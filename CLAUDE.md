@@ -236,7 +236,8 @@ nhập làm nguồn chính + kéo thả vật cản.
   theo đơn vị hành chính từ 01/07/2025 (người dùng chốt): tỉnh cố định "Thành phố Hồ Chí Minh" (ô chỉ đọc), phường/xã bắt buộc,
   chọn bằng `Combobox` từ API công khai provinces.open-api.vn v2 (`/api/v2/p/79?depth=2`, 168 phường/xã/đặc khu, gồm Bình
   Dương và Bà Rịa – Vũng Tàu cũ) – backend không có API địa giới nên FE gọi thẳng bằng fetch (`services/provinceService.ts`,
-  `hooks/useHcmWards.ts`, tải một lần mỗi phiên); không còn ô quận/huyện (`district` gửi null). API lỗi thì vẫn gõ tay được
+  `hooks/useHcmWards.ts`, tải một lần mỗi phiên; địa chỉ gốc ở `VITE_PROVINCES_API_URL`, không khai thì dùng
+  `https://provinces.open-api.vn/api/v2`); không còn ô quận/huyện (`district` gửi null). API lỗi thì vẫn gõ tay được
   + nút thử lại. Địa điểm đã lưu mà không sửa gì thì đi tiếp, không kiểm tra lại (địa chỉ cũ khai tự do trước ngày đó không
   bị bắt chọn lại và tạo bản nháp mới). Toạ độ nằm ngoài khung TP.HCM (`isInHcm` ở `preSurveyDisplay.ts`) thì cảnh báo vàng,
   vẫn cho lưu (người dùng chốt), lặp lại ở bước mô phỏng và kết quả; mục khí hậu ghi toạ độ + link bản đồ. Lý do: một bản

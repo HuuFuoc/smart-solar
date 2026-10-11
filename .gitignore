@@ -7,7 +7,7 @@ dist-ssr
 *.tsbuildinfo
 
 # Env — never commit secrets (keep .env.example)
-# .env.development chỉ chứa VITE_API_BASE_URL=/api nên commit được;
+# .env.development chỉ chứa địa chỉ API công khai (không có bí mật) nên commit được;
 # tài khoản mẫu để trong .env.development.local (khớp *.local nên không commit).
 .env
 .env.*
