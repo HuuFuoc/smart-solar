@@ -18,6 +18,9 @@ export const ROUTES = {
     assistant: '/customer/assistant',
     products: '/customer/products',
     product: '/customer/products/:id',
+    /** Yêu cầu khảo sát đã gửi: đặt / đổi / huỷ giờ khảo sát (12/10/2026). */
+    requests: '/customer/requests',
+    request: '/customer/requests/:id',
   },
   ops: {
     home: '/ops',
@@ -49,6 +52,9 @@ export const ROUTES = {
     home: '/manage',
     products: '/manage/products',
     product: '/manage/products/:id',
+    /** Cấu hình lịch + lịch ngày của kỹ thuật viên (quản lý dùng chung trang với quản trị). */
+    technicians: '/manage/technicians',
+    technician: '/manage/technicians/:id',
     projects: '/manage/projects',
     project: '/manage/projects/:id',
     approvals: '/manage/approvals',
@@ -77,6 +83,9 @@ export const ROUTES = {
   ADMIN: {
     DASHBOARD: '/admin',
     USERS: '/admin/users',
+    USER: '/admin/users/:id',
+    TECHNICIANS: '/admin/technicians',
+    TECHNICIAN: '/admin/technicians/:id',
     ROLES: '/admin/roles',
     PRODUCTS: '/admin/products',
     SERVICES: '/admin/services',
@@ -92,6 +101,9 @@ export const ROUTES = {
     /** Danh mục sản phẩm (GET /api/products): màn có dữ liệu thật duy nhất của kỹ thuật viên lúc này. */
     PRODUCTS: '/tech/products',
     PRODUCT: '/tech/products/:id',
+    /** Lịch khảo sát được kinh doanh phân công (12/10/2026): danh sách, chi tiết + xác nhận nhận việc. */
+    JOBS: '/tech/jobs',
+    JOB: '/tech/jobs/:id',
     TASKS: '/tech/tasks',
     SURVEYS: '/tech/surveys',
     INSTALLATIONS: '/tech/installations',

@@ -196,8 +196,13 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   service và hook import kiểu từ đây. Ngoại lệ: swagger của tag Customers, PreSurveys, SurveyRequests, PreSurveySurface,
   Simulations chỉ khai "200 OK" nên `customersRes.ts`, `preSurveysRes.ts`, `surveyRequestsRes.ts`, `preSurveySurfaceRes.ts`,
   `simulationsRes.ts` viết tay theo contract backend (đối chiếu response thật 09/10/2026; không có header tự sinh nên
-  `gen:api` không xoá); backend khai response thì `gen:api` ghi đè. `provincesRes.ts` cũng viết tay: kiểu của API công khai
-  provinces.open-api.vn (không thuộc swagger).
+  `gen:api` không xoá); backend khai response thì `gen:api` ghi đè. Cùng lý do, luồng 1 (12/10/2026) viết tay
+  `surveySlotsRes.ts`, `customerSurveyRequestsRes.ts`, `technicianAvailabilityRes.ts`, `technicianAppointmentsRes.ts`,
+  `adminTechniciansRes.ts`, `adminUsersRes.ts` theo record C# của backend `main` (4d12e4d); request của các tag đó sinh
+  bình thường. `provincesRes.ts` cũng viết tay: kiểu của API công khai provinces.open-api.vn (không thuộc swagger).
+- `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
+  repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
+  JWT; không đụng DB nào.
 - Nghiệp vụ chưa có endpoint đọc dữ liệu từ `data/*.ts` và bị ẩn khỏi menu/route (mục dưới). Khi backend có
   endpoint: thêm `types/req|res/<nghiệp vụ>*.ts`, rồi `services/` + `hooks/` vào feature đó, bỏ file trong `data/`,
   rồi mở lại route + mục menu.
@@ -285,9 +290,42 @@ nhập làm nguồn chính + kéo thả vật cản.
   và GET chi tiết với mọi vai trò (dò 08/10/2026), nên: tạo mới luôn ACTIVE; "Ngừng bán" hỏi xác nhận, có "Hoàn tác";
   sản phẩm đã ngừng bán được nhớ trong localStorage (`features/products/hiddenProducts.ts`) để "Mở bán lại" — chỉ trên
   trình duyệt đã bấm. Khi backend có cách liệt kê sản phẩm ngừng bán thì bỏ cơ chế này.
-- `/tech/products(/:id)`, `/manage/products(/:id)`: kỹ thuật viên và quản lý chưa có API riêng, nên trang chủ của họ là
-  danh mục sản phẩm thật (GET /api/products, bản portal kit). Không còn trang giữ chỗ "chưa có chức năng" (08/10/2026);
-  `/field/*` chuyển về `/tech`.
+- `/tech/products(/:id)`, `/manage/products(/:id)`: danh mục sản phẩm thật (GET /api/products, bản portal kit) cho kỹ
+  thuật viên và quản lý. Không còn trang giữ chỗ "chưa có chức năng" (08/10/2026); `/field/*` chuyển về `/tech`.
+
+**Luồng 1: đặt lịch khảo sát → phân công → kỹ thuật viên nhận việc** (backend `main` 4d12e4d, nối 12/10/2026; tài liệu bàn
+giao BE "SmartSolar – Tài liệu bàn giao tích hợp FE/BE" 12/10/2026, contract đối chiếu bằng code backend chứ không theo bảng
+"Agent/Hardening" của tài liệu). Hiển thị trong `features/scheduling` (`schedulingDisplay.ts`: giờ Việt Nam, nhãn trạng thái,
+đường đi, lý do không xếp được), tài khoản trong `features/users`. Luồng dừng ở "Nhận việc": không có "Hoàn thành khảo sát".
+- Giờ nghiệp vụ là giờ Việt Nam bất kể máy: hiển thị qua `Intl` với `timeZone: 'Asia/Ho_Chi_Minh'` (cả `formatDateTime` cũ),
+  ngày gửi API là chuỗi `YYYY-MM-DD` tính theo giờ Việt Nam (không `new Date('2026-10-20')`), giờ hẹn gửi kèm `+07:00`.
+- Khách `/customer/requests(/:id)` (`pages/customer/request(s)-page.tsx`): gửi đánh giá xong hộp thoại dẫn thẳng tới "Chọn giờ
+  khảo sát". `SlotPicker`: lưới 30 ngày (giới hạn đặt trước của BE) theo cột thứ + các giờ BE trả (GET /survey-slots) –
+  không tự vẽ khung giờ rồi đoán giờ trống; sau 15:30 mở sẵn ngày mai. Đặt (201; gửi lại đúng giờ → 200 `created=false`, vẫn
+  là thành công), đổi giờ / huỷ khi lịch còn BOOKED và chưa tới giờ; 409 SURVEY_SLOT_UNAVAILABLE thì tải lại giờ và bỏ chọn.
+  Khách không bao giờ thấy kỹ thuật viên đang được giữ chỗ, chỉ thấy người được phân công chính thức.
+- **Toạ độ công trình bắt buộc** ở bước địa điểm (trước đó gập lại, không bắt buộc): không có toạ độ BE không xếp được giờ
+  (PROPERTY_SITE_LOCATION_REQUIRED) và không có API sửa địa điểm. Địa điểm cũ thiếu toạ độ thì bước địa điểm bắt khai lại (tạo
+  địa điểm + bản nháp mới), gửi bị chặn; yêu cầu đã gửi thiếu toạ độ thì trang đặt giờ hướng dẫn liên hệ kinh doanh.
+- Sales `/ops/surveys/:id`: khối lịch khảo sát đứng đầu cột chính (`SalesSchedulePanel`). Khách đã đặt → phân công (danh sách
+  kỹ thuật viên rảnh của BE, người đang giữ chỗ chọn sẵn, mỗi người kèm chặng đường Vietmap); đã phân công → "Đổi kỹ thuật
+  viên" (PUT reassign) hoặc "Đổi giờ" (chọn ngày + giờ, "Xem kỹ thuật viên rảnh" với `startsAt` rồi PUT reschedule kèm người).
+  Không cập nhật lạc quan; lỗi thì lịch cũ giữ nguyên. Nhãn đỏ đầu trang: "Chưa phân công kỹ thuật viên".
+- Kỹ thuật viên `/tech/jobs(/:id)` "Việc của tôi" (trang chủ), `/tech/schedule?ngay=` "Lịch làm việc": danh sách theo ngày,
+  chi tiết (đường tới, công trình, khách, số liệu khai, mô phỏng khách chọn qua `SimulationViewer`), nút "Nhận việc"
+  (gửi lại khi đã nhận vẫn là thành công). Số đỏ ở menu = lịch sắp tới chờ nhận việc.
+- Quản trị `/admin/users(/:id)` "Tài khoản" (trang chủ admin) và `/admin/technicians(/:id)`, quản lý `/manage/technicians(/:id)`
+  (trang chủ quản lý; dùng chung `pages/technician(s)-page.tsx`). Tài khoản: tạo không có mật khẩu (link đặt mật khẩu chỉ gửi qua
+  email, dùng chính trang `/reset-password`; môi trường tắt email thì báo rõ link CHƯA gửi), sửa, vai trò, trạng thái, gửi link,
+  xoá mềm; không tự khoá / xoá chính mình. Kỹ thuật viên: lịch theo ngày, hồ sơ nhận lịch (nơi xuất phát, số lịch / ngày, giờ rời
+  sớm nhất), giờ làm theo tuần, lịch nghỉ (`?muc=lich|nhan-lich|gio-lam|nghi`). Thay đổi làm hỏng lịch đã có bị BE từ chối
+  (409 + danh sách lịch, `ConflictList`; ACCOUNT_HAS_ACTIVE_WORK ở trang tài khoản) – không tự huỷ lịch nào. Số đỏ ở menu = kỹ
+  thuật viên chưa có nơi xuất phát.
+- Chặng đường không tính được thì ghi rõ trạng thái, không bao giờ in "0 phút"; thiếu dữ liệu kẹt xe ghi "Không có dữ liệu giao
+  thông", không suy ra "thông thoáng"; lịch ngày chỉ dùng số của chặng OK (đang tính lại / cũ / lỗi thì ghi trạng thái).
+- Thử cả luồng không cần DB thật: chạy pipeline backend bằng `AuthApiFactory` của bộ test (SQLite trong bộ nhớ, Vietmap /
+  PVGIS giả, email bắt lại) sau một proxy cổng 8090, rồi `API_PROXY_TARGET=http://localhost:8090 npm run dev -- --port 3000`.
+  Factory dùng một kết nối SQLite chung nên proxy phải phục vụ tuần tự (nhiều request song song làm EF ném NullReference).
 
 Mở lại một màn: thêm route trong `routes/protectedRoutes.tsx` và mục menu trong `config/portals.ts`
 (mọi portal). Sidebar/header không đặt số liệu giả (tên người dùng,
@@ -378,12 +416,12 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
 | `/403`            | `AuthLayout`   | `ForbiddenPage`                                             |
 | `/coming-soon`    | `PublicLayout` | Trang tạm cho Kinh doanh, Quản lý, Khách hàng               |
 | `/products`, `/products/:id` | `PublicLayout` | Danh mục sản phẩm công khai – GET /api/products(/{id}) |
-| `/admin/*`        | `AdminLayout`  | Sản phẩm – bọc `<RequireRole role="admin">`                 |
-| `/tech/*`         | `TechLayout`   | Sản phẩm (danh mục) – bọc `<RequireRole role="technician">` |
-| `/customer/*`     | `CustomerLayout` | Đánh giá sơ bộ – bọc `<RequireRole role="customer">`     |
-| `/ops/*`          | `OpsLayout`      | Yêu cầu khảo sát – bọc `<RequireRole role="sales">`      |
+| `/admin/*`        | `AdminLayout`  | Tài khoản, Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="admin">` |
+| `/tech/*`         | `TechLayout`   | Việc của tôi, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">` |
+| `/customer/*`     | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Sản phẩm – bọc `<RequireRole role="customer">` |
+| `/ops/*`          | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên) – bọc `<RequireRole role="sales">` |
 | `/field/*`        | —                | chuyển về `/tech` |
-| `/manage/*`       | `ManageLayout`   | Sản phẩm (danh mục) – bọc `<RequireRole role="manager">` |
+| `/manage/*`       | `ManageLayout`   | Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">` |
 | `/styleguide`     | –              | `StyleguidePage`                                            |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.

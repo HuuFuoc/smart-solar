@@ -1,5 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
-import { Icon } from '@/components/common/stitch-ui/Icon'
+import { useMemo, type ReactNode } from 'react'
 import { Button } from '@/components/common/ui/button'
 import { Combobox } from '@/components/common/ui/combobox'
 import { Field, Input, Radio, Textarea } from '@/components/common/ui/field'
@@ -26,42 +25,42 @@ type FieldsProps<F> = {
 }
 
 /*
-  Toạ độ không bắt buộc và ít khách biết: gập lại, chỉ mở sẵn khi đã có giá trị hoặc đang báo lỗi. Thiếu toạ độ thì
-  backend vẫn xếp tấm được nhưng không ước tính sản lượng (PVGIS) và khí hậu (NASA POWER), nên chữ mở nói rõ điều đó.
+  Toạ độ bắt buộc từ 12/10/2026 (trước đó gập lại, không bắt buộc): backend dùng nó để tính đường đi của kỹ thuật viên và
+  xếp giờ khảo sát (không có thì không đặt được lịch), và để ước tính sản lượng (PVGIS), khí hậu (NASA POWER). Ít khách
+  biết toạ độ nên chữ hướng dẫn nói cách lấy trên Google Maps.
 */
 function CoordinateFields({ value, errors, onChange }: FieldsProps<SiteForm>) {
-  const [open, setOpen] = useState(() => Boolean(value.latitude || value.longitude))
-  const hasError = Boolean(errors.latitude || errors.longitude)
-  const shown = open || hasError
   // Cảnh báo (vẫn cho lưu, người dùng chốt 10/10/2026) khi cả hai số hợp lệ mà nằm ngoài TP.HCM: gõ ngược hai số, sai dấu…
   const lat = toNumber(value.latitude)
   const lon = toNumber(value.longitude)
   const outside =
     lat !== null && lon !== null && Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180 && !isInHcm(lat, lon)
   return (
-    <details className="sm:col-span-2" open={shown} onToggle={(e) => setOpen(e.currentTarget.open)}>
-      {/* `tap` là inline-flex nên mất mũi tên mặc định của summary: icon mở / thu cùng chữ đổi theo trạng thái thay cho mũi tên. */}
-      <summary className="tap w-fit cursor-pointer gap-1 text-body font-medium text-accent-fg underline-offset-4 hover:underline">
-        <Icon name={shown ? 'expand_less' : 'add_location_alt'} className="text-[20px]" />
-        {shown ? 'Ẩn toạ độ' : 'Thêm toạ độ (cần để ước tính sản lượng điện)'}
-      </summary>
+    <fieldset className="sm:col-span-2">
+      <legend className="text-body font-medium text-fg">Toạ độ công trình</legend>
+      <p className="mt-1 max-w-prose text-meta text-fg-2">
+        Cần để xếp lịch khảo sát (tính đường đi của kỹ thuật viên) và ước tính sản lượng điện. Trên Google Maps, nhấn giữ vào
+        công trình: cặp số hiện ra là vĩ độ, kinh độ.
+      </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Field label="Vĩ độ" htmlFor="latitude" hint="Trên Google Maps, nhấn giữ vào công trình để thấy toạ độ, ví dụ 10.9036." error={errors.latitude}>
+        <Field label="Vĩ độ" htmlFor="latitude" required hint="Số đầu trong cặp toạ độ, ví dụ 10.9036." error={errors.latitude}>
           <Input
             id="latitude"
             inputMode="decimal"
             value={value.latitude}
             onChange={(e) => onChange({ latitude: e.target.value })}
             aria-invalid={Boolean(errors.latitude)}
+            aria-required
           />
         </Field>
-        <Field label="Kinh độ" htmlFor="longitude" hint="Số thứ hai trong cặp toạ độ, ví dụ 106.7686." error={errors.longitude}>
+        <Field label="Kinh độ" htmlFor="longitude" required hint="Số thứ hai trong cặp toạ độ, ví dụ 106.7686." error={errors.longitude}>
           <Input
             id="longitude"
             inputMode="decimal"
             value={value.longitude}
             onChange={(e) => onChange({ longitude: e.target.value })}
             aria-invalid={Boolean(errors.longitude)}
+            aria-required
           />
         </Field>
         {outside && (
@@ -74,7 +73,7 @@ function CoordinateFields({ value, errors, onChange }: FieldsProps<SiteForm>) {
           </Notice>
         )}
       </div>
-    </details>
+    </fieldset>
   )
 }
 

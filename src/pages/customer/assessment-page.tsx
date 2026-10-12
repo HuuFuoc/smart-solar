@@ -1,6 +1,6 @@
 import { useIsMutating, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ActionBar } from '@/components/common/ui/action-bar'
@@ -40,6 +40,7 @@ import {
   customerTypeLabel,
   directionLabel,
   formatAddress,
+  hasCoordinates,
   shortCode,
   surfaceTypeLabel,
 } from '@/features/pre-surveys/components/preSurveyDisplay'
@@ -76,6 +77,7 @@ import {
 import { useHcmWardsQuery } from '@/features/pre-surveys/hooks/useHcmWards'
 import { CREATE_SIMULATION_KEY, useSimulationsQuery } from '@/features/pre-surveys/hooks/useSimulations'
 import { getSurface } from '@/features/pre-surveys/services/preSurveyService'
+import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import { cx } from '@/utils/cx'
 
@@ -89,6 +91,7 @@ import { cx } from '@/utils/cx'
  * - Mặt lắp và form cũ dùng chung độ dốc / hướng: lưu mặt lắp trước (có kiểm revision), rồi mới ghi số liệu khai với
  *   đúng độ dốc / hướng đó, nên mô phỏng không bị đánh dấu cũ vì ghi lệch.
  * - Gửi không bắt buộc đã chạy mô phỏng (người dùng chốt 09/10/2026), bước xem lại chỉ nhắc.
+ * - Gửi xong khách chọn giờ khảo sát ngay ở trang của yêu cầu (/customer/requests/:id, luồng đặt lịch 12/10/2026).
  */
 
 const STEP_LABELS = ['Thông tin khách hàng', 'Địa điểm lắp đặt', 'Mặt lắp', 'Mô phỏng', 'Xem lại và gửi']
@@ -98,7 +101,7 @@ const STEP_HINTS = [
   'Công trình ở đâu và tấm pin sẽ lắp trên bề mặt nào.',
   'Đo mặt mái định lắp, chọn hướng mái và đánh dấu các vật cản trên mái.',
   'Chọn tấm pin và kiểu lắp để xem xếp được bao nhiêu tấm và ước tính sản lượng điện.',
-  'Kiểm tra lại thông tin rồi gửi để chuyên viên liên hệ hẹn ngày khảo sát.',
+  'Kiểm tra lại thông tin rồi gửi. Gửi xong bạn chọn ngày giờ để kỹ thuật viên tới khảo sát.',
 ]
 const SITE = 1
 const SURFACE = 2
@@ -136,6 +139,7 @@ export function AssessmentPage() {
   const account = user?.userId ?? user?.email ?? 'anonymous'
   const flagKey = profileFlagKey(account)
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const [saved, setSavedState] = useState<AssessmentDraft>(() => readDraft(account))
   const [profileDone, setProfileDone] = useState(() => readFlag(flagKey))
@@ -356,8 +360,10 @@ export function AssessmentPage() {
 
   async function saveSite() {
     // Không sửa gì ở địa điểm đã lưu: đi tiếp, kể cả địa điểm cũ khai tự do trước khi có danh sách phường/xã 2 cấp
-    // (kiểm tra lại sẽ bắt chọn phường mới và tạo bản nháp mới chỉ vì khách bấm Quay lại rồi Tiếp tục).
-    if (saved.siteId && saved.site && same(site, siteToForm(saved.site))) return goTo(SURFACE)
+    // (kiểm tra lại sẽ bắt chọn phường mới và tạo bản nháp mới chỉ vì khách bấm Quay lại rồi Tiếp tục). Trừ khi địa điểm
+    // cũ thiếu toạ độ: không có toạ độ thì không đặt được giờ khảo sát, phải khai rồi tạo địa điểm mới.
+    if (saved.siteId && saved.site && same(site, siteToForm(saved.site)) && hasCoordinates(saved.site.latitude, saved.site.longitude))
+      return goTo(SURFACE)
     const result = check(siteSchema, site)
     const wardNames = wards.data?.map((w) => w.name)
     // Danh sách không tải được thì nhận chữ khách gõ (đã báo ở ô); có danh sách thì phải đúng một phường, xã trong đó.
@@ -495,6 +501,11 @@ export function AssessmentPage() {
 
   async function submit() {
     if (!saved.preSurveyId) return goTo(SURFACE)
+    // Bản nháp cũ gắn với địa điểm thiếu toạ độ: gửi được nhưng không đặt được giờ khảo sát, nên bắt khai toạ độ trước.
+    if (saved.site && !hasCoordinates(saved.site.latitude, saved.site.longitude)) {
+      goTo(SITE)
+      return showErrors({ latitude: 'Nhập toạ độ công trình để đặt được lịch khảo sát.' })
+    }
     try {
       const { surveyRequestId } = await submitPreSurvey.mutateAsync(saved.preSurveyId)
       clearDraft(account)
@@ -596,8 +607,8 @@ export function AssessmentPage() {
         </Panel>
       )}
       <Notice tone="info" title="Sau khi gửi">
-        Yêu cầu chuyển tới bộ phận kinh doanh. Chuyên viên nhận yêu cầu sẽ liên hệ để hẹn ngày khảo sát tại công trình
-        và kiểm tra lại các số đo bạn khai.
+        Bạn chọn ngày giờ khảo sát trong 30 ngày tới. Bộ phận kinh doanh phân công kỹ thuật viên tới công trình để kiểm tra
+        lại các số đo bạn khai.
       </Notice>
       {saved.preSurveyId && !submitted && (
         <Notice tone="ok">
@@ -856,10 +867,11 @@ export function AssessmentPage() {
         </div>
       </ActionBar>
 
-      <Dialog ref={dialogRef}>
+      <Dialog ref={dialogRef} className="max-w-lg">
         <DialogTitle>Đã gửi yêu cầu khảo sát</DialogTitle>
         <p className="mt-2 text-body text-fg-2">
-          Chuyên viên kinh doanh sẽ nhận yêu cầu cho {saved.site?.name ?? 'địa điểm của bạn'} và liên hệ để hẹn ngày khảo sát.
+          Bước cuối: chọn ngày giờ để kỹ thuật viên tới khảo sát {saved.site?.name ?? 'địa điểm của bạn'}. Bạn cũng có thể chọn sau ở mục
+          Yêu cầu khảo sát.
         </p>
         {requestId && (
           <KeyValueList
@@ -868,11 +880,15 @@ export function AssessmentPage() {
           />
         )}
         <DialogFooter>
-          <Button variant="ghost" onClick={() => dialogRef.current?.close()}>
-            Đóng
-          </Button>
-          <Button variant="primary" onClick={startOver}>
+          <Button variant="ghost" onClick={startOver}>
             Đánh giá địa điểm khác
+          </Button>
+          {/* Mất phản hồi khi gửi (PRE_SURVEY_ALREADY_SUBMITTED) thì không có mã yêu cầu: mở danh sách để khách chọn. */}
+          <Button
+            variant="primary"
+            onClick={() => navigate(requestId ? withId(ROUTES.customer.request, requestId) : ROUTES.customer.requests)}
+          >
+            Chọn giờ khảo sát
           </Button>
         </DialogFooter>
       </Dialog>

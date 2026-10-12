@@ -114,7 +114,9 @@ function issue<F>(ctx: z.RefinementCtx, path: keyof F, message: string | null) {
 
 /*
   Luật kiểm tra bám đúng backend, không thêm luật riêng (dò validator ngày 05/10/2026):
-  - địa điểm: chỉ Name và Province bắt buộc; Latitude -90..90, Longitude -180..180.
+  - địa điểm: Name và Province bắt buộc; Latitude -90..90, Longitude -180..180. Từ 12/10/2026 toạ độ cũng bắt buộc ở
+    giao diện: không có toạ độ thì backend không xếp được giờ khảo sát (PROPERTY_SITE_LOCATION_REQUIRED) và không có API
+    sửa địa điểm đã tạo, nên khách sẽ làm hết bản đánh giá rồi không đặt được lịch. (0, 0) là giá trị bỏ trống, không nhận.
   - mặt lắp và số liệu khai: xem surfaceForm.ts (bám UpdatePreSurveySurfaceCommandValidator).
   - hồ sơ: swagger cho mọi trường để trống (chưa dò được validator vì tài khoản test đã có hồ sơ).
 */
@@ -144,8 +146,10 @@ export const siteSchema = z
     note: z.string(),
   })
   .superRefine((f, ctx) => {
-    issue<SiteForm>(ctx, 'latitude', numberIssue(f.latitude, { label: 'vĩ độ', min: -90, max: 90 }, false))
-    issue<SiteForm>(ctx, 'longitude', numberIssue(f.longitude, { label: 'kinh độ', min: -180, max: 180 }, false))
+    issue<SiteForm>(ctx, 'latitude', numberIssue(f.latitude, { label: 'vĩ độ', min: -90, max: 90 }, true))
+    issue<SiteForm>(ctx, 'longitude', numberIssue(f.longitude, { label: 'kinh độ', min: -180, max: 180 }, true))
+    if (toNumber(f.latitude) === 0 && toNumber(f.longitude) === 0)
+      issue<SiteForm>(ctx, 'latitude', 'Toạ độ (0, 0) không phải vị trí công trình. Lấy toạ độ trên Google Maps.')
   })
   .transform(
     (f): CreatePropertySiteRequest => ({

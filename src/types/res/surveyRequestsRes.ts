@@ -1,9 +1,10 @@
 /*
  * VIẾT TAY – swagger chỉ khai "200 OK" cho tag SurveyRequests, không có schema response.
  * Tên kiểu và field lấy đúng theo SmartSolar.Modules.PreSurvey (GetPendingSurveyRequests,
- * GetMySurveyRequests, GetSurveyRequestDetail) và Contracts.SurveyRequests của image 05/10/2026.
- * Enum serialize thành số giống request. Khi backend khai response trong swagger,
- * `npm run gen:api` sẽ ghi đè file này bằng bản sinh tự động.
+ * GetMySurveyRequests, GetSurveyRequestDetail) và Contracts.SurveyRequests của image 05/10/2026;
+ * lịch hẹn, phân công, đổi giờ theo Modules.Scheduling (backend main 4d12e4d, 12/10/2026).
+ * Enum của PreSurvey serialize thành số giống request; trạng thái của Scheduling là chuỗi IN HOA.
+ * Khi backend khai response trong swagger, `npm run gen:api` sẽ ghi đè file này bằng bản sinh tự động.
  */
 import type { InstallationSurfaceType } from '@/types/req/customersReq'
 
@@ -67,6 +68,66 @@ export type SurveyRequestDetail = {
   salesNote: string | null
   /** Lần mô phỏng khách chọn khi gửi (image 09/10/2026); null với yêu cầu gửi khi chưa chạy mô phỏng. */
   selectedSimulation: SelectedSimulationSummary | null
+  /** Lịch hẹn đang hiệu lực (12/10/2026); null khi khách chưa đặt giờ hoặc đã huỷ. */
+  appointment: SurveyAppointmentSummary | null
+}
+
+/** BOOKED → ASSIGNED → ACKNOWLEDGED, hoặc CANCELLED. Giá trị lạ vẫn nhận (backend có thể thêm). */
+export type AppointmentStatus = 'BOOKED' | 'ASSIGNED' | 'ACKNOWLEDGED' | 'CANCELLED' | (string & {})
+
+/**
+ * Lịch hẹn như sales thấy, gồm cả kỹ thuật viên hệ thống đang giữ chỗ (khách không bao giờ thấy).
+ * Giờ có offset +07:00.
+ */
+export type SurveyAppointmentSummary = {
+  appointmentId: string
+  /** Format: date-time */
+  startsAt: string
+  /** Format: date-time */
+  endsAt: string
+  status: AppointmentStatus
+  reservedTechnicianUserId: string
+  reservedTechnicianName: string
+  assignedTechnicianUserId: string | null
+  assignedTechnicianName: string | null
+  customerNote: string | null
+  /** Format: date-time */
+  bookedAt: string
+  assignedAt: string | null
+  acknowledgedAt: string | null
+}
+
+/** POST …/assign-technician và PUT …/reassign-technician (cùng một handler). */
+export type AssignmentView = {
+  appointmentId: string
+  surveyRequestId: string
+  technicianUserId: string
+  technicianName: string
+  startsAt: string
+  endsAt: string
+  appointmentStatus: AppointmentStatus
+  /** Luôn "SCHEDULED" khi thành công. */
+  surveyRequestStatus: string
+  scheduledAt: string
+  reassigned: boolean
+  /** Kỹ thuật viên (mới) phải xác nhận nhận việc. */
+  acknowledgementRequired: boolean
+}
+
+/** PUT …/reschedule. `previousAppointmentId` là lịch cũ (đã huỷ, giữ làm lịch sử). */
+export type SalesRescheduleView = {
+  appointmentId: string
+  previousAppointmentId: string | null
+  surveyRequestId: string
+  technicianUserId: string
+  technicianName: string
+  startsAt: string
+  endsAt: string
+  appointmentStatus: AppointmentStatus
+  surveyRequestStatus: string
+  scheduledAt: string | null
+  reassigned: boolean
+  acknowledgementRequired: boolean
 }
 
 /** Tóm tắt mô phỏng khách chọn; bản đầy đủ đọc ở GET /api/pre-surveys/{preSurveyId}/simulations/{simulationId}. */

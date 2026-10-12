@@ -116,9 +116,12 @@ function byNextAction(a: MySurveyRequestItem, b: MySurveyRequestItem) {
   return new Date(b.assignedAt ?? 0).getTime() - new Date(a.assignedAt ?? 0).getTime()
 }
 
-/** Gợi ý bước tiếp theo theo trạng thái; trạng thái đã xong thì không cần gợi ý. */
+/*
+  Gợi ý bước tiếp theo theo trạng thái; trạng thái đã xong thì không cần gợi ý. Từ 12/10/2026 khách tự đặt giờ, sales
+  phân công kỹ thuật viên (yêu cầu thành "Đã hẹn khảo sát"); danh sách không có giờ khách đặt nên chỉ nhắc mở yêu cầu.
+*/
 function nextStep(r: MySurveyRequestItem) {
-  if (needsScheduling(r.status)) return 'Gọi khách để hẹn ngày khảo sát.'
+  if (needsScheduling(r.status)) return 'Mở yêu cầu để phân công kỹ thuật viên cho giờ khách đặt.'
   if (r.status === 4 && r.scheduledAt) return `Khảo sát lúc ${formatDateTime(r.scheduledAt)}.`
   return null
 }
@@ -143,7 +146,7 @@ export function MyRequestList({ rows }: { rows: MySurveyRequestItem[] }) {
                     { k: 'Bạn nhận', v: r.assignedAt ? <When iso={r.assignedAt} /> : '—' },
                     {
                       k: 'Hẹn khảo sát',
-                      v: r.scheduledAt ? formatDateTime(r.scheduledAt) : needsScheduling(r.status) ? <Badge tone="danger">Chưa hẹn</Badge> : '—',
+                      v: r.scheduledAt ? formatDateTime(r.scheduledAt) : needsScheduling(r.status) ? <Badge tone="danger">Chưa phân công</Badge> : '—',
                     },
                   ]}
                 />

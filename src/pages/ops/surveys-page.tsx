@@ -59,7 +59,7 @@ export function OpsSurveysPage() {
               )}
               {unscheduled > 0 && (
                 <Badge tone="danger" icon="event_busy">
-                  {unscheduled} yêu cầu của bạn chưa hẹn ngày khảo sát
+                  {unscheduled} yêu cầu của bạn chưa phân công kỹ thuật viên
                 </Badge>
               )}
             </span>

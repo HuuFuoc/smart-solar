@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as preSurveyService from '@/features/pre-surveys/services/preSurveyService'
+import { bookingKeys } from '@/features/scheduling/hooks/useBooking'
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
 import type { UpdatePreSurveySurfaceRequest } from '@/types/req/preSurveySurfaceReq'
 import type { CreatePreSurveyRequest, UpdatePreSurveyRequest } from '@/types/req/preSurveysReq'
@@ -55,9 +56,12 @@ export function useUpdatePreSurveyMutation() {
 
 export function useSubmitPreSurveyMutation() {
   const invalidate = useInvalidatePreSurvey()
+  const queryClient = useQueryClient()
   return useMutation<SubmitPreSurveyResponse, ApiError, string>({
     mutationFn: (id) => preSurveyService.submitPreSurvey(id),
-    onSettled: (_data, _error, id) => invalidate(id),
+    // Gửi xong sinh một yêu cầu khảo sát mới: danh sách "Yêu cầu khảo sát" của khách phải có nó ngay.
+    onSettled: (_data, _error, id) =>
+      Promise.all([invalidate(id), queryClient.invalidateQueries({ queryKey: bookingKeys.all })]),
   })
 }
 

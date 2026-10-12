@@ -40,6 +40,8 @@ export const protectedRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to={customer.assessment} replace /> },
       { path: customer.assessment, lazy: () => import('@/pages/customer/assessment-page').then((m) => ({ Component: m.AssessmentPage })) },
+      { path: customer.requests, lazy: () => import('@/pages/customer/requests-page').then((m) => ({ Component: m.CustomerRequestsPage })) },
+      { path: customer.request, lazy: () => import('@/pages/customer/request-page').then((m) => ({ Component: m.CustomerRequestPage })) },
       { path: customer.products, lazy: () => import('@/pages/catalog-page').then((m) => ({ Component: m.CustomerCatalogPage })) },
       { path: customer.product, lazy: () => import('@/pages/catalog-product-page').then((m) => ({ Component: m.CustomerCatalogProductPage })) },
       fallback(customer.assessment),
@@ -73,7 +75,7 @@ export const protectedRoutes: RouteObject[] = [
   /* ---- /field: bản portal kit cũ của kỹ thuật viên, gộp về /tech (08/10/2026) ---- */
   { path: `${ROUTES.field.home}/*`, element: <Navigate to={ROUTES.TECH.DASHBOARD} replace /> },
 
-  /* ---- Portal quản lý: chưa có API riêng, dùng danh mục sản phẩm thật ---- */
+  /* ---- Portal quản lý: lịch + cấu hình kỹ thuật viên (dùng chung trang với quản trị), danh mục sản phẩm ---- */
   {
     path: manage.home,
     element: (
@@ -87,10 +89,12 @@ export const protectedRoutes: RouteObject[] = [
       </ManageLayout>
     ),
     children: [
-      { index: true, element: <Navigate to={manage.products} replace /> },
+      { index: true, element: <Navigate to={manage.technicians} replace /> },
+      { path: manage.technicians, lazy: () => import('@/pages/technicians-page').then((m) => ({ Component: m.ManageTechniciansPage })) },
+      { path: manage.technician, lazy: () => import('@/pages/technician-page').then((m) => ({ Component: m.ManageTechnicianPage })) },
       { path: manage.products, lazy: () => import('@/pages/catalog-page').then((m) => ({ Component: m.ManageCatalogPage })) },
       { path: manage.product, lazy: () => import('@/pages/catalog-product-page').then((m) => ({ Component: m.ManageCatalogProductPage })) },
-      fallback(manage.products),
+      fallback(manage.technicians),
     ],
   },
 
@@ -108,13 +112,17 @@ export const protectedRoutes: RouteObject[] = [
       </AdminLayout>
     ),
     children: [
-      { index: true, element: <Navigate to={ROUTES.ADMIN.PRODUCTS} replace /> },
+      { index: true, element: <Navigate to={ROUTES.ADMIN.USERS} replace /> },
+      { path: ROUTES.ADMIN.USERS, lazy: () => import('@/pages/admin/users-page').then((m) => ({ Component: m.AdminUsersPage })) },
+      { path: ROUTES.ADMIN.USER, lazy: () => import('@/pages/admin/user-page').then((m) => ({ Component: m.AdminUserPage })) },
+      { path: ROUTES.ADMIN.TECHNICIANS, lazy: () => import('@/pages/technicians-page').then((m) => ({ Component: m.AdminTechniciansPage })) },
+      { path: ROUTES.ADMIN.TECHNICIAN, lazy: () => import('@/pages/technician-page').then((m) => ({ Component: m.AdminTechnicianPage })) },
       { path: 'products', lazy: () => import('@/pages/admin/products-page').then((m) => ({ Component: m.AdminProductsPage })) },
-      fallback(ROUTES.ADMIN.PRODUCTS),
+      fallback(ROUTES.ADMIN.USERS),
     ],
   },
 
-  /* ---- Portal kỹ thuật viên /tech: chưa có API riêng, dùng danh mục sản phẩm thật ---- */
+  /* ---- Portal kỹ thuật viên /tech: lịch khảo sát được giao (xác nhận nhận việc), lịch làm việc, danh mục sản phẩm ---- */
   {
     path: ROUTES.TECH.DASHBOARD,
     element: (
@@ -128,10 +136,13 @@ export const protectedRoutes: RouteObject[] = [
       </TechLayout>
     ),
     children: [
-      { index: true, element: <Navigate to={ROUTES.TECH.PRODUCTS} replace /> },
+      { index: true, element: <Navigate to={ROUTES.TECH.JOBS} replace /> },
+      { path: ROUTES.TECH.JOBS, lazy: () => import('@/pages/tech/jobs-page').then((m) => ({ Component: m.TechJobsPage })) },
+      { path: ROUTES.TECH.JOB, lazy: () => import('@/pages/tech/job-page').then((m) => ({ Component: m.TechJobPage })) },
+      { path: ROUTES.TECH.SCHEDULE, lazy: () => import('@/pages/tech/schedule-page').then((m) => ({ Component: m.TechSchedulePage })) },
       { path: ROUTES.TECH.PRODUCTS, lazy: () => import('@/pages/catalog-page').then((m) => ({ Component: m.TechCatalogPage })) },
       { path: ROUTES.TECH.PRODUCT, lazy: () => import('@/pages/catalog-product-page').then((m) => ({ Component: m.TechCatalogProductPage })) },
-      fallback(ROUTES.TECH.PRODUCTS),
+      fallback(ROUTES.TECH.JOBS),
     ],
   },
 ]

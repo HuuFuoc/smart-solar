@@ -102,7 +102,7 @@ export function mapsUrl(latitude: number, longitude: number) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`
 }
 
-/** Đã nhận nhưng chưa hẹn ngày khảo sát: việc tiếp theo của sales là gọi khách. */
+/** Đã nhận nhưng chưa chốt lịch (chưa phân công kỹ thuật viên): việc tiếp theo của sales là phân công, hoặc nhắc khách đặt giờ. */
 export function needsScheduling(status: number | null | undefined) {
   return status === 2 || status === 3
 }
@@ -112,7 +112,9 @@ export function surveyStatusMeta(status: number | null | undefined): { label: st
 }
 
 const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
+/* Giờ nghiệp vụ là giờ Việt Nam, không theo múi giờ của máy đang xem (tài liệu bàn giao BE 12/10/2026, mục 15). */
 const dateTime = new Intl.DateTimeFormat('vi-VN', {
+  timeZone: 'Asia/Ho_Chi_Minh',
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',
