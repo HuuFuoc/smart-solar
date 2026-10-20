@@ -2,7 +2,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Notice } from '@/components/common/ui/lists'
-import { useDeleteProductMutation } from '@/features/products/hooks/useProducts'
+import { useDeleteProductMutation } from '@/hooks/useProducts'
 import { errorMessage } from '@/services/api/errors'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 

@@ -14,7 +14,7 @@ export function ForbiddenPage() {
       <ForbiddenCard />
       <div className="flex flex-wrap items-center gap-space-sm">
         <Link
-          to={user ? homePathForRole(user.role) : ROUTES.HOME}
+          to={user ? homePathForRole(user.role) : ROUTES.home}
           className="inline-flex items-center gap-space-xs rounded-lg bg-surface-container-lowest px-3 py-1.5 text-label-sm text-on-surface-variant shadow-sm transition-colors hover:text-on-surface"
         >
           <Icon name="arrow_back" className="text-[16px]" />

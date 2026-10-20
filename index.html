@@ -6,28 +6,48 @@
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <!--
-      Ảnh hero là LCP của trang chủ nhưng chỉ lộ ra sau khi JS và chunk LandingPage tải xong.
-      Tải trước ngay khi đọc HTML, và chỉ ở "/" để các portal không tải ảnh thừa.
+      1. Áp giao diện đã chọn (khoá "solar-theme" của src/hooks/useTheme.ts) trước khi vẽ, để trang không nháy sai màu;
+         chưa chọn thì để trống và CSS theo hệ thống. Trang công khai và menu khách hàng đều đổi được giao diện.
+      2. Ảnh hero là LCP của trang chủ nhưng chỉ lộ ra sau khi JS và chunk LandingPage tải xong: tải trước ngay khi đọc
+         HTML, chỉ ở "/" (các portal không tải ảnh thừa) và chỉ ảnh của giao diện đang dùng (ngày / đêm). srcset, sizes và
+         media phải trùng với heroImages trong src/data/landing.ts và <picture> của hero-section.tsx, nếu không trình
+         duyệt tải hai lần.
     -->
     <script>
-      if (location.pathname === '/') {
-        var l = document.createElement('link')
-        l.rel = 'preload'
-        l.as = 'image'
-        l.href = '/images/hero-960.webp'
-        l.setAttribute('imagesrcset', '/images/hero-960.webp 960w, /images/hero-1672.webp 1672w')
-        l.setAttribute('imagesizes', '100vw')
-        l.setAttribute('fetchpriority', 'high')
-        document.head.appendChild(l)
-      }
+      ;(function () {
+        var theme = null
+        try {
+          theme = localStorage.getItem('solar-theme')
+        } catch (e) {}
+        if (theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-theme', theme)
+        if (location.pathname !== '/') return
+        var dark = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        var scene = dark ? 'night' : 'day'
+        function preload(kind, widths, media, sizes) {
+          var l = document.createElement('link')
+          l.rel = 'preload'
+          l.as = 'image'
+          l.type = 'image/avif'
+          l.media = media
+          l.setAttribute(
+            'imagesrcset',
+            widths.map(function (w) { return '/images/hero/' + scene + '-' + kind + '-' + w + '.avif ' + w + 'w' }).join(', '),
+          )
+          l.setAttribute('imagesizes', sizes)
+          l.setAttribute('fetchpriority', 'high')
+          document.head.appendChild(l)
+        }
+        preload('wide', [1280, 1920, 2560, 3840], '(min-width: 768px)', '(min-width: 1024px) 100vw, 140vw')
+        preload('crop', [640, 960, 1280, 1600], '(max-width: 767.98px)', '120vw')
+      })()
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="description" content="Thi công điện mặt trời áp mái cho nhà xưởng, kho bãi và toà nhà: khảo sát tận mái, phương án riêng cho từng công trình, đội kỹ thuật của Smart Solar lắp đặt và bàn giao." />
+    <meta name="description" content="Giải pháp điện mặt trời cho ngôi nhà của bạn: khảo sát nhu cầu, tư vấn lắp đặt và quản lý bảo hành, bảo trì trên cùng một nền tảng." />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="vi_VN" />
-    <meta property="og:title" content="Smart Solar | Thi công điện mặt trời áp mái cho nhà xưởng và doanh nghiệp" />
-    <meta property="og:description" content="Khảo sát tận mái, lên phương án riêng cho từng công trình, lắp đặt bằng đội kỹ thuật của Smart Solar và bàn giao hệ thống chạy ổn định." />
+    <meta property="og:title" content="Smart Solar | Giải pháp điện mặt trời cho ngôi nhà của bạn" />
+    <meta property="og:description" content="Khảo sát nhu cầu, tư vấn lắp đặt và quản lý bảo hành, bảo trì trên cùng một nền tảng." />
     <title>Smart Solar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

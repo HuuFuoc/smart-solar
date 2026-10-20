@@ -20,5 +20,13 @@ export function ctaClass(size: 'lg' | 'md' = 'lg', display = 'inline-flex') {
   )
 }
 
+/* Nút phụ đứng cạnh nút chính (hero): nền trang + viền, cùng cỡ với ctaClass('lg'), như `secondary` của portal. */
+export function secondaryCtaClass(display = 'inline-flex') {
+  return cx(
+    display,
+    'press h-12 items-center justify-center rounded-control border border-line-2 bg-canvas px-6 text-fg ld-action whitespace-nowrap hover:border-fg-3 hover:bg-surface-2',
+  )
+}
+
 /** Link chữ trong nội dung: gạch chân để nhận ra là link khi không nhìn được màu. */
 export const TEXT_LINK = 'text-accent-fg underline decoration-1 underline-offset-4 hover:decoration-2'

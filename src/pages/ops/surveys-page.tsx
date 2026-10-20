@@ -12,7 +12,7 @@ import {
   useClaimSurveyRequestMutation,
   useMySurveyRequestsQuery,
   usePendingSurveyRequestsQuery,
-} from '@/features/pre-surveys/hooks/useSurveyRequests'
+} from '@/hooks/useSurveyRequests'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
@@ -59,7 +59,7 @@ export function OpsSurveysPage() {
               )}
               {unscheduled > 0 && (
                 <Badge tone="danger" icon="event_busy">
-                  {unscheduled} yêu cầu của bạn chưa hẹn ngày khảo sát
+                  {unscheduled} yêu cầu của bạn chưa phân công kỹ thuật viên
                 </Badge>
               )}
             </span>

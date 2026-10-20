@@ -19,7 +19,8 @@ export function WithTooltip({
   children,
 }: {
   label: string | null
-  side?: 'top' | 'right'
+  /** `bottom`: nút sát mép trên màn hình (header), hiện phía trên sẽ bị khuất. */
+  side?: 'top' | 'right' | 'bottom'
   children: (tip: TooltipHandlers) => ReactNode
 }) {
   const [anchor, setAnchor] = useState<DOMRect | null>(null)
@@ -57,10 +58,13 @@ export function WithTooltip({
       }
     : {}
 
+  const centerX = (anchor?.left ?? 0) + (anchor?.width ?? 0) / 2
   const position =
     side === 'right'
       ? { left: (anchor?.right ?? 0) + 8, top: (anchor?.top ?? 0) + (anchor?.height ?? 0) / 2, transform: 'translateY(-50%)' }
-      : { left: (anchor?.left ?? 0) + (anchor?.width ?? 0) / 2, top: (anchor?.top ?? 0) - 6, transform: 'translate(-50%, -100%)' }
+      : side === 'bottom'
+        ? { left: centerX, top: (anchor?.bottom ?? 0) + 6, transform: 'translateX(-50%)' }
+        : { left: centerX, top: (anchor?.top ?? 0) - 6, transform: 'translate(-50%, -100%)' }
 
   return (
     <>

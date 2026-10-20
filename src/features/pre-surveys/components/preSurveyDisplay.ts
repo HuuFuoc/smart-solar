@@ -1,43 +1,11 @@
+import { CUSTOMER_TYPES, DIRECTIONS, SURFACE_TYPES, SURVEY_REQUEST_STATUSES } from '@/common/preSurvey'
 import type { Tone } from '@/components/common/ui/badge'
-import type { CustomerType, InstallationSurfaceType } from '@/types/req/customersReq'
 import type { SurveyRequestStatus } from '@/types/res/surveyRequestsRes'
 
 /*
  * Nhãn và định dạng dùng chung cho màn đánh giá của khách hàng và màn yêu cầu khảo sát của sales.
- * Swagger chỉ khai enum là số; tên từng giá trị lấy từ SmartSolar.Modules.PreSurvey.Enums
- * (image 05/10/2026). Giá trị lạ thì in nguyên số thay vì đoán nghĩa.
+ * Bảng enum (loại khách, mặt lắp, hướng, trạng thái yêu cầu) ở common/preSurvey.ts.
  */
-
-export const CUSTOMER_TYPES = [
-  { value: 1, label: 'Cá nhân' },
-  { value: 2, label: 'Doanh nghiệp' },
-] as const satisfies readonly { value: CustomerType; label: string }[]
-
-export const SURFACE_TYPES = [
-  { value: 1, label: 'Mái nhà', hint: 'Mái tôn, mái ngói, sân thượng' },
-  { value: 2, label: 'Mặt đất', hint: 'Khoảng đất trống trong khuôn viên' },
-  { value: 3, label: 'Mái che bãi xe', hint: 'Khung che chỗ đậu ô tô, xe máy' },
-  { value: 4, label: 'Mặt dựng', hint: 'Tường đứng hoặc mặt ngoài toà nhà' },
-  { value: 5, label: 'Khác', hint: 'Ghi rõ ở phần ghi chú' },
-] as const satisfies readonly { value: InstallationSurfaceType; label: string; hint: string }[]
-
-/*
- * Hướng mặt mái theo 8 hướng la bàn; giá trị gửi backend là góc phương vị (độ, 0 = Bắc, theo chiều kim đồng hồ).
- * Thứ tự mảng là thứ tự ô trên lưới 3×3 của bộ chọn (Tây Bắc ở góc trên trái), null là ô giữa.
- */
-export const COMPASS_GRID = [
-  { label: 'Tây Bắc', degree: 315 },
-  { label: 'Bắc', degree: 0 },
-  { label: 'Đông Bắc', degree: 45 },
-  { label: 'Tây', degree: 270 },
-  null,
-  { label: 'Đông', degree: 90 },
-  { label: 'Tây Nam', degree: 225 },
-  { label: 'Nam', degree: 180 },
-  { label: 'Đông Nam', degree: 135 },
-] as const
-
-const DIRECTIONS = ['Bắc', 'Đông Bắc', 'Đông', 'Đông Nam', 'Nam', 'Tây Nam', 'Tây', 'Tây Bắc']
 
 /** 185 → "Nam"; dùng hướng gần nhất trong 8 hướng. */
 export function directionLabel(degree: number | null | undefined) {
@@ -52,19 +20,6 @@ export function customerTypeLabel(value: number | null | undefined) {
 
 export function surfaceTypeLabel(value: number | null | undefined) {
   return SURFACE_TYPES.find((t) => t.value === value)?.label ?? (value == null ? '—' : `Loại ${value}`)
-}
-
-/*
-  Màu theo việc còn phải làm (Badge): "Chờ nhận" là yêu cầu cần người nhận nên tô đỏ; đã nhận / đang xem xét
-  là đang xử lý (chấm xanh dương); đã hẹn là đúng tiến độ (chấm xanh lá); xong hoặc huỷ thì chấm xám.
-*/
-const STATUS_META: Record<SurveyRequestStatus, { label: string; tone: Tone }> = {
-  1: { label: 'Chờ nhận', tone: 'danger' },
-  2: { label: 'Đã nhận', tone: 'info' },
-  3: { label: 'Đang xem xét', tone: 'info' },
-  4: { label: 'Đã hẹn khảo sát', tone: 'ok' },
-  5: { label: 'Hoàn tất', tone: 'neutral' },
-  6: { label: 'Đã huỷ', tone: 'neutral' },
 }
 
 /**
@@ -102,17 +57,19 @@ export function mapsUrl(latitude: number, longitude: number) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`
 }
 
-/** Đã nhận nhưng chưa hẹn ngày khảo sát: việc tiếp theo của sales là gọi khách. */
+/** Đã nhận nhưng chưa chốt lịch (chưa phân công kỹ thuật viên): việc tiếp theo của sales là phân công, hoặc nhắc khách đặt giờ. */
 export function needsScheduling(status: number | null | undefined) {
   return status === 2 || status === 3
 }
 
 export function surveyStatusMeta(status: number | null | undefined): { label: string; tone: Tone } {
-  return STATUS_META[status as SurveyRequestStatus] ?? { label: status == null ? '—' : `Trạng thái ${status}`, tone: 'neutral' }
+  return SURVEY_REQUEST_STATUSES[status as SurveyRequestStatus] ??{ label: status == null ? '—' : `Trạng thái ${status}`, tone: 'neutral' }
 }
 
 const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
+/* Giờ nghiệp vụ là giờ Việt Nam, không theo múi giờ của máy đang xem (tài liệu bàn giao BE 12/10/2026, mục 15). */
 const dateTime = new Intl.DateTimeFormat('vi-VN', {
+  timeZone: 'Asia/Ho_Chi_Minh',
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',

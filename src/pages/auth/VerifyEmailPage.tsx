@@ -5,7 +5,7 @@ import { AuthCard } from '@/features/auth/components/AuthCard'
 import { AuthInput } from '@/features/auth/components/AuthInput'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
-import { useResendVerificationMutation, useVerifyEmailMutation } from '@/features/auth/hooks/useAuthMutations'
+import { useResendVerificationMutation, useVerifyEmailMutation } from '@/hooks/useAuthMutations'
 import { errorMessage } from '@/services/api/errors'
 import { verifyContent } from '@/data/auth'
 
@@ -103,7 +103,7 @@ export function VerifyEmailPage() {
         </div>
         <h1 className="mb-space-lg text-headline-xl text-on-surface">{verifyContent.successTitle}</h1>
         <Link
-          to={ROUTES.LOGIN}
+          to={ROUTES.login}
           className="flex h-12 w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-primary text-label-lg text-on-primary shadow-sm transition-all hover:bg-primary-container"
         >
           <Icon name="login" className="text-[18px]" />
@@ -154,7 +154,7 @@ export function VerifyEmailPage() {
             </span>
           </button>
           <Link
-            to={ROUTES.LOGIN}
+            to={ROUTES.login}
             className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-surface-container px-6 text-label-lg text-on-surface transition-all hover:bg-surface-container-high sm:w-auto"
           >
             <Icon name="arrow_back" className="text-[18px]" />
@@ -218,7 +218,7 @@ export function VerifyEmailPage() {
           </span>
         </button>
         <Link
-          to={ROUTES.LOGIN}
+          to={ROUTES.login}
           className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-surface-container px-6 text-label-lg text-on-surface transition-all hover:bg-surface-container-high sm:w-auto"
         >
           <Icon name="arrow_back" className="text-[18px]" />
@@ -230,7 +230,7 @@ export function VerifyEmailPage() {
       <div className="mt-space-xl w-full max-w-md border-t border-surface-container pt-space-md text-center">
         <span className="text-body-sm text-on-surface-variant">
           {verifyContent.wrongEmail}
-          <Link to={ROUTES.REGISTER} className="font-bold text-accent-fg hover:underline">
+          <Link to={ROUTES.register} className="font-bold text-accent-fg hover:underline">
             {verifyContent.registerAgain}
           </Link>
         </span>

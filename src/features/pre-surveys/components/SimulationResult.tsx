@@ -8,12 +8,11 @@ import { EnergyChart } from '@/features/pre-surveys/components/EnergyChart'
 import { Facts } from '@/features/pre-surveys/components/Facts'
 import { directionLabel, formatCoordinates, formatRelative, isInHcm, mapsUrl } from '@/features/pre-surveys/components/preSurveyDisplay'
 import type { SceneView } from '@/features/pre-surveys/components/SimulationScene'
+import { ORIENTATIONS, SCENARIO_PLACES } from '@/common/simulation'
 import {
   CLIMATE_DISCLAIMER,
   ENERGY_DISCLAIMER,
   MONTH_NAMES,
-  ORIENTATIONS,
-  SCENARIO_PLACES,
   assumptionText,
   energyMissingText,
   formatFixed1,

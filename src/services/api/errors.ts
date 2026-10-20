@@ -25,6 +25,8 @@ export class ApiError extends Error {
   readonly details: unknown
   /** Số giây phải chờ theo header Retry-After (429); null khi server không gửi. */
   readonly retryAfter: number | null
+  /** Câu gốc (tiếng Anh) của server; có khi kèm mã lý do trong ngoặc, vd. "(DAILY_LIMIT_REACHED)". */
+  readonly serverMessage: string | null
 
   constructor(init: {
     status: number
@@ -34,6 +36,7 @@ export class ApiError extends Error {
     traceId?: string | null
     details?: unknown
     retryAfter?: number | null
+    serverMessage?: string | null
   }) {
     super(init.message)
     this.name = 'ApiError'
@@ -43,6 +46,7 @@ export class ApiError extends Error {
     this.traceId = init.traceId ?? null
     this.details = init.details
     this.retryAfter = init.retryAfter ?? null
+    this.serverMessage = init.serverMessage ?? null
   }
 
   get hasFieldErrors() {
@@ -98,6 +102,35 @@ const ERROR_MESSAGES: Record<string, string> = {
   SIMULATION_SOURCE_CHANGED: 'Mặt lắp vừa thay đổi sau lần tải trước. Đã tải lại mặt lắp, hãy chạy mô phỏng lại.',
   SIMULATION_NOT_FOUND: 'Không tìm thấy lần mô phỏng này.',
   SIMULATION_ACCESS_DENIED: 'Bạn không có quyền xem mô phỏng của bản đánh giá này.',
+  // Lịch khảo sát: SchedulingErrorCodes (backend main 4d12e4d, 12/10/2026)
+  SCHEDULING_VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
+  SURVEY_SLOT_UNAVAILABLE: 'Giờ vừa chọn không còn trống. Danh sách giờ đã được tải lại, hãy chọn giờ khác.',
+  SURVEY_BOOKING_ALREADY_EXISTS: 'Yêu cầu này đã có lịch hẹn. Tải lại trang để xem lịch hiện tại.',
+  SURVEY_BOOKING_NOT_FOUND: 'Yêu cầu này chưa có lịch hẹn đang hiệu lực.',
+  INVALID_BOOKING_TIME:
+    'Giờ này không đặt được: giờ bắt đầu phải theo mốc 30 phút, nằm trọn trong giờ làm của kỹ thuật viên, chưa qua và trong 30 ngày tới.',
+  INVALID_BOOKING_STATE: 'Lịch hẹn đã đổi trạng thái (đã phân công, đã qua giờ hoặc đã huỷ) nên không làm được thao tác này. Tải lại để xem trạng thái mới.',
+  TECHNICIAN_NOT_AVAILABLE: 'Kỹ thuật viên này không nhận được lịch vào giờ đó. Tải lại danh sách và chọn người khác.',
+  TECHNICIAN_NOT_FOUND: 'Không tìm thấy kỹ thuật viên.',
+  TECHNICIAN_NOT_ASSIGNED: 'Lịch này không giao cho bạn.',
+  TRAVEL_ROUTE_UNAVAILABLE: 'Không tìm được đường đi tới công trình. Kiểm tra lại toạ độ của địa điểm.',
+  TRAVEL_PROVIDER_UNAVAILABLE: 'Dịch vụ tính đường đi (Vietmap) đang lỗi nên chưa kiểm tra được giờ này. Thử lại sau ít phút.',
+  TRAVEL_PROVIDER_QUOTA_EXCEEDED: 'Đã hết lượt tính đường đi của Vietmap. Thử lại sau.',
+  APPOINTMENT_CONCURRENCY_CONFLICT: 'Lịch hẹn vừa được thay đổi ở nơi khác. Đã tải lại, hãy thử lại.',
+  PROPERTY_SITE_LOCATION_REQUIRED: 'Địa điểm chưa có toạ độ GPS hợp lệ nên chưa tính được đường đi và giờ khảo sát.',
+  APPOINTMENT_NOT_FOUND: 'Không tìm thấy lịch hẹn, hoặc lịch không còn giao cho bạn.',
+  TECHNICIAN_HAS_CONFLICTING_APPOINTMENTS: 'Thay đổi này làm hỏng lịch hẹn đã có. Đổi giờ hoặc chuyển các lịch bên dưới cho người khác trước.',
+  TECHNICIAN_PROFILE_REQUIRED: 'Lưu hồ sơ lịch của kỹ thuật viên (nơi xuất phát) trước.',
+  // Quản lý tài khoản: AdminUserErrorCodes (backend main 4d12e4d, 12/10/2026)
+  ADMIN_USER_NOT_FOUND: 'Không tìm thấy tài khoản.',
+  ADMIN_INVALID_ROLE: 'Vai trò không hợp lệ.',
+  ADMIN_INVALID_STATUS_TRANSITION:
+    'Không chuyển được sang trạng thái này. Tài khoản chưa xác minh email thì gửi link kích hoạt; chỉ tài khoản đang hoạt động mới tạm khoá được.',
+  ADMIN_LAST_ACTIVE_ADMIN: 'Đây là quản trị viên đang hoạt động cuối cùng. Cấp quyền quản trị cho người khác trước.',
+  ADMIN_CANNOT_MODIFY_OWN_ACCOUNT: 'Bạn không thể đổi trạng thái hay xoá chính tài khoản của mình.',
+  ACCOUNT_HAS_ACTIVE_WORK: 'Tài khoản còn lịch khảo sát sắp tới hoặc yêu cầu khảo sát đang xử lý. Chuyển các việc này cho người khác trước.',
+  ADMIN_USER_DELETED: 'Tài khoản đã bị xoá nên không sửa được.',
+  ADMIN_RECOVERY_NOT_ALLOWED: 'Tài khoản đang tạm khoá hoặc bị vô hiệu: kích hoạt lại trước khi gửi link.',
   // Mã chung của backend (dò GET bằng từng vai trò ngày 08/10/2026)
   AUTH_FORBIDDEN: 'Tài khoản của bạn không có quyền xem nội dung này.',
   RESOURCE_NOT_FOUND: 'Không tìm thấy dữ liệu yêu cầu. Kiểm tra lại đường dẫn.',
@@ -225,6 +258,7 @@ export function toApiError(status: number, body: unknown, retryAfter: number | n
     traceId,
     details: raw?.details,
     retryAfter,
+    serverMessage,
   })
 }
 

@@ -186,15 +186,28 @@ apiClient.interceptors.response.use(
 )
 
 /** Gọi API và nhận thẳng phần `data` đã mở wrapper. */
-export async function apiRequest<T>(config: AxiosRequestConfig): Promise<T> {
+async function request<T>(config: AxiosRequestConfig): Promise<T> {
   const response = await apiClient.request<T>(config)
   return response.data
 }
 
-export async function apiPost<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
-  return apiRequest<T>({ ...config, method: 'POST', url, data: body })
+export function get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  return request<T>({ ...config, method: 'GET', url })
 }
 
-export async function apiGet<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-  return apiRequest<T>({ ...config, method: 'GET', url })
+export function post<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
+  return request<T>({ ...config, method: 'POST', url, data: body })
+}
+
+export function put<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
+  return request<T>({ ...config, method: 'PUT', url, data: body })
+}
+
+export function patch<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
+  return request<T>({ ...config, method: 'PATCH', url, data: body })
+}
+
+/** `delete` là từ khoá của JavaScript nên hàm tên `del`. */
+export function del<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  return request<T>({ ...config, method: 'DELETE', url })
 }

@@ -1,3 +1,4 @@
+import type { ComponentType, ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { TechLayout } from '@/components/layout/TechLayout'
@@ -5,133 +6,160 @@ import { CustomerLayout } from '@/components/layout/customer-layout'
 import { ManageLayout } from '@/components/layout/manage-layout'
 import { OpsLayout } from '@/components/layout/ops-layout'
 import { PageSkeleton } from '@/components/common/ui/states'
+import type { UserRole } from '@/common/role'
+import { page } from '@/routes/lazyPage'
 import { ROUTES } from '@/routes/paths'
 import { RequireRole } from '@/routes/RequireRole'
 
-const customer = ROUTES.customer
-const ops = ROUTES.ops
-const manage = ROUTES.manage
+/* Trang của các portal, nạp khi vào route lần đầu (mỗi trang một chunk). */
 
-/** Mọi đường dẫn còn lại trong portal (màn mock đã ẩn, link cũ, gõ sai) về trang có dữ liệu thật. */
-const fallback = (to: string): RouteObject => ({ path: '*', element: <Navigate to={to} replace /> })
+// Khách hàng
+const AssessmentPage = page(() => import('@/pages/customer/assessment-page'), 'AssessmentPage')
+const CustomerRequestsPage = page(() => import('@/pages/customer/requests-page'), 'CustomerRequestsPage')
+const CustomerRequestPage = page(() => import('@/pages/customer/request-page'), 'CustomerRequestPage')
+const CustomerCatalogPage = page(() => import('@/pages/catalog-page'), 'CustomerCatalogPage')
+const CustomerCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'CustomerCatalogProductPage')
+
+// Kinh doanh
+const OpsSurveysPage = page(() => import('@/pages/ops/surveys-page'), 'OpsSurveysPage')
+const OpsSurveyRequestPage = page(() => import('@/pages/ops/survey-request-page'), 'OpsSurveyRequestPage')
+const OpsCatalogPage = page(() => import('@/pages/catalog-page'), 'OpsCatalogPage')
+const OpsCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'OpsCatalogProductPage')
+
+// Kỹ thuật viên
+const TechJobsPage = page(() => import('@/pages/tech/jobs-page'), 'TechJobsPage')
+const TechJobPage = page(() => import('@/pages/tech/job-page'), 'TechJobPage')
+const TechSchedulePage = page(() => import('@/pages/tech/schedule-page'), 'TechSchedulePage')
+const TechCatalogPage = page(() => import('@/pages/catalog-page'), 'TechCatalogPage')
+const TechCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'TechCatalogProductPage')
+
+// Quản lý
+const ManageTechniciansPage = page(() => import('@/pages/technicians-page'), 'ManageTechniciansPage')
+const ManageTechnicianPage = page(() => import('@/pages/technician-page'), 'ManageTechnicianPage')
+const ManageCatalogPage = page(() => import('@/pages/catalog-page'), 'ManageCatalogPage')
+const ManageCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'ManageCatalogProductPage')
+
+// Quản trị
+const AdminUsersPage = page(() => import('@/pages/admin/users-page'), 'AdminUsersPage')
+const AdminUserPage = page(() => import('@/pages/admin/user-page'), 'AdminUserPage')
+const AdminTechniciansPage = page(() => import('@/pages/technicians-page'), 'AdminTechniciansPage')
+const AdminTechnicianPage = page(() => import('@/pages/technician-page'), 'AdminTechnicianPage')
+const AdminProductsPage = page(() => import('@/pages/admin/products-page'), 'AdminProductsPage')
+
+type PortalConfig = {
+  role: UserRole
+  /** Đường gốc của portal, vd. ROUTES.admin.home. */
+  path: string
+  Layout: ComponentType<{ children?: ReactNode }>
+  /** Trang mở khi vào đường gốc; đường lạ trong portal (màn mock đã ẩn, link cũ, gõ sai) cũng chuyển về đây. */
+  start: string
+  pages: RouteObject[]
+}
 
 /*
-  Route cần đăng nhập, mỗi portal bọc trong <RequireRole role="…">:
-  chưa đăng nhập → /login (nhớ trang đích), sai vai trò → /403.
+  Một portal = layout bọc trong <RequireRole role="…"> (chưa đăng nhập → /login nhớ trang đích, sai vai trò → /403).
+  Layout còn được vẽ làm khung chờ (hydrateFallbackElement) TRƯỚC RequireRole, nên query trong layout phải chờ
+  useAuth().user đúng vai trò mới gọi API.
+*/
+function portal({ role, path, Layout, start, pages }: PortalConfig): RouteObject {
+  return {
+    path,
+    element: (
+      <RequireRole role={role}>
+        <Layout />
+      </RequireRole>
+    ),
+    hydrateFallbackElement: (
+      <Layout>
+        <PageSkeleton />
+      </Layout>
+    ),
+    children: [
+      { index: true, element: <Navigate to={start} replace /> },
+      ...pages,
+      { path: '*', element: <Navigate to={start} replace /> },
+    ],
+  }
+}
 
-  Chỉ màn đã đổ dữ liệu thật từ backend mới có route (05/10/2026). Màn mock vẫn nằm trong
-  pages/<portal>/ và data/*.ts; nối API xong thì thêm lại route ở đây và mục menu trong
-  config/portals.ts (mọi portal, kể cả admin và kỹ thuật viên, dùng chung shell portal kit từ 08/10/2026).
+const { customer, ops, tech, manage, admin } = ROUTES
+
+/*
+  Route cần đăng nhập. Chỉ màn đã đổ dữ liệu thật từ backend mới có route (05/10/2026); màn mock vẫn nằm trong
+  pages/<portal>/ và data/*.ts. Mở lại một màn: khai báo trang ở đầu file, thêm dòng vào `pages` của portal,
+  rồi thêm mục menu trong config/portals.ts.
 */
 export const protectedRoutes: RouteObject[] = [
-  /* ---- Portal khách hàng ---- */
-  {
+  portal({
+    role: 'customer',
     path: customer.home,
-    element: (
-      <RequireRole role="customer">
-        <CustomerLayout />
-      </RequireRole>
-    ),
-    hydrateFallbackElement: (
-      <CustomerLayout>
-        <PageSkeleton />
-      </CustomerLayout>
-    ),
-    children: [
-      { index: true, element: <Navigate to={customer.assessment} replace /> },
-      { path: customer.assessment, lazy: () => import('@/pages/customer/assessment-page').then((m) => ({ Component: m.AssessmentPage })) },
-      { path: customer.products, lazy: () => import('@/pages/catalog-page').then((m) => ({ Component: m.CustomerCatalogPage })) },
-      { path: customer.product, lazy: () => import('@/pages/catalog-product-page').then((m) => ({ Component: m.CustomerCatalogProductPage })) },
-      fallback(customer.assessment),
+    Layout: CustomerLayout,
+    start: customer.assessment,
+    pages: [
+      { path: customer.assessment, lazy: AssessmentPage },
+      { path: customer.requests, lazy: CustomerRequestsPage },
+      { path: customer.request, lazy: CustomerRequestPage },
+      { path: customer.products, lazy: CustomerCatalogPage },
+      { path: customer.product, lazy: CustomerCatalogProductPage },
     ],
-  },
+  }),
 
-  /* ---- Portal kinh doanh ---- */
-  {
+  portal({
+    role: 'sales',
     path: ops.home,
-    element: (
-      <RequireRole role="sales">
-        <OpsLayout />
-      </RequireRole>
-    ),
-    hydrateFallbackElement: (
-      <OpsLayout>
-        <PageSkeleton />
-      </OpsLayout>
-    ),
-    children: [
-      { index: true, element: <Navigate to={ops.surveys} replace /> },
-      { path: ops.surveys, lazy: () => import('@/pages/ops/surveys-page').then((m) => ({ Component: m.OpsSurveysPage })) },
-      { path: ops.surveysMine, lazy: () => import('@/pages/ops/surveys-page').then((m) => ({ Component: m.OpsSurveysPage })) },
-      { path: ops.survey, lazy: () => import('@/pages/ops/survey-request-page').then((m) => ({ Component: m.OpsSurveyRequestPage })) },
-      { path: ops.products, lazy: () => import('@/pages/catalog-page').then((m) => ({ Component: m.OpsCatalogPage })) },
-      { path: ops.product, lazy: () => import('@/pages/catalog-product-page').then((m) => ({ Component: m.OpsCatalogProductPage })) },
-      fallback(ops.surveys),
+    Layout: OpsLayout,
+    start: ops.surveys,
+    pages: [
+      { path: ops.surveys, lazy: OpsSurveysPage },
+      { path: ops.surveysMine, lazy: OpsSurveysPage },
+      { path: ops.survey, lazy: OpsSurveyRequestPage },
+      { path: ops.products, lazy: OpsCatalogPage },
+      { path: ops.product, lazy: OpsCatalogProductPage },
     ],
-  },
+  }),
 
-  /* ---- /field: bản portal kit cũ của kỹ thuật viên, gộp về /tech (08/10/2026) ---- */
-  { path: `${ROUTES.field.home}/*`, element: <Navigate to={ROUTES.TECH.DASHBOARD} replace /> },
+  portal({
+    role: 'technician',
+    path: tech.home,
+    Layout: TechLayout,
+    start: tech.jobs,
+    pages: [
+      { path: tech.jobs, lazy: TechJobsPage },
+      { path: tech.job, lazy: TechJobPage },
+      { path: tech.schedule, lazy: TechSchedulePage },
+      { path: tech.products, lazy: TechCatalogPage },
+      { path: tech.product, lazy: TechCatalogProductPage },
+    ],
+  }),
 
-  /* ---- Portal quản lý: chưa có API riêng, dùng danh mục sản phẩm thật ---- */
-  {
+  // Quản lý dùng chung trang kỹ thuật viên với quản trị.
+  portal({
+    role: 'manager',
     path: manage.home,
-    element: (
-      <RequireRole role="manager">
-        <ManageLayout />
-      </RequireRole>
-    ),
-    hydrateFallbackElement: (
-      <ManageLayout>
-        <PageSkeleton />
-      </ManageLayout>
-    ),
-    children: [
-      { index: true, element: <Navigate to={manage.products} replace /> },
-      { path: manage.products, lazy: () => import('@/pages/catalog-page').then((m) => ({ Component: m.ManageCatalogPage })) },
-      { path: manage.product, lazy: () => import('@/pages/catalog-product-page').then((m) => ({ Component: m.ManageCatalogProductPage })) },
-      fallback(manage.products),
+    Layout: ManageLayout,
+    start: manage.technicians,
+    pages: [
+      { path: manage.technicians, lazy: ManageTechniciansPage },
+      { path: manage.technician, lazy: ManageTechnicianPage },
+      { path: manage.products, lazy: ManageCatalogPage },
+      { path: manage.product, lazy: ManageCatalogProductPage },
     ],
-  },
+  }),
 
-  /* ---- Portal quản trị viên ---- */
-  {
-    path: ROUTES.ADMIN.DASHBOARD,
-    element: (
-      <RequireRole role="admin">
-        <AdminLayout />
-      </RequireRole>
-    ),
-    hydrateFallbackElement: (
-      <AdminLayout>
-        <PageSkeleton />
-      </AdminLayout>
-    ),
-    children: [
-      { index: true, element: <Navigate to={ROUTES.ADMIN.PRODUCTS} replace /> },
-      { path: 'products', lazy: () => import('@/pages/admin/products-page').then((m) => ({ Component: m.AdminProductsPage })) },
-      fallback(ROUTES.ADMIN.PRODUCTS),
+  portal({
+    role: 'admin',
+    path: admin.home,
+    Layout: AdminLayout,
+    start: admin.users,
+    pages: [
+      { path: admin.users, lazy: AdminUsersPage },
+      { path: admin.user, lazy: AdminUserPage },
+      { path: admin.technicians, lazy: AdminTechniciansPage },
+      { path: admin.technician, lazy: AdminTechnicianPage },
+      { path: admin.products, lazy: AdminProductsPage },
     ],
-  },
+  }),
 
-  /* ---- Portal kỹ thuật viên /tech: chưa có API riêng, dùng danh mục sản phẩm thật ---- */
-  {
-    path: ROUTES.TECH.DASHBOARD,
-    element: (
-      <RequireRole role="technician">
-        <TechLayout />
-      </RequireRole>
-    ),
-    hydrateFallbackElement: (
-      <TechLayout>
-        <PageSkeleton />
-      </TechLayout>
-    ),
-    children: [
-      { index: true, element: <Navigate to={ROUTES.TECH.PRODUCTS} replace /> },
-      { path: ROUTES.TECH.PRODUCTS, lazy: () => import('@/pages/catalog-page').then((m) => ({ Component: m.TechCatalogPage })) },
-      { path: ROUTES.TECH.PRODUCT, lazy: () => import('@/pages/catalog-product-page').then((m) => ({ Component: m.TechCatalogProductPage })) },
-      fallback(ROUTES.TECH.PRODUCTS),
-    ],
-  },
+  // /field: bản portal kit cũ của kỹ thuật viên, gộp về /tech (08/10/2026).
+  { path: `${ROUTES.field.home}/*`, element: <Navigate to={tech.home} replace /> },
 ]

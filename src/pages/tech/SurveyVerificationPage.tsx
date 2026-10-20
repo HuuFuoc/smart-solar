@@ -149,7 +149,7 @@ function SurveyVerificationView({
   }
 
   const breadcrumb = [
-    { label: verification.breadcrumbRoot.label, icon: verification.breadcrumbRoot.icon, href: ROUTES.TECH.SURVEYS },
+    { label: verification.breadcrumbRoot.label, icon: verification.breadcrumbRoot.icon, href: ROUTES.tech.surveys },
     { label: survey.id },
   ]
 

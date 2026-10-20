@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { SimulationResult } from '@/features/pre-surveys/components/SimulationResult'
-import { useSimulationQuery } from '@/features/pre-surveys/hooks/useSimulations'
+import { useSimulationQuery } from '@/hooks/useSimulations'
 import { isApiError } from '@/services/api/errors'
 
 /* Khung chờ cùng dáng kết quả: hàng số liệu, hình bố trí, biểu đồ. */

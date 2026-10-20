@@ -26,8 +26,9 @@ export type Portal = {
   (pages/<portal>/*, data/*.ts) vẫn giữ trong code nhưng ẩn khỏi menu và route; nối API xong thì
   thêm lại mục ở đây và route trong routes/protectedRoutes.tsx.
   Từ 08/10/2026 mọi portal (kể cả admin và kỹ thuật viên /tech) dùng chung shell của portal kit, và không còn
-  trang giữ chỗ "chưa có chức năng": kỹ thuật viên và quản lý chưa có API riêng nên dùng danh mục sản phẩm thật
-  (GET /api/products, API công khai duy nhất các vai trò này gọi được). /field gộp về /tech.
+  trang giữ chỗ "chưa có chức năng". /field gộp về /tech.
+  Luồng 1 (12/10/2026): khách đặt giờ khảo sát (Yêu cầu khảo sát), kỹ thuật viên xem việc được giao + lịch làm việc,
+  quản trị có Tài khoản + Kỹ thuật viên, quản lý có Kỹ thuật viên (cấu hình lịch dùng chung trang với quản trị).
 */
 export const PORTALS: Record<PortalKey, Portal> = {
   customer: {
@@ -38,6 +39,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
       {
         items: [
           { label: 'Đánh giá sơ bộ', to: ROUTES.customer.assessment, icon: 'fact_check' },
+          { label: 'Yêu cầu khảo sát', to: ROUTES.customer.requests, icon: 'event_available' },
           { label: 'Sản phẩm', to: ROUTES.customer.products, icon: 'solar_power' },
         ],
       },
@@ -63,19 +65,42 @@ export const PORTALS: Record<PortalKey, Portal> = {
     key: 'manage',
     name: 'Quản lý',
     home: ROUTES.manage.home,
-    groups: [{ items: [{ label: 'Sản phẩm', to: ROUTES.manage.products, icon: 'solar_power' }] }],
+    groups: [
+      {
+        items: [
+          { label: 'Kỹ thuật viên', to: ROUTES.manage.technicians, icon: 'engineering' },
+          { label: 'Sản phẩm', to: ROUTES.manage.products, icon: 'solar_power' },
+        ],
+      },
+    ],
   },
   admin: {
     key: 'admin',
     name: 'Quản trị hệ thống',
-    home: ROUTES.ADMIN.DASHBOARD,
-    groups: [{ items: [{ label: 'Sản phẩm', to: ROUTES.ADMIN.PRODUCTS, icon: 'solar_power' }] }],
+    home: ROUTES.admin.home,
+    groups: [
+      {
+        items: [
+          { label: 'Tài khoản', to: ROUTES.admin.users, icon: 'manage_accounts' },
+          { label: 'Kỹ thuật viên', to: ROUTES.admin.technicians, icon: 'engineering' },
+          { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },
+        ],
+      },
+    ],
   },
   /* Vai trò kỹ thuật viên đăng nhập vào /tech (homePathForRole). */
   tech: {
     key: 'tech',
     name: 'Kỹ thuật hiện trường',
-    home: ROUTES.TECH.DASHBOARD,
-    groups: [{ items: [{ label: 'Sản phẩm', to: ROUTES.TECH.PRODUCTS, icon: 'solar_power' }] }],
+    home: ROUTES.tech.home,
+    groups: [
+      {
+        items: [
+          { label: 'Việc của tôi', to: ROUTES.tech.jobs, icon: 'assignment' },
+          { label: 'Lịch làm việc', to: ROUTES.tech.schedule, icon: 'calendar_month' },
+          { label: 'Sản phẩm', to: ROUTES.tech.products, icon: 'solar_power' },
+        ],
+      },
+    ],
   },
 }

@@ -21,7 +21,7 @@ import { authImages, authLayoutContent } from '@/data/auth'
 export function AuthLayout() {
   const { pathname } = useLocation()
   // Ảnh đăng nhập in sẵn chữ "Chào mừng trở lại": trang 403 dùng ảnh đăng ký (lời chào chung) cho khỏi lạc giọng.
-  const image = pathname === ROUTES.REGISTER || pathname === ROUTES.FORBIDDEN ? authImages.register : authImages.login
+  const image = pathname === ROUTES.register || pathname === ROUTES.forbidden ? authImages.register : authImages.login
 
   return (
     <main className="min-h-svh w-full bg-surface font-vn lg:grid lg:h-svh lg:grid-cols-12">
@@ -40,7 +40,7 @@ export function AuthLayout() {
 
       <div className="flex min-h-0 flex-col lg:col-span-7 lg:overflow-y-auto">
         <header className="flex items-center justify-between gap-4 px-4 py-4 md:px-8 lg:px-12 lg:py-6 short:lg:py-3">
-          <Link to={ROUTES.HOME} className="rounded-control dark:bg-fg dark:px-2 dark:py-1">
+          <Link to={ROUTES.home} className="rounded-control dark:bg-fg dark:px-2 dark:py-1">
             <img
               src="/images/logo-64h.webp"
               srcSet="/images/logo-64h.webp 262w, /images/logo-96h.webp 394w"
@@ -52,7 +52,7 @@ export function AuthLayout() {
             />
           </Link>
           <Link
-            to={ROUTES.HOME}
+            to={ROUTES.home}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-label-lg text-on-surface-variant transition-colors hover:text-on-surface lg:min-h-9"
           >
             <Icon name="arrow_back" className="text-[18px]" />

@@ -70,7 +70,8 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
    - Biến thể `dark:` của Tailwind theo đúng giao diện đang dùng như token (`@custom-variant dark` đầu `globals.css`:
      `data-theme`, không đặt thì theo hệ thống). Mặc định Tailwind chỉ đọc `prefers-color-scheme`: máy để tối mà chọn "Sáng"
      thì `dark:bg-fg` vẫn chạy và logo thành khối đen (người dùng báo 10/10/2026). Đừng viết `@media (prefers-color-scheme)` riêng.
-     Giao diện đã lưu được áp ngay trong `main.tsx` trước khi vẽ (menu Giao diện của khách chỉ gắn khi mở bảng tài khoản).
+     Giao diện đã lưu được áp bằng script trong `<head>` của `index.html` trước khi trang vẽ lần đầu (20/10/2026; trước đó ở
+     `main.tsx`, phải chờ JS). Cần biết giao diện đang hiện thật (kể cả "theo hệ thống") thì dùng `useResolvedTheme()`.
 5. **Nhãn trạng thái**: `Badge` – mọi trạng thái là nhãn nền nhạt cùng hình dạng (bán kính 6px), màu theo vai trò ở
    mục 4; `icon` chỉ cho thông báo cần làm ngay ở đầu trang. `Count` – số đếm cạnh mục menu/tab: `attention` = việc đang
    chờ người xem, nền đỏ như số thông báo; còn lại nền xám. Việc cần làm ngay hiện thành Badge đỏ có icon ở mô tả đầu
@@ -149,9 +150,13 @@ src/
   styles/globals.css           # @import "tailwindcss" + @theme tokens; landing.css cho trang chủ
   routes/
     router.tsx                 # createBrowserRouter: RootLayout + publicRoutes + protectedRoutes + 404
-    publicRoutes.tsx           # route không cần đăng nhập: /, /coming-soon, màn xác thực, /403, /styleguide
-    protectedRoutes.tsx        # 6 portal, mỗi portal bọc <RequireRole role="…"> (children lazy)
-    paths.ts                   # ROUTES, withId, techTaskPath, surveyPath…
+    publicRoutes.tsx           # route không cần đăng nhập: /, /products, /coming-soon, màn xác thực, /403, /styleguide
+    protectedRoutes.tsx        # mỗi portal một lời gọi portal({ role, path, Layout, start, pages }): RequireRole + layout
+                               # + khung chờ + index/đường lạ chuyển về `start`; /field chuyển về /tech
+    lazyPage.ts                # page(() => import('@/pages/…'), 'TênTrang'): khai báo ở đầu file route
+                               # (const TênTrang = page(…)), route ghi `lazy: TênTrang`; giữ tách chunk mỗi trang
+    paths.ts                   # ROUTES (khoá camelCase, mỗi portal một nhóm, trang chủ portal là `home`; trong nhóm:
+                               # màn có route ở trên, màn mock đã ẩn dưới dòng "Màn mock đã ẩn"), withId, techTaskPath…
     RequireRole.tsx            # route bảo vệ theo vai trò + AuthLoadingScreen
     notFound.ts                # ném Response 404 cho errorElement
   context/
@@ -164,22 +169,26 @@ src/
     common/stitch-ui/          # bộ Stitch (PascalCase, barrel index.ts): StatusBadge, MetricCard, DataTable, TaskCard, Timeline, ChecklistItem, PhotoGrid…
     common/tech/               # khối dùng ở nhiều nghiệp vụ kỹ thuật viên: SectionCard, ActionDock, JobHeaderCard, MeasurementCard…
   features/
-    auth/                      # components/ (AuthCard, PasswordRules, ForbiddenCard, SessionExpiredModal, ChangePasswordDialog…),
-                               # hooks/useAuthMutations.ts, services/authService.ts + me.ts
-    landing/components/        # section trang chủ, classes.ts, photo, reveal
+    auth/                      # components/ (AuthCard, PasswordRules, ForbiddenCard, SessionExpiredModal, ChangePasswordDialog…)
+    landing/components/        # section trang chủ, classes.ts, reveal, theme-toggle, survey-link
     surveys/ installations/ tasks/ warranty/   # components/ riêng của từng nghiệp vụ kỹ thuật viên
     dashboard/                 # components/ chỉ dùng ở màn tổng quan admin và kỹ thuật viên
     users/ roles/ products/    # components/ riêng của các màn admin
   pages/                       # màn gắn với route: admin/ tech/ customer/ ops/ field/ manage/ auth/ public/ + trang lẻ
   data/                        # dữ liệu tĩnh cho UI: mock từng màn (surveys.ts, tasks.ts, session.ts…, customer.ts, manage.ts…)
                                # và nội dung chữ (auth.ts, landing.ts)
-  services/api/                # client.ts (axios, mở wrapper, refresh), errors.ts (ApiError), tokens.ts
+  services/                    # API của mọi nghiệp vụ, mỗi file một nhóm: authService.ts, me.ts, productService.ts,
+                               # preSurveyService.ts, bookingService.ts, adminUserService.ts…
+    api/                       # client.ts (axios, mở wrapper, refresh), errors.ts (ApiError), tokens.ts
   types/                       # sinh bằng `npm run gen:api` (scripts/gen-api-types.mjs), KHÔNG sửa tay
     req/                       # request DTO theo tag swagger: authReq.ts, …
     res/                       # response DTO: apiRes.ts (ApiResponse<T>, ApiErrorBody), authRes.ts, …
-  config/                      # portals.ts (menu của mọi portal), roles.ts, demoAccounts.ts
-  hooks/                       # useMockQuery, useTheme, useElementWidth (bề rộng khung cho SVG vẽ bằng pixel),
-                               # useViewportHeight (chiều cao khung nhìn cho hình vẽ cao vừa màn hình)
+  common/                      # enum của app, mỗi nghiệp vụ một file: preSurvey.ts, simulation.ts, product.ts, user.ts,
+                               # scheduling.ts, role.ts (USER_ROLES, ROLE_LABELS, ROLE_ALIASES). CHỈ hằng số, không hàm
+  config/                      # portals.ts (menu của mọi portal), roles.ts (hàm theo vai trò), demoAccounts.ts
+  hooks/                       # hook react-query của mọi nghiệp vụ (useAuthMutations, useProducts, usePreSurveys, useBooking,
+                               # useAdminUsers…) và hook giao diện: useMockQuery, useTheme, useElementWidth (bề rộng khung cho
+                               # SVG vẽ bằng pixel), useViewportHeight (chiều cao khung nhìn cho hình vẽ cao vừa màn hình)
   utils/                       # cn, cx, format, img, jwt
 public/placeholders/           # thay cho ảnh lh3.googleusercontent.com
 ```
@@ -188,18 +197,29 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
 
 - `pages/` chỉ ghép UI và gọi hook. Component dùng ở MỘT nghiệp vụ nằm trong
   `features/<nghiệp vụ>/components/`; dùng ở nhiều nghiệp vụ thì vào `components/common/`.
-- Mỗi feature chỉ có các thư mục con `components/ hooks/ services/` thật sự cần.
-  API của nghiệp vụ ở `features/<nghiệp vụ>/services/`; `services/api/` chỉ giữ HTTP client dùng chung.
+- Feature chỉ còn `components/`. API của mọi nghiệp vụ gom ở `src/services/<tên>Service.ts`, hook react-query ở
+  `src/hooks/use<Tên>.ts` (20/10/2026, trước đó nằm trong `features/<nghiệp vụ>/services/` và `.../hooks/`);
+  `services/api/` chỉ giữ HTTP client dùng chung. Import qua `@/services/…` và `@/hooks/…`.
   Một trách nhiệm chỉ ở một nơi.
+- Enum (20/10/2026): tập giá trị cố định của một trường (mã backend hoặc lựa chọn trên giao diện) kèm nhãn tiếng Việt / màu
+  Badge / gợi ý nằm ở `src/common/<nghiệp vụ>.ts`, đặt tên IN HOA số nhiều (`PRODUCT_STATUSES`, `ROLE_CODES`,
+  `SIMULATION_WARNINGS`). Hàm tra nhãn và định dạng (`productStatusMeta`, `formatPower`…) ở
+  `features/<nghiệp vụ>/components/*Display.ts`, đọc bảng từ `common/`. Không dùng `enum` của TypeScript
+  (`erasableSyntaxOnly`); kiểu giá trị lấy từ `types/` (union sinh từ swagger).
 - DTO nằm ở `src/types/`: request trong `types/req/<nghiệp vụ>Req.ts`, response trong
   `types/res/<nghiệp vụ>Res.ts`. Các file này sinh từ swagger (không tự đoán field, không sửa tay);
   service và hook import kiểu từ đây. Ngoại lệ: swagger của tag Customers, PreSurveys, SurveyRequests, PreSurveySurface,
   Simulations chỉ khai "200 OK" nên `customersRes.ts`, `preSurveysRes.ts`, `surveyRequestsRes.ts`, `preSurveySurfaceRes.ts`,
   `simulationsRes.ts` viết tay theo contract backend (đối chiếu response thật 09/10/2026; không có header tự sinh nên
-  `gen:api` không xoá); backend khai response thì `gen:api` ghi đè. `provincesRes.ts` cũng viết tay: kiểu của API công khai
-  provinces.open-api.vn (không thuộc swagger).
+  `gen:api` không xoá); backend khai response thì `gen:api` ghi đè. Cùng lý do, luồng 1 (12/10/2026) viết tay
+  `surveySlotsRes.ts`, `customerSurveyRequestsRes.ts`, `technicianAvailabilityRes.ts`, `technicianAppointmentsRes.ts`,
+  `adminTechniciansRes.ts`, `adminUsersRes.ts` theo record C# của backend `main` (4d12e4d); request của các tag đó sinh
+  bình thường. `provincesRes.ts` cũng viết tay: kiểu của API công khai provinces.open-api.vn (không thuộc swagger).
+- `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
+  repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
+  JWT; không đụng DB nào.
 - Nghiệp vụ chưa có endpoint đọc dữ liệu từ `data/*.ts` và bị ẩn khỏi menu/route (mục dưới). Khi backend có
-  endpoint: thêm `types/req|res/<nghiệp vụ>*.ts`, rồi `services/` + `hooks/` vào feature đó, bỏ file trong `data/`,
+  endpoint: thêm `types/req|res/<nghiệp vụ>*.ts`, rồi `src/services/<tên>Service.ts` + `src/hooks/use<Tên>.ts`, bỏ file trong `data/`,
   rồi mở lại route + mục menu.
 
 ## Chỉ hiện màn có dữ liệu thật (05/10/2026)
@@ -235,8 +255,8 @@ nhập làm nguồn chính + kéo thả vật cản.
 - Địa điểm (`SiteFields` ở `AssessmentFields.tsx`): dự án chỉ nhận công trình ở TP.HCM (người dùng 10/10/2026). Địa chỉ 2 cấp
   theo đơn vị hành chính từ 01/07/2025 (người dùng chốt): tỉnh cố định "Thành phố Hồ Chí Minh" (ô chỉ đọc), phường/xã bắt buộc,
   chọn bằng `Combobox` từ API công khai provinces.open-api.vn v2 (`/api/v2/p/79?depth=2`, 168 phường/xã/đặc khu, gồm Bình
-  Dương và Bà Rịa – Vũng Tàu cũ) – backend không có API địa giới nên FE gọi thẳng bằng fetch (`services/provinceService.ts`,
-  `hooks/useHcmWards.ts`, tải một lần mỗi phiên; địa chỉ gốc ở `VITE_PROVINCES_API_URL`, không khai thì dùng
+  Dương và Bà Rịa – Vũng Tàu cũ) – backend không có API địa giới nên FE gọi thẳng bằng fetch (`src/services/provinceService.ts`,
+  `src/hooks/useHcmWards.ts`, tải một lần mỗi phiên; địa chỉ gốc ở `VITE_PROVINCES_API_URL`, không khai thì dùng
   `https://provinces.open-api.vn/api/v2`); không còn ô quận/huyện (`district` gửi null). API lỗi thì vẫn gõ tay được
   + nút thử lại. Địa điểm đã lưu mà không sửa gì thì đi tiếp, không kiểm tra lại (địa chỉ cũ khai tự do trước ngày đó không
   bị bắt chọn lại và tạo bản nháp mới). Toạ độ nằm ngoài khung TP.HCM (`isInHcm` ở `preSurveyDisplay.ts`) thì cảnh báo vàng,
@@ -264,7 +284,8 @@ nhập làm nguồn chính + kéo thả vật cản.
   "Mô phỏng chính" (không có API chọn lại); `isStale` = tính theo mặt lắp cũ.
 - Kết quả (`SimulationResult.tsx`, dùng chung khách hàng / sales, nạp qua `SimulationViewer.tsx`): số tấm, kWp, kWh/năm
   (null là "chưa có dữ liệu", không bao giờ 0), mặt bằng 2D / 3D, `EnergyChart.tsx` (cột một chuỗi theo skill dataviz, tooltip +
-  phím mũi tên + bảng số liệu), cảnh báo kỹ thuật và giới hạn dịch theo mã ở `simulationDisplay.ts` (mã lạ in câu gốc của BE).
+  phím mũi tên + bảng số liệu), cảnh báo kỹ thuật và giới hạn dịch theo mã (bảng mã ở `common/simulation.ts`, hàm ở `simulationDisplay.ts`; mã lạ in câu
+  gốc của BE).
   3D `SimulationScene.tsx` dựng thẳng từ toạ độ BE (E/N/U, trục Z lên, `camera.up = (0,0,1)`, tấm pin là một `InstancedMesh`
   hộp đơn vị mặt trước ở z = 0), `three` + `@react-three/fiber` nạp bằng `React.lazy`. Lịch sử các lần chạy: `SimulationHistory.tsx`
   (cao khoảng ba dòng rưỡi rồi cuộn trong khung, lần đang xem luôn cuộn tới; tiêu đề có số lần chạy – người dùng 10/10/2026).
@@ -285,12 +306,45 @@ nhập làm nguồn chính + kéo thả vật cản.
   và GET chi tiết với mọi vai trò (dò 08/10/2026), nên: tạo mới luôn ACTIVE; "Ngừng bán" hỏi xác nhận, có "Hoàn tác";
   sản phẩm đã ngừng bán được nhớ trong localStorage (`features/products/hiddenProducts.ts`) để "Mở bán lại" — chỉ trên
   trình duyệt đã bấm. Khi backend có cách liệt kê sản phẩm ngừng bán thì bỏ cơ chế này.
-- `/tech/products(/:id)`, `/manage/products(/:id)`: kỹ thuật viên và quản lý chưa có API riêng, nên trang chủ của họ là
-  danh mục sản phẩm thật (GET /api/products, bản portal kit). Không còn trang giữ chỗ "chưa có chức năng" (08/10/2026);
-  `/field/*` chuyển về `/tech`.
+- `/tech/products(/:id)`, `/manage/products(/:id)`: danh mục sản phẩm thật (GET /api/products, bản portal kit) cho kỹ
+  thuật viên và quản lý. Không còn trang giữ chỗ "chưa có chức năng" (08/10/2026); `/field/*` chuyển về `/tech`.
 
-Mở lại một màn: thêm route trong `routes/protectedRoutes.tsx` và mục menu trong `config/portals.ts`
-(mọi portal). Sidebar/header không đặt số liệu giả (tên người dùng,
+**Luồng 1: đặt lịch khảo sát → phân công → kỹ thuật viên nhận việc** (backend `main` 4d12e4d, nối 12/10/2026; tài liệu bàn
+giao BE "SmartSolar – Tài liệu bàn giao tích hợp FE/BE" 12/10/2026, contract đối chiếu bằng code backend chứ không theo bảng
+"Agent/Hardening" của tài liệu). Hiển thị trong `features/scheduling` (`schedulingDisplay.ts`: giờ Việt Nam, nhãn trạng thái,
+đường đi, lý do không xếp được; bảng mã ở `common/scheduling.ts`), tài khoản trong `features/users`. Luồng dừng ở "Nhận việc": không có "Hoàn thành khảo sát".
+- Giờ nghiệp vụ là giờ Việt Nam bất kể máy: hiển thị qua `Intl` với `timeZone: 'Asia/Ho_Chi_Minh'` (cả `formatDateTime` cũ),
+  ngày gửi API là chuỗi `YYYY-MM-DD` tính theo giờ Việt Nam (không `new Date('2026-10-20')`), giờ hẹn gửi kèm `+07:00`.
+- Khách `/customer/requests(/:id)` (`pages/customer/request(s)-page.tsx`): gửi đánh giá xong hộp thoại dẫn thẳng tới "Chọn giờ
+  khảo sát". `SlotPicker`: lưới 30 ngày (giới hạn đặt trước của BE) theo cột thứ + các giờ BE trả (GET /survey-slots) –
+  không tự vẽ khung giờ rồi đoán giờ trống; sau 15:30 mở sẵn ngày mai. Đặt (201; gửi lại đúng giờ → 200 `created=false`, vẫn
+  là thành công), đổi giờ / huỷ khi lịch còn BOOKED và chưa tới giờ; 409 SURVEY_SLOT_UNAVAILABLE thì tải lại giờ và bỏ chọn.
+  Khách không bao giờ thấy kỹ thuật viên đang được giữ chỗ, chỉ thấy người được phân công chính thức.
+- **Toạ độ công trình bắt buộc** ở bước địa điểm (trước đó gập lại, không bắt buộc): không có toạ độ BE không xếp được giờ
+  (PROPERTY_SITE_LOCATION_REQUIRED) và không có API sửa địa điểm. Địa điểm cũ thiếu toạ độ thì bước địa điểm bắt khai lại (tạo
+  địa điểm + bản nháp mới), gửi bị chặn; yêu cầu đã gửi thiếu toạ độ thì trang đặt giờ hướng dẫn liên hệ kinh doanh.
+- Sales `/ops/surveys/:id`: khối lịch khảo sát đứng đầu cột chính (`SalesSchedulePanel`). Khách đã đặt → phân công (danh sách
+  kỹ thuật viên rảnh của BE, người đang giữ chỗ chọn sẵn, mỗi người kèm chặng đường Vietmap); đã phân công → "Đổi kỹ thuật
+  viên" (PUT reassign) hoặc "Đổi giờ" (chọn ngày + giờ, "Xem kỹ thuật viên rảnh" với `startsAt` rồi PUT reschedule kèm người).
+  Không cập nhật lạc quan; lỗi thì lịch cũ giữ nguyên. Nhãn đỏ đầu trang: "Chưa phân công kỹ thuật viên".
+- Kỹ thuật viên `/tech/jobs(/:id)` "Việc của tôi" (trang chủ), `/tech/schedule?ngay=` "Lịch làm việc": danh sách theo ngày,
+  chi tiết (đường tới, công trình, khách, số liệu khai, mô phỏng khách chọn qua `SimulationViewer`), nút "Nhận việc"
+  (gửi lại khi đã nhận vẫn là thành công). Số đỏ ở menu = lịch sắp tới chờ nhận việc.
+- Quản trị `/admin/users(/:id)` "Tài khoản" (trang chủ admin) và `/admin/technicians(/:id)`, quản lý `/manage/technicians(/:id)`
+  (trang chủ quản lý; dùng chung `pages/technician(s)-page.tsx`). Tài khoản: tạo không có mật khẩu (link đặt mật khẩu chỉ gửi qua
+  email, dùng chính trang `/reset-password`; môi trường tắt email thì báo rõ link CHƯA gửi), sửa, vai trò, trạng thái, gửi link,
+  xoá mềm; không tự khoá / xoá chính mình. Kỹ thuật viên: lịch theo ngày, hồ sơ nhận lịch (nơi xuất phát, số lịch / ngày, giờ rời
+  sớm nhất), giờ làm theo tuần, lịch nghỉ (`?muc=lich|nhan-lich|gio-lam|nghi`). Thay đổi làm hỏng lịch đã có bị BE từ chối
+  (409 + danh sách lịch, `ConflictList`; ACCOUNT_HAS_ACTIVE_WORK ở trang tài khoản) – không tự huỷ lịch nào. Số đỏ ở menu = kỹ
+  thuật viên chưa có nơi xuất phát.
+- Chặng đường không tính được thì ghi rõ trạng thái, không bao giờ in "0 phút"; thiếu dữ liệu kẹt xe ghi "Không có dữ liệu giao
+  thông", không suy ra "thông thoáng"; lịch ngày chỉ dùng số của chặng OK (đang tính lại / cũ / lỗi thì ghi trạng thái).
+- Thử cả luồng không cần DB thật: chạy pipeline backend bằng `AuthApiFactory` của bộ test (SQLite trong bộ nhớ, Vietmap /
+  PVGIS giả, email bắt lại) sau một proxy cổng 8090, rồi `API_PROXY_TARGET=http://localhost:8090 npm run dev -- --port 3000`.
+  Factory dùng một kết nối SQLite chung nên proxy phải phục vụ tuần tự (nhiều request song song làm EF ném NullReference).
+
+Mở lại một màn: khai báo trang ở đầu `routes/protectedRoutes.tsx`, thêm một dòng vào `pages` của portal, chuyển đường dẫn của nó lên
+phần "có route" trong `routes/paths.ts`, rồi thêm mục menu trong `config/portals.ts` (mọi portal). Sidebar/header không đặt số liệu giả (tên người dùng,
 thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
 
 ## Layout chung
@@ -299,7 +353,7 @@ thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
 
 - **Nhân viên** – kinh doanh `/ops`, quản trị `/admin`, kỹ thuật viên `/tech`, quản lý `/manage` – dùng `app-shell.tsx`: công cụ
   làm việc cả ngày, rail trái + bố cục gọn (mục Mật độ bên dưới).
-- **Khách hàng** `/customer` dùng `customer-shell.tsx`: đi theo website công khai – thanh trên dính với logo đầy đủ, menu chữ
+- **Khách hàng** `/customer` dùng `customer-shell.tsx`: đi theo website công khai – thanh trên dính với logo đầy đủ (bấm về trang chủ công khai `/`, 20/10/2026), menu chữ
   (mục đang mở đậm + gạch chân xanh), nút tài khoản ghi tên người đang đăng nhập (chữ cái đầu + tên) và mở bảng chức năng
   (Đổi mật khẩu, Giao diện, Đăng xuất; Esc / bấm ra ngoài thì đóng); nội dung căn giữa tối đa 1200px (`max-w-landing`), lề 16/24px như `<main>` của portal để
   ActionBar và Table lấn mép đúng; font Be Vietnam Pro 400/500/600 (như trang công khai); trang con có dòng định vị
@@ -346,16 +400,40 @@ Khảo sát, Lắp đặt, Bảo hành & bảo trì, Lịch làm việc; cuối 
 
 Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
 
-- `PublicLayout` + trang chủ `/`: website bán hàng của công ty thi công điện mặt trời áp mái cho
-  **doanh nghiệp** (nhà xưởng, kho, toà nhà) – `docs/design/landing-brief.md`, mục "Bản 4". Ảnh lớn,
-  chữ lớn, mỗi section một bố cục; KHÔNG đặt bảng dữ liệu, màn tài khoản, biểu giá hay quy trình theo
-  giai đoạn lên trang (giao diện hệ thống chỉ một thẻ ở section theo dõi). Header dính: "Sản phẩm" (→ `/products`), "Công trình",
-  "Năng lực thi công", "Đăng nhập", nút "Nhận khảo sát" → `/register`. Nội dung ở
-  `src/data/landing.ts`; ảnh thật đặt `src` cho từng `Shot`; lời khách và con số chỉ thêm khi có
-  nguồn. Token riêng (`font-vn`, `max-w-landing`, `ld-*`) ở `src/styles/landing.css`.
-  Chuyển động chỉ transform/opacity, không thư viện: hero `ld-settle` (ảnh) + `ld-rise` (chữ, nút),
-  khối nội dung bọc `<Reveal>` (IntersectionObserver, hiện một lần khi cuộn tới), ảnh công trình phóng
-  nhẹ khi hover. `prefers-reduced-motion` tắt hết và hiện nội dung ngay. Favicon sinh từ
+- `PublicLayout` + trang chủ `/` (người dùng đổi hướng 20/10/2026, bản trước là thi công cho doanh nghiệp / nhà xưởng):
+  nền tảng tư vấn lắp đặt, bảo hành và bảo trì điện mặt trời cho **hộ gia đình**. Thứ tự: hero → "Giải pháp" (`#giai-phap`,
+  ba việc nền tảng làm, link tới `/products`) → "Quy trình làm việc" (`#quy-trinh`, 4 bước: Cung cấp thông tin → Tư vấn và
+  khảo sát → Báo giá và lắp đặt → Bảo hành, bảo trì; điểm mốc tròn đánh số, màu trung tính) → dải CTA → footer. Không bịa
+  số liệu tiết kiệm, số khách, chứng nhận, đánh giá, thông tin liên hệ. Nút "Đăng ký khảo sát" đi theo `surveyPath`
+  (`features/landing/components/survey-link.ts`): chưa đăng nhập → `/register`, khách hàng → `/customer/assessment`, nhân viên
+  → portal của mình. Nội dung ở `src/data/landing.ts`; token riêng (`font-vn`, `max-w-landing`, `ld-*`) ở `src/styles/landing.css`.
+  - Header dính: Giải pháp, Quy trình, Sản phẩm, Đăng nhập, nút "Đăng ký khảo sát", nút sáng / tối (`theme-toggle.tsx`) ở mép
+    phải. Dưới lg: logo + nút sáng / tối + nút "Menu" mở bảng liên kết dưới header (Esc đóng, trả focus về nút Menu). Nút sáng /
+    tối: khung 40px bo 6px (theo quy tắc bán kính, không tròn) + vùng bấm 44px, icon 20px là giao diện sẽ chuyển sang, tên đọc
+    cố định "Giao diện tối" + `aria-pressed`, tooltip `WithTooltip side="bottom"` (phía trên bị khuất ở đỉnh màn hình).
+  - Hero ảnh ngày (giao diện sáng) / đêm (tối): hai ảnh người dùng cung cấp `public/images/smart-solar-{day,night}-4k.png`
+    (3840 × 2160, giữ nguyên, trang không tải). Bản dùng thật ở `public/images/hero/`: `wide` 16:9 (1280–3840, từ 768px) và
+    `crop` vuông cắt phần bên trái (640–1600, điện thoại), mỗi bản AVIF + WebP, sinh bằng Pillow. Từ lg chữ căn giữa trên
+    vùng trời (nhà hai bên, pin nửa dưới), lớp phủ `ld-hero-veil` pha từ `--canvas` nên tự theo giao diện; dưới lg chữ đứng trên
+    nền trang, ảnh nằm dưới và tan vào nền. Tiêu đề `ld-display` 32/44/56px, 64px ở màn ≥ 1920 × 1000, 44px ở laptop thấp.
+    Tương phản đo trên điểm ảnh nền xấu nhất ≥ 5:1 cả hai giao diện (20/10/2026).
+  - Ảnh theo `useResolvedTheme` (data-theme hoặc hệ thống). Ảnh của giao diện đang dùng tải trước trong `index.html` (cùng
+    srcset / sizes / media với `heroImages` – đổi một chỗ phải đổi cả hai, nếu không tải đôi); ảnh còn lại tải lúc trình duyệt
+    rảnh, bỏ qua nếu bật tiết kiệm dữ liệu. Đổi giao diện: ảnh mới chưa tải xong thì giữ ảnh cũ; crossfade 600ms bằng opacity
+    (`.ld-hero-img`: ảnh mới hiện dần ở trên, ảnh cũ chỉ ẩn sau khi ảnh mới hiện hẳn, không lộ nền); giảm chuyển động thì đổi ngay.
+  - Mô hình 3D một tấm pin trong section "Giải pháp" (người dùng 20/10/2026; `solar-panel-showcase.tsx` + `solar-panel-scene.tsx`):
+    từ lg ở cột trái dưới phần chữ (danh sách bên phải `row-span-2`), dưới lg đứng sau danh sách; khung 4:3. Dựng hoàn toàn
+    bằng hình học + vật liệu trong code (tấm 1722 × 1134 × 35 mm, 120 nửa cell xanh đen vẽ bằng canvas dưới kính clearcoat, khung
+    nhôm có gờ, mặt sau có tấm nền, 3 hộp đấu dây, cáp, nhãn trơn không ghi thông số); môi trường phản chiếu là phòng chụp tự dựng
+    (RoomEnvironment của three cho vệt sáng gắt làm cell bạc màu). Kéo / vuốt ngang để xoay quanh tâm (bàn xoay, nghiêng dọc
+    trong khoảng hẹp để không chạm đất), phím mũi tên khi focus, không tự xoay, không phóng to / dịch chuyển; `touch-action:
+    pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong suốt, mờ dần theo bán kính (chèn vào shader của
+    `ShadowMaterial`; r186 đã bỏ `PCFSoftShadowMap`). Ánh sáng / bóng theo `useResolvedTheme`. Chỉ tải three.js khi khung cách
+    màn hình 300px; máy không có WebGL2, bật tiết kiệm dữ liệu hoặc lỗi renderer thì hiện ảnh tĩnh
+    `public/images/landing/solar-panel-{light,dark}.webp` – chụp từ chính khung hình đầu của cảnh (đổi camera / tư thế / ánh
+    sáng thì chụp lại, nếu không lúc canvas thay ảnh sẽ thấy nhảy). Điện thoại / cảm ứng: dpr ≤ 1,5, bản đồ bóng và hoạ tiết nhỏ hơn.
+  Chuyển động chỉ transform/opacity, không thư viện: `ld-rise` (chữ, nút hero), khối nội dung bọc `<Reveal>`
+  (IntersectionObserver, hiện một lần khi cuộn tới). `prefers-reduced-motion` tắt hết và hiện nội dung ngay. Favicon sinh từ
   `public/images/Logo.png` (`public/favicon-32/48.png`, `apple-touch-icon.png`).
 - `AuthLayout` – theo `auth_portal`: lưới 12 cột, panel `primary-container` bên trái
   (`lg:col-span-5`: tiêu đề "Chuyển dịch Năng lượng Xanh cho Ngôi nhà Việt", ảnh nhà, 2 ô số liệu
@@ -369,7 +447,7 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
 
 | Route             | Layout         | Trang                                                      |
 | ----------------- | -------------- | ---------------------------------------------------------- |
-| `/`               | `PublicLayout` | `LandingPage` – brief và direction ở `docs/design/landing-brief.md` |
+| `/`               | `PublicLayout` | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai") |
 | `/login`          | `AuthLayout`   | `LoginPage`                                                 |
 | `/register`       | `AuthLayout`   | `RegisterPage`                                              |
 | `/forgot-password`| `AuthLayout`   | `ForgotPasswordPage`                                        |
@@ -378,12 +456,12 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
 | `/403`            | `AuthLayout`   | `ForbiddenPage`                                             |
 | `/coming-soon`    | `PublicLayout` | Trang tạm cho Kinh doanh, Quản lý, Khách hàng               |
 | `/products`, `/products/:id` | `PublicLayout` | Danh mục sản phẩm công khai – GET /api/products(/{id}) |
-| `/admin/*`        | `AdminLayout`  | Sản phẩm – bọc `<RequireRole role="admin">`                 |
-| `/tech/*`         | `TechLayout`   | Sản phẩm (danh mục) – bọc `<RequireRole role="technician">` |
-| `/customer/*`     | `CustomerLayout` | Đánh giá sơ bộ – bọc `<RequireRole role="customer">`     |
-| `/ops/*`          | `OpsLayout`      | Yêu cầu khảo sát – bọc `<RequireRole role="sales">`      |
+| `/admin/*`        | `AdminLayout`  | Tài khoản, Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="admin">` |
+| `/tech/*`         | `TechLayout`   | Việc của tôi, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">` |
+| `/customer/*`     | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Sản phẩm – bọc `<RequireRole role="customer">` |
+| `/ops/*`          | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên) – bọc `<RequireRole role="sales">` |
 | `/field/*`        | —                | chuyển về `/tech` |
-| `/manage/*`       | `ManageLayout`   | Sản phẩm (danh mục) – bọc `<RequireRole role="manager">` |
+| `/manage/*`       | `ManageLayout`   | Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">` |
 | `/styleguide`     | –              | `StyleguidePage`                                            |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.
@@ -419,7 +497,7 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
   dùng câu tiếng Việt theo HTTP status.
 - **Role**: `AuthTokensResponse` không có role → decode claim `role` trong accessToken
   bằng `jwt-decode` (`src/utils/jwt.ts`) rồi map qua `ROLE_ALIASES` trong
-  `src/config/roles.ts` về `customer | technician | sales | manager | admin`.
+  `src/common/role.ts` (hàm `parseRole` ở `src/config/roles.ts`) về `customer | technician | sales | manager | admin`.
   Không đọc được role thì coi như đăng nhập hỏng, không đoán bừa.
 - **Khôi phục phiên**: mở app mà còn `refreshToken` thì gọi refresh trước;
   `status = 'loading'` và `RequireRole` (`src/routes/RequireRole.tsx`) hiện `AuthLoadingScreen` để không đá người dùng
@@ -428,16 +506,16 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
   của nó – `admin` → `/admin`, `technician` → `/tech`, `sales` → `/ops`, `manager` → `/manage`,
   `customer` → `/customer`. `<RequireRole role="…">`: chưa đăng nhập → `/login` (nhớ trang đích),
   sai vai trò → `/403`.
-- **API**: 9 hàm trong `src/features/auth/services/authService.ts` (DTO ở `src/types/req/authReq.ts` và `src/types/res/authRes.ts`) (register, verify-email, resend-verification,
+- **API**: 9 hàm trong `src/services/authService.ts` (DTO ở `src/types/req/authReq.ts` và `src/types/res/authRes.ts`) (register, verify-email, resend-verification,
   login, refresh, logout, forgot-password, reset-password, change-password); mutation của
-  react-query trong `src/features/auth/hooks/useAuthMutations.ts`; login/logout nằm trong `AuthProvider`
+  react-query trong `src/hooks/useAuthMutations.ts`; login/logout nằm trong `AuthProvider`
   vì còn phải lưu token.
 - **Tài khoản mẫu** ở `/login` chỉ hiện khi `import.meta.env.DEV` và lấy từ
   `.env.development.local` (không commit) – xem `src/config/demoAccounts.ts`.
 - **CHỜ BACKEND**: swagger chưa có endpoint `/me` (đọc hồ sơ người đăng nhập) và token thật chỉ có `sub`, `email`, role
   (dò lại 08/10/2026), nên tên hiển thị trên nút tài khoản tạm là email. Tên lấy theo thứ tự: `/me` → claim
   `fullName` / `name` / claim name của .NET / `family_name` + `given_name` → email. Khi có `/me`, chỉ cần điền thân
-  hàm `fetchCurrentUser()` trong `src/features/auth/services/me.ts`; backend thêm claim họ tên thì tên tự hiện.
+  hàm `fetchCurrentUser()` trong `src/services/me.ts`; backend thêm claim họ tên thì tên tự hiện.
 
 ## Biến thể đã chốt
 
@@ -456,7 +534,8 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
 - Mỗi màn = 1 route + 1 file dữ liệu trong `src/data/`. Không hard-code dữ liệu trong JSX.
 - Khi dựng xong một màn: chạy dev, chụp màn hình, đặt cạnh `screen.png`, liệt kê khác biệt (spacing, màu, font size, icon) rồi sửa. Chấp nhận sai lệch ≤ 4px.
 - Không cài thêm thư viện UI khác (MUI, Ant, Chakra…). Ngoại lệ đã chốt: `sonner` chỉ dùng cho toast;
-  `three` + `@react-three/fiber` chỉ cho mô phỏng 3D (05/10/2026).
+  `three` + `@react-three/fiber` chỉ cho 3D: mô phỏng (05/10/2026) và tấm pin ở trang chủ (20/10/2026); không thêm drei, dùng
+  module trong `three/examples/jsm`.
 - Không sửa bất kỳ file nào trong `design/stitch/stitch_smart_solar_customer_portal/`.
 
 ## Lệnh

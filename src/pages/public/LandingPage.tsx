@@ -1,22 +1,11 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router'
-import {
-  BenefitsSection,
-  CtaSection,
-  HeroSection,
-  ProjectsSection,
-  StatementSection,
-  TrackingSection,
-  TrustSection,
-  VoicesSection,
-} from '@/features/landing/components'
+import { CtaSection, HeroSection, SolutionSection, WorkflowSection } from '@/features/landing/components'
 import { pageTitle } from '@/data/landing'
 
 /*
-  Trang chủ công khai "/" – website bán hàng của công ty thi công điện mặt trời áp mái cho doanh nghiệp.
-  Mỗi section trả lời một câu hỏi bán hàng và có bố cục
-  riêng, ảnh lớn xen section chữ: bạn là ai → công trình → khách hàng nói gì (khi có dữ liệu) → vì sao
-  tin → doanh nghiệp nhận được gì → theo dõi công trình → bắt đầu.
+  Trang chủ công khai "/" – nền tảng tư vấn lắp đặt, bảo hành và bảo trì điện mặt trời cho hộ gia đình.
+  Hero ảnh ngày / đêm theo giao diện → giải pháp → quy trình bốn bước → mời đăng ký khảo sát.
 */
 export function LandingPage() {
   const { hash } = useLocation()
@@ -31,12 +20,8 @@ export function LandingPage() {
     <>
       <title>{pageTitle}</title>
       <HeroSection />
-      <StatementSection />
-      <ProjectsSection />
-      <VoicesSection />
-      <TrustSection />
-      <BenefitsSection />
-      <TrackingSection />
+      <SolutionSection />
+      <WorkflowSection />
       <CtaSection />
     </>
   )

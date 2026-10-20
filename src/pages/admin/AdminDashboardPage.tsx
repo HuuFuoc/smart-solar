@@ -189,7 +189,7 @@ export function AdminDashboardPage() {
                 {auditTrail.periodLabel}
               </span>
               <Link
-                to={ROUTES.ADMIN.REPORTS}
+                to={ROUTES.admin.reports}
                 className="flex items-center gap-1 text-label-md text-primary hover:underline"
               >
                 {auditTrail.linkLabel}
@@ -213,7 +213,7 @@ export function AdminDashboardPage() {
             <CardHeader className="mb-space-md">
               <CardTitle icon="display_settings">{engineDefaults.title}</CardTitle>
               <Link
-                to={ROUTES.ADMIN.TECH_CONFIG}
+                to={ROUTES.admin.techConfig}
                 className="text-label-sm font-semibold text-primary hover:underline"
               >
                 {engineDefaults.editLabel}

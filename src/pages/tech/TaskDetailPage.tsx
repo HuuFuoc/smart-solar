@@ -26,7 +26,7 @@ function TaskDetailView({ detail }: { detail: TaskDetail }) {
       <div className="flex flex-col justify-between gap-space-md md:flex-row md:items-center">
         <div className="flex items-center gap-space-sm">
           <Link
-            to={ROUTES.TECH.TASKS}
+            to={ROUTES.tech.tasks}
             aria-label="Quay lại danh sách phiếu công việc"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-container-lowest text-primary shadow-sm transition-all hover:bg-surface-container-high"
           >
