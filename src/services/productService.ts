@@ -2,6 +2,7 @@ import type { ChangeProductStatusRequest, CreateProductRequest, UpdateProductReq
 import type { ProductDeletedResponse, ProductResponse } from '@/types/res/adminProductsRes'
 import type { ProductResponsePagedResult } from '@/types/res/productsRes'
 import { get, post, put, patch, del } from '@/services/api/client'
+import { ENDPOINTS } from '@/services/api/endpoints'
 
 /*
  * 6 endpoint sản phẩm: 2 endpoint đọc (tag Products) và 4 endpoint quản trị (tag AdminProducts).
@@ -41,30 +42,30 @@ function compact(params: ProductListParams) {
 
 /** GET /api/products */
 export function listProducts(params: ProductListParams = {}) {
-  return get<ProductResponsePagedResult>('/products', { params: compact(params) })
+  return get<ProductResponsePagedResult>(ENDPOINTS.products.base, { params: compact(params) })
 }
 
 /** GET /api/products/{id} */
 export function getProduct(id: string) {
-  return get<ProductResponse>(`/products/${encodeURIComponent(id)}`)
+  return get<ProductResponse>(ENDPOINTS.products.byId(id))
 }
 
 /** POST /api/admin/products – trả 201 kèm sản phẩm vừa tạo */
 export function createProduct(body: CreateProductRequest) {
-  return post<ProductResponse>('/admin/products', body)
+  return post<ProductResponse>(ENDPOINTS.adminProducts.base, body)
 }
 
 /** PUT /api/admin/products/{id} – body không có status, đổi status qua PATCH riêng */
 export function updateProduct(id: string, body: UpdateProductRequest) {
-  return put<ProductResponse>(`/admin/products/${encodeURIComponent(id)}`, body)
+  return put<ProductResponse>(ENDPOINTS.adminProducts.byId(id), body)
 }
 
 /** DELETE /api/admin/products/{id} */
 export function deleteProduct(id: string) {
-  return del<ProductDeletedResponse>(`/admin/products/${encodeURIComponent(id)}`)
+  return del<ProductDeletedResponse>(ENDPOINTS.adminProducts.byId(id))
 }
 
 /** PATCH /api/admin/products/{id}/status */
 export function changeProductStatus(id: string, body: ChangeProductStatusRequest) {
-  return patch<ProductResponse>(`/admin/products/${encodeURIComponent(id)}/status`, body)
+  return patch<ProductResponse>(ENDPOINTS.adminProducts.status(id), body)
 }

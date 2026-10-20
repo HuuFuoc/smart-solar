@@ -1,6 +1,8 @@
 import axios, { AxiosError, AxiosHeaders, type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios'
+import { ENDPOINTS } from '@/services/api/endpoints'
 import { ApiError, messageForStatus, parseRetryAfter, toApiError } from '@/services/api/errors'
 import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from '@/services/api/tokens'
+import { apiBaseUrl, apiPath } from '@/services/api/url'
 import type { RefreshTokenRequest } from '@/types/req/authReq'
 import type { ApiResponse } from '@/types/res/apiRes'
 import type { AuthTokensResponse } from '@/types/res/authRes'
@@ -26,7 +28,8 @@ export function emitSessionExpired() {
   window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT))
 }
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+/* Khai thiếu /api hay thừa dấu / ở cuối đều về đúng địa chỉ gốc (xem url.ts). */
+const baseURL = apiBaseUrl(import.meta.env.VITE_API_BASE_URL)
 
 export const apiClient = axios.create({
   baseURL,
@@ -38,15 +41,15 @@ export const apiClient = axios.create({
  * /auth/logout chỉ cần refresh token trong body (dò 08/10/2026: trả 200 cả khi không có Bearer); để nó
  * đi qua refresh-rồi-gửi-lại sẽ gửi lại đúng refresh token vừa bị đổi, tức là "dùng lại" token.
  */
-const PUBLIC_PATHS = [
-  '/auth/login',
-  '/auth/logout',
-  '/auth/register',
-  '/auth/refresh',
-  '/auth/verify-email',
-  '/auth/resend-verification',
-  '/auth/forgot-password',
-  '/auth/reset-password',
+const PUBLIC_PATHS: string[] = [
+  ENDPOINTS.auth.login,
+  ENDPOINTS.auth.logout,
+  ENDPOINTS.auth.register,
+  ENDPOINTS.auth.refresh,
+  ENDPOINTS.auth.verifyEmail,
+  ENDPOINTS.auth.resendVerification,
+  ENDPOINTS.auth.forgotPassword,
+  ENDPOINTS.auth.resetPassword,
 ]
 
 function isPublicPath(url: string | undefined) {
@@ -55,6 +58,8 @@ function isPublicPath(url: string | undefined) {
 }
 
 apiClient.interceptors.request.use((config) => {
+  // Chuẩn hoá trước khi so với PUBLIC_PATHS: '/api/auth/login' hay 'auth/login' vẫn là endpoint công khai.
+  config.url = apiPath(config.url)
   const token = getAccessToken()
   if (token && !isPublicPath(config.url)) {
     const headers = AxiosHeaders.from(config.headers)
@@ -79,7 +84,7 @@ async function requestNewAccessToken(): Promise<string> {
   if (!refreshToken) throw new ApiError({ status: 401, message: messageForStatus(401) })
 
   const response = await axios.post<unknown>(
-    `${baseURL}/auth/refresh`,
+    `${baseURL}${ENDPOINTS.auth.refresh}`,
     { refreshToken } satisfies RefreshTokenRequest,
     { headers: { 'Content-Type': 'application/json' } },
   )
