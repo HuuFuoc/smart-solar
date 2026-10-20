@@ -5,7 +5,7 @@ import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
 import { needsScheduling } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { useMySurveyRequestsQuery, usePendingSurveyRequestsQuery } from '@/features/pre-surveys/hooks/useSurveyRequests'
+import { useMySurveyRequestsQuery, usePendingSurveyRequestsQuery } from '@/hooks/useSurveyRequests'
 import { ROUTES } from '@/routes/paths'
 
 /*

@@ -77,13 +77,13 @@ export const PORTALS: Record<PortalKey, Portal> = {
   admin: {
     key: 'admin',
     name: 'Quản trị hệ thống',
-    home: ROUTES.ADMIN.DASHBOARD,
+    home: ROUTES.admin.home,
     groups: [
       {
         items: [
-          { label: 'Tài khoản', to: ROUTES.ADMIN.USERS, icon: 'manage_accounts' },
-          { label: 'Kỹ thuật viên', to: ROUTES.ADMIN.TECHNICIANS, icon: 'engineering' },
-          { label: 'Sản phẩm', to: ROUTES.ADMIN.PRODUCTS, icon: 'solar_power' },
+          { label: 'Tài khoản', to: ROUTES.admin.users, icon: 'manage_accounts' },
+          { label: 'Kỹ thuật viên', to: ROUTES.admin.technicians, icon: 'engineering' },
+          { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },
         ],
       },
     ],
@@ -92,13 +92,13 @@ export const PORTALS: Record<PortalKey, Portal> = {
   tech: {
     key: 'tech',
     name: 'Kỹ thuật hiện trường',
-    home: ROUTES.TECH.DASHBOARD,
+    home: ROUTES.tech.home,
     groups: [
       {
         items: [
-          { label: 'Việc của tôi', to: ROUTES.TECH.JOBS, icon: 'assignment' },
-          { label: 'Lịch làm việc', to: ROUTES.TECH.SCHEDULE, icon: 'calendar_month' },
-          { label: 'Sản phẩm', to: ROUTES.TECH.PRODUCTS, icon: 'solar_power' },
+          { label: 'Việc của tôi', to: ROUTES.tech.jobs, icon: 'assignment' },
+          { label: 'Lịch làm việc', to: ROUTES.tech.schedule, icon: 'calendar_month' },
+          { label: 'Sản phẩm', to: ROUTES.tech.products, icon: 'solar_power' },
         ],
       },
     ],

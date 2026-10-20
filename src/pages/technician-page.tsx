@@ -12,7 +12,7 @@ import { TechnicianProfileForm } from '@/features/scheduling/components/Technici
 import { UnavailablePeriods } from '@/features/scheduling/components/UnavailablePeriods'
 import { WorkingScheduleEditor } from '@/features/scheduling/components/WorkingScheduleEditor'
 import { formatDay, technicianReadiness, todayVn } from '@/features/scheduling/components/schedulingDisplay'
-import { useTechnicianScheduleQuery, useTechniciansQuery } from '@/features/scheduling/hooks/useTechnicianAdmin'
+import { useTechnicianScheduleQuery, useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
 import { ROUTES, withId } from '@/routes/paths'
 
 type Section = 'lich' | 'nhan-lich' | 'gio-lam' | 'nghi'
@@ -112,7 +112,7 @@ function TechnicianPage({ accountPattern }: { accountPattern?: string }) {
 }
 
 export function AdminTechnicianPage() {
-  return <TechnicianPage accountPattern={ROUTES.ADMIN.USER} />
+  return <TechnicianPage accountPattern={ROUTES.admin.user} />
 }
 
 export function ManageTechnicianPage() {

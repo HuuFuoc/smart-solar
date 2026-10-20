@@ -20,7 +20,7 @@ import {
   historyStatusLabel,
   vnDate,
 } from '@/features/scheduling/components/schedulingDisplay'
-import { useMyRequestQuery } from '@/features/scheduling/hooks/useBooking'
+import { useMyRequestQuery } from '@/hooks/useBooking'
 import type { CustomerSurveyRequestDetailView, CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 
 /* Một câu nói khách đang ở đâu và việc tiếp theo là của ai. */

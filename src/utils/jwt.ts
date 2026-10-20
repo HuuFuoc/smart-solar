@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode'
-import { parseRole, type UserRole } from '@/config/roles'
+import type { UserRole } from '@/common/role'
+import { parseRole } from '@/config/roles'
 
 /*
  * Đọc claim trong accessToken.
@@ -8,7 +9,7 @@ import { parseRole, type UserRole } from '@/config/roles'
  * (dò 08/10/2026) để role ở claim .NET `http://schemas.microsoft.com/ws/2008/06/identity/claims/role`
  * với giá trị ADMIN / SALES / CUSTOMER; claim `role` ngắn vẫn được đọc trước nếu sau này backend đổi.
  * Token không có claim tên và backend chưa có /me, nên tên hiển thị là email; khi có /me thì
- * chuyển sang dùng dữ liệu của /me (xem src/features/auth/services/me.ts).
+ * chuyển sang dùng dữ liệu của /me (xem src/services/me.ts).
  */
 
 export type JwtClaims = {

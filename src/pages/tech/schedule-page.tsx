@@ -2,7 +2,7 @@ import { useSearchParams } from 'react-router'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { DayNav, ScheduleDay } from '@/features/scheduling/components/ScheduleDay'
 import { formatDay, todayVn } from '@/features/scheduling/components/schedulingDisplay'
-import { useMyScheduleQuery } from '@/features/scheduling/hooks/useTechnicianJobs'
+import { useMyScheduleQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES, withId } from '@/routes/paths'
 
 /** Ngày nằm trên địa chỉ (?ngay=YYYY-MM-DD) để link từ trang chi tiết mở đúng ngày và Back / Forward đi giữa các ngày. */
@@ -23,7 +23,7 @@ export function TechSchedulePage() {
         description={formatDay(date, { year: true })}
         actions={<DayNav date={date} onChange={(next) => setParams({ [DATE_PARAM]: next })} />}
       />
-      <ScheduleDay date={date} query={query} viewer="technician" linkFor={(id) => withId(ROUTES.TECH.JOB, id)} />
+      <ScheduleDay date={date} query={query} viewer="technician" linkFor={(id) => withId(ROUTES.tech.job, id)} />
     </>
   )
 }

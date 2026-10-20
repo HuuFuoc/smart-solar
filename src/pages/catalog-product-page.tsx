@@ -8,7 +8,7 @@ import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { formatPower, formatSize, formatWarranty, isProductActive, productTypeLabel, specEntries } from '@/features/products/components/productDisplay'
-import { useProductQuery } from '@/features/products/hooks/useProducts'
+import { useProductQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
 import { formatMoney } from '@/utils/format'
 

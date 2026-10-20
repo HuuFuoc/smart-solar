@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { HCM_PROVINCE } from '@/features/pre-surveys/services/provinceService'
+import { HCM_PROVINCE } from '@/services/provinceService'
 import type { ApiError } from '@/services/api/errors'
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
 

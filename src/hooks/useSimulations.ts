@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { preSurveyKeys } from '@/features/pre-surveys/hooks/usePreSurveys'
-import * as simulationService from '@/features/pre-surveys/services/simulationService'
+import { preSurveyKeys } from '@/hooks/usePreSurveys'
+import * as simulationService from '@/services/simulationService'
 import type { CreateSimulationRequest } from '@/types/req/simulationsReq'
 import type { SimulationDetail, SimulationListItem } from '@/types/res/simulationsRes'
 import type { ApiError } from '@/services/api/errors'

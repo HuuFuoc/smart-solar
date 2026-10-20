@@ -22,14 +22,14 @@ export function ComingSoonPage() {
 
       <div className="mt-space-xl flex flex-wrap items-center justify-center gap-space-sm">
         <Link
-          to={ROUTES.HOME}
+          to={ROUTES.home}
           className="inline-flex items-center justify-center gap-space-xs rounded-xl bg-primary-container px-space-lg py-3 text-label-lg text-on-primary shadow-sm transition-all hover:bg-primary"
         >
           <Icon name="arrow_back" className="text-[18px]" />
           Về trang chủ
         </Link>
         <Link
-          to={ROUTES.LOGIN}
+          to={ROUTES.login}
           className="inline-flex items-center justify-center rounded-xl bg-surface-container px-space-lg py-3 text-label-lg text-on-surface transition-colors hover:bg-surface-container-high"
         >
           Đăng nhập

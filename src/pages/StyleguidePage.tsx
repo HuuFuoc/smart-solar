@@ -181,7 +181,7 @@ export function StyleguidePage() {
     <div className="min-h-screen bg-surface font-jakarta text-body-md text-on-surface antialiased">
       <header className="sticky top-0 z-40 border-b border-outline-card bg-surface-container-lowest/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-space-md px-space-xl py-space-sm">
-          <Link to={ROUTES.HOME} className="text-headline-md text-primary">
+          <Link to={ROUTES.home} className="text-headline-md text-primary">
             Smart Solar UI
           </Link>
           <nav aria-label="Các mục" className="flex flex-wrap gap-space-2xs">

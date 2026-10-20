@@ -10,7 +10,7 @@ import { EmptyState } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { formatCoordinates } from '@/features/pre-surveys/components/preSurveyDisplay'
 import { technicianReadiness } from '@/features/scheduling/components/schedulingDisplay'
-import { useTechniciansQuery } from '@/features/scheduling/hooks/useTechnicianAdmin'
+import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
 import { ROUTES, withId } from '@/routes/paths'
 import type { TechnicianProfileView } from '@/types/res/adminTechniciansRes'
 
@@ -124,7 +124,7 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
 }
 
 export function AdminTechniciansPage() {
-  return <TechniciansPage detailPattern={ROUTES.ADMIN.TECHNICIAN} usersLink={ROUTES.ADMIN.USERS} />
+  return <TechniciansPage detailPattern={ROUTES.admin.technician} usersLink={ROUTES.admin.users} />
 }
 
 export function ManageTechniciansPage() {

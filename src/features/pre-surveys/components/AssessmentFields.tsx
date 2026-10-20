@@ -3,17 +3,11 @@ import { Button } from '@/components/common/ui/button'
 import { Combobox } from '@/components/common/ui/combobox'
 import { Field, Input, Radio, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
-import {
-  COMPASS_GRID,
-  CUSTOMER_TYPES,
-  HCM_COORDINATE_HINT,
-  SURFACE_TYPES,
-  isInHcm,
-  mapsUrl,
-} from '@/features/pre-surveys/components/preSurveyDisplay'
+import { COMPASS_GRID, CUSTOMER_TYPES, SURFACE_TYPES } from '@/common/preSurvey'
+import { HCM_COORDINATE_HINT, isInHcm, mapsUrl } from '@/features/pre-surveys/components/preSurveyDisplay'
 import { toNumber, type FormErrors, type ProfileForm, type SiteForm } from '@/features/pre-surveys/components/assessmentForm'
-import { useHcmWardsQuery } from '@/features/pre-surveys/hooks/useHcmWards'
-import { HCM_PROVINCE } from '@/features/pre-surveys/services/provinceService'
+import { useHcmWardsQuery } from '@/hooks/useHcmWards'
+import { HCM_PROVINCE } from '@/services/provinceService'
 
 /* Ô nhập của hai bước đầu màn đánh giá sơ bộ (hồ sơ, địa điểm) + la bàn và ô có đơn vị dùng ở bước mặt lắp, mô phỏng.
    Trang giữ state; component chỉ vẽ và báo thay đổi. */

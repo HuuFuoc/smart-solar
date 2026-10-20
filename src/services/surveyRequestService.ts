@@ -8,7 +8,7 @@ import type {
   SalesRescheduleView,
   SurveyRequestDetail,
 } from '@/types/res/surveyRequestsRes'
-import { apiGet, apiPost, apiRequest } from '@/services/api/client'
+import { get, post, put } from '@/services/api/client'
 
 /*
  * Endpoint phía kinh doanh (role SALES). Khách gửi bản đánh giá thì sinh một yêu cầu
@@ -20,22 +20,22 @@ import { apiGet, apiPost, apiRequest } from '@/services/api/client'
 
 /** GET /api/survey-requests/pending – yêu cầu chưa ai nhận */
 export function listPendingSurveyRequests() {
-  return apiGet<PendingSurveyRequestItem[]>('/survey-requests/pending')
+  return get<PendingSurveyRequestItem[]>('/survey-requests/pending')
 }
 
 /** GET /api/survey-requests/my – yêu cầu sales đang đăng nhập đã nhận */
 export function listMySurveyRequests() {
-  return apiGet<MySurveyRequestItem[]>('/survey-requests/my')
+  return get<MySurveyRequestItem[]>('/survey-requests/my')
 }
 
 /** GET /api/survey-requests/{id} */
 export function getSurveyRequest(id: string) {
-  return apiGet<SurveyRequestDetail>(`/survey-requests/${encodeURIComponent(id)}`)
+  return get<SurveyRequestDetail>(`/survey-requests/${encodeURIComponent(id)}`)
 }
 
 /** POST /api/survey-requests/{id}/claim – người khác nhận trước thì trả SURVEY_REQUEST_UNAVAILABLE */
 export function claimSurveyRequest(id: string) {
-  return apiPost<ClaimSurveyRequestResponse>(`/survey-requests/${encodeURIComponent(id)}/claim`)
+  return post<ClaimSurveyRequestResponse>(`/survey-requests/${encodeURIComponent(id)}/claim`)
 }
 
 /**
@@ -43,22 +43,22 @@ export function claimSurveyRequest(id: string) {
  * đường đi. Không truyền giờ thì dùng giờ khách đã đặt; truyền `startsAt` (có offset) để thử một giờ khác trước khi đổi giờ.
  */
 export function getTechnicianAvailability(surveyRequestId: string, startsAt?: string) {
-  return apiGet<TechnicianAvailabilityView>('/technicians/availability', {
+  return get<TechnicianAvailabilityView>('/technicians/availability', {
     params: startsAt ? { surveyRequestId, startsAt } : { surveyRequestId },
   })
 }
 
 /** POST /api/survey-requests/{id}/assign-technician – phân công chính thức; yêu cầu thành Scheduled. */
 export function assignTechnician(id: string, body: AssignTechnicianRequest) {
-  return apiPost<AssignmentView>(`/survey-requests/${encodeURIComponent(id)}/assign-technician`, body)
+  return post<AssignmentView>(`/survey-requests/${encodeURIComponent(id)}/assign-technician`, body)
 }
 
 /** PUT /api/survey-requests/{id}/reassign-technician – đổi người; người cũ đã xác nhận thì xác nhận đó mất hiệu lực. */
 export function reassignTechnician(id: string, body: AssignTechnicianRequest) {
-  return apiRequest<AssignmentView>({ method: 'PUT', url: `/survey-requests/${encodeURIComponent(id)}/reassign-technician`, data: body })
+  return put<AssignmentView>(`/survey-requests/${encodeURIComponent(id)}/reassign-technician`, body)
 }
 
 /** PUT /api/survey-requests/{id}/reschedule – đổi giờ (kèm `technicianUserId` để đổi cả người); lỗi thì lịch cũ giữ nguyên. */
 export function rescheduleSurveyRequest(id: string, body: SalesRescheduleRequest) {
-  return apiRequest<SalesRescheduleView>({ method: 'PUT', url: `/survey-requests/${encodeURIComponent(id)}/reschedule`, data: body })
+  return put<SalesRescheduleView>(`/survey-requests/${encodeURIComponent(id)}/reschedule`, body)
 }

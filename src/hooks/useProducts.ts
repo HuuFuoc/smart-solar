@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as productService from '@/features/products/services/productService'
-import type { ProductListParams } from '@/features/products/services/productService'
+import * as productService from '@/services/productService'
+import type { ProductListParams } from '@/services/productService'
 import type { ChangeProductStatusRequest, CreateProductRequest, UpdateProductRequest } from '@/types/req/adminProductsReq'
 import type { ProductDeletedResponse, ProductResponse } from '@/types/res/adminProductsRes'
 import type { ProductResponsePagedResult } from '@/types/res/productsRes'

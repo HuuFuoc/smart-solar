@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import * as authService from '@/features/auth/services/authService'
+import * as authService from '@/services/authService'
 import type {
   ChangePasswordRequest,
   ForgotPasswordRequest,

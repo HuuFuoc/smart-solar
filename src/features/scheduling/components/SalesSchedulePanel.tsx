@@ -30,7 +30,7 @@ import {
   useAssignTechnicianMutation,
   useSalesRescheduleMutation,
   useTechnicianAvailabilityQuery,
-} from '@/features/pre-surveys/hooks/useSurveyRequests'
+} from '@/hooks/useSurveyRequests'
 import { errorMessage, isApiError, type ApiError } from '@/services/api/errors'
 import type { AvailableTechnicianView, TechnicianAvailabilityView } from '@/types/res/technicianAvailabilityRes'
 import type { SurveyAppointmentSummary, SurveyRequestDetail } from '@/types/res/surveyRequestsRes'

@@ -4,8 +4,9 @@ import { PageHeader } from '@/components/common/ui/page-header'
 import { Pagination } from '@/components/common/ui/pagination'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { CatalogTable } from '@/features/products/components/CatalogTable'
-import { PRODUCT_SORT_OPTIONS, isProductActive, parseSort } from '@/features/products/components/productDisplay'
-import { useProductsQuery } from '@/features/products/hooks/useProducts'
+import { PRODUCT_SORT_OPTIONS } from '@/common/product'
+import { isProductActive, parseSort } from '@/features/products/components/productDisplay'
+import { useProductsQuery } from '@/hooks/useProducts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { ROUTES, withId } from '@/routes/paths'
 import { cx } from '@/utils/cx'
@@ -98,7 +99,7 @@ export function OpsCatalogPage() {
 }
 
 export function TechCatalogPage() {
-  return <CatalogPage detailPattern={ROUTES.TECH.PRODUCT} />
+  return <CatalogPage detailPattern={ROUTES.tech.product} />
 }
 
 export function ManageCatalogPage() {

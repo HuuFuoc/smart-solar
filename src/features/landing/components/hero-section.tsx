@@ -24,7 +24,7 @@ export function HeroSection() {
           </h1>
           <p className="mt-4 max-w-2xl ld-lede text-white/90 ld-rise ld-delay-1 lg:mt-5">{hero.lede}</p>
           <div className="mt-8 flex flex-col gap-4 ld-rise ld-delay-2 sm:flex-row sm:items-center sm:gap-8">
-            <Link to={ROUTES.REGISTER} className={ctaClass()}>
+            <Link to={ROUTES.register} className={ctaClass()}>
               {hero.cta}
             </Link>
             <a

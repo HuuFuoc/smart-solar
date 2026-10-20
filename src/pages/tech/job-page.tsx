@@ -29,7 +29,7 @@ import {
   surfaceNameLabel,
   vnDate,
 } from '@/features/scheduling/components/schedulingDisplay'
-import { useAcknowledgeMutation, useMyAppointmentQuery } from '@/features/scheduling/hooks/useTechnicianJobs'
+import { useAcknowledgeMutation, useMyAppointmentQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 import type { TechnicianJobView } from '@/types/res/technicianAppointmentsRes'
@@ -123,7 +123,7 @@ export function TechJobPage() {
                   <PanelHeader
                     title="Đường tới công trình"
                     action={
-                      <ButtonLink to={`${ROUTES.TECH.SCHEDULE}?ngay=${vnDate(job.startsAt)}`} size="sm" icon="calendar_month">
+                      <ButtonLink to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`} size="sm" icon="calendar_month">
                         Lịch cả ngày
                       </ButtonLink>
                     }

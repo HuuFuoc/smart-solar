@@ -4,8 +4,8 @@ import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Checkbox, Field, Input } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
-import { ROLE_OPTIONS } from '@/features/users/components/userDisplay'
-import { useCreateUserMutation, useUpdateUserMutation } from '@/features/users/hooks/useAdminUsers'
+import { ROLE_CODES } from '@/common/user'
+import { useCreateUserMutation, useUpdateUserMutation } from '@/hooks/useAdminUsers'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { AdminUserDetail, CreatedAdminUser, UpdatedAdminUser } from '@/types/res/adminUsersRes'
 
@@ -158,7 +158,7 @@ function AccountForm({
               </span>
             </legend>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
-              {ROLE_OPTIONS.map((r) => (
+              {ROLE_CODES.map((r) => (
                 <Checkbox
                   key={r.value}
                   label={r.label}

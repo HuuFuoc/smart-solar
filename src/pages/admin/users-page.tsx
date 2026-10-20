@@ -11,9 +11,10 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { formatDateTime, formatRelative } from '@/features/pre-surveys/components/preSurveyDisplay'
 import { AccountFormDialog } from '@/features/users/components/AccountFormDialog'
-import { ROLE_OPTIONS, STATUS_OPTIONS, activationMessage, rolesText, userStatusMeta } from '@/features/users/components/userDisplay'
-import { useAdminUsersQuery } from '@/features/users/hooks/useAdminUsers'
-import type { AdminUserListParams } from '@/features/users/services/adminUserService'
+import { ROLE_CODES, USER_STATUSES } from '@/common/user'
+import { activationMessage, rolesText, userStatusMeta } from '@/features/users/components/userDisplay'
+import { useAdminUsersQuery } from '@/hooks/useAdminUsers'
+import type { AdminUserListParams } from '@/services/adminUserService'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
@@ -84,7 +85,7 @@ export function AdminUsersPage() {
           <span className="sr-only">Vai trò</span>
           <Select active={filter.role !== ''} value={filter.role} onChange={(e) => updateFilter({ role: e.target.value })}>
             <option value="">Tất cả vai trò</option>
-            {ROLE_OPTIONS.map((r) => (
+            {ROLE_CODES.map((r) => (
               <option key={r.value} value={r.value}>
                 {r.label}
               </option>
@@ -95,7 +96,7 @@ export function AdminUsersPage() {
           <span className="sr-only">Trạng thái</span>
           <Select active={filter.status !== ''} value={filter.status} onChange={(e) => updateFilter({ status: e.target.value })}>
             <option value="">Tất cả trạng thái</option>
-            {STATUS_OPTIONS.map((s) => (
+            {USER_STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
               </option>
@@ -153,7 +154,7 @@ export function AdminUsersPage() {
                     <Tr key={u.id} className="group relative cursor-pointer">
                       <Td label="Tài khoản">
                         <Link
-                          to={withId(ROUTES.ADMIN.USER, u.id)}
+                          to={withId(ROUTES.admin.user, u.id)}
                           className="font-medium text-fg underline-offset-4 after:absolute after:inset-0 group-hover:text-accent-fg group-hover:underline"
                         >
                           {u.fullName || u.email}
@@ -196,7 +197,7 @@ export function AdminUsersPage() {
           const text = `Đã tạo tài khoản ${result.user.email}. ${sent.text}`
           if (sent.ok) toast.success(text)
           else toast.warning(text)
-          navigate(withId(ROUTES.ADMIN.USER, result.user.id))
+          navigate(withId(ROUTES.admin.user, result.user.id))
         }}
       />
     </>

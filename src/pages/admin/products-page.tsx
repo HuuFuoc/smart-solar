@@ -12,17 +12,16 @@ import { formatDateTime } from '@/features/pre-surveys/components/preSurveyDispl
 import { DeleteProductDialog } from '@/features/products/components/DeleteProductDialog'
 import { ProductFormDialog } from '@/features/products/components/ProductFormDialog'
 import { ProductsTable } from '@/features/products/components/ProductsTable'
+import { PRODUCT_SORT_OPTIONS, SOLAR_PANEL_TYPE } from '@/common/product'
 import {
-  PRODUCT_SORT_OPTIONS,
   SOLAR_PANEL_QUERY,
-  SOLAR_PANEL_TYPE,
   isProductActive,
   panelSpecGaps,
   parseSort,
   productTypeLabel,
 } from '@/features/products/components/productDisplay'
 import { readHiddenProducts, writeHiddenProducts, type HiddenProduct } from '@/features/products/hiddenProducts'
-import { useChangeProductStatusMutation, useProductsQuery } from '@/features/products/hooks/useProducts'
+import { useChangeProductStatusMutation, useProductsQuery } from '@/hooks/useProducts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { ProductResponse } from '@/types/res/adminProductsRes'

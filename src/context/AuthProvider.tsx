@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import * as authService from '@/features/auth/services/authService'
+import * as authService from '@/services/authService'
 import { SESSION_EXPIRED_EVENT, refreshAccessToken, waitForRefresh } from '@/services/api/client'
 import { ApiError } from '@/services/api/errors'
-import { fetchCurrentUser } from '@/features/auth/services/me'
+import { fetchCurrentUser } from '@/services/me'
 import { clearTokens, getAccessToken, getRefreshToken, hasRefreshToken, saveTokens } from '@/services/api/tokens'
 import { emailFromToken, nameFromToken, roleFromToken, userIdFromToken } from '@/utils/jwt'
-import type { UserRole } from '@/config/roles'
+import type { UserRole } from '@/common/role'
 
 /*
  * Phiên đăng nhập thật (API .NET ở /api/auth/*).

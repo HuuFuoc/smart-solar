@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router'
-import type { UserRole } from '@/config/roles'
+import type { UserRole } from '@/common/role'
 import { useAuth } from '@/context/AuthProvider'
 import { ROUTES } from '@/routes/paths'
 
@@ -17,8 +17,8 @@ export function RequireRole({ role, children }: RequireRoleProps) {
   if (status === 'loading') return <AuthLoadingScreen />
   // Giữ cả query string để đăng nhập xong quay lại đúng chỗ; trang 403 cũng nhớ trang đích cho nút "Đổi tài khoản khác".
   const from = location.pathname + location.search
-  if (!user) return <Navigate to={ROUTES.LOGIN} replace state={{ from }} />
-  if (user.role !== role) return <Navigate to={ROUTES.FORBIDDEN} replace state={{ required: role, from }} />
+  if (!user) return <Navigate to={ROUTES.login} replace state={{ from }} />
+  if (user.role !== role) return <Navigate to={ROUTES.forbidden} replace state={{ required: role, from }} />
   return <>{children}</>
 }
 

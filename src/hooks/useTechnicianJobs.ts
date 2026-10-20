@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as technicianJobService from '@/features/scheduling/services/technicianJobService'
+import * as technicianJobService from '@/services/technicianJobService'
 import type { ApiError } from '@/services/api/errors'
 import type {
   AcknowledgementView,

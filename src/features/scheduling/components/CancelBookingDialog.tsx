@@ -4,7 +4,7 @@ import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Textarea } from '@/components/common/ui/field'
 import { formatAppointment } from '@/features/scheduling/components/schedulingDisplay'
-import { useCancelAppointmentMutation } from '@/features/scheduling/hooks/useBooking'
+import { useCancelAppointmentMutation } from '@/hooks/useBooking'
 import { errorMessage } from '@/services/api/errors'
 import type { CustomerAppointmentView } from '@/types/res/customerSurveyRequestsRes'
 

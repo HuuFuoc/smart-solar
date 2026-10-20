@@ -4,7 +4,7 @@ import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
 import { technicianReadiness } from '@/features/scheduling/components/schedulingDisplay'
-import { useTechniciansQuery } from '@/features/scheduling/hooks/useTechnicianAdmin'
+import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
 import { ROUTES } from '@/routes/paths'
 
 /*

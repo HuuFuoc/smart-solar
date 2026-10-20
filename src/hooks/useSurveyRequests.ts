@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as surveyRequestService from '@/features/pre-surveys/services/surveyRequestService'
+import * as surveyRequestService from '@/services/surveyRequestService'
 import type { SalesRescheduleRequest } from '@/types/req/surveyRequestsReq'
 import type { TechnicianAvailabilityView } from '@/types/res/technicianAvailabilityRes'
 import type {

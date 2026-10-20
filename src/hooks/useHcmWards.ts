@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { HCM_PROVINCE, getHcmWards } from '@/features/pre-surveys/services/provinceService'
+import { HCM_PROVINCE, getHcmWards } from '@/services/provinceService'
 
 export const provinceKeys = {
   wards: (provinceCode: number) => ['provinces', 'v2', provinceCode, 'wards'] as const,

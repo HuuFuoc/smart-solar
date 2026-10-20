@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 import { useAuth } from '@/context/AuthProvider'
-import { roleLabels, type UserRole } from '@/config/roles'
+import { ROLE_LABELS, type UserRole } from '@/common/role'
 import { forbiddenContent } from '@/data/auth'
 
 /*
@@ -15,13 +15,13 @@ export function ForbiddenCard() {
   const { user, signOut } = useAuth()
   const requiredRole = (location.state as { required?: UserRole } | null)?.required
 
-  const currentRoleLabel = user ? roleLabels[user.role] : forbiddenContent.guestLabel
+  const currentRoleLabel = user ? ROLE_LABELS[user.role] : forbiddenContent.guestLabel
 
   // Đăng nhập lại bằng tài khoản đúng vai trò thì quay về đúng trang vừa bị chặn.
   const switchAccount = async () => {
     const from = (location.state as { from?: string } | null)?.from
     await signOut()
-    navigate(ROUTES.LOGIN, { replace: true, state: from ? { from } : undefined })
+    navigate(ROUTES.login, { replace: true, state: from ? { from } : undefined })
   }
 
   return (
@@ -35,7 +35,7 @@ export function ForbiddenCard() {
           {requiredRole && (
             <span className="rounded-full bg-error-container px-2 py-0.5 text-label-sm text-error">
               {forbiddenContent.requiredPrefix}
-              {roleLabels[requiredRole]}
+              {ROLE_LABELS[requiredRole]}
             </span>
           )}
         </div>

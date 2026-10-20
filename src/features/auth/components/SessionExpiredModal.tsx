@@ -17,12 +17,12 @@ export function SessionExpiredModal() {
 
   const goToLogin = () => {
     dismissSessionExpired()
-    navigate(ROUTES.LOGIN, { replace: true })
+    navigate(ROUTES.login, { replace: true })
   }
 
   const goHome = () => {
     dismissSessionExpired()
-    navigate(ROUTES.HOME, { replace: true })
+    navigate(ROUTES.home, { replace: true })
   }
 
   return (

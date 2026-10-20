@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as technicianAdminService from '@/features/scheduling/services/technicianAdminService'
+import * as technicianAdminService from '@/services/technicianAdminService'
 import type { ApiError } from '@/services/api/errors'
 import type {
   AddUnavailablePeriodRequest,

@@ -8,7 +8,7 @@ import { AuthCard } from '@/features/auth/components/AuthCard'
 import { AuthInput } from '@/features/auth/components/AuthInput'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
-import { useForgotPasswordMutation } from '@/features/auth/hooks/useAuthMutations'
+import { useForgotPasswordMutation } from '@/hooks/useAuthMutations'
 import { forgotContent } from '@/data/auth'
 
 const schema = z.object({ email: z.email({ error: (issue) => (issue.input ? 'Email không hợp lệ' : 'Vui lòng nhập email') }) })
@@ -87,7 +87,7 @@ export function ForgotPasswordPage() {
           </button>
           <button
             type="button"
-            onClick={() => navigate(ROUTES.LOGIN)}
+            onClick={() => navigate(ROUTES.login)}
             className="h-11 rounded-xl bg-surface-container px-4 text-label-lg text-on-surface transition-all hover:bg-surface-container-high"
           >
             {forgotContent.cancel}

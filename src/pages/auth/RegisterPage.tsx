@@ -9,7 +9,7 @@ import { AuthInput, PasswordInput } from '@/features/auth/components/AuthInput'
 import { PasswordRules } from '@/features/auth/components/PasswordRules'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
-import { useRegisterMutation } from '@/features/auth/hooks/useAuthMutations'
+import { useRegisterMutation } from '@/hooks/useAuthMutations'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import { isStrongPassword, registerContent } from '@/data/auth'
 import { homePathForRole } from '@/config/roles'
@@ -80,7 +80,7 @@ export function RegisterPage() {
       })
       toast.success(registerContent.toastSuccess)
       const email = result.email ?? values.email
-      navigate(`${ROUTES.VERIFY_EMAIL}?email=${encodeURIComponent(email)}`, { replace: true })
+      navigate(`${ROUTES.verifyEmail}?email=${encodeURIComponent(email)}`, { replace: true })
     } catch (error) {
       // Lỗi validate của server: gắn vào đúng ô nhập; phần còn lại hiện ở alert chung.
       let mappedAny = false
@@ -209,11 +209,11 @@ export function RegisterPage() {
           <span className="text-body-sm text-on-surface">
             {registerContent.termsBefore}
             {/* Tab mới: điều hướng tại chỗ sẽ xoá form đang điền dở. */}
-            <Link to={ROUTES.COMING_SOON} target="_blank" rel="noreferrer" className="font-semibold text-accent-fg underline">
+            <Link to={ROUTES.comingSoon} target="_blank" rel="noreferrer" className="font-semibold text-accent-fg underline">
               {registerContent.termsLink}
             </Link>
             {registerContent.termsMiddle}
-            <Link to={ROUTES.COMING_SOON} target="_blank" rel="noreferrer" className="font-semibold text-accent-fg underline">
+            <Link to={ROUTES.comingSoon} target="_blank" rel="noreferrer" className="font-semibold text-accent-fg underline">
               {registerContent.privacyLink}
             </Link>
             {registerContent.termsAfter}
@@ -236,7 +236,7 @@ export function RegisterPage() {
 
       <div className="mt-space-md text-center">
         <span className="text-body-md text-on-surface-variant">{registerContent.hasAccount}</span>
-        <Link to={ROUTES.LOGIN} className="text-label-lg font-bold text-accent-fg hover:underline">
+        <Link to={ROUTES.login} className="text-label-lg font-bold text-accent-fg hover:underline">
           {registerContent.loginLink}
         </Link>
       </div>

@@ -6,7 +6,7 @@ import { ROUTES } from '@/routes/paths'
 
 export const rolesPageHeader = {
   breadcrumb: [
-    { label: 'Quản trị', icon: 'admin_panel_settings', href: ROUTES.ADMIN.DASHBOARD },
+    { label: 'Quản trị', icon: 'admin_panel_settings', href: ROUTES.admin.home },
     { label: 'An toàn thông tin' },
     { label: 'Vai trò & quyền' },
   ] satisfies Crumb[],

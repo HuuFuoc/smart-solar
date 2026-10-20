@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as preSurveyService from '@/features/pre-surveys/services/preSurveyService'
-import { bookingKeys } from '@/features/scheduling/hooks/useBooking'
+import * as preSurveyService from '@/services/preSurveyService'
+import { bookingKeys } from '@/hooks/useBooking'
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
 import type { UpdatePreSurveySurfaceRequest } from '@/types/req/preSurveySurfaceReq'
 import type { CreatePreSurveyRequest, UpdatePreSurveyRequest } from '@/types/req/preSurveysReq'

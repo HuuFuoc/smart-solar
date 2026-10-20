@@ -11,7 +11,7 @@ export function NotFoundPage() {
   const message = !notFound && error instanceof Error ? error.message : undefined
   // Đã đăng nhập thì nút chính về trang làm việc của vai trò; chưa đăng nhập thì về landing.
   const { user } = useAuth()
-  const home = user ? homePathForRole(user.role) : ROUTES.HOME
+  const home = user ? homePathForRole(user.role) : ROUTES.home
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[560px] flex-col justify-center px-6 py-16">

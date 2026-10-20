@@ -9,7 +9,7 @@ import {
   productTypeLabel,
   specEntries,
 } from '@/features/products/components/productDisplay'
-import { useProductQuery } from '@/features/products/hooks/useProducts'
+import { useProductQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { cx } from '@/utils/cx'
@@ -22,7 +22,7 @@ export function ProductDetailPage() {
 
   return (
     <div className={cx('pt-8 lg:pt-12', LANDING_CONTAINER)}>
-      <Link to={ROUTES.PRODUCTS} className={cx(TEXT_LINK, 'inline-block py-2 ld-meta')}>
+      <Link to={ROUTES.products} className={cx(TEXT_LINK, 'inline-block py-2 ld-meta')}>
         Tất cả sản phẩm
       </Link>
 
@@ -74,7 +74,7 @@ function ProductDetail({ product }: { product: ProductResponse }) {
           {product.unit && <span className="ld-body font-normal text-fg-2"> / {product.unit}</span>}
         </p>
         <p className="mt-1 ld-meta text-fg-2">Giá tham khảo, chưa gồm lắp đặt. Giá chính thức có sau khi khảo sát.</p>
-        <Link to={ROUTES.REGISTER} className={ctaClass('lg', 'mt-6 inline-flex')}>
+        <Link to={ROUTES.register} className={ctaClass('lg', 'mt-6 inline-flex')}>
           Nhận khảo sát
         </Link>
 

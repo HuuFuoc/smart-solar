@@ -4,7 +4,7 @@ import { Count } from '@/components/common/ui/badge'
 import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
-import { useMyAppointmentsQuery } from '@/features/scheduling/hooks/useTechnicianJobs'
+import { useMyAppointmentsQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES } from '@/routes/paths'
 
 /*
@@ -21,10 +21,10 @@ export function TechLayout({ children }: { children?: ReactNode }) {
   return (
     <AppShell
       portal={PORTALS.tech}
-      badges={{ [ROUTES.TECH.JOBS]: { value: waiting || undefined, attention: true } }}
+      badges={{ [ROUTES.tech.jobs]: { value: waiting || undefined, attention: true } }}
       collapsedHint={
         waiting ? (
-          <Link to={ROUTES.TECH.JOBS} className="tap gap-2 underline-offset-4 hover:text-fg hover:underline">
+          <Link to={ROUTES.tech.jobs} className="tap gap-2 underline-offset-4 hover:text-fg hover:underline">
             <Count value={waiting} attention />
             <span className="sr-only sm:not-sr-only">lịch chờ nhận việc</span>
           </Link>

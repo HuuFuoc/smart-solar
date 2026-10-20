@@ -21,14 +21,14 @@ export function CtaSection() {
         </Reveal>
         <Reveal delay={150} className="col-span-4 flex flex-col gap-3 sm:items-start lg:col-span-4 lg:col-start-9 lg:self-end">
           <Link
-            to={ROUTES.REGISTER}
+            to={ROUTES.register}
             className="press inline-flex h-12 items-center justify-center rounded-control bg-on-accent px-6 ld-action whitespace-nowrap text-accent hover:bg-on-accent/90"
           >
             {cta.button}
           </Link>
           <p className="ld-meta">
             {cta.hasAccount}{' '}
-            <Link to={ROUTES.LOGIN} className="underline decoration-1 underline-offset-4 hover:decoration-2">
+            <Link to={ROUTES.login} className="underline decoration-1 underline-offset-4 hover:decoration-2">
               {cta.login}
             </Link>
           </p>

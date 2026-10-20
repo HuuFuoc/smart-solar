@@ -8,7 +8,8 @@ import { Avatar } from '@/components/common/ui/avatar'
 import { Segmented } from '@/components/common/ui/segmented'
 import { PageCrumbContext, isNavItemActive, isNavItemPage, type PageCrumb } from '@/components/layout/page-crumb'
 import { PORTALS, type NavItem } from '@/config/portals'
-import { canChangeOwnPassword, roleLabels } from '@/config/roles'
+import { ROLE_LABELS } from '@/common/role'
+import { canChangeOwnPassword } from '@/config/roles'
 import { useAuth } from '@/context/AuthProvider'
 import { changePasswordContent } from '@/data/auth'
 import { ChangePasswordDialog } from '@/features/auth/components/ChangePasswordDialog'
@@ -246,7 +247,7 @@ function AccountActions({ onChangePassword }: { onChangePassword: () => void }) 
 
   async function handleSignOut() {
     await signOut()
-    navigate(ROUTES.LOGIN, { replace: true })
+    navigate(ROUTES.login, { replace: true })
   }
 
   return (
@@ -255,7 +256,7 @@ function AccountActions({ onChangePassword }: { onChangePassword: () => void }) 
         <p className="truncate text-body font-medium text-fg" title={user?.email}>
           {user?.name}
         </p>
-        <p className="text-meta text-fg-2">{user ? roleLabels[user.role] : ''}</p>
+        <p className="text-meta text-fg-2">{user ? ROLE_LABELS[user.role] : ''}</p>
       </div>
       <div className="my-1 border-t border-line" />
       {canChangeOwnPassword(user?.role) && (

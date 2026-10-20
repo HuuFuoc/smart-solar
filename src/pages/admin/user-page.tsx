@@ -13,7 +13,7 @@ import { formatDateTime } from '@/features/pre-surveys/components/preSurveyDispl
 import { AccountFormDialog } from '@/features/users/components/AccountFormDialog'
 import { DeleteAccountDialog, RecoveryPanel, RolesPanel, StatusPanel } from '@/features/users/components/AccountPanels'
 import { activationMessage, rolesText, userStatusMeta } from '@/features/users/components/userDisplay'
-import { useAdminUserQuery } from '@/features/users/hooks/useAdminUsers'
+import { useAdminUserQuery } from '@/hooks/useAdminUsers'
 import { ROUTES, withId } from '@/routes/paths'
 import type { AdminUserDetail } from '@/types/res/adminUsersRes'
 
@@ -24,7 +24,7 @@ function TechnicianSummary({ user }: { user: AdminUserDetail }) {
       <PanelHeader
         title="Lịch kỹ thuật viên"
         action={
-          <ButtonLink to={withId(ROUTES.ADMIN.TECHNICIAN, user.id)} size="sm" icon="edit_calendar">
+          <ButtonLink to={withId(ROUTES.admin.technician, user.id)} size="sm" icon="edit_calendar">
             Cấu hình lịch
           </ButtonLink>
         }
@@ -144,7 +144,7 @@ export function AdminUserPage() {
               onOpenChange={setDeleting}
               onDeleted={() => {
                 setDeleting(false)
-                navigate(ROUTES.ADMIN.USERS)
+                navigate(ROUTES.admin.users)
               }}
             />
           </>

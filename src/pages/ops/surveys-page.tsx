@@ -12,7 +12,7 @@ import {
   useClaimSurveyRequestMutation,
   useMySurveyRequestsQuery,
   usePendingSurveyRequestsQuery,
-} from '@/features/pre-surveys/hooks/useSurveyRequests'
+} from '@/hooks/useSurveyRequests'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'

@@ -14,7 +14,7 @@ import {
   todayVn,
   vnDate,
 } from '@/features/scheduling/components/schedulingDisplay'
-import { useMyAppointmentsQuery } from '@/features/scheduling/hooks/useTechnicianJobs'
+import { useMyAppointmentsQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES, withId } from '@/routes/paths'
 import type { TechnicianAppointmentListItem } from '@/types/res/technicianAppointmentsRes'
 
@@ -61,7 +61,7 @@ export function TechJobsPage() {
           ) : undefined
         }
         actions={
-          <ButtonLink to={ROUTES.TECH.SCHEDULE} icon="calendar_month">
+          <ButtonLink to={ROUTES.tech.schedule} icon="calendar_month">
             Lịch làm việc
           </ButtonLink>
         }
@@ -105,7 +105,7 @@ export function TechJobsPage() {
                             </div>
                             <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
                               <Badge tone={tab === 'past' && status.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
-                              <ButtonLink to={withId(ROUTES.TECH.JOB, r.appointmentId)} size="sm" variant="soft">
+                              <ButtonLink to={withId(ROUTES.tech.job, r.appointmentId)} size="sm" variant="soft">
                                 {r.status === 'ASSIGNED' && tab === 'upcoming' ? 'Xem và nhận việc' : 'Xem chi tiết'}
                               </ButtonLink>
                             </div>

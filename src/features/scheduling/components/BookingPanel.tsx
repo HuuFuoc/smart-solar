@@ -6,7 +6,7 @@ import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { SlotPicker } from '@/features/scheduling/components/SlotPicker'
 import { formatAppointment, initialBookingDate, vnDate } from '@/features/scheduling/components/schedulingDisplay'
-import { useBookAppointmentMutation, useRescheduleAppointmentMutation } from '@/features/scheduling/hooks/useBooking'
+import { useBookAppointmentMutation, useRescheduleAppointmentMutation } from '@/hooks/useBooking'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { CustomerAppointmentView } from '@/types/res/customerSurveyRequestsRes'
 import type { SurveySlot } from '@/types/res/surveySlotsRes'

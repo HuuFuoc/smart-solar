@@ -93,7 +93,7 @@ export function LoginPage() {
               "email chưa xác thực"; để người dùng tự sang màn xác thực khi cần.
             */}
             <Link
-              to={`${ROUTES.VERIFY_EMAIL}${emailValue ? `?email=${encodeURIComponent(emailValue)}` : ''}`}
+              to={`${ROUTES.verifyEmail}${emailValue ? `?email=${encodeURIComponent(emailValue)}` : ''}`}
               className="mt-1 inline-block text-label-sm font-semibold underline"
             >
               {loginContent.notVerifiedLink}
@@ -139,7 +139,7 @@ export function LoginPage() {
             <label htmlFor="login-password" className="text-label-lg text-on-surface">
               {loginContent.passwordLabel} <RequiredMark />
             </label>
-            <Link to={ROUTES.FORGOT_PASSWORD} className="text-label-sm font-semibold text-accent-fg hover:underline">
+            <Link to={ROUTES.forgotPassword} className="text-label-sm font-semibold text-accent-fg hover:underline">
               {loginContent.forgotLink}
             </Link>
           </div>
@@ -206,7 +206,7 @@ export function LoginPage() {
 
       <div className="mt-space-md text-center">
         <span className="text-body-md text-on-surface-variant">{loginContent.noAccount}</span>
-        <Link to={ROUTES.REGISTER} className="text-label-lg font-bold text-accent-fg hover:underline">
+        <Link to={ROUTES.register} className="text-label-lg font-bold text-accent-fg hover:underline">
           {loginContent.registerLink}
         </Link>
       </div>

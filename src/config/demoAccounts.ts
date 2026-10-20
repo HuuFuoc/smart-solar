@@ -1,4 +1,4 @@
-import { roleLabels, USER_ROLES, type UserRole } from '@/config/roles'
+import { ROLE_LABELS, USER_ROLES, type UserRole } from '@/common/role'
 
 /*
  * Khối "Thử nhanh theo các vai trò" ở /login.
@@ -44,6 +44,6 @@ export const demoAccounts: DemoAccount[] = import.meta.env.DEV
       const email = readEnv(keys.email)
       const password = readEnv(keys.password)
       if (!email || !password) return []
-      return [{ role, roleLabel: roleLabels[role], description: DESCRIPTIONS[role], email, password }]
+      return [{ role, roleLabel: ROLE_LABELS[role], description: DESCRIPTIONS[role], email, password }]
     })
   : []

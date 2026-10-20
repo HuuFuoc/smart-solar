@@ -8,7 +8,8 @@ import { Segmented } from '@/components/common/ui/segmented'
 import { EmptyState, Skeleton } from '@/components/common/ui/states'
 import { CompassPicker, WithUnit } from '@/features/pre-surveys/components/AssessmentFields'
 import { HCM_COORDINATE_HINT, directionLabel, formatCoordinates, isInHcm, mapsUrl } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { MOUNTING_TYPES, formatKwh, formatOne, formatTwo, type MountingType } from '@/features/pre-surveys/components/simulationDisplay'
+import { MOUNTING_TYPES, type MountingType } from '@/common/simulation'
+import { formatKwh, formatOne, formatTwo } from '@/features/pre-surveys/components/simulationDisplay'
 import {
   DEFAULT_SYSTEM_LOSS_PERCENT,
   SPACING_FIELDS,
@@ -20,9 +21,9 @@ import {
   type SimulationForm,
 } from '@/features/pre-surveys/components/simulationForm'
 import { SimulationSkeleton, SimulationViewer } from '@/features/pre-surveys/components/SimulationViewer'
-import { useCreateSimulationMutation } from '@/features/pre-surveys/hooks/useSimulations'
+import { useCreateSimulationMutation } from '@/hooks/useSimulations'
 import { SOLAR_PANEL_QUERY } from '@/features/products/components/productDisplay'
-import { useProductsQuery } from '@/features/products/hooks/useProducts'
+import { useProductsQuery } from '@/hooks/useProducts'
 import { isApiError } from '@/services/api/errors'
 import type { PreSurveySurfaceView } from '@/types/res/preSurveySurfaceRes'
 import { cx } from '@/utils/cx'

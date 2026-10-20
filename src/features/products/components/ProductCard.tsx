@@ -11,7 +11,7 @@ export function ProductCard({ product }: { product: ProductResponse }) {
   )
   return (
     <Link
-      to={withId(ROUTES.PRODUCT_DETAIL, product.id ?? '')}
+      to={withId(ROUTES.product, product.id ?? '')}
       className="group flex h-full flex-col overflow-hidden rounded-container border border-line bg-canvas transition-colors hover:border-line-2"
     >
       <div className="aspect-[4/3] overflow-hidden bg-surface-2">

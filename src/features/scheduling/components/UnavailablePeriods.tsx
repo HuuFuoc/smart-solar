@@ -12,7 +12,7 @@ import {
   useAddUnavailablePeriodMutation,
   useRemoveUnavailablePeriodMutation,
   useUnavailablePeriodsQuery,
-} from '@/features/scheduling/hooks/useTechnicianAdmin'
+} from '@/hooks/useTechnicianAdmin'
 import { errorMessage } from '@/services/api/errors'
 import type { UnavailablePeriodView } from '@/types/res/adminTechniciansRes'
 

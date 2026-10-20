@@ -6,7 +6,7 @@ import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
 import { formatRelative, shortCode } from '@/features/pre-surveys/components/preSurveyDisplay'
 import { canBook, customerProgress, formatAppointment } from '@/features/scheduling/components/schedulingDisplay'
-import { useMyRequestsQuery } from '@/features/scheduling/hooks/useBooking'
+import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { ROUTES, withId } from '@/routes/paths'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 

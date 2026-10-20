@@ -9,7 +9,7 @@ import { PasswordInput } from '@/features/auth/components/AuthInput'
 import { PasswordRules } from '@/features/auth/components/PasswordRules'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
-import { useResetPasswordMutation } from '@/features/auth/hooks/useAuthMutations'
+import { useResetPasswordMutation } from '@/hooks/useAuthMutations'
 import { errorMessage } from '@/services/api/errors'
 import { cn } from '@/utils/cn'
 import { isStrongPassword, resetContent } from '@/data/auth'
@@ -65,7 +65,7 @@ export function ResetPasswordPage() {
   // Thành công thì hiện thông báo rồi về /login sau 2 giây.
   useEffect(() => {
     if (!done) return
-    const timer = window.setTimeout(() => navigate(ROUTES.LOGIN, { replace: true }), 2000)
+    const timer = window.setTimeout(() => navigate(ROUTES.login, { replace: true }), 2000)
     return () => window.clearTimeout(timer)
   }, [done, navigate])
 
@@ -103,7 +103,7 @@ export function ResetPasswordPage() {
           <div className="flex-1 text-body-sm">
             <p>{formError ?? resetContent.missingToken}</p>
             <Link
-              to={ROUTES.FORGOT_PASSWORD}
+              to={ROUTES.forgotPassword}
               className="mt-1 inline-block text-label-sm font-semibold underline"
             >
               {resetContent.requestNewLink}

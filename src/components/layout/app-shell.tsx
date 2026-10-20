@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router'
 import { ROUTES } from '@/routes/paths'
 import { type NavItem, type Portal } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
-import { canChangeOwnPassword, roleLabels } from '@/config/roles'
+import { ROLE_LABELS } from '@/common/role'
+import { canChangeOwnPassword } from '@/config/roles'
 import { cx } from '@/utils/cx'
 import { THEME_OPTIONS, useTheme } from '@/hooks/useTheme'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -514,13 +515,13 @@ function SessionBlock({ compact, onExpandRail }: { compact: boolean; onExpandRai
   const name = user?.name ?? ''
   // Rail chỉ rộng 208px: khi chưa có họ tên (tên = email) thì ghi phần trước "@", email đầy đủ nằm trong tầng con.
   const shortName = user?.email && name === user.email ? name.split('@')[0]! : name
-  const role = user ? roleLabels[user.role] : ''
+  const role = user ? ROLE_LABELS[user.role] : ''
   const current = THEMES.find((t) => t.value === theme) ?? THEMES[0]!
   const expanded = open && !compact
 
   async function handleSignOut() {
     await signOut()
-    navigate(ROUTES.LOGIN, { replace: true })
+    navigate(ROUTES.login, { replace: true })
   }
 
   function onAccountClick() {

@@ -149,9 +149,13 @@ src/
   styles/globals.css           # @import "tailwindcss" + @theme tokens; landing.css cho trang chủ
   routes/
     router.tsx                 # createBrowserRouter: RootLayout + publicRoutes + protectedRoutes + 404
-    publicRoutes.tsx           # route không cần đăng nhập: /, /coming-soon, màn xác thực, /403, /styleguide
-    protectedRoutes.tsx        # 6 portal, mỗi portal bọc <RequireRole role="…"> (children lazy)
-    paths.ts                   # ROUTES, withId, techTaskPath, surveyPath…
+    publicRoutes.tsx           # route không cần đăng nhập: /, /products, /coming-soon, màn xác thực, /403, /styleguide
+    protectedRoutes.tsx        # mỗi portal một lời gọi portal({ role, path, Layout, start, pages }): RequireRole + layout
+                               # + khung chờ + index/đường lạ chuyển về `start`; /field chuyển về /tech
+    lazyPage.ts                # page(() => import('@/pages/…'), 'TênTrang'): khai báo ở đầu file route
+                               # (const TênTrang = page(…)), route ghi `lazy: TênTrang`; giữ tách chunk mỗi trang
+    paths.ts                   # ROUTES (khoá camelCase, mỗi portal một nhóm, trang chủ portal là `home`; trong nhóm:
+                               # màn có route ở trên, màn mock đã ẩn dưới dòng "Màn mock đã ẩn"), withId, techTaskPath…
     RequireRole.tsx            # route bảo vệ theo vai trò + AuthLoadingScreen
     notFound.ts                # ném Response 404 cho errorElement
   context/
@@ -164,8 +168,7 @@ src/
     common/stitch-ui/          # bộ Stitch (PascalCase, barrel index.ts): StatusBadge, MetricCard, DataTable, TaskCard, Timeline, ChecklistItem, PhotoGrid…
     common/tech/               # khối dùng ở nhiều nghiệp vụ kỹ thuật viên: SectionCard, ActionDock, JobHeaderCard, MeasurementCard…
   features/
-    auth/                      # components/ (AuthCard, PasswordRules, ForbiddenCard, SessionExpiredModal, ChangePasswordDialog…),
-                               # hooks/useAuthMutations.ts, services/authService.ts + me.ts
+    auth/                      # components/ (AuthCard, PasswordRules, ForbiddenCard, SessionExpiredModal, ChangePasswordDialog…)
     landing/components/        # section trang chủ, classes.ts, photo, reveal
     surveys/ installations/ tasks/ warranty/   # components/ riêng của từng nghiệp vụ kỹ thuật viên
     dashboard/                 # components/ chỉ dùng ở màn tổng quan admin và kỹ thuật viên
@@ -173,13 +176,18 @@ src/
   pages/                       # màn gắn với route: admin/ tech/ customer/ ops/ field/ manage/ auth/ public/ + trang lẻ
   data/                        # dữ liệu tĩnh cho UI: mock từng màn (surveys.ts, tasks.ts, session.ts…, customer.ts, manage.ts…)
                                # và nội dung chữ (auth.ts, landing.ts)
-  services/api/                # client.ts (axios, mở wrapper, refresh), errors.ts (ApiError), tokens.ts
+  services/                    # API của mọi nghiệp vụ, mỗi file một nhóm: authService.ts, me.ts, productService.ts,
+                               # preSurveyService.ts, bookingService.ts, adminUserService.ts…
+    api/                       # client.ts (axios, mở wrapper, refresh), errors.ts (ApiError), tokens.ts
   types/                       # sinh bằng `npm run gen:api` (scripts/gen-api-types.mjs), KHÔNG sửa tay
     req/                       # request DTO theo tag swagger: authReq.ts, …
     res/                       # response DTO: apiRes.ts (ApiResponse<T>, ApiErrorBody), authRes.ts, …
-  config/                      # portals.ts (menu của mọi portal), roles.ts, demoAccounts.ts
-  hooks/                       # useMockQuery, useTheme, useElementWidth (bề rộng khung cho SVG vẽ bằng pixel),
-                               # useViewportHeight (chiều cao khung nhìn cho hình vẽ cao vừa màn hình)
+  common/                      # enum của app, mỗi nghiệp vụ một file: preSurvey.ts, simulation.ts, product.ts, user.ts,
+                               # scheduling.ts, role.ts (USER_ROLES, ROLE_LABELS, ROLE_ALIASES). CHỈ hằng số, không hàm
+  config/                      # portals.ts (menu của mọi portal), roles.ts (hàm theo vai trò), demoAccounts.ts
+  hooks/                       # hook react-query của mọi nghiệp vụ (useAuthMutations, useProducts, usePreSurveys, useBooking,
+                               # useAdminUsers…) và hook giao diện: useMockQuery, useTheme, useElementWidth (bề rộng khung cho
+                               # SVG vẽ bằng pixel), useViewportHeight (chiều cao khung nhìn cho hình vẽ cao vừa màn hình)
   utils/                       # cn, cx, format, img, jwt
 public/placeholders/           # thay cho ảnh lh3.googleusercontent.com
 ```
@@ -188,9 +196,15 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
 
 - `pages/` chỉ ghép UI và gọi hook. Component dùng ở MỘT nghiệp vụ nằm trong
   `features/<nghiệp vụ>/components/`; dùng ở nhiều nghiệp vụ thì vào `components/common/`.
-- Mỗi feature chỉ có các thư mục con `components/ hooks/ services/` thật sự cần.
-  API của nghiệp vụ ở `features/<nghiệp vụ>/services/`; `services/api/` chỉ giữ HTTP client dùng chung.
+- Feature chỉ còn `components/`. API của mọi nghiệp vụ gom ở `src/services/<tên>Service.ts`, hook react-query ở
+  `src/hooks/use<Tên>.ts` (20/10/2026, trước đó nằm trong `features/<nghiệp vụ>/services/` và `.../hooks/`);
+  `services/api/` chỉ giữ HTTP client dùng chung. Import qua `@/services/…` và `@/hooks/…`.
   Một trách nhiệm chỉ ở một nơi.
+- Enum (20/10/2026): tập giá trị cố định của một trường (mã backend hoặc lựa chọn trên giao diện) kèm nhãn tiếng Việt / màu
+  Badge / gợi ý nằm ở `src/common/<nghiệp vụ>.ts`, đặt tên IN HOA số nhiều (`PRODUCT_STATUSES`, `ROLE_CODES`,
+  `SIMULATION_WARNINGS`). Hàm tra nhãn và định dạng (`productStatusMeta`, `formatPower`…) ở
+  `features/<nghiệp vụ>/components/*Display.ts`, đọc bảng từ `common/`. Không dùng `enum` của TypeScript
+  (`erasableSyntaxOnly`); kiểu giá trị lấy từ `types/` (union sinh từ swagger).
 - DTO nằm ở `src/types/`: request trong `types/req/<nghiệp vụ>Req.ts`, response trong
   `types/res/<nghiệp vụ>Res.ts`. Các file này sinh từ swagger (không tự đoán field, không sửa tay);
   service và hook import kiểu từ đây. Ngoại lệ: swagger của tag Customers, PreSurveys, SurveyRequests, PreSurveySurface,
@@ -204,7 +218,7 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
   JWT; không đụng DB nào.
 - Nghiệp vụ chưa có endpoint đọc dữ liệu từ `data/*.ts` và bị ẩn khỏi menu/route (mục dưới). Khi backend có
-  endpoint: thêm `types/req|res/<nghiệp vụ>*.ts`, rồi `services/` + `hooks/` vào feature đó, bỏ file trong `data/`,
+  endpoint: thêm `types/req|res/<nghiệp vụ>*.ts`, rồi `src/services/<tên>Service.ts` + `src/hooks/use<Tên>.ts`, bỏ file trong `data/`,
   rồi mở lại route + mục menu.
 
 ## Chỉ hiện màn có dữ liệu thật (05/10/2026)
@@ -240,8 +254,8 @@ nhập làm nguồn chính + kéo thả vật cản.
 - Địa điểm (`SiteFields` ở `AssessmentFields.tsx`): dự án chỉ nhận công trình ở TP.HCM (người dùng 10/10/2026). Địa chỉ 2 cấp
   theo đơn vị hành chính từ 01/07/2025 (người dùng chốt): tỉnh cố định "Thành phố Hồ Chí Minh" (ô chỉ đọc), phường/xã bắt buộc,
   chọn bằng `Combobox` từ API công khai provinces.open-api.vn v2 (`/api/v2/p/79?depth=2`, 168 phường/xã/đặc khu, gồm Bình
-  Dương và Bà Rịa – Vũng Tàu cũ) – backend không có API địa giới nên FE gọi thẳng bằng fetch (`services/provinceService.ts`,
-  `hooks/useHcmWards.ts`, tải một lần mỗi phiên; địa chỉ gốc ở `VITE_PROVINCES_API_URL`, không khai thì dùng
+  Dương và Bà Rịa – Vũng Tàu cũ) – backend không có API địa giới nên FE gọi thẳng bằng fetch (`src/services/provinceService.ts`,
+  `src/hooks/useHcmWards.ts`, tải một lần mỗi phiên; địa chỉ gốc ở `VITE_PROVINCES_API_URL`, không khai thì dùng
   `https://provinces.open-api.vn/api/v2`); không còn ô quận/huyện (`district` gửi null). API lỗi thì vẫn gõ tay được
   + nút thử lại. Địa điểm đã lưu mà không sửa gì thì đi tiếp, không kiểm tra lại (địa chỉ cũ khai tự do trước ngày đó không
   bị bắt chọn lại và tạo bản nháp mới). Toạ độ nằm ngoài khung TP.HCM (`isInHcm` ở `preSurveyDisplay.ts`) thì cảnh báo vàng,
@@ -269,7 +283,8 @@ nhập làm nguồn chính + kéo thả vật cản.
   "Mô phỏng chính" (không có API chọn lại); `isStale` = tính theo mặt lắp cũ.
 - Kết quả (`SimulationResult.tsx`, dùng chung khách hàng / sales, nạp qua `SimulationViewer.tsx`): số tấm, kWp, kWh/năm
   (null là "chưa có dữ liệu", không bao giờ 0), mặt bằng 2D / 3D, `EnergyChart.tsx` (cột một chuỗi theo skill dataviz, tooltip +
-  phím mũi tên + bảng số liệu), cảnh báo kỹ thuật và giới hạn dịch theo mã ở `simulationDisplay.ts` (mã lạ in câu gốc của BE).
+  phím mũi tên + bảng số liệu), cảnh báo kỹ thuật và giới hạn dịch theo mã (bảng mã ở `common/simulation.ts`, hàm ở `simulationDisplay.ts`; mã lạ in câu
+  gốc của BE).
   3D `SimulationScene.tsx` dựng thẳng từ toạ độ BE (E/N/U, trục Z lên, `camera.up = (0,0,1)`, tấm pin là một `InstancedMesh`
   hộp đơn vị mặt trước ở z = 0), `three` + `@react-three/fiber` nạp bằng `React.lazy`. Lịch sử các lần chạy: `SimulationHistory.tsx`
   (cao khoảng ba dòng rưỡi rồi cuộn trong khung, lần đang xem luôn cuộn tới; tiêu đề có số lần chạy – người dùng 10/10/2026).
@@ -296,7 +311,7 @@ nhập làm nguồn chính + kéo thả vật cản.
 **Luồng 1: đặt lịch khảo sát → phân công → kỹ thuật viên nhận việc** (backend `main` 4d12e4d, nối 12/10/2026; tài liệu bàn
 giao BE "SmartSolar – Tài liệu bàn giao tích hợp FE/BE" 12/10/2026, contract đối chiếu bằng code backend chứ không theo bảng
 "Agent/Hardening" của tài liệu). Hiển thị trong `features/scheduling` (`schedulingDisplay.ts`: giờ Việt Nam, nhãn trạng thái,
-đường đi, lý do không xếp được), tài khoản trong `features/users`. Luồng dừng ở "Nhận việc": không có "Hoàn thành khảo sát".
+đường đi, lý do không xếp được; bảng mã ở `common/scheduling.ts`), tài khoản trong `features/users`. Luồng dừng ở "Nhận việc": không có "Hoàn thành khảo sát".
 - Giờ nghiệp vụ là giờ Việt Nam bất kể máy: hiển thị qua `Intl` với `timeZone: 'Asia/Ho_Chi_Minh'` (cả `formatDateTime` cũ),
   ngày gửi API là chuỗi `YYYY-MM-DD` tính theo giờ Việt Nam (không `new Date('2026-10-20')`), giờ hẹn gửi kèm `+07:00`.
 - Khách `/customer/requests(/:id)` (`pages/customer/request(s)-page.tsx`): gửi đánh giá xong hộp thoại dẫn thẳng tới "Chọn giờ
@@ -327,8 +342,8 @@ giao BE "SmartSolar – Tài liệu bàn giao tích hợp FE/BE" 12/10/2026, con
   PVGIS giả, email bắt lại) sau một proxy cổng 8090, rồi `API_PROXY_TARGET=http://localhost:8090 npm run dev -- --port 3000`.
   Factory dùng một kết nối SQLite chung nên proxy phải phục vụ tuần tự (nhiều request song song làm EF ném NullReference).
 
-Mở lại một màn: thêm route trong `routes/protectedRoutes.tsx` và mục menu trong `config/portals.ts`
-(mọi portal). Sidebar/header không đặt số liệu giả (tên người dùng,
+Mở lại một màn: khai báo trang ở đầu `routes/protectedRoutes.tsx`, thêm một dòng vào `pages` của portal, chuyển đường dẫn của nó lên
+phần "có route" trong `routes/paths.ts`, rồi thêm mục menu trong `config/portals.ts` (mọi portal). Sidebar/header không đặt số liệu giả (tên người dùng,
 thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
 
 ## Layout chung
@@ -457,7 +472,7 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
   dùng câu tiếng Việt theo HTTP status.
 - **Role**: `AuthTokensResponse` không có role → decode claim `role` trong accessToken
   bằng `jwt-decode` (`src/utils/jwt.ts`) rồi map qua `ROLE_ALIASES` trong
-  `src/config/roles.ts` về `customer | technician | sales | manager | admin`.
+  `src/common/role.ts` (hàm `parseRole` ở `src/config/roles.ts`) về `customer | technician | sales | manager | admin`.
   Không đọc được role thì coi như đăng nhập hỏng, không đoán bừa.
 - **Khôi phục phiên**: mở app mà còn `refreshToken` thì gọi refresh trước;
   `status = 'loading'` và `RequireRole` (`src/routes/RequireRole.tsx`) hiện `AuthLoadingScreen` để không đá người dùng
@@ -466,16 +481,16 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
   của nó – `admin` → `/admin`, `technician` → `/tech`, `sales` → `/ops`, `manager` → `/manage`,
   `customer` → `/customer`. `<RequireRole role="…">`: chưa đăng nhập → `/login` (nhớ trang đích),
   sai vai trò → `/403`.
-- **API**: 9 hàm trong `src/features/auth/services/authService.ts` (DTO ở `src/types/req/authReq.ts` và `src/types/res/authRes.ts`) (register, verify-email, resend-verification,
+- **API**: 9 hàm trong `src/services/authService.ts` (DTO ở `src/types/req/authReq.ts` và `src/types/res/authRes.ts`) (register, verify-email, resend-verification,
   login, refresh, logout, forgot-password, reset-password, change-password); mutation của
-  react-query trong `src/features/auth/hooks/useAuthMutations.ts`; login/logout nằm trong `AuthProvider`
+  react-query trong `src/hooks/useAuthMutations.ts`; login/logout nằm trong `AuthProvider`
   vì còn phải lưu token.
 - **Tài khoản mẫu** ở `/login` chỉ hiện khi `import.meta.env.DEV` và lấy từ
   `.env.development.local` (không commit) – xem `src/config/demoAccounts.ts`.
 - **CHỜ BACKEND**: swagger chưa có endpoint `/me` (đọc hồ sơ người đăng nhập) và token thật chỉ có `sub`, `email`, role
   (dò lại 08/10/2026), nên tên hiển thị trên nút tài khoản tạm là email. Tên lấy theo thứ tự: `/me` → claim
   `fullName` / `name` / claim name của .NET / `family_name` + `given_name` → email. Khi có `/me`, chỉ cần điền thân
-  hàm `fetchCurrentUser()` trong `src/features/auth/services/me.ts`; backend thêm claim họ tên thì tên tự hiện.
+  hàm `fetchCurrentUser()` trong `src/services/me.ts`; backend thêm claim họ tên thì tên tự hiện.
 
 ## Biến thể đã chốt
 

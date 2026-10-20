@@ -8,13 +8,14 @@ import { Checkbox, Field, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { formatMoment } from '@/features/scheduling/components/schedulingDisplay'
-import { ROLE_OPTIONS, activationMessage, rolesText, userStatusMeta } from '@/features/users/components/userDisplay'
+import { ROLE_CODES } from '@/common/user'
+import { activationMessage, rolesText, userStatusMeta } from '@/features/users/components/userDisplay'
 import {
   useChangeUserStatusMutation,
   useDeleteUserMutation,
   useReplaceUserRolesMutation,
   useSendPasswordResetMutation,
-} from '@/features/users/hooks/useAdminUsers'
+} from '@/hooks/useAdminUsers'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { AccountActiveWork, AdminUserDetail } from '@/types/res/adminUsersRes'
 
@@ -85,7 +86,7 @@ export function RolesPanel({ user, readOnly }: { user: AdminUserDetail; readOnly
       <PanelHeader title="Vai trò" description="Đổi vai trò làm mọi phiên đang mở của tài khoản này hết hiệu lực ngay; người dùng đăng nhập lại." />
       <PanelBody className="space-y-4">
         <div className="grid gap-2 sm:grid-cols-2">
-          {ROLE_OPTIONS.map((r) => (
+          {ROLE_CODES.map((r) => (
             <Checkbox
               key={r.value}
               label={r.label}

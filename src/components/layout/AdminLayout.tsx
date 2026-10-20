@@ -3,10 +3,10 @@ import { Outlet } from 'react-router'
 import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
-import { useProductsQuery } from '@/features/products/hooks/useProducts'
+import { useProductsQuery } from '@/hooks/useProducts'
 import { technicianReadiness } from '@/features/scheduling/components/schedulingDisplay'
-import { useTechniciansQuery } from '@/features/scheduling/hooks/useTechnicianAdmin'
-import { useAdminUsersQuery } from '@/features/users/hooks/useAdminUsers'
+import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
+import { useAdminUsersQuery } from '@/hooks/useAdminUsers'
 import { ROUTES } from '@/routes/paths'
 
 /*
@@ -24,9 +24,9 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
     <AppShell
       portal={PORTALS.admin}
       badges={{
-        [ROUTES.ADMIN.USERS]: { value: userTotal },
-        [ROUTES.ADMIN.TECHNICIANS]: { value: missingBase || undefined, attention: true },
-        [ROUTES.ADMIN.PRODUCTS]: { value: productTotal },
+        [ROUTES.admin.users]: { value: userTotal },
+        [ROUTES.admin.technicians]: { value: missingBase || undefined, attention: true },
+        [ROUTES.admin.products]: { value: productTotal },
       }}
     >
       {children ?? <Outlet />}

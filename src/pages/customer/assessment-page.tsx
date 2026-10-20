@@ -73,10 +73,10 @@ import {
   useSubmitPreSurveyMutation,
   useSurfaceQuery,
   useUpdatePreSurveyMutation,
-} from '@/features/pre-surveys/hooks/usePreSurveys'
-import { useHcmWardsQuery } from '@/features/pre-surveys/hooks/useHcmWards'
-import { CREATE_SIMULATION_KEY, useSimulationsQuery } from '@/features/pre-surveys/hooks/useSimulations'
-import { getSurface } from '@/features/pre-surveys/services/preSurveyService'
+} from '@/hooks/usePreSurveys'
+import { useHcmWardsQuery } from '@/hooks/useHcmWards'
+import { CREATE_SIMULATION_KEY, useSimulationsQuery } from '@/hooks/useSimulations'
+import { getSurface } from '@/services/preSurveyService'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import { cx } from '@/utils/cx'

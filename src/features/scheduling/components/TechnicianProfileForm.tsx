@@ -8,7 +8,7 @@ import { toNumber } from '@/features/pre-surveys/components/assessmentForm'
 import { isInHcm, mapsUrl } from '@/features/pre-surveys/components/preSurveyDisplay'
 import { ConflictList } from '@/features/scheduling/components/ConflictList'
 import { conflictsOf } from '@/features/scheduling/components/schedulingDisplay'
-import { useUpsertTechnicianProfileMutation } from '@/features/scheduling/hooks/useTechnicianAdmin'
+import { useUpsertTechnicianProfileMutation } from '@/hooks/useTechnicianAdmin'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { TechnicianProfileView } from '@/types/res/adminTechniciansRes'
 

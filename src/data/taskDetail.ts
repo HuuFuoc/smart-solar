@@ -59,13 +59,13 @@ export type TaskDetail = {
 }
 
 const surveyCrumbs = (code: string): Crumb[] => [
-  { label: 'Phiếu công việc', href: ROUTES.TECH.TASKS },
-  { label: 'Khảo sát', href: ROUTES.TECH.SURVEYS },
+  { label: 'Phiếu công việc', href: ROUTES.tech.tasks },
+  { label: 'Khảo sát', href: ROUTES.tech.surveys },
   { label: code },
 ]
 
 const jobCrumbs = (section: string, href: string, code: string): Crumb[] => [
-  { label: 'Phiếu công việc', href: ROUTES.TECH.TASKS },
+  { label: 'Phiếu công việc', href: ROUTES.tech.tasks },
   { label: section, href },
   { label: code },
 ]
@@ -253,7 +253,7 @@ const ord8821: TaskDetail = {
 const ord8824: TaskDetail = {
   id: 'ORD-8824',
   code: '#ORD-8824',
-  breadcrumb: jobCrumbs('Lắp đặt', ROUTES.TECH.INSTALLATIONS, '#ORD-8824'),
+  breadcrumb: jobCrumbs('Lắp đặt', ROUTES.tech.installations, '#ORD-8824'),
   actions: { ...actions, dossier: { label: 'Mở hồ sơ lắp đặt', icon: 'menu_book' } },
   summary: {
     icon: 'solar_power',
@@ -342,7 +342,7 @@ const ord8824: TaskDetail = {
 const ord8827: TaskDetail = {
   id: 'ORD-8827',
   code: '#ORD-8827',
-  breadcrumb: jobCrumbs('Bảo hành & bảo trì', ROUTES.TECH.WARRANTY, '#ORD-8827'),
+  breadcrumb: jobCrumbs('Bảo hành & bảo trì', ROUTES.tech.warranty, '#ORD-8827'),
   actions: { ...actions, dossier: { label: 'Mở hồ sơ bảo hành', icon: 'menu_book' } },
   summary: {
     icon: 'shield_with_heart',
@@ -422,7 +422,7 @@ const ord8827: TaskDetail = {
 const ord8819: TaskDetail = {
   id: 'ORD-8819',
   code: '#ORD-8819',
-  breadcrumb: jobCrumbs('Bảo hành & bảo trì', ROUTES.TECH.WARRANTY, '#ORD-8819'),
+  breadcrumb: jobCrumbs('Bảo hành & bảo trì', ROUTES.tech.warranty, '#ORD-8819'),
   actions: { ...actions, dossier: { label: 'Mở biên bản dịch vụ', icon: 'menu_book' } },
   summary: {
     icon: 'tune',
@@ -522,7 +522,7 @@ const ord8819: TaskDetail = {
 const ord8830: TaskDetail = {
   id: 'ORD-8830',
   code: '#ORD-8830',
-  breadcrumb: jobCrumbs('Bảo hành & bảo trì', ROUTES.TECH.WARRANTY, '#ORD-8830'),
+  breadcrumb: jobCrumbs('Bảo hành & bảo trì', ROUTES.tech.warranty, '#ORD-8830'),
   actions: { ...actions, dossier: { label: 'Mở hồ sơ bảo hành', icon: 'menu_book' } },
   summary: {
     icon: 'build_circle',

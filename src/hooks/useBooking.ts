@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as bookingService from '@/features/scheduling/services/bookingService'
+import * as bookingService from '@/services/bookingService'
 import type { ApiError } from '@/services/api/errors'
 import type { BookSurveyAppointmentRequest } from '@/types/req/customerSurveyRequestsReq'
 import type {

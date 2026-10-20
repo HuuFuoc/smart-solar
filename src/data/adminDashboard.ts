@@ -21,9 +21,9 @@ export const adminDashboardHeader = {
 }
 
 export const quickCreateItems = [
-  { key: 'user', icon: 'person_add', label: 'Tài khoản người dùng', href: ROUTES.ADMIN.USERS },
-  { key: 'sku', icon: 'inventory_2', label: 'Sản phẩm (SKU)', href: ROUTES.ADMIN.PRODUCTS },
-  { key: 'doc', icon: 'upload_file', label: 'Tài liệu tri thức', href: ROUTES.ADMIN.KNOWLEDGE_BASE },
+  { key: 'user', icon: 'person_add', label: 'Tài khoản người dùng', href: ROUTES.admin.users },
+  { key: 'sku', icon: 'inventory_2', label: 'Sản phẩm (SKU)', href: ROUTES.admin.products },
+  { key: 'doc', icon: 'upload_file', label: 'Tài liệu tri thức', href: ROUTES.admin.knowledgeBase },
 ]
 
 /** Footer của từng thẻ KPI khác nhau nên mô tả bằng union. */
@@ -196,7 +196,7 @@ export const userDistribution = {
   title: 'Cơ cấu người dùng',
   total: 1428,
   linkLabel: 'Mở danh sách người dùng',
-  linkHref: ROUTES.ADMIN.USERS,
+  linkHref: ROUTES.admin.users,
   segments: [
     { key: 'homeowners', label: 'Khách hàng', count: 1120, percent: 78.4, colorClass: 'bg-primary' },
     { key: 'sales', label: 'Nhân viên kinh doanh', count: 84, percent: 5.8, colorClass: 'bg-secondary' },
@@ -214,28 +214,28 @@ export const launchpads = {
       tone: 'primary',
       title: 'Thêm nhân sự',
       ctaLabel: 'Mở trang người dùng',
-      href: ROUTES.ADMIN.USERS,
+      href: ROUTES.admin.users,
     },
     {
       icon: 'tune',
       tone: 'secondary',
       title: 'Cấu hình tham số sản lượng',
       ctaLabel: 'Mở cấu hình kỹ thuật',
-      href: ROUTES.ADMIN.TECH_CONFIG,
+      href: ROUTES.admin.techConfig,
     },
     {
       icon: 'auto_stories',
       tone: 'primary-container',
       title: 'Bổ sung tài liệu cho trợ lý AI',
       ctaLabel: 'Mở kho tri thức',
-      href: ROUTES.ADMIN.KNOWLEDGE_BASE,
+      href: ROUTES.admin.knowledgeBase,
     },
     {
       icon: 'policy',
       tone: 'tertiary',
       title: 'Rà soát quyền theo vai trò',
       ctaLabel: 'Mở bảng phân quyền',
-      href: ROUTES.ADMIN.ROLES,
+      href: ROUTES.admin.roles,
     },
   ] satisfies QuickLaunchCardProps[],
 }

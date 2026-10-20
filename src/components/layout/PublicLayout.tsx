@@ -16,17 +16,17 @@ import { footer, header, projects, trust } from '@/data/landing'
  * Header không có menu theo giai đoạn (khảo sát, báo giá, thi công…): điều hướng đặt tên theo
  * giai đoạn đọc thành quy trình. Chỉ link tới danh mục sản phẩm, phần công trình và phần năng lực thi công.
  */
-const capabilityLink = { pathname: ROUTES.HOME, hash: `#${trust.id}` }
-const projectsLink = { pathname: ROUTES.HOME, hash: `#${projects.id}` }
+const capabilityLink = { pathname: ROUTES.home, hash: `#${trust.id}` }
+const projectsLink = { pathname: ROUTES.home, hash: `#${projects.id}` }
 
 export function PublicLayout() {
   // Ghi chú nguồn giá điện chỉ đúng với trang chủ (nơi có biểu giá).
-  const onHome = useLocation().pathname === ROUTES.HOME
+  const onHome = useLocation().pathname === ROUTES.home
   // Đã đăng nhập: thay "Đăng nhập" bằng đường vào trang làm việc, ẩn nút đăng ký.
   const { user } = useAuth()
   const account = user
     ? { to: homePathForRole(user.role), label: 'Vào trang làm việc' }
-    : { to: ROUTES.LOGIN, label: header.login }
+    : { to: ROUTES.login, label: header.login }
   return (
     <div className="public-shell flex min-h-screen flex-col bg-canvas font-vn text-fg">
       <a
@@ -40,7 +40,7 @@ export function PublicLayout() {
         <div className={cx('flex h-14 items-center justify-between gap-4 lg:h-16', LANDING_CONTAINER)}>
           {/* Logo người dùng cung cấp (public/images/Logo-navbar.png), bản WebP đã cắt viền trong suốt. Chữ "Smart" màu
               navy chìm trên nền tối nên ở dark mode logo đặt trên một nền sáng. */}
-          <Link to={ROUTES.HOME} className="flex items-center rounded-control dark:bg-fg dark:px-2 dark:py-1">
+          <Link to={ROUTES.home} className="flex items-center rounded-control dark:bg-fg dark:px-2 dark:py-1">
             <img
               src="/images/logo-64h.webp"
               srcSet="/images/logo-64h.webp 262w, /images/logo-96h.webp 394w"
@@ -54,7 +54,7 @@ export function PublicLayout() {
           <nav aria-label="Liên kết chính" className="flex items-center gap-6">
             {/* Trang đang mở: chữ đậm màu chính + gạch chân màu thương hiệu, không chỉ đậm hơn một chút. */}
             <NavLink
-              to={ROUTES.PRODUCTS}
+              to={ROUTES.products}
               className={({ isActive }) =>
                 cx(
                   'tap ld-body underline-offset-8 hover:text-fg',
@@ -74,7 +74,7 @@ export function PublicLayout() {
               {account.label}
             </Link>
             {!user && (
-              <Link to={ROUTES.REGISTER} className={ctaClass('md', 'hidden lg:inline-flex')}>
+              <Link to={ROUTES.register} className={ctaClass('md', 'hidden lg:inline-flex')}>
                 {header.register}
               </Link>
             )}
@@ -103,7 +103,7 @@ export function PublicLayout() {
             className="h-7 w-auto self-start dark:rounded-control dark:bg-fg dark:px-2 dark:py-1"
           />
           <nav aria-label="Liên kết cuối trang" className="flex gap-6">
-            <Link to={ROUTES.PRODUCTS} className={cx(TEXT_LINK, 'inline-block py-1')}>
+            <Link to={ROUTES.products} className={cx(TEXT_LINK, 'inline-block py-1')}>
               {header.products}
             </Link>
             <Link to={projectsLink} className={cx(TEXT_LINK, 'inline-block py-1')}>

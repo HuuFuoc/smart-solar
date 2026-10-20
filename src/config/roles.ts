@@ -1,37 +1,7 @@
+import { ROLE_ALIASES, ROLE_PRIORITY, type UserRole } from '@/common/role'
 import { ROUTES } from '@/routes/paths'
 
-/** 5 vai trò của hệ thống. */
-export const USER_ROLES = ['customer', 'technician', 'sales', 'manager', 'admin'] as const
-
-export type UserRole = (typeof USER_ROLES)[number]
-
-/** Nhãn tiếng Việt – dùng cho chip vai trò và trang /403. */
-export const roleLabels: Record<UserRole, string> = {
-  customer: 'Khách hàng',
-  technician: 'Kỹ thuật viên',
-  sales: 'Kinh doanh',
-  manager: 'Quản lý',
-  admin: 'Quản trị viên',
-}
-
-/*
- * Giá trị claim `role` trong JWT → vai trò của web.
- * So khớp không phân biệt hoa thường; thêm vài biến thể hay gặp phía .NET.
- * Nếu backend phát giá trị khác, bổ sung vào bảng này (chỉ sửa 1 chỗ).
- */
-const ROLE_ALIASES: Record<string, UserRole> = {
-  customer: 'customer',
-  user: 'customer',
-  homeowner: 'customer',
-  technician: 'technician',
-  tech: 'technician',
-  sales: 'sales',
-  salesperson: 'sales',
-  manager: 'manager',
-  admin: 'admin',
-  administrator: 'admin',
-  systemadmin: 'admin',
-}
+/* Hàm theo vai trò của phiên đăng nhập; bảng vai trò, nhãn và bí danh claim ở common/role.ts. */
 
 /*
  * Ai được tự đổi mật khẩu trong giao diện (quyết định 08/10/2026): chỉ khách hàng. Tài khoản nội bộ (sales, kỹ thuật
@@ -41,9 +11,7 @@ export function canChangeOwnPassword(role: UserRole | undefined) {
   return role === 'customer'
 }
 
-/** Khi JWT có nhiều role, lấy vai trò quyền cao nhất theo thứ tự này. */
-const ROLE_PRIORITY: UserRole[] = ['admin', 'manager', 'sales', 'technician', 'customer']
-
+/** Chuẩn hoá giá trị claim để tra ROLE_ALIASES: không phân biệt hoa thường, bỏ khoảng trắng, "_" và "-". */
 function normalize(value: string) {
   return value.trim().toLowerCase().replace(/[\s_-]/g, '')
 }
@@ -67,9 +35,9 @@ export function parseRole(value: unknown): UserRole | null {
 export function homePathForRole(role: UserRole): string {
   switch (role) {
     case 'admin':
-      return ROUTES.ADMIN.DASHBOARD
+      return ROUTES.admin.home
     case 'technician':
-      return ROUTES.TECH.DASHBOARD
+      return ROUTES.tech.home
     case 'sales':
       return ROUTES.ops.home
     case 'manager':
