@@ -1,5 +1,5 @@
-import type { TimelineEntry } from '@/features/tasks/components/VerticalTimeline'
-import type { WorkOrderFact, WorkOrderMetric } from '@/features/tasks/components/WorkOrderHeaderCard'
+import type { TimelineEntry } from '@/features/tasks/VerticalTimeline'
+import type { WorkOrderFact, WorkOrderMetric } from '@/features/tasks/WorkOrderHeaderCard'
 import type { Crumb } from '@/components/common/stitch-ui/PageHeader'
 import type { StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 import type { TimelineStepProps } from '@/components/common/stitch-ui/Timeline'

@@ -1,7 +1,7 @@
 /*
  * Enum của mô phỏng (khách hàng và sales dùng chung). Backend trả mã ổn định kèm câu tiếng Anh: mã đã biết
  * (SimulationConstants.cs, InstallationModels.cs, EnergyContracts.cs, SimulationDocuments.cs của image 09/10/2026) dịch
- * sang tiếng Việt ở đây; hàm tra nhãn ở features/pre-surveys/components/simulationDisplay.ts, mã lạ in câu gốc của backend.
+ * sang tiếng Việt ở đây; hàm tra nhãn ở features/pre-surveys/simulationDisplay.ts, mã lạ in câu gốc của backend.
  */
 
 export type MountingType = 'FLUSH' | 'RACK'

@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router'
-import { CompletedTaskCard } from '@/features/dashboard/components/CompletedTaskCard'
-import { ScheduleList } from '@/features/dashboard/components/ScheduleList'
-import { SectionHeading } from '@/features/dashboard/components/SectionHeading'
-import { StatRibbon } from '@/features/dashboard/components/StatRibbon'
+import { CompletedTaskCard } from '@/features/dashboard/CompletedTaskCard'
+import { ScheduleList } from '@/features/dashboard/ScheduleList'
+import { SectionHeading } from '@/features/dashboard/SectionHeading'
+import { StatRibbon } from '@/features/dashboard/StatRibbon'
 import { TaskCard } from '@/components/common/stitch-ui'
 import { techTaskPath } from '@/routes/paths'
 import {

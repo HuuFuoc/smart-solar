@@ -6,7 +6,7 @@ import {
   formatMoment,
   originLabel,
   routeCalculationLabel,
-} from '@/features/scheduling/components/schedulingDisplay'
+} from '@/features/scheduling/schedulingDisplay'
 import type { TravelEstimateView } from '@/types/res/technicianAvailabilityRes'
 
 /*

@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router'
-import { LANDING_CONTAINER, TEXT_LINK, ctaClass } from '@/features/landing/components/classes'
-import { CatalogError } from '@/features/products/components/CatalogError'
+import { LANDING_CONTAINER, TEXT_LINK, ctaClass } from '@/features/landing/classes'
+import { CatalogError } from '@/features/products/CatalogError'
 import {
   formatPower,
   formatSize,
@@ -8,7 +8,7 @@ import {
   isProductActive,
   productTypeLabel,
   specEntries,
-} from '@/features/products/components/productDisplay'
+} from '@/features/products/productDisplay'
 import { useProductQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
 import type { ProductResponse } from '@/types/res/adminProductsRes'

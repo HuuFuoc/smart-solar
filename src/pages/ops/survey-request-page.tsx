@@ -19,15 +19,15 @@ import {
   shortCode,
   surfaceTypeLabel,
   surveyStatusMeta,
-} from '@/features/pre-surveys/components/preSurveyDisplay'
-import { Facts } from '@/features/pre-surveys/components/Facts'
-import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/components/simulationDisplay'
-import { SimulationHistory } from '@/features/pre-surveys/components/SimulationHistory'
-import { SimulationViewer } from '@/features/pre-surveys/components/SimulationViewer'
+} from '@/features/pre-surveys/preSurveyDisplay'
+import { Facts } from '@/features/pre-surveys/Facts'
+import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/simulationDisplay'
+import { SimulationHistory } from '@/features/pre-surveys/SimulationHistory'
+import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
 import { useSimulationsQuery } from '@/hooks/useSimulations'
 import { useSurveyRequestQuery } from '@/hooks/useSurveyRequests'
-import { SalesSchedulePanel } from '@/features/scheduling/components/SalesSchedulePanel'
-import { formatAppointment } from '@/features/scheduling/components/schedulingDisplay'
+import { SalesSchedulePanel } from '@/features/scheduling/SalesSchedulePanel'
+import { formatAppointment } from '@/features/scheduling/schedulingDisplay'
 import type { SurveyRequestDetail } from '@/types/res/surveyRequestsRes'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })

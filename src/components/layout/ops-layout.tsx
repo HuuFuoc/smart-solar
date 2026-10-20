@@ -4,7 +4,7 @@ import { Count } from '@/components/common/ui/badge'
 import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
-import { needsScheduling } from '@/features/pre-surveys/components/preSurveyDisplay'
+import { needsScheduling } from '@/features/pre-surveys/preSurveyDisplay'
 import { useMySurveyRequestsQuery, usePendingSurveyRequestsQuery } from '@/hooks/useSurveyRequests'
 import { ROUTES } from '@/routes/paths'
 

@@ -6,8 +6,8 @@ import { FilterChips } from '@/components/common/ui/chips'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
-import { isOverdue, needsScheduling } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { MyRequestList, PendingRequestList } from '@/features/pre-surveys/components/SurveyRequestLists'
+import { isOverdue, needsScheduling } from '@/features/pre-surveys/preSurveyDisplay'
+import { MyRequestList, PendingRequestList } from '@/features/pre-surveys/SurveyRequestLists'
 import {
   useClaimSurveyRequestMutation,
   useMySurveyRequestsQuery,

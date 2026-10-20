@@ -1,4 +1,4 @@
-import { toArea } from '@/features/pre-surveys/components/assessmentForm'
+import { toArea } from '@/features/pre-surveys/assessmentForm'
 import type { MountingType } from '@/common/simulation'
 import type { ApiError } from '@/services/api/errors'
 import type { CreateSimulationRequest } from '@/types/req/simulationsReq'

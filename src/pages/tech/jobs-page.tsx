@@ -13,7 +13,7 @@ import {
   relativeDay,
   todayVn,
   vnDate,
-} from '@/features/scheduling/components/schedulingDisplay'
+} from '@/features/scheduling/schedulingDisplay'
 import { useMyAppointmentsQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES, withId } from '@/routes/paths'
 import type { TechnicianAppointmentListItem } from '@/types/res/technicianAppointmentsRes'

@@ -3,12 +3,12 @@ import { toast } from 'sonner'
 import { Checkbox, Field, Input } from '@/components/common/ui/field'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState } from '@/components/common/ui/states'
-import { CompassPicker, WithUnit } from '@/features/pre-surveys/components/AssessmentFields'
-import { Facts } from '@/features/pre-surveys/components/Facts'
-import { ObstaclePanel } from '@/features/pre-surveys/components/ObstaclePanel'
-import { directionLabel } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { formatM2 } from '@/features/pre-surveys/components/simulationDisplay'
-import { SurfacePlan } from '@/features/pre-surveys/components/SurfacePlan'
+import { CompassPicker, WithUnit } from '@/features/pre-surveys/AssessmentFields'
+import { Facts } from '@/features/pre-surveys/Facts'
+import { ObstaclePanel } from '@/features/pre-surveys/ObstaclePanel'
+import { directionLabel } from '@/features/pre-surveys/preSurveyDisplay'
+import { formatM2 } from '@/features/pre-surveys/simulationDisplay'
+import { SurfacePlan } from '@/features/pre-surveys/SurfacePlan'
 import {
   SURFACE_LIMITS,
   autoDeclared,
@@ -23,7 +23,7 @@ import {
   type ObstacleForm,
   type SurfaceErrors,
   type SurfaceForm,
-} from '@/features/pre-surveys/components/surfaceForm'
+} from '@/features/pre-surveys/surfaceForm'
 
 /*
   Bước "Mặt lắp" của đánh giá sơ bộ: kích thước, độ dốc, hướng, vật cản. Ô nhập là nguồn chính; trên hình chọn và kéo

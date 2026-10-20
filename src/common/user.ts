@@ -2,7 +2,7 @@ import type { Tone } from '@/components/common/ui/badge'
 
 /*
  * Enum của quản lý tài khoản (AdminUserContracts, backend main 4d12e4d, 12/10/2026). Mã là chuỗi IN HOA của backend; hàm
- * tra nhãn ở features/users/components/userDisplay.ts, mã lạ in nguyên văn thay vì đoán nghĩa.
+ * tra nhãn ở features/users/userDisplay.ts, mã lạ in nguyên văn thay vì đoán nghĩa.
  */
 
 /** Mã vai trò của API tài khoản (IN HOA). Vai trò của phiên đăng nhập là USER_ROLES trong common/role.ts. */

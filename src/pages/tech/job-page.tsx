@@ -10,7 +10,7 @@ import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/u
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { Stat, StatRow } from '@/components/common/ui/stat'
 import { usePageCrumb } from '@/components/layout/page-crumb'
-import { Facts } from '@/features/pre-surveys/components/Facts'
+import { Facts } from '@/features/pre-surveys/Facts'
 import {
   directionLabel,
   formatAddress,
@@ -19,16 +19,16 @@ import {
   hasCoordinates,
   mapsUrl,
   shortCode,
-} from '@/features/pre-surveys/components/preSurveyDisplay'
-import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/components/simulationDisplay'
-import { SimulationViewer } from '@/features/pre-surveys/components/SimulationViewer'
-import { TravelSummary } from '@/features/scheduling/components/TravelSummary'
+} from '@/features/pre-surveys/preSurveyDisplay'
+import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/simulationDisplay'
+import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
+import { TravelSummary } from '@/features/scheduling/TravelSummary'
 import {
   appointmentStatusMeta,
   formatAppointment,
   surfaceNameLabel,
   vnDate,
-} from '@/features/scheduling/components/schedulingDisplay'
+} from '@/features/scheduling/schedulingDisplay'
 import { useAcknowledgeMutation, useMyAppointmentQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'

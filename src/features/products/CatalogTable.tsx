@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
-import { formatPower, formatSize, formatWarranty, productTypeLabel } from '@/features/products/components/productDisplay'
+import { formatPower, formatSize, formatWarranty, productTypeLabel } from '@/features/products/productDisplay'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { formatMoney } from '@/utils/format'
 

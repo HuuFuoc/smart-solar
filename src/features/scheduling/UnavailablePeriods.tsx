@@ -5,9 +5,9 @@ import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Input } from '@/components/common/ui/field'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
-import { ConflictList } from '@/features/scheduling/components/ConflictList'
-import { conflictsOf } from '@/features/scheduling/components/schedulingDisplay'
-import { formatMoment } from '@/features/scheduling/components/schedulingDisplay'
+import { ConflictList } from '@/features/scheduling/ConflictList'
+import { conflictsOf } from '@/features/scheduling/schedulingDisplay'
+import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
   useAddUnavailablePeriodMutation,
   useRemoveUnavailablePeriodMutation,

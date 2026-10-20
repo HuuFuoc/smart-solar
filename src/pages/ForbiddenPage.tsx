@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { homePathForRole } from '@/config/roles'
 import { useAuth } from '@/context/AuthProvider'
-import { ForbiddenCard } from '@/features/auth/components/ForbiddenCard'
+import { ForbiddenCard } from '@/features/auth/ForbiddenCard'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 

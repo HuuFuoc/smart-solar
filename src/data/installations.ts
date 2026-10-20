@@ -5,13 +5,13 @@
  * Mọi số liệu (số panel, phần trăm, tên khách, crew…) phải khớp nhau giữa hai màn.
  */
 
-import type { ChecklistPhaseTone, ChecklistTaskItem } from '@/features/installations/components/ChecklistPhaseCard'
+import type { ChecklistPhaseTone, ChecklistTaskItem } from '@/features/installations/ChecklistPhaseCard'
 import type { EvidenceDropzoneItem, EvidencePhotoItem } from '@/components/common/tech/EvidenceGallery'
 import type { ExecutionStepItem } from '@/components/common/tech/ExecutionStepList'
 import type { InfoTileData } from '@/components/common/tech/InfoTile'
 import type { JobHeaderAction, JobProgress } from '@/components/common/tech/JobHeaderCard'
 import type { MeasurementReading } from '@/components/common/tech/MeasurementCard'
-import type { PanelCell, PanelState } from '@/features/installations/components/PanelArrayGrid'
+import type { PanelCell, PanelState } from '@/features/installations/PanelArrayGrid'
 import type { StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 
 export type SpecCard = {

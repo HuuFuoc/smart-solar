@@ -1,4 +1,4 @@
-import { toArea, toNumber } from '@/features/pre-surveys/components/assessmentForm'
+import { toArea, toNumber } from '@/features/pre-surveys/assessmentForm'
 import type { UpdatePreSurveySurfaceRequest } from '@/types/req/preSurveySurfaceReq'
 import type { UpdatePreSurveyRequest } from '@/types/req/preSurveysReq'
 import type { PreSurveySurfaceView, SurfaceObstacle } from '@/types/res/preSurveySurfaceRes'

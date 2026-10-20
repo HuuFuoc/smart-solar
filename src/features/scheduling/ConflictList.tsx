@@ -1,5 +1,5 @@
 import { Notice } from '@/components/common/ui/lists'
-import { appointmentStatusMeta, feasibilityLabel, formatAppointment } from '@/features/scheduling/components/schedulingDisplay'
+import { appointmentStatusMeta, feasibilityLabel, formatAppointment } from '@/features/scheduling/schedulingDisplay'
 import type { ConflictingAppointmentView } from '@/types/res/adminTechniciansRes'
 
 const PROBLEMS: Record<string, string> = {

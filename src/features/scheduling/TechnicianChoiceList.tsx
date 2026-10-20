@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { Badge } from '@/components/common/ui/badge'
-import { TravelSummary } from '@/features/scheduling/components/TravelSummary'
-import { formatTime } from '@/features/scheduling/components/schedulingDisplay'
+import { TravelSummary } from '@/features/scheduling/TravelSummary'
+import { formatTime } from '@/features/scheduling/schedulingDisplay'
 import type { AvailableTechnicianView } from '@/types/res/technicianAvailabilityRes'
 import { cx } from '@/utils/cx'
 

@@ -1,6 +1,6 @@
 import { useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
-import { NUDGE_M, round3 } from '@/features/pre-surveys/components/surfaceForm'
-import { formatTwo } from '@/features/pre-surveys/components/simulationDisplay'
+import { NUDGE_M, round3 } from '@/features/pre-surveys/surfaceForm'
+import { formatTwo } from '@/features/pre-surveys/simulationDisplay'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useViewportHeight } from '@/hooks/useViewportHeight'
 import { cx } from '@/utils/cx'

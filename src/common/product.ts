@@ -3,7 +3,7 @@ import type { ProductSortBy, ProductSortDirection } from '@/services/productServ
 
 /*
  * Enum của sản phẩm (trang admin, danh mục của các portal và trang công khai). Hàm tra nhãn ở
- * features/products/components/productDisplay.ts.
+ * features/products/productDisplay.ts.
  *
  * Swagger khai `status` là string tự do. Danh sách dưới đây là các giá trị backend nhận
  * (backend trả "'Status' must be ACTIVE or INACTIVE." khi dò PATCH .../status ngày 29/09/2026);

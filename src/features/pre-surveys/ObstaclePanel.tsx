@@ -3,7 +3,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button, IconButton } from '@/components/common/ui/button'
 import { Combobox } from '@/components/common/ui/combobox'
 import { Field, Input } from '@/components/common/ui/field'
-import { WithUnit } from '@/features/pre-surveys/components/AssessmentFields'
+import { WithUnit } from '@/features/pre-surveys/AssessmentFields'
 import {
   OBSTACLE_NAME_SUGGESTIONS,
   SURFACE_LIMITS,
@@ -12,7 +12,7 @@ import {
   type ObstacleField,
   type ObstacleForm,
   type SurfaceErrors,
-} from '@/features/pre-surveys/components/surfaceForm'
+} from '@/features/pre-surveys/surfaceForm'
 import { cx } from '@/utils/cx'
 import { keepInView } from '@/utils/scroll'
 

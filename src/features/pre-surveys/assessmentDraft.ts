@@ -1,6 +1,6 @@
-import { EMPTY_PROFILE, EMPTY_SITE, type ProfileForm, type SiteForm } from '@/features/pre-surveys/components/assessmentForm'
-import { EMPTY_SIMULATION_FORM, type SimulationForm } from '@/features/pre-surveys/components/simulationForm'
-import { EMPTY_SURFACE_FORM, newObstacleKey, type SurfaceForm } from '@/features/pre-surveys/components/surfaceForm'
+import { EMPTY_PROFILE, EMPTY_SITE, type ProfileForm, type SiteForm } from '@/features/pre-surveys/assessmentForm'
+import { EMPTY_SIMULATION_FORM, type SimulationForm } from '@/features/pre-surveys/simulationForm'
+import { EMPTY_SURFACE_FORM, newObstacleKey, type SurfaceForm } from '@/features/pre-surveys/surfaceForm'
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
 
 /*

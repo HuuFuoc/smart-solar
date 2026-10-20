@@ -1,5 +1,5 @@
-import type { TaskBucket, TaskPriorityFilter, TaskTypeFilter } from '@/features/tasks/components/TaskFilterBar'
-import type { ViewOption } from '@/features/tasks/components/ViewToggle'
+import type { TaskBucket, TaskPriorityFilter, TaskTypeFilter } from '@/features/tasks/TaskFilterBar'
+import type { ViewOption } from '@/features/tasks/ViewToggle'
 import type { ButtonVariant } from '@/components/common/stitch-ui/Button'
 import type { StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 import type { TaskAccent } from '@/components/common/stitch-ui/TaskCard'

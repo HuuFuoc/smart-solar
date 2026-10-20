@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router'
-import { CtaSection, HeroSection, SolutionSection, WorkflowSection } from '@/features/landing/components'
+import { CtaSection, HeroSection, SolutionSection, WorkflowSection } from '@/features/landing'
 import { pageTitle } from '@/data/landing'
 
 /*

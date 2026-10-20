@@ -8,10 +8,10 @@ import { FilterBar } from '@/components/common/ui/filter-bar'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Pagination } from '@/components/common/ui/pagination'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
-import { formatDateTime } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { DeleteProductDialog } from '@/features/products/components/DeleteProductDialog'
-import { ProductFormDialog } from '@/features/products/components/ProductFormDialog'
-import { ProductsTable } from '@/features/products/components/ProductsTable'
+import { formatDateTime } from '@/features/pre-surveys/preSurveyDisplay'
+import { DeleteProductDialog } from '@/features/products/DeleteProductDialog'
+import { ProductFormDialog } from '@/features/products/ProductFormDialog'
+import { ProductsTable } from '@/features/products/ProductsTable'
 import { PRODUCT_SORT_OPTIONS, SOLAR_PANEL_TYPE } from '@/common/product'
 import {
   SOLAR_PANEL_QUERY,
@@ -19,7 +19,7 @@ import {
   panelSpecGaps,
   parseSort,
   productTypeLabel,
-} from '@/features/products/components/productDisplay'
+} from '@/features/products/productDisplay'
 import { readHiddenProducts, writeHiddenProducts, type HiddenProduct } from '@/features/products/hiddenProducts'
 import { useChangeProductStatusMutation, useProductsQuery } from '@/hooks/useProducts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'

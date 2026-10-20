@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router'
-import { PhotoInspector } from '@/features/surveys/components/PhotoInspector'
-import { PhotoSectionHeader } from '@/features/surveys/components/PhotoSectionHeader'
+import { PhotoInspector } from '@/features/surveys/PhotoInspector'
+import { PhotoSectionHeader } from '@/features/surveys/PhotoSectionHeader'
 import { Button, Card, Icon, PhotoCard, PhotoDropzone, PhotoGrid, ProgressBar, StatusBadge, Toast } from '@/components/common/stitch-ui'
 import { notFound } from '@/routes/notFound'
 import {

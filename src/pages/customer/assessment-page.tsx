@@ -14,7 +14,7 @@ import { EmptyState, ErrorState, PageSkeleton } from '@/components/common/ui/sta
 import { WizardSteps, type WizardStep } from '@/components/common/ui/wizard-steps'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { useAuth } from '@/context/AuthProvider'
-import { ProfileFields, SiteFields } from '@/features/pre-surveys/components/AssessmentFields'
+import { ProfileFields, SiteFields } from '@/features/pre-surveys/AssessmentFields'
 import {
   clearDraft,
   clearWork,
@@ -23,7 +23,7 @@ import {
   writeDraft,
   writeWork,
   type AssessmentDraft,
-} from '@/features/pre-surveys/components/assessmentDraft'
+} from '@/features/pre-surveys/assessmentDraft'
 import {
   EMPTY_PROFILE,
   EMPTY_SITE,
@@ -35,7 +35,7 @@ import {
   type FormErrors,
   type ProfileForm,
   type SiteForm,
-} from '@/features/pre-surveys/components/assessmentForm'
+} from '@/features/pre-surveys/assessmentForm'
 import {
   customerTypeLabel,
   directionLabel,
@@ -43,12 +43,12 @@ import {
   hasCoordinates,
   shortCode,
   surfaceTypeLabel,
-} from '@/features/pre-surveys/components/preSurveyDisplay'
-import { formatKwh, formatM2, formatOne, formatTwo, mountingLabel } from '@/features/pre-surveys/components/simulationDisplay'
-import { EMPTY_SIMULATION_FORM, type SimulationForm } from '@/features/pre-surveys/components/simulationForm'
-import { SimulationHistory } from '@/features/pre-surveys/components/SimulationHistory'
-import { SimulationWorkspace } from '@/features/pre-surveys/components/SimulationWorkspace'
-import { SurfaceEditor } from '@/features/pre-surveys/components/SurfaceEditor'
+} from '@/features/pre-surveys/preSurveyDisplay'
+import { formatKwh, formatM2, formatOne, formatTwo, mountingLabel } from '@/features/pre-surveys/simulationDisplay'
+import { EMPTY_SIMULATION_FORM, type SimulationForm } from '@/features/pre-surveys/simulationForm'
+import { SimulationHistory } from '@/features/pre-surveys/SimulationHistory'
+import { SimulationWorkspace } from '@/features/pre-surveys/SimulationWorkspace'
+import { SurfaceEditor } from '@/features/pre-surveys/SurfaceEditor'
 import {
   EMPTY_SURFACE_FORM,
   autoDeclared,
@@ -63,7 +63,7 @@ import {
   validateSurface,
   type SurfaceErrors,
   type SurfaceForm,
-} from '@/features/pre-surveys/components/surfaceForm'
+} from '@/features/pre-surveys/surfaceForm'
 import {
   preSurveyKeys,
   useCreateCustomerProfileMutation,

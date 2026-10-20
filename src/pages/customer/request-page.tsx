@@ -8,9 +8,9 @@ import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/u
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
 import { usePageCrumb } from '@/components/layout/page-crumb'
-import { formatDateTime, shortCode } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { BookingPanel } from '@/features/scheduling/components/BookingPanel'
-import { CancelBookingDialog } from '@/features/scheduling/components/CancelBookingDialog'
+import { formatDateTime, shortCode } from '@/features/pre-surveys/preSurveyDisplay'
+import { BookingPanel } from '@/features/scheduling/BookingPanel'
+import { CancelBookingDialog } from '@/features/scheduling/CancelBookingDialog'
 import {
   canBook,
   customerProgress,
@@ -19,7 +19,7 @@ import {
   formatTimeRange,
   historyStatusLabel,
   vnDate,
-} from '@/features/scheduling/components/schedulingDisplay'
+} from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestQuery } from '@/hooks/useBooking'
 import type { CustomerSurveyRequestDetailView, CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 

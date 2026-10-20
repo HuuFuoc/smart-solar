@@ -7,9 +7,9 @@ import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/d
 import { Checkbox, Field, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
-import { formatMoment } from '@/features/scheduling/components/schedulingDisplay'
+import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { ROLE_CODES } from '@/common/user'
-import { activationMessage, rolesText, userStatusMeta } from '@/features/users/components/userDisplay'
+import { activationMessage, rolesText, userStatusMeta } from '@/features/users/userDisplay'
 import {
   useChangeUserStatusMutation,
   useDeleteUserMutation,

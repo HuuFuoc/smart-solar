@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
-import { SimulationResult } from '@/features/pre-surveys/components/SimulationResult'
+import { SimulationResult } from '@/features/pre-surveys/SimulationResult'
 import { useSimulationQuery } from '@/hooks/useSimulations'
 import { isApiError } from '@/services/api/errors'
 

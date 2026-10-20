@@ -1,5 +1,5 @@
 import { useId, useState, type KeyboardEvent } from 'react'
-import { MONTHS, MONTH_NAMES, formatKwh, formatOne } from '@/features/pre-surveys/components/simulationDisplay'
+import { MONTHS, MONTH_NAMES, formatKwh, formatOne } from '@/features/pre-surveys/simulationDisplay'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import type { MonthlyPvEnergy } from '@/types/res/simulationsRes'
 

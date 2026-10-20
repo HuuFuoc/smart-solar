@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { ROUTES, withId } from '@/routes/paths'
 import { formatMoney } from '@/utils/format'
-import { formatPower, formatWarranty, productTypeLabel } from '@/features/products/components/productDisplay'
+import { formatPower, formatWarranty, productTypeLabel } from '@/features/products/productDisplay'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 
 /* Một ô trong lưới /products. Cả thẻ là link tới trang chi tiết. */

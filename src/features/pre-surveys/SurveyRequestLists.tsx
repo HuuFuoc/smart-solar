@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { ListRow } from '@/components/common/ui/list-row'
-import { Facts } from '@/features/pre-surveys/components/Facts'
+import { Facts } from '@/features/pre-surveys/Facts'
 import {
   formatArea,
   formatDateTime,
@@ -11,7 +11,7 @@ import {
   needsScheduling,
   surfaceTypeLabel,
   surveyStatusMeta,
-} from '@/features/pre-surveys/components/preSurveyDisplay'
+} from '@/features/pre-surveys/preSurveyDisplay'
 import { ROUTES, withId } from '@/routes/paths'
 import type { MySurveyRequestItem, PendingSurveyRequestItem, SurveyRequestStatus } from '@/types/res/surveyRequestsRes'
 

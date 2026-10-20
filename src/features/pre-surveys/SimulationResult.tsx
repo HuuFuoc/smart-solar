@@ -4,10 +4,10 @@ import { KeyValueList, Notice } from '@/components/common/ui/lists'
 import { Segmented, type SegmentedOption } from '@/components/common/ui/segmented'
 import { Stat, StatRow } from '@/components/common/ui/stat'
 import { Skeleton } from '@/components/common/ui/states'
-import { EnergyChart } from '@/features/pre-surveys/components/EnergyChart'
-import { Facts } from '@/features/pre-surveys/components/Facts'
-import { directionLabel, formatCoordinates, formatRelative, isInHcm, mapsUrl } from '@/features/pre-surveys/components/preSurveyDisplay'
-import type { SceneView } from '@/features/pre-surveys/components/SimulationScene'
+import { EnergyChart } from '@/features/pre-surveys/EnergyChart'
+import { Facts } from '@/features/pre-surveys/Facts'
+import { directionLabel, formatCoordinates, formatRelative, isInHcm, mapsUrl } from '@/features/pre-surveys/preSurveyDisplay'
+import type { SceneView } from '@/features/pre-surveys/SimulationScene'
 import { ORIENTATIONS, SCENARIO_PLACES } from '@/common/simulation'
 import {
   CLIMATE_DISCLAIMER,
@@ -27,8 +27,8 @@ import {
   providerFailureText,
   simulationStatusMeta,
   warningText,
-} from '@/features/pre-surveys/components/simulationDisplay'
-import { SurfacePlan } from '@/features/pre-surveys/components/SurfacePlan'
+} from '@/features/pre-surveys/simulationDisplay'
+import { SurfacePlan } from '@/features/pre-surveys/SurfacePlan'
 import type { InstallationValue, SimulationDetail } from '@/types/res/simulationsRes'
 
 /*
@@ -38,7 +38,7 @@ import type { InstallationValue, SimulationDetail } from '@/types/res/simulation
   Sản lượng null hiện "chưa có dữ liệu", không bao giờ hiện 0 kWh.
 */
 
-const SimulationScene = lazy(() => import('@/features/pre-surveys/components/SimulationScene').then((m) => ({ default: m.SimulationScene })))
+const SimulationScene = lazy(() => import('@/features/pre-surveys/SimulationScene').then((m) => ({ default: m.SimulationScene })))
 
 type View = 'plan' | '3d'
 const VIEWS: SegmentedOption<View>[] = [

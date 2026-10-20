@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PermissionMatrix } from '@/features/roles/components/PermissionMatrix'
-import { RoleCard } from '@/features/roles/components/RoleCard'
+import { PermissionMatrix } from '@/features/roles/PermissionMatrix'
+import { RoleCard } from '@/features/roles/RoleCard'
 import {
   Breadcrumb,
   Button,

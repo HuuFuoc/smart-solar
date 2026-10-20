@@ -6,7 +6,7 @@ import { Input } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Stat, StatRow } from '@/components/common/ui/stat'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
-import { TravelSummary } from '@/features/scheduling/components/TravelSummary'
+import { TravelSummary } from '@/features/scheduling/TravelSummary'
 import {
   addDays,
   appointmentStatusMeta,
@@ -19,7 +19,7 @@ import {
   relativeDay,
   scheduleRoutingMeta,
   todayVn,
-} from '@/features/scheduling/components/schedulingDisplay'
+} from '@/features/scheduling/schedulingDisplay'
 import { errorMessage, type ApiError } from '@/services/api/errors'
 import type { ScheduleAppointmentView, TechnicianScheduleView } from '@/types/res/technicianAppointmentsRes'
 

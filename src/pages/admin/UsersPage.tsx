@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { UserFormDialog, type UserFormValues } from '@/features/users/components/UserFormDialog'
-import { UsersTable } from '@/features/users/components/UsersTable'
+import { UserFormDialog, type UserFormValues } from '@/features/users/UserFormDialog'
+import { UsersTable } from '@/features/users/UsersTable'
 import { Button, FilterBar, Icon, MetricCard, PageHeader } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 import {

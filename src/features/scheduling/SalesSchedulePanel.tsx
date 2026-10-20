@@ -9,9 +9,9 @@ import { Field, Input, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
-import { Facts } from '@/features/pre-surveys/components/Facts'
-import { formatDateTime } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { TechnicianChoiceList } from '@/features/scheduling/components/TechnicianChoiceList'
+import { Facts } from '@/features/pre-surveys/Facts'
+import { formatDateTime } from '@/features/pre-surveys/preSurveyDisplay'
+import { TechnicianChoiceList } from '@/features/scheduling/TechnicianChoiceList'
 import {
   BOOKING_HORIZON_DAYS,
   HALF_HOUR_TIMES,
@@ -25,7 +25,7 @@ import {
   todayVn,
   vnDate,
   vnTimestamp,
-} from '@/features/scheduling/components/schedulingDisplay'
+} from '@/features/scheduling/schedulingDisplay'
 import {
   useAssignTechnicianMutation,
   useSalesRescheduleMutation,

@@ -5,7 +5,7 @@ import type { SurveyRequestStatus } from '@/types/res/surveyRequestsRes'
 /*
  * Enum của đánh giá sơ bộ và yêu cầu khảo sát (khách hàng, sales, kỹ thuật viên dùng chung).
  * Swagger chỉ khai enum là số; tên từng giá trị lấy từ SmartSolar.Modules.PreSurvey.Enums (image 05/10/2026).
- * Hàm tra nhãn ở features/pre-surveys/components/preSurveyDisplay.ts; giá trị lạ thì in nguyên số thay vì đoán nghĩa.
+ * Hàm tra nhãn ở features/pre-surveys/preSurveyDisplay.ts; giá trị lạ thì in nguyên số thay vì đoán nghĩa.
  */
 
 export const CUSTOMER_TYPES = [

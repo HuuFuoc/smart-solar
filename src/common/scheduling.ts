@@ -2,7 +2,7 @@ import type { Tone } from '@/components/common/ui/badge'
 
 /*
  * Enum của lịch khảo sát (Modules.Scheduling, backend main 4d12e4d, 12/10/2026), dùng chung cho khách hàng, kinh doanh,
- * kỹ thuật viên, quản trị / quản lý. Hàm tra nhãn ở features/scheduling/components/schedulingDisplay.ts; mã lạ in nguyên văn.
+ * kỹ thuật viên, quản trị / quản lý. Hàm tra nhãn ở features/scheduling/schedulingDisplay.ts; mã lạ in nguyên văn.
  */
 
 /** Ai đang xem lịch hẹn: quyết định màu của trạng thái (APPOINTMENT_TONES). */

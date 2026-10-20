@@ -4,11 +4,11 @@ import { Controller, useForm, useWatch } from 'react-hook-form'
 import { Link, useParams } from 'react-router'
 import { z } from 'zod'
 import { ActionDock } from '@/components/common/tech/ActionDock'
-import { FieldSection } from '@/features/surveys/components/FieldSection'
+import { FieldSection } from '@/features/surveys/FieldSection'
 import { RadioCardGroup } from '@/components/common/tech/RadioCardGroup'
 import { SectionCard } from '@/components/common/tech/SectionCard'
-import { SurveyBaselineAside } from '@/features/surveys/components/SurveyBaselineAside'
-import { TaskHeaderCard } from '@/features/surveys/components/TaskHeaderCard'
+import { SurveyBaselineAside } from '@/features/surveys/SurveyBaselineAside'
+import { TaskHeaderCard } from '@/features/surveys/TaskHeaderCard'
 import {
   Breadcrumb,
   Button,

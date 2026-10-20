@@ -24,7 +24,7 @@ hai ăn chung một hệ token trong `src/styles/globals.css`:
 - `src/components/common/stitch-ui` (file PascalCase, token `surface/on-surface/primary…`,
   Material Symbols): trang công khai/xác thực, hộp thoại hết phiên, `/styleguide` (chỉ chạy ở dev) và các màn
   mock đã ẩn của admin/kỹ thuật viên. Shell Stitch (`AppShell`, `Sidebar`, `TopHeader`) và `config/nav.ts` đã xoá.
-  (Hộp thoại đổi mật khẩu đã chuyển sang portal kit: `features/auth/components/ChangePasswordDialog.tsx`.)
+  (Hộp thoại đổi mật khẩu đã chuyển sang portal kit: `features/auth/ChangePasswordDialog.tsx`.)
 - Token của bộ Stitch nay chỉ là bí danh trỏ vào token của portal kit (màu nền/chữ/đường
   kẻ, bán kính, bóng, họ chữ, thang chữ). Sửa giá trị ở block portal kit là cả hai đổi theo;
   ĐỪNG đặt lại hex hay px trong block Stitch.
@@ -168,12 +168,12 @@ src/
     common/ui/                 # portal kit (kebab-case) + query-boundary
     common/stitch-ui/          # bộ Stitch (PascalCase, barrel index.ts): StatusBadge, MetricCard, DataTable, TaskCard, Timeline, ChecklistItem, PhotoGrid…
     common/tech/               # khối dùng ở nhiều nghiệp vụ kỹ thuật viên: SectionCard, ActionDock, JobHeaderCard, MeasurementCard…
-  features/
-    auth/                      # components/ (AuthCard, PasswordRules, ForbiddenCard, SessionExpiredModal, ChangePasswordDialog…)
-    landing/components/        # section trang chủ, classes.ts, reveal, theme-toggle, survey-link
-    surveys/ installations/ tasks/ warranty/   # components/ riêng của từng nghiệp vụ kỹ thuật viên
-    dashboard/                 # components/ chỉ dùng ở màn tổng quan admin và kỹ thuật viên
-    users/ roles/ products/    # components/ riêng của các màn admin
+  features/                    # file nằm thẳng trong thư mục nghiệp vụ, không có cấp components/
+    auth/                      # AuthCard, PasswordRules, ForbiddenCard, SessionExpiredModal, ChangePasswordDialog…
+    landing/                   # section trang chủ, classes.ts, reveal, theme-toggle, survey-link (barrel index.ts)
+    surveys/ installations/ tasks/ warranty/   # component riêng của từng nghiệp vụ kỹ thuật viên
+    dashboard/                 # component chỉ dùng ở màn tổng quan admin và kỹ thuật viên
+    users/ roles/ products/    # component riêng của các màn admin
   pages/                       # màn gắn với route: admin/ tech/ customer/ ops/ field/ manage/ auth/ public/ + trang lẻ
   data/                        # dữ liệu tĩnh cho UI: mock từng màn (surveys.ts, tasks.ts, session.ts…, customer.ts, manage.ts…)
                                # và nội dung chữ (auth.ts, landing.ts)
@@ -196,15 +196,16 @@ public/placeholders/           # thay cho ảnh lh3.googleusercontent.com
 Quy tắc đặt file (tái cấu trúc 29/09/2026):
 
 - `pages/` chỉ ghép UI và gọi hook. Component dùng ở MỘT nghiệp vụ nằm trong
-  `features/<nghiệp vụ>/components/`; dùng ở nhiều nghiệp vụ thì vào `components/common/`.
-- Feature chỉ còn `components/`. API của mọi nghiệp vụ gom ở `src/services/<tên>Service.ts`, hook react-query ở
+  `features/<nghiệp vụ>/` (đặt thẳng trong thư mục, bỏ cấp `components/` từ 20/10/2026); dùng ở nhiều nghiệp vụ thì vào
+  `components/common/`.
+- Feature chỉ chứa component và file hiển thị / form của nó. API của mọi nghiệp vụ gom ở `src/services/<tên>Service.ts`, hook react-query ở
   `src/hooks/use<Tên>.ts` (20/10/2026, trước đó nằm trong `features/<nghiệp vụ>/services/` và `.../hooks/`);
   `services/api/` chỉ giữ HTTP client dùng chung. Import qua `@/services/…` và `@/hooks/…`.
   Một trách nhiệm chỉ ở một nơi.
 - Enum (20/10/2026): tập giá trị cố định của một trường (mã backend hoặc lựa chọn trên giao diện) kèm nhãn tiếng Việt / màu
   Badge / gợi ý nằm ở `src/common/<nghiệp vụ>.ts`, đặt tên IN HOA số nhiều (`PRODUCT_STATUSES`, `ROLE_CODES`,
   `SIMULATION_WARNINGS`). Hàm tra nhãn và định dạng (`productStatusMeta`, `formatPower`…) ở
-  `features/<nghiệp vụ>/components/*Display.ts`, đọc bảng từ `common/`. Không dùng `enum` của TypeScript
+  `features/<nghiệp vụ>/*Display.ts`, đọc bảng từ `common/`. Không dùng `enum` của TypeScript
   (`erasableSyntaxOnly`); kiểu giá trị lấy từ `types/` (union sinh từ swagger).
 - DTO nằm ở `src/types/`: request trong `types/req/<nghiệp vụ>Req.ts`, response trong
   `types/res/<nghiệp vụ>Res.ts`. Các file này sinh từ swagger (không tự đoán field, không sửa tay);
@@ -405,7 +406,7 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
   ba việc nền tảng làm, link tới `/products`) → "Quy trình làm việc" (`#quy-trinh`, 4 bước: Cung cấp thông tin → Tư vấn và
   khảo sát → Báo giá và lắp đặt → Bảo hành, bảo trì; điểm mốc tròn đánh số, màu trung tính) → dải CTA → footer. Không bịa
   số liệu tiết kiệm, số khách, chứng nhận, đánh giá, thông tin liên hệ. Nút "Đăng ký khảo sát" đi theo `surveyPath`
-  (`features/landing/components/survey-link.ts`): chưa đăng nhập → `/register`, khách hàng → `/customer/assessment`, nhân viên
+  (`features/landing/survey-link.ts`): chưa đăng nhập → `/register`, khách hàng → `/customer/assessment`, nhân viên
   → portal của mình. Nội dung ở `src/data/landing.ts`; token riêng (`font-vn`, `max-w-landing`, `ld-*`) ở `src/styles/landing.css`.
   - Header dính: Giải pháp, Quy trình, Sản phẩm, Đăng nhập, nút "Đăng ký khảo sát", nút sáng / tối (`theme-toggle.tsx`) ở mép
     phải. Dưới lg: logo + nút sáng / tối + nút "Menu" mở bảng liên kết dưới header (Esc đóng, trả focus về nút Menu). Nút sáng /

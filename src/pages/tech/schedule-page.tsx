@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router'
 import { PageHeader } from '@/components/common/ui/page-header'
-import { DayNav, ScheduleDay } from '@/features/scheduling/components/ScheduleDay'
-import { formatDay, todayVn } from '@/features/scheduling/components/schedulingDisplay'
+import { DayNav, ScheduleDay } from '@/features/scheduling/ScheduleDay'
+import { formatDay, todayVn } from '@/features/scheduling/schedulingDisplay'
 import { useMyScheduleQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES, withId } from '@/routes/paths'
 

@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { AdvisoryCard } from '@/features/dashboard/components/AdvisoryCard'
-import { AuditTrailTable } from '@/features/dashboard/components/AuditTrailTable'
-import { DistributionBar } from '@/features/dashboard/components/DistributionBar'
-import { KeyValueList, KeyValueRow } from '@/features/dashboard/components/KeyValueList'
-import { QuickLaunchCard } from '@/features/dashboard/components/QuickLaunchCard'
+import { AdvisoryCard } from '@/features/dashboard/AdvisoryCard'
+import { AuditTrailTable } from '@/features/dashboard/AuditTrailTable'
+import { DistributionBar } from '@/features/dashboard/DistributionBar'
+import { KeyValueList, KeyValueRow } from '@/features/dashboard/KeyValueList'
+import { QuickLaunchCard } from '@/features/dashboard/QuickLaunchCard'
 import {
   Button,
   Card,

@@ -9,7 +9,7 @@ import {
   formatTime,
   formatTimeRange,
   todayVn,
-} from '@/features/scheduling/components/schedulingDisplay'
+} from '@/features/scheduling/schedulingDisplay'
 import { useSurveySlotsQuery } from '@/hooks/useBooking'
 import { errorMessage } from '@/services/api/errors'
 import type { SurveySlot } from '@/types/res/surveySlotsRes'

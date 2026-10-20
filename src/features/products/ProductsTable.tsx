@@ -2,7 +2,7 @@ import { Badge } from '@/components/common/ui/badge'
 import { Button, IconButton } from '@/components/common/ui/button'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { WithTooltip } from '@/components/common/ui/tooltip'
-import { formatPower, formatSize, isProductActive, panelSpecGaps, productStatusMeta, productTypeLabel } from '@/features/products/components/productDisplay'
+import { formatPower, formatSize, isProductActive, panelSpecGaps, productStatusMeta, productTypeLabel } from '@/features/products/productDisplay'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { formatMoney } from '@/utils/format'
 

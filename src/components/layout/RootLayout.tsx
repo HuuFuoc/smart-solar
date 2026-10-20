@@ -1,5 +1,5 @@
 import { Outlet, ScrollRestoration } from 'react-router'
-import { SessionExpiredModal } from '@/features/auth/components/SessionExpiredModal'
+import { SessionExpiredModal } from '@/features/auth/SessionExpiredModal'
 
 /*
  * Route gốc: bọc toàn bộ app để SessionExpiredModal nằm trong router context

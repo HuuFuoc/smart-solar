@@ -2,7 +2,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { StatusBadge } from '@/components/common/stitch-ui/StatusBadge'
 import { SectionCard } from '@/components/common/tech/SectionCard'
 import { StatTile } from '@/components/common/tech/StatTile'
-import { SunPathChart } from '@/features/surveys/components/SunPathChart'
+import { SunPathChart } from '@/features/surveys/SunPathChart'
 import type { SurveyRecord } from '@/data/surveys'
 
 /*
