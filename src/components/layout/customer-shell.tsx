@@ -64,13 +64,14 @@ export function CustomerShell({ children }: { children: ReactNode }) {
 
       <header className="sticky top-0 z-30 border-b border-line bg-canvas">
         <div className="mx-auto flex h-14 w-full max-w-landing items-center gap-8 px-4 md:px-6 lg:h-16">
-          {/* Logo người dùng cung cấp; chữ "Smart" màu navy chìm trên nền tối nên ở dark mode logo đặt trên nền sáng. */}
-          <Link to={portal.home} className="flex shrink-0 items-center rounded-control dark:bg-fg dark:px-2 dark:py-1">
+          {/* Logo người dùng cung cấp; chữ "Smart" màu navy chìm trên nền tối nên ở dark mode logo đặt trên nền sáng.
+              Bấm logo về trang chủ công khai "/" (người dùng 20/10/2026); trang chủ của cổng đã có mục menu đầu tiên. */}
+          <Link to={ROUTES.home} className="flex shrink-0 items-center rounded-control dark:bg-fg dark:px-2 dark:py-1">
             <img
               src="/images/logo-64h.webp"
               srcSet="/images/logo-64h.webp 262w, /images/logo-96h.webp 394w"
               sizes="148px"
-              alt="Smart Solar – Cổng khách hàng"
+              alt="Smart Solar – Trang chủ"
               width={148}
               height={36}
               className="h-8 w-auto lg:h-9"

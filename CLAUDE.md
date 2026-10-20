@@ -70,7 +70,8 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
    - Biến thể `dark:` của Tailwind theo đúng giao diện đang dùng như token (`@custom-variant dark` đầu `globals.css`:
      `data-theme`, không đặt thì theo hệ thống). Mặc định Tailwind chỉ đọc `prefers-color-scheme`: máy để tối mà chọn "Sáng"
      thì `dark:bg-fg` vẫn chạy và logo thành khối đen (người dùng báo 10/10/2026). Đừng viết `@media (prefers-color-scheme)` riêng.
-     Giao diện đã lưu được áp ngay trong `main.tsx` trước khi vẽ (menu Giao diện của khách chỉ gắn khi mở bảng tài khoản).
+     Giao diện đã lưu được áp bằng script trong `<head>` của `index.html` trước khi trang vẽ lần đầu (20/10/2026; trước đó ở
+     `main.tsx`, phải chờ JS). Cần biết giao diện đang hiện thật (kể cả "theo hệ thống") thì dùng `useResolvedTheme()`.
 5. **Nhãn trạng thái**: `Badge` – mọi trạng thái là nhãn nền nhạt cùng hình dạng (bán kính 6px), màu theo vai trò ở
    mục 4; `icon` chỉ cho thông báo cần làm ngay ở đầu trang. `Count` – số đếm cạnh mục menu/tab: `attention` = việc đang
    chờ người xem, nền đỏ như số thông báo; còn lại nền xám. Việc cần làm ngay hiện thành Badge đỏ có icon ở mô tả đầu
@@ -169,7 +170,7 @@ src/
     common/tech/               # khối dùng ở nhiều nghiệp vụ kỹ thuật viên: SectionCard, ActionDock, JobHeaderCard, MeasurementCard…
   features/
     auth/                      # components/ (AuthCard, PasswordRules, ForbiddenCard, SessionExpiredModal, ChangePasswordDialog…)
-    landing/components/        # section trang chủ, classes.ts, photo, reveal
+    landing/components/        # section trang chủ, classes.ts, reveal, theme-toggle, survey-link
     surveys/ installations/ tasks/ warranty/   # components/ riêng của từng nghiệp vụ kỹ thuật viên
     dashboard/                 # components/ chỉ dùng ở màn tổng quan admin và kỹ thuật viên
     users/ roles/ products/    # components/ riêng của các màn admin
@@ -352,7 +353,7 @@ thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
 
 - **Nhân viên** – kinh doanh `/ops`, quản trị `/admin`, kỹ thuật viên `/tech`, quản lý `/manage` – dùng `app-shell.tsx`: công cụ
   làm việc cả ngày, rail trái + bố cục gọn (mục Mật độ bên dưới).
-- **Khách hàng** `/customer` dùng `customer-shell.tsx`: đi theo website công khai – thanh trên dính với logo đầy đủ, menu chữ
+- **Khách hàng** `/customer` dùng `customer-shell.tsx`: đi theo website công khai – thanh trên dính với logo đầy đủ (bấm về trang chủ công khai `/`, 20/10/2026), menu chữ
   (mục đang mở đậm + gạch chân xanh), nút tài khoản ghi tên người đang đăng nhập (chữ cái đầu + tên) và mở bảng chức năng
   (Đổi mật khẩu, Giao diện, Đăng xuất; Esc / bấm ra ngoài thì đóng); nội dung căn giữa tối đa 1200px (`max-w-landing`), lề 16/24px như `<main>` của portal để
   ActionBar và Table lấn mép đúng; font Be Vietnam Pro 400/500/600 (như trang công khai); trang con có dòng định vị
@@ -399,16 +400,40 @@ Khảo sát, Lắp đặt, Bảo hành & bảo trì, Lịch làm việc; cuối 
 
 Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
 
-- `PublicLayout` + trang chủ `/`: website bán hàng của công ty thi công điện mặt trời áp mái cho
-  **doanh nghiệp** (nhà xưởng, kho, toà nhà) – `docs/design/landing-brief.md`, mục "Bản 4". Ảnh lớn,
-  chữ lớn, mỗi section một bố cục; KHÔNG đặt bảng dữ liệu, màn tài khoản, biểu giá hay quy trình theo
-  giai đoạn lên trang (giao diện hệ thống chỉ một thẻ ở section theo dõi). Header dính: "Sản phẩm" (→ `/products`), "Công trình",
-  "Năng lực thi công", "Đăng nhập", nút "Nhận khảo sát" → `/register`. Nội dung ở
-  `src/data/landing.ts`; ảnh thật đặt `src` cho từng `Shot`; lời khách và con số chỉ thêm khi có
-  nguồn. Token riêng (`font-vn`, `max-w-landing`, `ld-*`) ở `src/styles/landing.css`.
-  Chuyển động chỉ transform/opacity, không thư viện: hero `ld-settle` (ảnh) + `ld-rise` (chữ, nút),
-  khối nội dung bọc `<Reveal>` (IntersectionObserver, hiện một lần khi cuộn tới), ảnh công trình phóng
-  nhẹ khi hover. `prefers-reduced-motion` tắt hết và hiện nội dung ngay. Favicon sinh từ
+- `PublicLayout` + trang chủ `/` (người dùng đổi hướng 20/10/2026, bản trước là thi công cho doanh nghiệp / nhà xưởng):
+  nền tảng tư vấn lắp đặt, bảo hành và bảo trì điện mặt trời cho **hộ gia đình**. Thứ tự: hero → "Giải pháp" (`#giai-phap`,
+  ba việc nền tảng làm, link tới `/products`) → "Quy trình làm việc" (`#quy-trinh`, 4 bước: Cung cấp thông tin → Tư vấn và
+  khảo sát → Báo giá và lắp đặt → Bảo hành, bảo trì; điểm mốc tròn đánh số, màu trung tính) → dải CTA → footer. Không bịa
+  số liệu tiết kiệm, số khách, chứng nhận, đánh giá, thông tin liên hệ. Nút "Đăng ký khảo sát" đi theo `surveyPath`
+  (`features/landing/components/survey-link.ts`): chưa đăng nhập → `/register`, khách hàng → `/customer/assessment`, nhân viên
+  → portal của mình. Nội dung ở `src/data/landing.ts`; token riêng (`font-vn`, `max-w-landing`, `ld-*`) ở `src/styles/landing.css`.
+  - Header dính: Giải pháp, Quy trình, Sản phẩm, Đăng nhập, nút "Đăng ký khảo sát", nút sáng / tối (`theme-toggle.tsx`) ở mép
+    phải. Dưới lg: logo + nút sáng / tối + nút "Menu" mở bảng liên kết dưới header (Esc đóng, trả focus về nút Menu). Nút sáng /
+    tối: khung 40px bo 6px (theo quy tắc bán kính, không tròn) + vùng bấm 44px, icon 20px là giao diện sẽ chuyển sang, tên đọc
+    cố định "Giao diện tối" + `aria-pressed`, tooltip `WithTooltip side="bottom"` (phía trên bị khuất ở đỉnh màn hình).
+  - Hero ảnh ngày (giao diện sáng) / đêm (tối): hai ảnh người dùng cung cấp `public/images/smart-solar-{day,night}-4k.png`
+    (3840 × 2160, giữ nguyên, trang không tải). Bản dùng thật ở `public/images/hero/`: `wide` 16:9 (1280–3840, từ 768px) và
+    `crop` vuông cắt phần bên trái (640–1600, điện thoại), mỗi bản AVIF + WebP, sinh bằng Pillow. Từ lg chữ căn giữa trên
+    vùng trời (nhà hai bên, pin nửa dưới), lớp phủ `ld-hero-veil` pha từ `--canvas` nên tự theo giao diện; dưới lg chữ đứng trên
+    nền trang, ảnh nằm dưới và tan vào nền. Tiêu đề `ld-display` 32/44/56px, 64px ở màn ≥ 1920 × 1000, 44px ở laptop thấp.
+    Tương phản đo trên điểm ảnh nền xấu nhất ≥ 5:1 cả hai giao diện (20/10/2026).
+  - Ảnh theo `useResolvedTheme` (data-theme hoặc hệ thống). Ảnh của giao diện đang dùng tải trước trong `index.html` (cùng
+    srcset / sizes / media với `heroImages` – đổi một chỗ phải đổi cả hai, nếu không tải đôi); ảnh còn lại tải lúc trình duyệt
+    rảnh, bỏ qua nếu bật tiết kiệm dữ liệu. Đổi giao diện: ảnh mới chưa tải xong thì giữ ảnh cũ; crossfade 600ms bằng opacity
+    (`.ld-hero-img`: ảnh mới hiện dần ở trên, ảnh cũ chỉ ẩn sau khi ảnh mới hiện hẳn, không lộ nền); giảm chuyển động thì đổi ngay.
+  - Mô hình 3D một tấm pin trong section "Giải pháp" (người dùng 20/10/2026; `solar-panel-showcase.tsx` + `solar-panel-scene.tsx`):
+    từ lg ở cột trái dưới phần chữ (danh sách bên phải `row-span-2`), dưới lg đứng sau danh sách; khung 4:3. Dựng hoàn toàn
+    bằng hình học + vật liệu trong code (tấm 1722 × 1134 × 35 mm, 120 nửa cell xanh đen vẽ bằng canvas dưới kính clearcoat, khung
+    nhôm có gờ, mặt sau có tấm nền, 3 hộp đấu dây, cáp, nhãn trơn không ghi thông số); môi trường phản chiếu là phòng chụp tự dựng
+    (RoomEnvironment của three cho vệt sáng gắt làm cell bạc màu). Kéo / vuốt ngang để xoay quanh tâm (bàn xoay, nghiêng dọc
+    trong khoảng hẹp để không chạm đất), phím mũi tên khi focus, không tự xoay, không phóng to / dịch chuyển; `touch-action:
+    pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong suốt, mờ dần theo bán kính (chèn vào shader của
+    `ShadowMaterial`; r186 đã bỏ `PCFSoftShadowMap`). Ánh sáng / bóng theo `useResolvedTheme`. Chỉ tải three.js khi khung cách
+    màn hình 300px; máy không có WebGL2, bật tiết kiệm dữ liệu hoặc lỗi renderer thì hiện ảnh tĩnh
+    `public/images/landing/solar-panel-{light,dark}.webp` – chụp từ chính khung hình đầu của cảnh (đổi camera / tư thế / ánh
+    sáng thì chụp lại, nếu không lúc canvas thay ảnh sẽ thấy nhảy). Điện thoại / cảm ứng: dpr ≤ 1,5, bản đồ bóng và hoạ tiết nhỏ hơn.
+  Chuyển động chỉ transform/opacity, không thư viện: `ld-rise` (chữ, nút hero), khối nội dung bọc `<Reveal>`
+  (IntersectionObserver, hiện một lần khi cuộn tới). `prefers-reduced-motion` tắt hết và hiện nội dung ngay. Favicon sinh từ
   `public/images/Logo.png` (`public/favicon-32/48.png`, `apple-touch-icon.png`).
 - `AuthLayout` – theo `auth_portal`: lưới 12 cột, panel `primary-container` bên trái
   (`lg:col-span-5`: tiêu đề "Chuyển dịch Năng lượng Xanh cho Ngôi nhà Việt", ảnh nhà, 2 ô số liệu
@@ -422,7 +447,7 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
 
 | Route             | Layout         | Trang                                                      |
 | ----------------- | -------------- | ---------------------------------------------------------- |
-| `/`               | `PublicLayout` | `LandingPage` – brief và direction ở `docs/design/landing-brief.md` |
+| `/`               | `PublicLayout` | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai") |
 | `/login`          | `AuthLayout`   | `LoginPage`                                                 |
 | `/register`       | `AuthLayout`   | `RegisterPage`                                              |
 | `/forgot-password`| `AuthLayout`   | `ForgotPasswordPage`                                        |
@@ -509,7 +534,8 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
 - Mỗi màn = 1 route + 1 file dữ liệu trong `src/data/`. Không hard-code dữ liệu trong JSX.
 - Khi dựng xong một màn: chạy dev, chụp màn hình, đặt cạnh `screen.png`, liệt kê khác biệt (spacing, màu, font size, icon) rồi sửa. Chấp nhận sai lệch ≤ 4px.
 - Không cài thêm thư viện UI khác (MUI, Ant, Chakra…). Ngoại lệ đã chốt: `sonner` chỉ dùng cho toast;
-  `three` + `@react-three/fiber` chỉ cho mô phỏng 3D (05/10/2026).
+  `three` + `@react-three/fiber` chỉ cho 3D: mô phỏng (05/10/2026) và tấm pin ở trang chủ (20/10/2026); không thêm drei, dùng
+  module trong `three/examples/jsm`.
 - Không sửa bất kỳ file nào trong `design/stitch/stitch_smart_solar_customer_portal/`.
 
 ## Lệnh
