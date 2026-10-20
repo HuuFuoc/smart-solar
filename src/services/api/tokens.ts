@@ -1,12 +1,5 @@
-/*
- * Kho token phía client.
- *
- * Swagger trả token trong body (AuthTokensResponse) chứ không phải cookie httpOnly,
- * nên KHÔNG dùng withCredentials:
- * - accessToken giữ trong bộ nhớ (mất khi reload → khôi phục bằng refresh).
- * - refreshToken lưu localStorage khi người dùng tick "Ghi nhớ đăng nhập",
- *   ngược lại lưu sessionStorage (mất khi đóng tab).
- */
+// Lưu token phía client. Token trả trong body nên không dùng withCredentials
+// accessToken trong bộ nhớ, refreshToken trong localStorage nếu chọn "Ghi nhớ đăng nhập", không thì sessionStorage
 
 const REFRESH_KEY = 'smart-solar.refresh-token'
 /** Nhớ nơi đã lưu refreshToken để lần sau đọc/ghi đúng chỗ. */
@@ -77,7 +70,7 @@ export function setRefreshToken(token: string | null, store: TokenStore = curren
       window.localStorage.removeItem(STORE_KEY)
     }
   } catch {
-    /* storage bị chặn – bỏ qua, phiên vẫn chạy được trong bộ nhớ */
+    /* storage bị chặn, bỏ qua, phiên vẫn chạy được trong bộ nhớ */
   }
 }
 

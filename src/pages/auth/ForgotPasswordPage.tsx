@@ -11,10 +11,12 @@ import { ROUTES } from '@/routes/paths'
 import { useForgotPasswordMutation } from '@/hooks/useAuthMutations'
 import { forgotContent } from '@/data/auth'
 
-const schema = z.object({ email: z.email({ error: (issue) => (issue.input ? 'Email không hợp lệ' : 'Vui lòng nhập email') }) })
+const schema = z.object({
+  email: z.email({ error: (issue) => (issue.input ? 'Email không hợp lệ' : 'Vui lòng nhập email') }),
+})
 type ForgotValues = z.infer<typeof schema>
 
-/** /forgot-password – sub-card "Quên mật khẩu?" của auth_portal. */
+/** /forgot-password, sub-card "Quên mật khẩu?" của auth_portal. */
 export function ForgotPasswordPage() {
   const navigate = useNavigate()
   const forgotMutation = useForgotPasswordMutation()
@@ -27,16 +29,13 @@ export function ForgotPasswordPage() {
 
   const submitting = forgotMutation.isPending
 
-  /*
-   * Thông báo luôn trung tính, kể cả khi email không tồn tại hoặc API trả lỗi:
-   * không để lộ email nào đang có trong hệ thống.
-   */
+  // Luôn báo trung tính để không lộ email nào đang có trong hệ thống
   const onSubmit = handleSubmit(async (values) => {
     if (submitting) return
     try {
       await forgotMutation.mutateAsync({ email: values.email })
     } catch {
-      // nuốt lỗi có chủ đích – xem ghi chú ở trên
+      // nuốt lỗi có chủ đích, xem ghi chú ở trên
     } finally {
       setSent(true)
       toast.success(forgotContent.toastSuccess)

@@ -35,7 +35,7 @@ const schema = z
 
 type RegisterValues = z.infer<typeof schema>
 
-/** Tên field trong ApiError.details (theo RegisterRequest) → field của form. */
+/** Đổi tên field trong ApiError.details (theo RegisterRequest) sang field của form */
 const SERVER_FIELD_MAP: Record<string, keyof RegisterValues> = {
   email: 'email',
   password: 'password',
@@ -46,7 +46,7 @@ const SERVER_FIELD_MAP: Record<string, keyof RegisterValues> = {
   phonenumber: 'phone',
 }
 
-/** /register – view "Đăng ký tài khoản Khách hàng" của auth_portal. */
+/** /register, view "Đăng ký tài khoản Khách hàng" của auth_portal. */
 export function RegisterPage() {
   const navigate = useNavigate()
   const { user, status } = useAuth()
@@ -208,12 +208,22 @@ export function RegisterPage() {
           <input type="checkbox" className="mt-1 h-4 w-4 rounded accent-primary" {...register('terms')} />
           <span className="text-body-sm text-on-surface">
             {registerContent.termsBefore}
-            {/* Tab mới: điều hướng tại chỗ sẽ xoá form đang điền dở. */}
-            <Link to={ROUTES.comingSoon} target="_blank" rel="noreferrer" className="font-semibold text-accent-fg underline">
+            {/* Mở tab mới để không mất form đang điền dở */}
+            <Link
+              to={ROUTES.comingSoon}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-accent-fg underline"
+            >
               {registerContent.termsLink}
             </Link>
             {registerContent.termsMiddle}
-            <Link to={ROUTES.comingSoon} target="_blank" rel="noreferrer" className="font-semibold text-accent-fg underline">
+            <Link
+              to={ROUTES.comingSoon}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-accent-fg underline"
+            >
               {registerContent.privacyLink}
             </Link>
             {registerContent.termsAfter}

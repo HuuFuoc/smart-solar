@@ -2,10 +2,7 @@ import type { ReactNode } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/*
- * Thanh hành động dính đáy màn hình của các màn khảo sát: icon + tiến độ bên trái, nhóm nút bên phải.
- * installation_task / maintenance_task dùng biến thể `pulse`: chấm xanh nhấp nháy thay ô icon.
- */
+// Thanh hành động dính đáy màn hình. Biến thể `pulse` dùng chấm nhấp nháy thay icon
 export type ActionDockProps = {
   /** Bỏ trống khi dùng `pulse` */
   icon?: string
@@ -19,15 +16,7 @@ export type ActionDockProps = {
   className?: string
 }
 
-export function ActionDock({
-  icon,
-  pulse = false,
-  title,
-  description,
-  leading,
-  children,
-  className,
-}: ActionDockProps) {
+export function ActionDock({ icon, pulse = false, title, description, leading, children, className }: ActionDockProps) {
   if (leading) {
     return (
       <div className={cn('sticky bottom-4 z-30 mt-space-md w-full', className)}>
@@ -44,10 +33,7 @@ export function ActionDock({
       <div className="flex w-full flex-col items-center justify-between gap-space-md rounded-2xl bg-surface-container-lowest/95 p-space-md shadow-level-3 backdrop-blur-xl sm:flex-row">
         <div className="flex items-center gap-space-sm">
           {pulse ? (
-            <span
-              aria-hidden="true"
-              className="ml-1 h-3 w-3 shrink-0 rounded-full bg-status-in-progress-dot"
-            />
+            <span aria-hidden="true" className="ml-1 h-3 w-3 shrink-0 rounded-full bg-status-in-progress-dot" />
           ) : (
             icon && (
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">

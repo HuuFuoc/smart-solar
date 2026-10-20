@@ -1,14 +1,6 @@
-/*
- * VIẾT TAY – swagger chỉ khai "200 OK" cho tag PreSurveySurface, không có schema response.
- * Tên kiểu và field lấy đúng theo SmartSolar.Modules.PreSurvey (GetPreSurveySurface, UpdatePreSurveySurface,
- * Surface/SurfaceObstacle) và Contracts.PreSurveys của image 09/10/2026 (commit 833ff3c), đã đối chiếu response thật.
- * Khi backend khai response trong swagger, `npm run gen:api` sẽ ghi đè file này bằng bản sinh tự động.
- */
+// Viết tay vì swagger không có schema response (tag PreSurveySurface)
 
-/**
- * Vật cản hình chữ nhật trên mặt lắp, mọi số đo là mét: (xM, yM) là góc trên-trái (gần gốc toạ độ nhất),
- * widthM theo trục X (chiều rộng mặt lắp), lengthM theo trục Y (xuôi dốc). heightM chỉ dùng để vẽ 3D.
- */
+/** Vật cản hình chữ nhật, đơn vị mét. (xM, yM) là góc trên-trái, heightM chỉ dùng để vẽ 3D */
 export type SurfaceObstacle = {
   name: string
   xM: number
@@ -18,7 +10,7 @@ export type SurfaceObstacle = {
   heightM: number | null
 }
 
-/** Số liệu khách khai ở form cũ (PUT /api/pre-surveys/{id}); không phải diện tích backend tính từ hình học. */
+/** Số liệu khách khai qua PUT /api/pre-surveys/{id} */
 export type DeclaredSurveyValues = {
   totalAreaM2: number | null
   usableAreaM2: number | null
@@ -36,14 +28,14 @@ export type SurfaceConventions = {
   obstacleHeight: string
 }
 
-/** GET /api/pre-surveys/{id}/surface – chỉ khách hàng sở hữu bản đánh giá. */
+/** GET /api/pre-surveys/{id}/surface, chỉ khách hàng sở hữu bản đánh giá. */
 export type PreSurveySurfaceView = {
   preSurveyId: string
   /** Tên enum PreSurveyStatus viết hoa: "DRAFT", "SUBMITTED". */
   status: string
-  /** Mỗi lần ghi bản đánh giá (kể cả form cũ) tăng 1; gửi lại làm expectedRevision của PUT surface. */
+  /** Tăng mỗi lần ghi bản đánh giá, gửi làm expectedRevision */
   revision: number
-  /** Chỉ tăng khi hình học đổi (kích thước, độ dốc, hướng, vật cản); gửi làm expectedGeometryVersion của POST simulation. */
+  /** Chỉ tăng khi hình học đổi, gửi làm expectedGeometryVersion khi chạy mô phỏng */
   geometryVersion: number
   /** Đã lưu kích thước và danh sách vật cản (có thể rỗng) ít nhất một lần. */
   surfaceDefined: boolean
@@ -52,7 +44,7 @@ export type PreSurveySurfaceView = {
   /** Dùng chung cột với tiltDegree / azimuthDegree của form cũ. */
   surfaceTiltDegree: number | null
   surfaceAzimuthDegree: number | null
-  /** Mảng rỗng cả khi chưa lưu mặt lắp – xem `surfaceDefined`. */
+  /** Mảng rỗng cả khi chưa lưu mặt lắp, xem `surfaceDefined`. */
   obstacles: SurfaceObstacle[]
   declared: DeclaredSurveyValues
   latitude: number | null

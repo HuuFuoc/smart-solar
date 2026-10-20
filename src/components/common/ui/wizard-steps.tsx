@@ -4,20 +4,14 @@ import { cx } from '@/utils/cx'
 export type WizardStep = {
   label: string
   state: 'done' | 'active' | 'upcoming'
-  /** Một dòng tóm tắt điều đã nhập ở bước đã xong (vd. "30 × 15 m, 2 vật cản"). */
+  /** Một dòng tóm tắt điều đã nhập ở bước đã xong (vd. "30 x 15 m, 2 vật cản"). */
   summary?: string
   /** Có thì bước (đã xong) bấm được để quay lại sửa; không có thì chỉ hiển thị. */
   onSelect?: () => void
 }
 
-/*
-  Thanh các bước của form nhiều bước (người dùng 10/10/2026: "các bước chưa chuẩn UI UX", chọn kiểu vòng số + đường nối).
-  Khác `Stepper` (dải tiến độ của một hành trình, chỉ để xem): ở đây là chỗ điều hướng.
-  - Máy tính (md+): vòng tròn đánh số nối bằng đường. Xong: vòng xanh có dấu ✓ kèm dòng tóm tắt, bấm để quay lại sửa;
-    đang làm: vòng xanh có số, quầng nhạt, chữ đậm; chưa tới: vòng viền xám. Đường nối xanh tới bước đang làm.
-  - Điện thoại: một khối gọn "Bước 3/5: Mặt lắp", thanh tiến độ chia đoạn và "Tiếp theo: …" (năm nhãn không vừa 360px).
-  Vòng tròn là điểm mốc tiến độ nên dùng rounded-full (quy tắc bán kính chỉ cho phép ở hình tròn thật).
-*/
+// Thanh các bước của form nhiều bước, bấm bước đã xong để quay lại
+// Từ md: vòng số nối bằng đường. Điện thoại: khối gọn "Bước 3/5" + thanh tiến độ
 export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; label: string; className?: string }) {
   const activeIndex = steps.findIndex((s) => s.state === 'active')
   const current = steps[activeIndex]
@@ -54,14 +48,23 @@ export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; 
                 {step.state === 'done' && <span className="sr-only">, đã xong</span>}
               </span>
               {(step.summary || step.state === 'active') && (
-                <span className={cx('mt-0.5 block text-meta line-clamp-2', step.state === 'active' ? 'text-accent-fg' : 'text-fg-3')}>
+                <span
+                  className={cx(
+                    'mt-0.5 block text-meta line-clamp-2',
+                    step.state === 'active' ? 'text-accent-fg' : 'text-fg-3',
+                  )}
+                >
                   {step.state === 'active' ? 'Đang làm' : step.summary}
                 </span>
               )}
             </>
           )
           return (
-            <li key={step.label} aria-current={step.state === 'active' ? 'step' : undefined} className="relative min-w-0 flex-1 px-2 text-center">
+            <li
+              key={step.label}
+              aria-current={step.state === 'active' ? 'step' : undefined}
+              className="relative min-w-0 flex-1 px-2 text-center"
+            >
               {i < steps.length - 1 && (
                 // Đường nối từ mép vòng này sang mép vòng sau (tâm vòng ở giữa cột, vòng rộng 2rem).
                 <span
@@ -94,9 +97,16 @@ export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; 
           <p className="text-body text-fg-2">
             Bước {activeIndex + 1}/{steps.length}: <span className="font-semibold text-fg">{current.label}</span>
           </p>
-          <div aria-hidden className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+          <div
+            aria-hidden
+            className="mt-2 grid gap-1"
+            style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
+          >
             {steps.map((step) => (
-              <span key={step.label} className={cx('h-1.5 rounded-control', step.state === 'upcoming' ? 'bg-line' : 'bg-accent')} />
+              <span
+                key={step.label}
+                className={cx('h-1.5 rounded-control', step.state === 'upcoming' ? 'bg-line' : 'bg-accent')}
+              />
             ))}
           </div>
           {next && <p className="mt-2 text-meta text-fg-3">Tiếp theo: {next.label}</p>}

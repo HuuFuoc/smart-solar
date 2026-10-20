@@ -169,7 +169,11 @@ export const permissionModules: PermissionModule[] = [
     columns: 2,
     items: [
       { id: 'view-users', label: 'Xem người dùng', description: 'Tra danh bạ, hồ sơ và trạng thái' },
-      { id: 'create-edit-users', label: 'Tạo và sửa người dùng', description: 'Cấp tài khoản và sửa thông tin liên hệ' },
+      {
+        id: 'create-edit-users',
+        label: 'Tạo và sửa người dùng',
+        description: 'Cấp tài khoản và sửa thông tin liên hệ',
+      },
       {
         id: 'deactivate-accounts',
         label: 'Ngừng hoặc xoá tài khoản',
@@ -238,7 +242,15 @@ export const roleDefaults: Record<RoleId, string[]> = {
     (id) => !['deactivate-accounts', 'assign-admin-roles', 'bypass-signoff', 'purge-chunks'].includes(id),
   ),
   'sales-rep': ['view-users', 'view-quotations', 'authorize-discounts', 'publish-skus', 'baseline-cost'],
-  'field-tech': ['view-users', 'view-quotations', 'publish-skus', 'cec-presets', 'warranty-terms', 'upload-pdfs', 'reindex'],
+  'field-tech': [
+    'view-users',
+    'view-quotations',
+    'publish-skus',
+    'cec-presets',
+    'warranty-terms',
+    'upload-pdfs',
+    'reindex',
+  ],
   customer: ['view-users', 'view-quotations'],
   'compliance-auditor': ['view-users', 'view-quotations', 'baseline-cost', 'cec-presets', 'upload-pdfs'],
 }

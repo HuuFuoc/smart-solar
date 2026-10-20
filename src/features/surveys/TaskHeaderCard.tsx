@@ -4,10 +4,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { StatusBadge } from '@/components/common/stitch-ui/StatusBadge'
 import { cn } from '@/utils/cn'
 
-/*
- * Card ngữ cảnh đầu trang của luồng khảo sát: mã dự án, trạng thái, tiêu đề, danh bạ và địa chỉ.
- * Dùng lại ở cả ba màn /tech/surveys/:id, .../verify và .../photos.
- */
+// Card đầu trang của luồng khảo sát, dùng ở cả ba màn
 export type TaskHeaderContact = { icon: string; label: string; value: string }
 
 export type TaskHeaderCardProps = {
@@ -24,7 +21,7 @@ export type TaskHeaderCardProps = {
   location?: { address: string; meta: string }
   /** Nhóm nút ở mép phải card (Reject / Save Draft / Complete & Sign) */
   actions?: ReactNode
-  /** Nội dung thêm dưới lưới danh bạ (stepper của màn ảnh tư liệu…) */
+  /** Nội dung thêm dưới lưới danh bạ (stepper của màn ảnh tư liệu...) */
   children?: ReactNode
   className?: string
 }
@@ -52,7 +49,12 @@ export function TaskHeaderCard({
       <div className="relative z-10 flex flex-col gap-space-md lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-space-xs">
           {eyebrow && <div className="flex flex-wrap items-center gap-space-xs">{eyebrow}</div>}
-          <div className={cn('flex flex-wrap items-center gap-space-xs', !code && !statusLabel && !autosaveLabel && 'hidden')}>
+          <div
+            className={cn(
+              'flex flex-wrap items-center gap-space-xs',
+              !code && !statusLabel && !autosaveLabel && 'hidden',
+            )}
+          >
             {code && (
               <StatusBadge variant="primary" dot={false} className="tracking-wide">
                 {code}

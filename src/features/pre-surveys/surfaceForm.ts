@@ -3,23 +3,18 @@ import type { UpdatePreSurveySurfaceRequest } from '@/types/req/preSurveySurface
 import type { UpdatePreSurveyRequest } from '@/types/req/preSurveysReq'
 import type { PreSurveySurfaceView, SurfaceObstacle } from '@/types/res/preSurveySurfaceRes'
 
-/*
- * Form mặt lắp: hình chữ nhật rộng × dài (mét, đo trên mặt nghiêng), độ dốc, hướng và các vật cản chữ nhật.
- * Quy ước của backend (GetPreSurveySurface.SurfaceConventions): gốc (0, 0) là góc trên-trái = mép cao của mái;
- * X theo chiều rộng, Y xuôi dốc theo chiều dài; (xM, yM) là góc trên-trái của vật cản.
- * Ô nhập giữ dạng chuỗi (khách gõ "1,5"); kéo thả trên hình ghi lại chuỗi đã làm tròn.
- * Số liệu khai của form cũ (tổng diện tích, diện tích dùng được, có vật cản) tự tính từ mặt lắp (người dùng chốt
- * 09/10/2026); khách vẫn sửa được hai ô diện tích.
- */
+// Form mặt lắp: một hình chữ nhật rộng x dài (mét) cùng các vật cản hình chữ nhật trên đó.
+// Gốc (0, 0) là góc trên-trái (mép cao của mái), X theo chiều rộng, Y xuôi theo dốc.
+// Ô nhập giữ dạng chuỗi (khách gõ "1,5"), chỉ đổi sang số khi tính toán hoặc gửi backend.
 
-/** Giới hạn mặc định của backend (SolarSimulationOptions.Limits); cấu hình backend đổi thì sửa ở đây. */
+/** Giới hạn lấy theo SolarSimulationOptions.Limits của backend */
 export const SURFACE_LIMITS = { maxSideM: 200, maxObstacles: 50, maxNameLength: 100, maxObstacleHeightM: 100 } as const
 
-/** Bước kéo thả / phím mũi tên trên hình: 0,1 m; giữ Shift: 1 m. */
+/** Bước dịch vật cản bằng phím mũi tên (giữ Shift thì 1 m) */
 export const NUDGE_M = 0.1
 
 export type ObstacleForm = {
-  /** Khoá ổn định cho React (không gửi backend). */
+  /** Chỉ dùng làm key React, không gửi backend */
   key: string
   name: string
   xM: string
@@ -35,7 +30,7 @@ export type SurfaceForm = {
   tiltDegree: string
   azimuthDegree: string
   obstacles: ObstacleForm[]
-  /** Khách tự khai diện tích thay vì lấy theo mặt lắp. */
+  /** true: khách tự khai diện tích, false: diện tích tự tính từ mặt lắp */
   declaredManual: boolean
   totalAreaM2: string
   usableAreaM2: string
@@ -55,27 +50,25 @@ export const EMPTY_SURFACE_FORM: SurfaceForm = {
 let keySeed = 0
 export const newObstacleKey = () => `o${Date.now().toString(36)}${(keySeed++).toString(36)}`
 
-/** Làm tròn mét về mm (3 chữ số): tránh 1.2000000000000002 sau khi kéo thả. */
+/** Làm tròn 3 chữ số thập phân (tới mm), tránh lỗi số thực như 1.2000000000000002 */
 export const round3 = (n: number) => Math.round(n * 1000) / 1000
 
-/** Số → chuỗi ô nhập kiểu Việt ("1,5"); bỏ số 0 thừa. */
+/** Số thành chữ để đặt vào ô nhập: 1.5 thành "1,5" */
 export function meterText(n: number) {
   return String(round3(n)).replace('.', ',')
 }
 
-/** Đọc ô số; rỗng / sai → null. */
+/** Đọc ô số, ô trống hoặc gõ sai thì trả null */
 export function num(value: string) {
   const n = toNumber(value)
   return n === null || !Number.isFinite(n) ? null : n
 }
 
-/** Đọc ô diện tích: "1.200" là một nghìn hai trăm m² (kiểu Việt), không phải 1,2. */
+/** Đọc ô diện tích, "1.200" là 1200 */
 export function areaNum(value: string) {
   const n = toArea(value)
   return n === null || !Number.isFinite(n) ? null : n
 }
-
-/* ------------------------------------------------------------------ chuyển đổi server ⇄ form */
 
 export function surfaceToForm(view: PreSurveySurfaceView): SurfaceForm {
   const declaredTotal = view.declared.totalAreaM2
@@ -98,15 +91,17 @@ export function surfaceToForm(view: PreSurveySurfaceView): SurfaceForm {
     totalAreaM2: declaredTotal == null ? '' : meterText(declaredTotal),
     usableAreaM2: declaredUsable == null ? '' : meterText(declaredUsable),
   }
-  // Số khai trên server khác số tính từ mặt lắp → khách đã tự khai lần trước: giữ chế độ tự khai.
+
+  // Diện tích trên server khác số tự tính nghĩa là lần trước khách đã tự khai
   const auto = autoDeclared(form)
-  if (view.surfaceDefined && auto && (declaredTotal !== auto.totalAreaM2 || declaredUsable !== auto.usableAreaM2)) form.declaredManual = true
+  if (view.surfaceDefined && auto && (declaredTotal !== auto.totalAreaM2 || declaredUsable !== auto.usableAreaM2))
+    form.declaredManual = true
   return form
 }
 
-/* ------------------------------------------------------------------ hình học */
+// Hình học
 
-/** Vật cản đã đọc được thành số (bỏ ô còn trống hoặc sai). */
+/** Các vật cản đã nhập đủ số (bỏ qua vật cản còn ô trống hoặc gõ sai) */
 export function parsedObstacles(form: SurfaceForm): SurfaceObstacle[] {
   return form.obstacles.flatMap((o) => {
     const xM = num(o.xM)
@@ -119,10 +114,12 @@ export function parsedObstacles(form: SurfaceForm): SurfaceObstacle[] {
 }
 
 /**
- * Diện tích hợp của các vật cản trong mặt lắp (m²): cắt theo mép mặt lắp, phần chồng nhau chỉ tính một lần
- * (nén toạ độ, tối đa 50 vật cản nên ≤ 100 × 100 ô).
+ * Tổng diện tích các vật cản nằm trong mặt lắp, phần chồng lên nhau chỉ tính một lần.
+ * Cách làm: lấy mọi toạ độ mép của vật cản chia mặt lắp thành lưới ô nhỏ,
+ * ô nào có tâm nằm trong ít nhất một vật cản thì cộng diện tích ô đó.
  */
 export function obstacleUnionArea(obstacles: SurfaceObstacle[], widthM: number, lengthM: number) {
+  // Cắt từng vật cản theo mép mặt lắp, bỏ vật cản nằm hẳn bên ngoài
   const rects = obstacles
     .map((o) => ({
       x1: Math.max(0, o.xM),
@@ -139,13 +136,14 @@ export function obstacleUnionArea(obstacles: SurfaceObstacle[], widthM: number, 
     for (let j = 0; j < ys.length - 1; j++) {
       const cx = (xs[i]! + xs[i + 1]!) / 2
       const cy = (ys[j]! + ys[j + 1]!) / 2
-      if (rects.some((r) => cx > r.x1 && cx < r.x2 && cy > r.y1 && cy < r.y2)) area += (xs[i + 1]! - xs[i]!) * (ys[j + 1]! - ys[j]!)
+      if (rects.some((r) => cx > r.x1 && cx < r.x2 && cy > r.y1 && cy < r.y2))
+        area += (xs[i + 1]! - xs[i]!) * (ys[j + 1]! - ys[j]!)
     }
   }
   return area
 }
 
-/** Số liệu khai tính từ mặt lắp: tổng = rộng × dài; dùng được = tổng − phần vật cản. null khi chưa đủ kích thước. */
+/** Diện tích tự tính: tổng = rộng x dài, dùng được = tổng - phần vật cản. null khi chưa đủ kích thước */
 export function autoDeclared(form: SurfaceForm) {
   const width = num(form.widthM)
   const length = num(form.lengthM)
@@ -156,8 +154,8 @@ export function autoDeclared(form: SurfaceForm) {
 }
 
 /**
- * Vật cản mới 1 × 1 m quanh giữa mặt lắp (nhỏ hơn nếu mặt lắp nhỏ hơn 1 m). Mỗi vật cản thêm sau lệch chéo 1,5 m để
- * không chồng khít lên vật cản trước (bấm "Thêm" ba lần không còn trông như một ô).
+ * Vật cản mới cỡ 1 x 1 m (nhỏ hơn nếu mặt lắp nhỏ hơn 1 m), đặt gần giữa mặt lắp.
+ * Mỗi vật cản thêm sau lệch chéo 1,5 m để không chồng khít lên vật cản trước.
  */
 export function newObstacle(form: SurfaceForm): ObstacleForm {
   const width = num(form.widthM) ?? 0
@@ -165,7 +163,8 @@ export function newObstacle(form: SurfaceForm): ObstacleForm {
   const w = width > 0 ? Math.min(1, width) : 1
   const l = length > 0 ? Math.min(1, length) : 1
   const shift = (form.obstacles.length % 4) * 1.5
-  const place = (side: number, size: number) => (side > size ? Math.min(side - size, Math.max(0, (side - size) / 2 + shift)) : 0)
+  const place = (side: number, size: number) =>
+    side > size ? Math.min(side - size, Math.max(0, (side - size) / 2 + shift)) : 0
   return {
     key: newObstacleKey(),
     name: `Vật cản ${form.obstacles.length + 1}`,
@@ -177,10 +176,7 @@ export function newObstacle(form: SurfaceForm): ObstacleForm {
   }
 }
 
-/**
- * Bản sao của vật cản thứ `index` (cùng tên, cỡ, chiều cao) cho mái có nhiều vật cản giống nhau (dãy cục nóng máy lạnh,
- * ống thông gió): đặt ngay bên phải, cách 0,5 m; hết chỗ thì xuống dưới; vẫn hết thì chồng lên chỗ cũ để khách kéo đi.
- */
+/** Nhân bản vật cản thứ `index`: đặt ngay bên phải cách 0,5 m, hết chỗ thì xuống dưới, vẫn hết thì để chồng lên */
 export function duplicateObstacle(form: SurfaceForm, index: number): ObstacleForm {
   const o = form.obstacles[index]!
   const width = num(form.widthM) ?? 0
@@ -197,7 +193,7 @@ export function duplicateObstacle(form: SurfaceForm, index: number): ObstacleFor
   return { ...o, key: newObstacleKey(), xM: meterText(nx), yM: meterText(ny) }
 }
 
-/** Gợi ý ở ô tên vật cản (vẫn gõ tên khác được): những thứ hay gặp trên mái nhà xưởng. */
+/** Gợi ý tên vật cản hay gặp trên mái, vẫn gõ tên khác được */
 export const OBSTACLE_NAME_SUGGESTIONS = [
   'Bồn nước',
   'Cục nóng máy lạnh',
@@ -211,10 +207,11 @@ export const OBSTACLE_NAME_SUGGESTIONS = [
   'Máng xối',
 ]
 
-/* ------------------------------------------------------------------ kiểm tra (bám đúng UpdatePreSurveySurfaceCommandValidator) */
+// Kiểm tra form (theo UpdatePreSurveySurfaceCommandValidator của backend)
 
 export type ObstacleField = 'name' | 'xM' | 'yM' | 'widthM' | 'lengthM' | 'heightM'
-/** Khoá lỗi: ô của mặt lắp, hoặc `obstacles.<i>.<field>` cho ô của vật cản. */
+
+/** Lỗi theo ô: key là tên ô của mặt lắp, hoặc `obstacles.<i>.<field>` cho ô của vật cản thứ i */
 export type SurfaceErrors = Record<string, string>
 
 export const obstacleErrorKey = (index: number, field: ObstacleField) => `obstacles.${index}.${field}`
@@ -222,9 +219,8 @@ export const obstacleErrorKey = (index: number, field: ObstacleField) => `obstac
 const OBSTACLE_FIELDS: ObstacleField[] = ['name', 'xM', 'yM', 'widthM', 'lengthM', 'heightM']
 
 /**
- * Lỗi của các ô SỐ của vật cản để báo ngay khi gõ (số quá lớn, vật cản to hơn / tràn khỏi mặt lắp), không đợi bấm Tiếp tục
- * (người test 10/10/2026 gõ 1000000 thấy hình "tràn" mà không biết vì sao). Ô đang trống thì chưa báo "Nhập …" để khách xoá đi
- * gõ lại không bị nháy đỏ; tên vật cản vẫn chỉ kiểm khi bấm Tiếp tục.
+ * Lỗi của các ô số của vật cản, hiện ngay khi gõ (không đợi bấm Tiếp tục) để khách biết vì sao hình bị tràn.
+ * Ô đang trống thì chưa báo, để khách xoá đi gõ lại không bị nháy đỏ.
  */
 export function liveObstacleErrors(form: SurfaceForm): SurfaceErrors {
   const live: SurfaceErrors = {}
@@ -235,20 +231,26 @@ export function liveObstacleErrors(form: SurfaceForm): SurfaceErrors {
   return live
 }
 
-/** Vật cản thứ `index` có ô nào đang báo lỗi không (dấu lỗi ở danh sách vật cản). */
-export const hasObstacleError = (errors: SurfaceErrors, index: number) => OBSTACLE_FIELDS.some((f) => errors[obstacleErrorKey(index, f)])
+/** Vật cản thứ `index` có ô nào đang báo lỗi không */
+export const hasObstacleError = (errors: SurfaceErrors, index: number) =>
+  OBSTACLE_FIELDS.some((f) => errors[obstacleErrorKey(index, f)])
 
 function rangeIssue(
   value: string,
   label: string,
   min: number,
   max: number,
-  { minExclusive = false, required = true, parse = toNumber }: { minExclusive?: boolean; required?: boolean; parse?: (v: string) => number | null } = {},
+  {
+    minExclusive = false,
+    required = true,
+    parse = toNumber,
+  }: { minExclusive?: boolean; required?: boolean; parse?: (v: string) => number | null } = {},
 ) {
   const n = parse(value)
   if (n === null) return required ? `Nhập ${label}.` : null
   if (!Number.isFinite(n)) return `Nhập ${label} bằng số.`
-  if (minExclusive ? n <= min : n < min) return minExclusive ? `${cap(label)} phải lớn hơn ${min}.` : `${cap(label)} từ ${min} đến ${fmt(max)}.`
+  if (minExclusive ? n <= min : n < min)
+    return minExclusive ? `${cap(label)} phải lớn hơn ${min}.` : `${cap(label)} từ ${min} đến ${fmt(max)}.`
   if (n > max) return `${cap(label)} tối đa ${fmt(max)}.`
   return null
 }
@@ -265,51 +267,70 @@ export function validateSurface(form: SurfaceForm): SurfaceErrors {
   add('lengthM', rangeIssue(form.lengthM, 'chiều dài theo dốc (m)', 0, SURFACE_LIMITS.maxSideM, { minExclusive: true }))
   add('tiltDegree', rangeIssue(form.tiltDegree, 'độ dốc (độ)', 0, 90))
   if (!form.azimuthDegree.trim()) add('azimuthDegree', 'Chọn hướng mặt mái.')
-  if (form.obstacles.length > SURFACE_LIMITS.maxObstacles) add('obstacles', `Tối đa ${SURFACE_LIMITS.maxObstacles} vật cản.`)
+  if (form.obstacles.length > SURFACE_LIMITS.maxObstacles)
+    add('obstacles', `Tối đa ${SURFACE_LIMITS.maxObstacles} vật cản.`)
 
   const width = num(form.widthM)
   const length = num(form.lengthM)
   form.obstacles.forEach((o, i) => {
     const key = (field: ObstacleField) => obstacleErrorKey(i, field)
     if (!o.name.trim()) add(key('name'), 'Đặt tên vật cản.')
-    else if (o.name.trim().length > SURFACE_LIMITS.maxNameLength) add(key('name'), `Tên tối đa ${SURFACE_LIMITS.maxNameLength} ký tự.`)
+    else if (o.name.trim().length > SURFACE_LIMITS.maxNameLength)
+      add(key('name'), `Tên tối đa ${SURFACE_LIMITS.maxNameLength} ký tự.`)
     add(key('xM'), rangeIssue(o.xM, 'vị trí ngang (m)', 0, SURFACE_LIMITS.maxSideM))
     add(key('yM'), rangeIssue(o.yM, 'vị trí dọc (m)', 0, SURFACE_LIMITS.maxSideM))
     add(key('widthM'), rangeIssue(o.widthM, 'bề ngang (m)', 0, SURFACE_LIMITS.maxSideM, { minExclusive: true }))
     add(key('lengthM'), rangeIssue(o.lengthM, 'bề dọc (m)', 0, SURFACE_LIMITS.maxSideM, { minExclusive: true }))
-    add(key('heightM'), rangeIssue(o.heightM, 'chiều cao (m)', 0, SURFACE_LIMITS.maxObstacleHeightM, { required: false }))
-    // Vật cản phải nằm trọn trong mặt lắp; chạm mép được. To hơn cả mặt lắp thì báo ở ô cỡ (dời vị trí không cứu được, và
-    // kéo trên hình theo chiều đó đứng im – người test 10/10/2026 tưởng kéo dọc bị hỏng); còn lại báo ở ô vị trí.
+    add(
+      key('heightM'),
+      rangeIssue(o.heightM, 'chiều cao (m)', 0, SURFACE_LIMITS.maxObstacleHeightM, { required: false }),
+    )
+    // Vật cản phải nằm trọn trong mặt lắp (chạm mép thì được).
+    // To hơn cả mặt lắp thì báo ở ô kích thước (dời vị trí cũng không sửa được), còn lại báo ở ô vị trí.
     const x = num(o.xM)
     const y = num(o.yM)
     const w = num(o.widthM)
     const l = num(o.lengthM)
-    if (width && w !== null && w > width) add(key('widthM'), `Bề ngang lớn hơn chiều rộng mặt lắp (${meterText(width)} m).`)
-    else if (width && x !== null && w !== null && round3(x + w) > width) add(key('xM'), 'Vật cản tràn ra ngoài chiều rộng mặt lắp.')
-    if (length && l !== null && l > length) add(key('lengthM'), `Bề dọc lớn hơn chiều dài mặt lắp (${meterText(length)} m).`)
-    else if (length && y !== null && l !== null && round3(y + l) > length) add(key('yM'), 'Vật cản tràn ra ngoài chiều dài mặt lắp.')
+    if (width && w !== null && w > width)
+      add(key('widthM'), `Bề ngang lớn hơn chiều rộng mặt lắp (${meterText(width)} m).`)
+    else if (width && x !== null && w !== null && round3(x + w) > width)
+      add(key('xM'), 'Vật cản tràn ra ngoài chiều rộng mặt lắp.')
+    if (length && l !== null && l > length)
+      add(key('lengthM'), `Bề dọc lớn hơn chiều dài mặt lắp (${meterText(length)} m).`)
+    else if (length && y !== null && l !== null && round3(y + l) > length)
+      add(key('yM'), 'Vật cản tràn ra ngoài chiều dài mặt lắp.')
   })
 
-  // Số khai tự tính phải đạt luật của backend (UsableAreaM2 > 0): vật cản phủ kín mặt lắp thì dùng được = 0 → bị từ chối.
+  // Backend yêu cầu diện tích dùng được > 0, vật cản phủ kín mặt lắp thì bị từ chối
   const auto = autoDeclared(form)
   if (!form.declaredManual && auto && auto.usableAreaM2 <= 0) {
-    add('obstacles', 'Vật cản đang phủ kín mặt lắp nên diện tích dùng được bằng 0. Thu nhỏ vật cản hoặc tự khai diện tích.')
+    add(
+      'obstacles',
+      'Vật cản đang phủ kín mặt lắp nên diện tích dùng được bằng 0. Thu nhỏ vật cản hoặc tự khai diện tích.',
+    )
   }
 
   if (form.declaredManual) {
-    // Trần 1.000.000 m² (100 ha) chỉ để chặn số vô nghĩa, như form cũ.
-    add('totalAreaM2', rangeIssue(form.totalAreaM2, 'tổng diện tích (m²)', 0, 1_000_000, { minExclusive: true, parse: toArea }))
-    add('usableAreaM2', rangeIssue(form.usableAreaM2, 'diện tích dùng được (m²)', 0, 1_000_000, { minExclusive: true, parse: toArea }))
+    // Trần 1.000.000 m² chỉ để chặn số vô lý
+    add(
+      'totalAreaM2',
+      rangeIssue(form.totalAreaM2, 'tổng diện tích (m²)', 0, 1_000_000, { minExclusive: true, parse: toArea }),
+    )
+    add(
+      'usableAreaM2',
+      rangeIssue(form.usableAreaM2, 'diện tích dùng được (m²)', 0, 1_000_000, { minExclusive: true, parse: toArea }),
+    )
     const total = areaNum(form.totalAreaM2)
     const usable = areaNum(form.usableAreaM2)
-    if (total !== null && usable !== null && usable > total) add('usableAreaM2', 'Diện tích dùng được không được lớn hơn tổng diện tích.')
+    if (total !== null && usable !== null && usable > total)
+      add('usableAreaM2', 'Diện tích dùng được không được lớn hơn tổng diện tích.')
   }
   return errors
 }
 
 /**
- * Lỗi theo field từ server (FluentValidation, tên PascalCase: "SurfaceWidthM", "Obstacles[0].XM") → khoá của form.
- * Câu của server là tiếng Anh nên chỉ dùng để đánh dấu ô; câu hiển thị là câu chung tiếng Việt.
+ * Lỗi theo field từ server, ví dụ "SurfaceWidthM" hoặc "Obstacles[0].XM".
+ * Câu lỗi của server là tiếng Anh nên chỉ dùng để đánh dấu ô, câu hiển thị là câu chung tiếng Việt.
  */
 export function serverSurfaceErrors(fieldErrors: Record<string, string>): SurfaceErrors {
   const errors: SurfaceErrors = {}
@@ -319,13 +340,20 @@ export function serverSurfaceErrors(fieldErrors: Record<string, string>): Surfac
     SurfaceTiltDegree: 'tiltDegree',
     SurfaceAzimuthDegree: 'azimuthDegree',
     Obstacles: 'obstacles',
-    // Lỗi của form cũ (POST / PUT /api/pre-surveys): số khai báo và độ dốc, hướng dùng chung.
+    // Lỗi từ API số liệu khai (PUT /api/pre-surveys/{id})
     TotalAreaM2: 'totalAreaM2',
     UsableAreaM2: 'usableAreaM2',
     TiltDegree: 'tiltDegree',
     AzimuthDegree: 'azimuthDegree',
   }
-  const fields: Record<string, ObstacleField> = { Name: 'name', XM: 'xM', YM: 'yM', WidthM: 'widthM', LengthM: 'lengthM', HeightM: 'heightM' }
+  const fields: Record<string, ObstacleField> = {
+    Name: 'name',
+    XM: 'xM',
+    YM: 'yM',
+    WidthM: 'widthM',
+    LengthM: 'lengthM',
+    HeightM: 'heightM',
+  }
   for (const raw of Object.keys(fieldErrors)) {
     const m = /^Obstacles\[(\d+)\]\.?(\w*)$/.exec(raw)
     if (m) {
@@ -336,7 +364,7 @@ export function serverSurfaceErrors(fieldErrors: Record<string, string>): Surfac
   return errors
 }
 
-/* ------------------------------------------------------------------ body gửi backend (đã qua validateSurface) */
+// Body gửi backend (form đã qua validateSurface)
 
 export function toSurfaceRequest(form: SurfaceForm, expectedRevision: number): UpdatePreSurveySurfaceRequest {
   const width = num(form.widthM)!
@@ -353,7 +381,7 @@ export function toSurfaceRequest(form: SurfaceForm, expectedRevision: number): U
       const height = num(o.heightM)
       return {
         name: o.name.trim(),
-        // Kẹp sau khi làm tròn: x + w không vượt chiều rộng vì sai số làm tròn.
+        // Kẹp lại sau khi làm tròn, để x + bề ngang không vượt quá chiều rộng mặt lắp
         xM: Math.min(round3(num(o.xM)!), round3(width - w)),
         yM: Math.min(round3(num(o.yM)!), round3(length - l)),
         widthM: w,
@@ -364,7 +392,10 @@ export function toSurfaceRequest(form: SurfaceForm, expectedRevision: number): U
   }
 }
 
-/** Body của form cũ (PUT /api/pre-surveys/{id}): độ dốc và hướng PHẢI trùng mặt lắp, nếu không mọi mô phỏng thành cũ. */
+/**
+ * Body của PUT /api/pre-surveys/{id} (số liệu khai).
+ * Độ dốc và hướng PHẢI trùng với mặt lắp, nếu không mọi mô phỏng bị đánh dấu cũ.
+ */
 export function toDeclaredRequest(form: SurfaceForm): UpdatePreSurveyRequest {
   const auto = autoDeclared(form)
   return {
@@ -376,11 +407,11 @@ export function toDeclaredRequest(form: SurfaceForm): UpdatePreSurveyRequest {
   }
 }
 
-/* ------------------------------------------------------------------ so với bản trên server (bỏ qua lần ghi không cần) */
+// So với bản trên server để bỏ qua lần ghi không cần thiết
 
 const same = (a: number | null | undefined, b: number | null | undefined) => (a ?? null) === (b ?? null)
 
-/** Mặt lắp trong body khác bản đang lưu trên server (hoặc server chưa có mặt lắp). */
+/** Mặt lắp trong body có khác bản trên server không (server chưa có mặt lắp thì coi là khác) */
 export function surfaceDiffers(server: PreSurveySurfaceView, body: UpdatePreSurveySurfaceRequest) {
   if (!server.surfaceDefined) return true
   if (
@@ -394,11 +425,18 @@ export function surfaceDiffers(server: PreSurveySurfaceView, body: UpdatePreSurv
   if (next.length !== server.obstacles.length) return true
   return next.some((o, i) => {
     const s = server.obstacles[i]!
-    return o.name !== s.name || !same(o.xM, s.xM) || !same(o.yM, s.yM) || !same(o.widthM, s.widthM) || !same(o.lengthM, s.lengthM) || !same(o.heightM, s.heightM)
+    return (
+      o.name !== s.name ||
+      !same(o.xM, s.xM) ||
+      !same(o.yM, s.yM) ||
+      !same(o.widthM, s.widthM) ||
+      !same(o.lengthM, s.lengthM) ||
+      !same(o.heightM, s.heightM)
+    )
   })
 }
 
-/** Số liệu khai trong body khác bản đang lưu (form cũ ghi cả độ dốc, hướng nên so luôn hai số này). */
+/** Số liệu khai trong body có khác bản trên server không (so cả độ dốc, hướng vì API này cũng ghi 2 giá trị đó) */
 export function declaredDiffers(server: PreSurveySurfaceView, body: UpdatePreSurveyRequest) {
   return (
     !same(server.declared.totalAreaM2, body.totalAreaM2) ||
@@ -410,10 +448,12 @@ export function declaredDiffers(server: PreSurveySurfaceView, body: UpdatePreSur
 }
 
 /**
- * Form mặt lắp có thay đổi chưa lưu lên server không: chưa có bản lưu thì là đã nhập gì đó; có rồi thì khác bản lưu (cả số
- * liệu khai). Dùng để nhắc ở bước mô phỏng / xem lại khi khách quay về sửa rồi đi tiếp bằng nút Forward của trình duyệt.
+ * Form mặt lắp có thay đổi chưa lưu lên server không.
+ * Server chưa có mặt lắp: khách đã nhập gì đó là có thay đổi.
  */
 export function surfaceChanged(form: SurfaceForm, server: PreSurveySurfaceView | undefined) {
   if (!server?.surfaceDefined) return Boolean(form.widthM.trim() || form.lengthM.trim() || form.obstacles.length > 0)
-  return surfaceDiffers(server, toSurfaceRequest(form, server.revision)) || declaredDiffers(server, toDeclaredRequest(form))
+  return (
+    surfaceDiffers(server, toSurfaceRequest(form, server.revision)) || declaredDiffers(server, toDeclaredRequest(form))
+  )
 }

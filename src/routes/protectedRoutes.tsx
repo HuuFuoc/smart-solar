@@ -11,8 +11,6 @@ import { page } from '@/routes/lazyPage'
 import { ROUTES } from '@/routes/paths'
 import { RequireRole } from '@/routes/RequireRole'
 
-/* Trang của các portal, nạp khi vào route lần đầu (mỗi trang một chunk). */
-
 // Khách hàng
 const AssessmentPage = page(() => import('@/pages/customer/assessment-page'), 'AssessmentPage')
 const CustomerRequestsPage = page(() => import('@/pages/customer/requests-page'), 'CustomerRequestsPage')
@@ -48,19 +46,14 @@ const AdminProductsPage = page(() => import('@/pages/admin/products-page'), 'Adm
 
 type PortalConfig = {
   role: UserRole
-  /** Đường gốc của portal, vd. ROUTES.admin.home. */
   path: string
   Layout: ComponentType<{ children?: ReactNode }>
-  /** Trang mở khi vào đường gốc; đường lạ trong portal (màn mock đã ẩn, link cũ, gõ sai) cũng chuyển về đây. */
+  /** Trang mở khi vào đường gốc. Đường lạ trong portal (màn mock đã ẩn, link cũ, gõ sai) cũng về đây */
   start: string
   pages: RouteObject[]
 }
 
-/*
-  Một portal = layout bọc trong <RequireRole role="…"> (chưa đăng nhập → /login nhớ trang đích, sai vai trò → /403).
-  Layout còn được vẽ làm khung chờ (hydrateFallbackElement) TRƯỚC RequireRole, nên query trong layout phải chờ
-  useAuth().user đúng vai trò mới gọi API.
-*/
+// Layout được vẽ làm khung chờ trước RequireRole, nên query trong layout phải chờ có user đúng vai trò
 function portal({ role, path, Layout, start, pages }: PortalConfig): RouteObject {
   return {
     path,
@@ -84,11 +77,7 @@ function portal({ role, path, Layout, start, pages }: PortalConfig): RouteObject
 
 const { customer, ops, tech, manage, admin } = ROUTES
 
-/*
-  Route cần đăng nhập. Chỉ màn đã đổ dữ liệu thật từ backend mới có route (05/10/2026); màn mock vẫn nằm trong
-  pages/<portal>/ và data/*.ts. Mở lại một màn: khai báo trang ở đầu file, thêm dòng vào `pages` của portal,
-  rồi thêm mục menu trong config/portals.ts.
-*/
+// Chỉ màn có dữ liệu thật mới có route. Màn mock nối API xong thì thêm route ở đây và mục menu trong config/portals.ts
 export const protectedRoutes: RouteObject[] = [
   portal({
     role: 'customer',
@@ -132,7 +121,7 @@ export const protectedRoutes: RouteObject[] = [
     ],
   }),
 
-  // Quản lý dùng chung trang kỹ thuật viên với quản trị.
+  // Quản lý dùng chung trang kỹ thuật viên với quản trị
   portal({
     role: 'manager',
     path: manage.home,
@@ -160,6 +149,6 @@ export const protectedRoutes: RouteObject[] = [
     ],
   }),
 
-  // /field: bản portal kit cũ của kỹ thuật viên, gộp về /tech (08/10/2026).
+  // /field cũ chuyển về /tech
   { path: `${ROUTES.field.home}/*`, element: <Navigate to={tech.home} replace /> },
 ]

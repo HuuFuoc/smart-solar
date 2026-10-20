@@ -5,11 +5,7 @@ import { formatTime } from '@/features/scheduling/schedulingDisplay'
 import type { AvailableTechnicianView } from '@/types/res/technicianAvailabilityRes'
 import { cx } from '@/utils/cx'
 
-/*
-  Chọn một kỹ thuật viên trong danh sách backend trả (đã kiểm tra lịch, giờ làm, lịch nghỉ, số lịch / ngày và đường đi);
-  không bao giờ cho chọn người ngoài danh sách. Mỗi lựa chọn là một radio thật trong khối có viền; khối đang chọn mang
-  nền "đang chọn" như mọi lựa chọn khác. Thứ tự giữ như backend: người đang giữ chỗ lên đầu, rồi người tới nhanh hơn.
-*/
+// Chọn kỹ thuật viên trong danh sách backend trả, giữ đúng thứ tự backend
 export function TechnicianChoiceList({
   technicians,
   value,
@@ -50,11 +46,13 @@ export function TechnicianChoiceList({
               <span className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold text-fg">{t.fullName}</span>
                 {t.technicianUserId === currentAssigneeId && <Badge tone="info">Đang phụ trách</Badge>}
-                {t.isCurrentReservation && t.technicianUserId !== currentAssigneeId && <Badge tone="accent">Hệ thống đang giữ chỗ</Badge>}
+                {t.isCurrentReservation && t.technicianUserId !== currentAssigneeId && (
+                  <Badge tone="accent">Hệ thống đang giữ chỗ</Badge>
+                )}
               </span>
               <span className="block text-meta text-fg-2">
-                Tới nơi sớm nhất <span className="tnum font-medium text-fg">{formatTime(t.earliestArrivalAt)}</span>, {t.activeAppointmentsThatDay} lịch
-                khác trong ngày
+                Tới nơi sớm nhất <span className="tnum font-medium text-fg">{formatTime(t.earliestArrivalAt)}</span>,{' '}
+                {t.activeAppointmentsThatDay} lịch khác trong ngày
               </span>
               <TravelSummary leg={t.inbound} />
               {t.outbound && <TravelSummary leg={t.outbound} label="Sau lịch này, tới công trình kế tiếp" />}

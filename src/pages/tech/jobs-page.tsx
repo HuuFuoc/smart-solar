@@ -33,11 +33,7 @@ function byDay(rows: TechnicianAppointmentListItem[]) {
   return [...groups]
 }
 
-/*
-  Lịch khảo sát kinh doanh đã phân công cho kỹ thuật viên (GET /api/technicians/me/appointments), nhóm theo ngày. Lịch còn
-  chờ xác nhận ("Chờ bạn nhận việc") là việc của người xem: số đỏ ở menu, nhãn đỏ trên dòng; số trên tab để xám (một sự
-  việc chỉ báo đỏ một lần). Nhận việc ở trang chi tiết, sau khi đã xem địa chỉ và số liệu.
-*/
+// Lịch khảo sát đã phân công, nhóm theo ngày. Lịch chờ nhận việc tô đỏ
 export function TechJobsPage() {
   const query = useMyAppointmentsQuery()
   const [tab, setTab] = useState<Tab>('upcoming')
@@ -81,7 +77,9 @@ export function TechJobsPage() {
           shown.length === 0 ? (
             <EmptyState
               title={tab === 'upcoming' ? 'Chưa có lịch khảo sát sắp tới' : 'Chưa có lịch nào đã qua'}
-              description={tab === 'upcoming' ? 'Khi kinh doanh phân công lịch cho bạn, lịch sẽ hiện ở đây.' : undefined}
+              description={
+                tab === 'upcoming' ? 'Khi kinh doanh phân công lịch cho bạn, lịch sẽ hiện ở đây.' : undefined
+              }
             />
           ) : (
             <div className="space-y-8">
@@ -90,7 +88,9 @@ export function TechJobsPage() {
                   <h2 id={`day-${day}`} className="text-title font-semibold">
                     {relativeDay(day, today)}
                     {/* "Hôm nay" / "Ngày mai" kèm thứ, ngày; ngày khác thì relativeDay đã là thứ, ngày. */}
-                    {relativeDay(day, today) !== formatDay(day) && <span className="font-normal text-fg-2">, {formatDay(day)}</span>}
+                    {relativeDay(day, today) !== formatDay(day) && (
+                      <span className="font-normal text-fg-2">, {formatDay(day)}</span>
+                    )}
                   </h2>
                   <ul className="mt-2 divide-y divide-line">
                     {items.map((r) => {
@@ -98,13 +98,19 @@ export function TechJobsPage() {
                       return (
                         <ListRow key={r.appointmentId}>
                           <div className="grid gap-x-6 gap-y-2 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start">
-                            <p className="tnum text-title font-semibold text-fg">{formatTimeRange(r.startsAt, r.endsAt)}</p>
+                            <p className="tnum text-title font-semibold text-fg">
+                              {formatTimeRange(r.startsAt, r.endsAt)}
+                            </p>
                             <div className="min-w-0">
                               <h3 className="text-body font-semibold text-fg">{r.propertyName}</h3>
-                              <p className="mt-0.5 text-body text-fg-2">{[r.district, r.province].filter(Boolean).join(', ')}</p>
+                              <p className="mt-0.5 text-body text-fg-2">
+                                {[r.district, r.province].filter(Boolean).join(', ')}
+                              </p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
-                              <Badge tone={tab === 'past' && status.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
+                              <Badge tone={tab === 'past' && status.tone === 'danger' ? 'neutral' : status.tone}>
+                                {status.label}
+                              </Badge>
                               <ButtonLink to={withId(ROUTES.tech.job, r.appointmentId)} size="sm" variant="soft">
                                 {r.status === 'ASSIGNED' && tab === 'upcoming' ? 'Xem và nhận việc' : 'Xem chi tiết'}
                               </ButtonLink>

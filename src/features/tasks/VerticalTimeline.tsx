@@ -4,11 +4,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { StatusBadge, type StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 import { cn } from '@/utils/cn'
 
-/*
- * Dòng thời gian dọc của "Chronological Audit Log" (task_detail_timeline):
- * đường kẻ dọc, nút tròn có icon, mỗi mục là một card nhật ký.
- * Khác Timeline trong components/common/stitch-ui (stepper ngang của Lifecycle Progression).
- */
+// Dòng thời gian dọc của nhật ký công việc
 export type TimelineNodeTone = 'primary' | 'accent' | 'tint' | 'muted'
 
 export type TimelineMedia = {

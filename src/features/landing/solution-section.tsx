@@ -7,12 +7,7 @@ import { Reveal } from './reveal'
 import { Section, SectionTitle } from './section'
 import { SolarPanelShowcase } from './solar-panel-showcase'
 
-/*
-  Giới thiệu giải pháp: tiêu đề + một câu bên trái, ba việc nền tảng làm bên phải, ngăn bằng đường kẻ. Link duy nhất dẫn
-  tới danh mục sản phẩm thật (/products); bảo hành, bảo trì chỉ mô tả, không có nút vì chưa có màn cho khách.
-  Mô hình 3D một tấm pin: từ lg ở cột trái, dưới phần chữ (danh sách bên phải trải qua cả hai hàng); dưới lg đứng sau
-  danh sách để không chen vào giữa các đoạn chữ.
-*/
+// Section giải pháp: chữ bên trái, ba chức năng bên phải. Mô hình 3D nằm dưới phần chữ, dưới lg thì sau danh sách
 export function SolutionSection() {
   return (
     <Section id={solution.id} space="far" titleId="solution-title">

@@ -15,7 +15,7 @@ import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { cx } from '@/utils/cx'
 import { formatMoney } from '@/utils/format'
 
-/* /products/:id – chi tiết một sản phẩm, đọc GET /api/products/{id}. */
+/* /products/:id, chi tiết một sản phẩm, đọc GET /api/products/{id}. */
 export function ProductDetailPage() {
   const { id } = useParams()
   const query = useProductQuery(id)

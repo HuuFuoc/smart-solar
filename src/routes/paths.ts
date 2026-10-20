@@ -1,12 +1,6 @@
-/*
-  Mọi đường dẫn của app. Mỗi portal một nhóm, khoá viết camelCase, trang chủ portal luôn là `home`.
-  Trong từng nhóm: phần trên là màn đang có route (protectedRoutes.tsx), phần dưới là màn mock đã ẩn
-  (code còn trong pages/<portal>/, chưa có route) – mở lại màn nào thì thêm route và mục menu
-  (config/portals.ts) rồi chuyển đường dẫn lên trên.
-  Đường có :id dựng bằng withId(ROUTES.admin.user, id).
-*/
+// Mọi đường dẫn của app, mỗi portal một nhóm. Trong nhóm, màn mock đã ẩn nằm dưới dòng "Màn mock đã ẩn"
 export const ROUTES = {
-  /* ---- Công khai và xác thực (publicRoutes.tsx) ---- */
+  // Công khai và xác thực
   home: '/',
   comingSoon: '/coming-soon',
   /** Danh mục sản phẩm công khai (GET /api/products) */
@@ -18,14 +12,13 @@ export const ROUTES = {
   resetPassword: '/reset-password',
   verifyEmail: '/verify-email',
   forbidden: '/403',
-  /** Chỉ có ở dev. */
+  /** Chỉ có ở dev */
   styleguide: '/styleguide',
 
-  /* ---- Khách hàng (customer) ---- */
   customer: {
     home: '/customer',
     assessment: '/customer/assessment',
-    /** Yêu cầu khảo sát đã gửi: đặt / đổi / huỷ giờ khảo sát (12/10/2026). */
+    /** Yêu cầu khảo sát đã gửi: đặt / đổi / huỷ giờ */
     requests: '/customer/requests',
     request: '/customer/requests/:id',
     products: '/customer/products',
@@ -43,11 +36,10 @@ export const ROUTES = {
     assistant: '/customer/assistant',
   },
 
-  /* ---- Kinh doanh (sales) ---- */
   ops: {
     home: '/ops',
     surveys: '/ops/surveys',
-    /** Tab "Của tôi" có đường dẫn riêng để mục menu đánh dấu đúng; đường tĩnh nên không đụng :id. */
+    /** Tab "Của tôi" có đường dẫn riêng để menu đánh dấu đúng */
     surveysMine: '/ops/surveys/mine',
     survey: '/ops/surveys/:id',
     products: '/ops/products',
@@ -60,10 +52,9 @@ export const ROUTES = {
     projects: '/ops/projects',
   },
 
-  /* ---- Kỹ thuật viên (technician) ---- */
   tech: {
     home: '/tech',
-    /** Lịch khảo sát được kinh doanh phân công (12/10/2026): danh sách, chi tiết + xác nhận nhận việc. */
+    /** Lịch khảo sát được phân công */
     jobs: '/tech/jobs',
     job: '/tech/jobs/:id',
     schedule: '/tech/schedule',
@@ -79,10 +70,9 @@ export const ROUTES = {
     settings: '/tech/settings',
   },
 
-  /* ---- Quản lý (manager) ---- */
   manage: {
     home: '/manage',
-    /** Cấu hình lịch + lịch ngày của kỹ thuật viên (quản lý dùng chung trang với quản trị). */
+    /** Cấu hình lịch + lịch ngày của kỹ thuật viên (quản lý dùng chung trang với quản trị) */
     technicians: '/manage/technicians',
     technician: '/manage/technicians/:id',
     products: '/manage/products',
@@ -99,7 +89,6 @@ export const ROUTES = {
     profile: '/manage/profile',
   },
 
-  /* ---- Quản trị (admin) ---- */
   admin: {
     home: '/admin',
     users: '/admin/users',
@@ -118,7 +107,7 @@ export const ROUTES = {
     profile: '/admin/profile',
   },
 
-  /* ---- /field: bản portal kit cũ của kỹ thuật viên, mọi đường chuyển về /tech (08/10/2026) ---- */
+  // Đường cũ của kỹ thuật viên, mọi đường chuyển về /tech
   field: {
     home: '/field',
     // Màn mock đã ẩn
@@ -138,7 +127,7 @@ export function withId(pattern: string, id: string) {
   return pattern.replace(':id', id)
 }
 
-/* Đường dẫn chi tiết của các màn mock kỹ thuật viên đã ẩn. */
+// Đường dẫn chi tiết của các màn mock kỹ thuật viên đã ẩn
 
 /** /tech/tasks/:id */
 export const techTaskPath = (id: string) => `${ROUTES.tech.tasks}/${id}`

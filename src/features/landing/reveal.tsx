@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { cx } from '@/utils/cx'
 
-/*
-  Khối hiện dần khi cuộn tới (CSS .ld-reveal trong landing.css): mỗi khối một IntersectionObserver,
-  ngắt ngay sau lần hiện đầu nên không theo dõi mãi. Trình duyệt không có IntersectionObserver thì hiện
-  luôn. `delay` (ms) để các khối cùng hàng hiện lệch nhau một chút.
-*/
+// Hiện dần khi cuộn tới, mỗi khối một IntersectionObserver và ngắt sau lần hiện đầu
 export function Reveal({ delay, className, children }: { delay?: number; className?: string; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   const [shown, setShown] = useState(() => typeof IntersectionObserver === 'undefined')

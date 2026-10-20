@@ -20,11 +20,7 @@ import { Switch } from '@/components/common/stitch-ui/Switch'
 import { cn } from '@/utils/cn'
 import { regionZones, userRoleMap, userRoleValues, userRoles, type UserRecord } from '@/data/users'
 
-/*
- * "Governance Drawer" trong user_management chuyển thành Dialog (theo yêu cầu):
- * mode create = "+ Invite New User" (thêm ô tên/email/phòng ban), mode edit = sửa role, zone, MFA.
- * Validate bằng zod + react-hook-form.
- */
+// Dialog tạo / sửa người dùng, validate bằng zod + react-hook-form
 const userFormSchema = z.object({
   name: z.string().trim().min(2, 'Vui lòng nhập họ và tên'),
   email: z.email('Email không hợp lệ'),
@@ -99,7 +95,12 @@ function UserForm({ mode, user, onSubmit }: Pick<UserFormDialogProps, 'mode' | '
       {!isEdit && (
         <>
           <Field label="Họ và tên" htmlFor={`${idPrefix}-name`} error={errors.name?.message}>
-            <Input id={`${idPrefix}-name`} placeholder="Ví dụ: Nguyễn Văn An" invalid={!!errors.name} {...register('name')} />
+            <Input
+              id={`${idPrefix}-name`}
+              placeholder="Ví dụ: Nguyễn Văn An"
+              invalid={!!errors.name}
+              {...register('name')}
+            />
           </Field>
           <div className="grid grid-cols-1 gap-space-md sm:grid-cols-2">
             <Field label="Email công việc" htmlFor={`${idPrefix}-email`} error={errors.email?.message}>
@@ -252,7 +253,13 @@ function UserForm({ mode, user, onSubmit }: Pick<UserFormDialogProps, 'mode' | '
             Hủy
           </Button>
         </DialogClose>
-        <Button type="submit" size="md" iconLeft={isEdit ? 'save' : 'send'} disabled={isSubmitting} className="h-11 flex-1">
+        <Button
+          type="submit"
+          size="md"
+          iconLeft={isEdit ? 'save' : 'send'}
+          disabled={isSubmitting}
+          className="h-11 flex-1"
+        >
           {isEdit ? 'Lưu thay đổi' : 'Gửi lời mời'}
         </Button>
       </DialogFooter>

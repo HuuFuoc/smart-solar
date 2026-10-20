@@ -6,12 +6,8 @@ export const LANDING_CONTAINER = 'mx-auto w-full max-w-landing px-4 md:px-8 xl:p
 /** Lưới 4 cột trên mobile, 12 cột từ lg (cột 78px, gutter 24px ở 1200). */
 export const PAGE_GRID = 'grid grid-cols-4 gap-x-4 lg:grid-cols-12 lg:gap-x-6'
 
-/*
-  Nút chính duy nhất của trang công khai. Hai cỡ: 48px trong nội dung, 40px trên header (lg).
-  Không dùng buttonClass của portal vì cỡ chữ và chiều cao khác nhau sẽ đè class lẫn nhau.
-  `display` là tham số chứ không nằm sẵn trong class: `inline-flex` đứng sau `hidden` trong CSS
-  sinh ra, nên ghép thêm "hidden" từ ngoài sẽ không ẩn được nút.
-*/
+// Nút chính của trang công khai: 48px trong nội dung, 40px trên header
+// `display` là tham số riêng vì ghép thêm "hidden" từ ngoài sẽ không ẩn được nút
 export function ctaClass(size: 'lg' | 'md' = 'lg', display = 'inline-flex') {
   return cx(
     display,
@@ -20,7 +16,7 @@ export function ctaClass(size: 'lg' | 'md' = 'lg', display = 'inline-flex') {
   )
 }
 
-/* Nút phụ đứng cạnh nút chính (hero): nền trang + viền, cùng cỡ với ctaClass('lg'), như `secondary` của portal. */
+// Nút phụ cạnh nút chính ở hero, cùng cỡ với ctaClass('lg')
 export function secondaryCtaClass(display = 'inline-flex') {
   return cx(
     display,

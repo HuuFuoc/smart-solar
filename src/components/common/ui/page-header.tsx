@@ -2,10 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { cx } from '@/utils/cx'
 
-/*
-  Title at figure size on every screen (display is kept for hero figures).
-  Actions align with the first line of the title, not with whatever line the description ends on.
-*/
+// Nút thao tác căn theo dòng đầu của tiêu đề
 export function PageHeader({
   title,
   description,

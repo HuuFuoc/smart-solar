@@ -7,10 +7,7 @@ import { LANDING_CONTAINER, PAGE_GRID } from './classes'
 import { Reveal } from './reveal'
 import { surveyPath } from './survey-link'
 
-/*
-  Bắt đầu thế nào: dải màu thương hiệu tràn màn, một câu hỏi, một nút. Nút đảo màu (nền chữ,
-  chữ xanh) vì dải đã là màu accent. Đã đăng nhập thì không mời đăng nhập nữa.
-*/
+// Dải CTA màu thương hiệu, nút đảo màu vì nền đã là màu chính
 export function CtaSection() {
   const { user } = useAuth()
   return (
@@ -22,7 +19,10 @@ export function CtaSection() {
           </h2>
           <p className="mt-4 max-w-xl ld-lede opacity-90">{cta.lede}</p>
         </Reveal>
-        <Reveal delay={150} className="col-span-4 flex flex-col gap-3 sm:items-start lg:col-span-4 lg:col-start-9 lg:self-end">
+        <Reveal
+          delay={150}
+          className="col-span-4 flex flex-col gap-3 sm:items-start lg:col-span-4 lg:col-start-9 lg:self-end"
+        >
           <Link
             to={surveyPath(user)}
             className="press inline-flex h-12 items-center justify-center rounded-control bg-on-accent px-6 ld-action whitespace-nowrap text-accent hover:bg-on-accent/90"

@@ -3,7 +3,7 @@ import { Card } from '@/components/common/stitch-ui/Card'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/* Dải "Quick Status / Daily Metrics" đầu technician_dashboard_1: 4 ô số liệu + trạng thái điều phối. */
+// Dải 4 ô số liệu + trạng thái điều phối
 export type StatTileTone = 'primary' | 'neutral' | 'secondary' | 'success'
 
 export type StatRibbonItem = {
@@ -38,17 +38,11 @@ export function StatRibbon({ stats, unitLabel, readyLabel, busyLabel, className 
   return (
     <Card
       padding="md"
-      className={cn(
-        'flex flex-col items-stretch justify-between gap-space-md xl:flex-row xl:items-center',
-        className,
-      )}
+      className={cn('flex flex-col items-stretch justify-between gap-space-md xl:flex-row xl:items-center', className)}
     >
       <div className="grid flex-1 grid-cols-2 gap-space-sm md:grid-cols-4">
         {stats.map((stat) => (
-          <div
-            key={stat.key}
-            className="flex items-center gap-space-sm rounded-xl bg-surface-container-low p-space-sm"
-          >
+          <div key={stat.key} className="flex items-center gap-space-sm rounded-xl bg-surface-container-low p-space-sm">
             <div
               className={cn(
                 'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',

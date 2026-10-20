@@ -2,10 +2,7 @@ import type { ComponentProps } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/*
- * DESIGN.md mục "Buttons": primary/secondary/accent, cao 48px, rounded-xl, label bold.
- * tonal / ghost là hai kiểu nút phụ lặp lại trong code.html (header actions, nút "Map").
- */
+// Nút theo DESIGN.md: primary / secondary / accent cao 48px; tonal và ghost là nút phụ
 export type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'tonal' | 'ghost' | 'neutral'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
@@ -89,7 +86,7 @@ export type IconButtonProps = Omit<ComponentProps<'button'>, 'children'> & {
   size?: 'sm' | 'md'
 }
 
-/** Nút vuông chỉ có icon – cột action trong bảng, nút zoom/replace trên ảnh… */
+/** Nút vuông chỉ có icon, cột action trong bảng, nút zoom/replace trên ảnh... */
 export function IconButton({ icon, label, size = 'sm', className, type = 'button', ...rest }: IconButtonProps) {
   return (
     <button

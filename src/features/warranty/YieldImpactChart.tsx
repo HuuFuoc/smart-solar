@@ -1,10 +1,6 @@
 import { cn } from '@/utils/cn'
 
-/*
- * Biểu đồ "Generation Yield Impact" trong maintenance_task: hai đường sản lượng
- * (baseline trước vệ sinh màu secondary, post-wash màu primary) trên lưới nét đứt,
- * kèm chấm đánh dấu đỉnh và hàng chú giải giờ bắt đầu / kết thúc.
- */
+// Biểu đồ sản lượng trước và sau vệ sinh
 export type YieldSeriesPoint = { x: number; y: number }
 
 export type YieldImpactChartProps = {
@@ -45,7 +41,13 @@ export function YieldImpactChart({
 }: YieldImpactChartProps) {
   return (
     <div className={cn('w-full pt-space-xs', className)}>
-      <svg viewBox="0 0 400 120" preserveAspectRatio="none" role="img" aria-label={postWashLabel} className="h-28 w-full">
+      <svg
+        viewBox="0 0 400 120"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={postWashLabel}
+        className="h-28 w-full"
+      >
         <defs>
           <linearGradient id="yield-pre" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="#fe932c" stopOpacity="0.3" />

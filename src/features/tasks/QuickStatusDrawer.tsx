@@ -4,11 +4,7 @@ import { cn } from '@/utils/cn'
 import { quickStatusDrawer } from '@/data/tasks'
 import type { WorkOrder } from '@/data/tasks'
 
-/*
- * Slide-over "#quickStatusDrawer" của my_tasks_1/code.html.
- * Đóng: translate-x-full (giao diện trang giữ nguyên như screen.png);
- * mở: translate-x-0 kèm overlay "#drawerOverlay". Đóng bằng overlay, nút close hoặc Escape.
- */
+// Drawer trạng thái nhanh, đóng bằng overlay, nút đóng hoặc Esc
 export type QuickStatusDrawerProps = {
   /** Work order đang hiển thị; giữ lại khi đóng để chạy hết animation trượt ra. */
   order: WorkOrder | null
@@ -20,10 +16,7 @@ export type QuickStatusDrawerProps = {
 
 const d = quickStatusDrawer
 
-/*
- * TasksPage truyền `key={order.id}` nên đổi sang work order khác là remount:
- * state dưới đây khởi tạo thẳng từ props, không cần effect đồng bộ lại.
- */
+// Trang cha truyền `key={order.id}` nên state khởi tạo thẳng từ props
 export function QuickStatusDrawer({ order, open, onClose, onCommit }: QuickStatusDrawerProps) {
   const titleId = useId()
   const [stage, setStage] = useState<WorkOrder['lifecycleStage']>(order?.lifecycleStage ?? 3)
@@ -72,9 +65,7 @@ export function QuickStatusDrawer({ order, open, onClose, onCommit }: QuickStatu
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-space-xs">
                   <span aria-hidden="true" className="h-3 w-3 rounded-full bg-primary" />
-                  <span className="text-label-sm font-bold text-primary">
-                    {d.sync.label}
-                  </span>
+                  <span className="text-label-sm font-bold text-primary">{d.sync.label}</span>
                 </div>
                 <IconButton
                   size="md"
@@ -99,9 +90,7 @@ export function QuickStatusDrawer({ order, open, onClose, onCommit }: QuickStatu
 
               {/* Shift Job Lifecycle Stage */}
               <div className="flex flex-col gap-space-sm rounded-2xl bg-surface-container-low p-space-md">
-                <span className="text-label-sm font-bold text-on-surface">
-                  {d.lifecycle.title}
-                </span>
+                <span className="text-label-sm font-bold text-on-surface">{d.lifecycle.title}</span>
                 <div className="grid grid-cols-2 gap-space-xs">
                   {d.lifecycle.stages.map((item) => {
                     const active = item.value === stage
@@ -136,10 +125,7 @@ export function QuickStatusDrawer({ order, open, onClose, onCommit }: QuickStatu
                       key={item.id}
                       className="flex cursor-pointer items-center gap-space-sm rounded-xl bg-surface-container-low p-3 transition-colors hover:bg-surface-container"
                     >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={(value) => toggleItem(item.id, value === true)}
-                      />
+                      <Checkbox checked={checked} onCheckedChange={(value) => toggleItem(item.id, value === true)} />
                       <span className="flex flex-col">
                         <span className="text-label-sm font-semibold text-on-surface">{item.label}</span>
                         <span className="text-body-sm text-on-surface-variant">{item.description}</span>

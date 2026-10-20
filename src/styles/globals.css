@@ -2,11 +2,7 @@
 @import '@fontsource-variable/schibsted-grotesk';
 @import './landing.css';
 
-/*
-  `dark:` theo đúng giao diện đang dùng như các token màu bên dưới: data-theme trên <html>, không đặt thì theo hệ thống.
-  Mặc định của Tailwind v4 chỉ đọc prefers-color-scheme, nên máy để chế độ tối mà khách chọn "Sáng" thì `dark:bg-fg` vẫn
-  chạy và đặt logo lên màu chữ của chế độ sáng (gần đen) – logo thành khối đen (người dùng báo 10/10/2026).
-*/
+/* `dark:` theo data-theme trên <html> (không đặt thì theo hệ thống), vì mặc định Tailwind chỉ đọc prefers-color-scheme */
 @custom-variant dark {
   &:where([data-theme='dark'], [data-theme='dark'] *) {
     @slot;
@@ -18,35 +14,13 @@
   }
 }
 
-/* =====================================================================
-   Portal kit (src/components/common/ui): customer, sales & operations, field, management.
-   ===================================================================== */
+/* Portal kit (src/components/common/ui) */
 
 /*
-  Design tokens. Semantic names only; every component reads these.
-  Theme follows the system preference and can be pinned with
-  <html data-theme="light|dark">.
-
-  Colour roles (08/10/2026 – mỗi màu một vai trò, dùng giống nhau ở mọi màn):
-    accent        thương hiệu + hành động chính: nút đặc duy nhất của trang, vạch mục menu đang mở,
-                  tab / trang / bộ lọc đang chọn, tiến độ đã xong
-    accent-soft   nền "đang chọn" trong nội dung, nền của nút hành động phụ mang màu (Button soft)
-    accent-muted  nền mục đang mở trên rail (rail đã ngả xanh nên cần đậm hơn accent-soft), hover của nút soft
-    accent-line   viền của control đang chọn / bộ lọc đang áp dụng
-    accent-fg     chữ màu thương hiệu trên nền sáng: link, nhãn nút soft, icon mục đang mở
-    ok            đúng tiến độ, đang hoạt động (đang bán, đã hẹn)
-    info          đang xử lý (đã nhận, đang xem xét), thông tin trung tính cần đọc
-    danger        thông báo / yêu cầu cần xử lý (số đếm việc chờ, chờ nhận, quá hạn, chưa hẹn, thiếu thông số), lỗi,
-                  thao tác phá huỷ (xoá); không dùng cho thao tác thường
-    warn          lưu ý không đòi làm ngay (dữ liệu chưa làm mới được, không vẽ được 3D, sản phẩm đã ngừng bán)
-    rail          bề mặt vùng điều hướng, tách menu khỏi nội dung
-    hover/pressed lớp phủ trung tính khi rê chuột / nhấn, dùng được trên mọi bề mặt (định nghĩa trong @theme)
-
-  Text colour rule:
-    fg    primary text, headings, figures
-    fg-2  secondary body: descriptions, key labels, supporting sentences
-    fg-3  tertiary meta: timestamps, captions, units, hints, sub-lines in lists
-  Mọi cặp chữ/nền ở trên đạt ≥ 4,5:1 ở cả hai chế độ (đo 08/10/2026), kể cả fg-3 trên rail.
+  Token màu theo vai trò, mọi component đọc từ đây. Giao diện theo hệ thống, có thể ghim bằng data-theme
+  accent: thương hiệu và hành động chính. accent-soft / muted / line / fg: các sắc độ cho nền, viền, chữ
+  ok: đúng tiến độ, info: đang xử lý, danger: cần xử lý / lỗi, warn: lưu ý
+  fg: chữ chính, fg-2: chữ phụ, fg-3: chú thích. Mọi cặp chữ / nền đạt >= 4,5:1
 */
 :root {
   color-scheme: light;
@@ -86,12 +60,12 @@
   --ring: oklch(55% 0.12 160);
   --shadow-pop: 0 4px 16px -4px oklch(30% 0.03 155 / 0.18), 0 1px 2px oklch(30% 0.03 155 / 0.08);
 
-  /* Màu vật liệu của tấm pin trên mặt bằng 2D (mặt kính, khung nhôm): vẽ vật thể thật, không mang nghĩa trạng thái. */
+  /* Màu tấm pin trên mặt bằng 2D */
   --pv-glass: oklch(31% 0.045 262);
   --pv-frame: oklch(84% 0.01 250);
-  /* Cột biểu đồ một chuỗi (sản lượng theo tháng): cùng hue thương hiệu, đo bằng validator dataviz ≥ 3:1 trên canvas. */
+  /* Cột biểu đồ một chuỗi */
   --chart-1: oklch(55% 0.11 160);
-  /* Lớp phủ sau hộp thoại / drawer: luôn làm tối trang. bg-fg/40 cũ làm SÁNG trang ở chế độ tối (fg gần trắng). */
+  /* Lớp phủ sau dialog / drawer, luôn làm tối trang */
   --scrim: oklch(20% 0.012 130 / 0.4);
 }
 
@@ -219,20 +193,11 @@
   --color-pv-frame: var(--pv-frame);
   --color-chart-1: var(--chart-1);
   --color-scrim: var(--scrim);
-  /* Lớp phủ trung tính khi rê chuột / nhấn: tính từ màu chữ nên đúng trên canvas, rail, panel và cả dark mode. */
+  /* Lớp phủ khi hover / nhấn, tính từ màu chữ nên đúng trên mọi nền */
   --color-hover: oklch(from var(--fg) l c h / 0.06);
   --color-pressed: oklch(from var(--fg) l c h / 0.1);
 
-  /*
-    Type scale: five steps, one family. Adjacent steps differ by at least 2px.
-      meta     13/20  timestamps, captions, units, hints, sub-lines
-      body     15/22  everything else
-      title    18/24  panel and section titles (h2)
-      figure   24/28  key figures, page title on small screens
-      display  32/36  page title, hero figure
-    The portal kit uses only these five; the Tailwind defaults stay because the
-    Stitch kit below relies on them.
-  */
+  /* Thang chữ 5 bậc: meta 13, body 15, title 18, figure 24, display 32 */
   --text-meta: 13px;
   --text-meta--line-height: 20px;
   --text-body: 15px;
@@ -247,19 +212,12 @@
   --text-display--line-height: 36px;
   --text-display--letter-spacing: -0.02em;
 
-  /*
-    Shape rule (08/10/2026, người dùng: "cái nút nào cũng phải được bo góc chứ không phải chỗ có chỗ không"):
-    MỘT bán kính 6px cho mọi nút, ô nhập, nhãn, mục menu VÀ khối (thẻ, dialog, thông báo, toast). 3px cũ trông như vuông
-    cạnh khối 6px, nên đọc thành "chỗ bo chỗ không". Hai token giữ tên riêng để sau này tách được, nhưng phải bằng nhau.
-    Phần tử lồng sát bên trong một khung có đệm (ô của Segmented) dùng bán kính khung trừ đệm để góc đồng tâm.
-    Chỉ hình tròn thật (chấm, ảnh đại diện, điểm mốc tiến độ) dùng rounded-full.
-  */
+  /* Một bán kính 6px cho mọi nút, ô nhập và khối. rounded-full chỉ cho hình tròn thật */
   --radius-control: 6px;
   --radius-container: 6px;
 
   --shadow-pop: var(--shadow-pop);
 
-  /* Between xl and 2xl: a 1440px desktop with the rail still has a 1064px column, wide enough for one more table column. */
   --breakpoint-wide: 88rem;
 }
 
@@ -314,10 +272,7 @@
   }
 }
 
-/*
-  Text-styled links and buttons that stand alone (panel actions, back links, phone numbers)
-  keep a 44px hit area on touch screens without taking that much room in the layout.
-*/
+/* Link / nút dạng chữ vẫn có vùng bấm 44px trên màn cảm ứng */
 @utility tap {
   display: inline-flex;
   align-items: center;
@@ -329,10 +284,7 @@
   }
 }
 
-/*
-  Link chữ trong nội dung portal (điện thoại, email, toạ độ, tên sản phẩm dẫn tới trang chi tiết):
-  màu thương hiệu + gạch chân mảnh để nhận ra là link cả khi không phân biệt được màu; rê chuột thì gạch chân đậm lên.
-*/
+/* Link trong nội dung: màu thương hiệu + gạch chân mảnh */
 @utility ui-link {
   color: var(--color-accent-fg);
   text-decoration-line: underline;
@@ -344,7 +296,7 @@
   }
 }
 
-/* Icon Material Symbols bản tô đặc: mục menu đang mở, bước đã xong (bản viền là trạng thái thường). */
+/* Icon tô đặc cho mục đang mở, bước đã xong */
 @utility icon-fill {
   font-variation-settings:
     'FILL' 1,
@@ -357,11 +309,7 @@
   .tnum {
     font-variant-numeric: tabular-nums;
   }
-  /*
-    Stacked table (see Table). Selectors are scoped under .scroll-x so they win
-    over the cell utilities (px-3, border-b, text-right, hidden) without !important.
-    .table-stack xếp khối dưới lg, .table-stack-xl dưới xl.
-  */
+  /* Bảng xếp khối (xem Table). .table-stack dưới lg, .table-stack-xl dưới xl */
   @media (width < 64rem) {
     .scroll-x .table-stack,
     .scroll-x .table-stack tbody {
@@ -381,7 +329,7 @@
     }
     .scroll-x .table-stack td {
       display: grid;
-      /* Cột nhãn tối đa 12rem: bảng xếp khối ở màn rộng (đến xl) không bỏ trống một khoảng lớn giữa nhãn và giá trị. */
+      /* Cột nhãn tối đa 12rem */
       grid-template-columns: minmax(96px, min(35%, 12rem)) minmax(0, 1fr);
       /* Phần tử trong ô rộng theo nội dung: nhãn trạng thái nền màu không bị kéo dài hết cột. */
       justify-items: start;
@@ -390,7 +338,6 @@
       border: 0;
       text-align: start;
     }
-    /* The label owns column 1 for every line of the cell; the cell's own lines flow down column 2. */
     .scroll-x .table-stack td[data-label]::before {
       grid-row: 1 / span 12;
       content: attr(data-label);
@@ -407,7 +354,7 @@
       white-space: normal;
     }
   }
-  /* Cùng bộ quy tắc cho bảng nhiều cột (`<Table stack="xl">`): xếp khối đến xl. Viết lại vì điều kiện media khác. */
+  /* Như trên cho `<Table stack="xl">` */
   @media (width < 80rem) {
     .scroll-x .table-stack-xl,
     .scroll-x .table-stack-xl tbody {
@@ -427,7 +374,7 @@
     }
     .scroll-x .table-stack-xl td {
       display: grid;
-      /* Cột nhãn tối đa 12rem: bảng xếp khối ở màn rộng (đến xl) không bỏ trống một khoảng lớn giữa nhãn và giá trị. */
+      /* Cột nhãn tối đa 12rem */
       grid-template-columns: minmax(96px, min(35%, 12rem)) minmax(0, 1fr);
       /* Phần tử trong ô rộng theo nội dung: nhãn trạng thái nền màu không bị kéo dài hết cột. */
       justify-items: start;
@@ -436,7 +383,6 @@
       border: 0;
       text-align: start;
     }
-    /* The label owns column 1 for every line of the cell; the cell's own lines flow down column 2. */
     .scroll-x .table-stack-xl td[data-label]::before {
       grid-row: 1 / span 12;
       content: attr(data-label);
@@ -463,11 +409,7 @@
   .press:active:not(:disabled) {
     transform: translateY(1px);
   }
-  /*
-    Horizontal scroller that shades whichever edge still has content
-    (the shade is painted with background-attachment: scroll, the cover with local,
-    so it only shows while there is something to scroll to).
-  */
+  /* Khung cuộn ngang, tô bóng ở cạnh còn nội dung */
   .scroll-x {
     overflow-x: auto;
     background:
@@ -478,20 +420,12 @@
   }
 }
 
-/*
-  Portal shell: thanh trên (48px, dưới lg hoặc khi rail thu gọn) + thanh định vị (40px) dính ở đầu trang.
-  Chừa chỗ đó khi trình duyệt cuộn tới phần tử được focus hoặc neo #id, để nó không bị thanh che (WCAG 2.4.11).
-*/
+/* Chừa chỗ cho thanh trên và thanh định vị khi cuộn tới phần tử được focus */
 :root:has(#main) {
   scroll-padding-top: 6rem;
 }
 
-/*
-  Transitions are switched off (0s), not shortened to 0.01ms: transition-property defaults to `all`,
-  so a non-zero duration on every element would make every element animate every inherited change.
-  The drawer's children then stayed `visibility: hidden` for a frame after it opened, and the close
-  button could not take focus. Nothing in the app waits for transitionend.
-*/
+/* Tắt hẳn transition (0s) thay vì 0.01ms, vì transition-property mặc định là `all` */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -504,28 +438,14 @@
   }
 }
 
-/* =====================================================================
-   Stitch kit (src/components/common/stitch-ui): admin and technician portals.
-   ===================================================================== */
+/* Stitch kit (src/components/common/stitch-ui) */
 
-/*
- * Design tokens – lấy từ block YAML đầu
- * design/stitch/stitch_smart_solar_customer_portal/solaris_home_design_system/DESIGN.md
- * (trùng với tailwind.config trong mỗi code.html).
- */
+/* Token lấy từ DESIGN.md của bộ Stitch */
 @theme {
-  /*
-    Đồng bộ: cả hai bộ dùng chung một họ chữ. Tên biến giữ nguyên (font-jakarta)
-    vì các root của bộ Stitch đang gọi theo tên này.
-  */
+  /* Dùng chung font với portal kit, tên biến font-jakarta giữ lại vì các root của Stitch đang dùng */
   --font-jakarta: var(--font-sans);
 
-  /*
-    ---- Colors ----
-    Nền, chữ và đường kẻ dùng chung token của portal kit nên hai bộ không còn
-    lệch tông (bộ Stitch vốn ngả xanh, portal kit ngả trung tính ấm).
-    Các màu ngữ nghĩa (primary/error/secondary…) bên dưới giữ vai trò cũ.
-  */
+  /* Nền, chữ, đường kẻ dùng chung token của portal kit */
   --color-surface: var(--canvas);
   --color-surface-dim: var(--surface-3);
   --color-surface-bright: var(--canvas);
@@ -574,7 +494,6 @@
   --color-on-background: var(--fg);
   --color-surface-variant: var(--surface-3);
 
-  /* ---- Spacing (p-space-md, gap-space-sm, px-space-lg…) ---- */
   --spacing-space-2xs: 0.25rem;
   --spacing-space-xs: 0.5rem;
   --spacing-space-sm: 0.75rem;
@@ -589,11 +508,7 @@
   --spacing-margin-tablet: 2rem;
   --spacing-margin-desktop: 3rem;
 
-  /* ---- Typography (text-headline-md, text-label-sm…) ---- */
-  /*
-    Thang chữ dùng chung với portal kit: 13 / 15 / 18 / 24 / 32.
-    Tên token của bộ Stitch giữ nguyên, chỉ ánh xạ về 5 bậc này.
-  */
+  /* Thang chữ dùng chung với portal kit: 13 / 15 / 18 / 24 / 32 */
   --text-display-lg: 32px;
   --text-display-lg--line-height: 36px;
   --text-display-lg--letter-spacing: -0.02em;
@@ -657,7 +572,6 @@
   --text-data-metric--letter-spacing: -0.02em;
   --text-data-metric--font-weight: 700;
 
-  /* ---- Status & Lifecycle Palette (DESIGN.md, mục Badges) ---- */
   --color-status-submitted: #0369a1;
   --color-status-submitted-bg: #f0f9ff;
   --color-status-submitted-dot: #0284c7;
@@ -674,14 +588,9 @@
   --color-status-complete-bg: #dcfce7;
   --color-status-complete-dot: #15803d;
 
-  /* ---- Card border (DESIGN.md "Border Depth") ---- */
   --color-outline-card: rgba(13, 92, 58, 0.06);
 
-  /* ---- Elevation (DESIGN.md "Elevation & Depth") ---- */
-  /*
-    Bóng chỉ dành cho lớp nổi (dialog, drawer, menu). Thẻ tĩnh phân tách bằng
-    nền và viền, nên level-1 và các shadow-sm/md của Tailwind đều tắt.
-  */
+  /* Bóng chỉ cho lớp nổi (dialog, drawer, menu) */
   --shadow-float: var(--shadow-pop);
   --shadow-level-1: 0 0 #0000;
   --shadow-level-2: var(--shadow-float);
@@ -694,10 +603,7 @@
   --shadow-xl: var(--shadow-float);
   --shadow-2xl: var(--shadow-float);
 
-  /*
-    Đúng hai bán kính, lấy thẳng từ portal kit: 3px cho control (nút, ô nhập, chip)
-    và 6px cho khối (thẻ, panel, dialog). rounded-full chỉ dùng cho hình tròn thật.
-  */
+  /* Bán kính lấy từ portal kit. rounded-full chỉ cho hình tròn thật */
   --radius-xs: var(--radius-control);
   --radius-sm: var(--radius-control);
   --radius-md: var(--radius-control);
@@ -708,14 +614,10 @@
   --radius-4xl: var(--radius-container);
 }
 
-/* The kit's body styles (bg-surface text-body-md text-on-surface font-jakarta) are set on its roots, not on <body>, so both kits can share one document. */
+/* Style body của Stitch đặt trên root riêng, không đặt trên <body> */
 
 @layer components {
-  /*
-   * Material Symbols. Cố ý KHÔNG dùng class `material-symbols-outlined` của Google:
-   * rule đó không nằm trong cascade layer nên sẽ đè `text-[20px]` của Tailwind.
-   * Kích thước icon để utility `text-*` quyết định.
-   */
+  /* Không dùng class `material-symbols-outlined` của Google vì nó sẽ đè `text-[20px]` của Tailwind */
   .material-symbols {
     font-family: 'Material Symbols Outlined';
     font-weight: normal;
@@ -728,13 +630,13 @@
     white-space: nowrap;
     word-wrap: normal;
     direction: ltr;
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
     -webkit-font-smoothing: antialiased;
-    /*
-      Mỗi icon là đúng một ô vuông 1em: font chưa tải xong thì chữ tên icon ("solar_power") không đẩy lệch bố cục.
-      Trước khi font sẵn sàng (main.tsx gắn .icons-ready) icon trong suốt, nên mạng chậm chỉ thấy chỗ trống đúng cỡ,
-      không bao giờ thấy chữ tên icon; mọi nút có icon đều có chữ hoặc aria-label nên vẫn dùng được.
-    */
+    /* Mỗi icon là một ô vuông 1em, trong suốt cho tới khi font tải xong (.icons-ready) */
     width: 1em;
     height: 1em;
     overflow: hidden;

@@ -3,12 +3,7 @@ import type { Tone } from '@/components/common/ui/badge'
 import type { ProductListParams, ProductSortBy, ProductSortDirection } from '@/services/productService'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 
-/*
- * Cách hiển thị một ProductResponse, dùng chung cho trang admin và trang sản phẩm công khai.
- * Enum (trạng thái, mã tấm pin, tuỳ chọn sắp xếp) ở common/product.ts.
- */
-
-/** Danh sách tấm pin cho mô phỏng và cảnh báo thiếu thông số ở admin: cùng tham số nên dùng chung một cache. */
+/** Dùng chung một cache cho mô phỏng và admin */
 export const SOLAR_PANEL_QUERY = {
   ProductType: SOLAR_PANEL_TYPE,
   PageSize: 100,
@@ -20,7 +15,7 @@ export function isSolarPanelType(productType: string | null | undefined) {
   return productType?.trim().toUpperCase() === SOLAR_PANEL_TYPE
 }
 
-/** Tên loại cho khách và sales: mã SOLAR_PANEL đọc thành "Tấm pin"; loại khác là chữ tự do nên giữ nguyên. Admin vẫn thấy mã gốc. */
+/** SOLAR_PANEL hiện là "Tấm pin", loại khác giữ nguyên */
 export function productTypeLabel(productType: string | null | undefined) {
   if (!productType?.trim()) return null
   return isSolarPanelType(productType) ? 'Tấm pin' : productType
@@ -36,10 +31,7 @@ export function productStatusMeta(status: string | null | undefined): { label: s
   return { label: status?.trim() || 'Chưa đặt trạng thái', tone: 'warn' }
 }
 
-/**
- * Thông số tấm pin còn thiếu (công suất, kích thước). Backend bắt buộc chúng khi tạo/sửa loại SOLAR_PANEL,
- * nhưng dữ liệu cũ vẫn có thể thiếu; tấm thiếu thì mô phỏng bố trí không dùng được nên phải lộ ra ở admin.
- */
+/** Thông số tấm pin còn thiếu. Dữ liệu cũ có thể thiếu nên cần báo ở admin */
 export function panelSpecGaps(product: Pick<ProductResponse, 'productType' | 'ratedPowerW' | 'widthMm' | 'heightMm'>) {
   if (!isSolarPanelType(product.productType)) return { power: false, size: false }
   return {
@@ -48,7 +40,6 @@ export function panelSpecGaps(product: Pick<ProductResponse, 'productType' | 'ra
   }
 }
 
-/** Tách value của PRODUCT_SORT_OPTIONS ("SortBy:SortDirection") thành tham số query. */
 export function parseSort(value: string): { SortBy: ProductSortBy; SortDirection: ProductSortDirection } {
   const [by, dir] = value.split(':') as [ProductSortBy, ProductSortDirection]
   return { SortBy: by, SortDirection: dir }
@@ -61,7 +52,7 @@ export function formatPower(watt: number | null | undefined) {
   return `${new Intl.NumberFormat('vi-VN').format(watt)} W`
 }
 
-/** Kích thước rộng × cao (mm). */
+/** Kích thước rộng x cao (mm). */
 export function formatSize(product: Pick<ProductResponse, 'widthMm' | 'heightMm'>) {
   if (product.widthMm == null || product.heightMm == null) return null
   const n = new Intl.NumberFormat('vi-VN')
@@ -75,10 +66,7 @@ export function formatWarranty(months: number | null | undefined) {
   return months % 12 === 0 ? `${months / 12} năm` : `${months} tháng`
 }
 
-/*
- * Swagger không khai kiểu của `spec` (schema rỗng). Chuỗi thì in thẳng; object thì trải
- * thành các cặp "khoá: giá trị"; dạng khác bỏ qua.
- */
+// `spec` không có kiểu: chuỗi thì in thẳng, object thì trải thành các cặp khoá: giá trị
 export function specEntries(spec: unknown): { key: string; value: string }[] {
   if (spec == null) return []
   if (typeof spec === 'string') {

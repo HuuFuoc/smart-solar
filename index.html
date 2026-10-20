@@ -6,12 +6,9 @@
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <!--
-      1. Áp giao diện đã chọn (khoá "solar-theme" của src/hooks/useTheme.ts) trước khi vẽ, để trang không nháy sai màu;
-         chưa chọn thì để trống và CSS theo hệ thống. Trang công khai và menu khách hàng đều đổi được giao diện.
-      2. Ảnh hero là LCP của trang chủ nhưng chỉ lộ ra sau khi JS và chunk LandingPage tải xong: tải trước ngay khi đọc
-         HTML, chỉ ở "/" (các portal không tải ảnh thừa) và chỉ ảnh của giao diện đang dùng (ngày / đêm). srcset, sizes và
-         media phải trùng với heroImages trong src/data/landing.ts và <picture> của hero-section.tsx, nếu không trình
-         duyệt tải hai lần.
+      Áp giao diện đã chọn trước khi vẽ để trang không nháy sai màu.
+      Ảnh hero là LCP của trang chủ nên tải trước ngay khi đọc HTML, chỉ ở "/" và chỉ ảnh của giao diện đang dùng.
+      srcset, sizes và media phải trùng với heroImages trong src/data/landing.ts, nếu không trình duyệt tải hai lần.
     -->
     <script>
       ;(function () {
@@ -31,7 +28,11 @@
           l.media = media
           l.setAttribute(
             'imagesrcset',
-            widths.map(function (w) { return '/images/hero/' + scene + '-' + kind + '-' + w + '.avif ' + w + 'w' }).join(', '),
+            widths
+              .map(function (w) {
+                return '/images/hero/' + scene + '-' + kind + '-' + w + '.avif ' + w + 'w'
+              })
+              .join(', '),
           )
           l.setAttribute('imagesizes', sizes)
           l.setAttribute('fetchpriority', 'high')
@@ -43,11 +44,17 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="description" content="Giải pháp điện mặt trời cho ngôi nhà của bạn: khảo sát nhu cầu, tư vấn lắp đặt và quản lý bảo hành, bảo trì trên cùng một nền tảng." />
+    <meta
+      name="description"
+      content="Giải pháp điện mặt trời cho ngôi nhà của bạn: khảo sát nhu cầu, tư vấn lắp đặt và quản lý bảo hành, bảo trì trên cùng một nền tảng."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="vi_VN" />
     <meta property="og:title" content="Smart Solar | Giải pháp điện mặt trời cho ngôi nhà của bạn" />
-    <meta property="og:description" content="Khảo sát nhu cầu, tư vấn lắp đặt và quản lý bảo hành, bảo trì trên cùng một nền tảng." />
+    <meta
+      property="og:description"
+      content="Khảo sát nhu cầu, tư vấn lắp đặt và quản lý bảo hành, bảo trì trên cùng một nền tảng."
+    />
     <title>Smart Solar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

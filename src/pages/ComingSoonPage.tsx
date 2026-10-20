@@ -4,10 +4,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 import { cn } from '@/utils/cn'
 
-/*
- * Trang tạm cho các link chưa có nội dung (điều khoản, chính sách bảo mật…). Không nhắc tới portal nào:
- * cổng khách hàng, kinh doanh và quản trị đều đã chạy với dữ liệu thật (08/10/2026).
- */
+// Trang tạm cho các link chưa có nội dung (điều khoản, chính sách...)
 
 export function ComingSoonPage() {
   return (

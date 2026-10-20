@@ -5,10 +5,7 @@ import { useAuth } from '@/context/AuthProvider'
 import { ROLE_LABELS, type UserRole } from '@/common/role'
 import { forbiddenContent } from '@/data/auth'
 
-/*
- * Thẻ 403 – "State 1: Unauthorized Access Warning Box" trong auth_portal/code.html.
- * "Đổi tài khoản khác" = đăng xuất rồi về /login.
- */
+// Thẻ 403. "Đổi tài khoản khác" là đăng xuất rồi về /login
 export function ForbiddenCard() {
   const navigate = useNavigate()
   const location = useLocation()

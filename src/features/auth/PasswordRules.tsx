@@ -3,7 +3,7 @@ import { cn } from '@/utils/cn'
 import { passwordRules, registerContent } from '@/data/auth'
 
 export type PasswordRulesProps = {
-  /** Giá trị mật khẩu đang gõ – checklist đổi màu theo thời gian thực */
+  /** Giá trị mật khẩu đang gõ, checklist đổi màu theo thời gian thực */
   value: string
   className?: string
 }

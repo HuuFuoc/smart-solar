@@ -28,7 +28,7 @@ export type TaskCardProps = {
   onTitleClick?: () => void
   address?: string
   phoneHref?: string
-  /** Lưới thông số 2–4 cột trong khối nền nhạt */
+  /** Lưới thông số 2-4 cột trong khối nền nhạt */
   specs?: TaskSpec[]
   primaryAction?: TaskAction
   secondaryAction?: TaskAction

@@ -5,11 +5,10 @@ import { formatDay, todayVn } from '@/features/scheduling/schedulingDisplay'
 import { useMyScheduleQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES, withId } from '@/routes/paths'
 
-/** Ngày nằm trên địa chỉ (?ngay=YYYY-MM-DD) để link từ trang chi tiết mở đúng ngày và Back / Forward đi giữa các ngày. */
+/** Ngày lưu trên URL (?ngay=YYYY-MM-DD) */
 const DATE_PARAM = 'ngay'
 const isDate = (v: string | null): v is string => v != null && /^\d{4}-\d{2}-\d{2}$/.test(v)
 
-/* Lịch làm việc một ngày của kỹ thuật viên (GET /api/technicians/me/schedule): các lịch, đường đi giữa chúng, cảnh báo. */
 export function TechSchedulePage() {
   const [params, setParams] = useSearchParams()
   const raw = params.get(DATE_PARAM)

@@ -143,7 +143,10 @@ export function ManageProjectPage() {
               </Panel>
 
               <Panel>
-                <PanelHeader title="Khách tự đánh giá so với khảo sát thực tế" action={<Badge tone="ok">{data.audit.tolerance}</Badge>} />
+                <PanelHeader
+                  title="Khách tự đánh giá so với khảo sát thực tế"
+                  action={<Badge tone="ok">{data.audit.tolerance}</Badge>}
+                />
                 <Table stack>
                   <thead>
                     <tr>
@@ -157,11 +160,24 @@ export function ManageProjectPage() {
                   <tbody>
                     {data.audit.rows.map((r) => (
                       <Tr key={r.metric}>
-                        <Td label="Chỉ tiêu" className="font-medium">{r.metric}</Td>
-                        <Td label="Khách tự đánh giá" className="text-fg-2">{r.self}</Td>
+                        <Td label="Chỉ tiêu" className="font-medium">
+                          {r.metric}
+                        </Td>
+                        <Td label="Khách tự đánh giá" className="text-fg-2">
+                          {r.self}
+                        </Td>
                         <Td label="Khảo sát thực tế (19/10)">{r.survey}</Td>
-                        <Td label="Chênh lệch" className={cx(r.variance.startsWith('+') || r.variance.startsWith('-') ? 'text-warn' : 'text-fg-2')}>{r.variance}</Td>
-                        <Td label="Cách xử lý" className="hidden text-fg-2 md:table-cell">{r.resolution}</Td>
+                        <Td
+                          label="Chênh lệch"
+                          className={cx(
+                            r.variance.startsWith('+') || r.variance.startsWith('-') ? 'text-warn' : 'text-fg-2',
+                          )}
+                        >
+                          {r.variance}
+                        </Td>
+                        <Td label="Cách xử lý" className="hidden text-fg-2 md:table-cell">
+                          {r.resolution}
+                        </Td>
                       </Tr>
                     ))}
                   </tbody>
@@ -175,11 +191,22 @@ export function ManageProjectPage() {
                 <PanelBody className="space-y-4">
                   <div>
                     <p className="tnum text-figure font-semibold">
-                      {fmt.usd(data.contract.cleared)} <span className="text-body font-normal text-fg-2">/ {fmt.usd(data.contract.total)} đã xuất hoá đơn và thu</span>
+                      {fmt.usd(data.contract.cleared)}{' '}
+                      <span className="text-body font-normal text-fg-2">
+                        / {fmt.usd(data.contract.total)} đã xuất hoá đơn và thu
+                      </span>
                     </p>
-                    <div className="mt-2 flex h-2 w-full gap-1 overflow-hidden rounded-control" role="img" aria-label="Phân bổ hợp đồng theo mốc">
+                    <div
+                      className="mt-2 flex h-2 w-full gap-1 overflow-hidden rounded-control"
+                      role="img"
+                      aria-label="Phân bổ hợp đồng theo mốc"
+                    >
                       {data.ledger.split.map((s, i) => (
-                        <span key={s.label} className={cx('h-full', ['bg-accent', 'bg-accent/60', 'bg-surface-3'][i])} style={{ width: `${s.pct}%` }} />
+                        <span
+                          key={s.label}
+                          className={cx('h-full', ['bg-accent', 'bg-accent/60', 'bg-surface-3'][i])}
+                          style={{ width: `${s.pct}%` }}
+                        />
                       ))}
                     </div>
                     <ul className="mt-2 flex flex-wrap gap-x-4 text-meta text-fg-2">
@@ -197,7 +224,11 @@ export function ManageProjectPage() {
                           <p className="text-body font-medium">{r.name}</p>
                           <p className="text-meta text-fg-3">{r.note}</p>
                         </div>
-                        <span className={cx('tnum shrink-0 text-body font-semibold', r.state === 'pending' && 'text-fg-2')}>{fmt.usdCents(r.amount)}</span>
+                        <span
+                          className={cx('tnum shrink-0 text-body font-semibold', r.state === 'pending' && 'text-fg-2')}
+                        >
+                          {fmt.usdCents(r.amount)}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -241,11 +272,21 @@ export function ManageProjectPage() {
                     onSubmit={(e) => {
                       e.preventDefault()
                       if (!note.trim()) return
-                      setNotes((n) => [{ time: 'Vừa xong', title: 'Jonathan Mercer (giám đốc khu vực)', body: note.trim() }, ...n])
+                      setNotes((n) => [
+                        { time: 'Vừa xong', title: 'Jonathan Mercer (giám đốc khu vực)', body: note.trim() },
+                        ...n,
+                      ])
                       setNote('')
                     }}
                   >
-                    <Textarea aria-label="Thêm ghi chú điều hành" rows={1} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Thêm ghi chú điều hành" className="min-h-11 resize-none lg:min-h-10" />
+                    <Textarea
+                      aria-label="Thêm ghi chú điều hành"
+                      rows={1}
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Thêm ghi chú điều hành"
+                      className="min-h-11 resize-none lg:min-h-10"
+                    />
                     <Button type="submit" disabled={!note.trim()}>
                       Gửi
                     </Button>

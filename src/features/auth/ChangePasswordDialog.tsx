@@ -31,22 +31,24 @@ export type ChangePasswordDialogProps = {
   onOpenChange: (open: boolean) => void
 }
 
-/*
- * Dialog đổi mật khẩu, mở từ khối tài khoản ở rail (bộ portal kit, cùng kiểu với các hộp thoại khác).
- * <dialog> gốc nên tự là modal và trả focus về nút đã mở nó khi đóng.
- * ChangePasswordRequest trong swagger = { currentPassword, newPassword }; ô "xác nhận" chỉ validate phía client.
- */
+// Dialog đổi mật khẩu. Ô "xác nhận" chỉ kiểm tra phía client
 export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialogProps) {
   // Đang gửi thì không cho đóng (Esc): form báo trạng thái lên đây vì mutation nằm trong form.
   const [busy, setBusy] = useState(false)
   return (
-    <ModalDialog open={open} onOpenChange={onOpenChange} dismissible={!busy} aria-label={changePasswordContent.title} className="max-w-lg">
+    <ModalDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      dismissible={!busy}
+      aria-label={changePasswordContent.title}
+      className="max-w-lg"
+    >
       <ChangePasswordForm onDone={() => onOpenChange(false)} onBusyChange={setBusy} />
     </ModalDialog>
   )
 }
 
-/* Form gắn trong dialog chỉ khi đang mở (ModalDialog gỡ children lúc đóng), nên mỗi lần mở là form trống. */
+// Form chỉ mount khi dialog mở nên mỗi lần mở là form trống
 function ChangePasswordForm({ onDone, onBusyChange }: { onDone: () => void; onBusyChange: (busy: boolean) => void }) {
   const id = useId()
   const changeMutation = useChangePasswordMutation()
@@ -76,8 +78,8 @@ function ChangePasswordForm({ onDone, onBusyChange }: { onDone: () => void; onBu
       toast.success(changePasswordContent.success)
       onDone()
     } catch (error) {
-      // 401 ở đây là phiên đã hết (client.ts đã thử refresh và bật hộp "hết phiên"): mật khẩu CHƯA đổi.
-      // Sai mật khẩu hiện tại là 400 AUTH_CURRENT_PASSWORD_INVALID (dò 08/10/2026), báo ngay dưới ô đó.
+      // 401 ở đây là phiên đã hết (client.ts đã thử refresh), mật khẩu chưa được đổi
+      // Sai mật khẩu hiện tại thì backend trả 400 AUTH_CURRENT_PASSWORD_INVALID
       if (isApiError(error) && (error.fieldErrors.currentPassword || error.code === 'AUTH_CURRENT_PASSWORD_INVALID')) {
         setError('currentPassword', { type: 'server', message: error.fieldErrors.currentPassword ?? error.message })
         return
@@ -91,10 +93,28 @@ function ChangePasswordForm({ onDone, onBusyChange }: { onDone: () => void; onBu
     <form onSubmit={onSubmit} noValidate>
       <DialogTitle>{changePasswordContent.title}</DialogTitle>
       <div className="mt-6 space-y-4">
-        <PasswordField id={f('current')} label={changePasswordContent.currentLabel} autoComplete="current-password" error={errors.currentPassword?.message} field={register('currentPassword')} />
-        <PasswordField id={f('new')} label={changePasswordContent.newLabel} autoComplete="new-password" error={errors.newPassword?.message} field={register('newPassword')} />
-        <PasswordField id={f('confirm')} label={changePasswordContent.confirmLabel} autoComplete="new-password" error={errors.confirm?.message} field={register('confirm')} />
-        {/* Quy tắc đạt: dấu tích tròn màu xanh (ok); chưa đạt: vòng tròn xám. Chữ đọc thêm "(đã đạt)" cho trình đọc màn hình. */}
+        <PasswordField
+          id={f('current')}
+          label={changePasswordContent.currentLabel}
+          autoComplete="current-password"
+          error={errors.currentPassword?.message}
+          field={register('currentPassword')}
+        />
+        <PasswordField
+          id={f('new')}
+          label={changePasswordContent.newLabel}
+          autoComplete="new-password"
+          error={errors.newPassword?.message}
+          field={register('newPassword')}
+        />
+        <PasswordField
+          id={f('confirm')}
+          label={changePasswordContent.confirmLabel}
+          autoComplete="new-password"
+          error={errors.confirm?.message}
+          field={register('confirm')}
+        />
+        {/* Quy tắc đạt thì hiện dấu tích xanh, chưa đạt thì vòng xám */}
         <div className="rounded-container bg-surface-2 px-4 py-3">
           <p className="text-meta font-medium text-fg-2">{registerContent.rulesTitle}</p>
           <ul className="mt-2 grid gap-1.5 text-meta sm:grid-cols-2">
@@ -131,7 +151,7 @@ function ChangePasswordForm({ onDone, onBusyChange }: { onDone: () => void; onBu
   )
 }
 
-/* Ô mật khẩu của portal kit với nút Hiện / Ẩn (icon con mắt + chữ, cùng kiểu với các nút có icon khác). */
+// Ô mật khẩu có nút Hiện / Ẩn
 function PasswordField({
   id,
   label,
@@ -149,7 +169,13 @@ function PasswordField({
   return (
     <Field label={label} htmlFor={id} error={error}>
       <div className="flex gap-2">
-        <Input id={id} type={shown ? 'text' : 'password'} autoComplete={autoComplete} aria-invalid={error ? true : undefined} {...field} />
+        <Input
+          id={id}
+          type={shown ? 'text' : 'password'}
+          autoComplete={autoComplete}
+          aria-invalid={error ? true : undefined}
+          {...field}
+        />
         <Button
           variant="ghost"
           bleed={false}

@@ -4,10 +4,7 @@ import { cn } from '@/utils/cn'
 /* "Governance Quick Launchpads" trong admin_dashboard: nav phụ dạng thẻ bấm được. */
 export type QuickLaunchTone = 'primary' | 'secondary' | 'primary-container' | 'tertiary'
 
-/*
-  Cả app chỉ còn một màu nhấn nên 4 tone không còn khác nhau về màu; giữ kiểu
-  prop để dữ liệu cũ không phải sửa.
-*/
+// Chỉ còn một màu nhấn nên các tone giống nhau, giữ prop để dữ liệu cũ không phải sửa
 const ctaClasses = 'text-primary'
 const titleHoverClasses = 'group-hover:text-primary'
 
@@ -23,13 +20,7 @@ export type QuickLaunchCardProps = {
   className?: string
 }
 
-export function QuickLaunchCard({
-  title,
-  description,
-  ctaLabel,
-  href,
-  className,
-}: QuickLaunchCardProps) {
+export function QuickLaunchCard({ title, description, ctaLabel, href, className }: QuickLaunchCardProps) {
   return (
     <Link
       to={href}
@@ -39,7 +30,9 @@ export function QuickLaunchCard({
       )}
     >
       <div>
-        <h3 className={cn('text-body-lg font-semibold text-on-surface transition-colors', titleHoverClasses)}>{title}</h3>
+        <h3 className={cn('text-body-lg font-semibold text-on-surface transition-colors', titleHoverClasses)}>
+          {title}
+        </h3>
         {description && <p className="mt-1 text-body-sm text-on-surface-variant">{description}</p>}
       </div>
       <span className={cn('mt-space-lg text-label-md font-semibold', ctaClasses)}>{ctaLabel}</span>

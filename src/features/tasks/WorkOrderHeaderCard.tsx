@@ -3,10 +3,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { StatusBadge, type StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 import { cn } from '@/utils/cn'
 
-/*
- * "Work Order Key Data Card" đầu task_detail_timeline: ô icon lớn, mã lệnh, badge trạng thái,
- * các dòng thông tin hiện trường bên trái và khối 3 chỉ số bên phải.
- */
+// Card đầu trang chi tiết work order
 export type WorkOrderFact = { icon: string; text: string; emphasis?: boolean }
 
 export type WorkOrderMetric = {

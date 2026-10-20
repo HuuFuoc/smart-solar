@@ -1,4 +1,4 @@
-/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api` – KHÔNG sửa tay. */
+/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 
 export type ProductResponsePagedResult = {

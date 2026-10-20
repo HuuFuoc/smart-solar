@@ -44,10 +44,7 @@ export function FieldNoteComposer({ dictation, placeholder, submitLabel, classNa
 
           <div aria-hidden="true" className="flex h-6 items-center gap-0.5 px-2">
             {waveform.map((bar, index) => (
-              <span
-                key={index}
-                className={cn('w-1 rounded-full', bar.height, bar.tone)}
-              />
+              <span key={index} className={cn('w-1 rounded-full', bar.height, bar.tone)} />
             ))}
           </div>
         </div>

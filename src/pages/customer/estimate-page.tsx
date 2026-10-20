@@ -42,7 +42,9 @@ export function EstimatePage() {
                   <p className="mt-1 text-meta text-fg-3">Khoảng giá trước ưu đãi</p>
                   <p className="tnum mt-4 text-title font-semibold">
                     {fmt.usd(data.netRange[0])} đến {fmt.usd(data.netRange[1])}{' '}
-                    <span className="text-body font-normal text-fg-2">sau khi trừ tín dụng thuế điện mặt trời liên bang 30%</span>
+                    <span className="text-body font-normal text-fg-2">
+                      sau khi trừ tín dụng thuế điện mặt trời liên bang 30%
+                    </span>
                   </p>
                   <StatRow className="mt-6 border-t border-line pt-6 md:grid-cols-3">
                     <Stat label="Thời gian hoàn vốn ước tính" value={data.paybackYears} unit="năm" />

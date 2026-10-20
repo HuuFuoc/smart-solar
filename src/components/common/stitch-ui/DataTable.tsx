@@ -4,10 +4,7 @@ import { Checkbox } from '@/components/common/stitch-ui/Checkbox'
 import { Pagination, type PaginationProps } from '@/components/common/stitch-ui/Pagination'
 import { cn } from '@/utils/cn'
 
-/*
- * Theo bảng trong user_management (chọn hàng, cột action, phân trang), product_catalogue (dense)
- * và bảng audit gọn trong admin_dashboard (variant plain + size sm).
- */
+// Bảng dữ liệu: chọn hàng, cột thao tác, phân trang
 export type DataTableColumn<T> = {
   key: string
   header: ReactNode
@@ -26,18 +23,18 @@ export type DataTableProps<T> = {
   selectable?: boolean
   selectedKeys?: ReadonlySet<string>
   onSelectionChange?: (keys: Set<string>) => void
-  /** Cột action bên phải (IconButton…) */
+  /** Cột action bên phải (IconButton...) */
   actions?: (row: T) => ReactNode
   actionsHeader?: ReactNode
-  /** Thanh tiêu đề trên bảng: tên + chip đếm + nút export… */
+  /** Thanh tiêu đề trên bảng: tên + chip đếm + nút export... */
   toolbar?: ReactNode
-  /** Nội dung dưới bảng khi không dùng pagination (dòng "Showing…" + link) */
+  /** Nội dung dưới bảng khi không dùng pagination (dòng "Showing..." + link) */
   footer?: ReactNode
   pagination?: PaginationProps
   emptyMessage?: ReactNode
   /** card = bọc trong Card trắng (mặc định); plain = chỉ bảng, để đặt trong card có sẵn */
   variant?: 'card' | 'plain'
-  /** md = bảng chính; sm = bảng gọn (header 11px, hàng py-3); compact = product_catalogue; matrix = my_tasks_1 (ô cao, nội dung căn trên) */
+  /** md: bảng chính, sm: bảng gọn, compact: danh mục sản phẩm, matrix: ô cao, nội dung căn trên */
   size?: 'md' | 'sm' | 'compact' | 'matrix'
   /** Kẻ đường ngăn giữa các hàng (my_tasks_1) */
   divided?: boolean
@@ -68,7 +65,7 @@ const sizeStyles = {
     tbody: 'text-body-sm text-on-surface',
     rowHover: 'hover:bg-surface-container-low/40',
   },
-  /** my_tasks_1: header label-sm in hoa, ô py-space-lg, nội dung căn trên, mép trái/phải space-lg */
+  /** Header in hoa, ô cao, nội dung căn trên */
   matrix: {
     thead: 'bg-surface-container-low text-label-sm text-on-surface-variant',
     th: 'px-space-md py-space-md font-semibold',
@@ -132,13 +129,7 @@ export function DataTable<T>({
   }
 
   const cellPadding =
-    size === 'sm'
-      ? 'py-3'
-      : size === 'matrix'
-        ? 'py-space-lg'
-        : size === 'compact' || dense
-          ? 'py-space-sm'
-          : 'py-4'
+    size === 'sm' ? 'py-3' : size === 'matrix' ? 'py-space-lg' : size === 'compact' || dense ? 'py-space-sm' : 'py-4'
   const columnCount = columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0)
   const lastIndex = columns.length - 1
 

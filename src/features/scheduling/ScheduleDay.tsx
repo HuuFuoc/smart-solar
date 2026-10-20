@@ -23,23 +23,38 @@ import {
 import { errorMessage, type ApiError } from '@/services/api/errors'
 import type { ScheduleAppointmentView, TechnicianScheduleView } from '@/types/res/technicianAppointmentsRes'
 
-/*
-  Lịch một ngày của một kỹ thuật viên: các lịch theo giờ, chặng đường tới từng lịch (ước tính đã lưu, không gọi lại Vietmap),
-  tổng quãng đường / thời gian đi, cảnh báo trùng giờ. Chỉ chặng "OK" là số liệu hiện tại; chặng đang tính lại, cũ, lỗi
-  hoặc chưa có thì ghi rõ trạng thái và không hiện số cũ như đang đúng (tổng của backend cũng chỉ cộng chặng OK).
-  Dùng cho kỹ thuật viên (lịch của mình) và quản trị / quản lý (lịch của một kỹ thuật viên).
-*/
+// Lịch một ngày của kỹ thuật viên: các lịch, chặng đường và cảnh báo trùng giờ
+// Chỉ chặng có trạng thái OK mới hiện số liệu
 
-export function DayNav({ date, onChange, label = 'Ngày' }: { date: string; onChange: (date: string) => void; label?: string }) {
+// "Hôm nay" luôn có chỗ để cụm nút không nhảy khi đổi ngày
+export function DayNav({
+  date,
+  onChange,
+  label = 'Ngày',
+}: {
+  date: string
+  onChange: (date: string) => void
+  label?: string
+}) {
   const today = todayVn()
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <IconButton icon="chevron_left" label="Ngày trước" variant="secondary" onClick={() => onChange(addDays(date, -1))} />
+      <IconButton
+        icon="chevron_left"
+        label="Ngày trước"
+        variant="secondary"
+        onClick={() => onChange(addDays(date, -1))}
+      />
       <label className="w-44">
         <span className="sr-only">{label}</span>
         <Input type="date" value={date} onChange={(e) => e.target.value && onChange(e.target.value)} />
       </label>
-      <IconButton icon="chevron_right" label="Ngày sau" variant="secondary" onClick={() => onChange(addDays(date, 1))} />
+      <IconButton
+        icon="chevron_right"
+        label="Ngày sau"
+        variant="secondary"
+        onClick={() => onChange(addDays(date, 1))}
+      />
       {date !== today && (
         <Button variant="ghost" bleed={false} onClick={() => onChange(today)}>
           Hôm nay
@@ -64,7 +79,15 @@ function Leg({ item }: { item: ScheduleAppointmentView }) {
   )
 }
 
-function AppointmentItem({ item, linkTo, viewer }: { item: ScheduleAppointmentView; linkTo?: string; viewer: 'technician' | 'staff' }) {
+function AppointmentItem({
+  item,
+  linkTo,
+  viewer,
+}: {
+  item: ScheduleAppointmentView
+  linkTo?: string
+  viewer: 'technician' | 'staff'
+}) {
   const status = appointmentStatusMeta(item.status, viewer)
   return (
     <li className="grid gap-x-6 gap-y-2 py-4 first:pt-0 last:pb-0 sm:grid-cols-[7rem_minmax(0,1fr)]">
@@ -123,14 +146,22 @@ export function ScheduleDay({
         <StatRow>
           <Stat label="Lịch trong ngày" value={s.appointmentCount} />
           <Stat label="Quãng đường đã kiểm tra" value={formatDistance(s.estimatedTravelDistanceMeters)} />
-          <Stat label="Thời gian đi" value={formatDuration(s.estimatedTravelSeconds)} note={`cộng ${s.safetyBufferMinutesTotal} phút dự phòng`} />
+          <Stat
+            label="Thời gian đi"
+            value={formatDuration(s.estimatedTravelSeconds)}
+            note={`cộng ${s.safetyBufferMinutesTotal} phút dự phòng`}
+          />
           <Stat label="Rời nơi xuất phát từ" value={formatTime(s.earliestBaseDeparture)} />
         </StatRow>
       )}
 
       {r && (
-        <Notice tone={r.status === 'FAILED' ? 'warn' : 'info'} title={r.status === 'FAILED' ? 'Chưa tính lại được đường đi' : 'Đang tính lại đường đi'}>
-          Lịch trong ngày vừa thay đổi ({recalculationReasonLabel(r.reason)}). Hệ thống thử lại lúc {formatTime(r.nextAttemptAt)}
+        <Notice
+          tone={r.status === 'FAILED' ? 'warn' : 'info'}
+          title={r.status === 'FAILED' ? 'Chưa tính lại được đường đi' : 'Đang tính lại đường đi'}
+        >
+          Lịch trong ngày vừa thay đổi ({recalculationReasonLabel(r.reason)}). Hệ thống thử lại lúc{' '}
+          {formatTime(r.nextAttemptAt)}
           {r.attempts > 0 ? `, đã thử ${r.attempts} lần` : ''}. Trang tự tải lại khi xong.
         </Notice>
       )}
@@ -141,7 +172,8 @@ export function ScheduleDay({
       )}
       {s.routesNeedingReview > 0 && !r && (
         <Notice tone="warn">
-          {s.routesNeedingReview} chặng đường chưa được kiểm tra lại; tổng quãng đường và thời gian đi chỉ tính các chặng đã kiểm tra.
+          {s.routesNeedingReview} chặng đường chưa được kiểm tra lại; tổng quãng đường và thời gian đi chỉ tính các
+          chặng đã kiểm tra.
         </Notice>
       )}
 
@@ -150,12 +182,18 @@ export function ScheduleDay({
       ) : (
         <ol className="divide-y divide-line">
           {s.appointments.map((item) => (
-            <AppointmentItem key={item.appointmentId} item={item} viewer={viewer} linkTo={linkFor?.(item.appointmentId)} />
+            <AppointmentItem
+              key={item.appointmentId}
+              item={item}
+              viewer={viewer}
+              linkTo={linkFor?.(item.appointmentId)}
+            />
           ))}
         </ol>
       )}
       <p className="text-meta text-fg-3">
-        Thời gian đi là ước tính xe máy của Vietmap lưu lại khi lịch thay đổi, không phải giao thông trực tiếp. Mỗi chặng cộng thêm phút dự phòng.
+        Thời gian đi là ước tính xe máy của Vietmap lưu lại khi lịch thay đổi, không phải giao thông trực tiếp. Mỗi
+        chặng cộng thêm phút dự phòng.
       </p>
     </section>
   )

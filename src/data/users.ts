@@ -33,8 +33,7 @@ export const userRoles: UserRoleMeta[] = [
     icon: 'shield_person',
     badgeVariant: 'solid',
     clearance: 'Cấp 5',
-    description:
-      'Toàn quyền với dữ liệu vận hành, thương mại, điều phối và cấu hình AI.',
+    description: 'Toàn quyền với dữ liệu vận hành, thương mại, điều phối và cấu hình AI.',
   },
   {
     value: 'lead-technician',
@@ -261,11 +260,7 @@ export const users: UserRecord[] = [
 ]
 
 export const usersPageHeader = {
-  breadcrumb: [
-    { label: 'Quản trị' },
-    { label: 'Quản trị nền tảng' },
-    { label: 'Người dùng' },
-  ] satisfies Crumb[],
+  breadcrumb: [{ label: 'Quản trị' }, { label: 'Quản trị nền tảng' }, { label: 'Người dùng' }] satisfies Crumb[],
   title: 'Người dùng',
   actions: { export: 'Xuất CSV', invite: 'Mời người dùng' },
 }

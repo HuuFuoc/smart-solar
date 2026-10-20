@@ -3,7 +3,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { StatusBadge, type StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 import { cn } from '@/utils/cn'
 
-/* Khối "Upcoming Schedule (3-Day)" trong technician_dashboard_1: nhóm theo ngày, mỗi việc là một hàng. */
+// Lịch sắp tới nhóm theo ngày, mỗi việc một hàng
 export type ScheduleRowTone = 'primary' | 'secondary'
 
 export type ScheduleRow = {
@@ -46,18 +46,11 @@ export function ScheduleList({ days, className }: ScheduleListProps) {
       {days.map((day, index) => (
         <div
           key={day.id}
-          className={cn(
-            'flex flex-col',
-            index > 0 && 'pt-space-md',
-            index < days.length - 1 && 'pb-space-md',
-          )}
+          className={cn('flex flex-col', index > 0 && 'pt-space-md', index < days.length - 1 && 'pb-space-md')}
         >
           <div className="mb-space-sm flex flex-wrap items-center gap-space-xs">
             <span
-              className={cn(
-                'text-label-md font-bold',
-                day.tone === 'default' ? 'text-on-surface' : 'text-primary',
-              )}
+              className={cn('text-label-md font-bold', day.tone === 'default' ? 'text-on-surface' : 'text-primary')}
             >
               {day.label}
             </span>

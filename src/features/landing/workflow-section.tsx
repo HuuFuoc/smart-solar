@@ -3,11 +3,8 @@ import { workflow } from '@/data/landing'
 import { Reveal } from './reveal'
 import { Section, SectionTitle } from './section'
 
-/*
-  Quy trình bốn bước: danh sách có thứ tự, mỗi bước một điểm mốc tròn đánh số nối bằng đường kẻ – dọc trên điện thoại,
-  ngang từ lg. Màu trung tính: đây là thứ tự các bước, không phải tiến độ đã xong.
-  Điểm mốc và đường nối nằm trong khối Reveal (luôn là khung chứa của phần tử absolute, kể cả lúc đang trượt lên).
-*/
+// Quy trình bốn bước, nối bằng đường kẻ dọc trên điện thoại và ngang từ lg
+// Màu trung tính vì đây là thứ tự các bước, không phải tiến độ
 export function WorkflowSection() {
   return (
     <Section id={workflow.id} space="far" titleId="workflow-title">
@@ -21,8 +18,7 @@ export function WorkflowSection() {
               delay={110 * i}
               className={cx(
                 'relative h-full pl-16 lg:pt-16 lg:pl-0',
-                // Đường nối tới bước sau, cách mỗi điểm mốc 16px: dọc trên điện thoại (hai bước cách 32px), ngang từ lg
-                // (gutter 24px).
+                // Đường nối tới bước sau, cách mỗi điểm mốc 16px
                 i < workflow.steps.length - 1 &&
                   'after:absolute after:top-14 after:-bottom-4 after:left-5 after:w-px after:bg-line-2 after:content-[""] lg:after:top-5 lg:after:-right-2 lg:after:bottom-auto lg:after:left-14 lg:after:h-px lg:after:w-auto',
               )}

@@ -1,9 +1,6 @@
 import { cn } from '@/utils/cn'
 
-/*
- * Hàng tiêu đề của mỗi khối trong technician_dashboard_1:
- * h2 headline-lg bold + ngày tháng body-md bên trái, ghi chú label-sm bên phải.
- */
+// Hàng tiêu đề của mỗi khối: tiêu đề + ngày bên trái, ghi chú bên phải
 export type SectionHeadingProps = {
   title: string
   /** Chữ nhỏ cạnh tiêu đề, ví dụ "Wednesday, Oct 23" */

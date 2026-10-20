@@ -1,11 +1,5 @@
-/*
- * VIẾT TAY – swagger chỉ khai "200 OK" cho tag SurveyRequests, không có schema response.
- * Tên kiểu và field lấy đúng theo SmartSolar.Modules.PreSurvey (GetPendingSurveyRequests,
- * GetMySurveyRequests, GetSurveyRequestDetail) và Contracts.SurveyRequests của image 05/10/2026;
- * lịch hẹn, phân công, đổi giờ theo Modules.Scheduling (backend main 4d12e4d, 12/10/2026).
- * Enum của PreSurvey serialize thành số giống request; trạng thái của Scheduling là chuỗi IN HOA.
- * Khi backend khai response trong swagger, `npm run gen:api` sẽ ghi đè file này bằng bản sinh tự động.
- */
+// Viết tay vì swagger không có schema response (tag SurveyRequests)
+// Enum của PreSurvey là số, trạng thái của Scheduling là chuỗi in hoa
 import type { InstallationSurfaceType } from '@/types/req/customersReq'
 
 /** 1 Pending, 2 Assigned, 3 Reviewing, 4 Scheduled, 5 Completed, 6 Cancelled */
@@ -66,19 +60,16 @@ export type SurveyRequestDetail = {
   assignedAt: string | null
   scheduledAt: string | null
   salesNote: string | null
-  /** Lần mô phỏng khách chọn khi gửi (image 09/10/2026); null với yêu cầu gửi khi chưa chạy mô phỏng. */
+  /** Lần mô phỏng khách chọn khi gửi, null nếu chưa chạy mô phỏng */
   selectedSimulation: SelectedSimulationSummary | null
-  /** Lịch hẹn đang hiệu lực (12/10/2026); null khi khách chưa đặt giờ hoặc đã huỷ. */
+  /** Lịch hẹn đang hiệu lực, null khi chưa đặt giờ hoặc đã huỷ */
   appointment: SurveyAppointmentSummary | null
 }
 
-/** BOOKED → ASSIGNED → ACKNOWLEDGED, hoặc CANCELLED. Giá trị lạ vẫn nhận (backend có thể thêm). */
+/** BOOKED, rồi ASSIGNED, rồi ACKNOWLEDGED, hoặc CANCELLED. Giá trị lạ vẫn nhận (backend có thể thêm) */
 export type AppointmentStatus = 'BOOKED' | 'ASSIGNED' | 'ACKNOWLEDGED' | 'CANCELLED' | (string & {})
 
-/**
- * Lịch hẹn như sales thấy, gồm cả kỹ thuật viên hệ thống đang giữ chỗ (khách không bao giờ thấy).
- * Giờ có offset +07:00.
- */
+/** Lịch hẹn như sales thấy, có cả kỹ thuật viên đang giữ chỗ. Giờ có offset +07:00 */
 export type SurveyAppointmentSummary = {
   appointmentId: string
   /** Format: date-time */
@@ -97,7 +88,7 @@ export type SurveyAppointmentSummary = {
   acknowledgedAt: string | null
 }
 
-/** POST …/assign-technician và PUT …/reassign-technician (cùng một handler). */
+/** POST .../assign-technician và PUT .../reassign-technician (cùng một handler). */
 export type AssignmentView = {
   appointmentId: string
   surveyRequestId: string
@@ -114,7 +105,7 @@ export type AssignmentView = {
   acknowledgementRequired: boolean
 }
 
-/** PUT …/reschedule. `previousAppointmentId` là lịch cũ (đã huỷ, giữ làm lịch sử). */
+/** PUT .../reschedule. `previousAppointmentId` là lịch cũ (đã huỷ, giữ làm lịch sử). */
 export type SalesRescheduleView = {
   appointmentId: string
   previousAppointmentId: string | null

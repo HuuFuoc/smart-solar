@@ -5,7 +5,7 @@ export const provinceKeys = {
   wards: (provinceCode: number) => ['provinces', 'v2', provinceCode, 'wards'] as const,
 }
 
-/** Danh sách chỉ đổi khi có nghị quyết sắp xếp đơn vị hành chính: tải một lần, giữ suốt phiên. */
+/** Danh sách gần như không đổi nên chỉ tải một lần */
 export function useHcmWardsQuery() {
   return useQuery({
     queryKey: provinceKeys.wards(HCM_PROVINCE.code),

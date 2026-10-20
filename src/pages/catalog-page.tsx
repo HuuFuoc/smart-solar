@@ -11,10 +11,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { ROUTES, withId } from '@/routes/paths'
 import { cx } from '@/utils/cx'
 
-/*
-  Danh mục sản phẩm trong portal khách hàng và kinh doanh, đọc GET /api/products như trang công khai.
-  Chỉ hiện sản phẩm đang bán: swagger không có tham số lọc trạng thái nên lọc ở client.
-*/
+// Danh mục sản phẩm trong portal. Chỉ hiện sản phẩm đang bán (lọc ở client)
 
 const PAGE_SIZE = 20
 

@@ -5,10 +5,7 @@ import { StatTile } from '@/components/common/tech/StatTile'
 import { SunPathChart } from '@/features/surveys/SunPathChart'
 import type { SurveyRecord } from '@/data/surveys'
 
-/*
- * Aside phụ của luồng khảo sát: dữ liệu chủ nhà tự khai (chỉ đọc).
- * Dựng từ cột trái của site_survey_task; màn survey_image_documentation dùng lại nguyên khối này.
- */
+// Dữ liệu chủ nhà tự khai (chỉ đọc)
 export type SurveyHomeownerAsideProps = {
   data: SurveyRecord['homeowner']
   /** Bấm vào một ảnh tự đánh giá (mở lightbox ở bản thật) */

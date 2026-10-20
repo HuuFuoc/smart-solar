@@ -1,15 +1,10 @@
-import type { ReactNode } from "react";
-import { cx } from "@/utils/cx";
-import { Button } from "@/components/common/ui/button";
-import { Icon } from "@/components/common/stitch-ui/Icon";
+import type { ReactNode } from 'react'
+import { cx } from '@/utils/cx'
+import { Button } from '@/components/common/ui/button'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 
 export function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      aria-hidden
-      className={cx("animate-pulse rounded-control bg-surface-3", className)}
-    />
-  );
+  return <div aria-hidden className={cx('animate-pulse rounded-control bg-surface-3', className)} />
 }
 
 /* Placeholder that matches the shape of a typical page: header, a stat row and two panels. */
@@ -33,7 +28,7 @@ export function PageSkeleton() {
         <Skeleton className="h-64" />
       </div>
     </div>
-  );
+  )
 }
 
 export function EmptyState({
@@ -42,38 +37,28 @@ export function EmptyState({
   action,
   className,
 }: {
-  title: string;
-  description?: string;
-  action?: ReactNode;
-  className?: string;
+  title: string
+  description?: string
+  action?: ReactNode
+  className?: string
 }) {
   return (
-    <div
-      className={cx(
-        "rounded-container border border-dashed border-line-2 px-6 py-8 text-center",
-        className,
-      )}
-    >
+    <div className={cx('rounded-container border border-dashed border-line-2 px-6 py-8 text-center', className)}>
       <p className="text-body font-medium text-fg">{title}</p>
-      {description && (
-        <p className="mx-auto mt-1 max-w-[46ch] text-body text-fg-2">
-          {description}
-        </p>
-      )}
+      {description && <p className="mx-auto mt-1 max-w-[46ch] text-body text-fg-2">{description}</p>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>
-  );
+  )
 }
 
-/* Lỗi tải dữ liệu: khối nền đỏ nhạt + icon, cùng kiểu với Notice tone="danger", nút "Thử lại" là nút thật. */
 export function ErrorState({
-  title = "Không tải được trang này.",
+  title = 'Không tải được trang này.',
   message,
   onRetry,
 }: {
-  title?: string;
-  message?: string;
-  onRetry?: () => void;
+  title?: string
+  message?: string
+  onRetry?: () => void
 }) {
   return (
     <div role="alert" className="flex gap-3 rounded-container bg-danger-soft px-4 py-3">
@@ -88,5 +73,5 @@ export function ErrorState({
         )}
       </div>
     </div>
-  );
+  )
 }

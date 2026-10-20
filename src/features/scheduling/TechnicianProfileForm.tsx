@@ -35,14 +35,16 @@ function toForm(t: TechnicianProfileView): Form {
   }
 }
 
-/* Luật bám UpsertTechnicianProfileCommandValidator (backend main 4d12e4d). */
+// Luật kiểm tra theo UpsertTechnicianProfileCommandValidator của backend
 function validate(f: Form): Errors {
   const errors: Errors = {}
   const lat = toNumber(f.baseLatitude)
   const lon = toNumber(f.baseLongitude)
   if (lat !== null && (!Number.isFinite(lat) || lat < -90 || lat > 90)) errors.baseLatitude = 'Vĩ độ từ -90 đến 90.'
-  if (lon !== null && (!Number.isFinite(lon) || lon < -180 || lon > 180)) errors.baseLongitude = 'Kinh độ từ -180 đến 180.'
-  if ((lat === null) !== (lon === null)) errors[lat === null ? 'baseLatitude' : 'baseLongitude'] = 'Nhập đủ cả vĩ độ và kinh độ.'
+  if (lon !== null && (!Number.isFinite(lon) || lon < -180 || lon > 180))
+    errors.baseLongitude = 'Kinh độ từ -180 đến 180.'
+  if ((lat === null) !== (lon === null))
+    errors[lat === null ? 'baseLatitude' : 'baseLongitude'] = 'Nhập đủ cả vĩ độ và kinh độ.'
   if (f.isSchedulingActive && (lat === null || lon === null || (lat === 0 && lon === 0)))
     errors.baseLatitude ??= 'Đang nhận lịch thì phải có toạ độ nơi xuất phát thật.'
   if (f.baseLabel.trim().length > 200) errors.baseLabel = 'Tối đa 200 ký tự.'
@@ -55,9 +57,16 @@ function validate(f: Form): Errors {
   return errors
 }
 
-const FIELDS: (keyof Form)[] = ['isSchedulingActive', 'baseLabel', 'baseLatitude', 'baseLongitude', 'maxAppointmentsPerDay', 'earliestBaseDeparture']
+const FIELDS: (keyof Form)[] = [
+  'isSchedulingActive',
+  'baseLabel',
+  'baseLatitude',
+  'baseLongitude',
+  'maxAppointmentsPerDay',
+  'earliestBaseDeparture',
+]
 
-/* Lỗi theo field của backend: tên PascalCase (BaseLatitude) hoặc camelCase (earliestBaseDeparture). */
+// Field lỗi của backend có thể là PascalCase hoặc camelCase
 function serverErrors(error: unknown): Errors {
   if (!isApiError(error)) return {}
   const out: Errors = {}
@@ -68,11 +77,7 @@ function serverErrors(error: unknown): Errors {
   return out
 }
 
-/*
-  Hồ sơ nhận lịch của kỹ thuật viên: nơi xuất phát (điểm bắt đầu mọi chặng đường đầu ngày – phải là nơi xuất phát thật,
-  không lấy toạ độ của khách), bật / tắt nhận lịch, số lịch tối đa / ngày, giờ rời nơi xuất phát sớm nhất. Phương tiện V1 cố
-  định là xe máy nên không có ô chọn. Tắt nhận lịch khi còn lịch sắp tới bị từ chối và liệt kê các lịch đó.
-*/
+// Hồ sơ nhận lịch của kỹ thuật viên: nơi xuất phát, bật / tắt nhận lịch, số lịch tối đa / ngày, giờ xuất phát sớm nhất
 export function TechnicianProfileForm({ technician }: { technician: TechnicianProfileView }) {
   const [form, setForm] = useState<Form>(() => toForm(technician))
   const [errors, setErrors] = useState<Errors>({})
@@ -129,18 +134,53 @@ export function TechnicianProfileForm({ technician }: { technician: TechnicianPr
       <fieldset className="space-y-4">
         <legend className="text-body font-medium text-fg">Nơi xuất phát</legend>
         <p className="-mt-2 text-meta text-fg-2">
-          Nơi kỹ thuật viên đi tới lịch đầu tiên trong ngày (văn phòng, kho, nhà). Trên Google Maps, nhấn giữ vào vị trí để lấy
-          toạ độ.
+          Nơi kỹ thuật viên đi tới lịch đầu tiên trong ngày (văn phòng, kho, nhà). Trên Google Maps, nhấn giữ vào vị trí
+          để lấy toạ độ.
         </p>
-        <Field label="Tên gọi" htmlFor="base-label" hint="Không bắt buộc, ví dụ: Văn phòng Quận 7." error={errors.baseLabel}>
-          <Input id="base-label" maxLength={200} value={form.baseLabel} onChange={(e) => edit({ baseLabel: e.target.value })} aria-invalid={Boolean(errors.baseLabel)} />
+        <Field
+          label="Tên gọi"
+          htmlFor="base-label"
+          hint="Không bắt buộc, ví dụ: Văn phòng Quận 7."
+          error={errors.baseLabel}
+        >
+          <Input
+            id="base-label"
+            maxLength={200}
+            value={form.baseLabel}
+            onChange={(e) => edit({ baseLabel: e.target.value })}
+            aria-invalid={Boolean(errors.baseLabel)}
+          />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Vĩ độ" htmlFor="base-lat" required={form.isSchedulingActive} hint="Ví dụ 10.7769." error={errors.baseLatitude}>
-            <Input id="base-lat" inputMode="decimal" value={form.baseLatitude} onChange={(e) => edit({ baseLatitude: e.target.value })} aria-invalid={Boolean(errors.baseLatitude)} />
+          <Field
+            label="Vĩ độ"
+            htmlFor="base-lat"
+            required={form.isSchedulingActive}
+            hint="Ví dụ 10.7769."
+            error={errors.baseLatitude}
+          >
+            <Input
+              id="base-lat"
+              inputMode="decimal"
+              value={form.baseLatitude}
+              onChange={(e) => edit({ baseLatitude: e.target.value })}
+              aria-invalid={Boolean(errors.baseLatitude)}
+            />
           </Field>
-          <Field label="Kinh độ" htmlFor="base-lon" required={form.isSchedulingActive} hint="Ví dụ 106.7009." error={errors.baseLongitude}>
-            <Input id="base-lon" inputMode="decimal" value={form.baseLongitude} onChange={(e) => edit({ baseLongitude: e.target.value })} aria-invalid={Boolean(errors.baseLongitude)} />
+          <Field
+            label="Kinh độ"
+            htmlFor="base-lon"
+            required={form.isSchedulingActive}
+            hint="Ví dụ 106.7009."
+            error={errors.baseLongitude}
+          >
+            <Input
+              id="base-lon"
+              inputMode="decimal"
+              value={form.baseLongitude}
+              onChange={(e) => edit({ baseLongitude: e.target.value })}
+              aria-invalid={Boolean(errors.baseLongitude)}
+            />
           </Field>
         </div>
         {point && (
@@ -177,7 +217,11 @@ export function TechnicianProfileForm({ technician }: { technician: TechnicianPr
         <Field
           label="Rời nơi xuất phát sớm nhất"
           htmlFor="earliest-departure"
-          hint={technician.earliestBaseDepartureIsDefault ? `Để trống là theo mặc định (${technician.earliestBaseDeparture}).` : 'Để trống là theo mặc định của hệ thống.'}
+          hint={
+            technician.earliestBaseDepartureIsDefault
+              ? `Để trống là theo mặc định (${technician.earliestBaseDeparture}).`
+              : 'Để trống là theo mặc định của hệ thống.'
+          }
           error={errors.earliestBaseDeparture}
         >
           <Input

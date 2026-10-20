@@ -11,10 +11,7 @@ export type AuthInputProps = Omit<ComponentProps<'input'>, 'size'> & {
   size?: 'md' | 'lg'
 }
 
-/*
-  Ô nhập của màn xác thực, cùng kiểu với ô nhập portal kit (08/10/2026, thống nhất): nền trắng có viền, rê chuột viền đậm
-  lên, focus là một vòng liền 2px màu thương hiệu, lỗi (aria-invalid) viền đỏ. Giữ icon ở đầu ô của thiết kế xác thực.
-*/
+// Ô nhập của màn xác thực, cùng kiểu với ô nhập của portal kit, có icon ở đầu ô
 export function AuthInput({ leadingIcon, trailing, size = 'lg', className, ...rest }: AuthInputProps) {
   return (
     <div className="relative flex items-center">

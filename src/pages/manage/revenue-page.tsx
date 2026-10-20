@@ -40,7 +40,10 @@ export function ManageRevenuePage() {
 
           <div className="mb-12 grid gap-x-12 gap-y-12 lg:grid-cols-3 lg:items-start">
             <Panel className="lg:col-span-2">
-              <PanelHeader title="Dòng tiền theo mốc so với giá trị hợp đồng đã ký" description="Sáu tháng gần nhất, đơn vị triệu đô la." />
+              <PanelHeader
+                title="Dòng tiền theo mốc so với giá trị hợp đồng đã ký"
+                description="Sáu tháng gần nhất, đơn vị triệu đô la."
+              />
               <PanelBody>
                 <LineChart months={data.series.months} booked={data.series.booked} realized={data.series.realized} />
                 <p className="mt-3 text-meta text-fg-3">{data.series.note}</p>
@@ -74,12 +77,14 @@ export function ManageRevenuePage() {
           </div>
 
           <Panel className="mb-12">
-            <PanelHeader
-              title="Sổ doanh thu và biên lợi nhuận"
-              action={<Badge>{data.ledger.filters.range}</Badge>}
-            />
+            <PanelHeader title="Sổ doanh thu và biên lợi nhuận" action={<Badge>{data.ledger.filters.range}</Badge>} />
             <FilterBar>
-              <Input type="search" aria-label="Lọc dự án hoặc khách hàng" placeholder="Lọc dự án hoặc khách hàng" className="w-full sm:max-w-xs" />
+              <Input
+                type="search"
+                aria-label="Lọc dự án hoặc khách hàng"
+                placeholder="Lọc dự án hoặc khách hàng"
+                className="w-full sm:max-w-xs"
+              />
               <Select aria-label="Nhân viên kinh doanh" className="w-auto">
                 {data.ledger.filters.advisers.map((o) => (
                   <option key={o}>{o}</option>
@@ -120,20 +125,35 @@ export function ManageRevenuePage() {
                       <p>{r.system}</p>
                       <p className="text-meta text-fg-3">{r.hardware}</p>
                     </Td>
-                    <Td label="Giá báo" className="tnum hidden text-right whitespace-nowrap md:table-cell">{fmt.usd(r.gross)}</Td>
-                    <Td label="Chiết khấu" className={cx('tnum hidden text-right whitespace-nowrap md:table-cell', r.discount < 0 ? 'text-warn' : 'text-fg-3')}>{r.discount < 0 ? fmt.usd(r.discount) : 'Không có'}</Td>
-                    <Td label="Giá trị hợp đồng" className="tnum text-right font-medium whitespace-nowrap">{fmt.usd(r.net)}</Td>
+                    <Td label="Giá báo" className="tnum hidden text-right whitespace-nowrap md:table-cell">
+                      {fmt.usd(r.gross)}
+                    </Td>
+                    <Td
+                      label="Chiết khấu"
+                      className={cx(
+                        'tnum hidden text-right whitespace-nowrap md:table-cell',
+                        r.discount < 0 ? 'text-warn' : 'text-fg-3',
+                      )}
+                    >
+                      {r.discount < 0 ? fmt.usd(r.discount) : 'Không có'}
+                    </Td>
+                    <Td label="Giá trị hợp đồng" className="tnum text-right font-medium whitespace-nowrap">
+                      {fmt.usd(r.net)}
+                    </Td>
                     <Td label="Biên lợi nhuận gộp" className="text-right">
                       <Badge tone={r.margin < 30 ? 'danger' : 'ok'}>{r.margin}%</Badge>
                     </Td>
-                    <Td label="Mốc thanh toán" className="hidden whitespace-nowrap text-fg-2 lg:table-cell">{r.stage}</Td>
+                    <Td label="Mốc thanh toán" className="hidden whitespace-nowrap text-fg-2 lg:table-cell">
+                      {r.stage}
+                    </Td>
                   </Tr>
                 ))}
               </tbody>
             </Table>
             <PanelFooter className="justify-between text-body text-fg-2">
               <span className="tnum">
-                Hiển thị {data.ledger.rows.length} trên {data.ledger.total} hợp đồng đang chạy. <span className="text-warn">{data.ledger.flagged} hợp đồng cần xem lại biên lợi nhuận (dưới 30%).</span>
+                Hiển thị {data.ledger.rows.length} trên {data.ledger.total} hợp đồng đang chạy.{' '}
+                <span className="text-warn">{data.ledger.flagged} hợp đồng cần xem lại biên lợi nhuận (dưới 30%).</span>
               </span>
               <Pagination page={1} pages={3} />
             </PanelFooter>
@@ -181,10 +201,25 @@ function LineChart({ months, booked, realized }: { months: string[]; booked: num
       <svg viewBox={`0 0 ${w} ${h}`} className="h-auto w-full" role="img" aria-labelledby={`${id}-title`}>
         <title id={`${id}-title`}>Giá trị hợp đồng đã ký so với tiền đã thu theo tháng</title>
         {[0.25, 0.5, 0.75].map((t) => (
-          <line key={t} x1={padX} x2={w - padX} y1={padY + t * (h - padY * 2)} y2={padY + t * (h - padY * 2)} className="stroke-line" strokeWidth={1} />
+          <line
+            key={t}
+            x1={padX}
+            x2={w - padX}
+            y1={padY + t * (h - padY * 2)}
+            y2={padY + t * (h - padY * 2)}
+            className="stroke-line"
+            strokeWidth={1}
+          />
         ))}
         <path d={path(booked)} fill="none" className="stroke-accent" strokeWidth={2} strokeLinejoin="round" />
-        <path d={path(realized)} fill="none" className="stroke-fg-3" strokeWidth={2} strokeDasharray="4 4" strokeLinejoin="round" />
+        <path
+          d={path(realized)}
+          fill="none"
+          className="stroke-fg-3"
+          strokeWidth={2}
+          strokeDasharray="4 4"
+          strokeLinejoin="round"
+        />
         {booked.map((v, i) => (
           <circle key={`b${i}`} cx={x(i)} cy={y(v)} r={3.5} className="fill-accent" />
         ))}
@@ -192,7 +227,10 @@ function LineChart({ months, booked, realized }: { months: string[]; booked: num
           <circle key={`r${i}`} cx={x(i)} cy={y(v)} r={3.5} className="fill-fg-3" />
         ))}
       </svg>
-      <div className="tnum mt-1 grid text-center text-meta text-fg-2" style={{ gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))` }}>
+      <div
+        className="tnum mt-1 grid text-center text-meta text-fg-2"
+        style={{ gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))` }}
+      >
         {months.map((m, i) => (
           <span key={m}>
             <span className="block font-medium text-fg">{m}</span>

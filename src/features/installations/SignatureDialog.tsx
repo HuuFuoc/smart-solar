@@ -11,10 +11,7 @@ import {
   Icon,
 } from '@/components/common/stitch-ui'
 
-/*
- * "Customer Handover & Signature" của installation_task_checklist: tóm tắt hạng mục bàn giao,
- * ô ký (SignaturePad dùng chung với warranty_request) và hai nút Cancel / Sign & Complete Job.
- */
+// Dialog bàn giao: tóm tắt hạng mục, ô ký và nút hoàn tất
 export type SignatureSummaryRow = { label: string; value: string; highlight?: boolean }
 
 export type SignatureDialogProps = {

@@ -1,19 +1,16 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/utils/cn'
 
-/*
- * Nhãn label-md + gợi ý bên phải + nội dung + chú thích dưới.
- * Bảy field của site_survey_task và các nhóm của site_survey_verification đều dùng khối này.
- */
+// Khối field: nhãn, gợi ý, nội dung và chú thích
 export type FieldSectionHintTone = 'tint' | 'primary' | 'muted' | 'error'
 
 export type FieldSectionProps = {
   label: ReactNode
-  /** Có giá trị thì render <label htmlFor>, không thì render <span> để tránh label rỗng control */
+  /** Có id thì dùng <label htmlFor>, không thì <span> */
   htmlFor?: string
   hint?: ReactNode
   hintTone?: FieldSectionHintTone
-  /** strong = label-md đậm màu on-surface (site_survey_task); muted = nhãn nhạt (site_survey_verification) */
+  /** strong: nhãn đậm, muted: nhãn nhạt */
   labelTone?: 'strong' | 'muted'
   /** Dòng chú thích dưới nội dung */
   footnote?: ReactNode

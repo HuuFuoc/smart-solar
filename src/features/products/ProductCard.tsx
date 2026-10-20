@@ -6,9 +6,10 @@ import type { ProductResponse } from '@/types/res/adminProductsRes'
 
 /* Một ô trong lưới /products. Cả thẻ là link tới trang chi tiết. */
 export function ProductCard({ product }: { product: ProductResponse }) {
-  const facts = [formatPower(product.ratedPowerW), formatWarranty(product.warrantyMonth) && `Bảo hành ${formatWarranty(product.warrantyMonth)}`].filter(
-    Boolean,
-  )
+  const facts = [
+    formatPower(product.ratedPowerW),
+    formatWarranty(product.warrantyMonth) && `Bảo hành ${formatWarranty(product.warrantyMonth)}`,
+  ].filter(Boolean)
   return (
     <Link
       to={withId(ROUTES.product, product.id ?? '')}

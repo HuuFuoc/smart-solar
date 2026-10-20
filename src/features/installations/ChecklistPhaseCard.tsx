@@ -1,10 +1,7 @@
 import { Card, ChecklistItem, Icon } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 
-/*
- * Một phase của installation_task_checklist: ô icon 36px theo tông của phase,
- * tiêu đề + mô tả, badge tiến độ "3 of 3 Verified" và danh sách bước dùng ChecklistItem.
- */
+// Một phase của checklist: icon, tiêu đề, tiến độ và danh sách bước
 export type ChecklistPhaseTone = 'safety' | 'execution' | 'audit'
 
 export type ChecklistTaskItem = {
@@ -81,10 +78,7 @@ export function ChecklistPhaseCard({
           </div>
         </div>
         <span
-          className={cn(
-            'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-label-sm font-bold',
-            t.badge,
-          )}
+          className={cn('flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-label-sm font-bold', t.badge)}
         >
           {badgeIcon && <Icon name={badgeIcon} className="text-[14px]" />}
           {badgeLabel}

@@ -4,7 +4,13 @@ import * as adminUserService from '@/services/adminUserService'
 import type { AdminUserListParams } from '@/services/adminUserService'
 import type { ApiError } from '@/services/api/errors'
 import type { CreateAdminUserRequest, UpdateAdminUserRequest } from '@/types/req/adminUsersReq'
-import type { AdminUserDetail, AdminUserPage, CreatedAdminUser, RecoveryIssued, UpdatedAdminUser } from '@/types/res/adminUsersRes'
+import type {
+  AdminUserDetail,
+  AdminUserPage,
+  CreatedAdminUser,
+  RecoveryIssued,
+  UpdatedAdminUser,
+} from '@/types/res/adminUsersRes'
 
 export const adminUserKeys = {
   all: ['admin-users'] as const,
@@ -12,7 +18,7 @@ export const adminUserKeys = {
   detail: (id: string) => [...adminUserKeys.all, 'detail', id] as const,
 }
 
-/** `enabled`: layout chỉ gọi khi phiên quản trị đã khôi phục. Giữ trang cũ khi đổi trang / bộ lọc để bảng không nháy. */
+/** Giữ trang cũ khi đổi trang / bộ lọc để bảng không nháy */
 export function useAdminUsersQuery(params: AdminUserListParams, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<AdminUserPage, ApiError>({
     queryKey: adminUserKeys.list(params),
@@ -30,7 +36,7 @@ export function useAdminUserQuery(id: string | undefined) {
   })
 }
 
-/* Đổi tài khoản có thể đổi danh sách kỹ thuật viên (thêm / bớt vai trò, khoá tài khoản): làm mới cả hai cụm. */
+// Làm mới cả danh sách kỹ thuật viên vì đổi tài khoản có thể ảnh hưởng
 function useInvalidateUsers() {
   const queryClient = useQueryClient()
   return () =>

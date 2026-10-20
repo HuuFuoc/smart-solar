@@ -199,7 +199,12 @@ export function StyleguidePage() {
       </header>
 
       <main className="mx-auto flex max-w-[1280px] flex-col gap-space-3xl px-space-xl py-space-xl">
-        <Section id="buttons" title="Button" source="DESIGN.md › Buttons" description="primary / secondary / accent theo spec; tonal / ghost là nút phụ lặp lại trong code.html.">
+        <Section
+          id="buttons"
+          title="Button"
+          source="DESIGN.md › Buttons"
+          description="primary / secondary / accent theo spec; tonal / ghost là nút phụ lặp lại trong code.html."
+        >
           <Card className="flex flex-col gap-space-md">
             <div className="flex flex-wrap items-center gap-space-sm">
               <Button>Primary</Button>
@@ -232,7 +237,12 @@ export function StyleguidePage() {
           </Card>
         </Section>
 
-        <Section id="badges" title="StatusBadge" source="DESIGN.md › Badges & Lifecycle Indicators" description="Pill rounded-full py-1 px-3 label-sm + chấm 6px. 5 variant đầu theo bảng Status & Lifecycle Palette.">
+        <Section
+          id="badges"
+          title="StatusBadge"
+          source="DESIGN.md › Badges & Lifecycle Indicators"
+          description="Pill rounded-full py-1 px-3 label-sm + chấm 6px. 5 variant đầu theo bảng Status & Lifecycle Palette."
+        >
           <Card className="flex flex-col gap-space-md">
             <div className="flex flex-wrap items-center gap-space-xs">
               {styleguideBadges.map((badge) => (
@@ -261,7 +271,12 @@ export function StyleguidePage() {
           </Card>
         </Section>
 
-        <Section id="metrics" title="MetricCard" source="user_management › hàng KPI" description="label, giá trị data-metric, delta, icon, tone màu.">
+        <Section
+          id="metrics"
+          title="MetricCard"
+          source="user_management › hàng KPI"
+          description="label, giá trị data-metric, delta, icon, tone màu."
+        >
           <div className="grid grid-cols-1 gap-space-md md:grid-cols-2 xl:grid-cols-4">
             {styleguideMetrics.map((metric) => (
               <MetricCard key={metric.label} {...metric} />
@@ -269,7 +284,12 @@ export function StyleguidePage() {
           </div>
         </Section>
 
-        <Section id="page-header" title="PageHeader" source="admin_dashboard › đầu trang" description="Breadcrumb + meta, eyebrow, h1 headline-xl, mô tả, cụm nút.">
+        <Section
+          id="page-header"
+          title="PageHeader"
+          source="admin_dashboard › đầu trang"
+          description="Breadcrumb + meta, eyebrow, h1 headline-xl, mô tả, cụm nút."
+        >
           <div className="rounded-2xl border border-dashed border-outline-variant p-space-lg">
             <PageHeader
               breadcrumb={styleguidePageHeader.breadcrumb}
@@ -298,7 +318,12 @@ export function StyleguidePage() {
           </div>
         </Section>
 
-        <Section id="filter-bar" title="FilterBar" source="user_management + my_tasks_1" description="Chip nhóm thời gian, search, select, chip lọc đang áp dụng, slot bulk action.">
+        <Section
+          id="filter-bar"
+          title="FilterBar"
+          source="user_management + my_tasks_1"
+          description="Chip nhóm thời gian, search, select, chip lọc đang áp dụng, slot bulk action."
+        >
           <FilterBar
             chips={
               <>
@@ -367,7 +392,12 @@ export function StyleguidePage() {
           </Card>
         </Section>
 
-        <Section id="data-table" title="DataTable" source="user_management › bảng user" description="Cột generic, chọn hàng, cột action, toolbar, phân trang.">
+        <Section
+          id="data-table"
+          title="DataTable"
+          source="user_management › bảng user"
+          description="Cột generic, chọn hàng, cột action, toolbar, phân trang."
+        >
           <DataTable
             columns={userColumns}
             rows={styleguideUsers}
@@ -411,7 +441,12 @@ export function StyleguidePage() {
           />
         </Section>
 
-        <Section id="task-card" title="TaskCard" source="technician_dashboard_1 › Today's Assignments" description="Vạch màu theo loại, badge loại + ưu tiên, meta, thông số 3 cột, 2 nút.">
+        <Section
+          id="task-card"
+          title="TaskCard"
+          source="technician_dashboard_1 › Today's Assignments"
+          description="Vạch màu theo loại, badge loại + ưu tiên, meta, thông số 3 cột, 2 nút."
+        >
           <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-2">
             {styleguideTaskCards.map((task) => (
               <TaskCard key={task.title} {...task} />
@@ -419,7 +454,12 @@ export function StyleguidePage() {
           </div>
         </Section>
 
-        <Section id="timeline" title="Timeline / TimelineStep" source="task_detail_timeline › Lifecycle Progression" description="done / current / upcoming; dọc trên mobile, chia đều theo số bước từ md.">
+        <Section
+          id="timeline"
+          title="Timeline / TimelineStep"
+          source="task_detail_timeline › Lifecycle Progression"
+          description="done / current / upcoming; dọc trên mobile, chia đều theo số bước từ md."
+        >
           <Card>
             <div className="flex items-center justify-between pb-space-md">
               <div>
@@ -436,7 +476,12 @@ export function StyleguidePage() {
           </Card>
         </Section>
 
-        <Section id="checklist" title="ChecklistItem" source="installation_task_checklist" description="done (status xanh), pending (badge), active (viền, progress).">
+        <Section
+          id="checklist"
+          title="ChecklistItem"
+          source="installation_task_checklist"
+          description="done (status xanh), pending (badge), active (viền, progress)."
+        >
           <Card>
             <div className="mb-space-md flex items-center justify-between">
               <div className="flex items-center gap-space-sm">
@@ -473,7 +518,12 @@ export function StyleguidePage() {
           </Card>
         </Section>
 
-        <Section id="photos" title="PhotoGrid / PhotoCard" source="survey_image_documentation › Section A" description="Thẻ ảnh có tag, giờ, GPS, ghi chú; ô trống để thêm ảnh bắt buộc.">
+        <Section
+          id="photos"
+          title="PhotoGrid / PhotoCard"
+          source="survey_image_documentation › Section A"
+          description="Thẻ ảnh có tag, giờ, GPS, ghi chú; ô trống để thêm ảnh bắt buộc."
+        >
           <PhotoGrid columns={3}>
             {styleguidePhotos.map((photo, i) => (
               <PhotoCard
@@ -494,7 +544,12 @@ export function StyleguidePage() {
           </PhotoGrid>
         </Section>
 
-        <Section id="primitives" title="Primitives" source="DESIGN.md › Form Inputs & Checkboxes" description="Checkbox 20px rounded-md tô primary khi checked; ProgressBar; Icon.">
+        <Section
+          id="primitives"
+          title="Primitives"
+          source="DESIGN.md › Form Inputs & Checkboxes"
+          description="Checkbox 20px rounded-md tô primary khi checked; ProgressBar; Icon."
+        >
           <Card className="flex flex-col gap-space-lg">
             <div className="flex flex-wrap items-center gap-space-lg">
               <label className="flex items-center gap-space-xs text-label-md text-on-surface">
@@ -529,14 +584,21 @@ export function StyleguidePage() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-space-md text-primary">
-              {['grid_view', 'solar_power', 'manage_accounts', 'square_foot', 'build_circle', 'calendar_today', 'verified', 'pin_drop'].map(
-                (name) => (
-                  <span key={name} className="flex flex-col items-center gap-1 text-label-sm text-on-surface-variant">
-                    <Icon name={name} className="text-[24px] text-primary" />
-                    {name}
-                  </span>
-                ),
-              )}
+              {[
+                'grid_view',
+                'solar_power',
+                'manage_accounts',
+                'square_foot',
+                'build_circle',
+                'calendar_today',
+                'verified',
+                'pin_drop',
+              ].map((name) => (
+                <span key={name} className="flex flex-col items-center gap-1 text-label-sm text-on-surface-variant">
+                  <Icon name={name} className="text-[24px] text-primary" />
+                  {name}
+                </span>
+              ))}
             </div>
           </Card>
         </Section>

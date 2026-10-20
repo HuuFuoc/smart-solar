@@ -2,7 +2,6 @@ import * as TabsPrimitive from '@radix-ui/react-tabs'
 import type { ComponentProps } from 'react'
 import { cn } from '@/utils/cn'
 
-/* Tabs kiểu shadcn trên Radix, style theo tab "General Info / Electrical Specs…" trong product_catalogue. */
 export const Tabs = TabsPrimitive.Root
 
 export function TabsList({ className, ...rest }: ComponentProps<typeof TabsPrimitive.List>) {

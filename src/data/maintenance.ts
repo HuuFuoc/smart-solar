@@ -1,8 +1,4 @@
-/*
- * Dữ liệu giả cho màn 13 – maintenance_task (/tech/maintenance/:id).
- * Dựng theo maintenance_task/screen.png: work order bảo trì định kỳ Tier-1 của
- * một hệ thương mại 45 kW, kèm số liệu lịch sử, telemetry và ký xác nhận.
- */
+// Dữ liệu giả cho màn bảo trì (/tech/maintenance/:id)
 
 import type { EvidencePhotoItem } from '@/components/common/tech/EvidenceGallery'
 import type { ExecutionStepItem } from '@/components/common/tech/ExecutionStepList'

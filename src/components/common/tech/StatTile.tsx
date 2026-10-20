@@ -1,9 +1,6 @@
 import { cn } from '@/utils/cn'
 
-/*
- * Ô số liệu nhỏ nền surface-container-low: nhãn in hoa, số lớn, chú thích.
- * Dùng cho lưới "Homeowner Submission" (site_survey_task) và khối tóm tắt ở các màn khảo sát khác.
- */
+// Ô số liệu nhỏ: nhãn, số lớn, chú thích
 export type StatTileProps = {
   label: string
   value: string

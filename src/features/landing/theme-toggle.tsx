@@ -4,12 +4,8 @@ import { useResolvedTheme, useTheme } from '@/hooks/useTheme'
 import { cx } from '@/utils/cx'
 import { themeToggle } from '@/data/landing'
 
-/*
-  Nút sáng / tối trên header trang công khai. Bấm là chọn hẳn giao diện ngược với giao diện đang hiện và lưu lại
-  (useTheme), nên lần đầu theo hệ thống, sau đó theo lựa chọn của người dùng. Icon là giao diện sẽ chuyển sang (mặt trăng
-  khi đang sáng), tooltip nói rõ việc đó; tên đọc cố định "Giao diện tối" kèm aria-pressed.
-  Khung nhìn thấy 40px; vùng bấm 44px (::after lấn 2px mỗi bên) cho màn cảm ứng.
-*/
+// Nút sáng / tối: bấm thì chuyển sang giao diện ngược lại và lưu lựa chọn
+// Icon là giao diện sẽ chuyển sang. Khung 40px nhưng vùng bấm 44px
 export function ThemeToggle({ className }: { className?: string }) {
   const resolved = useResolvedTheme()
   const [, setTheme] = useTheme()
@@ -38,7 +34,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   )
 }
 
-/* Hai icon chồng nhau: icon cũ xoay ra và mờ đi, icon mới xoay vào (tắt khi giảm chuyển động – rule chung ở globals.css). */
+// Hai icon chồng nhau, icon cũ xoay ra và icon mới xoay vào
 function ThemeIcon({ name, shown }: { name: string; shown: boolean }) {
   return (
     <Icon

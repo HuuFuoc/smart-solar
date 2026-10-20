@@ -117,7 +117,12 @@ export function UsersPage() {
             <Button variant="tonal" size="md" iconLeft="file_download" className="h-11 hover:bg-surface-container-high">
               {usersPageHeader.actions.export}
             </Button>
-            <Button size="md" iconLeft="person_add" className="h-11 px-5 shadow-md" onClick={() => setDialog({ mode: 'create' })}>
+            <Button
+              size="md"
+              iconLeft="person_add"
+              className="h-11 px-5 shadow-md"
+              onClick={() => setDialog({ mode: 'create' })}
+            >
               {usersPageHeader.actions.invite}
             </Button>
           </>

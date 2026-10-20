@@ -1,44 +1,45 @@
-import type { ReactNode } from "react";
-import { Icon } from "@/components/common/stitch-ui/Icon";
-import { cx } from "@/utils/cx";
+import type { ReactNode } from 'react'
+import { Icon } from '@/components/common/stitch-ui/Icon'
+import { cx } from '@/utils/cx'
 
 export type ActivityItem = {
-  time: ReactNode;
-  title: ReactNode;
-  body?: ReactNode;
-  by?: string;
-  /**
-   * Mốc của một tiến trình: `done` đã xong, `current` bước đang tới, `todo` chưa tới / không diễn ra.
-   * Có `state` thì danh sách vẽ thành dòng thời gian có điểm mốc màu.
-   */
-  state?: "done" | "current" | "todo";
-};
+  time: ReactNode
+  title: ReactNode
+  body?: ReactNode
+  by?: string
+  /** Trạng thái của mốc: done, current, todo. Có `state` thì vẽ thành dòng thời gian */
+  state?: 'done' | 'current' | 'todo'
+}
 
-/*
-  Dòng thời gian tiến độ: điểm mốc tô theo trạng thái (đã xong = tròn đặc màu thương hiệu có dấu tích, bước đang tới =
-  vòng màu thương hiệu, chưa tới = vòng xám), nối bằng một đường dọc; đoạn đã đi qua cũng mang màu thương hiệu.
-  Việc cần chú ý (vd. chưa hẹn ngày) nói bằng Badge cảnh báo trong nội dung, không bằng màu điểm mốc.
-*/
+// Dòng thời gian: mốc đã xong tô màu chính, mốc đang tới viền màu chính, chưa tới viền xám
 function Timeline({ items, className }: { items: ActivityItem[]; className?: string }) {
   return (
     <ol className={className}>
       {items.map((item, i) => {
-        const last = i === items.length - 1;
+        const last = i === items.length - 1
         return (
           <li key={i} className="relative grid grid-cols-[20px_1fr] gap-x-3 pb-5 last:pb-0">
             {!last && (
               <span
                 aria-hidden
-                className={cx("absolute top-6 bottom-1 left-2.25 w-0.5", item.state === "done" ? "bg-accent-line" : "bg-line")}
+                className={cx(
+                  'absolute top-6 bottom-1 left-2.25 w-0.5',
+                  item.state === 'done' ? 'bg-accent-line' : 'bg-line',
+                )}
               />
             )}
             <span aria-hidden className="flex h-5 items-center justify-center">
-              {item.state === "done" ? (
+              {item.state === 'done' ? (
                 <span className="flex size-5 items-center justify-center rounded-full bg-accent text-on-accent">
                   <Icon name="check" className="text-[16px]" />
                 </span>
               ) : (
-                <span className={cx("size-3.5 rounded-full border-2 bg-canvas", item.state === "current" ? "border-accent" : "border-line-2")} />
+                <span
+                  className={cx(
+                    'size-3.5 rounded-full border-2 bg-canvas',
+                    item.state === 'current' ? 'border-accent' : 'border-line-2',
+                  )}
+                />
               )}
             </span>
             <div className="min-w-0">
@@ -48,75 +49,47 @@ function Timeline({ items, className }: { items: ActivityItem[]; className?: str
               {item.by && <p className="mt-1 text-meta text-fg-3">{item.by}</p>}
             </div>
           </li>
-        );
+        )
       })}
     </ol>
-  );
+  )
 }
 
 /* Time-stamped activity list. Time sits in its own column so entries scan vertically. */
-export function ActivityList({
-  items,
-  className,
-}: {
-  items: ActivityItem[];
-  className?: string;
-}) {
-  if (items.some((item) => item.state)) return <Timeline items={items} className={className} />;
+export function ActivityList({ items, className }: { items: ActivityItem[]; className?: string }) {
+  if (items.some((item) => item.state)) return <Timeline items={items} className={className} />
   return (
-    <ol className={cx("@container divide-y divide-line", className)}>
+    <ol className={cx('@container divide-y divide-line', className)}>
       {items.map((item, i) => (
         <li
           key={i}
           className="flex flex-col gap-1 py-4 first:pt-0 last:pb-0 @md:grid @md:grid-cols-[104px_1fr] @md:gap-4"
         >
-          <time className="tnum text-meta text-fg-3">
-            {item.time}
-          </time>
+          <time className="tnum text-meta text-fg-3">{item.time}</time>
           <div className="min-w-0">
-            <p className="text-body font-medium text-fg">
-              {item.title}
-            </p>
-            {item.body && (
-              <p className="mt-1 text-body text-fg-2">
-                {item.body}
-              </p>
-            )}
+            <p className="text-body font-medium text-fg">{item.title}</p>
+            {item.body && <p className="mt-1 text-body text-fg-2">{item.body}</p>}
             {item.by && <p className="mt-1 text-meta text-fg-3">{item.by}</p>}
           </div>
         </li>
       ))}
     </ol>
-  );
+  )
 }
 
-export type KV = { k: ReactNode; v: ReactNode };
+export type KV = { k: ReactNode; v: ReactNode }
 
 /* Definition list for specs and properties. */
-export function KeyValueList({
-  items,
-  className,
-  columns = 1,
-}: {
-  items: KV[];
-  className?: string;
-  columns?: 1 | 2;
-}) {
+export function KeyValueList({ items, className, columns = 1 }: { items: KV[]; className?: string; columns?: 1 | 2 }) {
   return (
-    <dl
-      className={cx(
-        "grid gap-x-8 text-body",
-        columns === 2 ? "sm:grid-cols-2" : "",
-        className,
-      )}
-    >
+    <dl className={cx('grid gap-x-8 text-body', columns === 2 ? 'sm:grid-cols-2' : '', className)}>
       {/* Rules sit above rows, never below, so the last row is clean whatever the count. */}
       {items.map((item, i) => (
         <div
           key={i}
           className={cx(
-            "grid grid-cols-[minmax(140px,40%)_1fr] gap-4 border-t border-line py-2 first:border-t-0 first:pt-0",
-            columns === 2 && "sm:nth-2:border-t-0 sm:nth-2:pt-0",
+            'grid grid-cols-[minmax(140px,40%)_1fr] gap-4 border-t border-line py-2 first:border-t-0 first:pt-0',
+            columns === 2 && 'sm:nth-2:border-t-0 sm:nth-2:pt-0',
           )}
         >
           <dt className="text-fg-2">{item.k}</dt>
@@ -124,19 +97,11 @@ export function KeyValueList({
         </div>
       ))}
     </dl>
-  );
+  )
 }
 
-export function Progress({
-  value,
-  label,
-  className,
-}: {
-  value: number;
-  label: string;
-  className?: string;
-}) {
-  const v = Math.max(0, Math.min(100, value));
+export function Progress({ value, label, className }: { value: number; label: string; className?: string }) {
+  const v = Math.max(0, Math.min(100, value))
   return (
     <div
       role="progressbar"
@@ -144,17 +109,11 @@ export function Progress({
       aria-valuenow={v}
       aria-valuemin={0}
       aria-valuemax={100}
-      className={cx(
-        "h-1 w-full overflow-hidden rounded-control bg-surface-3",
-        className,
-      )}
+      className={cx('h-1 w-full overflow-hidden rounded-control bg-surface-3', className)}
     >
-      <div
-        className="h-full rounded-control bg-accent"
-        style={{ width: `${v}%` }}
-      />
+      <div className="h-full rounded-control bg-accent" style={{ width: `${v}%` }} />
     </div>
-  );
+  )
 }
 
 export function Photo({
@@ -162,41 +121,35 @@ export function Photo({
   alt,
   caption,
   meta,
-  ratio = "aspect-[4/3]",
+  ratio = 'aspect-[4/3]',
   className,
 }: {
-  src: string;
-  alt: string;
-  caption?: ReactNode;
-  meta?: ReactNode;
-  ratio?: string;
-  className?: string;
+  src: string
+  alt: string
+  caption?: ReactNode
+  meta?: ReactNode
+  ratio?: string
+  className?: string
 }) {
   return (
-    <figure className={cx("min-w-0", className)}>
+    <figure className={cx('min-w-0', className)}>
       <img
         src={src}
         alt={alt}
         loading="lazy"
-        className={cx("w-full rounded-container bg-surface-2 object-cover", ratio)}
+        className={cx('w-full rounded-container bg-surface-2 object-cover', ratio)}
       />
       {(caption || meta) && (
         <figcaption className="mt-2 text-body">
-          {caption && (
-            <span className="block font-medium text-fg">{caption}</span>
-          )}
+          {caption && <span className="block font-medium text-fg">{caption}</span>}
           {meta && <span className="block text-meta text-fg-3">{meta}</span>}
         </figcaption>
       )}
     </figure>
-  );
+  )
 }
 
-/*
-  Thông báo trong trang: khối nền nhạt theo nghĩa, để phân biệt "đọc để biết" (neutral, info), "đã xong" (ok),
-  "lưu ý" (warn), "lỗi / không hoàn tác" (danger) với nội dung thường. Không có viền hay bóng.
-  Icon chỉ cho ok / warn / danger (nó nói trạng thái); khối chỉ để đọc thì không gắn icon, tránh icon ở mọi khối.
-*/
+// Thông báo trong trang, nền nhạt theo nghĩa. Chỉ ok / warn / danger mới có icon
 const noticeTones = {
   neutral: { box: 'bg-surface-2', icon: null, iconColor: '' },
   info: { box: 'bg-info-soft', icon: null, iconColor: '' },

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/* "Engine Defaults" trong admin_dashboard: hàng icon + nhãn/phụ đề bên trái, giá trị bên phải. */
+// Hàng icon + nhãn bên trái, giá trị bên phải
 export type KeyValueRowProps = {
   icon?: string
   /** Màu icon, mặc định text-primary */
@@ -12,7 +12,7 @@ export type KeyValueRowProps = {
   sublabelClassName?: string
   value?: ReactNode
   valueClassName?: string
-  /** Thay cho value: chấm trạng thái, badge… */
+  /** Thay cho value: chấm trạng thái, badge... */
   trailing?: ReactNode
   className?: string
 }

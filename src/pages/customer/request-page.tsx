@@ -29,8 +29,10 @@ function describe(r: CustomerSurveyRequestView) {
   if (canBook(r)) return 'Chọn ngày giờ để kỹ thuật viên tới khảo sát công trình.'
   if (!a) return undefined
   if (a.status === 'BOOKED') return 'Bộ phận kinh doanh sẽ phân công kỹ thuật viên cho giờ bạn đã đặt.'
-  if (a.status === 'ASSIGNED') return `Kỹ thuật viên ${a.assignedTechnicianName ?? ''} sẽ tới khảo sát theo lịch bên dưới.`
-  if (a.status === 'ACKNOWLEDGED') return `Kỹ thuật viên ${a.assignedTechnicianName ?? ''} đã nhận việc và sẽ tới theo lịch bên dưới.`
+  if (a.status === 'ASSIGNED')
+    return `Kỹ thuật viên ${a.assignedTechnicianName ?? ''} sẽ tới khảo sát theo lịch bên dưới.`
+  if (a.status === 'ACKNOWLEDGED')
+    return `Kỹ thuật viên ${a.assignedTechnicianName ?? ''} đã nhận việc và sẽ tới theo lịch bên dưới.`
   return undefined
 }
 
@@ -49,7 +51,11 @@ function Progress({ r }: { r: CustomerSurveyRequestView }) {
           time: assigned ? (a?.assignedTechnicianName ?? 'Đã phân công') : 'Sau khi bạn đặt giờ',
           state: assigned ? 'done' : a ? 'current' : 'todo',
         },
-        { title: 'Kỹ thuật viên nhận việc', time: acknowledged ? 'Đã nhận' : '—', state: acknowledged ? 'done' : assigned ? 'current' : 'todo' },
+        {
+          title: 'Kỹ thuật viên nhận việc',
+          time: acknowledged ? 'Đã nhận' : '—',
+          state: acknowledged ? 'done' : assigned ? 'current' : 'todo',
+        },
         {
           title: 'Khảo sát tại công trình',
           time: a ? formatAppointment(a.startsAt, a.endsAt) : '—',
@@ -100,7 +106,9 @@ function AppointmentPanel({
           ]}
         />
         {!a.canCustomerChange && a.technicianAssigned && (
-          <Notice tone="info">Kỹ thuật viên đã được phân công nên bạn không tự đổi giờ được. Cần đổi, hãy liên hệ bộ phận kinh doanh.</Notice>
+          <Notice tone="info">
+            Kỹ thuật viên đã được phân công nên bạn không tự đổi giờ được. Cần đổi, hãy liên hệ bộ phận kinh doanh.
+          </Notice>
         )}
       </PanelBody>
     </Panel>
@@ -122,10 +130,8 @@ function History({ items }: { items: CustomerSurveyRequestDetailView['history'] 
   )
 }
 
-/*
-  Chi tiết một yêu cầu khảo sát của khách: đặt giờ khi chưa có lịch, đổi giờ / huỷ khi lịch còn chờ phân công, chỉ xem
-  khi kỹ thuật viên đã được phân công (khi đó muốn đổi phải qua kinh doanh). Không hiện kỹ thuật viên hệ thống đang giữ chỗ.
-*/
+// Chi tiết yêu cầu khảo sát của khách: đặt giờ, đổi giờ / huỷ khi còn chờ phân công
+// Đã phân công thì chỉ xem, muốn đổi phải qua kinh doanh
 export function CustomerRequestPage() {
   const { id } = useParams()
   const query = useMyRequestQuery(id)
@@ -167,10 +173,17 @@ export function CustomerRequestPage() {
                       onDone={() => setRescheduling(false)}
                     />
                   ) : (
-                    <AppointmentPanel r={r} onReschedule={() => setRescheduling(true)} onCancel={() => setCancelling(true)} />
+                    <AppointmentPanel
+                      r={r}
+                      onReschedule={() => setRescheduling(true)}
+                      onCancel={() => setCancelling(true)}
+                    />
                   )
                 ) : (
-                  <EmptyState title="Yêu cầu này không còn đặt lịch được" description="Liên hệ bộ phận kinh doanh nếu bạn cần khảo sát lại." />
+                  <EmptyState
+                    title="Yêu cầu này không còn đặt lịch được"
+                    description="Liên hệ bộ phận kinh doanh nếu bạn cần khảo sát lại."
+                  />
                 )}
               </div>
 
@@ -194,7 +207,12 @@ export function CustomerRequestPage() {
             </div>
 
             {a?.canCustomerChange && (
-              <CancelBookingDialog surveyRequestId={r.surveyRequestId} appointment={a} open={cancelling} onOpenChange={setCancelling} />
+              <CancelBookingDialog
+                surveyRequestId={r.surveyRequestId}
+                appointment={a}
+                open={cancelling}
+                onOpenChange={setCancelling}
+              />
             )}
           </>
         )

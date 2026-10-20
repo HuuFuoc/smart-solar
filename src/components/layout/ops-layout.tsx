@@ -8,13 +8,9 @@ import { needsScheduling } from '@/features/pre-surveys/preSurveyDisplay'
 import { useMySurveyRequestsQuery, usePendingSurveyRequestsQuery } from '@/hooks/useSurveyRequests'
 import { ROUTES } from '@/routes/paths'
 
-/*
-  Children replace the Outlet while the first page module is still loading, so the rail never pops in late.
-  Số đếm trên menu lấy từ chính API hàng chờ (cùng cache với trang, tự làm mới mỗi phút). Tô đỏ khi có việc
-  đang chờ: còn yêu cầu chưa ai nhận, hoặc yêu cầu đã nhận mà chưa phân công kỹ thuật viên.
-*/
+// Số đếm trên menu lấy từ API hàng chờ, tô đỏ khi còn yêu cầu chưa nhận hoặc chưa phân công
 export function OpsLayout({ children }: { children?: ReactNode }) {
-  // Layout còn là khung chờ trước RequireRole: chỉ gọi hàng chờ khi phiên sales đã khôi phục xong.
+  // Chỉ gọi khi phiên sales đã khôi phục xong
   const isSales = useAuth().user?.role === 'sales'
   const pending = usePendingSurveyRequestsQuery({ enabled: isSales }).data?.length
   const mine = useMySurveyRequestsQuery({ enabled: isSales }).data

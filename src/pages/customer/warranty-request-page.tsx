@@ -95,7 +95,9 @@ export function WarrantyRequestPage() {
               <Panel>
                 <PanelHeader title="Sự cố đã báo" />
                 <PanelBody className="space-y-4">
-                  <blockquote className="border-l-2 border-line-2 pl-3 text-body text-fg-2">{data.description}</blockquote>
+                  <blockquote className="border-l-2 border-line-2 pl-3 text-body text-fg-2">
+                    {data.description}
+                  </blockquote>
                   <div>
                     <p className="mb-2 text-body font-medium">Ảnh đính kèm ({data.photos.length})</p>
                     <ul className="grid gap-4 sm:grid-cols-2">
@@ -110,15 +112,23 @@ export function WarrantyRequestPage() {
               </Panel>
 
               <Panel>
-                <PanelHeader title="Đánh giá và phương án của kỹ thuật viên" description={`Tóm tắt do ${data.technician.name} chuẩn bị`} />
+                <PanelHeader
+                  title="Đánh giá và phương án của kỹ thuật viên"
+                  description={`Tóm tắt do ${data.technician.name} chuẩn bị`}
+                />
                 <PanelBody className="space-y-4">
-                  <blockquote className="border-l-2 border-accent pl-3 text-body text-fg-2">{data.plan.brief}</blockquote>
+                  <blockquote className="border-l-2 border-accent pl-3 text-body text-fg-2">
+                    {data.plan.brief}
+                  </blockquote>
                   <KeyValueList items={data.plan.impact} />
                 </PanelBody>
               </Panel>
 
               <Panel>
-                <PanelHeader title="Xác nhận sau dịch vụ" description={`So sánh hiện trạng khi gửi với biên bản sau dịch vụ. Quy trình ${data.verification.protocol}.`} />
+                <PanelHeader
+                  title="Xác nhận sau dịch vụ"
+                  description={`So sánh hiện trạng khi gửi với biên bản sau dịch vụ. Quy trình ${data.verification.protocol}.`}
+                />
                 <PanelBody className="grid gap-6 sm:grid-cols-2">
                   <div>
                     <p className="text-body font-medium">Hiện trạng khi báo</p>
@@ -160,9 +170,7 @@ export function WarrantyRequestPage() {
                   />
                 </PanelBody>
                 <PanelFooter>
-                  <Button className="w-full">
-                    Gọi trực tiếp {data.technician.name.split(' ')[0]}
-                  </Button>
+                  <Button className="w-full">Gọi trực tiếp {data.technician.name.split(' ')[0]}</Button>
                 </PanelFooter>
               </Panel>
 
@@ -172,7 +180,10 @@ export function WarrantyRequestPage() {
                   <Button className="w-full justify-start" onClick={() => open('reschedule')}>
                     Đổi lịch hẹn
                   </Button>
-                  <a href="tel:18005557652" className="flex h-11 items-center justify-between rounded-control px-3 text-body text-fg-2 hover:bg-surface-2 lg:h-10">
+                  <a
+                    href="tel:18005557652"
+                    className="flex h-11 items-center justify-between rounded-control px-3 text-body text-fg-2 hover:bg-surface-2 lg:h-10"
+                  >
                     <span>Gọi bộ phận hỗ trợ</span>
                     <span className="tnum text-meta">{data.supportPhone}</span>
                   </a>
@@ -181,9 +192,7 @@ export function WarrantyRequestPage() {
 
               <Notice title="Cam kết bảo hành">
                 {data.guarantee}{' '}
-                <PlaceholderLink className="text-accent-fg hover:underline">
-                  Đọc điều khoản bảo hành
-                </PlaceholderLink>
+                <PlaceholderLink className="text-accent-fg hover:underline">Đọc điều khoản bảo hành</PlaceholderLink>
               </Notice>
             </div>
           </div>
@@ -191,12 +200,23 @@ export function WarrantyRequestPage() {
           <Dialog ref={dialogRef}>
             <form
               method="dialog"
-              onSubmit={() => setSent(modal === 'message' ? `Đã gửi ghi chú tới ${data.technician.name}.` : 'Đã gửi yêu cầu đổi lịch cho điều phối. Bạn sẽ nhận xác nhận trong vòng một ngày làm việc.')}
+              onSubmit={() =>
+                setSent(
+                  modal === 'message'
+                    ? `Đã gửi ghi chú tới ${data.technician.name}.`
+                    : 'Đã gửi yêu cầu đổi lịch cho điều phối. Bạn sẽ nhận xác nhận trong vòng một ngày làm việc.',
+                )
+              }
             >
               <DialogTitle>{MODALS[modal].title}</DialogTitle>
               <p className="mt-1 text-body text-fg-2">{MODALS[modal].description}</p>
               <Field label="Nội dung" htmlFor="modal-text" className="mt-4">
-                <Textarea id="modal-text" value={text} onChange={(e) => setText(e.target.value)} placeholder={MODALS[modal].placeholder} />
+                <Textarea
+                  id="modal-text"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder={MODALS[modal].placeholder}
+                />
               </Field>
               <DialogFooter>
                 <Button type="button" variant="ghost" onClick={() => dialogRef.current?.close()}>

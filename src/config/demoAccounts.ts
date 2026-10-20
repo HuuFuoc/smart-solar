@@ -1,12 +1,6 @@
 import { ROLE_LABELS, USER_ROLES, type UserRole } from '@/common/role'
 
-/*
- * Khối "Thử nhanh theo các vai trò" ở /login.
- *
- * Chỉ dùng khi chạy dev: email/mật khẩu lấy từ .env.development.local
- * (file này khớp *.local trong .gitignore nên không commit). Xem .env.example
- * để biết tên biến. Không khai báo biến nào thì khối này tự ẩn.
- */
+// Tài khoản thử ở /login, chỉ dùng khi chạy dev. Lấy từ .env.development.local, không khai thì ẩn
 
 export type DemoAccount = {
   role: UserRole
@@ -37,7 +31,7 @@ function readEnv(key: string): string {
   return typeof value === 'string' ? value.trim() : ''
 }
 
-/** Rỗng khi build production hoặc khi chưa khai báo biến môi trường nào. */
+/** Rỗng khi build production hoặc khi chưa khai báo biến môi trường nào */
 export const demoAccounts: DemoAccount[] = import.meta.env.DEV
   ? USER_ROLES.flatMap((role) => {
       const keys = ENV_KEYS[role]

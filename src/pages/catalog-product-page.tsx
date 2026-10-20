@@ -7,15 +7,19 @@ import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
-import { formatPower, formatSize, formatWarranty, isProductActive, productTypeLabel, specEntries } from '@/features/products/productDisplay'
+import {
+  formatPower,
+  formatSize,
+  formatWarranty,
+  isProductActive,
+  productTypeLabel,
+  specEntries,
+} from '@/features/products/productDisplay'
 import { useProductQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
 import { formatMoney } from '@/utils/format'
 
-/*
-  Chi tiết một sản phẩm trong các portal (khách hàng, kinh doanh, kỹ thuật viên, quản lý), đọc GET /api/products/{id}.
-  Đường quay lại danh mục nằm ở thanh định vị của shell, nên trang không có link "quay lại" riêng.
-*/
+// Chi tiết sản phẩm trong các portal. Đường quay lại danh mục nằm ở thanh định vị của shell
 function CatalogProductPage({ action }: { action?: ReactNode }) {
   const { id } = useParams()
   const query = useProductQuery(id)

@@ -15,7 +15,7 @@ const paddingClasses = {
   lg: 'p-space-lg',
 } as const
 
-/** Base Card theo DESIGN.md: trắng, rounded-2xl, shadow Level 1, viền 1px rgba(13,92,58,0.06). */
+/** Card theo DESIGN.md: nền trắng, viền mảnh */
 export function Card({ padding = 'lg', interactive = false, className, ...rest }: CardProps) {
   return (
     <div

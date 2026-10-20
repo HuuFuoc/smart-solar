@@ -2,12 +2,8 @@ import { createContext, useContext, useEffect } from 'react'
 import { matchPath, useLocation } from 'react-router'
 import type { NavItem } from '@/config/portals'
 
-/*
-  Mắt xích cuối của thanh định vị (app-shell): tên trang chi tiết (công trình, sản phẩm) hoặc bước đang làm
-  của wizard. Trang danh sách không cần đặt; mục menu đang mở đã là vị trí hiện tại.
-  Lưu kèm pathname: chuyển trang là một transition, trang cũ gỡ crumb SAU khi trang mới đã vẽ, nên thanh định vị
-  chỉ dùng crumb khớp đúng đường dẫn đang mở (không loé tên của trang trước).
-*/
+// Mắt xích cuối của thanh định vị: tên trang chi tiết hoặc bước wizard
+// Lưu kèm pathname để không loé tên của trang trước khi chuyển trang
 export type PageCrumb = { pathname: string; label: string }
 
 export const PageCrumbContext = createContext<(crumb: PageCrumb | null) => void>(() => {})
@@ -21,7 +17,7 @@ export function usePageCrumb(label: string | null | undefined) {
   }, [label, pathname, setCrumb])
 }
 
-/** Mục menu có đang mở không: khớp `to` (theo `end`) hoặc một trong `alsoActiveOn` (trang con nằm ngoài `to`). */
+/** Mục menu đang mở: khớp `to` hoặc một trong `alsoActiveOn` */
 export function isNavItemActive(item: NavItem, pathname: string) {
   if (item.to === '#') return false
   if (matchPath({ path: item.to, end: item.end ?? false }, pathname)) return true

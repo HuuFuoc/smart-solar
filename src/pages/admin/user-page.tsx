@@ -39,7 +39,10 @@ function TechnicianSummary({ user }: { user: AdminUserDetail }) {
               { k: 'Nơi xuất phát', v: t.hasBaseLocation ? (t.baseLabel ?? 'Đã có toạ độ') : 'Chưa có' },
               { k: 'Lịch / ngày', v: t.maxAppointmentsPerDay ?? 'Mặc định' },
               { k: 'Giờ làm', v: t.hasCustomWorkingSchedule ? 'Giờ riêng' : 'Giờ chung' },
-              { k: 'Rời nơi xuất phát từ', v: t.earliestBaseDeparture ? t.earliestBaseDeparture.slice(0, 5) : 'Mặc định' },
+              {
+                k: 'Rời nơi xuất phát từ',
+                v: t.earliestBaseDeparture ? t.earliestBaseDeparture.slice(0, 5) : 'Mặc định',
+              },
             ]}
           />
         )}
@@ -48,10 +51,7 @@ function TechnicianSummary({ user }: { user: AdminUserDetail }) {
   )
 }
 
-/*
-  Một tài khoản (GET /api/admin/users/{id}): thông tin, vai trò, trạng thái, gửi link mật khẩu, xoá. Quản trị không tự khoá
-  hay xoá chính mình (backend cũng chặn); tài khoản đã xoá chỉ xem.
-*/
+// Chi tiết một tài khoản. Quản trị không tự khoá hay xoá chính mình
 export function AdminUserPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -87,7 +87,9 @@ export function AdminUserPage() {
               }
             />
             {deleted && (
-              <Notice className="mb-6">Tài khoản đã bị xoá lúc {formatDateTime(user.deletedAt)}. Chỉ xem được, không sửa được.</Notice>
+              <Notice className="mb-6">
+                Tài khoản đã bị xoá lúc {formatDateTime(user.deletedAt)}. Chỉ xem được, không sửa được.
+              </Notice>
             )}
 
             <div className="grid gap-6 lg:grid-cols-3">
@@ -98,7 +100,10 @@ export function AdminUserPage() {
                 {user.roles.includes('TECHNICIAN') && !deleted && <TechnicianSummary user={user} />}
                 {!deleted && !isSelf && (
                   <Panel>
-                    <PanelHeader title="Xoá tài khoản" description="Xoá mềm: lịch sử vẫn giữ, người dùng không đăng nhập được nữa." />
+                    <PanelHeader
+                      title="Xoá tài khoản"
+                      description="Xoá mềm: lịch sử vẫn giữ, người dùng không đăng nhập được nữa."
+                    />
                     <PanelBody>
                       <Button size="sm" variant="danger" icon="delete" onClick={() => setDeleting(true)}>
                         Xoá tài khoản
@@ -115,9 +120,17 @@ export function AdminUserPage() {
                     <KeyValueList
                       items={[
                         { k: 'Điện thoại', v: user.phone || '—' },
-                        { k: 'Email', v: user.emailVerifiedAt ? `Đã xác minh ${formatDateTime(user.emailVerifiedAt)}` : 'Chưa xác minh' },
+                        {
+                          k: 'Email',
+                          v: user.emailVerifiedAt
+                            ? `Đã xác minh ${formatDateTime(user.emailVerifiedAt)}`
+                            : 'Chưa xác minh',
+                        },
                         { k: 'Mật khẩu', v: user.hasPassword ? 'Đã đặt' : 'Chưa đặt' },
-                        { k: 'Đăng nhập gần nhất', v: user.lastLoginAt ? formatDateTime(user.lastLoginAt) : 'Chưa đăng nhập' },
+                        {
+                          k: 'Đăng nhập gần nhất',
+                          v: user.lastLoginAt ? formatDateTime(user.lastLoginAt) : 'Chưa đăng nhập',
+                        },
                         { k: 'Tạo lúc', v: formatDateTime(user.createdAt) },
                         { k: 'Cập nhật lúc', v: formatDateTime(user.updatedAt) },
                       ]}

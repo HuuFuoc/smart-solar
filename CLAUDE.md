@@ -124,13 +124,13 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
 DESIGN.md trong thư mục `design/stitch/…` vẫn là nguồn tham chiếu về bố cục và tên token,
 nhưng GIÁ TRỊ token nay lấy theo hệ chung ở trên. Những chỗ cố ý lệch:
 
-| Hạng mục | DESIGN.md | Trong code hiện tại |
-| --- | --- | --- |
+| Hạng mục      | DESIGN.md                                          | Trong code hiện tại                                    |
+| ------------- | -------------------------------------------------- | ------------------------------------------------------ |
 | Màu nền / chữ | `surface=#f8f9ff`, `on-surface=#0d1c2e` (ngả xanh) | trỏ vào `--canvas`, `--fg` của portal kit (trung tính) |
-| Màu nhấn | `primary=#004328`, `primary-container=#0d5c3a` | cả hai trỏ vào `--accent` |
-| Bán kính | `rounded-lg/xl/2xl` (8–16px) | ánh xạ về 3px / 6px |
-| Bóng | 3 cấp elevation | chỉ một bóng cho lớp nổi, thẻ tĩnh không bóng |
-| Badge | pill `rounded-full` tô nền theo trạng thái | chỉ trạng thái cần chú ý mới tô nền |
+| Màu nhấn      | `primary=#004328`, `primary-container=#0d5c3a`     | cả hai trỏ vào `--accent`                              |
+| Bán kính      | `rounded-lg/xl/2xl` (8–16px)                       | ánh xạ về 3px / 6px                                    |
+| Bóng          | 3 cấp elevation                                    | chỉ một bóng cho lớp nổi, thẻ tĩnh không bóng          |
+| Badge         | pill `rounded-full` tô nền theo trạng thái         | chỉ trạng thái cần chú ý mới tô nền                    |
 
 1. Dùng đúng tên token Tailwind như file gốc: `bg-surface`, `bg-surface-container-lowest`,
    `text-on-surface-variant`, `bg-primary-container text-on-primary`, `text-headline-md`,
@@ -239,6 +239,7 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
 của BE: `Solar-Client-dnl/fe.md`). Người dùng chốt 09/10/2026: số liệu khai tự tính từ mặt lắp, bỏ mô phỏng FE giả định 3:2
 (`roofLayout.ts`, `RoofScene.tsx`, `RoofSimulation.tsx` đã xoá), cho gửi khi chưa chạy mô phỏng (chỉ nhắc), editor 2D lấy ô
 nhập làm nguồn chính + kéo thả vật cản.
+
 - Bước mặt lắp (`SurfaceEditor.tsx`, form + luật kiểm tra ở `surfaceForm.ts` bám `UpdatePreSurveySurfaceCommandValidator`):
   rộng × dài theo dốc (mét, đo trên mặt nghiêng), độ dốc, hướng (la bàn `CompassPicker`), tối đa 50 vật cản chữ nhật. Quy ước
   của BE: gốc (0, 0) góc trên-trái = mép cao, X theo chiều rộng, Y xuôi dốc, (xM, yM) là góc trên-trái của vật cản. Hình
@@ -259,10 +260,10 @@ nhập làm nguồn chính + kéo thả vật cản.
   Dương và Bà Rịa – Vũng Tàu cũ) – backend không có API địa giới nên FE gọi thẳng bằng fetch (`src/services/provinceService.ts`,
   `src/hooks/useHcmWards.ts`, tải một lần mỗi phiên; địa chỉ gốc ở `VITE_PROVINCES_API_URL`, không khai thì dùng
   `https://provinces.open-api.vn/api/v2`); không còn ô quận/huyện (`district` gửi null). API lỗi thì vẫn gõ tay được
-  + nút thử lại. Địa điểm đã lưu mà không sửa gì thì đi tiếp, không kiểm tra lại (địa chỉ cũ khai tự do trước ngày đó không
-  bị bắt chọn lại và tạo bản nháp mới). Toạ độ nằm ngoài khung TP.HCM (`isInHcm` ở `preSurveyDisplay.ts`) thì cảnh báo vàng,
-  vẫn cho lưu (người dùng chốt), lặp lại ở bước mô phỏng và kết quả; mục khí hậu ghi toạ độ + link bản đồ. Lý do: một bản
-  nháp thật nhập sai toạ độ ra khí hậu Nam Cực (−49 °C) và mọi lần chạy "chưa có sản lượng".
+  - nút thử lại. Địa điểm đã lưu mà không sửa gì thì đi tiếp, không kiểm tra lại (địa chỉ cũ khai tự do trước ngày đó không
+    bị bắt chọn lại và tạo bản nháp mới). Toạ độ nằm ngoài khung TP.HCM (`isInHcm` ở `preSurveyDisplay.ts`) thì cảnh báo vàng,
+    vẫn cho lưu (người dùng chốt), lặp lại ở bước mô phỏng và kết quả; mục khí hậu ghi toạ độ + link bản đồ. Lý do: một bản
+    nháp thật nhập sai toạ độ ra khí hậu Nam Cực (−49 °C) và mọi lần chạy "chưa có sản lượng".
 - Lưu mặt lắp (`saveSurface` ở `assessment-page.tsx`): lần đầu POST /pre-surveys (số liệu khai + độ dốc + hướng) rồi PUT
   .../surface; các lần sau chỉ ghi phần đổi (`surfaceDiffers`, `declaredDiffers`). **Độ dốc / hướng của mặt lắp dùng chung cột
   với form cũ** (PUT /pre-surveys/{id} ghi đè, đổi giá trị là mọi mô phỏng thành "cũ"), nên PUT surface trước rồi mới PUT số
@@ -314,6 +315,7 @@ nhập làm nguồn chính + kéo thả vật cản.
 giao BE "SmartSolar – Tài liệu bàn giao tích hợp FE/BE" 12/10/2026, contract đối chiếu bằng code backend chứ không theo bảng
 "Agent/Hardening" của tài liệu). Hiển thị trong `features/scheduling` (`schedulingDisplay.ts`: giờ Việt Nam, nhãn trạng thái,
 đường đi, lý do không xếp được; bảng mã ở `common/scheduling.ts`), tài khoản trong `features/users`. Luồng dừng ở "Nhận việc": không có "Hoàn thành khảo sát".
+
 - Giờ nghiệp vụ là giờ Việt Nam bất kể máy: hiển thị qua `Intl` với `timeZone: 'Asia/Ho_Chi_Minh'` (cả `formatDateTime` cũ),
   ngày gửi API là chuỗi `YYYY-MM-DD` tính theo giờ Việt Nam (không `new Date('2026-10-20')`), giờ hẹn gửi kèm `+07:00`.
 - Khách `/customer/requests(/:id)` (`pages/customer/request(s)-page.tsx`): gửi đánh giá xong hộp thoại dẫn thẳng tới "Chọn giờ
@@ -374,19 +376,20 @@ Cuối rail: "Thu gọn menu", rồi nhóm **Tài khoản phân tầng** (góp �
 nhỏ"): mặc định chỉ một hàng ghi tên người đang đăng nhập (chữ cái đầu + tên; rail hẹp nên khi chưa có họ tên thì ghi phần
 trước "@" của email; trạng thái mở / đóng nhớ trong localStorage); bấm mới mở tầng con thụt vào có đường dọc: email đầy đủ +
 vai trò (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm tầng Tự động / Sáng / Tối, lựa chọn đang dùng có nền "đang chọn"
-+ dấu tích), Đăng xuất (đỏ khi rê chuột). Mọi hàng cùng chiều cao (44px drawer, 36px desktop). Rail thu gọn chỉ còn nút icon
-Tài khoản, bấm thì rail mở và nhóm mở sẵn.
-**Chỉ khách hàng thấy "Đổi mật khẩu"** (`canChangeOwnPassword` trong `config/roles.ts`, người dùng chốt 08/10/2026): tài khoản nội
-bộ do quản trị cấp; backend vẫn cho mọi vai trò gọi API, đây chỉ là ẩn ở giao diện.
-Bảng (`Table`): khi chia cột, dòng tô nền khi rê chuột, bảng lấn 12px mỗi bên để nền không cắt sát chữ; dưới lg xếp khối
-nhãn/giá trị (ô là lưới `justify-items: start`, cột nhãn tối đa 12rem). Bảng nhiều cột có cụm thao tác dùng `stack="xl"` (xếp
-khối đến 1280px: ở 1024px chia cột thì tên bị bóp còn vài chữ mỗi dòng) và gộp cột phụ vào dòng phụ của cột chính từ xl đến
-2xl, như bảng sản phẩm admin. Bảng mà cả dòng là một link (danh mục sản phẩm) phủ link tên lên cả dòng bằng `::after`,
-dòng `relative cursor-pointer`; tên giữ màu chữ chính, rê chuột mới xanh + gạch chân.
-Trang chi tiết hoặc wizard đặt mắt xích cuối bằng `usePageCrumb(tên)` (`components/layout/page-crumb.tsx`), không tự làm link "quay lại". Số đếm thật cạnh mục menu truyền qua
-`badges` của layout (`ops-layout`: hàng chờ; `AdminLayout`: tổng sản phẩm). Làm 1 lần trong layout route với `<Outlet/>`,
-KHÔNG copy rail vào từng page; layout còn được vẽ làm khung chờ (`hydrateFallbackElement`) TRƯỚC `RequireRole` nên
-query trong layout phải chờ `useAuth().user` đúng vai trò mới gọi API.
+
+- dấu tích), Đăng xuất (đỏ khi rê chuột). Mọi hàng cùng chiều cao (44px drawer, 36px desktop). Rail thu gọn chỉ còn nút icon
+  Tài khoản, bấm thì rail mở và nhóm mở sẵn.
+  **Chỉ khách hàng thấy "Đổi mật khẩu"** (`canChangeOwnPassword` trong `config/roles.ts`, người dùng chốt 08/10/2026): tài khoản nội
+  bộ do quản trị cấp; backend vẫn cho mọi vai trò gọi API, đây chỉ là ẩn ở giao diện.
+  Bảng (`Table`): khi chia cột, dòng tô nền khi rê chuột, bảng lấn 12px mỗi bên để nền không cắt sát chữ; dưới lg xếp khối
+  nhãn/giá trị (ô là lưới `justify-items: start`, cột nhãn tối đa 12rem). Bảng nhiều cột có cụm thao tác dùng `stack="xl"` (xếp
+  khối đến 1280px: ở 1024px chia cột thì tên bị bóp còn vài chữ mỗi dòng) và gộp cột phụ vào dòng phụ của cột chính từ xl đến
+  2xl, như bảng sản phẩm admin. Bảng mà cả dòng là một link (danh mục sản phẩm) phủ link tên lên cả dòng bằng `::after`,
+  dòng `relative cursor-pointer`; tên giữ màu chữ chính, rê chuột mới xanh + gạch chân.
+  Trang chi tiết hoặc wizard đặt mắt xích cuối bằng `usePageCrumb(tên)` (`components/layout/page-crumb.tsx`), không tự làm link "quay lại". Số đếm thật cạnh mục menu truyền qua
+  `badges` của layout (`ops-layout`: hàng chờ; `AdminLayout`: tổng sản phẩm). Làm 1 lần trong layout route với `<Outlet/>`,
+  KHÔNG copy rail vào từng page; layout còn được vẽ làm khung chờ (`hydrateFallbackElement`) TRƯỚC `RequireRole` nên
+  query trong layout phải chờ `useAuth().user` đúng vai trò mới gọi API.
 
 Mật độ (bố cục gọn 05/10/2026, cho khung nhân viên và cả hai bộ component; cổng khách hàng thì nội dung căn giữa tối đa 1200px): lề nội dung 24px (`px-6`, bộ Stitch `px-space-lg`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; khoảng cách tiêu đề trang → nội dung 24px; giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; `ListRow` `py-4`. Thêm màn mới thì theo đúng các bậc này, đừng quay lại 48px.
 
@@ -395,7 +398,8 @@ Danh mục dịch vụ, Nhóm hàng, Kho tri thức AI, Cấu hình kỹ thuật
 
 Menu Kỹ thuật viên (subtitle "Kỹ thuật hiện trường"): Tổng quan, Việc của tôi (badge số),
 Khảo sát, Lắp đặt, Bảo hành & bảo trì, Lịch làm việc; cuối sidebar là khối user (tên, chức danh)
-+ Cảnh báo + Tài khoản + Đổi mật khẩu + Đăng xuất.
+
+- Cảnh báo + Tài khoản + Đổi mật khẩu + Đăng xuất.
 
 ## Màn công khai & xác thực
 
@@ -428,14 +432,14 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
     nhôm có gờ, mặt sau có tấm nền, 3 hộp đấu dây, cáp, nhãn trơn không ghi thông số); môi trường phản chiếu là phòng chụp tự dựng
     (RoomEnvironment của three cho vệt sáng gắt làm cell bạc màu). Kéo / vuốt ngang để xoay quanh tâm (bàn xoay, nghiêng dọc
     trong khoảng hẹp để không chạm đất), phím mũi tên khi focus, không tự xoay, không phóng to / dịch chuyển; `touch-action:
-    pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong suốt, mờ dần theo bán kính (chèn vào shader của
+pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong suốt, mờ dần theo bán kính (chèn vào shader của
     `ShadowMaterial`; r186 đã bỏ `PCFSoftShadowMap`). Ánh sáng / bóng theo `useResolvedTheme`. Chỉ tải three.js khi khung cách
     màn hình 300px; máy không có WebGL2, bật tiết kiệm dữ liệu hoặc lỗi renderer thì hiện ảnh tĩnh
     `public/images/landing/solar-panel-{light,dark}.webp` – chụp từ chính khung hình đầu của cảnh (đổi camera / tư thế / ánh
     sáng thì chụp lại, nếu không lúc canvas thay ảnh sẽ thấy nhảy). Điện thoại / cảm ứng: dpr ≤ 1,5, bản đồ bóng và hoạ tiết nhỏ hơn.
-  Chuyển động chỉ transform/opacity, không thư viện: `ld-rise` (chữ, nút hero), khối nội dung bọc `<Reveal>`
-  (IntersectionObserver, hiện một lần khi cuộn tới). `prefers-reduced-motion` tắt hết và hiện nội dung ngay. Favicon sinh từ
-  `public/images/Logo.png` (`public/favicon-32/48.png`, `apple-touch-icon.png`).
+    Chuyển động chỉ transform/opacity, không thư viện: `ld-rise` (chữ, nút hero), khối nội dung bọc `<Reveal>`
+    (IntersectionObserver, hiện một lần khi cuộn tới). `prefers-reduced-motion` tắt hết và hiện nội dung ngay. Favicon sinh từ
+    `public/images/Logo.png` (`public/favicon-32/48.png`, `apple-touch-icon.png`).
 - `AuthLayout` – theo `auth_portal`: lưới 12 cột, panel `primary-container` bên trái
   (`lg:col-span-5`: tiêu đề "Chuyển dịch Năng lượng Xanh cho Ngôi nhà Việt", ảnh nhà, 2 ô số liệu
   1.240 kWh / ~3,85 Tr ₫), `<Outlet/>` trong card trắng bên phải (`lg:col-span-7`), footer chỉ còn
@@ -446,24 +450,24 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
 
 ## Bảng route
 
-| Route             | Layout         | Trang                                                      |
-| ----------------- | -------------- | ---------------------------------------------------------- |
-| `/`               | `PublicLayout` | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai") |
-| `/login`          | `AuthLayout`   | `LoginPage`                                                 |
-| `/register`       | `AuthLayout`   | `RegisterPage`                                              |
-| `/forgot-password`| `AuthLayout`   | `ForgotPasswordPage`                                        |
-| `/reset-password` | `AuthLayout`   | `ResetPasswordPage` (đọc `?token=`)                         |
-| `/verify-email`   | `AuthLayout`   | `VerifyEmailPage`                                           |
-| `/403`            | `AuthLayout`   | `ForbiddenPage`                                             |
-| `/coming-soon`    | `PublicLayout` | Trang tạm cho Kinh doanh, Quản lý, Khách hàng               |
-| `/products`, `/products/:id` | `PublicLayout` | Danh mục sản phẩm công khai – GET /api/products(/{id}) |
-| `/admin/*`        | `AdminLayout`  | Tài khoản, Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="admin">` |
-| `/tech/*`         | `TechLayout`   | Việc của tôi, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">` |
-| `/customer/*`     | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Sản phẩm – bọc `<RequireRole role="customer">` |
-| `/ops/*`          | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên) – bọc `<RequireRole role="sales">` |
-| `/field/*`        | —                | chuyển về `/tech` |
-| `/manage/*`       | `ManageLayout`   | Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">` |
-| `/styleguide`     | –              | `StyleguidePage`                                            |
+| Route                        | Layout           | Trang                                                                                      |
+| ---------------------------- | ---------------- | ------------------------------------------------------------------------------------------ |
+| `/`                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")           |
+| `/login`                     | `AuthLayout`     | `LoginPage`                                                                                |
+| `/register`                  | `AuthLayout`     | `RegisterPage`                                                                             |
+| `/forgot-password`           | `AuthLayout`     | `ForgotPasswordPage`                                                                       |
+| `/reset-password`            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                        |
+| `/verify-email`              | `AuthLayout`     | `VerifyEmailPage`                                                                          |
+| `/403`                       | `AuthLayout`     | `ForbiddenPage`                                                                            |
+| `/coming-soon`               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                              |
+| `/products`, `/products/:id` | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                     |
+| `/admin/*`                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="admin">`                      |
+| `/tech/*`                    | `TechLayout`     | Việc của tôi, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`              |
+| `/customer/*`                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Sản phẩm – bọc `<RequireRole role="customer">` |
+| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên) – bọc `<RequireRole role="sales">`        |
+| `/field/*`                   | —                | chuyển về `/tech`                                                                          |
+| `/manage/*`                  | `ManageLayout`   | Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                               |
+| `/styleguide`                | –                | `StyleguidePage`                                                                           |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.
 
@@ -551,4 +555,6 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
 - `npm run typecheck` – `tsc -b` (nhanh hơn build, dùng khi lặp)
 - `npm run gen:api` – sinh lại `src/types/req` và `src/types/res` từ `docs/api/swagger.json`
 - `npm run lint` – oxlint (KHÔNG dùng ESLint: repo dùng `typescript@7`, gói này không còn API JS nên typescript-eslint không chạy được)
+- `npm run format` – prettier cho toàn repo (cấu hình `.prettierrc.json`: không `;`, nháy đơn, rộng 120). Chạy trước khi commit; `npm run format:check` để kiểm
+- Comment trong code: câu ngắn, nói lý do, không ghi ngày tháng / "người dùng chốt" / "rà code" (lịch sử để ở git)
   (Nếu package.json dùng tên script khác, dùng theo package.json.)

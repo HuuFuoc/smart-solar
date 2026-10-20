@@ -35,7 +35,13 @@ export function ManageApprovalPage() {
                 <>
                   <span className="text-fg-2">{data.id}</span>
                   <Badge tone={decision === 'approved' ? 'ok' : decision === 'rejected' ? 'danger' : 'warn'}>
-                    {decision === 'approved' ? 'Đã duyệt' : decision === 'rejected' ? 'Đã từ chối' : decision === 'redline' ? 'Đã yêu cầu sửa' : data.status}
+                    {decision === 'approved'
+                      ? 'Đã duyệt'
+                      : decision === 'rejected'
+                        ? 'Đã từ chối'
+                        : decision === 'redline'
+                          ? 'Đã yêu cầu sửa'
+                          : data.status}
                   </Badge>
                   <span>Gửi {data.submitted}</span>
                 </>
@@ -95,7 +101,10 @@ export function ManageApprovalPage() {
                 </Panel>
 
                 <Panel>
-                  <PanelHeader title={`Khảo sát ${data.survey.id}`} action={<Badge tone="ok">{data.survey.status}</Badge>} />
+                  <PanelHeader
+                    title={`Khảo sát ${data.survey.id}`}
+                    action={<Badge tone="ok">{data.survey.status}</Badge>}
+                  />
                   <PanelBody className="space-y-4">
                     <ul className="grid grid-cols-2 gap-3">
                       {data.survey.photos.map((p) => (
@@ -171,13 +180,29 @@ export function ManageApprovalPage() {
                 </Panel>
 
                 <Panel>
-                  <PanelHeader title="Giới hạn tài chính" description={`Giá vốn ${fmt.usdCents(data.guardrails.cogs)}. Biên lợi nhuận gộp thực tế ${data.margin.pct}%, cao hơn mức chặn ${(data.margin.pct - data.margin.floor).toFixed(1)} điểm.`} />
+                  <PanelHeader
+                    title="Giới hạn tài chính"
+                    description={`Giá vốn ${fmt.usdCents(data.guardrails.cogs)}. Biên lợi nhuận gộp thực tế ${data.margin.pct}%, cao hơn mức chặn ${(data.margin.pct - data.margin.floor).toFixed(1)} điểm.`}
+                  />
                   <PanelBody className="space-y-4">
                     <div>
-                      <div className="relative h-2 w-full rounded-control bg-surface-3" role="img" aria-label="Vị trí báo giá giữa giá vốn và giá bán">
-                        <span className="absolute inset-y-0 left-0 rounded-control bg-danger/40" style={{ width: `${cogsPct}%` }} />
-                        <span className="absolute inset-y-0 rounded-control bg-warn/40" style={{ left: `${cogsPct}%`, width: `${minPct - cogsPct}%` }} />
-                        <span className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-control border-2 border-canvas bg-accent" style={{ left: `${finalPct}%` }} />
+                      <div
+                        className="relative h-2 w-full rounded-control bg-surface-3"
+                        role="img"
+                        aria-label="Vị trí báo giá giữa giá vốn và giá bán"
+                      >
+                        <span
+                          className="absolute inset-y-0 left-0 rounded-control bg-danger/40"
+                          style={{ width: `${cogsPct}%` }}
+                        />
+                        <span
+                          className="absolute inset-y-0 rounded-control bg-warn/40"
+                          style={{ left: `${cogsPct}%`, width: `${minPct - cogsPct}%` }}
+                        />
+                        <span
+                          className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-control border-2 border-canvas bg-accent"
+                          style={{ left: `${finalPct}%` }}
+                        />
                       </div>
                       <dl className="tnum mt-2 grid grid-cols-3 text-meta">
                         <div>
@@ -217,9 +242,20 @@ export function ManageApprovalPage() {
                   <PanelHeader title="Quyết định của quản lý" description="Đăng nhập với tên Jonathan Mercer." />
                   {decision ? (
                     <PanelBody>
-                      <Notice tone={decision === 'rejected' ? 'danger' : 'ok'} title={decision === 'approved' ? 'Đã duyệt và gửi đi' : decision === 'redline' ? 'Đã gửi yêu cầu sửa' : 'Đã từ chối báo giá'}>
-                        {decision === 'approved' && 'Đã áp dụng duyệt vượt mức khuyến mãi và gửi hồ sơ DocuSign cho David Miller.'}
-                        {decision === 'redline' && `Đã trả đề xuất về cho Marcus Chen kèm ghi chú của bạn: "${counter}".`}
+                      <Notice
+                        tone={decision === 'rejected' ? 'danger' : 'ok'}
+                        title={
+                          decision === 'approved'
+                            ? 'Đã duyệt và gửi đi'
+                            : decision === 'redline'
+                              ? 'Đã gửi yêu cầu sửa'
+                              : 'Đã từ chối báo giá'
+                        }
+                      >
+                        {decision === 'approved' &&
+                          'Đã áp dụng duyệt vượt mức khuyến mãi và gửi hồ sơ DocuSign cho David Miller.'}
+                        {decision === 'redline' &&
+                          `Đã trả đề xuất về cho Marcus Chen kèm ghi chú của bạn: "${counter}".`}
                         {decision === 'rejected' && `Đã đóng hồ sơ cơ hội bán hàng. Lý do: ${reason}.`}
                       </Notice>
                     </PanelBody>
@@ -228,7 +264,9 @@ export function ManageApprovalPage() {
                       <div className="flex flex-wrap items-center justify-between gap-3 rounded-container bg-surface-2 px-4 py-3">
                         <div className="text-body">
                           <p className="font-medium">Ký duyệt cấp điều hành</p>
-                          <p className="text-fg-2">Áp dụng duyệt vượt mức khuyến mãi, ký gửi hợp đồng và gửi hồ sơ DocuSign cho David Miller.</p>
+                          <p className="text-fg-2">
+                            Áp dụng duyệt vượt mức khuyến mãi, ký gửi hợp đồng và gửi hồ sơ DocuSign cho David Miller.
+                          </p>
                         </div>
                         <Button variant="primary" onClick={() => setDecision('approved')}>
                           Duyệt và gửi đi
@@ -242,8 +280,17 @@ export function ManageApprovalPage() {
                           if (counter.trim()) setDecision('redline')
                         }}
                       >
-                        <Field label="Yêu cầu sửa hoặc đề xuất giá khác" hint="Trả đề xuất về cho Marcus Chen." htmlFor="counter">
-                          <Textarea id="counter" value={counter} onChange={(e) => setCounter(e.target.value)} placeholder="Đề xuất $29,200 hoặc giảm gói nhân công bảo hành. Không xuống dưới $29k nếu không gia hạn giám sát." />
+                        <Field
+                          label="Yêu cầu sửa hoặc đề xuất giá khác"
+                          hint="Trả đề xuất về cho Marcus Chen."
+                          htmlFor="counter"
+                        >
+                          <Textarea
+                            id="counter"
+                            value={counter}
+                            onChange={(e) => setCounter(e.target.value)}
+                            placeholder="Đề xuất $29,200 hoặc giảm gói nhân công bảo hành. Không xuống dưới $29k nếu không gia hạn giám sát."
+                          />
                         </Field>
                         <div className="flex flex-wrap items-center gap-2">
                           {data.presets.map((p) => (
@@ -269,9 +316,18 @@ export function ManageApprovalPage() {
                           if (reason) setDecision('rejected')
                         }}
                       >
-                        <Field label="Từ chối báo giá" hint="Đóng hồ sơ cơ hội bán hàng và huỷ mức giá đang giữ." htmlFor="reason">
+                        <Field
+                          label="Từ chối báo giá"
+                          hint="Đóng hồ sơ cơ hội bán hàng và huỷ mức giá đang giữ."
+                          htmlFor="reason"
+                        >
                           <div className="flex flex-wrap gap-3">
-                            <Select id="reason" value={reason} onChange={(e) => setReason(e.target.value)} className="w-full sm:w-auto sm:min-w-0 sm:flex-1">
+                            <Select
+                              id="reason"
+                              value={reason}
+                              onChange={(e) => setReason(e.target.value)}
+                              className="w-full sm:w-auto sm:min-w-0 sm:flex-1"
+                            >
                               <option value="">Chọn lý do từ chối</option>
                               {data.rejectReasons.map((r) => (
                                 <option key={r}>{r}</option>
@@ -290,7 +346,8 @@ export function ManageApprovalPage() {
             </div>
 
             <p className="mt-6 border-t border-line pt-4 text-meta text-fg-3">
-              Mã băm báo giá <span className="text-fg-2">{data.hash}</span>. Tuân thủ tiêu chuẩn hiệu quả năng lượng công trình Title 24 của California.
+              Mã băm báo giá <span className="text-fg-2">{data.hash}</span>. Tuân thủ tiêu chuẩn hiệu quả năng lượng
+              công trình Title 24 của California.
             </p>
           </>
         )

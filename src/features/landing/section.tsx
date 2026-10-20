@@ -4,9 +4,9 @@ import { LANDING_CONTAINER } from './classes'
 
 /*
   Khoảng cách trước một section đi theo quan hệ nội dung, không một giá trị chung:
-    near    – cùng hồ sơ với section trước (96px)
-    far     – đổi chủ đề (128px)
-    farther – nhảy thời gian hoặc đổi người chịu trách nhiệm (160px)
+    near: cùng hồ sơ với section trước (96px)
+    far: đổi chủ đề (128px)
+    farther: nhảy thời gian hoặc đổi người chịu trách nhiệm (160px)
 */
 const spaces = {
   near: 'pt-16 lg:pt-24',

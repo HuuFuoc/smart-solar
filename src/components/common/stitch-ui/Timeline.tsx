@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/* Theo "Lifecycle Progression" trong task_detail_timeline: stepper ngang, mỗi stage là một ô. */
+// Stepper ngang, mỗi giai đoạn là một ô
 export type TimelineStepState = 'done' | 'current' | 'upcoming'
 
 export type TimelineStepProps = {

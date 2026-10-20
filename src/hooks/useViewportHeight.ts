@@ -5,10 +5,7 @@ function subscribe(onChange: () => void) {
   return () => window.removeEventListener('resize', onChange)
 }
 
-/**
- * Chiều cao khung nhìn (px), cập nhật khi đổi cỡ cửa sổ. Đọc clientHeight của <html> thay vì innerHeight: trên điện thoại
- * nó không đổi khi thanh địa chỉ ẩn / hiện lúc cuộn, nên hình vẽ cao theo khung nhìn không nhảy cỡ giữa chừng.
- */
+/** Chiều cao khung nhìn. Dùng clientHeight vì trên điện thoại nó không đổi khi thanh địa chỉ ẩn / hiện */
 export function useViewportHeight() {
   return useSyncExternalStore(subscribe, () => document.documentElement.clientHeight)
 }

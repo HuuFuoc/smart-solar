@@ -1,11 +1,7 @@
 import type { ReactNode } from 'react'
 import { cx } from '@/utils/cx'
 
-/*
-  One record inside a list of many (approval queue, alert stream, work orders).
-  Rows are separated by hairlines from the parent `divide-y`; a tone paints a rule
-  in the left margin, and the selected row sits on a tinted field.
-*/
+// Một dòng trong danh sách, ngăn cách bằng đường kẻ. `tone` vẽ vạch màu ở lề trái
 export function ListRow({
   tone,
   selected,
@@ -17,7 +13,14 @@ export function ListRow({
   className?: string
   children: ReactNode
 }) {
-  const rule = tone === 'danger' ? 'border-l-danger' : tone === 'warn' ? 'border-l-warn' : tone === 'accent' ? 'border-l-accent' : undefined
+  const rule =
+    tone === 'danger'
+      ? 'border-l-danger'
+      : tone === 'warn'
+        ? 'border-l-warn'
+        : tone === 'accent'
+          ? 'border-l-accent'
+          : undefined
   return (
     <li
       aria-current={selected ? 'true' : undefined}

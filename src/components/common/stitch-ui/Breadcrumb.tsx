@@ -15,7 +15,10 @@ export type BreadcrumbProps = {
 /* Hàng breadcrumb đầu trang: label-md, mũi tên chevron_right 14px. */
 export function Breadcrumb({ items, activeTone = 'on-surface', className }: BreadcrumbProps) {
   return (
-    <nav aria-label="Đường dẫn trang" className={cn('flex items-center gap-space-2xs text-label-md text-outline', className)}>
+    <nav
+      aria-label="Đường dẫn trang"
+      className={cn('flex items-center gap-space-2xs text-label-md text-outline', className)}
+    >
       {items.map((crumb, i) => {
         const isLast = i === items.length - 1
         const content = (

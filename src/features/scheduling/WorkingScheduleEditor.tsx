@@ -24,7 +24,7 @@ function toWeek(periods: WorkingPeriodView[]): Week {
   return week
 }
 
-/* Luật bám SetWorkingScheduleCommandValidator: mỗi khoảng kết thúc sau khi bắt đầu, cùng ngày không chồng nhau, tối đa 42. */
+// Mỗi khoảng kết thúc sau khi bắt đầu, cùng ngày không chồng nhau, tối đa 42
 function weekIssue(week: Week): string | null {
   const all = Object.values(week).flat()
   if (all.length === 0) return 'Cần ít nhất một khoảng làm việc trong tuần, hoặc chọn giờ chung của hệ thống.'
@@ -35,7 +35,8 @@ function weekIssue(week: Week): string | null {
       if (!p.start || !p.end) return `${d.label}: nhập đủ giờ bắt đầu và kết thúc.`
       if (p.end <= p.start) return `${d.label}: giờ kết thúc phải sau giờ bắt đầu (${p.start}–${p.end}).`
       const prev = sorted[i - 1]
-      if (prev && p.start < prev.end) return `${d.label}: hai khoảng ${prev.start}–${prev.end} và ${p.start}–${p.end} chồng nhau.`
+      if (prev && p.start < prev.end)
+        return `${d.label}: hai khoảng ${prev.start}–${prev.end} và ${p.start}–${p.end} chồng nhau.`
     }
   }
   return null
@@ -48,14 +49,24 @@ function DefaultWeek({ schedule }: { schedule: WorkingScheduleView }) {
       {WEEK_DAYS.map((d) => (
         <div key={d.value} className="contents">
           <dt className="text-fg-2">{d.label}</dt>
-          <dd className="tnum text-fg">{week[d.value].length ? week[d.value].map((p) => `${p.start}–${p.end}`).join(', ') : 'Nghỉ'}</dd>
+          <dd className="tnum text-fg">
+            {week[d.value].length ? week[d.value].map((p) => `${p.start}–${p.end}`).join(', ') : 'Nghỉ'}
+          </dd>
         </div>
       ))}
     </dl>
   )
 }
 
-function WeekForm({ initial, technicianUserId, onSaved }: { initial: Week; technicianUserId: string; onSaved: () => void }) {
+function WeekForm({
+  initial,
+  technicianUserId,
+  onSaved,
+}: {
+  initial: Week
+  technicianUserId: string
+  onSaved: () => void
+}) {
   const [week, setWeek] = useState<Week>(initial)
   const [issue, setIssue] = useState<string | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
@@ -73,7 +84,10 @@ function WeekForm({ initial, technicianUserId, onSaved }: { initial: Week; techn
     try {
       await save.mutateAsync({
         id: technicianUserId,
-        body: { useDefault: false, periods: WEEK_DAYS.flatMap((d) => week[d.value].map((p) => ({ day: d.value, start: p.start, end: p.end }))) },
+        body: {
+          useDefault: false,
+          periods: WEEK_DAYS.flatMap((d) => week[d.value].map((p) => ({ day: d.value, start: p.start, end: p.end }))),
+        },
       })
       toast.success('Đã lưu giờ làm riêng.')
       onSaved()
@@ -110,7 +124,12 @@ function WeekForm({ initial, technicianUserId, onSaved }: { initial: Week; techn
                           step={1800}
                           className="w-32"
                           value={p.start}
-                          onChange={(e) => update(d.value, periods.map((q, j) => (j === i ? { ...q, start: e.target.value } : q)))}
+                          onChange={(e) =>
+                            update(
+                              d.value,
+                              periods.map((q, j) => (j === i ? { ...q, start: e.target.value } : q)),
+                            )
+                          }
                         />
                       </label>
                       <span aria-hidden className="text-fg-3">
@@ -125,7 +144,12 @@ function WeekForm({ initial, technicianUserId, onSaved }: { initial: Week; techn
                           step={1800}
                           className="w-32"
                           value={p.end}
-                          onChange={(e) => update(d.value, periods.map((q, j) => (j === i ? { ...q, end: e.target.value } : q)))}
+                          onChange={(e) =>
+                            update(
+                              d.value,
+                              periods.map((q, j) => (j === i ? { ...q, end: e.target.value } : q)),
+                            )
+                          }
                         />
                       </label>
                       <IconButton
@@ -133,7 +157,12 @@ function WeekForm({ initial, technicianUserId, onSaved }: { initial: Week; techn
                         variant="danger-quiet"
                         label={`Bỏ khoảng ${p.start}–${p.end} của ${d.label}`}
                         tooltip="Bỏ khoảng này"
-                        onClick={() => update(d.value, periods.filter((_, j) => j !== i))}
+                        onClick={() =>
+                          update(
+                            d.value,
+                            periods.filter((_, j) => j !== i),
+                          )
+                        }
                       />
                     </div>
                   ))}
@@ -141,7 +170,9 @@ function WeekForm({ initial, technicianUserId, onSaved }: { initial: Week; techn
                     size="sm"
                     variant="ghost"
                     icon="add"
-                    onClick={() => update(d.value, [...periods, { start: periods.at(-1)?.end ?? '13:00', end: '17:00' }])}
+                    onClick={() =>
+                      update(d.value, [...periods, { start: periods.at(-1)?.end ?? '13:00', end: '17:00' }])
+                    }
                   >
                     Thêm khoảng
                   </Button>
@@ -167,11 +198,8 @@ function WeekForm({ initial, technicianUserId, onSaved }: { initial: Week; techn
   )
 }
 
-/*
-  Giờ làm theo tuần của một kỹ thuật viên (giờ Việt Nam). Mặc định dùng giờ chung của hệ thống (08:00–12:00, 13:00–17:00
-  mọi ngày); "Giờ riêng" thay cả tuần, ngày không có khoảng nào là ngày nghỉ. Đổi giờ làm mà làm lịch đã có rơi ra ngoài giờ
-  thì backend từ chối và liệt kê lịch đó, không tự huỷ. Cần có hồ sơ nhận lịch trước (TECHNICIAN_PROFILE_REQUIRED).
-*/
+// Giờ làm theo tuần (giờ Việt Nam). Mặc định dùng giờ chung, "Giờ riêng" thay cả tuần
+// Cần có hồ sơ nhận lịch trước (TECHNICIAN_PROFILE_REQUIRED)
 export function WorkingScheduleEditor({ technicianUserId }: { technicianUserId: string }) {
   const query = useWorkingScheduleQuery(technicianUserId)
   const save = useSetWorkingScheduleMutation()
@@ -215,13 +243,13 @@ export function WorkingScheduleEditor({ technicianUserId }: { technicianUserId: 
       />
       {current === 'default' ? (
         <div className="space-y-4">
-          {/* Backend chỉ trả giờ chung khi người này đang dùng nó; đang dùng giờ riêng thì không biết giờ chung để vẽ. */}
+          {/* Đang dùng giờ riêng thì backend không trả giờ chung */}
           {schedule.usesDefault ? (
             <DefaultWeek schedule={schedule} />
           ) : (
             <p className="max-w-prose text-body text-fg-2">
-              Người này đang dùng giờ riêng. Chuyển về giờ chung của hệ thống (mặc định 08:00–12:00 và 13:00–17:00 mọi ngày) thì giờ
-              riêng bị xoá.
+              Người này đang dùng giờ riêng. Chuyển về giờ chung của hệ thống (mặc định 08:00–12:00 và 13:00–17:00 mọi
+              ngày) thì giờ riêng bị xoá.
             </p>
           )}
           {!schedule.usesDefault && (
@@ -243,7 +271,12 @@ export function WorkingScheduleEditor({ technicianUserId }: { technicianUserId: 
         </div>
       ) : (
         // Chuyển sang giờ riêng lần đầu: điền sẵn giờ chung để chỉ sửa chỗ khác.
-        <WeekForm key={formKey} initial={toWeek(schedule.periods)} technicianUserId={technicianUserId} onSaved={() => setMode(null)} />
+        <WeekForm
+          key={formKey}
+          initial={toWeek(schedule.periods)}
+          technicianUserId={technicianUserId}
+          onSaved={() => setMode(null)}
+        />
       )}
     </div>
   )

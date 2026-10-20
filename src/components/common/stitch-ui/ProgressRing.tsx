@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { cn } from '@/utils/cn'
 
 export type ProgressRingProps = {
-  /** 0–100 */
+  /** 0-100 */
   value: number
   /** Đường kính px */
   size?: number
@@ -16,7 +16,7 @@ export type ProgressRingProps = {
   className?: string
 }
 
-/* Vòng tiến độ SVG theo widget "Accounts Governed" trong roles_permissions (chu vi 100 đơn vị). */
+// Vòng tiến độ SVG, chu vi 100 đơn vị
 const RING_PATH = 'M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831'
 
 export function ProgressRing({

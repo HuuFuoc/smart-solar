@@ -58,7 +58,7 @@ function TaskDetailView({ detail }: { detail: TaskDetail }) {
         metrics={summary.metrics}
       />
 
-      {/* Lifecycle Progression – stepper ngang dùng Timeline của components/common/stitch-ui */}
+      {/* Lifecycle Progression, stepper ngang dùng Timeline của components/common/stitch-ui */}
       <Card padding="lg">
         <div className="flex items-center justify-between gap-space-sm pb-space-md">
           <div>

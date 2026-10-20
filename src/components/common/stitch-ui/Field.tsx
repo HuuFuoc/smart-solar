@@ -4,7 +4,7 @@ import { cn } from '@/utils/cn'
 export type FieldProps = {
   label: ReactNode
   htmlFor?: string
-  /** default = label-md đậm (form user_management); caps = label-sm in hoa màu outline (panel product_catalogue) */
+  /** default: nhãn đậm, caps: nhãn nhỏ in hoa */
   variant?: 'default' | 'caps'
   labelClassName?: string
   /** Chữ nhỏ bên phải nhãn, ví dụ "Clearance: Level 3" */
@@ -35,14 +35,14 @@ export function Field({
         htmlFor={htmlFor}
         className={cn(
           'flex items-center justify-between',
-          variant === 'caps'
-            ? 'text-label-sm text-outline'
-            : 'text-label-md font-semibold text-on-surface',
+          variant === 'caps' ? 'text-label-sm text-outline' : 'text-label-md font-semibold text-on-surface',
           labelClassName,
         )}
       >
         <span>{label}</span>
-        {hint && <span className="text-label-sm font-medium normal-case tracking-normal text-tertiary-container">{hint}</span>}
+        {hint && (
+          <span className="text-label-sm font-medium normal-case tracking-normal text-tertiary-container">{hint}</span>
+        )}
       </label>
       {children}
       {error ? (

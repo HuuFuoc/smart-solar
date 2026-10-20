@@ -17,21 +17,9 @@ import { changePasswordContent } from '@/data/auth'
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
 import { PageCrumbContext, isNavItemActive, isNavItemPage, type PageCrumb } from '@/components/layout/page-crumb'
 
-/*
-  The shell is a margin, not a frame: the rail on the left, on its own faintly brand-tinted surface so navigation
-  reads as a zone apart from the page, and the page as a document on the right. Context and tools for the portal
-  live in the rail. Main padding is px-4 below md and px-6 from md, no max width (dense layout, 05/10/2026);
-  ActionBar and Table bleed by the same amounts.
-  Desktop: "Thu gọn menu" shrinks the rail to a 64px column of icons (mục menu kèm số đếm, thao tác tài khoản, tooltip
-  bằng title), so the page gains the width and navigation stays one click away. Below lg the rail is a drawer opened
-  from the slim top bar.
-  Keyboard: collapse and expand are one button that keeps its place in the tree, so focus stays on it; opening the
-  drawer moves focus to "Đóng", closing returns it to "Menu"; Esc closes the drawer; a closed drawer is invisible,
-  so its links leave the Tab order.
-  "Bạn đang ở đâu" (08/10/2026): mục đang mở trên rail có nền màu + vạch nhấn + icon tô đặc, nhóm chứa nó đậm lên, và
-  một thanh định vị dính trên cùng nội dung ghi đường đi: portal / nhóm / mục / trang chi tiết (usePageCrumb).
-*/
-/** Số đếm cạnh mục menu. `attention`: việc đang chờ người dùng xử lý, tô đỏ như số thông báo. */
+// Rail bên trái, nội dung bên phải. Desktop có thể thu gọn rail còn 64px, dưới lg rail thành drawer
+// Mở drawer thì focus vào nút "Đóng", đóng thì trả focus về "Menu", Esc để đóng
+/** Số đếm cạnh mục menu. `attention` là việc đang chờ nên tô đỏ */
 export type RailCount = { value?: number; attention?: boolean }
 
 const DESKTOP = '(min-width: 64rem)'
@@ -49,7 +37,7 @@ export function AppShell({
   tools?: ReactNode
   /** Số đếm thật cạnh mục menu, theo `to` của mục; 0 hoặc chưa có thì không hiện. */
   badges?: Record<string, RailCount | undefined>
-  /** Nội dung ngắn trên thanh trên cùng (dưới lg, khi menu nằm trong drawer), ví dụ "3 yêu cầu chờ nhận". */
+  /** Nội dung ngắn trên thanh trên cùng khi menu nằm trong drawer, vd. "3 yêu cầu chờ nhận" */
   collapsedHint?: ReactNode
   children: ReactNode
 }) {
@@ -62,7 +50,7 @@ export function AppShell({
   const [crumb, setCrumb] = useState<PageCrumb | null>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
-  /* Nút cần nhận focus sau lần mở / đóng drawer do người dùng bấm (null: không đụng tới focus). */
+  // Nút cần nhận focus sau khi mở / đóng drawer (null: không đổi focus)
   const focusNext = useRef<RefObject<HTMLButtonElement | null> | null>(null)
 
   function openDrawer() {
@@ -89,7 +77,7 @@ export function AppShell({
 
   useEffect(() => {
     if (!open) return
-    // Esc của một hộp thoại mở từ drawer (Đổi mật khẩu) chỉ đóng hộp thoại đó, không đóng luôn drawer.
+    // Esc của dialog mở từ drawer chỉ đóng dialog đó
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || e.defaultPrevented || document.querySelector('dialog[open], [role=dialog]')) return
       closeDrawer()
@@ -98,7 +86,7 @@ export function AppShell({
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  // Drawer đang mở mà cửa sổ rộng qua lg (xoay máy tính bảng): đóng lại, nếu không trang bị khoá cuộn mà không thấy nút đóng.
+  // Màn hình rộng ra quá lg thì đóng drawer, nếu không trang bị khoá cuộn
   useEffect(() => {
     const desktop = window.matchMedia(DESKTOP)
     const onChange = () => {
@@ -175,20 +163,17 @@ export function AppShell({
   )
 }
 
-/*
-  Biểu tượng thương hiệu (mặt trời, mái nhà, tấm pin), thu từ public/images/Logo.png về 96px nền trong suốt
-  (public/images/mark-96.png): đủ nét cho màn 2x/3x ở cỡ 24–32px. Không dùng apple-touch-icon.png vì ảnh đó nền trắng đặc.
-*/
+// Biểu tượng thương hiệu 96px nền trong suốt
 function BrandImage({ className }: { className?: string }) {
   return <img src="/images/mark-96.png" width={32} height={32} alt="" className={cx('shrink-0', className)} />
 }
 
-/* Hàng thao tác trên rail (thu gọn, tài khoản): icon + nhãn đủ bề ngang, rê chuột hiện nền. 44px trong drawer, 36px từ lg. */
+// Hàng thao tác trên rail: 44px trong drawer, 36px từ lg
 const railRow = 'press flex h-11 w-full items-center gap-3 rounded-control px-3 text-left text-body lg:h-9'
 /* Nút vuông của rail thu gọn, căn giữa cột 64px (rail px-3 còn đúng 40px). */
 const railIcon = 'press relative mx-auto flex size-10 items-center justify-center rounded-control'
 const railQuiet = 'text-fg-2 hover:bg-hover hover:text-fg'
-/* Đăng xuất: dễ thấy nhờ icon, chỉ chuyển đỏ khi rê chuột để không giành chú ý lúc bình thường. */
+// Đăng xuất chỉ đỏ khi rê chuột
 const railDanger = 'text-fg-2 hover:bg-danger-soft hover:text-danger'
 
 function Rail({
@@ -216,20 +201,17 @@ function Rail({
   return (
     <>
       {open && <div className="fixed inset-0 z-30 bg-scrim lg:hidden" aria-hidden onClick={onClose} />}
-      {/*
-        Ba phần: đầu (thương hiệu), menu (flex-1, tự cuộn), chân (thu gọn + tài khoản, không dính đè). Nhóm Tài khoản mở
-        hết trên màn thấp chỉ làm menu ngắn lại và cuộn được, không phủ lên mục menu. Cả rail chỉ cuộn khi màn quá thấp.
-      */}
+      {/* Rail chia ba phần: đầu, menu (tự cuộn), chân (thu gọn + tài khoản) */}
       <aside
         id="rail"
         className={cx(
           'fixed inset-y-0 left-0 z-40 flex flex-col overflow-y-auto overscroll-contain [scrollbar-width:thin] border-r border-line bg-rail pt-5 pb-4 duration-200',
-          // Drawer điện thoại rộng 288px (nằm đè nội dung, cần chỗ cho tên portal và nút Đóng); rail desktop giữ 208px.
+          // Drawer điện thoại rộng 288px, rail desktop 208px
           compact ? 'w-16 px-3' : 'w-72 px-6 lg:w-52',
-          // Đóng: ẩn hẳn (invisible gỡ khỏi thứ tự Tab và cây trợ năng), không chỉ đẩy ra ngoài màn hình.
-          // Transition lấy theo trạng thái MỚI: lúc ẩn có visibility trong transition nên trượt ra hết rồi mới ẩn;
-          // lúc hiện thì không, để rail hiện ngay và nhận được focus ở khung hình đầu. Từ lg rail luôn hiện.
-          open ? 'visible translate-x-0 transition-[translate]' : 'invisible -translate-x-full transition-[translate,visibility]',
+          // Khi đóng thì ẩn hẳn (invisible) để link bên trong không nhận Tab
+          open
+            ? 'visible translate-x-0 transition-[translate]'
+            : 'invisible -translate-x-full transition-[translate,visibility]',
           'lg:visible lg:translate-x-0',
         )}
         aria-label="Điều hướng chính"
@@ -245,7 +227,6 @@ function Rail({
               <BrandImage className="mt-0.5 size-8" />
               <div className="min-w-0">
                 <p className="text-body font-semibold">Smart Solar</p>
-                {/* text-balance: tên dài ngắt thành hai dòng cân ("Kinh doanh & / vận hành"), không bỏ một chữ lẻ xuống dòng. */}
                 <p className="text-meta text-balance text-fg-2">{portal.name}</p>
               </div>
             </div>
@@ -264,19 +245,30 @@ function Rail({
         )}
         {context && !compact && <div className="mt-4 shrink-0 text-meta text-fg-2">{context}</div>}
 
-        {/* -mx-3 px-3: khung cuộn rộng bằng các hàng (hàng lấn 12px mỗi bên), để hàng không bị cắt hay sinh cuộn ngang. */}
-        <nav className={cx('-mx-3 mt-6 min-h-28 flex-1 overflow-y-auto overscroll-contain px-3 [scrollbar-width:thin]', compact && 'pt-1.5')}>
+        {/* Khung cuộn rộng bằng các hàng để hàng không bị cắt */}
+        <nav
+          className={cx(
+            '-mx-3 mt-6 min-h-28 flex-1 overflow-y-auto overscroll-contain px-3 [scrollbar-width:thin]',
+            compact && 'pt-1.5',
+          )}
+        >
           {portal.groups.map((group, gi) => {
             const groupActive = group.items.some((item) => isNavItemActive(item, pathname))
             return (
               <div key={gi} className={cx(gi > 0 && (compact ? 'mt-3 border-t border-line pt-3' : 'mt-5'))}>
                 {group.label && !compact && (
-                  <p className={cx('mb-1 text-meta font-medium', groupActive ? 'text-fg' : 'text-fg-2')}>{group.label}</p>
+                  <p className={cx('mb-1 text-meta font-medium', groupActive ? 'text-fg' : 'text-fg-2')}>
+                    {group.label}
+                  </p>
                 )}
                 <ul aria-label={compact ? group.label : undefined} className="space-y-0.5">
                   {group.items.map((item) => (
                     <li key={item.label}>
-                      {compact ? <RailIconLink item={item} count={badges?.[item.to]} /> : <RailLink item={item} count={badges?.[item.to]} />}
+                      {compact ? (
+                        <RailIconLink item={item} count={badges?.[item.to]} />
+                      ) : (
+                        <RailLink item={item} count={badges?.[item.to]} />
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -313,13 +305,10 @@ function Rail({
   )
 }
 
-/*
-  Rail rows are 44px tall in the drawer and 36px on the desktop rail, bo đủ bốn góc và thẳng mép với mọi hàng khác của
-  rail (thu gọn, tài khoản). The open item sits on the accent tint with a 3px accent bar inside its left edge and a filled
-  icon in the accent colour, so "where am I" reads at a glance; other rows show a neutral field on hover.
-  Viền focus vẽ vào trong (outline-offset âm): khung cuộn của menu cắt mất phần viền vẽ ra ngoài.
-*/
-const railActiveBar = 'before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-control before:bg-accent'
+// Hàng menu: 44px trong drawer, 36px trên desktop. Mục đang mở có nền nhạt, vạch 3px bên trái và icon tô đặc
+// Viền focus vẽ vào trong vì khung cuộn sẽ cắt mất viền vẽ ra ngoài
+const railActiveBar =
+  'before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-control before:bg-accent'
 
 function RailLink({ item, count }: { item: NavItem; count?: RailCount }) {
   const { pathname } = useLocation()
@@ -332,7 +321,10 @@ function RailLink({ item, count }: { item: NavItem; count?: RailCount }) {
     )
   const inner = (on: boolean) => (
     <>
-      <Icon name={item.icon} className={cx('shrink-0 text-[20px]', on ? 'icon-fill text-accent-fg' : 'text-fg-3 group-hover:text-fg-2')} />
+      <Icon
+        name={item.icon}
+        className={cx('shrink-0 text-[20px]', on ? 'icon-fill text-accent-fg' : 'text-fg-3 group-hover:text-fg-2')}
+      />
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
       {item.badge && <span className="text-meta text-accent-fg">{item.badge}</span>}
       {!item.badge && count?.value ? <Count value={count.value} attention={count.attention} /> : null}
@@ -340,14 +332,18 @@ function RailLink({ item, count }: { item: NavItem; count?: RailCount }) {
   )
   if (isPlaceholder) {
     return (
-      <button type="button" className={cx(className(false), 'w-[calc(100%+1.5rem)] text-left')} aria-disabled title="Chưa có trong bản này">
+      <button
+        type="button"
+        className={cx(className(false), 'w-[calc(100%+1.5rem)] text-left')}
+        aria-disabled
+        title="Chưa có trong bản này"
+      >
         {inner(false)}
       </button>
     )
   }
   return (
-    // Link thường thay NavLink: NavLink bỏ aria-current khi đường dẫn không khớp hẳn, kể cả lúc đang ở trang con.
-    // Đúng trang của mục: "page"; trang con (chi tiết…): "location".
+    // Dùng Link thay NavLink vì NavLink bỏ aria-current khi đang ở trang con
     <Link
       to={item.to}
       aria-current={active ? (isNavItemPage(item, pathname) ? 'page' : 'location') : undefined}
@@ -358,16 +354,22 @@ function RailLink({ item, count }: { item: NavItem; count?: RailCount }) {
   )
 }
 
-/* Mục menu khi rail thu gọn: chỉ còn icon (tên đọc qua aria-label, tooltip khi rê chuột hoặc focus), số đếm ở góc. */
+// Rail thu gọn: chỉ còn icon, tooltip và số đếm ở góc
 function RailIconLink({ item, count }: { item: NavItem; count?: RailCount }) {
   const { pathname } = useLocation()
   const active = isNavItemActive(item, pathname)
   const label = count?.value ? `${item.label} (${count.value})` : item.label
-  const className = cx(railIcon, 'focus-visible:-outline-offset-2', active ? cx('bg-accent-muted text-accent-fg', railActiveBar) : railQuiet)
+  const className = cx(
+    railIcon,
+    'focus-visible:-outline-offset-2',
+    active ? cx('bg-accent-muted text-accent-fg', railActiveBar) : railQuiet,
+  )
   const inner = (
     <>
       <Icon name={item.icon} className={cx('text-[20px]', active && 'icon-fill')} />
-      {count?.value ? <Count value={count.value} attention={count.attention} className="absolute -top-1.5 -right-1.5" /> : null}
+      {count?.value ? (
+        <Count value={count.value} attention={count.attention} className="absolute -top-1.5 -right-1.5" />
+      ) : null}
     </>
   )
   if (item.to === '#') {
@@ -398,13 +400,8 @@ function RailIconLink({ item, count }: { item: NavItem; count?: RailCount }) {
   )
 }
 
-/*
-  Thanh định vị: portal / nhóm menu / mục đang mở / trang chi tiết (hoặc bước wizard).
-  - Mắt xích cuối là trang đang xem (aria-current, không phải link); mục menu là link về danh sách khi đang ở trang
-    con, kể cả lúc trang con còn đang tải hoặc báo lỗi (404/403), để không thành đường cụt.
-  - Điện thoại: ẩn tên portal và nhóm, nhường chỗ cho tên trang hiện tại; tên quá dài thì cắt "…" và có tooltip.
-  - Tiêu đề tab trình duyệt đi theo vị trí: "<trang> – <portal> – Smart Solar".
-*/
+// Thanh định vị: portal / nhóm / mục / trang chi tiết. Mắt xích cuối là trang đang xem, không phải link
+// Trên điện thoại chỉ hiện tên trang hiện tại
 function LocationBar({ portal, crumb }: { portal: Portal; crumb: string | null }) {
   const { pathname } = useLocation()
   const group = portal.groups.find((g) => g.items.some((item) => isNavItemActive(item, pathname)))
@@ -414,7 +411,7 @@ function LocationBar({ portal, crumb }: { portal: Portal; crumb: string | null }
   type Step = { label: string; to?: string; wide?: boolean }
   const trail: Step[] = [{ label: portal.name, wide: true }]
   if (group?.label) trail.push({ label: group.label, to: group.items[0]?.to, wide: true })
-  // Mục menu là link khi đang ở trang con của nó, hoặc khi còn mắt xích sau nó (bước wizard: không link về chính trang).
+  // Mục menu là link khi đang ở trang con của nó
   if (item) trail.push({ label: item.label, to: onItemPage ? undefined : item.to })
   if (crumb) trail.push({ label: crumb })
 
@@ -425,7 +422,6 @@ function LocationBar({ portal, crumb }: { portal: Portal; crumb: string | null }
 
   return (
     <nav aria-label="Vị trí hiện tại" className="flex h-10 items-center">
-      {/* flex-1: giới hạn 45% của các mắt xích trước tính theo cả bề ngang thanh, không theo bề rộng đã co lại. */}
       <ol className="flex min-w-0 flex-1 items-center gap-2 text-meta">
         {trail.map((step, i) => {
           const last = i === trail.length - 1
@@ -440,7 +436,10 @@ function LocationBar({ portal, crumb }: { portal: Portal; crumb: string | null }
             >
               {i > 0 && (
                 // Trên điện thoại các mắt xích "wide" phía trước bị ẩn: bỏ luôn dấu "/" đứng đầu.
-                <span aria-hidden className={cx('text-fg-3', trail.slice(0, i).every((prev) => prev.wide) && 'hidden sm:inline')}>
+                <span
+                  aria-hidden
+                  className={cx('text-fg-3', trail.slice(0, i).every((prev) => prev.wide) && 'hidden sm:inline')}
+                >
                   /
                 </span>
               )}
@@ -450,7 +449,10 @@ function LocationBar({ portal, crumb }: { portal: Portal; crumb: string | null }
                   {step.label}
                 </span>
               ) : step.to ? (
-                <Link to={step.to} className="tap min-w-0 text-fg-2 underline-offset-4 hover:text-accent-fg hover:underline">
+                <Link
+                  to={step.to}
+                  className="tap min-w-0 text-fg-2 underline-offset-4 hover:text-accent-fg hover:underline"
+                >
                   <span className="min-w-0 truncate">{step.label}</span>
                 </Link>
               ) : (
@@ -466,21 +468,12 @@ function LocationBar({ portal, crumb }: { portal: Portal; crumb: string | null }
 
 const THEMES = THEME_OPTIONS
 
-/* Hàng trong tầng con của nhóm Tài khoản: cùng chiều cao với mọi hàng của rail, đệm ngang hẹp hơn vì đã thụt vào. */
 const subRow = 'press flex h-11 w-full items-center gap-3 rounded-control px-2 text-left text-body lg:h-9'
 
-/*
-  Tài khoản ở đáy rail, phân tầng như nhóm menu (08/10/2026, góp ý "không bày tài khoản ra, phân tầng các chức năng nhỏ"):
-  mặc định chỉ một hàng "Tài khoản" cùng kiểu với mục menu. Bấm vào mới mở tầng con thụt vào, nối bằng đường dọc:
-  ai đang đăng nhập (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm một tầng: Tự động / Sáng / Tối, lựa chọn đang dùng có
-  nền "đang chọn" và dấu tích), Đăng xuất (đỏ khi rê chuột). Mọi hàng cùng chiều cao nên nhịp đều.
-  Rail thu gọn: chỉ một nút icon Tài khoản; bấm thì rail mở rộng và nhóm mở sẵn. Đó là cùng một nút nên focus không mất.
-  Tài khoản thật lấy từ AuthProvider; Đổi mật khẩu gọi POST /api/auth/change-password.
-  Chỉ khách hàng thấy "Đổi mật khẩu" (canChangeOwnPassword, config/roles.ts). Khách hàng có khung riêng (customer-shell),
-  nên ở rail nhân viên mục này thực tế không hiện; giữ điều kiện để quy định nằm một chỗ.
-*/
+// Nhóm Tài khoản ở đáy rail, bấm mới mở: thông tin đăng nhập, Đổi mật khẩu, Giao diện, Đăng xuất
+// Rail thu gọn thì chỉ còn nút icon, bấm thì rail mở rộng và nhóm mở sẵn
 const canChangePassword = canChangeOwnPassword
-/* Nhóm Tài khoản đang mở hay đóng, nhớ theo trình duyệt: ai hay dùng thì để mở, Đăng xuất còn một lần bấm. */
+// Nhớ trạng thái mở / đóng của nhóm Tài khoản
 const ACCOUNT_OPEN_KEY = 'smartsolar.rail-account-open'
 
 function useAccountGroupOpen() {
@@ -513,7 +506,7 @@ function SessionBlock({ compact, onExpandRail }: { compact: boolean; onExpandRai
   const groupId = useId()
   const themeId = useId()
   const name = user?.name ?? ''
-  // Rail chỉ rộng 208px: khi chưa có họ tên (tên = email) thì ghi phần trước "@", email đầy đủ nằm trong tầng con.
+  // Chưa có họ tên thì ghi phần trước "@" của email cho vừa rail
   const shortName = user?.email && name === user.email ? name.split('@')[0]! : name
   const role = user ? ROLE_LABELS[user.role] : ''
   const current = THEMES.find((t) => t.value === theme) ?? THEMES[0]!
@@ -536,7 +529,6 @@ function SessionBlock({ compact, onExpandRail }: { compact: boolean; onExpandRai
   return (
     <div className="mt-2 border-t border-line pt-2">
       <div className={cx(!compact && '-mx-3')}>
-        {/* Hàng nhóm ghi tên người đang đăng nhập (chữ cái đầu + tên; backend chưa trả họ tên nên tạm là email). */}
         <WithTooltip side="right" label={compact ? name || 'Tài khoản' : null}>
           {(tip) => (
             <button
@@ -594,7 +586,12 @@ function SessionBlock({ compact, onExpandRail }: { compact: boolean; onExpandRai
                   <Icon name={themeOpen ? 'expand_less' : 'expand_more'} className="text-[20px] text-fg-3" />
                 </button>
                 {themeOpen && (
-                  <div id={themeId} role="radiogroup" aria-label="Giao diện" className="mt-0.5 ml-[17px] space-y-0.5 border-l border-line pl-2">
+                  <div
+                    id={themeId}
+                    role="radiogroup"
+                    aria-label="Giao diện"
+                    className="mt-0.5 ml-[17px] space-y-0.5 border-l border-line pl-2"
+                  >
                     {THEMES.map((t) => {
                       const on = theme === t.value
                       return (
@@ -606,7 +603,14 @@ function SessionBlock({ compact, onExpandRail }: { compact: boolean; onExpandRai
                             on ? 'bg-accent-soft font-semibold text-accent-fg' : railQuiet,
                           )}
                         >
-                          <input type="radio" name={themeId} value={t.value} checked={on} onChange={() => setTheme(t.value)} className="sr-only" />
+                          <input
+                            type="radio"
+                            name={themeId}
+                            value={t.value}
+                            checked={on}
+                            onChange={() => setTheme(t.value)}
+                            className="sr-only"
+                          />
                           {/* Không icon riêng cho từng lựa chọn: tầng ba chỉ còn ~125px, icon làm "Tự động" bẻ dòng. */}
                           <span className="min-w-0 flex-1 whitespace-nowrap">{t.label}</span>
                           {on && <Icon name="check" className="text-[20px]" />}
@@ -626,7 +630,9 @@ function SessionBlock({ compact, onExpandRail }: { compact: boolean; onExpandRai
           )}
         </ul>
       )}
-      {canChangePassword(user?.role) && <ChangePasswordDialog open={changingPassword} onOpenChange={setChangingPassword} />}
+      {canChangePassword(user?.role) && (
+        <ChangePasswordDialog open={changingPassword} onOpenChange={setChangingPassword} />
+      )}
     </div>
   )
 }

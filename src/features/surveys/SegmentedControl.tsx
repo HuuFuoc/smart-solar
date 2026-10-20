@@ -1,11 +1,6 @@
 import { cn } from '@/utils/cn'
 
-/*
- * Nhóm nút chọn một giá trị.
- * sm = thang mức độ che bóng (None / Light / Moderate / Heavy) trong site_survey_task.
- * md = cặp YES / NO của khối Electrical Infrastructure Check.
- * Màu khi được chọn đặt theo từng option: cảnh báo dùng secondary-container, xác nhận dùng primary-container.
- */
+// Nhóm nút chọn một giá trị. Màu khi chọn đặt theo từng option
 export type SegmentTone = 'neutral' | 'warning' | 'primary'
 
 export type SegmentOption<T extends string> = { value: T; label: string; tone?: SegmentTone }

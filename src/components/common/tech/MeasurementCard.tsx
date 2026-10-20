@@ -1,11 +1,7 @@
 import { Icon, ProgressBar } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 
-/*
- * Thẻ số đo dùng chung hai màn:
- * - installation_task_checklist: nhãn + ngưỡng, giá trị data-metric, huy hiệu PASS, thanh so ngưỡng.
- * - warranty_request: thêm icon trước nhãn, chân thẻ hai bên và tông đỏ cho phép đo trượt ngưỡng.
- */
+// Thẻ số đo: nhãn, ngưỡng, giá trị và thanh so ngưỡng. Đo trượt ngưỡng thì tô đỏ
 export type MeasurementReading = {
   label: string
   /** Ngưỡng bên phải nhãn, ví dụ "Target: 405-418 V" */
@@ -15,7 +11,7 @@ export type MeasurementReading = {
   /** Cỡ giá trị: metric = 36px (số đo), headline = 32px (">100") */
   valueSize?: 'metric' | 'headline'
   verdict: { label: string; icon?: string }
-  /** Vị trí trong dải mục tiêu, 0–100; bỏ trống thì không có thanh */
+  /** Vị trí trong dải mục tiêu, 0-100; bỏ trống thì không có thanh */
   scale?: number
   /** Icon trước nhãn (warranty_request) */
   icon?: string
@@ -65,9 +61,7 @@ export function MeasurementCard({
           <span
             className={cn(
               'shrink-0 rounded-full px-2 py-0.5 text-label-sm',
-              isError
-                ? 'bg-error font-bold text-on-error'
-                : 'bg-surface-container-highest font-semibold text-primary',
+              isError ? 'bg-error font-bold text-on-error' : 'bg-surface-container-highest font-semibold text-primary',
             )}
           >
             {verdict.label}
@@ -105,7 +99,12 @@ export function MeasurementCard({
       </div>
 
       {footer && (
-        <div className={cn('flex items-center justify-between gap-space-xs text-label-sm', isError ? 'text-error' : 'text-on-surface-variant')}>
+        <div
+          className={cn(
+            'flex items-center justify-between gap-space-xs text-label-sm',
+            isError ? 'text-error' : 'text-on-surface-variant',
+          )}
+        >
           <span>{footer.left}</span>
           <span className={isError ? 'font-bold' : 'font-semibold text-primary'}>{footer.right}</span>
         </div>

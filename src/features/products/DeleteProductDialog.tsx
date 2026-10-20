@@ -42,8 +42,8 @@ export function DeleteProductDialog({ product, onOpenChange, onDeleted, onAfterC
     >
       <DialogTitle>Xoá sản phẩm?</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        <span className="font-medium text-fg">{product?.name}</span> (<span className="tnum">{product?.sku}</span>) sẽ bị xoá khỏi
-        danh mục. Nếu chỉ muốn tạm ẩn, hãy chuyển sang Ngừng bán.
+        <span className="font-medium text-fg">{product?.name}</span> (<span className="tnum">{product?.sku}</span>) sẽ
+        bị xoá khỏi danh mục. Nếu chỉ muốn tạm ẩn, hãy chuyển sang Ngừng bán.
       </p>
       <Notice tone="danger" className="mt-4">
         Không hoàn tác được sau khi xoá.

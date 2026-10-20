@@ -34,10 +34,7 @@ const SORTS = [
 type Filter = { search: string; role: string; status: string; sort: string; includeDeleted: boolean }
 const defaultFilter: Filter = { search: '', role: '', status: '', sort: SORTS[0].value, includeDeleted: false }
 
-/*
-  Tài khoản của mọi vai trò (GET /api/admin/users: tìm, lọc, sắp xếp, phân trang phía server). Tạo tài khoản không có mật
-  khẩu: người dùng nhận link qua email để tự đặt. Cả dòng là link sang trang chi tiết (sửa, vai trò, trạng thái, xoá).
-*/
+// Danh sách tài khoản (tìm, lọc, sắp xếp, phân trang phía server). Bấm dòng để mở chi tiết
 export function AdminUsersPage() {
   const navigate = useNavigate()
   const [filter, setFilter] = useState<Filter>(defaultFilter)
@@ -79,11 +76,20 @@ export function AdminUsersPage() {
       <FilterBar>
         <label className="min-w-0 flex-1 basis-64">
           <span className="sr-only">Tìm tài khoản</span>
-          <SearchInput placeholder="Tìm tên, email, điện thoại" maxLength={100} value={filter.search} onChange={(e) => updateFilter({ search: e.target.value })} />
+          <SearchInput
+            placeholder="Tìm tên, email, điện thoại"
+            maxLength={100}
+            value={filter.search}
+            onChange={(e) => updateFilter({ search: e.target.value })}
+          />
         </label>
         <label className="w-full sm:w-44">
           <span className="sr-only">Vai trò</span>
-          <Select active={filter.role !== ''} value={filter.role} onChange={(e) => updateFilter({ role: e.target.value })}>
+          <Select
+            active={filter.role !== ''}
+            value={filter.role}
+            onChange={(e) => updateFilter({ role: e.target.value })}
+          >
             <option value="">Tất cả vai trò</option>
             {ROLE_CODES.map((r) => (
               <option key={r.value} value={r.value}>
@@ -94,7 +100,11 @@ export function AdminUsersPage() {
         </label>
         <label className="w-full sm:w-44">
           <span className="sr-only">Trạng thái</span>
-          <Select active={filter.status !== ''} value={filter.status} onChange={(e) => updateFilter({ status: e.target.value })}>
+          <Select
+            active={filter.status !== ''}
+            value={filter.status}
+            onChange={(e) => updateFilter({ status: e.target.value })}
+          >
             <option value="">Tất cả trạng thái</option>
             {USER_STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
@@ -113,7 +123,11 @@ export function AdminUsersPage() {
             ))}
           </Select>
         </label>
-        <Checkbox label="Gồm tài khoản đã xoá" checked={filter.includeDeleted} onChange={(e) => updateFilter({ includeDeleted: e.target.checked })} />
+        <Checkbox
+          label="Gồm tài khoản đã xoá"
+          checked={filter.includeDeleted}
+          onChange={(e) => updateFilter({ includeDeleted: e.target.checked })}
+        />
         {isFiltering && (
           <Button variant="ghost" bleed={false} icon="filter_alt_off" onClick={() => updateFilter(defaultFilter)}>
             Xoá bộ lọc
@@ -123,7 +137,10 @@ export function AdminUsersPage() {
 
       <section aria-label="Danh sách tài khoản" aria-live="polite" aria-busy={query.isFetching}>
         {query.isError && !query.data ? (
-          <ErrorState message={errorMessage(query.error, 'Không tải được danh sách tài khoản.')} onRetry={() => query.refetch()} />
+          <ErrorState
+            message={errorMessage(query.error, 'Không tải được danh sách tài khoản.')}
+            onRetry={() => query.refetch()}
+          />
         ) : query.isPending ? (
           <div aria-label="Đang tải" className="space-y-4">
             {Array.from({ length: 5 }, (_, i) => (
@@ -166,7 +183,11 @@ export function AdminUsersPage() {
                         <Badge tone={status.tone}>{status.label}</Badge>
                       </Td>
                       <Td label="Đăng nhập gần nhất" className="whitespace-nowrap">
-                        {u.lastLoginAt ? <time title={formatDateTime(u.lastLoginAt)}>{formatRelative(u.lastLoginAt)}</time> : <span className="text-fg-3">Chưa đăng nhập</span>}
+                        {u.lastLoginAt ? (
+                          <time title={formatDateTime(u.lastLoginAt)}>{formatRelative(u.lastLoginAt)}</time>
+                        ) : (
+                          <span className="text-fg-3">Chưa đăng nhập</span>
+                        )}
                       </Td>
                       <Td label="Tạo lúc" className="tnum whitespace-nowrap">
                         {formatDateTime(u.createdAt)}

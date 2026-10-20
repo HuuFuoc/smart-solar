@@ -3,24 +3,20 @@ import type { SimulationDetail, SimulationListItem } from '@/types/res/simulatio
 import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
-/*
- * Mô phỏng bố trí tấm pin + sản lượng do backend tính (PVGIS, NASA POWER) và lưu thành từng lần chạy.
- * - Tạo: chỉ khách hàng sở hữu, bản nháp còn là Draft; tối đa 10 lần / phút / người (429 + Retry-After).
- * - Đọc: khách hàng sở hữu hoặc sales đã nhận yêu cầu khảo sát của bản đánh giá đó.
- * Backend tự chọn lần vừa tạo hoặc dùng lại làm mô phỏng chính (isSelected); không có API chọn lại lần khác.
- */
+// Mô phỏng do backend tính, tối đa 10 lần / phút (429)
+// Backend tự chọn lần chạy mới nhất làm mô phỏng chính
 
-/** POST – 201 tạo mới, 200 dùng lại lần chạy cùng đầu vào; có thể chờ nhà cung cấp dữ liệu tới ~25 giây. */
+/** 201 tạo mới, 200 dùng lại kết quả cũ. Có thể mất khoảng 25 giây */
 export function createSimulation(preSurveyId: string, body: CreateSimulationRequest) {
   return post<SimulationDetail>(ENDPOINTS.simulations.base(preSurveyId), body)
 }
 
-/** GET – mọi lần chạy, mới nhất trước, bản rút gọn (không có toạ độ tấm). */
+/** Bản rút gọn, không có toạ độ tấm */
 export function listSimulations(preSurveyId: string) {
   return get<SimulationListItem[]>(ENDPOINTS.simulations.base(preSurveyId))
 }
 
-/** GET – bản đầy đủ để vẽ 2D / 3D, biểu đồ sản lượng và cảnh báo; payload có thể lớn (tới 5.000 tấm). */
+/** Bản đầy đủ để vẽ 2D / 3D */
 export function getSimulation(preSurveyId: string, simulationId: string) {
   return get<SimulationDetail>(ENDPOINTS.simulations.byId(preSurveyId, simulationId))
 }

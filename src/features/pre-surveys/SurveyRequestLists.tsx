@@ -15,12 +15,7 @@ import {
 import { ROUTES, withId } from '@/routes/paths'
 import type { MySurveyRequestItem, PendingSurveyRequestItem, SurveyRequestStatus } from '@/types/res/surveyRequestsRes'
 
-/*
-  Hàng chờ yêu cầu khảo sát của sales, dạng danh sách thay vì bảng: mỗi yêu cầu là một khối đọc được một lượt.
-  Từ lg mỗi khối hai cột: trái là công trình, khu vực, vài con số; phải là thời gian / trạng thái và nút hành động, để mắt
-  quét dọc cột phải là biết yêu cầu nào chờ lâu và bấm ngay, không bỏ trống nửa phải màn hình.
-  Mỗi tín hiệu nói một lần: chờ quá một ngày là nhãn đỏ cạnh thời gian (không thêm vạch đỏ ở lề nói lại điều đó).
-*/
+// Hàng chờ yêu cầu khảo sát của sales, dạng danh sách thay vì bảng
 
 function RequestRow({ main, side }: { main: ReactNode; side: ReactNode }) {
   return (
@@ -33,7 +28,7 @@ function RequestRow({ main, side }: { main: ReactNode; side: ReactNode }) {
   )
 }
 
-/* h2: ngay dưới tiêu đề trang (h1); nhảy thẳng h3 thì trình đọc màn hình và kiểm tra trợ năng báo sai thứ tự tiêu đề. */
+// h2 để đúng thứ tự tiêu đề sau h1 của trang
 function Heading({ name }: { name: string | null }) {
   return <h2 className="text-title font-semibold">{name || 'Công trình chưa đặt tên'}</h2>
 }
@@ -43,7 +38,6 @@ function Area({ district, province }: { district: string | null; province: strin
   return text ? <p className="mt-1 text-body text-fg-2">{text}</p> : null
 }
 
-/* Giờ tương đối dễ đọc hơn; giờ chính xác nằm trong title khi rê chuột. */
 function When({ iso, prefix }: { iso: string; prefix?: string }) {
   return (
     <time dateTime={iso} title={formatDateTime(iso)}>
@@ -53,7 +47,7 @@ function When({ iso, prefix }: { iso: string; prefix?: string }) {
   )
 }
 
-/** Chờ lâu nhất lên đầu: hàng chờ phục vụ theo thứ tự đến. */
+/** Chờ lâu nhất lên đầu */
 function oldestFirst(a: PendingSurveyRequestItem, b: PendingSurveyRequestItem) {
   return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime()
 }
@@ -94,7 +88,6 @@ export function PendingRequestList({
                   <When iso={r.submittedAt} prefix="Gửi" />
                   {overdue && <Badge tone="danger">Chờ hơn 1 ngày</Badge>}
                 </span>
-                {/* Hành động chính của từng yêu cầu: nút soft (có màu, không đặc) để nhiều dòng không thành một dãy nút đặc. */}
                 <Button size="sm" variant="soft" disabled={claimingId !== null} onClick={() => onClaim(r)}>
                   {claimingId === r.surveyRequestId ? 'Đang nhận…' : 'Nhận yêu cầu'}
                 </Button>
@@ -107,7 +100,7 @@ export function PendingRequestList({
   )
 }
 
-/* Việc cần làm trước: đã nhận / đang xem xét → đã hẹn → còn lại; cùng nhóm thì mới nhận lên trước. */
+// Thứ tự: đã nhận / đang xem xét, rồi đã hẹn, rồi còn lại. Cùng nhóm thì mới nhận lên trước
 const STATUS_ORDER: Record<SurveyRequestStatus, number> = { 2: 0, 3: 1, 4: 2, 1: 3, 5: 4, 6: 5 }
 
 function byNextAction(a: MySurveyRequestItem, b: MySurveyRequestItem) {
@@ -116,10 +109,7 @@ function byNextAction(a: MySurveyRequestItem, b: MySurveyRequestItem) {
   return new Date(b.assignedAt ?? 0).getTime() - new Date(a.assignedAt ?? 0).getTime()
 }
 
-/*
-  Gợi ý bước tiếp theo theo trạng thái; trạng thái đã xong thì không cần gợi ý. Từ 12/10/2026 khách tự đặt giờ, sales
-  phân công kỹ thuật viên (yêu cầu thành "Đã hẹn khảo sát"); danh sách không có giờ khách đặt nên chỉ nhắc mở yêu cầu.
-*/
+// Gợi ý việc tiếp theo cho sales theo trạng thái
 function nextStep(r: MySurveyRequestItem) {
   if (needsScheduling(r.status)) return 'Mở yêu cầu để phân công kỹ thuật viên cho giờ khách đặt.'
   if (r.status === 4 && r.scheduledAt) return `Khảo sát lúc ${formatDateTime(r.scheduledAt)}.`
@@ -146,7 +136,13 @@ export function MyRequestList({ rows }: { rows: MySurveyRequestItem[] }) {
                     { k: 'Bạn nhận', v: r.assignedAt ? <When iso={r.assignedAt} /> : '—' },
                     {
                       k: 'Hẹn khảo sát',
-                      v: r.scheduledAt ? formatDateTime(r.scheduledAt) : needsScheduling(r.status) ? <Badge tone="danger">Chưa phân công</Badge> : '—',
+                      v: r.scheduledAt ? (
+                        formatDateTime(r.scheduledAt)
+                      ) : needsScheduling(r.status) ? (
+                        <Badge tone="danger">Chưa phân công</Badge>
+                      ) : (
+                        '—'
+                      ),
                     },
                   ]}
                 />

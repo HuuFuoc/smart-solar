@@ -2,10 +2,6 @@ import { ROLE_CODES, USER_STATUSES } from '@/common/user'
 import type { Tone } from '@/components/common/ui/badge'
 import type { ActivationState, AdminUserListItem } from '@/types/res/adminUsersRes'
 
-/*
- * Nhãn của quản lý tài khoản. Enum (mã vai trò, trạng thái) ở common/user.ts; mã lạ in nguyên văn thay vì đoán nghĩa.
- */
-
 export function roleLabel(code: string) {
   return ROLE_CODES.find((r) => r.value === code)?.label ?? code
 }
@@ -20,7 +16,7 @@ export function userStatusMeta(u: Pick<AdminUserListItem, 'status' | 'deletedAt'
   return found ? { label: found.label, tone: found.tone } : { label: u.status, tone: 'neutral' }
 }
 
-/** Câu báo kết quả gửi link (tạo tài khoản, đổi email, gửi lại link). `ok` = link thật sự đã vào hàng đợi gửi. */
+/** `ok` là link đã thật sự được đưa vào hàng đợi gửi */
 export function activationMessage(a: ActivationState): { ok: boolean; text: string } {
   const what =
     a.status === 'PENDING_ACCOUNT_SETUP'
@@ -30,6 +26,9 @@ export function activationMessage(a: ActivationState): { ok: boolean; text: stri
         : 'link đặt lại mật khẩu'
   if (a.emailDelivery === 'QUEUED') return { ok: true, text: `Đã gửi ${what} tới email của tài khoản.` }
   if (a.emailDelivery === 'EMAIL_DELIVERY_DISABLED')
-    return { ok: false, text: `Môi trường này chưa bật gửi email nên ${what} CHƯA được gửi. Bật gửi email rồi bấm "Gửi link" để gửi lại.` }
+    return {
+      ok: false,
+      text: `Môi trường này chưa bật gửi email nên ${what} CHƯA được gửi. Bật gửi email rồi bấm "Gửi link" để gửi lại.`,
+    }
   return { ok: false, text: `Không gửi được ${what} (hàng đợi email lỗi). Bấm "Gửi link" để thử lại.` }
 }

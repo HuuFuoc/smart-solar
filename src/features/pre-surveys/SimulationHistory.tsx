@@ -6,13 +6,7 @@ import type { SimulationListItem } from '@/types/res/simulationsRes'
 import { cx } from '@/utils/cx'
 import { keepInView } from '@/utils/scroll'
 
-/*
-  Các lần chạy mô phỏng của một bản đánh giá, mới nhất trước (GET .../simulations). Cả dòng là nút "xem lần này";
-  dòng đang xem có nền "đang chọn". Nhãn: "Mô phỏng chính" là lần backend chọn (lần tạo / dùng lại gần nhất; không có
-  API chọn lại lần khác), "Theo mặt lắp cũ" là lần tính trước khi mặt lắp đổi. Đủ hẹp để nằm trong cột phụ.
-  Chạy nhiều lần thì danh sách cuộn trong khung cao khoảng ba dòng rưỡi (dòng thứ tư lộ một nửa cho biết còn nữa) thay vì
-  kéo dài cả trang (người dùng 10/10/2026); lần đang xem luôn được cuộn tới. Vòng focus vẽ vào trong nút để khung cuộn không cắt.
-*/
+// Danh sách các lần chạy mô phỏng, mới nhất trước. Cuộn trong khung khoảng 3,5 dòng
 export function SimulationHistory({
   items,
   viewingId,

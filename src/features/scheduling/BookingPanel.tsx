@@ -13,13 +13,9 @@ import type { SurveySlot } from '@/types/res/surveySlotsRes'
 
 const NOTE_MAX = 500
 
-/*
-  Khối đặt giờ / đổi giờ khảo sát của khách: chọn ngày + giờ, ghi chú cho kỹ thuật viên, xác nhận. Đây là khối duy nhất
-  trên trang đòi khách quyết định nên nằm trong khung viền (Panel raised) và có nút đặc của trang.
-  - 201: đặt mới. 200 + created=false: lần gửi trước đã tới server (mất phản hồi, bấm lại) – vẫn là thành công.
-  - 409 SURVEY_SLOT_UNAVAILABLE: người khác vừa lấy giờ đó; giờ trống đã tải lại (hook), bỏ chọn để khách chọn giờ khác.
-  - Lỗi khác: giữ lựa chọn, báo lỗi ngay trên nút.
-*/
+// Đặt / đổi giờ khảo sát của khách
+// 201 là đặt mới, 200 + created=false là lần trước đã thành công
+// 409 SURVEY_SLOT_UNAVAILABLE: giờ đó vừa bị lấy, bỏ chọn để khách chọn giờ khác
 export function BookingPanel({
   surveyRequestId,
   propertySiteId,
@@ -58,7 +54,8 @@ export function BookingPanel({
       onDone?.()
     } catch (e) {
       if (isApiError(e) && e.code === 'SURVEY_SLOT_UNAVAILABLE') setSlot(null)
-      if (isApiError(e) && e.status === 429 && e.retryAfter) setError(`Bạn thao tác quá nhanh. Thử lại sau ${e.retryAfter} giây.`)
+      if (isApiError(e) && e.status === 429 && e.retryAfter)
+        setError(`Bạn thao tác quá nhanh. Thử lại sau ${e.retryAfter} giây.`)
       else setError(errorMessage(e))
     }
   }
@@ -103,14 +100,18 @@ export function BookingPanel({
         <p className="min-w-0 flex-1 basis-64 text-body text-fg-2" aria-live="polite">
           {slot ? (
             <>
-              Giờ đã chọn: <span className="font-semibold text-fg">{formatAppointment(slot.startsAt, slot.endsAt)}</span>
+              Giờ đã chọn:{' '}
+              <span className="font-semibold text-fg">{formatAppointment(slot.startsAt, slot.endsAt)}</span>
             </>
           ) : (
             'Chưa chọn giờ.'
           )}
         </p>
         {error && (
-          <span className="flex basis-full items-center gap-1.5 text-body font-medium text-danger sm:order-last" role="alert">
+          <span
+            className="flex basis-full items-center gap-1.5 text-body font-medium text-danger sm:order-last"
+            role="alert"
+          >
             <Icon name="error" className="shrink-0 text-[20px]" />
             {error}
           </span>

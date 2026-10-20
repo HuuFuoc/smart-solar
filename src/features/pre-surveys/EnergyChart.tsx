@@ -3,22 +3,15 @@ import { MONTHS, MONTH_NAMES, formatKwh, formatOne } from '@/features/pre-survey
 import { useElementWidth } from '@/hooks/useElementWidth'
 import type { MonthlyPvEnergy } from '@/types/res/simulationsRes'
 
-/*
-  Sản lượng điện theo tháng (PVGIS, năm điển hình): biểu đồ cột một chuỗi theo skill dataviz – cột ≤ 24px, đỉnh bo 4px,
-  chân vuông trên một đường gốc; lưới ngang mảnh; một chuỗi nên không có chú giải (tiêu đề panel đã nói đang vẽ gì);
-  chỉ ghi số trên cột cao nhất. Rê chuột hoặc focus rồi dùng phím mũi tên để xem từng tháng; bảng số liệu bên dưới
-  cho người không xem được hình. Màu cột là token --chart-1 (đã đo ≥ 3:1 trên nền ở cả hai chế độ).
-  Vòng focus: KHÔNG gắn `outline-none` – ở Tailwind v4 nó đặt --tw-outline-style: none và `focus-visible:outline-2` dùng lại
-  biến đó, nên vòng focus biến mất (lỗi kiểm thử 09/10/2026).
-*/
+// Biểu đồ sản lượng điện theo tháng, có bảng số liệu bên dưới cho trình đọc màn hình
+// Không dùng outline-none vì ở Tailwind v4 nó làm mất vòng focus-visible
 
 const MARGIN = { top: 24, right: 8, bottom: 28, left: 52 }
-/** Cao vùng vẽ theo bề rộng (≈ 1/5), trong khoảng 180–240px: kết quả rộng hết trang thì biểu đồ không thành một dải mỏng. */
+/** Chiều cao biểu đồ theo bề rộng, trong khoảng 180-240px */
 const PLOT_HEIGHT = { min: 180, max: 240, ratio: 0.2 }
 const BAR_MAX = 24
 const RADIUS = 4
 
-/** Trục y tròn số: 0 / 500 / 1.000 / 1.500… */
 function niceStep(max: number) {
   const raw = max / 4
   const power = 10 ** Math.floor(Math.log10(raw))
@@ -26,7 +19,6 @@ function niceStep(max: number) {
   return (unit <= 1 ? 1 : unit <= 2 ? 2 : unit <= 2.5 ? 2.5 : unit <= 5 ? 5 : 10) * power
 }
 
-/* Cột bo 4px ở đỉnh (đầu dữ liệu), vuông ở chân. */
 function columnPath(x: number, y: number, w: number, h: number) {
   const r = Math.min(RADIUS, h, w / 2)
   const base = y + h
@@ -57,7 +49,16 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
   function onKeyDown(e: KeyboardEvent<SVGSVGElement>) {
     const last = months.length - 1
     const current = active ?? peak
-    const next = e.key === 'ArrowRight' ? Math.min(last, current + 1) : e.key === 'ArrowLeft' ? Math.max(0, current - 1) : e.key === 'Home' ? 0 : e.key === 'End' ? last : null
+    const next =
+      e.key === 'ArrowRight'
+        ? Math.min(last, current + 1)
+        : e.key === 'ArrowLeft'
+          ? Math.max(0, current - 1)
+          : e.key === 'Home'
+            ? 0
+            : e.key === 'End'
+              ? last
+              : null
     if (next !== null) {
       e.preventDefault()
       setActive(next)
@@ -85,7 +86,14 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
             <g aria-hidden>
               {ticks.map((t) => (
                 <g key={t}>
-                  <line x1={MARGIN.left} x2={MARGIN.left + plotW} y1={y(t)} y2={y(t)} className={t === 0 ? 'stroke-line-2' : 'stroke-line'} strokeWidth="1" />
+                  <line
+                    x1={MARGIN.left}
+                    x2={MARGIN.left + plotW}
+                    y1={y(t)}
+                    y2={y(t)}
+                    className={t === 0 ? 'stroke-line-2' : 'stroke-line'}
+                    strokeWidth="1"
+                  />
                   <text x={MARGIN.left - 8} y={y(t) + 4} textAnchor="end" className="tnum fill-fg-3 text-meta">
                     {formatKwh(t)}
                   </text>
@@ -95,9 +103,16 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
                 const h = Math.max(0, y(0) - y(m.energyKwh))
                 return (
                   <g key={m.month}>
-                    {active === i && <rect x={cx(i) - band / 2} y={MARGIN.top} width={band} height={plotH} className="fill-hover" />}
+                    {active === i && (
+                      <rect x={cx(i) - band / 2} y={MARGIN.top} width={band} height={plotH} className="fill-hover" />
+                    )}
                     <path d={columnPath(cx(i) - barW / 2, y(m.energyKwh), barW, h)} className="fill-chart-1" />
-                    <text x={cx(i)} y={MARGIN.top + plotH + 18} textAnchor="middle" className={active === i ? 'fill-fg text-meta font-semibold' : 'fill-fg-3 text-meta'}>
+                    <text
+                      x={cx(i)}
+                      y={MARGIN.top + plotH + 18}
+                      textAnchor="middle"
+                      className={active === i ? 'fill-fg text-meta font-semibold' : 'fill-fg-3 text-meta'}
+                    >
                       {shortLabels ? m.month : MONTHS[m.month - 1]}
                     </text>
                     {i === peak && active !== i && (
@@ -105,7 +120,7 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
                         {formatKwh(m.energyKwh)}
                       </text>
                     )}
-                    {/* Vùng bắt chuột cả cột (cao bằng vùng vẽ), lớn hơn hẳn cột. */}
+                    {/* Vùng bắt chuột cao bằng cả vùng vẽ */}
                     <rect
                       x={cx(i) - band / 2}
                       y={MARGIN.top}
@@ -138,7 +153,7 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
           </div>
         )}
       </div>
-      {/* Vùng đọc cố định cho trình đọc màn hình: tooltip hiện / ẩn nên không tự được đọc. */}
+      {/* Tooltip ẩn hiện nên cần vùng cố định này cho trình đọc màn hình */}
       <p aria-live="polite" className="sr-only">
         {current ? `${MONTH_NAMES[current.month - 1]}: ${formatKwh(current.energyKwh)} kWh` : ''}
       </p>
@@ -147,15 +162,25 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
       </p>
 
       <details className="mt-3">
-        <summary className="tap w-fit cursor-pointer text-body font-medium text-accent-fg underline-offset-4 hover:underline">Xem bảng số liệu</summary>
+        <summary className="tap w-fit cursor-pointer text-body font-medium text-accent-fg underline-offset-4 hover:underline">
+          Xem bảng số liệu
+        </summary>
         <div className="scroll-x mt-3">
           <table className="w-full border-collapse text-body">
             <thead>
               <tr className="text-left text-meta text-fg-2">
-                <th scope="col" className="border-b border-line-2 pr-3 pb-2 font-semibold">Tháng</th>
-                <th scope="col" className="border-b border-line-2 px-3 pb-2 text-right font-semibold">Sản lượng (kWh)</th>
-                <th scope="col" className="border-b border-line-2 px-3 pb-2 text-right font-semibold">Dao động (± kWh)</th>
-                <th scope="col" className="border-b border-line-2 pb-2 pl-3 text-right font-semibold">Bức xạ trên mặt tấm (kWh/m²)</th>
+                <th scope="col" className="border-b border-line-2 pr-3 pb-2 font-semibold">
+                  Tháng
+                </th>
+                <th scope="col" className="border-b border-line-2 px-3 pb-2 text-right font-semibold">
+                  Sản lượng (kWh)
+                </th>
+                <th scope="col" className="border-b border-line-2 px-3 pb-2 text-right font-semibold">
+                  Dao động (± kWh)
+                </th>
+                <th scope="col" className="border-b border-line-2 pb-2 pl-3 text-right font-semibold">
+                  Bức xạ trên mặt tấm (kWh/m²)
+                </th>
               </tr>
             </thead>
             <tbody className="tnum">
@@ -166,7 +191,9 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
                   </th>
                   <td className="border-b border-line px-3 py-2 text-right">{formatKwh(m.energyKwh)}</td>
                   <td className="border-b border-line px-3 py-2 text-right">{formatKwh(m.stdDevKwh)}</td>
-                  <td className="border-b border-line py-2 pl-3 text-right">{formatOne(m.inPlaneIrradiationKwhPerM2)}</td>
+                  <td className="border-b border-line py-2 pl-3 text-right">
+                    {formatOne(m.inPlaneIrradiationKwhPerM2)}
+                  </td>
                 </tr>
               ))}
             </tbody>

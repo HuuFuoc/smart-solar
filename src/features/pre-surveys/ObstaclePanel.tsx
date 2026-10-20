@@ -16,25 +16,17 @@ import {
 import { cx } from '@/utils/cx'
 import { keepInView } from '@/utils/scroll'
 
-/*
-  Cột sửa vật cản đặt cạnh hình mặt lắp (người dùng chọn 10/10/2026 "hình + cột sửa bên phải", vì bản cũ mỗi vật cản lặp
-  7 nhãn và nằm xa hình nên "rối"):
-  - Danh sách gọn mọi vật cản để theo dõi: số thứ tự trùng số trên hình, tên, cỡ, dấu lỗi. Dài thì cuộn trong khung.
-  - Ô sửa của MỘT vật cản đang chọn (chọn ở danh sách hay bấm trên hình đều được), nằm ngay cạnh hình nên sửa số là thấy
-    vật cản dời theo. Nhân bản cho dãy vật cản giống nhau; xoá có "Hoàn tác" (ở trang).
-*/
-
 type Props = {
   obstacles: ObstacleForm[]
   errors: SurfaceErrors
-  /** Vật cản đang hiện ở ô sửa: đang chọn, hoặc vật cản đầu tiên có lỗi khi chưa chọn gì. */
+  /** Vị trí của vật cản đang mở ở ô sửa */
   selected: number | null
   onSelect: (index: number) => void
   onAdd: () => void
   onDuplicate: (index: number) => void
   onRemove: (index: number) => void
   onChange: (index: number, patch: Partial<ObstacleForm>) => void
-  /** Khoá của vật cản vừa thêm / nhân bản: focus và bôi đen ô tên của nó một lần để gõ đè ngay. */
+  /** Key của vật cản vừa thêm: ô tên của nó được focus một lần */
   focusKey: string | null
   onFocused: () => void
   addRef: Ref<HTMLButtonElement>
@@ -56,12 +48,27 @@ function NumberBadge({ n, active }: { n: number; active: boolean }) {
   )
 }
 
-export function ObstaclePanel({ obstacles, errors, selected, onSelect, onAdd, onDuplicate, onRemove, onChange, focusKey, onFocused, addRef }: Props) {
+// Cột sửa vật cản đặt cạnh hình mặt lắp:
+// - Danh sách gọn mọi vật cản (số thứ tự trùng số trên hình, tên, cỡ, dấu lỗi). Dài thì cuộn trong khung.
+// - Ô sửa của một vật cản đang chọn (chọn ở danh sách hay bấm trên hình đều được).
+export function ObstaclePanel({
+  obstacles,
+  errors,
+  selected,
+  onSelect,
+  onAdd,
+  onDuplicate,
+  onRemove,
+  onChange,
+  focusKey,
+  onFocused,
+  addRef,
+}: Props) {
   const listRef = useRef<HTMLOListElement>(null)
   const full = obstacles.length >= SURFACE_LIMITS.maxObstacles
   const current = selected !== null ? obstacles[selected] : undefined
 
-  // Bấm vật cản trên hình: dòng của nó trong danh sách cuộn tới (cuộn khung danh sách, không cuộn trang).
+  // Bấm vật cản trên hình thì cuộn khung danh sách tới dòng của nó (không cuộn cả trang)
   useEffect(() => {
     const list = listRef.current
     const item = list?.querySelector<HTMLElement>('[aria-current="true"]')
@@ -71,7 +78,9 @@ export function ObstaclePanel({ obstacles, errors, selected, onSelect, onAdd, on
   return (
     <div className="min-w-0 space-y-3 rounded-container border border-line p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-body font-semibold text-fg">{obstacles.length > 0 ? `${obstacles.length} vật cản` : 'Chưa có vật cản'}</p>
+        <p className="text-body font-semibold text-fg">
+          {obstacles.length > 0 ? `${obstacles.length} vật cản` : 'Chưa có vật cản'}
+        </p>
         <Button ref={addRef} size="sm" icon="add" onClick={onAdd} disabled={full}>
           Thêm vật cản
         </Button>
@@ -80,7 +89,11 @@ export function ObstaclePanel({ obstacles, errors, selected, onSelect, onAdd, on
       {obstacles.length === 0 ? (
         <p className="text-body text-fg-2">Mái không có vật cản thì bỏ qua phần này.</p>
       ) : (
-        <ol ref={listRef} aria-label="Danh sách vật cản" className="-mx-2 max-h-36 space-y-0.5 overflow-y-auto overscroll-contain scrollbar-thin">
+        <ol
+          ref={listRef}
+          aria-label="Danh sách vật cản"
+          className="-mx-2 max-h-36 space-y-0.5 overflow-y-auto overscroll-contain scrollbar-thin"
+        >
           {obstacles.map((o, i) => {
             const active = i === selected
             const broken = hasObstacleError(errors, i)
@@ -93,12 +106,15 @@ export function ObstaclePanel({ obstacles, errors, selected, onSelect, onAdd, on
                   className={cx(
                     'press flex w-full items-center gap-3 rounded-control px-2 py-1.5 text-left',
                     active ? 'bg-accent-soft' : 'hover:bg-hover',
+                    // Vòng focus vẽ vào trong vì khung cuộn sẽ cắt mất vòng vẽ ra ngoài
                     'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
                   )}
                 >
                   <NumberBadge n={i + 1} active={active} />
-                  <span className={cx('min-w-0 flex-1 truncate text-body text-fg', active && 'font-semibold')}>{o.name.trim() || 'Chưa đặt tên'}</span>
-                  {/* Cỡ gõ quá lớn (1000000000 m) không được đẩy tràn dòng: cắt bớt, ô sửa vẫn báo lỗi đúng số. */}
+                  <span className={cx('min-w-0 flex-1 truncate text-body text-fg', active && 'font-semibold')}>
+                    {o.name.trim() || 'Chưa đặt tên'}
+                  </span>
+                  {/* Cắt bớt số quá dài để không tràn dòng, ô sửa vẫn báo lỗi */}
                   <span className="tnum max-w-[45%] truncate text-meta text-fg-2">{sizeText(o)}</span>
                   {broken && (
                     <>
@@ -112,7 +128,9 @@ export function ObstaclePanel({ obstacles, errors, selected, onSelect, onAdd, on
           })}
         </ol>
       )}
-      {full && <p className="text-meta text-fg-3">Đã đủ {SURFACE_LIMITS.maxObstacles} vật cản, mức tối đa của một mặt lắp.</p>}
+      {full && (
+        <p className="text-meta text-fg-3">Đã đủ {SURFACE_LIMITS.maxObstacles} vật cản, mức tối đa của một mặt lắp.</p>
+      )}
       {errors.obstacles && (
         <p className="text-meta text-danger" role="alert">
           {errors.obstacles}
@@ -134,13 +152,16 @@ export function ObstaclePanel({ obstacles, errors, selected, onSelect, onAdd, on
         />
       ) : (
         obstacles.length > 0 && (
-          <p className="border-t border-line pt-3 text-meta text-fg-3">Chọn một vật cản trong danh sách hoặc bấm vào nó trên hình để sửa.</p>
+          <p className="border-t border-line pt-3 text-meta text-fg-3">
+            Chọn một vật cản trong danh sách hoặc bấm vào nó trên hình để sửa.
+          </p>
         )
       )}
     </div>
   )
 }
 
+// Ô sửa của một vật cản
 function ObstacleInspector({
   index,
   obstacle,
@@ -166,7 +187,6 @@ function ObstacleInspector({
   const err = (field: ObstacleField) => errors[obstacleErrorKey(index, field)]
   const label = obstacle.name.trim() || `vật cản ${index + 1}`
 
-  // Vật cản vừa thêm / nhân bản: focus ô tên một lần (trang tắt cờ qua onFocused).
   useEffect(() => {
     if (!autoFocus) return
     const input = document.getElementById(`obstacle-${obstacle.key}-name`)
@@ -192,7 +212,6 @@ function ObstacleInspector({
   )
 
   return (
-    // Không lặp dòng tiêu đề "Vật cản N": dòng đang chọn ngay phía trên (và ô trên hình) đã nói đang sửa vật cản nào.
     <fieldset className="space-y-4 border-t border-line pt-3">
       <legend className="sr-only">Sửa vật cản {index + 1}</legend>
       <Field label={`Tên vật cản ${index + 1}`} htmlFor={id('name')} error={err('name')}>
@@ -208,7 +227,13 @@ function ObstacleInspector({
               invalid={Boolean(err('name'))}
             />
           </div>
-          <IconButton icon="content_copy" label={`Nhân bản ${label}`} tooltip="Nhân bản" onClick={onDuplicate} disabled={full} />
+          <IconButton
+            icon="content_copy"
+            label={`Nhân bản ${label}`}
+            tooltip="Nhân bản"
+            onClick={onDuplicate}
+            disabled={full}
+          />
           <IconButton icon="delete" variant="danger-quiet" label={`Xoá ${label}`} tooltip="Xoá" onClick={onRemove} />
         </div>
       </Field>
@@ -220,7 +245,7 @@ function ObstacleInspector({
       <div className="grid grid-cols-3 gap-x-3 gap-y-4">
         {numberField('widthM', 'Bề ngang')}
         {numberField('lengthM', 'Bề dọc')}
-        {/* "Tuỳ chọn" thay "Không bắt buộc": cột hẹp, câu dài bị bẻ hai dòng. */}
+        {/* Ghi "Tuỳ chọn" cho ngắn vì cột hẹp */}
         {numberField('heightM', 'Chiều cao', 'Tuỳ chọn')}
       </div>
     </fieldset>

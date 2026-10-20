@@ -19,9 +19,10 @@ import type { UnavailablePeriodView } from '@/types/res/adminTechniciansRes'
 const REASON_MAX = 500
 const MAX_DAYS = 366
 
-/** Ô datetime-local ("2026-10-20T08:00") hiểu là giờ Việt Nam. */
+/** "2026-10-20T08:00" hiểu là giờ Việt Nam. */
 const toVnIso = (local: string) => `${local}:00+07:00`
 
+// Ô ngày + ô giờ 24h thay cho datetime-local. Mặc định 08:00 đến 17:00
 function AddPeriodForm({ technicianUserId }: { technicianUserId: string }) {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -40,7 +41,10 @@ function AddPeriodForm({ technicianUserId }: { technicianUserId: string }) {
     if (end - start > MAX_DAYS * 86_400_000) return setIssue('Mỗi lần nghỉ tối đa một năm.')
     setIssue(null)
     try {
-      await add.mutateAsync({ id: technicianUserId, body: { startsAt: toVnIso(from), endsAt: toVnIso(to), reason: reason.trim() || null } })
+      await add.mutateAsync({
+        id: technicianUserId,
+        body: { startsAt: toVnIso(from), endsAt: toVnIso(to), reason: reason.trim() || null },
+      })
       toast.success('Đã thêm lịch nghỉ.')
       setFrom('')
       setTo('')
@@ -56,10 +60,23 @@ function AddPeriodForm({ technicianUserId }: { technicianUserId: string }) {
     <form noValidate onSubmit={submit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Từ" htmlFor="leave-from" required>
-          <Input id="leave-from" type="datetime-local" step={1800} value={from} onChange={(e) => setFrom(e.target.value)} />
+          <Input
+            id="leave-from"
+            type="datetime-local"
+            step={1800}
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
         </Field>
         <Field label="Đến" htmlFor="leave-to" required>
-          <Input id="leave-to" type="datetime-local" step={1800} min={from || undefined} value={to} onChange={(e) => setTo(e.target.value)} />
+          <Input
+            id="leave-to"
+            type="datetime-local"
+            step={1800}
+            min={from || undefined}
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          />
         </Field>
       </div>
       <Field label="Lý do" htmlFor="leave-reason" hint={`Không bắt buộc, tối đa ${REASON_MAX} ký tự.`}>
@@ -81,11 +98,7 @@ function AddPeriodForm({ technicianUserId }: { technicianUserId: string }) {
   )
 }
 
-/*
-  Lịch nghỉ (nghỉ phép, bận việc khác) của một kỹ thuật viên: trong khoảng này hệ thống không xếp lịch cho người đó. Thêm
-  lịch nghỉ đè lên lịch đã có thì backend từ chối và liệt kê lịch đó (không tự huỷ). Bỏ lịch nghỉ chỉ thêm giờ trống.
-  Danh sách chỉ có các khoảng chưa kết thúc.
-*/
+// Lịch nghỉ của kỹ thuật viên. Đè lên lịch đã có thì backend từ chối và trả về danh sách lịch đó
 export function UnavailablePeriods({ technicianUserId }: { technicianUserId: string }) {
   const query = useUnavailablePeriodsQuery(technicianUserId)
   const remove = useRemoveUnavailablePeriodMutation()
@@ -142,11 +155,17 @@ export function UnavailablePeriods({ technicianUserId }: { technicianUserId: str
         <AddPeriodForm technicianUserId={technicianUserId} />
       </section>
 
-      <ModalDialog open={removing !== null} onOpenChange={(open) => !open && setRemoving(null)} dismissible={!remove.isPending} aria-label="Bỏ lịch nghỉ">
+      <ModalDialog
+        open={removing !== null}
+        onOpenChange={(open) => !open && setRemoving(null)}
+        dismissible={!remove.isPending}
+        aria-label="Bỏ lịch nghỉ"
+      >
         <DialogTitle>Bỏ lịch nghỉ này?</DialogTitle>
         {removing && (
           <p className="mt-2 text-body text-fg-2">
-            {formatMoment(removing.startsAt)} – {formatMoment(removing.endsAt)}. Khách đặt được giờ trong khoảng này ngay sau khi bỏ.
+            {formatMoment(removing.startsAt)} – {formatMoment(removing.endsAt)}. Khách đặt được giờ trong khoảng này
+            ngay sau khi bỏ.
           </p>
         )}
         <DialogFooter>

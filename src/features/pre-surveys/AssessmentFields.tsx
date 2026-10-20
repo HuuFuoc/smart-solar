@@ -9,8 +9,7 @@ import { toNumber, type FormErrors, type ProfileForm, type SiteForm } from '@/fe
 import { useHcmWardsQuery } from '@/hooks/useHcmWards'
 import { HCM_PROVINCE } from '@/services/provinceService'
 
-/* Ô nhập của hai bước đầu màn đánh giá sơ bộ (hồ sơ, địa điểm) + la bàn và ô có đơn vị dùng ở bước mặt lắp, mô phỏng.
-   Trang giữ state; component chỉ vẽ và báo thay đổi. */
+// Ô nhập của bước hồ sơ, địa điểm, cùng la bàn và ô có đơn vị dùng ở bước mặt lắp, mô phỏng
 
 type FieldsProps<F> = {
   value: F
@@ -18,26 +17,35 @@ type FieldsProps<F> = {
   onChange: (patch: Partial<F>) => void
 }
 
-/*
-  Toạ độ bắt buộc từ 12/10/2026 (trước đó gập lại, không bắt buộc): backend dùng nó để tính đường đi của kỹ thuật viên và
-  xếp giờ khảo sát (không có thì không đặt được lịch), và để ước tính sản lượng (PVGIS), khí hậu (NASA POWER). Ít khách
-  biết toạ độ nên chữ hướng dẫn nói cách lấy trên Google Maps.
-*/
+// Toạ độ bắt buộc vì backend cần để xếp lịch khảo sát và ước tính sản lượng
+// Ít khách biết toạ độ nên có hướng dẫn lấy từ Google Maps
 function CoordinateFields({ value, errors, onChange }: FieldsProps<SiteForm>) {
-  // Cảnh báo (vẫn cho lưu, người dùng chốt 10/10/2026) khi cả hai số hợp lệ mà nằm ngoài TP.HCM: gõ ngược hai số, sai dấu…
+  // Toạ độ hợp lệ mà nằm ngoài TP.HCM thì chỉ cảnh báo, vẫn cho lưu
   const lat = toNumber(value.latitude)
   const lon = toNumber(value.longitude)
   const outside =
-    lat !== null && lon !== null && Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180 && !isInHcm(lat, lon)
+    lat !== null &&
+    lon !== null &&
+    Number.isFinite(lat) &&
+    Number.isFinite(lon) &&
+    Math.abs(lat) <= 90 &&
+    Math.abs(lon) <= 180 &&
+    !isInHcm(lat, lon)
   return (
     <fieldset className="sm:col-span-2">
       <legend className="text-body font-medium text-fg">Toạ độ công trình</legend>
       <p className="mt-1 max-w-prose text-meta text-fg-2">
-        Cần để xếp lịch khảo sát (tính đường đi của kỹ thuật viên) và ước tính sản lượng điện. Trên Google Maps, nhấn giữ vào
-        công trình: cặp số hiện ra là vĩ độ, kinh độ.
+        Cần để xếp lịch khảo sát (tính đường đi của kỹ thuật viên) và ước tính sản lượng điện. Trên Google Maps, nhấn
+        giữ vào công trình: cặp số hiện ra là vĩ độ, kinh độ.
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Field label="Vĩ độ" htmlFor="latitude" required hint="Số đầu trong cặp toạ độ, ví dụ 10.9036." error={errors.latitude}>
+        <Field
+          label="Vĩ độ"
+          htmlFor="latitude"
+          required
+          hint="Số đầu trong cặp toạ độ, ví dụ 10.9036."
+          error={errors.latitude}
+        >
           <Input
             id="latitude"
             inputMode="decimal"
@@ -47,7 +55,13 @@ function CoordinateFields({ value, errors, onChange }: FieldsProps<SiteForm>) {
             aria-required
           />
         </Field>
-        <Field label="Kinh độ" htmlFor="longitude" required hint="Số thứ hai trong cặp toạ độ, ví dụ 106.7686." error={errors.longitude}>
+        <Field
+          label="Kinh độ"
+          htmlFor="longitude"
+          required
+          hint="Số thứ hai trong cặp toạ độ, ví dụ 106.7686."
+          error={errors.longitude}
+        >
           <Input
             id="longitude"
             inputMode="decimal"
@@ -71,11 +85,8 @@ function CoordinateFields({ value, errors, onChange }: FieldsProps<SiteForm>) {
   )
 }
 
-/*
-  Hướng chọn trên la bàn 3×3 thay vì gõ góc phương vị: khách hiểu "mái quay về hướng Nam"
-  chứ không hiểu "180°". Radio thật (ẩn) giữ đúng hành vi bàn phím: Tab vào nhóm, mũi tên đổi hướng.
-  Dùng cho hướng mặt mái (bước mặt lắp) và hướng tấm pin của khung nghiêng (bước mô phỏng): `name` phải khác nhau.
-*/
+// Chọn hướng trên la bàn thay vì gõ góc, vì khách hiểu "hướng Nam" hơn "180 độ"
+// Dùng radio ẩn để giữ hành vi bàn phím. Hai nơi dùng phải có `name` khác nhau
 export function CompassPicker({
   value,
   error,
@@ -192,10 +203,7 @@ export function ProfileFields({ value, errors, onChange }: FieldsProps<ProfileFo
   )
 }
 
-/*
-  Phường, xã của TP.HCM (2 cấp từ 01/07/2025) chọn trong danh sách tải từ provinces.open-api.vn, gõ không dấu vẫn tìm
-  được. Không tải được danh sách thì vẫn gõ tay được (khách không bị chặn ở bước này) và có nút thử lại.
-*/
+// Chọn phường, xã từ danh sách, gõ không dấu vẫn tìm được. Không tải được danh sách thì vẫn gõ tay được
 function WardField({ value, error, onChange }: { value: string; error?: string; onChange: (ward: string) => void }) {
   const wards = useHcmWardsQuery()
   const names = useMemo(() => (wards.data ?? []).map((w) => w.name), [wards.data])
@@ -230,10 +238,27 @@ function WardField({ value, error, onChange }: { value: string; error?: string; 
 export function SiteFields({ value, errors, onChange }: FieldsProps<SiteForm>) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Tên địa điểm" htmlFor="siteName" hint="Để phân biệt khi bạn có nhiều công trình." className="sm:col-span-2" error={errors.name}>
-        <Input id="siteName" value={value.name} onChange={(e) => onChange({ name: e.target.value })} aria-invalid={Boolean(errors.name)} />
+      <Field
+        label="Tên địa điểm"
+        htmlFor="siteName"
+        hint="Để phân biệt khi bạn có nhiều công trình."
+        className="sm:col-span-2"
+        error={errors.name}
+      >
+        <Input
+          id="siteName"
+          value={value.name}
+          onChange={(e) => onChange({ name: e.target.value })}
+          aria-invalid={Boolean(errors.name)}
+        />
       </Field>
-      <Field label="Số nhà, tên đường" htmlFor="streetLine" hint="Không bắt buộc." className="sm:col-span-2" error={errors.streetLine}>
+      <Field
+        label="Số nhà, tên đường"
+        htmlFor="streetLine"
+        hint="Không bắt buộc."
+        className="sm:col-span-2"
+        error={errors.streetLine}
+      >
         <Input
           id="streetLine"
           autoComplete="address-line1"
@@ -244,7 +269,7 @@ export function SiteFields({ value, errors, onChange }: FieldsProps<SiteForm>) {
       </Field>
       <WardField value={value.ward} error={errors.ward} onChange={(ward) => onChange({ ward })} />
       <Field label="Tỉnh, thành phố" htmlFor="province" hint="Hiện chỉ nhận công trình tại TP.HCM.">
-        {/* Giá trị cố định: ô chỉ đọc nền xám (`!` vì cx không gộp class, màu nền / chữ của ô nhập thường sẽ giành nhau). */}
+        {/* Ô chỉ đọc nền xám, cần `!` vì cx không gộp class */}
         <Input id="province" value={HCM_PROVINCE.name} readOnly className="bg-surface-2! text-fg-2!" />
       </Field>
       <CoordinateFields value={value} errors={errors} onChange={onChange} />
@@ -269,10 +294,25 @@ export function SiteFields({ value, errors, onChange }: FieldsProps<SiteForm>) {
           </p>
         )}
       </fieldset>
-      <Field label="Vật liệu bề mặt" htmlFor="surfaceMaterial" hint="Không bắt buộc. Ví dụ: mái tôn, bê tông." error={errors.surfaceMaterial}>
-        <Input id="surfaceMaterial" value={value.surfaceMaterial} onChange={(e) => onChange({ surfaceMaterial: e.target.value })} />
+      <Field
+        label="Vật liệu bề mặt"
+        htmlFor="surfaceMaterial"
+        hint="Không bắt buộc. Ví dụ: mái tôn, bê tông."
+        error={errors.surfaceMaterial}
+      >
+        <Input
+          id="surfaceMaterial"
+          value={value.surfaceMaterial}
+          onChange={(e) => onChange({ surfaceMaterial: e.target.value })}
+        />
       </Field>
-      <Field label="Ghi chú" htmlFor="siteNote" hint="Không bắt buộc. Ví dụ: giờ vào được công trình." className="sm:col-span-2" error={errors.note}>
+      <Field
+        label="Ghi chú"
+        htmlFor="siteNote"
+        hint="Không bắt buộc. Ví dụ: giờ vào được công trình."
+        className="sm:col-span-2"
+        error={errors.note}
+      >
         <Textarea id="siteNote" rows={3} value={value.note} onChange={(e) => onChange({ note: e.target.value })} />
       </Field>
     </div>

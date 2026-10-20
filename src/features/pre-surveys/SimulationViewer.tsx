@@ -4,7 +4,7 @@ import { SimulationResult } from '@/features/pre-surveys/SimulationResult'
 import { useSimulationQuery } from '@/hooks/useSimulations'
 import { isApiError } from '@/services/api/errors'
 
-/* Khung chờ cùng dáng kết quả: hàng số liệu, hình bố trí, biểu đồ. */
+/** Khung chờ cùng dáng với kết quả: hàng số liệu, hình bố trí, biểu đồ */
 export function SimulationSkeleton() {
   return (
     <div aria-hidden className="space-y-6">
@@ -22,16 +22,37 @@ export function SimulationSkeleton() {
   )
 }
 
-/** Tải bản đầy đủ của một lần chạy (GET .../simulations/{id}) rồi vẽ kết quả; dùng ở wizard khách hàng và trang sales. */
-export function SimulationViewer({ preSurveyId, simulationId, staleNote }: { preSurveyId: string; simulationId: string; staleNote?: ReactNode }) {
+/** Tải bản đầy đủ của một lần chạy rồi vẽ kết quả, dùng cho khách hàng và sales */
+export function SimulationViewer({
+  preSurveyId,
+  simulationId,
+  staleNote,
+}: {
+  preSurveyId: string
+  simulationId: string
+  /** Câu nhắc khi lần chạy này tính theo mặt lắp cũ */
+  staleNote?: ReactNode
+}) {
   const query = useSimulationQuery(preSurveyId, simulationId)
   if (query.isPending) return <SimulationSkeleton />
   if (!query.data) {
+    // Lỗi 4xx (không có quyền, không tìm thấy) thử lại cũng vậy nên không hiện nút thử lại
     const clientError = isApiError(query.error) && query.error.status >= 400 && query.error.status < 500
-    return <ErrorState title="Không tải được kết quả mô phỏng." message={query.error?.message} onRetry={clientError ? undefined : () => query.refetch()} />
+    return (
+      <ErrorState
+        title="Không tải được kết quả mô phỏng."
+        message={query.error?.message}
+        onRetry={clientError ? undefined : () => query.refetch()}
+      />
+    )
   }
+
+  // Đang đổi sang lần chạy khác: giữ kết quả cũ (mờ đi) tới khi bản mới về
   return (
-    <div aria-busy={query.isPlaceholderData} className={query.isPlaceholderData ? 'opacity-50 transition-opacity' : undefined}>
+    <div
+      aria-busy={query.isPlaceholderData}
+      className={query.isPlaceholderData ? 'opacity-50 transition-opacity' : undefined}
+    >
       <SimulationResult detail={query.data} staleNote={staleNote} />
     </div>
   )

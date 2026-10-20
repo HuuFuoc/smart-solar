@@ -2,11 +2,8 @@ import type { Tone } from '@/components/common/ui/badge'
 import type { CustomerType, InstallationSurfaceType } from '@/types/req/customersReq'
 import type { SurveyRequestStatus } from '@/types/res/surveyRequestsRes'
 
-/*
- * Enum của đánh giá sơ bộ và yêu cầu khảo sát (khách hàng, sales, kỹ thuật viên dùng chung).
- * Swagger chỉ khai enum là số; tên từng giá trị lấy từ SmartSolar.Modules.PreSurvey.Enums (image 05/10/2026).
- * Hàm tra nhãn ở features/pre-surveys/preSurveyDisplay.ts; giá trị lạ thì in nguyên số thay vì đoán nghĩa.
- */
+// Enum của đánh giá sơ bộ và yêu cầu khảo sát, dùng chung cho mọi vai trò
+// Swagger chỉ có số của enum, tên từng giá trị lấy từ SmartSolar.Modules.PreSurvey.Enums của backend
 
 export const CUSTOMER_TYPES = [
   { value: 1, label: 'Cá nhân' },
@@ -21,7 +18,7 @@ export const SURFACE_TYPES = [
   { value: 5, label: 'Khác', hint: 'Ghi rõ ở phần ghi chú' },
 ] as const satisfies readonly { value: InstallationSurfaceType; label: string; hint: string }[]
 
-/** Cùng enum InstallationSurfaceType nhưng theo tên (Rooftop…): màn kỹ thuật viên nhận tên, màn sales nhận số. */
+// Màn kỹ thuật viên nhận tên enum (Rooftop...), không phải số
 export const SURFACE_NAMES: Record<string, string> = {
   Rooftop: 'Mái nhà',
   Ground: 'Mặt đất',
@@ -30,10 +27,7 @@ export const SURFACE_NAMES: Record<string, string> = {
   Other: 'Khác',
 }
 
-/*
- * Hướng mặt mái theo 8 hướng la bàn; giá trị gửi backend là góc phương vị (độ, 0 = Bắc, theo chiều kim đồng hồ).
- * Thứ tự mảng là thứ tự ô trên lưới 3×3 của bộ chọn (Tây Bắc ở góc trên trái), null là ô giữa.
- */
+// 8 hướng la bàn, xếp theo lưới 3x3 của bộ chọn (null là ô giữa). Góc tính từ Bắc theo chiều kim đồng hồ
 export const COMPASS_GRID = [
   { label: 'Tây Bắc', degree: 315 },
   { label: 'Bắc', degree: 0 },
@@ -46,13 +40,10 @@ export const COMPASS_GRID = [
   { label: 'Đông Nam', degree: 135 },
 ] as const
 
-/** 8 hướng theo chiều kim đồng hồ từ Bắc, cách nhau 45°. */
+/** 8 hướng theo chiều kim đồng hồ từ Bắc, cách nhau 45 độ */
 export const DIRECTIONS = ['Bắc', 'Đông Bắc', 'Đông', 'Đông Nam', 'Nam', 'Tây Nam', 'Tây', 'Tây Bắc']
 
-/*
-  Trạng thái yêu cầu khảo sát. Màu theo việc còn phải làm (Badge): "Chờ nhận" là yêu cầu cần người nhận nên tô đỏ; đã nhận /
-  đang xem xét là đang xử lý (chấm xanh dương); đã hẹn là đúng tiến độ (chấm xanh lá); xong hoặc huỷ thì chấm xám.
-*/
+// "Chờ nhận" tô đỏ vì cần người nhận
 export const SURVEY_REQUEST_STATUSES: Record<SurveyRequestStatus, { label: string; tone: Tone }> = {
   1: { label: 'Chờ nhận', tone: 'danger' },
   2: { label: 'Đã nhận', tone: 'info' },

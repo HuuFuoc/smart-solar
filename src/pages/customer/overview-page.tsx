@@ -30,11 +30,7 @@ export function OverviewPage() {
             }
             title={`${data.milestone.title} sau ${data.milestone.daysAway} ngày`}
             description={`${data.milestone.when}, đã xác nhận với ${data.milestone.with}.`}
-            actions={
-              <ButtonLink to={withId(ROUTES.customer.consultation, 'CR-9042')}>
-                Xem tiến trình
-              </ButtonLink>
-            }
+            actions={<ButtonLink to={withId(ROUTES.customer.consultation, 'CR-9042')}>Xem tiến trình</ButtonLink>}
           />
 
           <Panel className="mb-12">
@@ -80,9 +76,7 @@ export function OverviewPage() {
                   </div>
                 </PanelBody>
                 <PanelFooter>
-                  <Button variant="primary">
-                    Gọi {advisor.name.split(' ')[0]}
-                  </Button>
+                  <Button variant="primary">Gọi {advisor.name.split(' ')[0]}</Button>
                   <Button>Đổi lịch</Button>
                 </PanelFooter>
               </Panel>
@@ -95,9 +89,23 @@ export function OverviewPage() {
                 />
                 <PanelBody>
                   <StatRow className="md:grid-cols-3">
-                    <Stat label="Công suất hệ thống" value={data.proposal.sizeKw} unit="kW DC" note={`${data.proposal.panels} tấm pin`} />
-                    <Stat label="Tỷ lệ bù điện năng ước tính" value={`${data.proposal.offsetPct}%`} note={`Đáp ứng ${fmt.num(data.proposal.coversKwh)} kWh mỗi năm`} />
-                    <Stat label="Tiết kiệm ước tính" value={fmt.usd(data.proposal.savingsPerYear)} unit="/ năm" note="Đã tính tín dụng thuế liên bang 30%" />
+                    <Stat
+                      label="Công suất hệ thống"
+                      value={data.proposal.sizeKw}
+                      unit="kW DC"
+                      note={`${data.proposal.panels} tấm pin`}
+                    />
+                    <Stat
+                      label="Tỷ lệ bù điện năng ước tính"
+                      value={`${data.proposal.offsetPct}%`}
+                      note={`Đáp ứng ${fmt.num(data.proposal.coversKwh)} kWh mỗi năm`}
+                    />
+                    <Stat
+                      label="Tiết kiệm ước tính"
+                      value={fmt.usd(data.proposal.savingsPerYear)}
+                      unit="/ năm"
+                      note="Đã tính tín dụng thuế liên bang 30%"
+                    />
                   </StatRow>
                   <KeyValueList
                     className="mt-6 border-t border-line pt-4"
@@ -116,9 +124,7 @@ export function OverviewPage() {
                 <PanelHeader
                   title="Lịch hẹn"
                   action={
-                    <PlaceholderLink className="text-body text-accent-fg hover:underline">
-                      Xem lịch
-                    </PlaceholderLink>
+                    <PlaceholderLink className="text-body text-accent-fg hover:underline">Xem lịch</PlaceholderLink>
                   }
                 />
                 <PanelBody>
@@ -146,18 +152,25 @@ export function OverviewPage() {
 
             <div className="space-y-8 lg:border-l lg:border-line lg:pl-8">
               <Panel>
-                <PanelHeader title="Mức sẵn sàng của công trình" action={<span className="tnum text-title font-semibold">{data.readiness.pct}%</span>} />
+                <PanelHeader
+                  title="Mức sẵn sàng của công trình"
+                  action={<span className="tnum text-title font-semibold">{data.readiness.pct}%</span>}
+                />
                 <PanelBody>
                   <Progress value={data.readiness.pct} label="Mức sẵn sàng của công trình" />
                   <ul className="mt-4 space-y-3">
                     {data.readiness.items.map((item) => (
                       <li key={item.label} className="flex items-start justify-between gap-3 text-body">
                         <span className="min-w-0">{item.label}</span>
-                        <Badge tone={item.tone} className="shrink-0 whitespace-nowrap">{item.status}</Badge>
+                        <Badge tone={item.tone} className="shrink-0 whitespace-nowrap">
+                          {item.status}
+                        </Badge>
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-4 border-t border-line pt-3 text-meta text-fg-3">Đội được giao: {data.readiness.crew}</p>
+                  <p className="mt-4 border-t border-line pt-3 text-meta text-fg-3">
+                    Đội được giao: {data.readiness.crew}
+                  </p>
                 </PanelBody>
                 <PanelFooter>
                   <ButtonLink to={withId(ROUTES.customer.project, 'SS-8842-CA')} size="sm">

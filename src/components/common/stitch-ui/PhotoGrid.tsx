@@ -4,7 +4,7 @@ import { Card } from '@/components/common/stitch-ui/Card'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/* Theo lưới ảnh trong survey_image_documentation: thẻ ảnh có tag, giờ, GPS, ghi chú + ô trống để thêm ảnh. */
+// Lưới ảnh có tag, giờ, GPS, ghi chú và ô thêm ảnh
 export type PhotoCardProps = {
   src: string
   alt: string
@@ -53,7 +53,12 @@ export function PhotoCard({
         {(onZoom || onReplace) && (
           <div className="absolute bottom-2 right-2 flex items-center gap-1">
             {onZoom && (
-              <button type="button" aria-label="Phóng to" onClick={onZoom} className={cn(overlayButton, 'hover:text-primary')}>
+              <button
+                type="button"
+                aria-label="Phóng to"
+                onClick={onZoom}
+                className={cn(overlayButton, 'hover:text-primary')}
+              >
                 <Icon name="zoom_in" className="text-[18px]" />
               </button>
             )}
@@ -141,9 +146,7 @@ export function PhotoDropzone({
       }}
       className={cn(
         'flex cursor-pointer flex-col items-center justify-center gap-space-xs text-center transition-all',
-        required
-          ? 'hover:bg-surface-container-low'
-          : 'bg-surface-container-low hover:bg-surface-container',
+        required ? 'hover:bg-surface-container-low' : 'bg-surface-container-low hover:bg-surface-container',
         className,
       )}
     >

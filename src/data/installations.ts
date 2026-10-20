@@ -1,9 +1,4 @@
-/*
- * Dữ liệu giả cho hai màn lắp đặt dùng chung một installation id:
- * - Màn 11 installation_task           → /tech/installations/:id
- * - Màn 12 installation_task_checklist → /tech/installations/:id/checklist (mở rộng ở cuối file)
- * Mọi số liệu (số panel, phần trăm, tên khách, crew…) phải khớp nhau giữa hai màn.
- */
+// Dữ liệu giả cho /tech/installations/:id và .../checklist, số liệu phải khớp nhau giữa hai màn
 
 import type { ChecklistPhaseTone, ChecklistTaskItem } from '@/features/installations/ChecklistPhaseCard'
 import type { EvidenceDropzoneItem, EvidencePhotoItem } from '@/components/common/tech/EvidenceGallery'
@@ -106,7 +101,7 @@ export type InstallationTask = {
   }
 }
 
-/** 24 panel: 18 đã lắp, 1 đang kéo lên, 5 đang chờ – khớp bộ đếm "18 / 24 Mounted". */
+/** 24 panel: 18 đã lắp, 1 đang kéo lên, 5 đang chờ, khớp bộ đếm "18 / 24 Mounted". */
 const southArrayCells: PanelCell[] = Array.from({ length: 24 }, (_, i) => {
   const index = i + 1
   if (index <= 18) return { index, state: 'mounted' }
@@ -209,8 +204,7 @@ export const installationTasks: InstallationTask[] = [
           id: 'ins-7704-step-1',
           order: 1,
           title: 'Có mặt tại công trình, phổ biến an toàn & neo chống rơi',
-          description:
-            'JSA đã ký bởi Marcus Vance, J. Alvarez, T. Nuyen. Lực siết neo xác nhận 45 ft-lbs.',
+          description: 'JSA đã ký bởi Marcus Vance, J. Alvarez, T. Nuyen. Lực siết neo xác nhận 45 ft-lbs.',
           state: 'done',
           statusText: '08:45',
           defaultChecked: true,
@@ -373,11 +367,7 @@ export function getInstallationTask(id: string | undefined): InstallationTask | 
 /** Nhãn đếm bước dưới tiêu đề "Execution Sequence & Sign-off". */
 export const executionCounterLabel = (done: number, total: number) => `Đã xong ${done}/${total} bước`
 
-/* ------------------------------------------------------------------ *
- * Màn 12 – installation_task_checklist (/tech/installations/:id/checklist)
- * Mở rộng cùng job order INS-7704: khách David Chen, 24 module REC Alpha 400W
- * (9.6 kW DC), 18/24 panel đã lắp và các mốc giờ trùng với màn 11.
- * ------------------------------------------------------------------ */
+// Dữ liệu màn checklist (/tech/installations/:id/checklist), cùng job INS-7704 với màn lắp đặt
 
 export type ChecklistPhase = {
   id: string
@@ -504,8 +494,7 @@ export const installationChecklists: Record<string, InstallationChecklist> = {
           {
             id: 'ins-7704-chk-1-2',
             title: 'Đã khoá & treo thẻ tủ điện chính (LOTO)',
-            description:
-              'Đã cắt điện CB tổng 200A. Đã gắn khoá #TX-489 kèm thẻ, xác nhận không còn điện.',
+            description: 'Đã cắt điện CB tổng 200A. Đã gắn khoá #TX-489 kèm thẻ, xác nhận không còn điện.',
             doneText: 'Đã xác minh 08:52',
             pendingText: 'Chờ làm',
             defaultChecked: true,
@@ -531,8 +520,7 @@ export const installationChecklists: Record<string, InstallationChecklist> = {
           {
             id: 'ins-7704-chk-2-1',
             title: 'Tấm chống thấm & chân L đã bắt bu lông vào xà gồ',
-            description:
-              '32 lỗ khoan đã bơm keo ChemLink M-1. Tâm xà gồ đã khoan mồi bằng mũi 7/32 in.',
+            description: '32 lỗ khoan đã bơm keo ChemLink M-1. Tâm xà gồ đã khoan mồi bằng mũi 7/32 in.',
             doneText: 'Đã kiểm lực siết 45 ft-lbs',
             pendingText: 'Chờ làm',
             defaultChecked: true,

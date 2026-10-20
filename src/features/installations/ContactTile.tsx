@@ -1,11 +1,7 @@
 import { Card, Icon } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 
-/*
- * Ô liên hệ nhanh: chữ cái viết tắt (khách hàng trong installation_task) hoặc icon
- * (hotline điều phối trong installation_task_checklist), tên + ghi chú, nút gọi bên phải.
- * Dùng lại cho maintenance_task và warranty_request.
- */
+// Ô liên hệ nhanh: chữ viết tắt hoặc icon, tên, ghi chú và nút gọi
 export type ContactTileProps = {
   /** Chữ cái viết tắt; bỏ trống khi dùng `icon` */
   initials?: string

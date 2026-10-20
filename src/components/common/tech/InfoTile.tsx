@@ -1,11 +1,7 @@
 import { Icon } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 
-/*
- * "Micro metadata chip" ở đầu installation_task: ô nền surface-container-low,
- * ô icon 36px nền trắng, rồi nhãn / giá trị / dòng phụ.
- * Dùng lại cho meta của maintenance_task và warranty_request.
- */
+// Ô thông tin có icon, nhãn, giá trị và dòng phụ
 export type InfoTileData = {
   icon: string
   label: string
@@ -16,10 +12,7 @@ export type InfoTileData = {
   hintTone?: 'default' | 'primary'
   /** Màu ô icon; mặc định primary */
   tone?: 'primary' | 'secondary' | 'error'
-  /**
-   * tile = ô icon 36px bên trái (installation_task);
-   * stacked = icon 16px đứng cạnh nhãn in hoa, giá trị nằm dưới (maintenance_task)
-   */
+  /** tile: icon bên trái, stacked: icon cạnh nhãn, giá trị nằm dưới */
   layout?: 'tile' | 'stacked'
 }
 

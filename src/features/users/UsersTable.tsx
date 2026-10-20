@@ -32,7 +32,11 @@ const columns: DataTableColumn<UserRecord>[] = [
             <div className="flex items-center gap-1.5">
               <span className="truncate text-body-lg font-bold text-on-surface">{user.name}</span>
               {user.ssoVerified && (
-                <Icon name="verified_user" title="Đã xác thực qua Azure AD SSO" className="text-[16px] text-tertiary-container" />
+                <Icon
+                  name="verified_user"
+                  title="Đã xác thực qua Azure AD SSO"
+                  className="text-[16px] text-tertiary-container"
+                />
               )}
               {user.activeEditor && (
                 <span title="Đang chỉnh sửa" className="h-2 w-2 rounded-full bg-tertiary-container" />
@@ -160,7 +164,8 @@ export function UsersTable({
               label="Sửa quyền"
               onClick={() => onEdit(user)}
               className={cn(
-                user.id === activeUserId && 'bg-primary-container text-on-primary shadow-sm hover:bg-primary hover:text-on-primary',
+                user.id === activeUserId &&
+                  'bg-primary-container text-on-primary shadow-sm hover:bg-primary hover:text-on-primary',
               )}
             />
           )}

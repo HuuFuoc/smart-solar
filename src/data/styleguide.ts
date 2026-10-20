@@ -208,7 +208,12 @@ export const styleguideTimeline: {
   { title: 'Đã giao', description: 'Sarah Jenkins (điều phối)', timestamp: '22/10, 14:15', state: 'done' },
   { title: 'Đã hẹn & xác nhận', description: 'Khách xác nhận qua SMS', timestamp: '22/10, 15:30', state: 'done' },
   { title: 'Đang di chuyển', description: 'Điểm danh qua GPS', timestamp: '23/10, 08:15', state: 'done' },
-  { title: 'Đang làm tại công trình', description: 'Người khảo sát: Marcus Vance', timestamp: '23/10, 08:35', state: 'current' },
+  {
+    title: 'Đang làm tại công trình',
+    description: 'Người khảo sát: Marcus Vance',
+    timestamp: '23/10, 08:35',
+    state: 'current',
+  },
   { title: 'Hồ sơ & nghiệm thu', description: 'Ký & đồng bộ', timestamp: 'Chờ', state: 'upcoming' },
 ]
 
@@ -321,6 +326,5 @@ export const styleguidePageHeader = {
   breadcrumb: [{ label: 'Quản trị', href: '/admin' }, { label: 'Tổng quan hệ thống' }],
   metaText: 'Nút cụm: US-Central-Primary (đang hoạt động)',
   title: 'Tổng quan hệ thống',
-  description:
-    'Theo dõi trực tiếp dữ liệu nền tảng, cấu hình hằng số thuật toán và nhật ký kiểm tra của doanh nghiệp.',
+  description: 'Theo dõi trực tiếp dữ liệu nền tảng, cấu hình hằng số thuật toán và nhật ký kiểm tra của doanh nghiệp.',
 }

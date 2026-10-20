@@ -7,15 +7,12 @@ import { useAuth } from '@/context/AuthProvider'
 import { useMyAppointmentsQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES } from '@/routes/paths'
 
-/*
-  Bọc mọi route /tech/*. Số đỏ cạnh "Việc của tôi": lịch sắp tới đang chờ kỹ thuật viên xác nhận nhận việc (cùng cache
-  với trang, tự làm mới mỗi phút).
-*/
+// Layout cho /tech/*. Số đỏ cạnh "Việc của tôi" là số lịch đang chờ kỹ thuật viên nhận việc
 export function TechLayout({ children }: { children?: ReactNode }) {
-  // Layout còn là khung chờ trước RequireRole: chỉ gọi khi phiên kỹ thuật viên đã khôi phục xong.
+  // Chỉ gọi khi phiên kỹ thuật viên đã khôi phục xong
   const isTechnician = useAuth().user?.role === 'technician'
   const jobs = useMyAppointmentsQuery({ enabled: isTechnician }).data
-  // Mốc "đã qua" lấy lúc mở portal: lịch qua giờ trong lúc đang mở chỉ rời số đếm ở lần tải trang sau, đủ cho một số đếm.
+  // Lấy mốc thời gian lúc mở portal là đủ cho số đếm
   const [now] = useState(() => Date.now())
   const waiting = jobs?.filter((j) => j.status === 'ASSIGNED' && new Date(j.endsAt).getTime() >= now).length
   return (

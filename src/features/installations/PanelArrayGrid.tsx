@@ -1,9 +1,6 @@
 import { cn } from '@/utils/cn'
 
-/*
- * Widget "South Roof Array Grid" của installation_task: ma trận 6 cột thể hiện
- * từng tấm pin theo trạng thái lắp đặt, kèm chú giải màu bên dưới.
- */
+// Ma trận tấm pin theo trạng thái lắp đặt, có chú giải màu
 export type PanelState = 'mounted' | 'active' | 'queued'
 
 export type PanelCell = {
@@ -46,10 +43,7 @@ export function PanelArrayGrid({ cells, legend, columns = 6, className }: PanelA
         {cells.map((cell) => (
           <div
             key={cell.index}
-            className={cn(
-              'flex h-9 items-center justify-center rounded text-label-sm',
-              cellClasses[cell.state],
-            )}
+            className={cn('flex h-9 items-center justify-center rounded text-label-sm', cellClasses[cell.state])}
           >
             {cell.index}
           </div>

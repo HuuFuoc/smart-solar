@@ -1,12 +1,6 @@
-/*
- * VIẾT TAY – swagger chỉ khai "200 OK" cho tag TechnicianAvailability, không có schema response.
- * Tên kiểu và field lấy đúng theo SmartSolar.Modules.Scheduling.PreSurveyAppointments.Views
- * (TechnicianAvailabilityView, AvailableTechnicianView, TravelEstimateView – backend main 4d12e4d,
- * 12/10/2026). TravelEstimateView dùng chung cho lịch kỹ thuật viên. Khi backend khai response trong
- * swagger, `npm run gen:api` sẽ ghi đè file này bằng bản sinh tự động.
- */
+// Viết tay vì swagger không có schema response (tag TechnicianAvailability)
 
-/** Dữ liệu kẹt xe của nhà cung cấp, hoặc NOT_RETURNED_BY_PROVIDER. Không bao giờ suy ra từ thời gian đi. */
+/** Dữ liệu kẹt xe của nhà cung cấp, không suy ra từ thời gian đi */
 export type TravelCongestionView = {
   status: 'AVAILABLE' | 'NOT_RETURNED_BY_PROVIDER' | (string & {})
   segmentsByLevel: Record<string, number> | null
@@ -14,7 +8,7 @@ export type TravelCongestionView = {
   metersByLevel: Record<string, number> | null
 }
 
-/** Ước tính quãng đường xe máy (Vietmap) tại thời điểm `estimatedAt`: số liệu lịch sử, không phải giao thông trực tiếp. */
+/** Ước tính quãng đường xe máy (Vietmap) tại `estimatedAt` */
 export type TravelEstimateView = {
   provider: string
   providerVersion: string
@@ -34,7 +28,7 @@ export type TravelEstimateView = {
   durationSeconds: number | null
   safetyBufferMinutes: number
   estimatedArrivalAt: string | null
-  /** OK, ROUTE_NOT_FOUND, QUOTA_EXCEEDED, RATE_LIMITED, TIMEOUT, PROVIDER_UNAVAILABLE, … */
+  /** OK, ROUTE_NOT_FOUND, QUOTA_EXCEEDED, RATE_LIMITED, TIMEOUT, PROVIDER_UNAVAILABLE, ... */
   routeCalculationStatus: string
   congestion: TravelCongestionView
   /** Đang chỉ có "HISTORICAL_ESTIMATE". */

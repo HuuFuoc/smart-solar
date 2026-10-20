@@ -3,9 +3,8 @@ import { Card } from '@/components/common/stitch-ui/Card'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/* Theo thanh lọc trong user_management (search + select + active scopes) và my_tasks_1 (chip Today/Upcoming, chip loại). */
+// Thanh lọc: ô tìm, select và chip
 
-/* ---------- SearchInput ---------- */
 export type SearchInputProps = Omit<ComponentProps<'input'>, 'size' | 'type'> & {
   size?: 'md' | 'lg'
   /** Gợi ý phím tắt góc phải, ví dụ "Ctrl K" */
@@ -34,7 +33,6 @@ export function SearchInput({ size = 'lg', shortcutHint, className, ...rest }: S
   )
 }
 
-/* ---------- Select ---------- */
 export type SelectOption = { value: string; label: string }
 
 export type SelectProps = Omit<ComponentProps<'select'>, 'size'> & {
@@ -74,7 +72,6 @@ export function Select({ options, size = 'lg', className, ...rest }: SelectProps
   )
 }
 
-/* ---------- FilterChip ---------- */
 export type FilterChipProps = Omit<ComponentProps<'button'>, 'children'> & {
   label: string
   active?: boolean
@@ -134,17 +131,16 @@ export function FilterChip({
   )
 }
 
-/* ---------- FilterBar ---------- */
 export type ActiveScope = { key: string; label: string; onRemove?: () => void }
 
 export type FilterBarProps = {
-  /** Hàng chip trên cùng (Today / Upcoming / …) */
+  /** Hàng chip trên cùng (Today / Upcoming / ...) */
   chips?: ReactNode
   search?: SearchInputProps
   selects?: (SelectProps & { key: string })[]
   /** Chip lọc đang áp dụng + nút reset */
   scopes?: { label?: string; items: ActiveScope[]; onReset?: () => void }
-  /** Slot phải của hàng scopes (bulk actions…) */
+  /** Slot phải của hàng scopes (bulk actions...) */
   trailing?: ReactNode
   className?: string
 }
@@ -170,9 +166,7 @@ export function FilterBar({ chips, search, selects, scopes, trailing, className 
       {(scopes || trailing) && (
         <div className="flex flex-col justify-between gap-space-xs rounded-xl bg-surface-container-low/40 px-space-sm py-2 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-space-xs">
-            {scopes?.label && (
-              <span className="text-label-sm font-semibold text-outline">{scopes.label}</span>
-            )}
+            {scopes?.label && <span className="text-label-sm font-semibold text-outline">{scopes.label}</span>}
             {scopes?.items.map((scope) => (
               <span
                 key={scope.key}
@@ -192,7 +186,11 @@ export function FilterBar({ chips, search, selects, scopes, trailing, className 
               </span>
             ))}
             {scopes?.onReset && (
-              <button type="button" onClick={scopes.onReset} className="ml-1 text-label-sm text-primary hover:underline">
+              <button
+                type="button"
+                onClick={scopes.onReset}
+                className="ml-1 text-label-sm text-primary hover:underline"
+              >
                 Xoá bộ lọc
               </button>
             )}

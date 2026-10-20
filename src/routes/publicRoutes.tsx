@@ -4,8 +4,6 @@ import { PublicLayout } from '@/components/layout/PublicLayout'
 import { page } from '@/routes/lazyPage'
 import { ROUTES } from '@/routes/paths'
 
-/* Trang công khai, nạp khi vào route lần đầu (mỗi trang một chunk). */
-
 // Website
 const LandingPage = page(() => import('@/pages/public/LandingPage'), 'LandingPage')
 const ComingSoonPage = page(() => import('@/pages/ComingSoonPage'), 'ComingSoonPage')
@@ -23,7 +21,7 @@ const ForbiddenPage = page(() => import('@/pages/ForbiddenPage'), 'ForbiddenPage
 // Chỉ ở dev
 const StyleguidePage = page(() => import('@/pages/StyleguidePage'), 'StyleguidePage')
 
-/* Route không cần đăng nhập: trang chủ, /coming-soon, /products, các màn xác thực, /403 và /styleguide. */
+// Route không cần đăng nhập
 export const publicRoutes: RouteObject[] = [
   {
     element: <PublicLayout />,
@@ -45,6 +43,6 @@ export const publicRoutes: RouteObject[] = [
       { path: ROUTES.forbidden, lazy: ForbiddenPage },
     ],
   },
-  // Bảng mẫu component chỉ cho lúc phát triển: bản build không có route này (số liệu trong đó là mẫu).
+  // Trang mẫu component chỉ có ở dev
   ...(import.meta.env.DEV ? [{ path: ROUTES.styleguide, lazy: StyleguidePage }] : []),
 ]

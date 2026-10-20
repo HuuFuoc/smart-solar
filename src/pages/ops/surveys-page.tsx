@@ -19,12 +19,11 @@ import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
 
 type Tab = 'pending' | 'my'
 
-/* Yêu cầu khảo sát sinh ra khi khách hàng gửi bản đánh giá sơ bộ. Sales nhận yêu cầu rồi xem chi tiết để liên hệ. */
 export function OpsSurveysPage() {
   const navigate = useNavigate()
   // Tab theo đường dẫn (/ops/surveys và /ops/surveys/mine) để menu bên trái đánh dấu đúng mục.
   const { pathname } = useLocation()
-  // matchPath (không so chuỗi): "/ops/surveys/mine/" có dấu "/" cuối vẫn là tab "Của tôi", khớp với menu.
+  // Dùng matchPath để "/ops/surveys/mine/" vẫn khớp tab "Của tôi"
   const tab: Tab = matchPath(ROUTES.ops.surveysMine, pathname) ? 'my' : 'pending'
   const setTab = (next: Tab) => navigate(next === 'my' ? ROUTES.ops.surveysMine : ROUTES.ops.surveys)
   const pending = usePendingSurveyRequestsQuery()
@@ -72,7 +71,7 @@ export function OpsSurveysPage() {
         className="mb-4"
         value={tab}
         onChange={setTab}
-        // Số trên tab chỉ để tham khảo (xám): số đỏ báo việc chờ đã nằm ở menu bên trái, cùng màn hình, không nói hai lần.
+        // Số trên tab để xám vì số đỏ đã có ở menu
         chips={[
           { value: 'pending', label: 'Chờ nhận', count: pending.data?.length },
           { value: 'my', label: 'Của tôi', count: my.data?.length },
@@ -83,9 +82,16 @@ export function OpsSurveysPage() {
         <QueryBoundary query={pending}>
           {(rows) =>
             rows.length === 0 ? (
-              <EmptyState title="Chưa có yêu cầu nào chờ nhận" description="Yêu cầu mới xuất hiện ở đây khi khách hàng gửi bản đánh giá sơ bộ." />
+              <EmptyState
+                title="Chưa có yêu cầu nào chờ nhận"
+                description="Yêu cầu mới xuất hiện ở đây khi khách hàng gửi bản đánh giá sơ bộ."
+              />
             ) : (
-              <PendingRequestList rows={rows} claimingId={claim.isPending ? (claim.variables ?? null) : null} onClaim={onClaim} />
+              <PendingRequestList
+                rows={rows}
+                claimingId={claim.isPending ? (claim.variables ?? null) : null}
+                onClaim={onClaim}
+              />
             )
           }
         </QueryBoundary>

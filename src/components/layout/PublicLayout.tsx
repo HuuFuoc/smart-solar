@@ -12,18 +12,13 @@ import { useAuth } from '@/context/AuthProvider'
 import { cx } from '@/utils/cx'
 import { footer, header, solution, workflow } from '@/data/landing'
 
-/*
- * Shell của các trang công khai ("/", "/coming-soon", "/products"). Không dùng AppShell/sidebar.
- * Font Be Vietnam Pro (300 số khai, 400 chữ, 600 tiêu đề và số đo) chỉ đặt ở đây vì
- * Schibsted Grotesk của portal thiếu dấu tiếng Việt.
- * Header: Giải pháp, Quy trình (section của trang chủ), Sản phẩm, Đăng nhập, nút "Đăng ký khảo sát" và nút sáng / tối ở
- * mép phải. Dưới lg chỉ còn logo, nút sáng / tối và nút Menu mở bảng liên kết ngay dưới header.
- */
+// Layout các trang công khai. Dùng Be Vietnam Pro vì font của portal thiếu dấu tiếng Việt
+// Dưới lg header chỉ còn logo, nút sáng / tối và nút Menu
 const solutionLink = { pathname: ROUTES.home, hash: `#${solution.id}` }
 const workflowLink = { pathname: ROUTES.home, hash: `#${workflow.id}` }
 
 export function PublicLayout() {
-  // Trang chủ kết thúc bằng dải CTA màu nên footer đứng sát.
+  // Trang chủ kết thúc bằng dải CTA nên footer đứng sát
   const onHome = useLocation().pathname === ROUTES.home
   // Đã đăng nhập: thay "Đăng nhập" bằng đường vào trang làm việc, ẩn nút đăng ký.
   const { user } = useAuth()
@@ -34,7 +29,7 @@ export function PublicLayout() {
   const menuButton = useRef<HTMLButtonElement>(null)
   const closeMenu = () => setMenuOpen(false)
 
-  // Esc đóng bảng liên kết và trả focus về nút Menu.
+  // Esc đóng bảng liên kết và trả focus về nút Menu
   useEffect(() => {
     if (!menuOpen) return
     const onKeyDown = (e: KeyboardEvent) => {
@@ -57,8 +52,7 @@ export function PublicLayout() {
 
       <header className="sticky top-0 z-40 border-b border-line bg-canvas">
         <div className={cx('flex h-14 items-center gap-4 lg:h-16', LANDING_CONTAINER)}>
-          {/* Logo người dùng cung cấp (public/images/Logo-navbar.png), bản WebP đã cắt viền trong suốt. Chữ "Smart" màu
-              navy chìm trên nền tối nên ở dark mode logo đặt trên một nền sáng. */}
+          {/* Ở dark mode logo đặt trên nền sáng vì chữ "Smart" màu navy khó thấy */}
           <Link to={ROUTES.home} className="flex shrink-0 items-center rounded-control dark:bg-fg dark:px-2 dark:py-1">
             <img
               src="/images/logo-64h.webp"
@@ -74,13 +68,15 @@ export function PublicLayout() {
           <nav aria-label="Liên kết chính" className="ml-auto hidden items-center gap-6 lg:flex">
             <HeaderLink to={solutionLink}>{header.solution}</HeaderLink>
             <HeaderLink to={workflowLink}>{header.process}</HeaderLink>
-            {/* Trang đang mở: chữ đậm màu chính + gạch chân màu thương hiệu, không chỉ đậm hơn một chút. */}
+            {/* Trang đang mở: chữ đậm + gạch chân màu thương hiệu */}
             <NavLink
               to={ROUTES.products}
               className={({ isActive }) =>
                 cx(
                   'tap ld-body underline-offset-8 hover:text-fg',
-                  isActive ? 'font-semibold text-fg underline decoration-accent decoration-2' : 'text-fg-2 hover:underline hover:decoration-line-2',
+                  isActive
+                    ? 'font-semibold text-fg underline decoration-accent decoration-2'
+                    : 'text-fg-2 hover:underline hover:decoration-line-2',
                 )
               }
             >
@@ -139,7 +135,6 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
-      {/* Trang chủ kết thúc bằng dải CTA màu nên footer đứng sát; trang khác cần khoảng trống phía trên. */}
       <footer className={cx('border-t border-line', !onHome && 'mt-24 lg:mt-32')}>
         <div
           className={cx(
@@ -178,14 +173,27 @@ export function PublicLayout() {
 
 function HeaderLink({ to, children }: { to: To; children: ReactNode }) {
   return (
-    <Link to={to} className="tap ld-body text-fg-2 underline-offset-8 hover:text-fg hover:underline hover:decoration-line-2">
+    <Link
+      to={to}
+      className="tap ld-body text-fg-2 underline-offset-8 hover:text-fg hover:underline hover:decoration-line-2"
+    >
       {children}
     </Link>
   )
 }
 
-/* Dòng trong bảng liên kết dưới lg: cao 48px; "Sản phẩm" (nav) có nền "đang chọn" khi đang ở trang sản phẩm. */
-function MenuLink({ to, onClick, nav = false, children }: { to: To; onClick: () => void; nav?: boolean; children: ReactNode }) {
+// Dòng trong bảng liên kết dưới lg, mục đang mở có nền "đang chọn"
+function MenuLink({
+  to,
+  onClick,
+  nav = false,
+  children,
+}: {
+  to: To
+  onClick: () => void
+  nav?: boolean
+  children: ReactNode
+}) {
   const row = 'press -mx-2 flex h-12 items-center rounded-control px-2 ld-body'
   const idle = 'text-fg-2 hover:bg-hover hover:text-fg'
   if (!nav) {
@@ -196,7 +204,11 @@ function MenuLink({ to, onClick, nav = false, children }: { to: To; onClick: () 
     )
   }
   return (
-    <NavLink to={to} onClick={onClick} className={({ isActive }) => cx(row, isActive ? 'bg-accent-soft font-semibold text-fg' : idle)}>
+    <NavLink
+      to={to}
+      onClick={onClick}
+      className={({ isActive }) => cx(row, isActive ? 'bg-accent-soft font-semibold text-fg' : idle)}
+    >
       {children}
     </NavLink>
   )

@@ -140,7 +140,14 @@ export function ManageDashboardPage() {
               <PanelHeader title="Xác minh hiện trường" />
               <PanelBody className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                 {data.photos.map((p) => (
-                  <Photo key={p.caption} src={p.src} alt={p.caption} ratio="aspect-[16/9]" caption={p.caption} meta={p.meta} />
+                  <Photo
+                    key={p.caption}
+                    src={p.src}
+                    alt={p.caption}
+                    ratio="aspect-[16/9]"
+                    caption={p.caption}
+                    meta={p.meta}
+                  />
                 ))}
               </PanelBody>
               <PanelFooter>
@@ -160,7 +167,10 @@ export function ManageDashboardPage() {
             </Panel>
 
             <Panel>
-              <PanelHeader title="Tiến độ doanh thu quý 4" action={<span className="tnum text-title font-semibold">{data.revenue.pct}%</span>} />
+              <PanelHeader
+                title="Tiến độ doanh thu quý 4"
+                action={<span className="tnum text-title font-semibold">{data.revenue.pct}%</span>}
+              />
               <PanelBody className="space-y-6">
                 <div>
                   <Progress value={data.revenue.pct} label="Doanh thu quý 4 đã đạt" />

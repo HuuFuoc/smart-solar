@@ -1,42 +1,40 @@
 import { Canvas, useFrame, useThree, type RootState } from '@react-three/fiber'
-import { useEffect, useMemo, useRef, type KeyboardEvent, type PointerEvent, type ReactNode, type RefObject } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { useResolvedTheme, type ResolvedTheme } from '@/hooks/useTheme'
 
-/*
-  Một tấm pin mặt trời 3D cho trang chủ, dựng hoàn toàn bằng hình học và vật liệu trong code (không tải model ngoài).
-  Kích thước theo một tấm 120 cell cắt nửa phổ biến: 1722 × 1134 × 35 mm.
-    - mặt trước: kính (clearcoat) phủ 6 × 20 cell xanh đen, khe giữa cell lộ tấm nền trắng, 9 thanh dẫn mỗi hàng
-    - khung nhôm định hình: gờ ôm mép kính, thành ngoài dày 35 mm, gờ sau gập vào trong
-    - mặt sau: tấm nền trắng lõm trong khung, 3 hộp đấu dây, 2 dây cáp có đầu nối, một nhãn trơn
-  Toạ độ của tấm: X theo cạnh dài, Y theo cạnh ngắn, Z vuông góc (mặt trước +Z). Trục lên của cảnh là Y.
-
-  Tương tác: kéo để xoay (chuột, bút, vuốt ngang trên điện thoại), phím mũi tên khi đang focus. Tấm xoay quanh tâm của
-  nó (bàn xoay nghiêng: kéo ngang quay quanh trục đứng, kéo dọc nghiêng trong khoảng hẹp), không dịch chuyển, không
-  phóng to, không tự xoay. Cảm ứng để trình duyệt giữ vuốt dọc (touch-action: pan-y) nên cuộn trang vẫn như thường.
-  Vẽ theo yêu cầu (frameloop "demand"): đứng yên thì không tốn GPU.
-  Màu vật liệu là hex cố định vì three.js không đọc được token oklch; nền trong suốt để thấy nền của section.
-*/
+// Tấm pin 3D ở trang chủ, dựng bằng hình học trong code. Cỡ tấm 120 nửa cell: 1722 x 1134 x 35 mm
+// Toạ độ tấm: X theo cạnh dài, Y theo cạnh ngắn, mặt trước hướng +Z. Trục lên của cảnh là Y
+// Kéo hoặc phím mũi tên để xoay quanh tâm tấm. Chỉ vẽ lại khi có thay đổi (frameloop "demand")
+// Màu là hex cố định vì three.js không đọc được token màu
 
 const PANEL = {
   w: 1.722,
   h: 1.134,
-  /** thành khung: dày 5 mm, sâu 35 mm, gờ trước ôm kính 14 mm, gờ sau 25 mm */
+  /** Thành khung dày 5 mm, sâu 35 mm, gờ trước 14 mm, gờ sau 25 mm */
   wall: 0.005,
   depth: 0.035,
   lip: 0.014,
   lipT: 0.0025,
   flange: 0.025,
   flangeT: 0.003,
-  /** tấm ép (kính + cell + tấm nền) */
+  /** Tấm ép gồm kính, cell và tấm nền */
   laminate: 0.004,
 }
-/** Mặt kính ở z = 0; khung từ z = +lipT xuống z = -(depth - lipT). Dời cả tấm để tâm xoay nằm giữa bề dày. */
+/** Mặt kính ở z = 0. Dời cả tấm để tâm xoay nằm giữa bề dày */
 const BACK_Z = -(PANEL.depth - PANEL.lipT)
 const PIVOT_Z = -(PANEL.lipT + BACK_Z) / 2
 
-/** Tư thế ban đầu: ngả ra sau, quay chéo sang trái để thấy mặt pin và bề dày khung bên phải. */
+/** Tư thế ban đầu: ngả ra sau, quay chéo để thấy mặt pin và bề dày khung */
 const BASE_TILT = -0.5
 const START = { yaw: -0.58, pitch: 0.05 }
 const PITCH_LIMIT: [number, number] = [-0.3, 0.38]
@@ -50,22 +48,55 @@ const COLORS = {
   cable: '#121315',
 }
 
-/** Ánh sáng theo giao diện: sáng = nắng ấm dịu, bóng nhạt; tối = ánh trăng lạnh, môi trường tối hơn, bóng đậm hơn để còn thấy. */
+/** Ánh sáng theo giao diện: sáng là nắng ấm, tối là ánh trăng lạnh với bóng đậm hơn */
 const LOOK: Record<
   ResolvedTheme,
-  { exposure: number; env: number; sky: string; ground: string; hemi: number; key: string; keyI: number; fill: string; fillI: number; rimI: number; bounceI: number; shadow: number }
+  {
+    exposure: number
+    env: number
+    sky: string
+    ground: string
+    hemi: number
+    key: string
+    keyI: number
+    fill: string
+    fillI: number
+    rimI: number
+    bounceI: number
+    shadow: number
+  }
 > = {
-  light: { exposure: 1, env: 0.9, sky: '#ffffff', ground: '#d6dace', hemi: 0.45, key: '#fff3df', keyI: 2.2, fill: '#e3ecff', fillI: 0.4, rimI: 0.6, bounceI: 0.9, shadow: 0.24 },
-  dark: { exposure: 0.95, env: 0.45, sky: '#b9c8ef', ground: '#1b1f1b', hemi: 0.3, key: '#dfe7ff', keyI: 1.8, fill: '#8fa6e6', fillI: 0.35, rimI: 0.8, bounceI: 0.6, shadow: 0.42 },
+  light: {
+    exposure: 1,
+    env: 0.9,
+    sky: '#ffffff',
+    ground: '#d6dace',
+    hemi: 0.45,
+    key: '#fff3df',
+    keyI: 2.2,
+    fill: '#e3ecff',
+    fillI: 0.4,
+    rimI: 0.6,
+    bounceI: 0.9,
+    shadow: 0.24,
+  },
+  dark: {
+    exposure: 0.95,
+    env: 0.45,
+    sky: '#b9c8ef',
+    ground: '#1b1f1b',
+    hemi: 0.3,
+    key: '#dfe7ff',
+    keyI: 1.8,
+    fill: '#8fa6e6',
+    fillI: 0.35,
+    rimI: 0.8,
+    bounceI: 0.6,
+    shadow: 0.42,
+  },
 }
 
-/* ---------- Hoạ tiết mặt trước ---------- */
-
-/*
-  Mặt tấm ép (bên trong thành khung, 1712 × 1124 mm), vẽ theo mm rồi phóng theo độ phân giải. 120 nửa cell 78 × 170 mm:
-  6 hàng, 2 nửa tấm × 10 cột, khe 2,5 mm, khe giữa hai nửa 14 mm. Cột nửa cell đi theo cặp, góc vát ở hai góc ngoài của
-  mỗi cặp như cell đơn tinh thể. 9 thanh dẫn chạy dọc mỗi hàng; dải nối ở hai đầu.
-*/
+// Hoạ tiết mặt trước vẽ bằng canvas theo mm: 6 hàng, 2 nửa tấm x 10 cột nửa cell
 function cellTexture(pxPerMm: number, maxAnisotropy: number) {
   const W = (PANEL.w - 2 * PANEL.wall) * 1000
   const H = (PANEL.h - 2 * PANEL.wall) * 1000
@@ -90,8 +121,8 @@ function cellTexture(pxPerMm: number, maxAnisotropy: number) {
   const y0 = (H - totalH) / 2
   const cut = 9
 
-  // Biến thiên độ sáng nhẹ giữa các cell, cố định (không ngẫu nhiên mỗi lần vẽ).
-  const shade = (i: number) => 0.94 + 0.06 * ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) / 2
+  // Độ sáng giữa các cell lệch nhẹ nhưng cố định, không ngẫu nhiên mỗi lần vẽ
+  const shade = (i: number) => 0.94 + (0.06 * (((Math.sin(i * 12.9898) * 43758.5453) % 1) + 1)) / 2
 
   for (let side = 0; side < 2; side++) {
     const sx = x0 + side * (halfW + mid)
@@ -124,13 +155,13 @@ function cellTexture(pxPerMm: number, maxAnisotropy: number) {
         ctx.closePath()
         ctx.fill()
       }
-      // 9 thanh dẫn chạy suốt hàng của nửa tấm.
+      // 9 thanh dẫn chạy suốt hàng của nửa tấm
       ctx.fillStyle = 'rgba(176, 188, 206, 0.5)'
       for (let b = 0; b < 9; b++) {
         ctx.fillRect(sx, y + (ch * (b + 0.5)) / 9 - 0.45, halfW, 0.9)
       }
     }
-    // Dải nối các hàng ở mép ngoài của nửa tấm.
+    // Dải nối các hàng ở mép ngoài của nửa tấm
     ctx.fillStyle = 'rgba(196, 202, 210, 0.95)'
     const ex = side === 0 ? x0 - 9 : x0 + totalW + 3
     ctx.fillRect(ex, y0, 6, totalH)
@@ -142,7 +173,7 @@ function cellTexture(pxPerMm: number, maxAnisotropy: number) {
   return texture
 }
 
-/* Nhãn trơn ở mặt sau: chỉ là mảng chữ xám, không ghi thông số (không có nguồn số liệu thật). */
+// Nhãn mặt sau không ghi thông số vì chưa có số liệu thật
 function labelTexture() {
   const canvas = document.createElement('canvas')
   canvas.width = 256
@@ -159,10 +190,18 @@ function labelTexture() {
   return texture
 }
 
-/* ---------- Tấm pin ---------- */
-
-/* Một cạnh khung: thành ngoài + gờ trước + gờ sau, dọc theo trục X của nhóm (cạnh dọc được quay 90°). */
-function FrameSide({ length, offset, rotateZ, material }: { length: number; offset: number; rotateZ: number; material: THREE.Material }) {
+// Một cạnh khung gồm thành ngoài, gờ trước và gờ sau, dọc theo trục X (cạnh dọc được quay 90 độ)
+function FrameSide({
+  length,
+  offset,
+  rotateZ,
+  material,
+}: {
+  length: number
+  offset: number
+  rotateZ: number
+  material: THREE.Material
+}) {
   const { wall, depth, lip, lipT, flange, flangeT } = PANEL
   return (
     <group rotation-z={rotateZ}>
@@ -210,7 +249,10 @@ function SolarPanel({ lite }: { lite: boolean }) {
   const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy())
   const cells = useMemo(() => cellTexture(lite ? 0.6 : 1.2, maxAnisotropy), [lite, maxAnisotropy])
   const label = useMemo(() => labelTexture(), [])
-  const frame = useMemo(() => new THREE.MeshStandardMaterial({ color: COLORS.frame, metalness: 0.9, roughness: 0.34 }), [])
+  const frame = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: COLORS.frame, metalness: 0.9, roughness: 0.34 }),
+    [],
+  )
   const jbox = useMemo(() => new RoundedBoxGeometry(0.1, 0.075, 0.018, 2, 0.005), [])
   useEffect(() => () => cells.dispose(), [cells])
   useEffect(
@@ -221,10 +263,16 @@ function SolarPanel({ lite }: { lite: boolean }) {
     },
     [label, frame, jbox],
   )
-  // Thứ tự mặt của BoxGeometry: +x, -x, +y, -y, +z (mặt kính), -z (tấm nền sau).
+  // Thứ tự mặt của BoxGeometry: +x, -x, +y, -y, +z (mặt kính), -z (tấm nền sau)
   const laminate = useMemo(() => {
     const edge = new THREE.MeshStandardMaterial({ color: COLORS.laminateEdge, roughness: 0.5 })
-    const glass = new THREE.MeshPhysicalMaterial({ map: cells, roughness: 0.6, metalness: 0, clearcoat: 0.85, clearcoatRoughness: 0.12 })
+    const glass = new THREE.MeshPhysicalMaterial({
+      map: cells,
+      roughness: 0.6,
+      metalness: 0,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.12,
+    })
     const back = new THREE.MeshStandardMaterial({ color: COLORS.backsheet, roughness: 0.88 })
     return [edge, edge, edge, edge, glass, back]
   }, [cells])
@@ -236,8 +284,16 @@ function SolarPanel({ lite }: { lite: boolean }) {
   const boxZ = backFace - 0.009
   const cables = useMemo(
     () => [
-      { from: new THREE.Vector3(0.05, 0.32, boxZ), to: new THREE.Vector3(0.38, 0.27, backFace - 0.012), bend: new THREE.Vector3(0.02, 0.03, -0.01) },
-      { from: new THREE.Vector3(-0.05, -0.32, boxZ), to: new THREE.Vector3(-0.38, -0.27, backFace - 0.012), bend: new THREE.Vector3(-0.02, -0.03, -0.01) },
+      {
+        from: new THREE.Vector3(0.05, 0.32, boxZ),
+        to: new THREE.Vector3(0.38, 0.27, backFace - 0.012),
+        bend: new THREE.Vector3(0.02, 0.03, -0.01),
+      },
+      {
+        from: new THREE.Vector3(-0.05, -0.32, boxZ),
+        to: new THREE.Vector3(-0.38, -0.27, backFace - 0.012),
+        bend: new THREE.Vector3(-0.02, -0.03, -0.01),
+      },
     ],
     [backFace, boxZ],
   )
@@ -267,13 +323,8 @@ function SolarPanel({ lite }: { lite: boolean }) {
   )
 }
 
-/* ---------- Ánh sáng, môi trường, bóng ---------- */
-
-/*
-  Phòng chụp dựng trong code cho phản chiếu của kính và nhôm: vòm chuyển sắc (trên sáng, dưới tối) + một hộp đèn mềm lớn
-  phía trên trước mặt và một hộp nhỏ bên trái, nên mặt kính có một vệt sáng rộng, mềm như ảnh chụp sản phẩm (môi trường
-  phòng dựng sẵn của three.js có đèn trần nhỏ, gắt, phản chiếu thành một mảng trắng làm cell bạc màu).
-*/
+// Môi trường phản chiếu tự dựng (vòm chuyển sắc và hai hộp đèn mềm)
+// Không dùng RoomEnvironment của three vì đèn gắt làm cell bị bạc màu
 function studioScene() {
   const scene = new THREE.Scene()
   const dome = new THREE.SphereGeometry(10, 32, 16)
@@ -289,7 +340,10 @@ function studioScene() {
   dome.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
   scene.add(new THREE.Mesh(dome, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })))
   const softbox = (w: number, h: number, power: number, pos: [number, number, number]) => {
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(power, power, power), side: THREE.DoubleSide }))
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(power, power, power), side: THREE.DoubleSide }),
+    )
     mesh.position.set(...pos)
     mesh.lookAt(0, 0, 0)
     scene.add(mesh)
@@ -299,7 +353,7 @@ function studioScene() {
   return scene
 }
 
-/* Độ mạnh của môi trường và độ phơi sáng đổi theo giao diện. Renderer và scene là đối tượng three.js nên chỉnh trực tiếp (qua get()). */
+// Độ mạnh môi trường và độ phơi sáng đổi theo giao diện, chỉnh thẳng trên renderer và scene
 function Studio({ environment, exposure }: { environment: number; exposure: number }) {
   const get = useThree((s) => s.get)
   useEffect(() => {
@@ -331,7 +385,7 @@ function Studio({ environment, exposure }: { environment: number; exposure: numb
 }
 
 function Lights({ look, lite }: { look: (typeof LOOK)[ResolvedTheme]; lite: boolean }) {
-  // Bóng mềm (VSM): bản đồ nhỏ + làm mờ rộng cho viền loang như bóng dưới hộp đèn; điện thoại dùng bản đồ nhỏ hơn.
+  // Bóng mềm (VSM), điện thoại dùng bản đồ bóng nhỏ hơn
   const mapSize = lite ? 256 : 512
   return (
     <>
@@ -353,34 +407,32 @@ function Lights({ look, lite }: { look: (typeof LOOK)[ResolvedTheme]; lite: bool
         shadow-camera-far={9}
       />
       <directionalLight position={[-2.6, 1.2, 1.6]} color={look.fill} intensity={look.fillI} />
-      {/* Đèn viền phía sau: khi quay ra mặt sau vẫn thấy rõ tấm nền, hộp đấu dây và gờ khung. */}
+      {/* Đèn phía sau để quay ra mặt sau vẫn thấy rõ */}
       <directionalLight position={[0.4, 1.8, -3]} intensity={look.rimI} />
-      {/* Ánh hắt từ sàn phía trước: tấm ngả ra sau nên khi quay mặt sau về phía người xem, mặt đó chúi xuống, đèn trên không tới. */}
+      {/* Ánh hắt từ sàn, vì mặt sau chúi xuống nên đèn trên không chiếu tới */}
       <directionalLight position={[0, -1.5, 3]} intensity={look.bounceI} />
     </>
   )
 }
 
-/*
-  Bóng trên mặt đất trong suốt (chỉ thấy phần bóng, nền là nền của section), mờ dần theo khoảng cách tới tâm nên không bao
-  giờ có mép bóng bị khung cắt ngang. Chèn vào shader của ShadowMaterial (r186): toạ độ trên mặt phẳng → hệ số mờ.
-*/
+// Mặt đất trong suốt chỉ hiện bóng, bóng mờ dần ra xa tâm để không bị khung cắt ngang
 function fadeShadowEdges(shader: THREE.WebGLProgramParametersWithUniforms) {
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', '#include <common>\nvarying vec2 vGround;')
     .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGround = position.xy;')
   shader.fragmentShader = shader.fragmentShader
     .replace('#include <common>', '#include <common>\nvarying vec2 vGround;')
-    .replace('opacity * ( 1.0 - getShadowMask() )', 'opacity * ( 1.0 - getShadowMask() ) * ( 1.0 - smoothstep( 0.5, 1.55, length( vGround ) ) )')
+    .replace(
+      'opacity * ( 1.0 - getShadowMask() )',
+      'opacity * ( 1.0 - getShadowMask() ) * ( 1.0 - smoothstep( 0.5, 1.55, length( vGround ) ) )',
+    )
 }
-
-/* ---------- Xoay ---------- */
 
 type Motion = { yaw: number; pitch: number; vYaw: number; vPitch: number; dragging: boolean }
 
 const clampPitch = (p: number) => Math.min(PITCH_LIMIT[1], Math.max(PITCH_LIMIT[0], p))
 
-/* Áp góc xoay vào hai nhóm: ngoài nghiêng quanh trục ngang của màn hình, trong quay quanh trục đứng (như bàn xoay). */
+// Nhóm ngoài nghiêng quanh trục ngang, nhóm trong quay quanh trục đứng như bàn xoay
 function Turntable({ motion, children }: { motion: RefObject<Motion>; children: ReactNode }) {
   const pitchRef = useRef<THREE.Group>(null)
   const yawRef = useRef<THREE.Group>(null)
@@ -397,16 +449,14 @@ function Turntable({ motion, children }: { motion: RefObject<Motion>; children: 
   )
 }
 
-/* ---------- Cảnh ---------- */
-
 export type SolarPanelSceneProps = {
   label: string
   describedBy: string
-  /** Điện thoại / cảm ứng: độ phân giải, bóng và hoạ tiết thấp hơn. */
+  /** Bản nhẹ cho điện thoại: độ phân giải, bóng và hoạ tiết thấp hơn */
   lite: boolean
-  /** Giảm chuyển động: không quán tính sau khi thả. */
+  /** Giảm chuyển động thì không trôi tiếp sau khi thả */
   reducedMotion: boolean
-  /** Gọi sau khung hình đầu tiên, để thay ảnh tĩnh bằng canvas. */
+  /** Gọi sau khung hình đầu tiên để thay ảnh tĩnh bằng canvas */
   onReady: () => void
 }
 
@@ -425,7 +475,7 @@ export default function SolarPanelScene({ label, describedBy, lite, reducedMotio
     root.current?.invalidate()
   }
 
-  /* Quán tính ngắn sau khi thả tay (tắt khi giảm chuyển động): tốc độ giảm dần theo thời gian thật, dừng hẳn dưới 1 giây. */
+  // Thả tay thì trôi tiếp một chút rồi dừng trong chưa tới 1 giây
   const stopCoasting = () => {
     cancelAnimationFrame(coasting.current)
     coasting.current = 0
@@ -457,7 +507,7 @@ export default function SolarPanelScene({ label, describedBy, lite, reducedMotio
     motion.current.dragging = true
     motion.current.vYaw = motion.current.vPitch = 0
     last.current = { x: e.clientX, y: e.clientY, t: e.timeStamp }
-    // Chuột kéo ra ngoài khung vẫn xoay; cảm ứng đã tự giữ con trỏ.
+    // Kéo chuột ra ngoài khung vẫn xoay
     if (e.pointerType === 'mouse') e.currentTarget.setPointerCapture(e.pointerId)
     e.currentTarget.style.cursor = 'grabbing'
   }
@@ -465,12 +515,12 @@ export default function SolarPanelScene({ label, describedBy, lite, reducedMotio
     const prev = last.current
     if (!motion.current.dragging || !prev) return
     const { width, height } = e.currentTarget.getBoundingClientRect()
-    // Kéo hết bề ngang khung ≈ gần một vòng; kéo hết bề cao ≈ nửa khoảng nghiêng cho phép.
+    // Kéo hết bề ngang khung gần bằng một vòng
     const dYaw = ((e.clientX - prev.x) / width) * Math.PI * 1.8
     const dPitch = ((e.clientY - prev.y) / height) * Math.PI * 0.45
     rotateBy(dYaw, dPitch)
     const dt = Math.max(1, e.timeStamp - prev.t)
-    // Vận tốc theo khung hình 16 ms, làm mượt để thả tay không giật.
+    // Làm mượt vận tốc để thả tay không giật
     motion.current.vYaw = motion.current.vYaw * 0.5 + ((dYaw * 16) / dt) * 0.5
     motion.current.vPitch = motion.current.vPitch * 0.5 + ((dPitch * 16) / dt) * 0.5
     last.current = { x: e.clientX, y: e.clientY, t: e.timeStamp }
@@ -478,8 +528,9 @@ export default function SolarPanelScene({ label, describedBy, lite, reducedMotio
   const endDrag = (e: PointerEvent<HTMLDivElement>, keepVelocity: boolean) => {
     if (!motion.current.dragging) return
     motion.current.dragging = false
-    // Dừng tay một lúc rồi mới thả thì không trôi tiếp.
-    if (reducedMotion || !keepVelocity || !last.current || e.timeStamp - last.current.t > 80) motion.current.vYaw = motion.current.vPitch = 0
+    // Dừng tay một lúc rồi mới thả thì không trôi tiếp
+    if (reducedMotion || !keepVelocity || !last.current || e.timeStamp - last.current.t > 80)
+      motion.current.vYaw = motion.current.vPitch = 0
     else coast()
     last.current = null
     e.currentTarget.style.cursor = 'grab'
@@ -487,7 +538,12 @@ export default function SolarPanelScene({ label, describedBy, lite, reducedMotio
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const step = e.shiftKey ? 0.5 : 0.15
-    const moves: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step / 2], ArrowDown: [0, step / 2] }
+    const moves: Record<string, [number, number]> = {
+      ArrowLeft: [-step, 0],
+      ArrowRight: [step, 0],
+      ArrowUp: [0, -step / 2],
+      ArrowDown: [0, step / 2],
+    }
     const move = moves[e.key]
     if (!move) return
     e.preventDefault()
@@ -506,7 +562,7 @@ export default function SolarPanelScene({ label, describedBy, lite, reducedMotio
       onCreated={(state) => {
         root.current = state
         state.camera.lookAt(0, -0.2, 0)
-        // Khung hình đầu đã vẽ trong lần render sau onCreated; đợi một nhịp rồi mới báo sẵn sàng.
+        // Đợi một nhịp để khung hình đầu vẽ xong rồi mới báo sẵn sàng
         requestAnimationFrame(() => requestAnimationFrame(onReady))
       }}
       role="img"
@@ -519,7 +575,7 @@ export default function SolarPanelScene({ label, describedBy, lite, reducedMotio
       onPointerCancel={(e) => endDrag(e, false)}
       onLostPointerCapture={(e) => endDrag(e, true)}
       onKeyDown={onKeyDown}
-      // pan-y: vuốt dọc vẫn cuộn trang, vuốt ngang mới xoay tấm pin.
+      // pan-y: vuốt dọc vẫn cuộn trang, vuốt ngang mới xoay tấm pin
       style={{ touchAction: 'pan-y', cursor: 'grab' }}
     >
       <Studio environment={look.env} exposure={look.exposure} />

@@ -15,7 +15,7 @@ type Errors = Partial<Record<keyof Form, string>>
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE = /^\+?[0-9 .-]{6,20}$/
 
-/* Luật bám CreateAdminUserCommandValidator / UpdateAdminUserCommandValidator (backend main 4d12e4d). */
+// Luật theo CreateAdminUserCommandValidator / UpdateAdminUserCommandValidator
 function validate(f: Form, creating: boolean): Errors {
   const errors: Errors = {}
   const email = f.email.trim()
@@ -23,7 +23,8 @@ function validate(f: Form, creating: boolean): Errors {
   else if (email && (!EMAIL.test(email) || email.length > 255)) errors.email = 'Email chưa đúng định dạng.'
   if (!f.fullName.trim()) errors.fullName = 'Nhập họ tên.'
   else if (f.fullName.trim().length > 255) errors.fullName = 'Tối đa 255 ký tự.'
-  if (f.phone.trim() && !PHONE.test(f.phone.trim())) errors.phone = 'Số điện thoại 6–20 chữ số (được có +, dấu cách, dấu chấm, gạch).'
+  if (f.phone.trim() && !PHONE.test(f.phone.trim()))
+    errors.phone = 'Số điện thoại 6–20 chữ số (được có +, dấu cách, dấu chấm, gạch).'
   if (creating && f.roles.length === 0) errors.roles = 'Chọn ít nhất một vai trò.'
   return errors
 }
@@ -39,10 +40,8 @@ function serverErrors(error: unknown): Errors {
   return out
 }
 
-/*
-  Tạo hoặc sửa tài khoản. Không có ô mật khẩu: tài khoản mới nhận link đặt mật khẩu qua email (không bao giờ hiện ở đây).
-  Sửa thì không đổi vai trò (khối vai trò riêng ở trang chi tiết); đổi email làm mất dấu đã xác minh và gửi link xác minh mới.
-*/
+// Tạo / sửa tài khoản. Không có ô mật khẩu, tài khoản mới nhận link qua email
+// Đổi email thì mất trạng thái đã xác minh và gửi link xác minh mới
 export function AccountFormDialog({
   open,
   onOpenChange,
@@ -58,8 +57,18 @@ export function AccountFormDialog({
   onUpdated?: (result: UpdatedAdminUser) => void
 }) {
   return (
-    <ModalDialog open={open} onOpenChange={onOpenChange} className="max-w-lg" aria-label={user ? 'Sửa tài khoản' : 'Tạo tài khoản'}>
-      <AccountForm user={user ?? null} onClose={() => onOpenChange(false)} onCreated={onCreated} onUpdated={onUpdated} />
+    <ModalDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      className="max-w-lg"
+      aria-label={user ? 'Sửa tài khoản' : 'Tạo tài khoản'}
+    >
+      <AccountForm
+        user={user ?? null}
+        onClose={() => onOpenChange(false)}
+        onCreated={onCreated}
+        onUpdated={onUpdated}
+      />
     </ModalDialog>
   )
 }
@@ -115,7 +124,11 @@ function AccountForm({
       } else {
         const result = await update.mutateAsync({
           id: user.id,
-          body: { fullName: form.fullName.trim(), phone: form.phone.trim() || null, email: emailChanged ? form.email.trim() : null },
+          body: {
+            fullName: form.fullName.trim(),
+            phone: form.phone.trim() || null,
+            email: emailChanged ? form.email.trim() : null,
+          },
         })
         onUpdated?.(result)
       }
@@ -142,12 +155,29 @@ function AccountForm({
             aria-invalid={Boolean(errors.email)}
           />
         </Field>
-        {emailChanged && <Notice tone="warn">Đổi email thì tài khoản phải xác minh lại email mới; hệ thống gửi link xác minh tới địa chỉ mới.</Notice>}
+        {emailChanged && (
+          <Notice tone="warn">
+            Đổi email thì tài khoản phải xác minh lại email mới; hệ thống gửi link xác minh tới địa chỉ mới.
+          </Notice>
+        )}
         <Field label="Họ tên" htmlFor="account-name" required error={errors.fullName}>
-          <Input id="account-name" maxLength={255} value={form.fullName} onChange={(e) => edit({ fullName: e.target.value })} aria-invalid={Boolean(errors.fullName)} />
+          <Input
+            id="account-name"
+            maxLength={255}
+            value={form.fullName}
+            onChange={(e) => edit({ fullName: e.target.value })}
+            aria-invalid={Boolean(errors.fullName)}
+          />
         </Field>
         <Field label="Điện thoại" htmlFor="account-phone" hint="Không bắt buộc." error={errors.phone}>
-          <Input id="account-phone" type="tel" maxLength={20} value={form.phone} onChange={(e) => edit({ phone: e.target.value })} aria-invalid={Boolean(errors.phone)} />
+          <Input
+            id="account-phone"
+            type="tel"
+            maxLength={20}
+            value={form.phone}
+            onChange={(e) => edit({ phone: e.target.value })}
+            aria-invalid={Boolean(errors.phone)}
+          />
         </Field>
         {creating && (
           <fieldset>
@@ -163,7 +193,11 @@ function AccountForm({
                   key={r.value}
                   label={r.label}
                   checked={form.roles.includes(r.value)}
-                  onChange={(e) => edit({ roles: e.target.checked ? [...form.roles, r.value] : form.roles.filter((x) => x !== r.value) })}
+                  onChange={(e) =>
+                    edit({
+                      roles: e.target.checked ? [...form.roles, r.value] : form.roles.filter((x) => x !== r.value),
+                    })
+                  }
                 />
               ))}
             </div>
@@ -174,7 +208,11 @@ function AccountForm({
             )}
           </fieldset>
         )}
-        {creating && <p className="text-meta text-fg-2">Không cần đặt mật khẩu: người dùng nhận link qua email để tự đặt mật khẩu và kích hoạt tài khoản.</p>}
+        {creating && (
+          <p className="text-meta text-fg-2">
+            Không cần đặt mật khẩu: người dùng nhận link qua email để tự đặt mật khẩu và kích hoạt tài khoản.
+          </p>
+        )}
       </div>
       <DialogFooter className="items-center">
         {failure && (

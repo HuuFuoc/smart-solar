@@ -5,11 +5,7 @@ import type { ButtonVariant } from '@/components/common/stitch-ui/Button'
 import type { StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 import type { TaskAccent, TaskSpec } from '@/components/common/stitch-ui/TaskCard'
 
-/*
- * Dữ liệu giả cho /tech, nội dung lấy từ technician_dashboard_1/screen.png.
- * id của 4 assignment trùng với data/tasks.ts và data/taskDetail.ts;
- * các việc đã xong dùng tiền tố CMP- để không đụng mã work order đang mở.
- */
+// Dữ liệu giả cho /tech, id trùng với data/tasks.ts. Việc đã xong dùng tiền tố CMP-
 
 export const dispatchRibbon = {
   unitLabel: 'Tổ kỹ thuật 12',

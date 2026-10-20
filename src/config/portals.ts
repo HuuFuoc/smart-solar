@@ -5,11 +5,11 @@ export type PortalKey = 'customer' | 'ops' | 'manage' | 'admin' | 'tech'
 export type NavItem = {
   label: string
   to: string
-  /** Tên icon Material Symbols: hiện trước nhãn, và là thứ duy nhất còn thấy khi rail thu gọn. */
+  /** Icon Material Symbols, còn thấy khi rail thu gọn */
   icon: string
   end?: boolean
   badge?: string
-  /** Mẫu đường dẫn khác cũng tính là đang ở mục này, khi trang con không nằm dưới `to` (vd. chi tiết yêu cầu thuộc "Của tôi"). */
+  /** Đường dẫn khác cũng tính là đang ở mục này */
   alsoActiveOn?: string[]
 }
 export type NavGroup = { label?: string; items: NavItem[] }
@@ -21,15 +21,8 @@ export type Portal = {
   groups: NavGroup[]
 }
 
-/*
-  Menu chỉ liệt kê màn đã đổ dữ liệu thật từ backend (quyết định 05/10/2026). Màn còn dùng mock
-  (pages/<portal>/*, data/*.ts) vẫn giữ trong code nhưng ẩn khỏi menu và route; nối API xong thì
-  thêm lại mục ở đây và route trong routes/protectedRoutes.tsx.
-  Từ 08/10/2026 mọi portal (kể cả admin và kỹ thuật viên /tech) dùng chung shell của portal kit, và không còn
-  trang giữ chỗ "chưa có chức năng". /field gộp về /tech.
-  Luồng 1 (12/10/2026): khách đặt giờ khảo sát (Yêu cầu khảo sát), kỹ thuật viên xem việc được giao + lịch làm việc,
-  quản trị có Tài khoản + Kỹ thuật viên, quản lý có Kỹ thuật viên (cấu hình lịch dùng chung trang với quản trị).
-*/
+// Menu chỉ có màn đã dùng dữ liệu thật. Màn mock vẫn giữ code nhưng ẩn khỏi menu và route
+// Nối API xong thì thêm mục ở đây và route trong routes/protectedRoutes.tsx
 export const PORTALS: Record<PortalKey, Portal> = {
   customer: {
     key: 'customer',
@@ -54,7 +47,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
         label: 'Yêu cầu khảo sát',
         items: [
           { label: 'Chờ nhận', to: ROUTES.ops.surveys, icon: 'move_to_inbox', end: true },
-          // Backend chỉ trả chi tiết cho sales đã nhận yêu cầu, nên mọi trang chi tiết đều thuộc "Của tôi".
+          // Backend chỉ trả chi tiết cho sales đã nhận yêu cầu, nên trang chi tiết thuộc "Của tôi"
           { label: 'Của tôi', to: ROUTES.ops.surveysMine, icon: 'assignment_ind', alsoActiveOn: [ROUTES.ops.survey] },
         ],
       },
@@ -88,7 +81,6 @@ export const PORTALS: Record<PortalKey, Portal> = {
       },
     ],
   },
-  /* Vai trò kỹ thuật viên đăng nhập vào /tech (homePathForRole). */
   tech: {
     key: 'tech',
     name: 'Kỹ thuật hiện trường',

@@ -4,14 +4,14 @@ import { formatPower, formatSize, formatWarranty, productTypeLabel } from '@/fea
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { formatMoney } from '@/utils/format'
 
-/*
-  Danh mục sản phẩm trong portal khách hàng và kinh doanh (bộ portal kit). Bảng thay vì lưới thẻ như
-  trang công khai: ở đây người dùng so thông số giữa các sản phẩm, không duyệt ảnh.
-  Cả dòng bấm được (link tên sản phẩm phủ cả dòng bằng ::after): rê chuột thì dòng tô nền, con trỏ thành bàn tay, tên
-  chuyển màu thương hiệu + gạch chân. Lúc nghỉ tên giữ màu chữ chính, không tô xanh cả cột chỉ để báo "đây là link".
-  Bàn phím vẫn Tab tới đúng link tên sản phẩm.
-*/
-export function CatalogTable({ products, detailPath }: { products: ProductResponse[]; detailPath: (id: string) => string }) {
+// Danh mục sản phẩm dạng bảng để so thông số. Cả dòng bấm được nhờ link tên phủ dòng bằng ::after
+export function CatalogTable({
+  products,
+  detailPath,
+}: {
+  products: ProductResponse[]
+  detailPath: (id: string) => string
+}) {
   return (
     <Table stack>
       <thead>

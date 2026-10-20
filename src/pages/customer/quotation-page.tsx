@@ -37,7 +37,9 @@ export function QuotationPage() {
             meta={
               <>
                 <span className="text-fg-2">{data.id}</span>
-                <Badge tone={signing === 'done' ? 'ok' : 'warn'}>{signing === 'done' ? 'Đã chấp nhận' : data.status}</Badge>
+                <Badge tone={signing === 'done' ? 'ok' : 'warn'}>
+                  {signing === 'done' ? 'Đã chấp nhận' : data.status}
+                </Badge>
                 <span>
                   Còn hiệu lực {data.validDays} ngày, hết hạn {data.expires}
                 </span>
@@ -50,10 +52,26 @@ export function QuotationPage() {
 
           <Panel className="mb-12">
             <PanelBody className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
-              <Photo src={data.site.photo} alt={`Mái nhà tại ${data.site.address}`} ratio="aspect-[3/2]" caption={data.site.address} meta={data.site.detail} />
+              <Photo
+                src={data.site.photo}
+                alt={`Mái nhà tại ${data.site.address}`}
+                ratio="aspect-[3/2]"
+                caption={data.site.address}
+                meta={data.site.detail}
+              />
               <StatRow className="md:grid-cols-3">
-                <Stat label="Công suất dàn pin" value={data.capacityKw} unit="kW DC" note="Tấm đơn tinh thể Tier-1 đen toàn phần" />
-                <Stat label="Sản lượng năm đầu" value={fmt.num(data.year1Kwh)} unit="kWh" note="Mô phỏng bằng PVWatts" />
+                <Stat
+                  label="Công suất dàn pin"
+                  value={data.capacityKw}
+                  unit="kW DC"
+                  note="Tấm đơn tinh thể Tier-1 đen toàn phần"
+                />
+                <Stat
+                  label="Sản lượng năm đầu"
+                  value={fmt.num(data.year1Kwh)}
+                  unit="kWh"
+                  note="Mô phỏng bằng PVWatts"
+                />
                 <Stat label="Tỷ lệ bù điện năng" value={`${data.offsetPct}%`} note="Bù trừ điện năng" />
               </StatRow>
             </PanelBody>
@@ -141,12 +159,15 @@ export function QuotationPage() {
                     <div className="mt-3 grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-meta text-fg-3">Hoá đơn điện hiện tại</p>
-                        <p className="tnum text-title font-semibold text-fg-3 line-through">{fmt.usd(data.cashflow.currentBill)}</p>
+                        <p className="tnum text-title font-semibold text-fg-3 line-through">
+                          {fmt.usd(data.cashflow.currentBill)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-meta text-fg-3">Tiền trả góp điện mặt trời</p>
                         <p className="tnum text-title font-semibold">
-                          {fmt.usd(data.cashflow.loanPayment)} <span className="text-meta font-normal text-fg-3">/ tháng</span>
+                          {fmt.usd(data.cashflow.loanPayment)}{' '}
+                          <span className="text-meta font-normal text-fg-3">/ tháng</span>
                         </p>
                       </div>
                     </div>
@@ -155,7 +176,8 @@ export function QuotationPage() {
 
                   {signing === 'done' ? (
                     <Notice tone="ok" title="Đã chấp nhận báo giá" className="mt-6">
-                      {data.id} đã được ký điện tử. {advisor.name} đã nhận thông báo để làm hồ sơ xin giấy phép với thành phố.
+                      {data.id} đã được ký điện tử. {advisor.name} đã nhận thông báo để làm hồ sơ xin giấy phép với
+                      thành phố.
                     </Notice>
                   ) : (
                     <div className="mt-6 space-y-3">
@@ -164,7 +186,12 @@ export function QuotationPage() {
                         onChange={(e) => setAgreed(e.target.checked)}
                         label="Tôi đã xem phạm vi công việc và thông số kỹ thuật, đồng ý giữ mức giá này trong 30 ngày."
                       />
-                      <Button variant="primary" className="w-full" disabled={!agreed || signing === 'busy'} onClick={sign}>
+                      <Button
+                        variant="primary"
+                        className="w-full"
+                        disabled={!agreed || signing === 'busy'}
+                        onClick={sign}
+                      >
                         {signing === 'busy' ? 'Đang xử lý chữ ký' : 'Chấp nhận và ký báo giá'}
                       </Button>
                     </div>
@@ -204,7 +231,8 @@ export function QuotationPage() {
             >
               <DialogTitle>Trao đổi với {advisor.name}</DialogTitle>
               <p className="mt-1 text-body text-fg-2">
-                Có câu hỏi về thiết bị, thêm pin lưu trữ hay cách lắp trên mái? {advisor.name.split(' ')[0]} sẽ trả lời qua cổng khách hàng hoặc điện thoại.
+                Có câu hỏi về thiết bị, thêm pin lưu trữ hay cách lắp trên mái? {advisor.name.split(' ')[0]} sẽ trả lời
+                qua cổng khách hàng hoặc điện thoại.
               </p>
               {sent ? (
                 <Notice tone="ok" className="mt-4">

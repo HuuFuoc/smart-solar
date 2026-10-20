@@ -3,7 +3,7 @@ import { cn } from '@/utils/cn'
 
 export type SwitchProps = Omit<ComponentProps<'input'>, 'type' | 'size'>
 
-/* Công tắc bật/tắt theo khối "Hardware FIDO2 / MFA" trong user_management: 36×20px, bật = primary. */
+// Công tắc 36x20px
 export function Switch({ className, ...rest }: SwitchProps) {
   return (
     <label className={cn('relative inline-flex cursor-pointer items-center', className)}>

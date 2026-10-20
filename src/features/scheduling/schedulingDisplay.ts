@@ -16,20 +16,25 @@ import type { ConflictingAppointmentView } from '@/types/res/adminTechniciansRes
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 import type { TravelCongestionView } from '@/types/res/technicianAvailabilityRes'
 
-/*
- * Nhãn và định dạng của lịch khảo sát (Modules.Scheduling, backend main 4d12e4d, 12/10/2026), dùng chung cho khách hàng,
- * kinh doanh, kỹ thuật viên, quản trị / quản lý. Bảng mã → nhãn ở common/scheduling.ts.
- *
- * Giờ nghiệp vụ là giờ Việt Nam (Asia/Ho_Chi_Minh) bất kể múi giờ của trình duyệt: mọi giờ hiển thị đổi về múi này, ngày
- * gửi API là chuỗi "YYYY-MM-DD" theo giờ Việt Nam (không qua `new Date('2026-10-20')`, vốn hiểu là nửa đêm UTC và lùi
- * một ngày ở múi giờ âm), giờ hẹn gửi kèm offset "+07:00". Việt Nam không đổi giờ mùa hè nên offset cố định.
- */
+// Nhãn và định dạng của lịch khảo sát, dùng chung cho mọi vai trò
+// Luôn dùng giờ Việt Nam: ngày gửi API là "YYYY-MM-DD", giờ hẹn kèm "+07:00"
+// Không dùng `new Date('2026-10-20')` vì nó hiểu là nửa đêm UTC
 
 export const VN_TIME_ZONE = 'Asia/Ho_Chi_Minh'
 const VN_OFFSET = '+07:00'
 
-const dayKeyFormat = new Intl.DateTimeFormat('en-CA', { timeZone: VN_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' })
-const timeFormat = new Intl.DateTimeFormat('vi-VN', { timeZone: VN_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+const dayKeyFormat = new Intl.DateTimeFormat('en-CA', {
+  timeZone: VN_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+const timeFormat = new Intl.DateTimeFormat('vi-VN', {
+  timeZone: VN_TIME_ZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
 
 const WEEKDAYS = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
 const WEEKDAYS_SHORT = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
@@ -89,12 +94,12 @@ export function formatTime(iso: string | null | undefined) {
   return date ? timeFormat.format(date) : '—'
 }
 
-/** "08:00–09:30" */
+/** "08:00-09:30" */
 export function formatTimeRange(startIso: string, endIso: string) {
   return `${formatTime(startIso)}–${formatTime(endIso)}`
 }
 
-/** "Thứ Ba, 20/10/2026, 08:00–09:30" */
+/** "Thứ Ba, 20/10/2026, 08:00-09:30" */
 export function formatAppointment(startIso: string, endIso: string) {
   return `${formatDay(vnDate(startIso), { year: true })}, ${formatTimeRange(startIso, endIso)}`
 }
@@ -112,28 +117,29 @@ export function vnTimestamp(date: string, time: string) {
   return `${date}T${time}:00${VN_OFFSET}`
 }
 
-/** Giới hạn đặt trước của backend (Scheduling:BookingHorizonDays, mặc định 30 ngày kể cả hôm nay). */
+/** Giới hạn đặt trước của backend: 30 ngày kể cả hôm nay */
 export const BOOKING_HORIZON_DAYS = 30
 
-/**
- * Ngày mở sẵn của bộ chọn giờ: hôm nay, trừ khi đã qua 15:30 giờ Việt Nam (giờ bắt đầu cuối cùng của ca mặc định
- * 13:00–17:00 với lịch 90 phút) – khi đó hôm nay gần như chắc chắn không còn giờ, mở ngày mai để khách không gặp ngay
- * một ngày trống.
- */
+/** Ngày mở sẵn: hôm nay, nhưng qua 15:30 thì mở ngày mai vì hôm nay gần như hết giờ trống */
 export function initialBookingDate(now: Date = new Date()) {
   const today = todayVn(now)
   return timeFormat.format(now) >= '15:30' ? addDays(today, 1) : today
 }
 
-/** Giờ bắt đầu từ 07:00 đến 17:00 cách 30 phút: chỗ chọn giờ của kinh doanh (backend kiểm tra lại từng giờ). */
-export const HALF_HOUR_TIMES = Array.from({ length: 21 }, (_, i) => `${pad(7 + Math.floor(i / 2))}:${i % 2 ? '30' : '00'}`)
+/** Giờ bắt đầu từ 07:00 đến 17:00, cách 30 phút, cho kinh doanh chọn (backend kiểm tra lại) */
+export const HALF_HOUR_TIMES = Array.from(
+  { length: 21 },
+  (_, i) => `${pad(7 + Math.floor(i / 2))}:${i % 2 ? '30' : '00'}`,
+)
 
-/* ------------------------------------------------------------------ trạng thái */
-
-export function appointmentStatusMeta(status: string | null | undefined, viewer: AppointmentViewer): { label: string; tone: Tone } {
+export function appointmentStatusMeta(
+  status: string | null | undefined,
+  viewer: AppointmentViewer,
+): { label: string; tone: Tone } {
   if (!status) return { label: '—', tone: 'neutral' }
   return {
-    label: viewer === 'technician' && status === 'ASSIGNED' ? 'Chờ bạn nhận việc' : (APPOINTMENT_LABELS[status] ?? status),
+    label:
+      viewer === 'technician' && status === 'ASSIGNED' ? 'Chờ bạn nhận việc' : (APPOINTMENT_LABELS[status] ?? status),
     tone: APPOINTMENT_TONES[viewer][status] ?? 'neutral',
   }
 }
@@ -143,24 +149,25 @@ export function historyStatusLabel(status: string) {
   return status === 'CANCELLED' ? 'Đã huỷ hoặc đổi giờ' : (APPOINTMENT_LABELS[status] ?? status)
 }
 
-/*
-  Một nhãn cho mỗi yêu cầu của khách, gộp trạng thái yêu cầu + lịch hẹn theo điều khách cần biết: chưa đặt giờ là việc của
-  khách (đỏ); đã đặt, chờ phân công là đang xử lý; đã phân công / kỹ thuật viên đã nhận là đúng tiến độ.
-*/
-export function customerProgress(r: Pick<CustomerSurveyRequestView, 'status' | 'appointment'>): { label: string; tone: Tone } {
+// Gộp trạng thái yêu cầu + lịch hẹn thành một nhãn. Chưa đặt giờ là việc của khách nên tô đỏ
+export function customerProgress(r: Pick<CustomerSurveyRequestView, 'status' | 'appointment'>): {
+  label: string
+  tone: Tone
+} {
   if (r.status === 'COMPLETED') return { label: 'Đã khảo sát xong', tone: 'neutral' }
   if (r.status === 'CANCELLED') return { label: 'Đã huỷ', tone: 'neutral' }
   const a = r.appointment
-  if (!a) return canBook(r) ? { label: 'Chưa đặt giờ khảo sát', tone: 'danger' } : { label: 'Chưa có lịch hẹn', tone: 'neutral' }
+  if (!a)
+    return canBook(r)
+      ? { label: 'Chưa đặt giờ khảo sát', tone: 'danger' }
+      : { label: 'Chưa có lịch hẹn', tone: 'neutral' }
   return appointmentStatusMeta(a.status, 'customer')
 }
 
-/** Khách tự đặt giờ được khi yêu cầu còn chờ / đã có kinh doanh nhận và chưa có lịch hiệu lực. */
+/** Khách đặt giờ được khi yêu cầu chưa có lịch hiệu lực */
 export function canBook(r: Pick<CustomerSurveyRequestView, 'status' | 'appointment'>) {
   return !r.appointment && (r.status === 'PENDING' || r.status === 'ASSIGNED')
 }
-
-/* ---------------------------------------------------------------- đường đi */
 
 const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
 
@@ -199,31 +206,32 @@ export function congestionText(c: TravelCongestionView | null | undefined) {
   return heavy > 0 ? `Kẹt xe nặng khoảng ${formatDistance(heavy)} trên đường` : 'Vietmap không ghi nhận đoạn kẹt nặng'
 }
 
-/* ------------------------------------------------------ lý do không xếp được */
-
 export function feasibilityLabel(code: string) {
   return FEASIBILITY_REASONS[code] ?? code
 }
 
-/** Mã lý do trong câu gốc của server, vd. "…cannot take this appointment (DAILY_LIMIT_REACHED)." → "đã đủ số lịch trong ngày". */
+/** Lấy mã lý do trong câu gốc của server, vd. "...cannot take this appointment (DAILY_LIMIT_REACHED)." thành "đã đủ số lịch trong ngày" */
 export function reasonFromServerMessage(message: string | null | undefined) {
   const code = message?.match(/\(([A-Z_]{4,})\)/)?.[1]
   return code ? feasibilityLabel(code) : null
 }
 
-/** Lịch bị ảnh hưởng trong `error.details.conflictingAppointments` của 409 TECHNICIAN_HAS_CONFLICTING_APPOINTMENTS. */
+/** Danh sách lịch bị ảnh hưởng trong lỗi 409 TECHNICIAN_HAS_CONFLICTING_APPOINTMENTS */
 export function conflictsOf(error: unknown): ConflictingAppointmentView[] {
   if (!isApiError(error) || error.code !== 'TECHNICIAN_HAS_CONFLICTING_APPOINTMENTS') return []
   const details = error.details as { conflictingAppointments?: unknown } | null
-  return Array.isArray(details?.conflictingAppointments) ? (details.conflictingAppointments as ConflictingAppointmentView[]) : []
+  return Array.isArray(details?.conflictingAppointments)
+    ? (details.conflictingAppointments as ConflictingAppointmentView[])
+    : []
 }
 
-/** Câu lỗi của thao tác xếp lịch: TECHNICIAN_NOT_AVAILABLE kèm lý do cụ thể khi server có ghi; 429 kèm số giây chờ. */
+/** Câu lỗi khi xếp lịch, kèm lý do nếu server có ghi */
 export function schedulingErrorMessage(error: unknown) {
   if (isApiError(error)) {
     if (error.code === 'TECHNICIAN_NOT_AVAILABLE') {
       const reason = reasonFromServerMessage(error.serverMessage)
-      if (reason) return `Kỹ thuật viên này không nhận được lịch (${reason}). Danh sách đã được tải lại, hãy chọn người khác.`
+      if (reason)
+        return `Kỹ thuật viên này không nhận được lịch (${reason}). Danh sách đã được tải lại, hãy chọn người khác.`
     }
     if (error.status === 429 && error.retryAfter) return `Bạn thao tác quá nhanh. Thử lại sau ${error.retryAfter} giây.`
   }
@@ -234,16 +242,11 @@ export function recalculationReasonLabel(reason: string) {
   return RECALCULATION_REASONS[reason] ?? reason
 }
 
-/* ----------------------------------------------------------------- tuần làm */
-
 export function weekDayLabel(day: string) {
   return WEEK_DAYS.find((d) => d.value === day)?.label ?? day
 }
 
-/*
-  Kỹ thuật viên có nhận được lịch không (readyForScheduling = tài khoản ACTIVE + đang nhận lịch + có nơi xuất phát thật).
-  Thiếu nơi xuất phát là việc quản trị phải làm (đỏ); tài khoản khoá hay đang tắt nhận lịch là chủ ý (xám).
-*/
+// Kỹ thuật viên nhận được lịch không. Thiếu nơi xuất phát thì tô đỏ, tắt nhận lịch / bị khoá thì xám
 export function technicianReadiness(t: {
   readyForScheduling: boolean
   isActiveUser: boolean
@@ -258,7 +261,6 @@ export function technicianReadiness(t: {
   return { label: 'Đang tắt nhận lịch', tone: 'neutral' }
 }
 
-/** Loại mặt lắp theo tên enum (Rooftop…) mà màn kỹ thuật viên nhận. */
 export function surfaceNameLabel(value: string | null | undefined) {
   return value ? (SURFACE_NAMES[value] ?? value) : '—'
 }

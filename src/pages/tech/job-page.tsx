@@ -43,7 +43,11 @@ function AcknowledgePanel({ job }: { job: TechnicianJobView }) {
     try {
       const result = await acknowledge.mutateAsync(job.appointmentId)
       // Gửi lại khi đã nhận (mất phản hồi lần trước) vẫn là thành công.
-      toast.success(result.alreadyAcknowledged ? 'Bạn đã nhận việc này trước đó.' : 'Đã nhận việc. Kinh doanh và khách sẽ thấy bạn đã xác nhận.')
+      toast.success(
+        result.alreadyAcknowledged
+          ? 'Bạn đã nhận việc này trước đó.'
+          : 'Đã nhận việc. Kinh doanh và khách sẽ thấy bạn đã xác nhận.',
+      )
     } catch (e) {
       toast.error(errorMessage(e))
     }
@@ -55,7 +59,12 @@ function AcknowledgePanel({ job }: { job: TechnicianJobView }) {
         description={`Kinh doanh giao lịch này cho bạn lúc ${formatDateTime(job.assignedAt)}. Xem địa chỉ và số liệu bên dưới rồi xác nhận để mọi người biết bạn đã nhận.`}
       />
       <PanelBody>
-        <Button variant="primary" disabled={acknowledge.isPending} onClick={() => void confirm()} className="w-full sm:w-auto">
+        <Button
+          variant="primary"
+          disabled={acknowledge.isPending}
+          onClick={() => void confirm()}
+          className="w-full sm:w-auto"
+        >
           {acknowledge.isPending ? 'Đang xác nhận…' : 'Nhận việc'}
         </Button>
       </PanelBody>
@@ -63,11 +72,7 @@ function AcknowledgePanel({ job }: { job: TechnicianJobView }) {
   )
 }
 
-/*
-  Chi tiết một lịch khảo sát được giao (GET /api/technicians/me/appointments/{id}): giờ, đường tới, công trình, khách hàng,
-  số liệu khách khai, mô phỏng khách chọn (kỹ thuật viên được phân công đọc được). Luồng 1 dừng ở "Nhận việc": không có
-  thao tác "Hoàn thành khảo sát" ở đây.
-*/
+// Chi tiết một lịch khảo sát được giao. Chỉ tới bước "Nhận việc", chưa có "Hoàn thành khảo sát"
 export function TechJobPage() {
   const { id } = useParams()
   const query = useMyAppointmentQuery(id)
@@ -116,14 +121,20 @@ export function TechJobPage() {
               <div className="min-w-0 space-y-4 lg:col-span-2">
                 {job.status === 'ASSIGNED' && <AcknowledgePanel job={job} />}
                 {job.status === 'ACKNOWLEDGED' && (
-                  <Notice tone="ok">Bạn đã nhận việc lúc {formatDateTime(job.acknowledgedAt)}. Tới công trình đúng giờ hẹn.</Notice>
+                  <Notice tone="ok">
+                    Bạn đã nhận việc lúc {formatDateTime(job.acknowledgedAt)}. Tới công trình đúng giờ hẹn.
+                  </Notice>
                 )}
 
                 <Panel>
                   <PanelHeader
                     title="Đường tới công trình"
                     action={
-                      <ButtonLink to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`} size="sm" icon="calendar_month">
+                      <ButtonLink
+                        to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`}
+                        size="sm"
+                        icon="calendar_month"
+                      >
                         Lịch cả ngày
                       </ButtonLink>
                     }
@@ -164,7 +175,11 @@ export function TechJobPage() {
                   <PanelHeader title="Số liệu khách khai" description="Đo lại tại công trình để đối chiếu." />
                   <PanelBody className="space-y-6">
                     <StatRow className="lg:grid-cols-3">
-                      <Stat label="Mặt lắp (rộng × dài)" value={s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)}`} unit="m" />
+                      <Stat
+                        label="Mặt lắp (rộng × dài)"
+                        value={s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)}`}
+                        unit="m"
+                      />
                       <Stat label="Dùng được / tổng" value={`${n(s.usableAreaM2)} / ${n(s.totalAreaM2)}`} unit="m²" />
                       <Stat label="Độ dốc" value={n(s.surfaceTiltDegree)} unit="độ" />
                     </StatRow>
@@ -172,9 +187,15 @@ export function TechJobPage() {
                       items={[
                         {
                           k: 'Hướng mái',
-                          v: s.surfaceAzimuthDegree == null ? '—' : `${directionLabel(s.surfaceAzimuthDegree)} (${n(s.surfaceAzimuthDegree)}°)`,
+                          v:
+                            s.surfaceAzimuthDegree == null
+                              ? '—'
+                              : `${directionLabel(s.surfaceAzimuthDegree)} (${n(s.surfaceAzimuthDegree)}°)`,
                         },
-                        { k: 'Vật cản', v: s.obstacleCount > 0 ? `${s.obstacleCount} vật cản` : s.hasObstruction ? 'Có' : 'Không' },
+                        {
+                          k: 'Vật cản',
+                          v: s.obstacleCount > 0 ? `${s.obstacleCount} vật cản` : s.hasObstruction ? 'Có' : 'Không',
+                        },
                       ]}
                     />
                   </PanelBody>
@@ -227,7 +248,16 @@ export function TechJobPage() {
                           k: 'Email',
                           v: job.customer.email ? (
                             <a className="ui-link wrap-anywhere" href={`mailto:${job.customer.email}`}>
-                              {job.customer.email.split('@').map((part, i) => (i === 0 ? part : [<Fragment key={i}>@<wbr /></Fragment>, part]))}
+                              {job.customer.email.split('@').map((part, i) =>
+                                i === 0
+                                  ? part
+                                  : [
+                                      <Fragment key={i}>
+                                        @<wbr />
+                                      </Fragment>,
+                                      part,
+                                    ],
+                              )}
                             </a>
                           ) : (
                             '—'

@@ -2,7 +2,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 import type { RoleScopeTone, RoleSummary } from '@/data/roles'
 
-/* Thẻ role trong cột "System Roles" của roles_permissions; thẻ đang chọn có vạch primary bên trái. */
+// Thẻ đang chọn có vạch màu bên trái
 const scopeToneClasses: Record<RoleScopeTone, string> = {
   protected: 'font-semibold text-tertiary-container',
   custom: 'text-on-surface-variant',
@@ -37,7 +37,9 @@ export function RoleCard({ role, selected, onSelect, onClone, onEdit, className 
         className,
       )}
     >
-      {selected && <div aria-hidden="true" className="absolute bottom-3 left-0 top-3 w-1.5 rounded-r-full bg-primary" />}
+      {selected && (
+        <div aria-hidden="true" className="absolute bottom-3 left-0 top-3 w-1.5 rounded-r-full bg-primary" />
+      )}
 
       <div className="flex items-start justify-between gap-space-xs">
         <div className="flex min-w-0 items-center gap-space-xs">

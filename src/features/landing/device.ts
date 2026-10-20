@@ -1,11 +1,11 @@
-/* Khả năng của thiết bị, đọc lúc cần (không đọc khi import) để trang chủ không tạo context WebGL thừa. */
+// Khả năng của thiết bị, chỉ đọc khi cần để không tạo context WebGL thừa
 
-/** Người dùng bật tiết kiệm dữ liệu: không tải trước ảnh hero của giao diện kia, không tải mô hình 3D. */
+/** Bật tiết kiệm dữ liệu thì không tải trước ảnh hero còn lại và không tải mô hình 3D */
 export function saveData() {
   return (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true
 }
 
-/** three r186 chỉ tạo context WebGL2, nên máy chỉ có WebGL1 cũng coi như không vẽ được 3D. */
+/** three r186 chỉ dùng WebGL2, máy chỉ có WebGL1 coi như không vẽ được 3D */
 export function supportsWebGL2() {
   try {
     return Boolean(document.createElement('canvas').getContext('webgl2'))
@@ -14,7 +14,7 @@ export function supportsWebGL2() {
   }
 }
 
-/** Điện thoại / máy cảm ứng hoặc màn hẹp: cảnh 3D chạy bản nhẹ. */
+/** Điện thoại, máy cảm ứng hoặc màn hẹp thì cảnh 3D chạy bản nhẹ */
 export function liteDevice() {
   return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768
 }

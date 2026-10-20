@@ -64,7 +64,13 @@ export function ManageOperationsPage() {
                     <p className="tnum text-title font-semibold">{p.count}</p>
                     <p className="text-body">{p.label}</p>
                     <p className="text-meta text-fg-3">{p.note}</p>
-                    <p className={i === data.throughput.phases.length - 1 ? 'tnum mt-1 text-meta font-medium text-fg' : 'tnum mt-1 text-meta text-fg-2'}>
+                    <p
+                      className={
+                        i === data.throughput.phases.length - 1
+                          ? 'tnum mt-1 text-meta font-medium text-fg'
+                          : 'tnum mt-1 text-meta text-fg-2'
+                      }
+                    >
                       {i === data.throughput.phases.length - 1 ? p.avg : `TB ${p.avg}`}
                     </p>
                   </li>
@@ -102,17 +108,33 @@ export function ManageOperationsPage() {
                           {s.metro}. {s.lead}.
                         </p>
                       </Td>
-                      <Td label="Thời gian hoàn thành" className="tnum text-right font-medium">{s.turnaround}</Td>
-                      <Td label="Đạt nghiệm thu lần đầu" className="tnum text-right">{s.pass}</Td>
-                      <Td label="Đang lắp" className="tnum text-right">{s.installs} công trình</Td>
-                      <Td label="Hiệu suất sử dụng" className="tnum hidden text-right wide:table-cell">{s.utilization}</Td>
-                      <Td label="Số ngày không sự cố" className="tnum hidden text-right wide:table-cell">{s.safety}</Td>
+                      <Td label="Thời gian hoàn thành" className="tnum text-right font-medium">
+                        {s.turnaround}
+                      </Td>
+                      <Td label="Đạt nghiệm thu lần đầu" className="tnum text-right">
+                        {s.pass}
+                      </Td>
+                      <Td label="Đang lắp" className="tnum text-right">
+                        {s.installs} công trình
+                      </Td>
+                      <Td label="Hiệu suất sử dụng" className="tnum hidden text-right wide:table-cell">
+                        {s.utilization}
+                      </Td>
+                      <Td label="Số ngày không sự cố" className="tnum hidden text-right wide:table-cell">
+                        {s.safety}
+                      </Td>
                     </Tr>
                   ))}
                 </tbody>
               </Table>
               <PanelBody>
-                <Photo src={data.squads.benchmark.src} alt={data.squads.benchmark.title} ratio="aspect-[21/9]" caption={`Công trình mẫu: ${data.squads.benchmark.title}`} meta={data.squads.benchmark.meta} />
+                <Photo
+                  src={data.squads.benchmark.src}
+                  alt={data.squads.benchmark.title}
+                  ratio="aspect-[21/9]"
+                  caption={`Công trình mẫu: ${data.squads.benchmark.title}`}
+                  meta={data.squads.benchmark.meta}
+                />
               </PanelBody>
             </Panel>
 
@@ -169,10 +191,18 @@ export function ManageOperationsPage() {
                       <p className="font-medium">{r.authority}</p>
                       <p className="text-meta text-fg-3">{r.note}</p>
                     </Td>
-                    <Td label="Khu vực" className="hidden md:table-cell">{r.region}</Td>
-                    <Td label="Thời gian xử lý TB" className="tnum text-right">{r.days} ngày</Td>
-                    <Td label="Tỷ lệ đạt" className="tnum text-right">{r.pass}</Td>
-                    <Td label="Hồ sơ đang xét" className="tnum text-right">{r.audits} giấy phép</Td>
+                    <Td label="Khu vực" className="hidden md:table-cell">
+                      {r.region}
+                    </Td>
+                    <Td label="Thời gian xử lý TB" className="tnum text-right">
+                      {r.days} ngày
+                    </Td>
+                    <Td label="Tỷ lệ đạt" className="tnum text-right">
+                      {r.pass}
+                    </Td>
+                    <Td label="Hồ sơ đang xét" className="tnum text-right">
+                      {r.audits} giấy phép
+                    </Td>
                     <Td label="Rủi ro SLA">
                       <Badge tone={r.tone}>{r.risk}</Badge>
                     </Td>

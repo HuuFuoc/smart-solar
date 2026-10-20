@@ -1,19 +1,10 @@
-/*
-  Mọi endpoint của backend (docs/api/swagger.json), tính từ địa chỉ gốc /api của client axios: '/products' ở đây
-  là GET /api/products. KHÁC với ROUTES (routes/paths.ts): ROUTES là đường dẫn trang trên trình duyệt, không gửi lên backend.
-
-  - Mỗi tag swagger một nhóm, tên nhóm là tag viết camelCase (AdminUsers → adminUsers), giống tên file types/req|res.
-  - `base`: đường dẫn gốc của nhóm, không có tham số; `byId(id)`: thêm /{id}; các khoá khác là đoạn cuối của đường
-    dẫn viết camelCase (…/send-password-reset → sendPasswordReset).
-  - Một đường dẫn dùng cho nhiều method (GET + PUT …/surface) chỉ có một khoá; method nằm ở service.
-  - Tham số tự encodeURIComponent, service chỉ truyền giá trị thô.
-  Backend thêm endpoint: thêm vào đúng nhóm ở đây rồi mới gọi trong services/<tên>Service.ts.
-*/
+// Endpoint của backend, tính từ /api: '/products' là GET /api/products. Khác ROUTES là đường dẫn trang trên trình duyệt
+// Mỗi tag swagger một nhóm, method nằm ở service. Tham số đã được encodeURIComponent ở đây
 
 const encode = (value: string) => encodeURIComponent(value)
 
 export const ENDPOINTS = {
-  /* ---- Xác thực ---- */
+  // Xác thực
   auth: {
     register: '/auth/register',
     verifyEmail: '/auth/verify-email',
@@ -26,7 +17,7 @@ export const ENDPOINTS = {
     changePassword: '/auth/change-password',
   },
 
-  /* ---- Sản phẩm ---- */
+  // Sản phẩm
   products: {
     base: '/products',
     byId: (id: string) => `/products/${encode(id)}`,
@@ -37,7 +28,7 @@ export const ENDPOINTS = {
     status: (id: string) => `/admin/products/${encode(id)}/status`,
   },
 
-  /* ---- Khách hàng: hồ sơ → địa điểm → đánh giá sơ bộ → mặt lắp → mô phỏng → đặt giờ khảo sát ---- */
+  // Khách hàng: hồ sơ, địa điểm, đánh giá sơ bộ, mặt lắp, mô phỏng, đặt giờ khảo sát
   customers: {
     base: '/customers/me',
     sites: '/customers/me/sites',
@@ -62,10 +53,11 @@ export const ENDPOINTS = {
     base: '/customers/me/survey-requests',
     byId: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}`,
     booking: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/booking`,
-    bookingCancel: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/booking/cancel`,
+    bookingCancel: (surveyRequestId: string) =>
+      `/customers/me/survey-requests/${encode(surveyRequestId)}/booking/cancel`,
   },
 
-  /* ---- Kinh doanh ---- */
+  // Kinh doanh
   surveyRequests: {
     pending: '/survey-requests/pending',
     my: '/survey-requests/my',
@@ -79,7 +71,7 @@ export const ENDPOINTS = {
     base: '/technicians/availability',
   },
 
-  /* ---- Kỹ thuật viên ---- */
+  // Kỹ thuật viên
   technicianAppointments: {
     base: '/technicians/me/appointments',
     byId: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}`,
@@ -90,7 +82,7 @@ export const ENDPOINTS = {
     schedule: (technicianUserId: string) => `/technicians/${encode(technicianUserId)}/schedule`,
   },
 
-  /* ---- Quản trị ---- */
+  // Quản trị
   adminUsers: {
     base: '/admin/users',
     byId: (userId: string) => `/admin/users/${encode(userId)}`,
@@ -102,7 +94,8 @@ export const ENDPOINTS = {
     base: '/admin/technicians',
     profile: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/profile`,
     workingSchedule: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/working-schedule`,
-    unavailablePeriods: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/unavailable-periods`,
+    unavailablePeriods: (technicianUserId: string) =>
+      `/admin/technicians/${encode(technicianUserId)}/unavailable-periods`,
     unavailablePeriod: (technicianUserId: string, periodId: string) =>
       `/admin/technicians/${encode(technicianUserId)}/unavailable-periods/${encode(periodId)}`,
   },

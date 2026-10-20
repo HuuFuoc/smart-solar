@@ -109,10 +109,22 @@ export function RolesPage() {
           title={rolesPageHeader.title}
           actions={
             <>
-              <Button variant="ghost" size="md" iconLeft="ios_share" className="h-11 text-on-surface shadow-sm hover:bg-surface-container-high" onClick={() => setToast(rolesToasts.export)}>
+              <Button
+                variant="ghost"
+                size="md"
+                iconLeft="ios_share"
+                className="h-11 text-on-surface shadow-sm hover:bg-surface-container-high"
+                onClick={() => setToast(rolesToasts.export)}
+              >
                 {rolesPageHeader.actions.export}
               </Button>
-              <Button variant="ghost" size="md" iconLeft="verified_user" className="h-11 text-secondary shadow-sm hover:bg-surface-container-high" onClick={() => setToast(rolesToasts.audit)}>
+              <Button
+                variant="ghost"
+                size="md"
+                iconLeft="verified_user"
+                className="h-11 text-secondary shadow-sm hover:bg-surface-container-high"
+                onClick={() => setToast(rolesToasts.audit)}
+              >
                 {rolesPageHeader.actions.audit}
               </Button>
               <Button size="md" iconLeft="add_moderator" className="h-11">
@@ -143,7 +155,9 @@ export function RolesPage() {
             <div className="flex items-center justify-between gap-space-sm rounded-xl bg-surface-container-low/60 p-3">
               <div className="flex flex-col">
                 <span className="text-label-sm text-outline">{systemRolesPanel.governed.label}</span>
-                <span className="mt-1 text-data-metric leading-none text-primary">{systemRolesPanel.governed.value}</span>
+                <span className="mt-1 text-data-metric leading-none text-primary">
+                  {systemRolesPanel.governed.value}
+                </span>
                 <span className="mt-0.5 flex items-center gap-1 text-label-sm text-tertiary-container">
                   <Icon name="check_circle" className="text-[13px]" /> {systemRolesPanel.governed.note}
                 </span>
@@ -238,7 +252,12 @@ export function RolesPage() {
                 <span className="text-label-md text-on-surface">{statusMessage}</span>
               </div>
               <div className="flex w-full items-center justify-end gap-space-sm sm:w-auto">
-                <Button variant="tonal" size="md" className="h-11 text-on-surface hover:bg-surface-container-high" onClick={handleReset}>
+                <Button
+                  variant="tonal"
+                  size="md"
+                  className="h-11 text-on-surface hover:bg-surface-container-high"
+                  onClick={handleReset}
+                >
                   {matrixLabels.reset}
                 </Button>
                 <Button size="md" iconLeft="save" className="h-11 px-space-lg" onClick={handleSave}>
@@ -262,7 +281,10 @@ export function RolesPage() {
                 </span>
               </div>
             </div>
-            <button type="button" className="flex shrink-0 items-center gap-1 text-label-md font-semibold text-primary hover:underline">
+            <button
+              type="button"
+              className="flex shrink-0 items-center gap-1 text-label-md font-semibold text-primary hover:underline"
+            >
               <span>{auditTrailFooter.linkLabel}</span>
             </button>
           </Card>

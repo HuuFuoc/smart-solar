@@ -17,7 +17,7 @@ export const technicianAdminKeys = {
   schedule: (id: string, date: string) => [...technicianAdminKeys.all, 'schedule', id, date] as const,
 }
 
-/** `enabled`: layout chỉ gọi khi phiên quản trị / quản lý đã khôi phục. */
+/** `enabled`: layout chỉ gọi khi phiên quản trị / quản lý đã khôi phục */
 export function useTechniciansQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<TechnicianProfileView[], ApiError>({
     queryKey: technicianAdminKeys.list(),
@@ -42,7 +42,7 @@ export function useUnavailablePeriodsQuery(id: string | undefined) {
   })
 }
 
-/** Đang chờ tính lại đường đi thì tự tải lại mỗi 30 giây cho tới khi xong (xem useMyScheduleQuery). */
+/** Đang chờ tính lại đường đi thì tải lại mỗi 30 giây */
 export function useTechnicianScheduleQuery(id: string | undefined, date: string) {
   return useQuery<TechnicianScheduleView, ApiError>({
     queryKey: technicianAdminKeys.schedule(id ?? '', date),
@@ -52,10 +52,7 @@ export function useTechnicianScheduleQuery(id: string | undefined, date: string)
   })
 }
 
-/*
- * Mọi thay đổi cấu hình có thể đổi giờ trống của khách và đường đi đã lưu (backend xếp hàng tính lại): làm mới cả cụm
- * kỹ thuật viên – hồ sơ, giờ làm, lịch nghỉ, lịch ngày – kể cả khi lỗi.
- */
+// Thay đổi cấu hình có thể đổi giờ trống và đường đi, nên làm mới tất cả kể cả khi lỗi
 function useInvalidateTechnicians() {
   const queryClient = useQueryClient()
   return () => queryClient.invalidateQueries({ queryKey: technicianAdminKeys.all })
