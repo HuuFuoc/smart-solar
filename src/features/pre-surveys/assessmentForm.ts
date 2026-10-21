@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { HCM_PROVINCE } from '@/services/administrativeUnitService'
+import { wardCenter } from '@/features/pre-surveys/hcmWardCenters'
 import type { ApiError } from '@/services/api/errors'
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
-import { capitalize, formatNumber, parseDecimal } from '@/utils/number'
 
 // Form của bước hồ sơ và bước địa điểm.
 // Ô nhập giữ dạng chuỗi, schema vừa kiểm tra vừa đổi form sang đúng kiểu request của backend.
@@ -25,8 +25,6 @@ export type SiteForm = {
   /** Mã của phường, xã đã chọn trong danh sách, rỗng khi chưa chọn */
   communeCode: string
   streetLine: string
-  latitude: string
-  longitude: string
   installationSurfaceType: string
   surfaceMaterial: string
   note: string
@@ -46,8 +44,6 @@ export const EMPTY_SITE: SiteForm = {
   ward: '',
   communeCode: '',
   streetLine: '',
-  latitude: '',
-  longitude: '',
   installationSurfaceType: '1',
   surfaceMaterial: '',
   note: '',
@@ -65,8 +61,6 @@ export function siteToForm(site: CreatePropertySiteRequest): SiteForm {
     ward: site.ward ?? '',
     communeCode: site.communeCode ?? '',
     streetLine: site.streetLine ?? '',
-    latitude: site.latitude == null ? '' : String(site.latitude),
-    longitude: site.longitude == null ? '' : String(site.longitude),
     installationSurfaceType: String(site.installationSurfaceType ?? 1),
     surfaceMaterial: site.surfaceMaterial ?? '',
     note: site.note ?? '',
@@ -78,22 +72,12 @@ function textOrNull(value: string) {
   return value.trim() || null
 }
 
-/** Câu lỗi khi toạ độ trống, gõ sai hoặc nằm ngoài khoảng [min, max] */
-function coordinateIssue(text: string, label: string, min: number, max: number) {
-  const value = parseDecimal(text)
-  if (value === null) return `Nhập ${label}.`
-  if (!Number.isFinite(value)) return `Nhập ${label} bằng số.`
-  if (value < min) return `${capitalize(label)} từ ${min} đến ${max}.`
-  if (value > max) return `Kiểm tra lại ${label}; tối đa ${formatNumber(max)}.`
-  return null
-}
-
 function addIssue(ctx: z.RefinementCtx, field: keyof SiteForm, message: string | null) {
   if (message) ctx.addIssue({ code: 'custom', path: [field], message })
 }
 
 // Luật kiểm tra lấy theo validator của backend.
-// Riêng toạ độ và mã phường, xã thì bắt buộc thêm: toạ độ để ước tính sản lượng, mã phường để xếp kỹ thuật viên.
+// Riêng mã phường, xã thì bắt buộc thêm: để xếp kỹ thuật viên theo khu vực và để lấy toạ độ ước tính sản lượng.
 
 export const profileSchema = z
   .object({
@@ -120,8 +104,6 @@ export const siteSchema = z
     ward: z.string().trim().min(1, 'Chọn phường, xã.'),
     communeCode: z.string(),
     streetLine: z.string(),
-    latitude: z.string(),
-    longitude: z.string(),
     installationSurfaceType: z.enum(['1', '2', '3', '4', '5'], {
       error: 'Chọn bề mặt lắp đặt.',
     }),
@@ -131,29 +113,27 @@ export const siteSchema = z
   .superRefine((form, ctx) => {
     // Gõ tay thì không có mã phường, xã mà backend cần để xếp kỹ thuật viên theo khu vực
     if (form.ward.trim() && !form.communeCode) addIssue(ctx, 'ward', 'Chọn phường, xã trong danh sách.')
-    addIssue(ctx, 'latitude', coordinateIssue(form.latitude, 'vĩ độ', -90, 90))
-    addIssue(ctx, 'longitude', coordinateIssue(form.longitude, 'kinh độ', -180, 180))
-    // (0, 0) là giá trị mặc định khi bỏ trống, không phải vị trí thật
-    if (parseDecimal(form.latitude) === 0 && parseDecimal(form.longitude) === 0) {
-      addIssue(ctx, 'latitude', 'Toạ độ (0, 0) không phải vị trí công trình. Lấy toạ độ trên Google Maps.')
+  })
+  .transform((form): CreatePropertySiteRequest => {
+    // Khách không nhập toạ độ: lấy điểm giữa của phường, xã đã chọn (đủ để ước tính sản lượng)
+    const center = wardCenter(form.communeCode)
+    return {
+      name: textOrNull(form.name),
+      province: HCM_PROVINCE.name,
+      provinceCode: HCM_PROVINCE.code,
+      district: null,
+      ward: textOrNull(form.ward),
+      communeCode: form.communeCode,
+      streetLine: textOrNull(form.streetLine),
+      latitude: center?.latitude ?? null,
+      longitude: center?.longitude ?? null,
+      installationSurfaceType: Number(
+        form.installationSurfaceType,
+      ) as CreatePropertySiteRequest['installationSurfaceType'],
+      surfaceMaterial: textOrNull(form.surfaceMaterial),
+      note: textOrNull(form.note),
     }
   })
-  .transform((form): CreatePropertySiteRequest => ({
-    name: textOrNull(form.name),
-    province: HCM_PROVINCE.name,
-    provinceCode: HCM_PROVINCE.code,
-    district: null,
-    ward: textOrNull(form.ward),
-    communeCode: form.communeCode,
-    streetLine: textOrNull(form.streetLine),
-    latitude: parseDecimal(form.latitude),
-    longitude: parseDecimal(form.longitude),
-    installationSurfaceType: Number(
-      form.installationSurfaceType,
-    ) as CreatePropertySiteRequest['installationSurfaceType'],
-    surfaceMaterial: textOrNull(form.surfaceMaterial),
-    note: textOrNull(form.note),
-  }))
 
 /** Kết quả kiểm tra form: hoặc có `data` (đã đổi sang request), hoặc có `errors` theo từng ô */
 type CheckResult<F, Out> = { data: Out; errors?: undefined } | { data?: undefined; errors: FormErrors<F> }

@@ -12,10 +12,10 @@ import { usePageCrumb } from '@/components/layout/page-crumb'
 import { Stat, StatRow } from '@/components/common/ui/stat'
 import { EmptyState } from '@/components/common/ui/states'
 import {
+  addressMapUrl,
   directionLabel,
   formatAddress,
   formatDateTime,
-  hasCoordinates,
   isOverdue,
   shortCode,
   surfaceTypeLabel,
@@ -88,13 +88,6 @@ function nextStep(r: SurveyRequestDetail): TrackerNext {
     title: `${a.assignedTechnicianName ?? 'Kỹ thuật viên'} sẽ khảo sát tại công trình`,
     body: `${whenText(a.startsAt, a.endsAt)}. Gọi khách xác nhận trước ngày hẹn.`,
   }
-}
-
-/** Có toạ độ thì ghim đúng điểm, không thì tìm theo địa chỉ. */
-function mapUrl(r: SurveyRequestDetail) {
-  if (hasCoordinates(r.latitude, r.longitude)) return `https://www.google.com/maps?q=${r.latitude},${r.longitude}`
-  const address = formatAddress(r)
-  return address === '—' ? null : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 }
 
 // Mô phỏng khách đã chọn + các lần chạy khác, sales chỉ được xem
@@ -173,7 +166,7 @@ export function OpsSurveyRequestPage() {
     <QueryBoundary query={query}>
       {(r) => {
         const status = surveyStatusMeta(r.status)
-        const map = mapUrl(r)
+        const map = addressMapUrl(formatAddress(r))
         return (
           <>
             <PageHeader
@@ -252,23 +245,6 @@ export function OpsSurveyRequestPage() {
                       items={[
                         { k: 'Bề mặt', v: surfaceTypeLabel(r.installationSurfaceType) },
                         { k: 'Vật liệu', v: r.surfaceMaterial || '—' },
-                        ...(hasCoordinates(r.latitude, r.longitude)
-                          ? [
-                              {
-                                k: 'Toạ độ',
-                                v: (
-                                  <a
-                                    className="tnum ui-link"
-                                    href={`https://www.google.com/maps?q=${r.latitude},${r.longitude}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                  >
-                                    {r.latitude}, {r.longitude}
-                                  </a>
-                                ),
-                              },
-                            ]
-                          : []),
                       ]}
                     />
                   </PanelBody>

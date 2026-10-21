@@ -73,6 +73,16 @@ const workKey = (account: string) => `smartsolar.assessment-work.${account}`
 
 const isObject = (v: unknown): v is Record<string, unknown> => Boolean(v) && typeof v === 'object' && !Array.isArray(v)
 
+/** Chỉ lấy các ô form hiện có. Ô đã bỏ (như vĩ độ, kinh độ của địa điểm) mà còn lại thì form bị coi là đã sửa */
+function knownFields<T extends object>(empty: T, stored: unknown): T {
+  const result = { ...empty }
+  if (!isObject(stored)) return result
+  for (const key of Object.keys(empty) as (keyof T & string)[]) {
+    if (typeof stored[key] === typeof empty[key]) result[key] = stored[key] as T[typeof key]
+  }
+  return result
+}
+
 export function readWork(account: string): AssessmentWork | null {
   try {
     const raw = localStorage.getItem(workKey(account))
@@ -84,7 +94,7 @@ export function readWork(account: string): AssessmentWork | null {
       step: w.step,
       // Ghép với form rỗng phòng khi dữ liệu cũ thiếu field
       profile: { ...EMPTY_PROFILE, ...(isObject(w.profile) ? w.profile : {}) },
-      site: { ...EMPTY_SITE, ...(isObject(w.site) ? w.site : {}) },
+      site: knownFields(EMPTY_SITE, w.site),
       surface: {
         ...EMPTY_SURFACE_FORM,
         ...surface,

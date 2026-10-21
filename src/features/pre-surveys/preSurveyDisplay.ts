@@ -44,8 +44,6 @@ export function isInHcm(latitude: number, longitude: number) {
   })
 }
 
-export const HCM_COORDINATE_HINT = 'vĩ độ (số đầu) khoảng 10.3 đến 11.6, kinh độ (số sau) khoảng 106.3 đến 107.6'
-
 /** Dùng dấu chấm như Google Maps, tránh nhầm với dấu phẩy ngăn cách */
 export function formatCoordinates(latitude: number, longitude: number) {
   // Tối đa 5 chữ số lẻ (chính xác tới khoảng 1 m), bỏ số 0 thừa ở cuối
@@ -55,6 +53,11 @@ export function formatCoordinates(latitude: number, longitude: number) {
 
 export function mapsUrl(latitude: number, longitude: number) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`
+}
+
+/** Tìm công trình trên Google Maps theo địa chỉ. Toạ độ đã lưu chỉ là điểm giữa phường, xã nên không dùng để chỉ đường */
+export function addressMapUrl(address: string) {
+  return address === '—' ? null : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 }
 
 /** Chưa có kỹ thuật viên xác nhận lịch khảo sát */

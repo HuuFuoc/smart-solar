@@ -11,13 +11,7 @@ import { SimulationSelection } from '@/features/pre-surveys/SimulationSelection'
 import { SimulationSkeleton, SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
 import { useRetryCountdown } from '@/hooks/useRetryCountdown'
 import { useCreateSimulationMutation } from '@/hooks/useSimulations'
-import {
-  HCM_COORDINATE_HINT,
-  directionLabel,
-  formatCoordinates,
-  isInHcm,
-  mapsUrl,
-} from '@/features/pre-surveys/preSurveyDisplay'
+import { directionLabel, formatCoordinates, isInHcm } from '@/features/pre-surveys/preSurveyDisplay'
 import { MOUNTING_TYPES, type MountingType } from '@/common/simulation'
 import { formatKwh, formatOne, formatTwo } from '@/features/pre-surveys/simulationDisplay'
 import {
@@ -286,25 +280,14 @@ export function SimulationWorkspace({
   )
 }
 
-function MapLink({ latitude, longitude }: { latitude: number; longitude: number }) {
-  return (
-    <a className="tap ui-link font-medium" href={mapsUrl(latitude, longitude)} target="_blank" rel="noreferrer">
-      Xem trên bản đồ
-      <span className="sr-only"> (mở tab mới)</span>
-    </a>
-  )
-}
-
 /** Toạ độ của địa điểm nếu có (null khi chưa khai) */
 function surfaceLocation(surface: PreSurveySurfaceView) {
   if (surface.latitude == null || surface.longitude == null) return null
   return { latitude: surface.latitude, longitude: surface.longitude }
 }
 
-/** Một dòng tóm tắt mặt lắp đã lưu, kèm toạ độ nếu nằm trong TP.HCM */
+/** Một dòng tóm tắt mặt lắp đã lưu */
 function SurfaceSummary({ surface, onEditSurface }: { surface: PreSurveySurfaceView; onEditSurface: () => void }) {
-  const location = surfaceLocation(surface)
-  const showLocation = location !== null && isInHcm(location.latitude, location.longitude)
   return (
     <p className="text-body text-fg-2">
       Mặt lắp {formatTwo(surface.surfaceWidthM)} × {formatTwo(surface.surfaceLengthM)} m, dốc{' '}
@@ -313,26 +296,21 @@ function SurfaceSummary({ surface, onEditSurface }: { surface: PreSurveySurfaceV
       <button type="button" className="tap ui-link font-medium" onClick={onEditSurface}>
         Sửa mặt lắp
       </button>
-      {showLocation && (
-        <span className="block">
-          Toạ độ <span className="tnum">{formatCoordinates(location.latitude, location.longitude)}</span>.{' '}
-          <MapLink latitude={location.latitude} longitude={location.longitude} />
-        </span>
-      )}
     </p>
   )
 }
 
-/** Cảnh báo về toạ độ trước khi chạy: chưa có toạ độ, hoặc toạ độ nằm ngoài TP.HCM */
+// Cảnh báo trước khi chạy, chỉ gặp ở địa điểm cũ (toạ độ do khách tự nhập trước đây): thiếu toạ độ hoặc nằm ngoài TP.HCM.
+// Chọn lại phường, xã rồi lưu thì địa điểm mới lấy vị trí theo phường
 function LocationNotices({ surface, onEditSite }: { surface: PreSurveySurfaceView; onEditSite: () => void }) {
   const location = surfaceLocation(surface)
 
   if (location === null) {
     return (
-      <Notice tone="warn" title="Địa điểm chưa có toạ độ">
-        Kết quả sẽ chỉ có bố trí tấm, chưa có sản lượng điện.{' '}
+      <Notice tone="warn" title="Chưa ước tính được sản lượng cho địa điểm này">
+        Địa điểm lưu trước đây chưa có vị trí nên kết quả chỉ có bố trí tấm.{' '}
         <button type="button" className="tap ui-link font-medium" onClick={onEditSite}>
-          Thêm toạ độ ở bước Địa điểm
+          Chọn lại phường, xã ở bước Địa điểm
         </button>
       </Notice>
     )
@@ -341,16 +319,13 @@ function LocationNotices({ surface, onEditSite }: { surface: PreSurveySurfaceVie
   // Toạ độ ngoài TP.HCM thì khí hậu, sản lượng sẽ tính ở nơi khác
   if (!isInHcm(location.latitude, location.longitude)) {
     return (
-      <Notice tone="warn" title="Toạ độ địa điểm nằm ngoài TP.HCM">
+      <Notice tone="warn" title="Vị trí đã lưu của địa điểm nằm ngoài TP.HCM">
         Khí hậu và sản lượng sẽ tính tại{' '}
         <span className="tnum">{formatCoordinates(location.latitude, location.longitude)}</span>, không phải công trình
-        của bạn. Toạ độ ở TP.HCM có {HCM_COORDINATE_HINT}.
-        <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-          <button type="button" className="tap ui-link font-medium" onClick={onEditSite}>
-            Sửa toạ độ ở bước Địa điểm
-          </button>
-          <MapLink latitude={location.latitude} longitude={location.longitude} />
-        </span>
+        của bạn.{' '}
+        <button type="button" className="tap ui-link font-medium" onClick={onEditSite}>
+          Chọn lại phường, xã ở bước Địa điểm
+        </button>
       </Notice>
     )
   }
