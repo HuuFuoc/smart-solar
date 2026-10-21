@@ -127,7 +127,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Thay đổi này làm hỏng lịch hẹn đã có. Đổi giờ hoặc chuyển các lịch bên dưới cho người khác trước.',
   TECHNICIAN_PROFILE_REQUIRED: 'Lưu hồ sơ nhận lịch của kỹ thuật viên trước.',
   // Lắp đặt (mọi vai trò)
-  FEATURE_PENDING_MIGRATION: 'Chức năng lắp đặt chưa được bật trên máy chủ. Liên hệ quản trị hệ thống.',
+  FEATURE_PENDING_MIGRATION: 'Chức năng lắp đặt đang tạm tắt. Liên hệ quản trị hệ thống.',
   VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
   INSTALLATION_PROJECT_NOT_FOUND: 'Không tìm thấy công trình, hoặc bạn không còn quyền xem công trình này.',
   INSTALLATION_INVALID_STATE:
@@ -136,7 +136,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_REASON_REQUIRED: 'Ghi lý do.',
   INSTALLATION_NOT_HANDED_OVER: 'Công trình chưa được bàn giao.',
   INSTALLATION_EVIDENCE_NOT_FOUND: 'Không tìm thấy ảnh này trong công trình.',
-  INSTALLATION_EVIDENCE_OBJECT_MISSING: 'Ảnh không còn trên kho lưu trữ nên không xem được nữa.',
+  INSTALLATION_EVIDENCE_OBJECT_MISSING: 'Ảnh này không còn nên không xem được nữa.',
   // Lắp đặt: kỹ thuật viên
   INSTALLATION_ASSIGNMENT_NOT_PENDING:
     'Bạn đã nhận việc này nên không từ chối được nữa. Báo quản lý nếu cần đổi người.',
@@ -167,7 +167,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   FILE_UPLOAD_NOT_ALLOWED: 'Tài khoản của bạn không được tải loại tệp này lên.',
   FILE_TYPE_NOT_ALLOWED: 'Loại tệp này không được nhận ở đây. Kiểm tra loại tệp và đuôi tên tệp.',
   FILE_TOO_LARGE: 'Tệp rỗng hoặc lớn hơn cỡ cho phép.',
-  FILE_BUCKET_NOT_ALLOWED: 'Kho lưu trữ chưa được cấu hình trên máy chủ.',
+  FILE_BUCKET_NOT_ALLOWED: 'Chức năng tải tệp đang tạm tắt. Liên hệ quản trị hệ thống.',
   FILE_INVALID_OBJECT_KEY: 'Vị trí lưu tệp không hợp lệ. Tải lại tệp.',
   FILE_ALREADY_REGISTERED: 'Tệp này đã được đăng ký. Tải lại tệp.',
   FILE_NOT_FOUND: 'Không tìm thấy tệp, hoặc tệp do tài khoản khác tải lên.',
@@ -176,26 +176,42 @@ const ERROR_MESSAGES: Record<string, string> = {
   FILE_NOT_OWNED: 'Tệp này do tài khoản khác tải lên.',
   FILE_ALREADY_LINKED: 'Ảnh này đã được gắn trước đó.',
   FILE_CONTENT_CHANGED: 'Tệp trên kho đã thay đổi sau khi xác minh nên không dùng được nữa.',
-  FILE_STORAGE_UNAVAILABLE: 'Chưa xác minh được tệp vì tạm thời không đọc được kho lưu trữ. Thử lại sau ít phút.',
+  FILE_STORAGE_UNAVAILABLE: 'Hệ thống chưa kiểm tra được tệp. Thử lại sau ít phút.',
   FILE_NOT_SIGNABLE: 'Không mở được tệp này.',
-  FILE_OBJECT_MISSING: 'Tệp không còn trên kho lưu trữ.',
-  STORAGE_NOT_CONFIGURED: 'Kho lưu trữ tệp chưa được cấu hình trên máy chủ.',
-  STORAGE_UNAVAILABLE: 'Tạm thời không kết nối được kho lưu trữ tệp. Thử lại sau ít phút.',
+  FILE_OBJECT_MISSING: 'Tệp này không còn nữa.',
+  STORAGE_NOT_CONFIGURED: 'Chức năng tải tệp đang tạm tắt. Liên hệ quản trị hệ thống.',
+  STORAGE_UNAVAILABLE: 'Tạm thời chưa mở được tệp. Thử lại sau ít phút.',
   // Gói dịch vụ sau lắp đặt (khách hàng). Mua gói dùng mã PROJECT_NOT_FOUND khi không tìm thấy hợp đồng
   AFTER_SALES_PROJECT_NOT_FOUND: 'Không tìm thấy hợp đồng hoặc công trình này trong tài khoản của bạn.',
   AFTER_SALES_VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
   AFTER_SALES_INVALID_STATE: 'Trạng thái đã thay đổi nên không làm được thao tác này. Tải lại để xem trạng thái mới.',
-  AFTER_SALES_STALE_REVISION: 'Gói vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  AFTER_SALES_STALE_REVISION: 'Dữ liệu vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
   AFTER_SALES_REASON_REQUIRED: 'Ghi lý do.',
   SERVICE_PACKAGE_NOT_FOUND: 'Không tìm thấy gói này. Danh sách gói đã được tải lại.',
   SERVICE_PACKAGE_INACTIVE: 'Gói này đã ngừng bán. Danh sách gói đã được tải lại.',
   SERVICE_SUBSCRIPTION_NOT_FOUND: 'Không tìm thấy gói đã mua.',
   SERVICE_SUBSCRIPTION_OVERLAP:
     'Hợp đồng này đã có một kỳ gói cùng loại đã thanh toán và chưa bắt đầu. Mỗi loại chỉ mua trước được một kỳ.',
+  // Bảo hành, sửa chữa, bảo trì
+  AFTER_SALES_NOT_HANDED_OVER: 'Công trình chưa bàn giao nên chưa gửi yêu cầu bảo hành, bảo trì được.',
+  SERVICE_REQUEST_NOT_FOUND: 'Không tìm thấy yêu cầu này.',
+  SERVICE_ITEM_NOT_FOUND: 'Không tìm thấy hạng mục này. Đã tải lại, kiểm tra rồi thử lại.',
+  SERVICE_VISIT_NOT_FOUND: 'Không tìm thấy buổi hẹn, hoặc buổi hẹn không còn giao cho bạn.',
+  SERVICE_QUOTATION_NOT_FOUND: 'Không tìm thấy báo giá.',
+  SERVICE_QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Liên hệ Smart Solar để nhận báo giá mới.',
+  AFTER_SALES_ASSET_NOT_FOUND: 'Thiết bị đã chọn không thuộc công trình này.',
+  AFTER_SALES_PAYMENT_REQUIRED: 'Khách chưa thanh toán phần phải trả tiền nên chưa làm được.',
+  AFTER_SALES_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh hiện trường của buổi này trước khi gửi báo cáo.',
+  AFTER_SALES_CHANGE_TOO_LATE: 'Đã quá hạn đổi hoặc huỷ trên mạng. Liên hệ Smart Solar.',
+  AFTER_SALES_TECHNICIAN_UNAVAILABLE:
+    'Kỹ thuật viên không nhận được buổi hẹn vào giờ này (trùng lịch, nghỉ hoặc ngoài giờ làm). Chọn người khác hoặc đổi giờ.',
+  MAINTENANCE_BOOKING_TOO_SOON: 'Ngày hẹn quá gần so với thời gian phải đặt trước. Chọn ngày xa hơn.',
+  SALES_TASK_NOT_FOUND: 'Không tìm thấy việc này.',
+  SALES_TASK_ALREADY_CLAIMED: 'Việc này vừa có người nhận trước. Danh sách đã được tải lại.',
   // Thanh toán PayOS
   PAYMENT_CHECKOUT_IN_PROGRESS:
     'Đang có một lần thanh toán chưa xong cho gói cùng loại hoặc cho hợp đồng này. Thanh toán hoặc huỷ đơn đó trước.',
-  PAYMENT_PROVIDER_NOT_CONFIGURED: 'Thanh toán trực tuyến chưa được bật trên máy chủ này.',
+  PAYMENT_PROVIDER_NOT_CONFIGURED: 'Thanh toán trực tuyến đang tạm tắt. Liên hệ Smart Solar.',
   PAYMENT_PROVIDER_ERROR: 'PayOS chưa tạo được link thanh toán. Thử lại sau ít phút.',
   PAYMENT_AMOUNT_NOT_SUPPORTED: 'Số tiền thanh toán không hợp lệ hoặc vượt giới hạn của một lần thanh toán.',
   PAYMENT_TOO_MANY_ATTEMPTS: 'Bạn đã tạo nhiều link thanh toán trong ít phút. Chờ một lát rồi thử lại.',
@@ -217,7 +233,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   // Mã chung
   AUTH_FORBIDDEN: 'Tài khoản của bạn không có quyền xem nội dung này.',
   RESOURCE_NOT_FOUND: 'Không tìm thấy dữ liệu yêu cầu. Kiểm tra lại đường dẫn.',
-  REQUEST_NOT_ACCEPTABLE: 'Máy chủ không hỗ trợ thao tác này.',
+  REQUEST_NOT_ACCEPTABLE: 'Hệ thống không hỗ trợ thao tác này.',
 }
 
 /** Bản dịch theo mã lỗi; chưa có trong bảng thì trả null. */
@@ -236,13 +252,13 @@ const STATUS_MESSAGES: Record<number, string> = {
   409: 'Dữ liệu đã tồn tại trên hệ thống.',
   422: 'Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại.',
   429: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.',
-  500: 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.',
-  502: 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.',
-  503: 'Máy chủ đang bảo trì. Vui lòng thử lại sau.',
+  500: 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.',
+  502: 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.',
+  503: 'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
 }
 
 /** Mất mạng / không gọi được server (status = 0). */
-export const NETWORK_ERROR_MESSAGE = 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.'
+export const NETWORK_ERROR_MESSAGE = 'Không kết nối được Smart Solar. Kiểm tra mạng rồi thử lại.'
 
 export function messageForStatus(status: number) {
   if (status === 0) return NETWORK_ERROR_MESSAGE

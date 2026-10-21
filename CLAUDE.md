@@ -285,6 +285,27 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
   - Kỳ bắt đầu khi đã thanh toán VÀ công trình đã bàn giao (mốc muộn hơn); ngày bắt đầu bảo vệ (`coverageStartsAt`) do BE ghi
     sau thời gian chờ (cài đặt `afterSales.disasterWaitingDays`, khách không đọc được) nên FE chỉ in ngày BE trả.
 
+**Luồng 3: bảo hành, sửa chữa, bảo trì lẻ** (tài liệu BE `guides/after-sales-services.md`). Menu "Bảo hành, sửa chữa" ở cả 5
+cổng; nhãn trạng thái ở `common/afterSales.ts`, điều kiện + nhãn ở `features/after-sales/serviceDisplay.ts` (bám handler BE,
+BE vẫn kiểm lại), response viết tay (`customerAfterSalesRes`, `technicianAfterSalesRes`, `salesAfterSalesRes`) vì swagger
+chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
+
+- Khách: khối "Bảo hành, sửa chữa" trên `/customer/projects/:id` khi đã bàn giao (hạn bảo hành, Báo lỗi, Đặt bảo trì lẻ – đặt
+  trước 7 ngày, BE tính đủ 7 × 24 giờ nên mở từ ngày thứ 8), `/customer/after-sales` + `/:id`: xác nhận giờ hẹn khác giờ đã
+  chọn, duyệt / từ chối báo giá, thanh toán PayOS (`useQuotationPaymentQuery` hỏi lại link 10 giây một lần), nghiệm thu
+  (không đạt thì bắt buộc lý do), huỷ khi chưa bắt đầu làm.
+- Quản lý + quản trị (trang dùng chung `pages/after-sales-request(s)-page.tsx`): xếp / đổi buổi hẹn (loại buổi theo
+  `visitToSchedule`, gửi `expectedRevision`; kỹ thuật viên ngoài khu vực của công trình thì bắt lý do, khu vực lấy từ dự án
+  thi công), quyết định ai chịu chi phí từng hạng mục, xét khi khách không đồng ý kết quả, xét yêu cầu huỷ việc đã trả tiền.
+- Kỹ thuật viên `/tech/after-sales` + `/:id` (theo mã buổi hẹn): nhận / từ chối, bắt đầu (sớm nhất 2 giờ trước giờ hẹn, khoá
+  nút và ghi rõ giờ), ảnh hiện trường (`uploadFile` mục đích `SERVICE_EVIDENCE`, gắn vào buổi hẹn; BE bắt ít nhất 1 ảnh trước
+  báo cáo), báo cáo kiểm tra (không lỗi hoặc danh sách hạng mục), báo cáo sửa / bảo trì, khách vắng.
+- Kinh doanh `/ops/after-sales` (chỉ việc báo giá; việc nhắc khách chưa làm) + `/:id` theo mã yêu cầu: nhận việc rồi lập báo
+  giá. Báo lỗi: mỗi hạng mục khách trả tiền đúng một dòng; bảo trì lẻ: dòng tự ghi. Tiền là số nguyên VND.
+- Chưa làm: gói thiên tai hỗ trợ sửa chữa (claim), đặt lịch lượt bảo trì của gói, đổi giờ bảo trì phía khách, sửa ngay tại chỗ
+  (`stayOnSite`), thay thiết bị trong báo cáo, việc nhắc khách của kinh doanh, hoàn tiền.
+- Chữ trên giao diện không nhắc tới backend, máy chủ, token, kho lưu trữ hay mã lỗi; lỗi BE luôn qua bảng `errors.ts`.
+
 **Mặt lắp + mô phỏng do backend tính** (BE nhánh `feature/presurvey-flow`, commit 833ff3c, nối 09/10/2026; tài liệu tích hợp
 của BE: `Solar-Client-dnl/fe.md`). Người dùng chốt 09/10/2026: số liệu khai tự tính từ mặt lắp, bỏ mô phỏng FE giả định 3:2
 (`roofLayout.ts`, `RoofScene.tsx`, `RoofSimulation.tsx` đã xoá), cho gửi khi chưa chạy mô phỏng (chỉ nhắc), editor 2D lấy ô

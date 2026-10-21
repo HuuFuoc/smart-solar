@@ -81,6 +81,21 @@ export const ENDPOINTS = {
     cancelSubscription: (subscriptionId: string) =>
       `/customers/me/after-sales/subscriptions/${encode(subscriptionId)}/cancel`,
     payment: (attemptId: string) => `/customers/me/after-sales/payments/${encode(attemptId)}`,
+    // Bảo hành, sửa chữa, bảo trì lẻ
+    warranty: (projectId: string) => `/customers/me/after-sales/installations/${encode(projectId)}/warranty`,
+    faultRequests: '/customers/me/after-sales/fault-requests',
+    oneTimeMaintenance: '/customers/me/after-sales/one-time-maintenance',
+    requests: '/customers/me/after-sales/requests',
+    request: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}`,
+    cancelRequest: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}/cancel`,
+    completion: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}/completion`,
+    confirmAppointment: (requestId: string) =>
+      `/customers/me/after-sales/requests/${encode(requestId)}/confirm-appointment`,
+    acceptQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/accept`,
+    rejectQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/reject`,
+    checkoutQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/checkout`,
+    evidenceUrl: (requestId: string, evidenceId: string) =>
+      `/customers/me/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
   },
 
   // Kinh doanh
@@ -96,6 +111,14 @@ export const ENDPOINTS = {
   },
   technicianAvailability: {
     base: '/technicians/availability',
+  },
+  salesAfterSales: {
+    warrantyOptions: '/sales/after-sales/warranty-options',
+    openTasks: '/sales/after-sales/tasks/open',
+    myTasks: '/sales/after-sales/tasks/mine',
+    claimTask: (taskId: string) => `/sales/after-sales/tasks/${encode(taskId)}/claim`,
+    request: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}`,
+    quotations: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}/quotations`,
   },
 
   // Kỹ thuật viên
@@ -123,6 +146,18 @@ export const ENDPOINTS = {
     completionReport: (projectId: string) =>
       `/technicians/me/installation-projects/${encode(projectId)}/completion-report`,
   },
+  technicianAfterSales: {
+    visits: '/technicians/me/after-sales/visits',
+    visit: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}`,
+    respond: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/respond`,
+    start: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/start`,
+    evidence: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/evidence`,
+    evidenceUrl: (visitId: string, evidenceId: string) =>
+      `/technicians/me/after-sales/visits/${encode(visitId)}/evidence/${encode(evidenceId)}/url`,
+    inspection: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/inspection`,
+    workReport: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/work-report`,
+    absence: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/absence`,
+  },
 
   // Thi công, phía quản lý và quản trị
   managerInstallations: {
@@ -140,6 +175,18 @@ export const ENDPOINTS = {
     evidenceUrl: (projectId: string, evidenceId: string) =>
       `/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
     handover: (projectId: string) => `/installation-projects/${encode(projectId)}/handover`,
+  },
+  // Bảo hành, sửa chữa, bảo trì (quản lý và quản trị)
+  managerAfterSales: {
+    requests: '/manager/after-sales/requests',
+    request: (requestId: string) => `/manager/after-sales/requests/${encode(requestId)}`,
+    visits: (requestId: string) => `/manager/after-sales/requests/${encode(requestId)}/visits`,
+    coverage: (requestId: string) => `/manager/after-sales/requests/${encode(requestId)}/coverage`,
+    disputeReview: (requestId: string) => `/manager/after-sales/requests/${encode(requestId)}/dispute-review`,
+    cancellationDecision: (requestId: string) =>
+      `/manager/after-sales/requests/${encode(requestId)}/cancellation-decision`,
+    evidenceUrl: (requestId: string, evidenceId: string) =>
+      `/manager/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
   },
 
   // Quản trị
