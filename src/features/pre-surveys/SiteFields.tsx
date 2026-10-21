@@ -247,7 +247,7 @@ function WardField({
       {communes.isError && (
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-meta text-danger">
           Không tải được danh sách phường, xã.
-          <Button size="sm" variant="ghost" bleed={false} icon="refresh" onClick={() => void communes.refetch()}>
+          <Button size="sm" variant="secondary" icon="refresh" onClick={() => void communes.refetch()}>
             Thử lại
           </Button>
         </span>

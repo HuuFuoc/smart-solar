@@ -129,7 +129,7 @@ export function PaymentDialog({ attemptId, onClose }: { attemptId: string | null
         </>
       )}
       <DialogFooter>
-        <Button variant="ghost" onClick={onClose}>
+        <Button icon="close" variant="secondary" onClick={onClose}>
           Đóng
         </Button>
       </DialogFooter>

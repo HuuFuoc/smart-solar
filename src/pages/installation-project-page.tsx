@@ -245,7 +245,7 @@ function InstallationProjectPage() {
                     </a>
                   )}
                   {canCancel(p.status) && (
-                    <Button variant="danger" onClick={() => setCancelling(true)}>
+                    <Button icon="cancel" variant="danger" onClick={() => setCancelling(true)}>
                       Huỷ dự án
                     </Button>
                   )}

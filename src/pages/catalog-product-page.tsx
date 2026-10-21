@@ -95,7 +95,7 @@ export function CustomerCatalogProductPage() {
   return (
     <CatalogProductPage
       action={
-        <ButtonLink to={ROUTES.customer.assessment} variant="primary">
+        <ButtonLink icon="send" to={ROUTES.customer.assessment} variant="primary">
           Gửi đánh giá sơ bộ
         </ButtonLink>
       }

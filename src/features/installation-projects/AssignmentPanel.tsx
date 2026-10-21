@@ -307,10 +307,11 @@ function AssignDialog({ project, onClose }: { project: InstallationStaffView; on
 
       <DialogFooter className="items-center">
         <ErrorLine message={error ?? blocker} />
-        <Button variant="ghost" disabled={busy} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={busy} onClick={onClose}>
           Huỷ
         </Button>
         <Button
+          icon="how_to_reg"
           variant="primary"
           disabled={!selected || !searchedCurrent || !!blocker || busy}
           onClick={() => void submit()}
@@ -337,7 +338,7 @@ export function AssignmentPanel({ project }: { project: InstallationStaffView })
         action={
           assignable ? (
             current ? (
-              <Button size="sm" icon="edit_calendar" onClick={() => setOpen(true)}>
+              <Button variant="soft" size="sm" icon="edit_calendar" onClick={() => setOpen(true)}>
                 Đổi người hoặc lịch
               </Button>
             ) : (

@@ -52,13 +52,14 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
         {quotation.status === 'ISSUED' && (
           <div className="flex flex-wrap gap-3">
             <Button
+              icon="check_circle"
               variant="primary"
               disabled={busy}
               onClick={() => void run(() => accept.mutateAsync(quotation.quotationId), 'Đã đồng ý báo giá.')}
             >
               {accept.isPending ? 'Đang gửi…' : 'Đồng ý báo giá'}
             </Button>
-            <Button variant="secondary" disabled={busy} onClick={() => setRejecting(true)}>
+            <Button icon="block" variant="danger" disabled={busy} onClick={() => setRejecting(true)}>
               Từ chối
             </Button>
           </div>
@@ -82,6 +83,7 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
                 </a>
               ) : (
                 <Button
+                  icon="payments"
                   variant="primary"
                   disabled={busy}
                   onClick={() =>
@@ -92,11 +94,16 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
                 </Button>
               )}
               {payable && (
-                <Button variant="secondary" disabled={payment.isFetching} onClick={() => void payment.refetch()}>
+                <Button
+                  icon="refresh"
+                  variant="secondary"
+                  disabled={payment.isFetching}
+                  onClick={() => void payment.refetch()}
+                >
                   {payment.isFetching ? 'Đang kiểm tra…' : 'Kiểm tra lại'}
                 </Button>
               )}
-              <Button variant="ghost" bleed={false} disabled={busy} onClick={() => setRejecting(true)}>
+              <Button icon="block" variant="danger" disabled={busy} onClick={() => setRejecting(true)}>
                 Không làm nữa
               </Button>
             </div>
@@ -113,6 +120,7 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
         title="Từ chối báo giá?"
         description="Các hạng mục trong báo giá sẽ không được làm. Phần được bảo hành (nếu có) vẫn làm bình thường."
         submitLabel="Từ chối báo giá"
+        icon="block"
         variant="danger"
         onSubmit={(reason) => reject.mutateAsync({ quotationId: quotation.quotationId, reason })}
         onClose={() => setRejecting(false)}

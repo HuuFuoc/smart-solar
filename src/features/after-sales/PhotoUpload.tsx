@@ -38,6 +38,7 @@ export function PhotoUpload({ visitId }: { visitId: string }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <FileButton
+          variant="soft"
           icon="add_a_photo"
           accept={acceptFor(PURPOSE)}
           multiple

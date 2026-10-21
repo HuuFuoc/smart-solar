@@ -118,7 +118,13 @@ export function ProductsTable({ products, onEdit, onToggleStatus, onDelete, busy
               <Td label="Thao tác" className="text-right whitespace-nowrap">
                 {/* Không dùng lề âm vì ô cuối sát mép bảng, lấn ra sẽ sinh thanh cuộn ngang */}
                 <div className="inline-flex items-center gap-1">
-                  <Button size="sm" icon="edit" aria-label={`Sửa ${p.name ?? ''}`} onClick={() => onEdit(p)}>
+                  <Button
+                    variant="soft"
+                    size="sm"
+                    icon="edit"
+                    aria-label={`Sửa ${p.name ?? ''}`}
+                    onClick={() => onEdit(p)}
+                  >
                     Sửa
                   </Button>
                   <WithTooltip label={busy ? 'Đang đổi…' : active ? 'Ngừng bán (ẩn khỏi danh mục)' : 'Mở bán lại'}>

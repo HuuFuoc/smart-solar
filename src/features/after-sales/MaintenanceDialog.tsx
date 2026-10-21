@@ -104,10 +104,10 @@ function MaintenanceForm({
         </div>
       )}
       <DialogFooter>
-        <Button variant="ghost" disabled={request.isPending} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={request.isPending} onClick={onClose}>
           Đóng
         </Button>
-        <Button variant="primary" disabled={request.isPending} onClick={() => void submit()}>
+        <Button icon="send" variant="primary" disabled={request.isPending} onClick={() => void submit()}>
           {request.isPending ? 'Đang gửi…' : 'Gửi yêu cầu'}
         </Button>
       </DialogFooter>

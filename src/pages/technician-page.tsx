@@ -96,7 +96,11 @@ function TechnicianPage({ accountPattern }: { accountPattern?: string }) {
               title={technician.fullName}
               actions={
                 accountPattern ? (
-                  <ButtonLink to={withId(accountPattern, technician.technicianUserId)} icon="manage_accounts">
+                  <ButtonLink
+                    variant="info"
+                    to={withId(accountPattern, technician.technicianUserId)}
+                    icon="manage_accounts"
+                  >
                     Tài khoản
                   </ButtonLink>
                 ) : undefined

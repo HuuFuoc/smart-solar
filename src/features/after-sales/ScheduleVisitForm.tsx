@@ -135,7 +135,7 @@ export function ScheduleVisitForm({
           <Notice tone="danger">{issue ?? error}</Notice>
         </div>
       )}
-      <Button type="submit" variant="primary" disabled={schedule.isPending}>
+      <Button icon="edit_calendar" type="submit" variant="primary" disabled={schedule.isPending}>
         {schedule.isPending ? 'Đang lưu…' : moving ? 'Đổi lịch' : 'Xếp lịch'}
       </Button>
     </form>

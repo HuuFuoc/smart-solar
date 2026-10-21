@@ -117,11 +117,17 @@ export function BookingPanel({
           </span>
         )}
         {onCancel && (
-          <Button variant="ghost" bleed={false} disabled={busy} onClick={onCancel}>
+          <Button icon="close" variant="secondary" disabled={busy} onClick={onCancel}>
             Thôi
           </Button>
         )}
-        <Button variant="primary" disabled={!slot || busy} onClick={() => void confirm()} className="w-full sm:w-auto">
+        <Button
+          icon="edit_calendar"
+          variant="primary"
+          disabled={!slot || busy}
+          onClick={() => void confirm()}
+          className="w-full sm:w-auto"
+        >
           {busy ? 'Đang giữ chỗ…' : rescheduling ? 'Đổi sang giờ này' : 'Đặt lịch khảo sát'}
         </Button>
       </PanelFooter>

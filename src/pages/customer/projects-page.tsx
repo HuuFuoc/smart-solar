@@ -84,7 +84,12 @@ export function CustomerProjectsPage() {
                       </div>
                       <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
                         <Badge tone={status.tone}>{status.label}</Badge>
-                        <ButtonLink to={withId(ROUTES.customer.project, p.projectId)} size="sm" variant="soft">
+                        <ButtonLink
+                          icon="visibility"
+                          to={withId(ROUTES.customer.project, p.projectId)}
+                          size="sm"
+                          variant="info"
+                        >
                           {decide ? 'Xem và nghiệm thu' : 'Xem tiến độ'}
                         </ButtonLink>
                       </div>

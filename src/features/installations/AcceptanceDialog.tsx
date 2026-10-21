@@ -18,6 +18,7 @@ const COPY = {
     label: 'Ghi chú',
     hint: `Không bắt buộc, tối đa ${REASON_MAX} ký tự.`,
     submit: 'Nghiệm thu',
+    icon: 'check_circle',
     pending: 'Đang gửi…',
     back: 'Xem lại',
   },
@@ -27,6 +28,7 @@ const COPY = {
     label: 'Chỗ cần sửa',
     hint: `Bắt buộc, tối đa ${REASON_MAX} ký tự.`,
     submit: 'Gửi yêu cầu sửa lại',
+    icon: 'replay',
     pending: 'Đang gửi…',
     back: 'Huỷ',
   },
@@ -121,10 +123,10 @@ export function AcceptanceDialog({
             </div>
           )}
           <DialogFooter>
-            <Button variant="ghost" disabled={decide.isPending} onClick={close}>
+            <Button icon="close" variant="secondary" disabled={decide.isPending} onClick={close}>
               {copy.back}
             </Button>
-            <Button variant="primary" disabled={decide.isPending} onClick={() => void confirm()}>
+            <Button icon={copy.icon} variant="primary" disabled={decide.isPending} onClick={() => void confirm()}>
               {decide.isPending ? copy.pending : copy.submit}
             </Button>
           </DialogFooter>

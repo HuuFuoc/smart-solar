@@ -168,7 +168,7 @@ function WeekForm({
                   ))}
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="soft"
                     icon="add"
                     onClick={() =>
                       update(d.value, [...periods, { start: periods.at(-1)?.end ?? '13:00', end: '17:00' }])
@@ -184,7 +184,7 @@ function WeekForm({
       </ul>
       <ConflictList conflicts={conflicts} />
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" disabled={save.isPending} onClick={() => void submit()}>
+        <Button icon="save" variant="primary" disabled={save.isPending} onClick={() => void submit()}>
           {save.isPending ? 'Đang lưu…' : 'Lưu giờ làm riêng'}
         </Button>
         {(issue || (failure !== null && conflicts.length === 0)) && (
@@ -256,7 +256,12 @@ export function WorkingScheduleEditor({ technicianUserId }: { technicianUserId: 
             <>
               <ConflictList conflicts={conflicts} />
               <div className="flex flex-wrap items-center gap-3">
-                <Button variant="primary" disabled={save.isPending} onClick={() => void switchToDefault()}>
+                <Button
+                  icon="restart_alt"
+                  variant="primary"
+                  disabled={save.isPending}
+                  onClick={() => void switchToDefault()}
+                >
                   {save.isPending ? 'Đang lưu…' : 'Dùng giờ chung'}
                 </Button>
                 {failure !== null && conflicts.length === 0 && (

@@ -61,7 +61,7 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
       </div>
       <ConflictList conflicts={conflicts} />
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" variant="primary" disabled={save.isPending}>
+        <Button icon="save" type="submit" variant="primary" disabled={save.isPending}>
           {save.isPending ? 'Đang lưu…' : `Lưu khu vực (${selected.size})`}
         </Button>
         {failure !== null && conflicts.length === 0 && (

@@ -109,7 +109,7 @@ export function QuotationForm({ request }: { request: ServiceRequestView }) {
             {!fault && lines.length > 1 && (
               <Button
                 size="sm"
-                variant="danger-quiet"
+                variant="danger"
                 icon="delete"
                 className="self-end"
                 onClick={() => setLines((all) => all.filter((_, i) => i !== index))}
@@ -122,6 +122,7 @@ export function QuotationForm({ request }: { request: ServiceRequestView }) {
       </ul>
       {!fault && (
         <Button
+          variant="soft"
           size="sm"
           icon="add"
           onClick={() => setLines((all) => [...all, { itemId: null, description: '', parts: '', labor: '' }])}
@@ -162,7 +163,7 @@ export function QuotationForm({ request }: { request: ServiceRequestView }) {
           <Notice tone="danger">{error}</Notice>
         </div>
       )}
-      <Button variant="primary" disabled={issue.isPending} onClick={() => void submit()}>
+      <Button icon="send" variant="primary" disabled={issue.isPending} onClick={() => void submit()}>
         {issue.isPending ? 'Đang gửi…' : 'Gửi báo giá'}
       </Button>
     </div>

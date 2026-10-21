@@ -242,6 +242,7 @@ export function SimulationWorkspace({
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line pt-4">
             <Button
+              icon="play_arrow"
               variant="soft"
               onClick={runSimulation}
               disabled={running || countdown.secondsLeft > 0 || panels.length === 0}

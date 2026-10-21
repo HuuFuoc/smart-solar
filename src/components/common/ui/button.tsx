@@ -4,14 +4,15 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { WithTooltip } from '@/components/common/ui/tooltip'
 import { cx } from '@/utils/cx'
 
-// Các kiểu nút:
-// primary: hành động chính của trang, mỗi màn một nút
-// soft: hành động chính của từng dòng (Nhận yêu cầu, Mở bán lại)
-// secondary: hành động phụ. ghost: thao tác kín đáo (Huỷ, Lưu nháp, Xoá bộ lọc)
-// warn: tạm dừng, hoàn tác được (Đổi bề mặt, Tạm khoá)
-// danger: phá huỷ hoàn tác được (Ngừng bán). danger-quiet: nút xoá lặp lại trên từng dòng, chỉ đỏ khi rê chuột
+// Màu theo loại việc, nút nào cũng có icon:
+// primary: việc chính của màn (Gửi, Lưu, Đồng ý), mỗi màn một nút
+// soft: thêm, sửa, đổi, nhận việc (Thêm ảnh, Sửa, Đổi lịch)
+// info: xem, mở chi tiết (Xem, Xử lý, Lập báo giá)
+// secondary: đóng hộp thoại, thử lại, tải về. ghost: thao tác kín đáo (Xoá bộ lọc)
+// warn: tạm dừng, việc cần chú ý (Ngừng bán, Khách vắng, Trả lại việc)
+// danger: từ chối, huỷ, xoá, báo lỗi. danger-quiet: nút xoá lặp lại trên từng dòng, chỉ đỏ khi rê chuột
 // danger-solid: nút xác nhận trong hộp thoại xoá
-type Variant = 'primary' | 'soft' | 'secondary' | 'ghost' | 'warn' | 'danger' | 'danger-quiet' | 'danger-solid'
+type Variant = 'primary' | 'soft' | 'info' | 'secondary' | 'ghost' | 'warn' | 'danger' | 'danger-quiet' | 'danger-solid'
 type Size = 'sm' | 'md'
 
 /* Disabled is a colour, not an opacity, so borders and fills stay crisp. */
@@ -21,6 +22,7 @@ const base =
 const variants: Record<Variant, string> = {
   primary: 'bg-accent text-on-accent not-disabled:hover:bg-accent-hover disabled:bg-surface-3',
   soft: 'border border-accent-line/50 bg-accent-soft text-accent-fg not-disabled:hover:border-accent-line not-disabled:hover:bg-accent-muted disabled:border-line disabled:bg-surface-2',
+  info: 'border border-info/45 bg-canvas text-info not-disabled:hover:border-info not-disabled:hover:bg-info-soft disabled:border-line',
   secondary:
     'border border-line-2 bg-canvas text-fg not-disabled:hover:border-fg-3 not-disabled:hover:bg-surface-2 disabled:border-line',
   ghost: 'text-fg-2 not-disabled:hover:bg-hover not-disabled:hover:text-fg not-disabled:active:bg-pressed',

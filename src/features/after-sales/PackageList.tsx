@@ -52,7 +52,7 @@ export function PackageList({ items, onBuy }: { items: PackageView[]; onBuy: (pk
               )}
               <PackageFacts pkg={p} columns={2} className="mt-4" />
             </div>
-            <Button variant="soft" onClick={() => onBuy(p)}>
+            <Button icon="payments" variant="soft" onClick={() => onBuy(p)}>
               Mua gói
             </Button>
           </div>

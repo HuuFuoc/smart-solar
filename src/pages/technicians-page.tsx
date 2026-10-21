@@ -38,7 +38,7 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
         }
         actions={
           usersLink ? (
-            <ButtonLink to={usersLink} icon="manage_accounts">
+            <ButtonLink variant="info" to={usersLink} icon="manage_accounts">
               Tài khoản
             </ButtonLink>
           ) : undefined
@@ -64,7 +64,13 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
               <EmptyState
                 title="Chưa có tài khoản kỹ thuật viên"
                 description="Tạo tài khoản với vai trò Kỹ thuật viên rồi chọn khu vực phục vụ ở đây."
-                action={usersLink ? <ButtonLink to={usersLink}>Mở trang tài khoản</ButtonLink> : undefined}
+                action={
+                  usersLink ? (
+                    <ButtonLink icon="manage_accounts" variant="info" to={usersLink}>
+                      Mở trang tài khoản
+                    </ButtonLink>
+                  ) : undefined
+                }
               />
             )
           if (shown.length === 0)

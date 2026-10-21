@@ -138,7 +138,7 @@ function InstallationProjectsPage({ detailPattern }: { detailPattern: string }) 
                   description="Dự án được tạo từ hợp đồng đã thanh toán đủ."
                   action={
                     readyCount > 0 ? (
-                      <Button size="sm" variant="soft" onClick={() => setTab('hop-dong')}>
+                      <Button icon="visibility" size="sm" variant="info" onClick={() => setTab('hop-dong')}>
                         Xem hợp đồng chờ tạo dự án
                       </Button>
                     ) : undefined

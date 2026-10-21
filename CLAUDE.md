@@ -92,16 +92,21 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
    tên icon.
 7. **Khoảng cách** theo thang 4/8/12/16/24/32/48/64 (`space-*` của bộ Stitch đã theo thang này).
 8. **Chạm**: control cao tối thiểu 44px dưới `lg`.
-9. **Thứ bậc thao tác** (`Button`): `primary` nút đặc, một nút mỗi màn; `soft` hành động chính của từng dòng / khối
-   (Nhận yêu cầu, Mở yêu cầu, Mở bán lại), nền xanh nhạt + viền; `secondary` nút trắng có viền; `ghost` thao tác kín
-   đáo (`bleed={false}` khi nằm trong cụm nút); `danger` viền đỏ cho phá huỷ hoàn tác được trong hộp thoại (Ngừng bán);
-   `danger-quiet` nút xoá lặp lại trên từng dòng (xám khi nghỉ, đỏ khi rê / focus, đứng sau vạch ngăn) để cột thao tác
-   không thành dải đỏ; `danger-solid` nút đặc đỏ chỉ để xác nhận việc không hoàn tác (Xoá). Cùng một thao tác dùng cùng
-   một kiểu ở mọi màn (vd. "Sửa" luôn là `secondary` sm có icon). Nút chỉ có icon dùng `IconButton` (`label` = aria-label,
-   `tooltip` = chữ ngắn khi label dài); tooltip thật dùng `WithTooltip` (`ui/tooltip.tsx`: hiện cả khi focus bàn phím,
-   vẽ ra body nên khung cuộn không cắt, tự né mép màn hình), không dùng `title`.
-   Link trong nội dung dùng utility `ui-link` (màu thương hiệu + gạch chân). Chọn một trong vài lựa chọn ngang hàng
-   dùng `Segmented`, không dùng dãy nút đặc. Bộ lọc đang áp dụng: `Select active`. Ô tìm: `SearchInput`.
+9. **Nút: màu theo loại việc, nút nào cũng có icon** (người dùng chọn 22/10/2026, thay quy tắc cũ hạn chế icon):
+   `primary` việc chính của màn (Gửi, Lưu, Đồng ý), một nút đặc mỗi màn; `soft` thêm / sửa / đổi / nhận việc; `info`
+   (xanh dương) xem, mở chi tiết, xử lý; `warn` tạm dừng, việc cần chú ý (Ngừng bán, Khách vắng, Trả lại việc);
+   `danger` từ chối, huỷ, xoá, báo lỗi; `secondary` đóng hộp thoại, thử lại, tải về; `danger-solid` xác nhận xoá.
+   Icon Material Symbols qua prop `icon` (vd. visibility, edit, add, send, save, close, block, report, refresh).
+10. **Thứ bậc thao tác** (`Button`): `primary` nút đặc, một nút mỗi màn; `soft` hành động chính của từng dòng / khối
+    (Nhận yêu cầu, Mở yêu cầu, Mở bán lại), nền xanh nhạt + viền; `secondary` nút trắng có viền; `ghost` thao tác kín
+    đáo (`bleed={false}` khi nằm trong cụm nút); `danger` viền đỏ cho phá huỷ hoàn tác được trong hộp thoại (Ngừng bán);
+    `danger-quiet` nút xoá lặp lại trên từng dòng (xám khi nghỉ, đỏ khi rê / focus, đứng sau vạch ngăn) để cột thao tác
+    không thành dải đỏ; `danger-solid` nút đặc đỏ chỉ để xác nhận việc không hoàn tác (Xoá). Cùng một thao tác dùng cùng
+    một kiểu ở mọi màn (vd. "Sửa" luôn là `secondary` sm có icon). Nút chỉ có icon dùng `IconButton` (`label` = aria-label,
+    `tooltip` = chữ ngắn khi label dài); tooltip thật dùng `WithTooltip` (`ui/tooltip.tsx`: hiện cả khi focus bàn phím,
+    vẽ ra body nên khung cuộn không cắt, tự né mép màn hình), không dùng `title`.
+    Link trong nội dung dùng utility `ui-link` (màu thương hiệu + gạch chân). Chọn một trong vài lựa chọn ngang hàng
+    dùng `Segmented`, không dùng dãy nút đặc. Bộ lọc đang áp dụng: `Select active`. Ô tìm: `SearchInput`.
 
 # Web portal (Stitch kit cho trang công khai, portal kit cho mọi portal đăng nhập)
 

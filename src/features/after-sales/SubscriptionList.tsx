@@ -103,12 +103,12 @@ export function SubscriptionList({
                 {(payAttempt || mode) && (
                   <div className="flex flex-wrap items-center gap-3">
                     {mode && (
-                      <Button size="sm" variant="danger-quiet" onClick={() => onCancel(s)}>
+                      <Button icon="cancel" size="sm" variant="danger" onClick={() => onCancel(s)}>
                         {mode === 'paid' ? 'Yêu cầu huỷ' : 'Huỷ đơn'}
                       </Button>
                     )}
                     {payAttempt && (
-                      <Button size="sm" variant="soft" onClick={() => onPay(payAttempt)}>
+                      <Button icon="payments" size="sm" variant="soft" onClick={() => onPay(payAttempt)}>
                         Thanh toán
                       </Button>
                     )}

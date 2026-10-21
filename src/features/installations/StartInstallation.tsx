@@ -31,7 +31,12 @@ export function StartInstallation({ view }: { view: InstallationTechnicianView }
         {blocked ? ` ${blocked}` : ' Tới công trình thì bấm bắt đầu.'}
       </p>
       <span className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" disabled={!view.canStart || start.isPending} onClick={() => void onStart()}>
+        <Button
+          icon="play_arrow"
+          variant="primary"
+          disabled={!view.canStart || start.isPending}
+          onClick={() => void onStart()}
+        >
           {start.isPending ? 'Đang bắt đầu…' : 'Bắt đầu lắp đặt'}
         </Button>
         {error && (

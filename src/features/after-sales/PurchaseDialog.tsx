@@ -143,10 +143,15 @@ export function PurchaseDialog({
           )}
 
           <DialogFooter>
-            <Button variant="ghost" disabled={purchase.isPending} onClick={close}>
+            <Button icon="close" variant="secondary" disabled={purchase.isPending} onClick={close}>
               Huỷ
             </Button>
-            <Button variant="primary" disabled={!selected || purchase.isPending} onClick={() => void confirm()}>
+            <Button
+              icon="payments"
+              variant="primary"
+              disabled={!selected || purchase.isPending}
+              onClick={() => void confirm()}
+            >
               {purchase.isPending ? 'Đang tạo link thanh toán…' : 'Mua và thanh toán'}
             </Button>
           </DialogFooter>

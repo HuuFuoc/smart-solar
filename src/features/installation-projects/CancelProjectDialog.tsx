@@ -60,10 +60,10 @@ export function CancelProjectDialog({ project, onClose }: { project: Installatio
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
-        <Button variant="ghost" disabled={cancel.isPending} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={cancel.isPending} onClick={onClose}>
           Giữ dự án
         </Button>
-        <Button variant="danger-solid" disabled={cancel.isPending} onClick={() => void submit()}>
+        <Button icon="cancel" variant="danger-solid" disabled={cancel.isPending} onClick={() => void submit()}>
           {cancel.isPending ? 'Đang huỷ…' : 'Huỷ dự án'}
         </Button>
       </DialogFooter>

@@ -85,14 +85,20 @@ export function PackageTable({
               </Td>
               <Td label="Thao tác" className="text-right whitespace-nowrap">
                 <div className="inline-flex items-center gap-1">
-                  <Button size="sm" icon="edit" aria-label={`Sửa ${p.name}`} disabled={busy} onClick={() => onEdit(p)}>
+                  <Button
+                    variant="soft"
+                    size="sm"
+                    icon="edit"
+                    aria-label={`Sửa ${p.name}`}
+                    disabled={busy}
+                    onClick={() => onEdit(p)}
+                  >
                     Sửa
                   </Button>
                   {p.isActive ? (
                     <Button
                       size="sm"
-                      variant="ghost"
-                      bleed={false}
+                      variant="warn"
                       icon="visibility_off"
                       aria-label={`Ngừng bán ${p.name}`}
                       disabled={busy}
@@ -102,6 +108,7 @@ export function PackageTable({
                     </Button>
                   ) : (
                     <Button
+                      icon="play_circle"
                       size="sm"
                       variant="soft"
                       aria-label={`Mở bán lại ${p.name}`}

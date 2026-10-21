@@ -284,7 +284,13 @@ export function AdminProductsPage() {
                   ? 'Sản phẩm đã ngừng bán nằm ở mục bên dưới.'
                   : 'Bấm "Thêm sản phẩm" để tạo sản phẩm đầu tiên.'
             }
-            action={isFiltering ? <Button onClick={clearFilters}>Xoá bộ lọc</Button> : undefined}
+            action={
+              isFiltering ? (
+                <Button icon="filter_alt_off" onClick={clearFilters}>
+                  Xoá bộ lọc
+                </Button>
+              ) : undefined
+            }
           />
         ) : (
           <div className={cx(query.isFetching && 'opacity-70')}>
@@ -327,7 +333,13 @@ export function AdminProductsPage() {
                     {h.hiddenAt && `, ngừng bán lúc ${formatDateTime(h.hiddenAt)}`}
                   </p>
                 </div>
-                <Button size="sm" variant="soft" disabled={pendingIds.has(h.id)} onClick={() => void reopen(h)}>
+                <Button
+                  icon="play_circle"
+                  size="sm"
+                  variant="soft"
+                  disabled={pendingIds.has(h.id)}
+                  onClick={() => void reopen(h)}
+                >
                   {pendingIds.has(h.id) ? 'Đang mở bán…' : 'Mở bán lại'}
                 </Button>
               </li>
@@ -363,10 +375,10 @@ export function AdminProductsPage() {
           ngừng bán&quot; ở cuối trang trên trình duyệt này để mở bán lại khi cần.
         </p>
         <DialogFooter>
-          <Button variant="ghost" disabled={hidingBusy} onClick={() => setHiding(null)}>
+          <Button icon="close" variant="secondary" disabled={hidingBusy} onClick={() => setHiding(null)}>
             Huỷ
           </Button>
-          <Button variant="danger" disabled={hidingBusy} onClick={() => hiding && void hide(hiding)}>
+          <Button icon="pause_circle" variant="warn" disabled={hidingBusy} onClick={() => hiding && void hide(hiding)}>
             {hidingBusy ? 'Đang ngừng bán…' : 'Ngừng bán'}
           </Button>
         </DialogFooter>

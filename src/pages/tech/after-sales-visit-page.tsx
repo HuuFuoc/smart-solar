@@ -97,6 +97,7 @@ function ActionPanel({
         <PanelBody className="space-y-4">
           <div className="flex flex-wrap gap-3">
             <Button
+              icon="assignment_turned_in"
               variant="primary"
               disabled={busy}
               onClick={() =>
@@ -108,7 +109,7 @@ function ActionPanel({
             >
               {respond.isPending ? 'Đang gửi…' : 'Nhận việc'}
             </Button>
-            <Button variant="secondary" disabled={busy} onClick={onDecline}>
+            <Button icon="block" variant="danger" disabled={busy} onClick={onDecline}>
               Từ chối
             </Button>
           </div>
@@ -126,6 +127,7 @@ function ActionPanel({
           {blocker && <p className="text-body text-fg-2">{blocker}</p>}
           <div className="flex flex-wrap gap-3">
             <Button
+              icon="play_arrow"
               variant="primary"
               disabled={busy || blocker !== null}
               onClick={() =>
@@ -134,7 +136,7 @@ function ActionPanel({
             >
               {start.isPending ? 'Đang gửi…' : 'Bắt đầu'}
             </Button>
-            <Button variant="secondary" disabled={busy || blocker !== null} onClick={onAbsent}>
+            <Button icon="person_off" variant="warn" disabled={busy || blocker !== null} onClick={onAbsent}>
               Khách vắng
             </Button>
           </div>
@@ -273,6 +275,7 @@ export function TechAfterSalesVisitPage() {
               title="Từ chối buổi hẹn?"
               description="Quản lý sẽ xếp người khác."
               submitLabel="Từ chối"
+              icon="block"
               variant="danger"
               onSubmit={async (reason) => {
                 await respond.mutateAsync({ visitId: v.visitId, body: { accept: false, reason } })
@@ -286,6 +289,8 @@ export function TechAfterSalesVisitPage() {
               description="Không tính tiền buổi này. Quản lý sẽ hẹn lại với khách."
               label="Chuyện gì đã xảy ra"
               submitLabel="Gửi"
+              icon="person_off"
+              variant="warn"
               onSubmit={async (note) => {
                 await absence.mutateAsync({ visitId: v.visitId, body: { note } })
                 toast.success('Đã báo khách vắng.')

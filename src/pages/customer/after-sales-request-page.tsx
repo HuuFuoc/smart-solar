@@ -133,7 +133,7 @@ function ConfirmVisitPanel({ request }: { request: ServiceRequestView }) {
           {request.preferredStartsAt && `, khác giờ bạn chọn (${formatMoment(request.preferredStartsAt)})`}.
         </p>
         <p className="text-body text-fg-2">Không hợp giờ này thì huỷ yêu cầu hoặc gọi Smart Solar để đổi.</p>
-        <Button variant="primary" disabled={confirm.isPending} onClick={() => void submit()}>
+        <Button icon="check_circle" variant="primary" disabled={confirm.isPending} onClick={() => void submit()}>
           {confirm.isPending ? 'Đang gửi…' : 'Đồng ý lịch này'}
         </Button>
         {error && (
@@ -174,10 +174,10 @@ function AcceptancePanel({ request, onReject }: { request: ServiceRequestView; o
           </div>
         )}
         <div className="flex flex-wrap gap-3">
-          <Button variant="primary" disabled={completion.isPending} onClick={() => void accept()}>
+          <Button icon="check_circle" variant="primary" disabled={completion.isPending} onClick={() => void accept()}>
             {completion.isPending ? 'Đang gửi…' : 'Đồng ý kết quả'}
           </Button>
-          <Button variant="secondary" disabled={completion.isPending} onClick={onReject}>
+          <Button icon="thumb_down" variant="danger" disabled={completion.isPending} onClick={onReject}>
             Chưa đạt
           </Button>
         </div>
@@ -248,7 +248,7 @@ export function CustomerAfterSalesRequestPage() {
               }
               actions={
                 customerCanCancel(r) && (
-                  <Button variant="danger" onClick={() => setDialog('cancel')}>
+                  <Button icon="cancel" variant="danger" onClick={() => setDialog('cancel')}>
                     Huỷ yêu cầu
                   </Button>
                 )
@@ -304,6 +304,7 @@ export function CustomerAfterSalesRequestPage() {
               title="Huỷ yêu cầu này?"
               description="Chưa thanh toán thì huỷ ngay. Đã thanh toán thì quản lý xét yêu cầu huỷ và báo lại số tiền hoàn."
               submitLabel="Huỷ yêu cầu"
+              icon="cancel"
               variant="danger"
               onSubmit={async (reason) => {
                 await cancel.mutateAsync({ requestId: r.requestId, reason })
@@ -317,6 +318,8 @@ export function CustomerAfterSalesRequestPage() {
               description="Quản lý sẽ xem ý kiến của bạn và hẹn kỹ thuật viên làm lại nếu cần."
               label="Điều chưa đạt"
               submitLabel="Gửi ý kiến"
+              icon="thumb_down"
+              variant="danger"
               onSubmit={async (reason) => {
                 await completion.mutateAsync({ requestId: r.requestId, accept: false, reason })
                 toast.success('Đã gửi ý kiến cho quản lý.')

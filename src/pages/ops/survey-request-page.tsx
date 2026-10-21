@@ -116,7 +116,7 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
             <Notice tone="info" title="Đang xem một lần chạy khác của khách">
               Đây không phải mô phỏng khách chọn khi gửi.
               <span className="mt-3 flex">
-                <Button size="sm" onClick={() => setViewId(null)}>
+                <Button icon="visibility" variant="info" size="sm" onClick={() => setViewId(null)}>
                   Xem mô phỏng khách chọn
                 </Button>
               </span>

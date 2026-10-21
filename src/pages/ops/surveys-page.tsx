@@ -106,7 +106,7 @@ export function OpsSurveysPage() {
               <EmptyState
                 title="Bạn chưa nhận yêu cầu nào"
                 action={
-                  <Button size="sm" variant="soft" onClick={() => setTab('pending')}>
+                  <Button icon="visibility" size="sm" variant="info" onClick={() => setTab('pending')}>
                     Xem yêu cầu chờ nhận
                   </Button>
                 }

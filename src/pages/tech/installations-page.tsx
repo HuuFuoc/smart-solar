@@ -55,7 +55,7 @@ function InstallationRow({ view, tab }: { view: InstallationTechnicianView; tab:
           <Badge tone={tone}>{status.label}</Badge>
         </ListCell>
         <ListCell wide className="lg:justify-self-end">
-          <ButtonLink to={withId(ROUTES.tech.installation, view.projectId)} size="sm" variant="soft">
+          <ButtonLink to={withId(ROUTES.tech.installation, view.projectId)} size="sm" variant="info" icon="visibility">
             {tab === 'pending' ? 'Xem và trả lời' : 'Xem chi tiết'}
           </ButtonLink>
         </ListCell>

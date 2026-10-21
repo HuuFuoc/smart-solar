@@ -160,10 +160,15 @@ export function AdminPackagesPage() {
           bán lại được bất cứ lúc nào.
         </p>
         <DialogFooter>
-          <Button variant="ghost" disabled={stoppingBusy} onClick={() => setStopping(null)}>
+          <Button icon="close" variant="secondary" disabled={stoppingBusy} onClick={() => setStopping(null)}>
             Huỷ
           </Button>
-          <Button variant="danger" disabled={stoppingBusy} onClick={() => stopping && void stop(stopping)}>
+          <Button
+            icon="pause_circle"
+            variant="warn"
+            disabled={stoppingBusy}
+            onClick={() => stopping && void stop(stopping)}
+          >
             {stoppingBusy ? 'Đang ngừng bán…' : 'Ngừng bán'}
           </Button>
         </DialogFooter>

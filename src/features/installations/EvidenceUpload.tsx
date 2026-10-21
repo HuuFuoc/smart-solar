@@ -133,6 +133,7 @@ export function EvidenceUpload({ projectId, round }: { projectId: string; round:
       </ul>
       <div className="flex flex-wrap items-center gap-3">
         <FileButton
+          variant="soft"
           size="sm"
           icon="add_photo_alternate"
           accept={accept}
@@ -143,10 +144,10 @@ export function EvidenceUpload({ projectId, round }: { projectId: string; round:
           Chọn thêm ảnh
         </FileButton>
         <span className="ml-auto flex flex-wrap items-center gap-3">
-          <Button size="sm" variant="ghost" bleed={false} disabled={queue.busy} onClick={queue.clear}>
+          <Button icon="delete" size="sm" variant="danger" disabled={queue.busy} onClick={queue.clear}>
             Bỏ hết
           </Button>
-          <Button size="sm" variant="soft" disabled={queue.busy || pending === 0} onClick={queue.start}>
+          <Button icon="upload" size="sm" variant="soft" disabled={queue.busy || pending === 0} onClick={queue.start}>
             {queue.busy ? 'Đang tải…' : `Tải lên ${pending} ảnh`}
           </Button>
         </span>

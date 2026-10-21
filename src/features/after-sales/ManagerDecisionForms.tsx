@@ -97,7 +97,7 @@ export function CoverageForm({ request }: { request: ServiceRequestView }) {
         ))}
       </ul>
       <ErrorNotice message={error} />
-      <Button variant="primary" disabled={decide.isPending} onClick={() => void submit()}>
+      <Button icon="save" variant="primary" disabled={decide.isPending} onClick={() => void submit()}>
         {decide.isPending ? 'Đang lưu…' : 'Lưu quyết định'}
       </Button>
     </div>
@@ -134,10 +134,10 @@ export function DisputeReviewForm({ request }: { request: ServiceRequestView }) 
       </Field>
       <ErrorNotice message={error} />
       <div className="flex flex-wrap gap-3">
-        <Button variant="primary" disabled={review.isPending} onClick={() => void submit(true)}>
+        <Button icon="replay" variant="primary" disabled={review.isPending} onClick={() => void submit(true)}>
           Yêu cầu làm lại
         </Button>
-        <Button variant="secondary" disabled={review.isPending} onClick={() => void submit(false)}>
+        <Button icon="check_circle" variant="secondary" disabled={review.isPending} onClick={() => void submit(false)}>
           Giữ kết quả, nhờ khách xem lại
         </Button>
       </div>
@@ -192,10 +192,10 @@ export function CancellationDecisionForm({ request }: { request: ServiceRequestV
       </div>
       <ErrorNotice message={error} />
       <div className="flex flex-wrap gap-3">
-        <Button variant="danger" disabled={decide.isPending} onClick={() => void submit(true)}>
+        <Button icon="cancel" variant="danger" disabled={decide.isPending} onClick={() => void submit(true)}>
           Đồng ý huỷ
         </Button>
-        <Button variant="secondary" disabled={decide.isPending} onClick={() => void submit(false)}>
+        <Button icon="block" variant="danger" disabled={decide.isPending} onClick={() => void submit(false)}>
           Không đồng ý
         </Button>
       </div>

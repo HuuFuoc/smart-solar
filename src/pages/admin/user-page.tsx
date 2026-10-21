@@ -24,7 +24,7 @@ function TechnicianSummary({ user }: { user: AdminUserDetail }) {
       <PanelHeader
         title="Lịch kỹ thuật viên"
         action={
-          <ButtonLink to={withId(ROUTES.admin.technician, user.id)} size="sm" icon="edit_calendar">
+          <ButtonLink variant="info" to={withId(ROUTES.admin.technician, user.id)} size="sm" icon="edit_calendar">
             Cấu hình lịch
           </ButtonLink>
         }

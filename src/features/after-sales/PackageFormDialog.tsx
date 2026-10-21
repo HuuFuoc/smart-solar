@@ -149,7 +149,7 @@ function PackageForm({
           <DialogTitle>{pkg ? 'Sửa gói' : 'Thêm gói'}</DialogTitle>
           <p className="mt-1 text-body text-fg-2">{pkg ? packageKindLabel(pkg.kind) : 'Ô có dấu * là bắt buộc.'}</p>
         </div>
-        <Button variant="ghost" icon="close" className="-mt-2" disabled={saving} onClick={onDone}>
+        <Button variant="secondary" icon="close" className="-mt-2" disabled={saving} onClick={onDone}>
           Đóng
         </Button>
       </div>
@@ -366,10 +366,10 @@ function PackageForm({
             Còn ô chưa hợp lệ.
           </p>
         )}
-        <Button variant="ghost" disabled={saving} onClick={onDone}>
+        <Button icon="close" variant="secondary" disabled={saving} onClick={onDone}>
           Huỷ
         </Button>
-        <Button type="submit" variant="primary" disabled={saving}>
+        <Button icon="save" type="submit" variant="primary" disabled={saving}>
           {saving ? 'Đang lưu…' : pkg ? 'Lưu thay đổi' : 'Thêm gói'}
         </Button>
       </DialogFooter>

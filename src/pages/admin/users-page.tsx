@@ -150,7 +150,13 @@ export function AdminUsersPage() {
         ) : users.length === 0 ? (
           <EmptyState
             title={isFiltering ? 'Không có tài khoản nào khớp bộ lọc' : 'Chưa có tài khoản nào'}
-            action={isFiltering ? <Button onClick={() => updateFilter(defaultFilter)}>Xoá bộ lọc</Button> : undefined}
+            action={
+              isFiltering ? (
+                <Button icon="filter_alt_off" onClick={() => updateFilter(defaultFilter)}>
+                  Xoá bộ lọc
+                </Button>
+              ) : undefined
+            }
           />
         ) : (
           <div className={cx(query.isPlaceholderData && 'opacity-70')}>

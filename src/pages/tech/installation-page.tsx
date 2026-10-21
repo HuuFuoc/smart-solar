@@ -258,7 +258,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
                 action={
                   work &&
                   !addingAssets && (
-                    <Button size="sm" icon="add" onClick={() => setAddingAssets(true)}>
+                    <Button variant="soft" size="sm" icon="add" onClick={() => setAddingAssets(true)}>
                       Ghi thiết bị
                     </Button>
                   )

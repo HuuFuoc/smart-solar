@@ -158,10 +158,10 @@ function AcceptancePanel({ pending, onDecide }: { pending: AcceptanceView; onDec
         <p className="max-w-[72ch] text-body whitespace-pre-line text-fg">{pending.completionReport}</p>
         <p className="text-body text-fg-2">Xem ảnh thi công và thiết bị đã lắp bên dưới trước khi quyết định.</p>
         <div className="flex flex-wrap gap-3">
-          <Button variant="primary" onClick={() => onDecide(ACCEPTANCE_CHOICES.accept)}>
+          <Button icon="check_circle" variant="primary" onClick={() => onDecide(ACCEPTANCE_CHOICES.accept)}>
             Nghiệm thu
           </Button>
-          <Button variant="secondary" onClick={() => onDecide(ACCEPTANCE_CHOICES.requestRework)}>
+          <Button icon="replay" variant="secondary" onClick={() => onDecide(ACCEPTANCE_CHOICES.requestRework)}>
             Yêu cầu sửa lại
           </Button>
         </div>

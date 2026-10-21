@@ -81,7 +81,13 @@ export function PendingRequestList({
                 </span>
               </ListCell>
               <ListCell wide className="lg:justify-self-end">
-                <Button size="sm" variant="soft" disabled={claimingId !== null} onClick={() => onClaim(r)}>
+                <Button
+                  icon="assignment_turned_in"
+                  size="sm"
+                  variant="soft"
+                  disabled={claimingId !== null}
+                  onClick={() => onClaim(r)}
+                >
                   {claimingId === r.surveyRequestId ? 'Đang nhận…' : 'Nhận yêu cầu'}
                 </Button>
               </ListCell>
@@ -151,7 +157,12 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
                 {state.hint && <p className="mt-1 text-meta text-fg-2">{state.hint}</p>}
               </ListCell>
               <ListCell wide className="lg:justify-self-end">
-                <ButtonLink to={withId(ROUTES.ops.survey, r.surveyRequestId)} size="sm" variant="soft">
+                <ButtonLink
+                  icon="visibility"
+                  to={withId(ROUTES.ops.survey, r.surveyRequestId)}
+                  size="sm"
+                  variant="info"
+                >
                   Mở yêu cầu
                 </ButtonLink>
               </ListCell>

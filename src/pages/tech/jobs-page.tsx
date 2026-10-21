@@ -140,7 +140,7 @@ function MyJobRow({ job, past }: { job: TechnicianAppointmentListItem; past: boo
           <Badge tone={past ? 'neutral' : status.tone}>{status.label}</Badge>
         </ListCell>
         <ListCell wide className="lg:justify-self-end">
-          <ButtonLink to={withId(ROUTES.tech.job, job.appointmentId)} size="sm" variant="soft">
+          <ButtonLink icon="visibility" to={withId(ROUTES.tech.job, job.appointmentId)} size="sm" variant="info">
             Xem chi tiết
           </ButtonLink>
         </ListCell>
@@ -177,7 +177,7 @@ export function TechJobsPage() {
           ) : undefined
         }
         actions={
-          <ButtonLink to={ROUTES.tech.schedule} icon="calendar_month">
+          <ButtonLink variant="info" to={ROUTES.tech.schedule} icon="calendar_month">
             Lịch làm việc
           </ButtonLink>
         }

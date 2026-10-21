@@ -203,10 +203,10 @@ function ChecklistDialog({
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
-        <Button variant="ghost" disabled={busy} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={busy} onClick={onClose}>
           Huỷ
         </Button>
-        <Button variant="primary" disabled={unchanged || busy} onClick={() => void submit()}>
+        <Button icon="save" variant="primary" disabled={unchanged || busy} onClick={() => void submit()}>
           {uploadPercent !== null ? `Đang tải tài liệu ${uploadPercent}%` : save.isPending ? 'Đang lưu…' : 'Lưu'}
         </Button>
       </DialogFooter>
@@ -249,7 +249,7 @@ export function ChecklistPanel({ project }: { project: InstallationStaffView }) 
                   {item.note && <p className="mt-1 text-body text-fg-2">{item.note}</p>}
                 </div>
                 {!locked && (
-                  <Button size="sm" icon="edit" onClick={() => setEditingId(item.itemId)}>
+                  <Button variant="soft" size="sm" icon="edit" onClick={() => setEditingId(item.itemId)}>
                     Sửa
                     <span className="sr-only"> {checklistItemLabel(item)}</span>
                   </Button>

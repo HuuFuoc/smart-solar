@@ -42,9 +42,10 @@ export function ServiceRequestList({
                 </ListCell>
                 <ListCell wide className="lg:justify-self-end">
                   <ButtonLink
+                    icon={isTodo(r.status, viewer) ? 'arrow_forward' : 'visibility'}
+                    variant="info"
                     to={withId(detailPattern, r.requestId)}
                     size="sm"
-                    variant={isTodo(r.status, viewer) ? 'soft' : 'secondary'}
                   >
                     {isTodo(r.status, viewer) ? 'Xử lý' : 'Xem'}
                   </ButtonLink>

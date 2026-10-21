@@ -28,7 +28,7 @@ export function CustomerAfterSalesPage() {
           )
         }
         actions={
-          <ButtonLink to={ROUTES.customer.projects} variant="secondary">
+          <ButtonLink icon="construction" to={ROUTES.customer.projects} variant="info">
             Công trình của tôi
           </ButtonLink>
         }

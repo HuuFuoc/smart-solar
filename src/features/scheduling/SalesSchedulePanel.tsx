@@ -182,6 +182,7 @@ function AssignPanel({
       <PanelFooter className="justify-end">
         <ErrorLine message={error} />
         <Button
+          icon="assignment_ind"
           variant="primary"
           disabled={!selected || assign.isPending}
           onClick={() => void submit()}
@@ -319,10 +320,15 @@ function ReassignDialog({
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
-        <Button variant="ghost" disabled={assign.isPending} onClick={() => onOpenChange(false)}>
+        <Button icon="close" variant="secondary" disabled={assign.isPending} onClick={() => onOpenChange(false)}>
           Huỷ
         </Button>
-        <Button variant="primary" disabled={!selected || assign.isPending} onClick={() => void submit()}>
+        <Button
+          icon="swap_horiz"
+          variant="primary"
+          disabled={!selected || assign.isPending}
+          onClick={() => void submit()}
+        >
           {assign.isPending ? 'Đang chuyển…' : selected ? `Chuyển cho ${selected.fullName}` : 'Chuyển'}
         </Button>
       </DialogFooter>
@@ -407,10 +413,15 @@ function RescheduleDialog({
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error ?? (unchanged ? 'Giờ mới giống giờ hiện tại.' : null)} />
-        <Button variant="ghost" disabled={reschedule.isPending} onClick={() => onOpenChange(false)}>
+        <Button icon="close" variant="secondary" disabled={reschedule.isPending} onClick={() => onOpenChange(false)}>
           Huỷ
         </Button>
-        <Button variant="primary" disabled={unchanged || reschedule.isPending} onClick={() => void submit()}>
+        <Button
+          icon="edit_calendar"
+          variant="primary"
+          disabled={unchanged || reschedule.isPending}
+          onClick={() => void submit()}
+        >
           {reschedule.isPending ? 'Đang đổi…' : 'Đổi lịch'}
         </Button>
       </DialogFooter>

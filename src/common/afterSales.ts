@@ -82,7 +82,7 @@ export const SERVICE_REQUEST_STATUSES: Record<string, string> = {
   IN_PROGRESS: 'Kỹ thuật viên đang làm',
   AWAITING_DECISION: 'Chờ xét bảo hành',
   AWAITING_QUOTATION: 'Chờ báo giá',
-  AWAITING_CUSTOMER: 'Chờ khách duyệt báo giá',
+  AWAITING_CUSTOMER: 'Chờ duyệt và thanh toán báo giá',
   READY_FOR_WORK: 'Chờ xếp lịch làm',
   PENDING_CUSTOMER_ACCEPTANCE: 'Chờ khách nghiệm thu',
   DISPUTED: 'Khách chưa đồng ý kết quả',

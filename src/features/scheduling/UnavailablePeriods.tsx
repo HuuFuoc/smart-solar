@@ -84,7 +84,7 @@ function AddPeriodForm({ technicianUserId }: { technicianUserId: string }) {
       </Field>
       <ConflictList conflicts={conflicts} />
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" icon="add" disabled={add.isPending}>
+        <Button variant="soft" type="submit" icon="add" disabled={add.isPending}>
           {add.isPending ? 'Đang thêm…' : 'Thêm lịch nghỉ'}
         </Button>
         {message && (
@@ -139,7 +139,7 @@ export function UnavailablePeriods({ technicianUserId }: { technicianUserId: str
                     </p>
                     {p.reason && <p className="text-meta text-fg-2">{p.reason}</p>}
                   </div>
-                  <Button size="sm" variant="danger-quiet" icon="delete" onClick={() => setRemoving(p)}>
+                  <Button size="sm" variant="danger" icon="delete" onClick={() => setRemoving(p)}>
                     Bỏ
                   </Button>
                 </li>
@@ -169,10 +169,10 @@ export function UnavailablePeriods({ technicianUserId }: { technicianUserId: str
           </p>
         )}
         <DialogFooter>
-          <Button variant="ghost" disabled={remove.isPending} onClick={() => setRemoving(null)}>
+          <Button icon="close" variant="secondary" disabled={remove.isPending} onClick={() => setRemoving(null)}>
             Giữ lại
           </Button>
-          <Button variant="danger" disabled={remove.isPending} onClick={() => void confirmRemove()}>
+          <Button icon="delete" variant="danger" disabled={remove.isPending} onClick={() => void confirmRemove()}>
             {remove.isPending ? 'Đang bỏ…' : 'Bỏ lịch nghỉ'}
           </Button>
         </DialogFooter>

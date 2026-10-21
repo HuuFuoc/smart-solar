@@ -60,10 +60,10 @@ export function CancelBookingDialog({
         />
       </Field>
       <DialogFooter>
-        <Button variant="ghost" disabled={cancel.isPending} onClick={() => onOpenChange(false)}>
+        <Button icon="close" variant="secondary" disabled={cancel.isPending} onClick={() => onOpenChange(false)}>
           Giữ lịch
         </Button>
-        <Button variant="danger" disabled={cancel.isPending} onClick={() => void confirm()}>
+        <Button icon="cancel" variant="danger" disabled={cancel.isPending} onClick={() => void confirm()}>
           {cancel.isPending ? 'Đang huỷ…' : 'Huỷ lịch'}
         </Button>
       </DialogFooter>

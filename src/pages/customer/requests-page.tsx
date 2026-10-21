@@ -53,7 +53,7 @@ export function CustomerRequestsPage() {
               title="Chưa có yêu cầu khảo sát"
               description="Làm đánh giá sơ bộ cho địa điểm của bạn rồi gửi để đặt lịch khảo sát."
               action={
-                <ButtonLink to={ROUTES.customer.assessment} variant="primary">
+                <ButtonLink icon="play_arrow" to={ROUTES.customer.assessment} variant="primary">
                   Bắt đầu đánh giá sơ bộ
                 </ButtonLink>
               }
@@ -83,7 +83,12 @@ export function CustomerRequestsPage() {
                       </div>
                       <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
                         <Badge tone={progress.tone}>{progress.label}</Badge>
-                        <ButtonLink to={withId(ROUTES.customer.request, r.surveyRequestId)} size="sm" variant="soft">
+                        <ButtonLink
+                          icon="event"
+                          to={withId(ROUTES.customer.request, r.surveyRequestId)}
+                          size="sm"
+                          variant="soft"
+                        >
                           {canBook(r) ? 'Đặt giờ khảo sát' : 'Xem yêu cầu'}
                         </ButtonLink>
                       </div>

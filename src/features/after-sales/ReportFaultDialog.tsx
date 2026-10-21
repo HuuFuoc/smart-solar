@@ -123,10 +123,10 @@ function FaultForm({
         </div>
       )}
       <DialogFooter>
-        <Button variant="ghost" disabled={create.isPending} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={create.isPending} onClick={onClose}>
           Đóng
         </Button>
-        <Button variant="primary" disabled={create.isPending} onClick={() => void submit()}>
+        <Button icon="report" variant="danger-solid" disabled={create.isPending} onClick={() => void submit()}>
           {create.isPending ? 'Đang gửi…' : 'Gửi báo lỗi'}
         </Button>
       </DialogFooter>

@@ -42,10 +42,10 @@ export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
         description={warranty.data ? warrantyText(warranty.data) : undefined}
         action={
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="soft" onClick={() => setDialog('fault')}>
+            <Button icon="report" size="sm" variant="danger" onClick={() => setDialog('fault')}>
               Báo lỗi
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => setDialog('maintenance')}>
+            <Button icon="event" size="sm" variant="soft" onClick={() => setDialog('maintenance')}>
               Đặt bảo trì lẻ
             </Button>
           </div>
@@ -86,7 +86,12 @@ export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
                     </p>
                   </div>
                   <Badge tone={status.tone}>{status.label}</Badge>
-                  <ButtonLink size="sm" variant="secondary" to={withId(ROUTES.customer.afterSalesRequest, r.requestId)}>
+                  <ButtonLink
+                    icon="visibility"
+                    size="sm"
+                    variant="info"
+                    to={withId(ROUTES.customer.afterSalesRequest, r.requestId)}
+                  >
                     Xem
                   </ButtonLink>
                 </li>
@@ -95,7 +100,7 @@ export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
           </ul>
         )}
         {mine.length > open.length && (
-          <ButtonLink size="sm" variant="ghost" to={ROUTES.customer.afterSales}>
+          <ButtonLink icon="visibility" size="sm" variant="info" to={ROUTES.customer.afterSales}>
             Xem mọi yêu cầu
           </ButtonLink>
         )}

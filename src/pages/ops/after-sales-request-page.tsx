@@ -85,7 +85,12 @@ export function OpsAfterSalesRequestPage() {
                 r.status === 'AWAITING_QUOTATION' &&
                 !mine &&
                 open && (
-                  <Button variant="primary" disabled={claim.isPending} onClick={() => void claimTask(open.taskId)}>
+                  <Button
+                    icon="assignment_turned_in"
+                    variant="primary"
+                    disabled={claim.isPending}
+                    onClick={() => void claimTask(open.taskId)}
+                  >
                     Nhận việc
                   </Button>
                 )

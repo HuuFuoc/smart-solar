@@ -721,6 +721,8 @@ export function AssessmentPage() {
   const stepActions = (
     <div className="flex flex-wrap items-center gap-3">
       <Button
+        icon="arrow_back"
+        variant="secondary"
         className="order-3 sm:order-none"
         onClick={() => goToStep(Math.max(firstStep, step - 1))}
         disabled={step <= firstStep || busy || submitted}
@@ -729,7 +731,7 @@ export function AssessmentPage() {
       </Button>
       {step === STEP.SURFACE && (
         <div className="order-1 flex w-full flex-wrap items-center gap-x-3 gap-y-1 sm:order-none sm:w-auto">
-          <Button variant="ghost" bleed={false} icon="save" onClick={saveSurfaceAsDraft} disabled={busy}>
+          <Button variant="secondary" icon="save" onClick={saveSurfaceAsDraft} disabled={busy}>
             Lưu nháp
           </Button>
           {/* Cho khách biết thay đổi mới nằm trên máy, chưa lên server */}
@@ -752,6 +754,7 @@ export function AssessmentPage() {
           type="submit"
           form="assessment-step"
           variant="primary"
+          icon={step === STEP.REVIEW ? 'send' : 'arrow_forward'}
           className="order-4 flex-1 sm:order-none sm:flex-none"
           disabled={busy || submitted || (step === STEP.SIMULATION && !surfaceSaved)}
         >
@@ -818,7 +821,11 @@ export function AssessmentPage() {
               <EmptyState
                 title="Chưa lưu mặt lắp"
                 description="Mô phỏng xếp tấm trên mặt lắp đã lưu. Nhập kích thước mặt lắp trước."
-                action={<Button onClick={() => goToStep(STEP.SURFACE)}>Về bước mặt lắp</Button>}
+                action={
+                  <Button icon="arrow_back" variant="secondary" onClick={() => goToStep(STEP.SURFACE)}>
+                    Về bước mặt lắp
+                  </Button>
+                }
               />
             )}
             {step === STEP.SIMULATION && draft.preSurveyId && serverSurface?.surfaceDefined && (

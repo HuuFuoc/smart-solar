@@ -91,7 +91,7 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
                 {items.length > 1 && (
                   <Button
                     size="sm"
-                    variant="danger-quiet"
+                    variant="danger"
                     icon="delete"
                     onClick={() => setItems((all) => all.filter((_, i) => i !== index))}
                   >
@@ -142,13 +142,13 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
               </div>
             </div>
           ))}
-          <Button size="sm" icon="add" onClick={() => setItems((all) => [...all, emptyItem()])}>
+          <Button variant="soft" size="sm" icon="add" onClick={() => setItems((all) => [...all, emptyItem()])}>
             Thêm hạng mục
           </Button>
         </div>
       )}
       <ErrorNotice message={error} />
-      <Button variant="primary" disabled={send.isPending} onClick={() => void submit()}>
+      <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
         {send.isPending ? 'Đang gửi…' : 'Gửi kết quả kiểm tra'}
       </Button>
     </div>
@@ -244,7 +244,7 @@ export function WorkReportForm({ visit }: { visit: TechnicianVisitView }) {
         />
       </Field>
       <ErrorNotice message={error} />
-      <Button variant="primary" disabled={send.isPending} onClick={() => void submit()}>
+      <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
         {send.isPending ? 'Đang gửi…' : 'Gửi báo cáo'}
       </Button>
     </div>

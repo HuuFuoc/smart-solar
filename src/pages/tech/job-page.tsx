@@ -116,11 +116,16 @@ function JobActions({ job }: { job: TechnicianJobView }) {
           {source} lúc {formatDateTime(job.acceptedAt ?? job.assignedAt)}.
         </p>
         <span className="flex flex-wrap gap-3">
-          <ButtonLink to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`} size="sm" icon="calendar_month">
+          <ButtonLink
+            variant="info"
+            to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`}
+            size="sm"
+            icon="calendar_month"
+          >
             Lịch cả ngày
           </ButtonLink>
           {upcoming && !open && (
-            <Button size="sm" variant="danger" icon="undo" onClick={() => setOpen(true)}>
+            <Button size="sm" variant="warn" icon="undo" onClick={() => setOpen(true)}>
               Trả lại việc
             </Button>
           )}
@@ -141,10 +146,16 @@ function JobActions({ job }: { job: TechnicianJobView }) {
             />
           </Field>
           <span className="flex flex-wrap items-center gap-3">
-            <Button size="sm" variant="ghost" bleed={false} disabled={release.isPending} onClick={() => setOpen(false)}>
+            <Button
+              icon="close"
+              size="sm"
+              variant="secondary"
+              disabled={release.isPending}
+              onClick={() => setOpen(false)}
+            >
               Huỷ
             </Button>
-            <Button size="sm" variant="danger" disabled={release.isPending} onClick={() => void submit()}>
+            <Button icon="undo" size="sm" variant="danger" disabled={release.isPending} onClick={() => void submit()}>
               {release.isPending ? 'Đang trả lại…' : 'Xác nhận trả lại'}
             </Button>
             {error && (

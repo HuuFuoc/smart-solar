@@ -67,7 +67,7 @@ export function ErrorState({
         <p className="text-body font-semibold text-danger">{title}</p>
         {message && <p className="mt-1 text-body text-fg-2">{message}</p>}
         {onRetry && (
-          <Button size="sm" icon="refresh" className="mt-3" onClick={onRetry}>
+          <Button variant="secondary" size="sm" icon="refresh" className="mt-3" onClick={onRetry}>
             Thử lại
           </Button>
         )}

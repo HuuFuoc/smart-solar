@@ -47,7 +47,7 @@ function ClaimButton({ task }: { task: SalesTaskView }) {
     }
   }
   return (
-    <Button size="sm" variant="soft" disabled={claim.isPending} onClick={() => void run()}>
+    <Button icon="assignment_turned_in" size="sm" variant="soft" disabled={claim.isPending} onClick={() => void run()}>
       {claim.isPending ? 'Đang nhận…' : 'Nhận việc'}
     </Button>
   )
@@ -76,7 +76,8 @@ function TaskRow({ task, tab }: { task: SalesTaskView; tab: Tab }) {
             <ButtonLink
               to={withId(ROUTES.ops.afterSalesRequest, task.requestId)}
               size="sm"
-              variant={tab === 'mine' ? 'soft' : 'secondary'}
+              variant="info"
+              icon={tab === 'mine' ? 'request_quote' : 'visibility'}
             >
               {tab === 'mine' ? 'Lập báo giá' : 'Xem'}
             </ButtonLink>

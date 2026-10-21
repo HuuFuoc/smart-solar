@@ -129,7 +129,7 @@ function Placeholder({ text, onRetry, className }: { text: string; onRetry?: () 
       <Icon name="hide_image" className="text-[20px] text-fg-3" />
       <span>{text}</span>
       {onRetry && (
-        <Button size="sm" variant="ghost" bleed={false} icon="refresh" onClick={onRetry}>
+        <Button size="sm" variant="secondary" icon="refresh" onClick={onRetry}>
           Thử lại
         </Button>
       )}
@@ -237,10 +237,10 @@ function Viewer({
             className="mt-4 max-h-[70vh] min-h-48 w-full rounded-container object-contain"
           />
           <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>
+            <Button icon="close" variant="secondary" onClick={onClose}>
               Đóng
             </Button>
-            <Button icon="download" disabled={downloading} onClick={() => void download(item)}>
+            <Button variant="secondary" icon="download" disabled={downloading} onClick={() => void download(item)}>
               {downloading ? 'Đang tải…' : 'Tải ảnh'}
             </Button>
           </DialogFooter>

@@ -17,6 +17,8 @@ type Props = {
   label?: string
   submitLabel: string
   variant?: ComponentProps<typeof Button>['variant']
+  /** Icon của nút gửi, mặc định là gửi */
+  icon?: string
   /** Lỗi thì giữ hộp thoại và hiện lỗi; xong thì đóng */
   onSubmit: (text: string) => Promise<unknown>
   onClose: () => void
@@ -42,6 +44,7 @@ function ReasonForm({
   label = 'Lý do',
   submitLabel,
   variant = 'primary',
+  icon = 'send',
   onSubmit,
   onClose,
   pending,
@@ -84,10 +87,10 @@ function ReasonForm({
         </div>
       )}
       <DialogFooter>
-        <Button variant="ghost" disabled={pending} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={pending} onClick={onClose}>
           Đóng
         </Button>
-        <Button variant={variant} disabled={pending} onClick={() => void submit()}>
+        <Button icon={icon} variant={variant} disabled={pending} onClick={() => void submit()}>
           {pending ? 'Đang gửi…' : submitLabel}
         </Button>
       </DialogFooter>

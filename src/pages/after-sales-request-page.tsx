@@ -122,7 +122,7 @@ function SchedulePanel({ request, zoneId }: { request: ServiceRequestView; zoneI
         description={visit ? formatAppointment(visit.startsAt, visit.endsAt) : undefined}
         action={
           visit && (
-            <Button size="sm" variant="secondary" onClick={() => setMoving((m) => !m)}>
+            <Button icon="close" size="sm" variant="secondary" onClick={() => setMoving((m) => !m)}>
               {moving ? 'Thôi đổi' : 'Đổi lịch'}
             </Button>
           )
