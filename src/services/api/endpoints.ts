@@ -28,7 +28,7 @@ export const ENDPOINTS = {
     status: (id: string) => `/admin/products/${encode(id)}/status`,
   },
 
-  // Khách hàng: hồ sơ, địa điểm, đánh giá sơ bộ, mặt lắp, mô phỏng, đặt giờ khảo sát
+  // Khách hàng: hồ sơ, địa điểm, đánh giá sơ bộ, mặt lắp, mô phỏng, đặt giờ khảo sát, theo dõi lắp đặt, hợp đồng, gói dịch vụ
   customers: {
     base: '/customers/me',
     sites: '/customers/me/sites',
@@ -62,6 +62,26 @@ export const ENDPOINTS = {
     bookingCancel: (surveyRequestId: string) =>
       `/customers/me/survey-requests/${encode(surveyRequestId)}/booking/cancel`,
   },
+  customerInstallations: {
+    base: '/customers/me/installation-projects',
+    byId: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}`,
+    evidence: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/evidence`,
+    evidenceUrl: (projectId: string, evidenceId: string) =>
+      `/customers/me/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
+    acceptance: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/acceptance`,
+    handover: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/handover`,
+  },
+  customerContracts: {
+    base: '/customers/me/contracts',
+  },
+  customerAfterSales: {
+    packages: '/customers/me/after-sales/packages',
+    purchases: '/customers/me/after-sales/purchases',
+    subscriptions: '/customers/me/after-sales/subscriptions',
+    cancelSubscription: (subscriptionId: string) =>
+      `/customers/me/after-sales/subscriptions/${encode(subscriptionId)}/cancel`,
+    payment: (attemptId: string) => `/customers/me/after-sales/payments/${encode(attemptId)}`,
+  },
 
   // Kinh doanh
   surveyRequests: {
@@ -89,6 +109,37 @@ export const ENDPOINTS = {
   },
   technicianSchedule: {
     schedule: (technicianUserId: string) => `/technicians/${encode(technicianUserId)}/schedule`,
+  },
+  technicianInstallations: {
+    base: '/technicians/me/installation-projects',
+    byId: (projectId: string) => `/technicians/me/installation-projects/${encode(projectId)}`,
+    accept: (projectId: string) => `/technicians/me/installation-projects/${encode(projectId)}/accept`,
+    decline: (projectId: string) => `/technicians/me/installation-projects/${encode(projectId)}/decline`,
+    start: (projectId: string) => `/technicians/me/installation-projects/${encode(projectId)}/start`,
+    evidence: (projectId: string) => `/technicians/me/installation-projects/${encode(projectId)}/evidence`,
+    evidenceUrl: (projectId: string, evidenceId: string) =>
+      `/technicians/me/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
+    assets: (projectId: string) => `/technicians/me/installation-projects/${encode(projectId)}/assets`,
+    completionReport: (projectId: string) =>
+      `/technicians/me/installation-projects/${encode(projectId)}/completion-report`,
+  },
+
+  // Thi công, phía quản lý và quản trị
+  managerInstallations: {
+    readyContracts: '/installations/ready-contracts',
+    createFromContract: (contractId: string) => `/contracts/${encode(contractId)}/installation-project`,
+    projects: '/installation-projects',
+    byId: (projectId: string) => `/installation-projects/${encode(projectId)}`,
+    candidates: (projectId: string) => `/installation-projects/${encode(projectId)}/technician-candidates`,
+    assignment: (projectId: string) => `/installation-projects/${encode(projectId)}/assignment`,
+    checklistItem: (projectId: string, itemId: string) =>
+      `/installation-projects/${encode(projectId)}/checklist/${encode(itemId)}`,
+    cancel: (projectId: string) => `/installation-projects/${encode(projectId)}/cancel`,
+    returnToRework: (projectId: string) => `/installation-projects/${encode(projectId)}/return-to-rework`,
+    evidence: (projectId: string) => `/installation-projects/${encode(projectId)}/evidence`,
+    evidenceUrl: (projectId: string, evidenceId: string) =>
+      `/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
+    handover: (projectId: string) => `/installation-projects/${encode(projectId)}/handover`,
   },
 
   // Quản trị

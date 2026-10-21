@@ -21,6 +21,11 @@ export const ROUTES = {
     /** Yêu cầu khảo sát đã gửi: đặt / đổi / huỷ giờ */
     requests: '/customer/requests',
     request: '/customer/requests/:id',
+    /** Công trình lắp đặt: tiến độ, ảnh thi công, nghiệm thu, bàn giao */
+    projects: '/customer/projects',
+    project: '/customer/projects/:id',
+    /** Gói bảo vệ thiên tai: mua, thanh toán PayOS, huỷ trước khi hiệu lực */
+    packages: '/customer/packages',
     products: '/customer/products',
     product: '/customer/products/:id',
     // Màn mock đã ẩn
@@ -29,8 +34,6 @@ export const ROUTES = {
     consultation: '/customer/consultations/:id',
     quotations: '/customer/quotations',
     quotation: '/customer/quotations/:id',
-    projects: '/customer/projects',
-    project: '/customer/projects/:id',
     warranty: '/customer/warranty',
     warrantyRequest: '/customer/warranty/:id',
     assistant: '/customer/assistant',
@@ -57,13 +60,15 @@ export const ROUTES = {
     /** Lịch khảo sát được phân công */
     jobs: '/tech/jobs',
     job: '/tech/jobs/:id',
+    /** Công trình lắp đặt quản lý giao */
+    installations: '/tech/installations',
+    installation: '/tech/installations/:id',
     schedule: '/tech/schedule',
     products: '/tech/products',
     product: '/tech/products/:id',
     // Màn mock đã ẩn
     tasks: '/tech/tasks',
     surveys: '/tech/surveys',
-    installations: '/tech/installations',
     maintenance: '/tech/maintenance',
     warranty: '/tech/warranty',
     alerts: '/tech/alerts',
@@ -77,6 +82,9 @@ export const ROUTES = {
     technician: '/manage/technicians/:id',
     products: '/manage/products',
     product: '/manage/products/:id',
+    /** Dự án thi công + hợp đồng chờ tạo dự án (quản lý dùng chung trang với quản trị) */
+    installations: '/manage/installations',
+    installation: '/manage/installations/:id',
     // Màn mock đã ẩn
     projects: '/manage/projects',
     project: '/manage/projects/:id',
@@ -96,6 +104,8 @@ export const ROUTES = {
     technicians: '/admin/technicians',
     technician: '/admin/technicians/:id',
     products: '/admin/products',
+    installations: '/admin/installations',
+    installation: '/admin/installations/:id',
     // Màn mock đã ẩn
     roles: '/admin/roles',
     services: '/admin/services',
@@ -136,10 +146,6 @@ export const techTaskPath = (id: string) => `${ROUTES.tech.tasks}/${id}`
 export const surveyPath = (id: string) => `${ROUTES.tech.surveys}/${id}`
 export const surveyVerifyPath = (id: string) => `${surveyPath(id)}/verify`
 export const surveyPhotosPath = (id: string) => `${surveyPath(id)}/photos`
-
-/** Luồng lắp đặt: /tech/installations/:id và .../checklist */
-export const installationPath = (id: string) => `${ROUTES.tech.installations}/${id}`
-export const installationChecklistPath = (id: string) => `${installationPath(id)}/checklist`
 
 /** Bảo trì và bảo hành: /tech/maintenance/:id, /tech/warranty/:id */
 export const maintenancePath = (id: string) => `${ROUTES.tech.maintenance}/${id}`

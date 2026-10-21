@@ -216,10 +216,20 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   `surveySlotsRes.ts`, `customerSurveyRequestsRes.ts`, `technicianAvailabilityRes.ts`, `technicianAppointmentsRes.ts`,
   `adminTechniciansRes.ts`, `adminUsersRes.ts` theo record C# của backend `main` (4d12e4d); request của các tag đó sinh
   bình thường. `administrativeUnitsRes.ts` (danh mục phường, xã) và `operationalZonesRes.ts` cũng viết tay theo record C#.
+  `customerInstallationsRes.ts` (21/10/2026) viết tay theo record C# của `Modules.Installations` nhánh
+  `fix/business-rules-flow-1-2` (fd06133), đã đối chiếu với metadata DLL của image `smartsolar-api:latest` đang chạy; các
+  kiểu dùng chung (`EvidenceView`, `AssetView`, `AcceptanceView`, `InstallationEvidenceFileView`…) các vai trò khác import lại.
+  `customerAfterSalesRes.ts` và `customerContractsRes.ts` viết tay theo record C# của backend `main` (6025bc1:
+  `Modules.AfterSales`, `Modules.Payments.PaymentAttemptView`, `Modules.CustomerContracts.ContractView`).
 - Image backend hiện tại (nhánh `fix/business-rules-flow-1-2`) lỗi khi xuất swagger (trùng schemaId
   `AssignTechnicianRequest`), nên `docs/api/swagger.json` được bổ sung tay các hợp đồng mới theo record C#: `provinceCode`,
   `communeCode` của `CreatePropertySiteRequest`, `SelectSimulationRequest` (kèm 2 đường dẫn chọn / bỏ chọn mô phỏng), nhận /
   trả lịch của kỹ thuật viên, khu vực phục vụ. Khi backend sửa swagger thì xuất lại file này rồi chạy `gen:api`.
+  Image 21/10/2026 xuất được swagger nhưng schemaId là tên đầy đủ (`SmartSolar.Api.Contracts.…`), `gen:api` không đọc được;
+  các path lắp đặt (Customer / Manager / TechnicianInstallations) được chép từ `/swagger/v1/swagger.json` đang chạy và đổi
+  `$ref` về tên ngắn. Đừng thay cả file bằng bản xuất mới khi chưa sửa script. Cùng cách đó với 6 path của khách (gói, mua
+  gói, gói đã mua, huỷ gói, trạng thái thanh toán after-sales, GET hợp đồng của khách); `ReasonRequest` của after-sales đặt tên
+  `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt.
 - `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
   repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
   JWT; không đụng DB nào.
@@ -238,6 +248,38 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
   ("Tiếp tục: Mặt lắp"); đổi bước do khách bấm thì cuộn về đầu trang và focus tiêu đề ẩn "Bước N/5: …" của bước.
 - `/ops` → `/ops/surveys` + `/ops/surveys/:id`: yêu cầu khảo sát chờ nhận / của tôi / chi tiết (kèm mô phỏng khách đã chọn).
 - `/customer/products(/:id)`, `/ops/products(/:id)`: catalog sản phẩm (GET /api/products) bản portal kit, `pages/catalog-page.tsx`.
+- `/customer/projects(/:id)` (menu "Lắp đặt", 21/10/2026): công trình lắp đặt của khách, tag CustomerInstallations (tài liệu
+  BE `guides/installation-workflow-api-integration.md`). View của khách không có tên / địa chỉ công trình nên tiêu đề là
+  "Công trình <mã>"; danh sách xếp chờ nghiệm thu lên đầu. Chi tiết: khối "Tình hình" (xếp kỹ thuật viên → lắp đặt → nghiệm
+  thu → bàn giao), ảnh thi công, thiết bị đã lắp, các lần nghiệm thu, bàn giao (GET .../handover chỉ gọi khi `COMPLETED`, kèm
+  hạn bảo hành từng thiết bị do BE tính).
+  - Ảnh: `features/installations/EvidenceGallery.tsx` dùng chung mọi vai trò (nơi gọi truyền `getUrl` của endpoint vai trò
+    mình). GET .../evidence rồi xin URL ký sẵn từng ảnh khi ô ảnh sắp vào màn hình; ảnh lỗi xin lại đúng một lần; 410 hiện ô
+    trống; `downloadable=false` không xin URL; tải về bằng `disposition=attachment`. URL chỉ nằm trong state của component,
+    không vào cache react-query, storage hay log.
+  - Nghiệm thu: nút chỉ hiện khi `status = PENDING_CUSTOMER_ACCEPTANCE` và còn một lần `decision = PENDING` (đúng điều kiện
+    của BE). POST .../acceptance `{ decision: ACCEPT | REQUEST_REWORK, reason }` – hai giá trị lấy từ controller BE (swagger
+    chỉ khai string, bảng ở `common/installation.ts`); REQUEST_REWORK bắt buộc lý do, BE cắt lý do quá 2000 ký tự; không có
+    `expectedRevision`. Gửi qua hộp thoại xác nhận (`AcceptanceDialog.tsx`), gửi xong (kể cả lỗi) tải lại mọi query của dự
+    án; câu báo thành công dựa vào trạng thái BE trả về, FE không tự đánh dấu xong hay tạo bàn giao.
+- `/customer/packages` (menu "Bảo vệ thiên tai", 21/10/2026): gói `DISASTER_PROTECTION` của khách, tag CustomerAfterSales
+  (tài liệu BE `guides/after-sales-services.md`, mã ở `ServicePackageHandlers.cs`), component ở `features/after-sales/`. Gói
+  bảo trì dùng cùng API nhưng chưa bán trên màn này.
+  - Gói đang bán: GET .../packages?kind=DISASTER_PROTECTION (BE chỉ trả gói `isActive`), hiện đúng giá, thời hạn, loại thiên
+    tai, tỷ lệ hỗ trợ, hạn mức mỗi sự cố / mỗi kỳ do BE trả. Chưa có gói nào thì admin phải tạo (POST /api/admin/after-sales/packages).
+  - Mua (`PurchaseDialog.tsx`): chọn hợp đồng từ GET /customers/me/contracts. `PAID` → `includeContract: false`; `SIGNED` →
+    BE bắt buộc `includeContract: true` và link PayOS gồm cả tiền hợp đồng; bỏ hợp đồng có công trình `CANCELLED`. POST
+    .../purchases luôn trả một link PayOS (`checkout`), quyền lợi chỉ có khi PayOS xác nhận nhận tiền. BE ghi đơn
+    (`AWAITING_PAYMENT`) TRƯỚC khi gọi PayOS: PayOS lỗi / chưa cấu hình (503 `PAYMENT_PROVIDER_NOT_CONFIGURED`) thì đơn vẫn nằm
+    lại và chặn mua cùng loại (`PAYMENT_CHECKOUT_IN_PROGRESS`) tới hạn thanh toán, khách phải huỷ đơn đó.
+  - Thanh toán (`PaymentDialog.tsx`): GET .../after-sales/payments/{attemptId} (dùng chung cho mọi checkout after-sales của
+    khách, BE đối soát với PayOS khi link còn PENDING / PROCESSING), hỏi lại mỗi 10 giây khi link còn chờ (giới hạn 30 lần /
+    phút). Link hết chờ thì tải lại gói đã mua và hợp đồng. Không tin trang PayOS chuyển về; `qrCode` là chuỗi VietQR, không vẽ.
+  - Huỷ (`CancelSubscriptionDialog.tsx`, lý do bắt buộc, BE giữ 500 ký tự): `AWAITING_PAYMENT` / `CHECKOUT_EXPIRED` huỷ ngay
+    (link chung bị huỷ, gói khác cùng link thành `CHECKOUT_EXPIRED`); `PAID` thành `CANCELLATION_REQUESTED` chờ quản lý, hoàn
+    tiền thủ công; `ACTIVE` không huỷ trên mạng. Toast theo trạng thái BE trả về.
+  - Kỳ bắt đầu khi đã thanh toán VÀ công trình đã bàn giao (mốc muộn hơn); ngày bắt đầu bảo vệ (`coverageStartsAt`) do BE ghi
+    sau thời gian chờ (cài đặt `afterSales.disasterWaitingDays`, khách không đọc được) nên FE chỉ in ngày BE trả.
 
 **Mặt lắp + mô phỏng do backend tính** (BE nhánh `feature/presurvey-flow`, commit 833ff3c, nối 09/10/2026; tài liệu tích hợp
 của BE: `Solar-Client-dnl/fe.md`). Người dùng chốt 09/10/2026: số liệu khai tự tính từ mặt lắp, bỏ mô phỏng FE giả định 3:2
@@ -335,6 +377,24 @@ nhập làm nguồn chính + kéo thả vật cản.
   trình duyệt đã bấm. Khi backend có cách liệt kê sản phẩm ngừng bán thì bỏ cơ chế này.
 - `/tech/products(/:id)`, `/manage/products(/:id)`: danh mục sản phẩm thật (GET /api/products, bản portal kit) cho kỹ
   thuật viên và quản lý. Không còn trang giữ chỗ "chưa có chức năng" (08/10/2026); `/field/*` chuyển về `/tech`.
+- `/manage/installations(/:id)` và `/admin/installations(/:id)` (menu "Thi công", 21/10/2026): tag ManagerInstallations, backend
+  chỉ cho MANAGER + ADMIN nên hai portal dùng chung `pages/installation-project(s)-page.tsx`, component ở
+  `features/installation-projects/` (thư mục `features/installations/` là của kỹ thuật viên). Swagger chỉ khai "200 OK" nên
+  `types/res/managerInstallationsRes.ts` viết tay theo record C# (`Modules/Installations/InstallationViews.cs`); request sinh từ
+  `docs/api/swagger.json` (bổ sung tay, `AssignTechnicianRequest` của thi công đặt tên `AssignInstallationTechnicianRequest`
+  vì trùng tên bản khảo sát). Số đỏ ở menu = hợp đồng đã thanh toán chưa có dự án + dự án `PENDING_ASSIGNMENT`.
+  - Danh sách: tab Dự án (lọc `?trang-thai=` gửi thẳng `status` lên BE, chỉ dùng 8 giá trị của `InstallationStatuses`) và tab
+    "Hợp đồng chờ tạo dự án" (`?muc=hop-dong`); chọn hợp đồng → hộp thoại xác nhận → POST không body (mỗi hợp đồng một dự án,
+    kể cả khi huỷ). Bản tóm tắt của BE không có tên công trình / khách / số hợp đồng nên dòng chỉ ghi mã.
+  - Phân công / đổi người / đổi lịch (PUT .../assignment): chọn khoảng thời gian, bấm "Tìm kỹ thuật viên" mới gọi
+    technician-candidates (giới hạn 15 lần / phút, không tự gọi khi gõ), đổi giờ sau khi tìm thì phải tìm lại. Người ngoài khu vực
+    (`crossZone`) chỉ gửi được khi người dùng tự tick "Cho phép phân công ngoài khu vực" + ghi lý do. Lý do bắt buộc khi đã có
+    kỹ thuật viên, đã thi công hoặc ngoài khu vực.
+  - Checklist: PUT gửi đủ `isRequired` (bool không nullable, bỏ trống thành false), `status`, `note` và `revision` của DỰ ÁN.
+    "Đã đạt" cần tài liệu `PROJECT_DOCUMENT` đã xác minh nhưng chưa có API tải tài liệu lên, nên chỉ giữ được cho mục đã có tài
+    liệu. Huỷ (trước khi thi công) và trả về làm lại (chỉ khi chờ khách nghiệm thu) bắt buộc lý do ≤ 500 ký tự.
+  - Mọi mutation gửi revision đang hiện, không cập nhật lạc quan; 409 thì báo lỗi, dữ liệu tự tải lại, người dùng tự gửi lại.
+    Link ảnh: xin khi mở khung xem (`gcTime: 0`), tải về qua mutation, ảnh lỗi xin lại một lần.
 
 **Luồng 1: khách đặt giờ khảo sát, kỹ thuật viên trong khu vực tự nhận lịch** (backend nhánh `fix/business-rules-flow-1-2`,
 tài liệu `guides/scheduling-and-admin.md`, `guides/administrative-locations-and-zones.md`). Hiển thị trong `features/scheduling`
@@ -375,6 +435,27 @@ BE chưa có API cấp link tải ảnh lên S3 mà hoàn thành lại bắt bu�
   và hiện nhãn trong ô. Người dùng không chấp nhận dòng dồn chữ bên trái, khoảng giữa bỏ trống. "Của tôi" của sales xếp
   cần phân công lên đầu, rồi lịch sắp tới, rồi chưa có kỹ thuật viên, cuối cùng là đã qua giờ hẹn (danh sách của backend
   không cho biết khách đã đặt giờ chưa nên các yêu cầu chưa có kỹ thuật viên chỉ ghi vậy).
+
+**Lắp đặt, phía kỹ thuật viên** (`/tech/installations(/:id)`, backend nhánh `fix/business-rules-flow-1-2`, tài liệu
+`guides/installation-workflow-api-integration.md` + `installation-workflow-business-flow.md`; response viết tay ở
+`types/res/technicianInstallationsRes.ts`, kiểu dùng chung import từ `customerInstallationsRes.ts`). Enum chung ở
+`common/installation.ts`, hiển thị chung ở `features/installations/installationDisplay.ts` + `EvidenceGallery.tsx` (dùng chung với
+cổng khách hàng), riêng kỹ thuật viên ở `technicianInstallationDisplay.ts`. Mỗi công trình một kỹ thuật viên phụ trách; mock cũ
+theo đội / ca / mốc (`InstallationTaskPage`, `InstallationChecklistPage`, `data/installations.ts`) đã xoá vì backend bỏ mô hình đó.
+
+- Tab: "Chờ bạn nhận" (`myAssignmentStatus = PENDING`, số đỏ ở menu), "Đang làm", "Đã nghiệm thu". Nhận / từ chối (lý do bắt buộc,
+  ≤ 500) gửi `expectedRevision` = `revision` đang xem; quá khung giờ được giao thì không nhận được. Bắt đầu chỉ khi `canStart`
+  (lý do chặn `startBlockedReason`: chưa tới ngày, hết khung giờ, quản lý chưa xong hạng mục bắt buộc); checklist chỉ quản lý
+  sửa được (`PUT …/checklist` chỉ cho Manager/Admin), kỹ thuật viên không thấy.
+- Thiết bị (`AssetEntry.tsx`, luật ở `assetForm.ts` bám `RegisterAssetsAsync`): nhiều dòng một lần, dòng mới chép loại / hãng /
+  model / bảo hành của dòng trước; đã lưu thì không sửa / xoá được nên báo trùng serial (cùng hãng) trước khi gửi. `productId` gửi
+  null vì loại sản phẩm là chữ tự do, chưa có quy ước nối với loại thiết bị.
+- Báo cáo hoàn thành (≤ 8000 ký tự, hỏi xác nhận) cần ít nhất một ảnh của lượt hiện tại (khoá nút) và mặc định tấm pin + inverter
+  (cấu hình được ở backend nên chỉ nhắc). Gửi xong công trình chờ khách nghiệm thu; kỹ thuật viên không tự đánh dấu hoàn tất.
+- **Chưa thêm ảnh được**: `POST …/evidence` nhận `{ fileId, caption }` của tệp `INSTALLATION_EVIDENCE` đã VERIFIED, nhưng FE phải
+  tự tải lên S3 trước rồi `POST /api/files` với `objectKey` và backend không có API cấp link tải lên (không đưa khoá S3 vào FE).
+  Hàm `addInstallationEvidence` có trong service nhưng chưa có giao diện; vì thế báo cáo hoàn thành cũng chưa gửi được thật.
+  Xem ảnh đã có thì được: `GET …/evidence` rồi xin URL ký sẵn từng ảnh khi sắp hiện, không lưu URL.
 
 Mở lại một màn: khai báo trang ở đầu `routes/protectedRoutes.tsx`, thêm một dòng vào `pages` của portal, chuyển đường dẫn của nó lên
 phần "có route" trong `routes/paths.ts`, rồi thêm mục menu trong `config/portals.ts` (mọi portal). Sidebar/header không đặt số liệu giả (tên người dùng,
@@ -480,24 +561,24 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 
 ## Bảng route
 
-| Route                        | Layout           | Trang                                                                                      |
-| ---------------------------- | ---------------- | ------------------------------------------------------------------------------------------ |
-| `/`                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")           |
-| `/login`                     | `AuthLayout`     | `LoginPage`                                                                                |
-| `/register`                  | `AuthLayout`     | `RegisterPage`                                                                             |
-| `/forgot-password`           | `AuthLayout`     | `ForgotPasswordPage`                                                                       |
-| `/reset-password`            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                        |
-| `/verify-email`              | `AuthLayout`     | `VerifyEmailPage`                                                                          |
-| `/403`                       | `AuthLayout`     | `ForbiddenPage`                                                                            |
-| `/coming-soon`               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                              |
-| `/products`, `/products/:id` | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                     |
-| `/admin/*`                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="admin">`                      |
-| `/tech/*`                    | `TechLayout`     | Việc của tôi, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`              |
-| `/customer/*`                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Sản phẩm – bọc `<RequireRole role="customer">` |
-| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên) – bọc `<RequireRole role="sales">`        |
-| `/field/*`                   | —                | chuyển về `/tech`                                                                          |
-| `/manage/*`                  | `ManageLayout`   | Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                               |
-| `/styleguide`                | –                | `StyleguidePage`                                                                           |
+| Route                        | Layout           | Trang                                                                                                                                        |
+| ---------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                             |
+| `/login`                     | `AuthLayout`     | `LoginPage`                                                                                                                                  |
+| `/register`                  | `AuthLayout`     | `RegisterPage`                                                                                                                               |
+| `/forgot-password`           | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                         |
+| `/reset-password`            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                          |
+| `/verify-email`              | `AuthLayout`     | `VerifyEmailPage`                                                                                                                            |
+| `/403`                       | `AuthLayout`     | `ForbiddenPage`                                                                                                                              |
+| `/coming-soon`               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                |
+| `/products`, `/products/:id` | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                       |
+| `/admin/*`                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm – bọc `<RequireRole role="admin">`                                                              |
+| `/tech/*`                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                       |
+| `/customer/*`                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Lắp đặt (nghiệm thu), Bảo vệ thiên tai (mua gói), Sản phẩm – bọc `<RequireRole role="customer">` |
+| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên) – bọc `<RequireRole role="sales">`                                                          |
+| `/field/*`                   | —                | chuyển về `/tech`                                                                                                                            |
+| `/manage/*`                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                                         |
+| `/styleguide`                | –                | `StyleguidePage`                                                                                                                             |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.
 
