@@ -1,14 +1,8 @@
-/*
- * VIẾT TAY – swagger chỉ khai "200 OK" cho tag SurveyRequests, không có schema response.
- * Tên kiểu và field lấy đúng theo SmartSolar.Modules.PreSurvey (GetPendingSurveyRequests,
- * GetMySurveyRequests, GetSurveyRequestDetail) và Contracts.SurveyRequests của image 05/10/2026;
- * lịch hẹn, phân công, đổi giờ theo Modules.Scheduling (backend main 4d12e4d, 12/10/2026).
- * Enum của PreSurvey serialize thành số giống request; trạng thái của Scheduling là chuỗi IN HOA.
- * Khi backend khai response trong swagger, `npm run gen:api` sẽ ghi đè file này bằng bản sinh tự động.
- */
+// Viết tay vì swagger không có schema response (tag SurveyRequests)
+// Enum của PreSurvey là số, trạng thái của Scheduling là chuỗi in hoa
 import type { InstallationSurfaceType } from '@/types/req/customersReq'
 
-/** 1 Pending, 2 Assigned, 3 Reviewing, 4 Scheduled, 5 Completed, 6 Cancelled */
+/** 1 Pending (chưa có kỹ thuật viên xác nhận), 4 Scheduled, 5 Completed, 6 Cancelled. 2 và 3 không còn dùng */
 export type SurveyRequestStatus = 1 | 2 | 3 | 4 | 5 | 6
 
 export type PendingSurveyRequestItem = {
@@ -66,38 +60,54 @@ export type SurveyRequestDetail = {
   assignedAt: string | null
   scheduledAt: string | null
   salesNote: string | null
-  /** Lần mô phỏng khách chọn khi gửi (image 09/10/2026); null với yêu cầu gửi khi chưa chạy mô phỏng. */
+  /** Lần mô phỏng khách chọn khi gửi, null nếu chưa chạy mô phỏng */
   selectedSimulation: SelectedSimulationSummary | null
-  /** Lịch hẹn đang hiệu lực (12/10/2026); null khi khách chưa đặt giờ hoặc đã huỷ. */
+  /** Lịch hẹn đang hiệu lực, null khi chưa đặt giờ hoặc đã huỷ */
   appointment: SurveyAppointmentSummary | null
 }
 
-/** BOOKED → ASSIGNED → ACKNOWLEDGED, hoặc CANCELLED. Giá trị lạ vẫn nhận (backend có thể thêm). */
-export type AppointmentStatus = 'BOOKED' | 'ASSIGNED' | 'ACKNOWLEDGED' | 'CANCELLED' | (string & {})
-
 /**
- * Lịch hẹn như sales thấy, gồm cả kỹ thuật viên hệ thống đang giữ chỗ (khách không bao giờ thấy).
- * Giờ có offset +07:00.
+ * Trạng thái lịch hẹn. PENDING_ACCEPTANCE: chờ kỹ thuật viên trong khu vực tự nhận; ESCALATED: quá hạn không ai nhận,
+ * chuyển cho sales; ACCEPTED: kỹ thuật viên tự nhận; ASSIGNED: sales / quản lý phân công.
  */
-export type SurveyAppointmentSummary = {
-  appointmentId: string
-  /** Format: date-time */
-  startsAt: string
-  /** Format: date-time */
-  endsAt: string
-  status: AppointmentStatus
-  reservedTechnicianUserId: string
-  reservedTechnicianName: string
-  assignedTechnicianUserId: string | null
-  assignedTechnicianName: string | null
-  customerNote: string | null
-  /** Format: date-time */
-  bookedAt: string
-  assignedAt: string | null
-  acknowledgedAt: string | null
+export type AppointmentStatus =
+  'PENDING_ACCEPTANCE' | 'ESCALATED' | 'ACCEPTED' | 'ASSIGNED' | 'COMPLETED' | 'CANCELLED' | (string & {})
+
+/** Khu vực phục vụ (nhóm phường, xã do admin lập) */
+export type ZoneView = {
+  zoneId: string
+  code: string
+  name: string
 }
 
-/** POST …/assign-technician và PUT …/reassign-technician (cùng một handler). */
+/** Lịch hẹn như sales thấy. Người giữ chỗ chỉ là chỗ trống tạm, chưa phải người nhận việc */
+export type SurveyAppointmentSummary = {
+  appointmentId: string
+  /** Format: date-time (+07:00) */
+  startsAt: string
+  endsAt: string
+  status: AppointmentStatus
+  capacityHolderUserId: string | null
+  capacityHolderName: string | null
+  /** Kỹ thuật viên đã xác nhận (tự nhận hoặc được phân công) */
+  assignedTechnicianUserId: string | null
+  assignedTechnicianName: string | null
+  /** SELF_ACCEPTED, SALES_ASSIGNED, MANAGER_OVERRIDE, ... */
+  assignmentSource: string | null
+  assignmentReason: string | null
+  customerNote: string | null
+  bookedAt: string
+  /** Hạn để kỹ thuật viên nhận, quá hạn thì chuyển cho sales */
+  acceptanceDeadlineAt: string | null
+  escalatedAt: string | null
+  acceptedAt: string | null
+  assignedAt: string | null
+  completedAt: string | null
+  operationalZoneId: string | null
+  revision: number
+}
+
+/** POST .../assign-technician và PUT .../reassign-technician (cùng một handler) */
 export type AssignmentView = {
   appointmentId: string
   surveyRequestId: string
@@ -106,28 +116,49 @@ export type AssignmentView = {
   startsAt: string
   endsAt: string
   appointmentStatus: AppointmentStatus
-  /** Luôn "SCHEDULED" khi thành công. */
+  assignmentSource: string | null
+  assignmentReason: string | null
   surveyRequestStatus: string
   scheduledAt: string
   reassigned: boolean
-  /** Kỹ thuật viên (mới) phải xác nhận nhận việc. */
-  acknowledgementRequired: boolean
+  changed: boolean
+  revision: number
 }
 
-/** PUT …/reschedule. `previousAppointmentId` là lịch cũ (đã huỷ, giữ làm lịch sử). */
+/** PUT .../reschedule. previousAppointmentId là lịch cũ (đã huỷ, giữ làm lịch sử) */
 export type SalesRescheduleView = {
   appointmentId: string
   previousAppointmentId: string | null
   surveyRequestId: string
-  technicianUserId: string
-  technicianName: string
+  technicianUserId: string | null
+  technicianName: string | null
   startsAt: string
   endsAt: string
   appointmentStatus: AppointmentStatus
+  acceptanceStatus: string
   surveyRequestStatus: string
   scheduledAt: string | null
-  reassigned: boolean
-  acknowledgementRequired: boolean
+}
+
+/** GET /api/survey-requests/escalated: lịch cần người phân công (không ai nhận kịp) */
+export type EscalatedAppointmentView = {
+  appointmentId: string
+  surveyRequestId: string
+  startsAt: string
+  endsAt: string
+  status: AppointmentStatus
+  acceptanceDeadlineAt: string | null
+  escalatedAt: string | null
+  revision: number
+  zone: ZoneView | null
+  customerName: string
+  propertyName: string
+  province: string
+  district: string | null
+  ward: string | null
+  assignedSaleId: string | null
+  ownedByMe: boolean
+  hasEligibleTechnician: boolean
 }
 
 /** Tóm tắt mô phỏng khách chọn; bản đầy đủ đọc ở GET /api/pre-surveys/{preSurveyId}/simulations/{simulationId}. */

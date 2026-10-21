@@ -1,19 +1,17 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
 import { ActionDock } from '@/components/common/tech/ActionDock'
-import { ContactTile } from '@/features/installations/components/ContactTile'
+import { ContactTile } from '@/features/installations/ContactTile'
 import { EvidenceGroup } from '@/components/common/tech/EvidenceGallery'
 import { ExecutionStepList } from '@/components/common/tech/ExecutionStepList'
 import { JobHeaderCard } from '@/components/common/tech/JobHeaderCard'
-import { PanelArrayGrid } from '@/features/installations/components/PanelArrayGrid'
+import { PanelArrayGrid } from '@/features/installations/PanelArrayGrid'
 import { SectionCard } from '@/components/common/tech/SectionCard'
 import { StepperInput } from '@/components/common/tech/StepperInput'
 import { Button, Icon, StatusBadge } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 import { executionCounterLabel, getInstallationTask, type InstallationStep } from '@/data/installations'
 import { notFound } from '@/routes/notFound'
-
-/* Dựng từ installation_task/code.html + screen.png. Mọi dữ liệu lấy từ data/installations.ts. */
 
 type SyncState = 'idle' | 'syncing' | 'synced'
 
@@ -37,20 +35,13 @@ function InstallationTaskView({ task }: { task: NonNullable<ReturnType<typeof ge
   const [sync, setSync] = useState<SyncState>('idle')
 
   const toggleStep = (stepId: string, checked: boolean) =>
-    setCheckedIds((current) =>
-      checked ? [...current, stepId] : current.filter((value) => value !== stepId),
-    )
+    setCheckedIds((current) => (checked ? [...current, stepId] : current.filter((value) => value !== stepId)))
 
-  /*
-   * Mốc mở màn lấy nguyên 65% của thiết kế. Khi kỹ thuật viên chỉnh bộ đếm panel thì tính lại
-   * theo công thức trong code.html: 2 bước nền = 33%, bước "Racking & Panels" thêm tối đa 32%.
-   */
+  // Mở màn là 65%, đổi số panel thì tính lại: 2 bước đầu = 33%, bước lắp tấm thêm tối đa 32%
   const initialPanels = activeStep?.counter?.initial ?? 0
   const totalPanels = activeStep?.counter?.total ?? 1
   const livePercent =
-    mountedPanels === initialPanels
-      ? task.progress.percent
-      : Math.round(33 + (mountedPanels / totalPanels) * 32)
+    mountedPanels === initialPanels ? task.progress.percent : Math.round(33 + (mountedPanels / totalPanels) * 32)
 
   const syncLabel =
     sync === 'syncing' ? task.footer.syncingLabel : sync === 'synced' ? task.footer.syncedLabel : task.footer.syncLabel
@@ -132,7 +123,11 @@ function InstallationTaskView({ task }: { task: NonNullable<ReturnType<typeof ge
                       defaultValue={serial.value}
                       className="flex-1 bg-transparent text-body-md text-on-surface outline-none"
                     />
-                    <button type="button" title="Quét mã vạch" className="p-1 text-primary hover:text-primary-container">
+                    <button
+                      type="button"
+                      title="Quét mã vạch"
+                      className="p-1 text-primary hover:text-primary-container"
+                    >
                       <Icon name="barcode_scanner" className="text-[22px]" />
                     </button>
                   </div>

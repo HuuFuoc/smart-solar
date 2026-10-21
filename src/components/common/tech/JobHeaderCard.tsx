@@ -3,12 +3,7 @@ import { InfoTileGrid, type InfoTileData } from '@/components/common/tech/InfoTi
 import { Card, Icon, ProgressBar, StatusBadge, type StatusVariant } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 
-/*
- * "Top command context bar" của installation_task: pill loại việc + mã job + badge giai đoạn,
- * mô tả gói thiết bị, nhóm nút phụ bên phải, lưới meta 4 ô, thanh tiến độ và các mốc.
- * Khác TaskHeaderCard (luồng khảo sát) ở chỗ có hàng nút, lưới meta và thanh tiến độ,
- * nên tách riêng cho nhóm installation / maintenance / warranty.
- */
+// Header của việc lắp đặt / bảo trì / bảo hành: loại việc, mã, giai đoạn, nút, lưới thông tin và tiến độ
 export type JobHeaderAction = {
   label: string
   icon: string
@@ -27,7 +22,7 @@ export type JobProgress = {
 }
 
 export type JobHeaderCardProps = {
-  /** Pill nhỏ trước mã job: "Job Order", "Service Ticket"… */
+  /** Pill nhỏ trước mã job: "Job Order", "Service Ticket"... */
   kindLabel: string
   code: string
   status: { label: string; variant?: StatusVariant }
@@ -38,7 +33,7 @@ export type JobHeaderCardProps = {
   meta: InfoTileData[]
   metaColumns?: 3 | 4
   progress?: JobProgress
-  /** Nội dung thêm dưới cùng (SLA, cảnh báo…) */
+  /** Nội dung thêm dưới cùng (SLA, cảnh báo...) */
   children?: ReactNode
   className?: string
 }
@@ -77,9 +72,7 @@ export function JobHeaderCard({
             </StatusBadge>
           </div>
           {title && <h1 className="mt-1 text-headline-xl tracking-tight text-on-surface">{title}</h1>}
-          <p className={cn('text-on-surface-variant', title ? 'mt-1 text-body-md' : 'mt-1 text-body-lg')}>
-            {summary}
-          </p>
+          <p className={cn('text-on-surface-variant', title ? 'mt-1 text-body-md' : 'mt-1 text-body-lg')}>{summary}</p>
         </div>
 
         {actions.length > 0 && (

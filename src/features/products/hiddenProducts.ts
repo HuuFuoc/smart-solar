@@ -1,12 +1,6 @@
-/*
- * Sản phẩm admin đã chuyển sang Ngừng bán từ trình duyệt này.
- *
- * Backend ẩn sản phẩm INACTIVE khỏi GET /api/products và cả GET /api/products/{id}, kể cả với admin
- * (dò 08/10/2026: ngừng bán xong, danh sách và trang chi tiết đều không còn sản phẩm đó), nên giao diện
- * không tự tìm lại được để mở bán. PATCH .../status theo id vẫn chạy, vì vậy lưu id + tên ở đây để còn
- * "Mở bán lại". Chỉ có trên trình duyệt đã bấm ngừng bán; khi backend có cách liệt kê sản phẩm ngừng bán
- * thì bỏ file này.
- */
+// Sản phẩm đã ngừng bán từ trình duyệt này
+// Backend ẩn sản phẩm INACTIVE khỏi mọi API đọc, nên phải lưu id + tên ở đây để còn "Mở bán lại"
+// Bỏ file này khi backend có API liệt kê sản phẩm ngừng bán
 
 const KEY = 'smartsolar.hidden-products'
 
@@ -15,7 +9,12 @@ export type HiddenProduct = { id: string; name: string; sku: string; hiddenAt: s
 function isHiddenProduct(value: unknown): value is HiddenProduct {
   if (!value || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
-  return typeof v.id === 'string' && typeof v.name === 'string' && typeof v.sku === 'string' && typeof v.hiddenAt === 'string'
+  return (
+    typeof v.id === 'string' &&
+    typeof v.name === 'string' &&
+    typeof v.sku === 'string' &&
+    typeof v.hiddenAt === 'string'
+  )
 }
 
 export function readHiddenProducts(): HiddenProduct[] {

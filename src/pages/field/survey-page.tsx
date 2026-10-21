@@ -97,20 +97,31 @@ export function FieldSurveyPage() {
                     <div className="grid gap-4 sm:grid-cols-3">
                       <Field label="Chiều dài đo được" htmlFor="len">
                         <div className="flex items-center gap-2">
-                          <Input id="len" inputMode="decimal" value={length} onChange={(e) => setLength(e.target.value)} />
+                          <Input
+                            id="len"
+                            inputMode="decimal"
+                            value={length}
+                            onChange={(e) => setLength(e.target.value)}
+                          />
                           <span className="text-body text-fg-2">m</span>
                         </div>
                       </Field>
                       <Field label="Chiều rộng đo được" htmlFor="wid">
                         <div className="flex items-center gap-2">
-                          <Input id="wid" inputMode="decimal" value={width} onChange={(e) => setWidth(e.target.value)} />
+                          <Input
+                            id="wid"
+                            inputMode="decimal"
+                            value={width}
+                            onChange={(e) => setWidth(e.target.value)}
+                          />
                           <span className="text-body text-fg-2">m</span>
                         </div>
                       </Field>
                       <div className="rounded-container bg-surface-2 px-3 py-2">
                         <p className="text-meta text-fg-2">Diện tích đã xác minh</p>
                         <p className="tnum text-figure font-semibold">
-                          {Number.isFinite(area) ? area.toFixed(2) : '0.00'} <span className="text-meta font-normal text-fg-2">m²</span>
+                          {Number.isFinite(area) ? area.toFixed(2) : '0.00'}{' '}
+                          <span className="text-meta font-normal text-fg-2">m²</span>
                         </p>
                         <p className="tnum text-meta text-fg-3">
                           {delta >= 0 ? '+' : ''}
@@ -128,10 +139,19 @@ export function FieldSurveyPage() {
                           key={p}
                           className={cx(
                             'press flex h-10 cursor-pointer items-center justify-center rounded-control border text-body',
-                            profile === p ? 'border-accent bg-accent-soft font-medium text-accent-fg' : 'border-line-2 hover:bg-surface-2',
+                            profile === p
+                              ? 'border-accent bg-accent-soft font-medium text-accent-fg'
+                              : 'border-line-2 hover:bg-surface-2',
                           )}
                         >
-                          <input type="radio" name="profile" value={p} checked={profile === p} onChange={() => setProfile(p)} className="sr-only" />
+                          <input
+                            type="radio"
+                            name="profile"
+                            value={p}
+                            checked={profile === p}
+                            onChange={() => setProfile(p)}
+                            className="sr-only"
+                          />
                           {p}
                         </label>
                       ))}
@@ -144,7 +164,8 @@ export function FieldSurveyPage() {
                         Độ nghiêng đo bằng thước đo nghiêng
                       </label>
                       <span className="tnum text-body">
-                        <span className="text-title font-semibold">{tilt}°</span> <span className="text-fg-3">khách khai 25°</span>
+                        <span className="text-title font-semibold">{tilt}°</span>{' '}
+                        <span className="text-fg-3">khách khai 25°</span>
                       </span>
                     </div>
                     <input
@@ -174,8 +195,17 @@ export function FieldSurveyPage() {
                             access === a.label ? 'border-accent bg-accent-soft' : 'border-line-2 hover:bg-surface-2',
                           )}
                         >
-                          <input type="radio" name="access" value={a.label} checked={access === a.label} onChange={() => setAccess(a.label)} className="sr-only" />
-                          <span className={cx('block text-body font-medium', access === a.label && 'text-accent-fg')}>{a.label}</span>
+                          <input
+                            type="radio"
+                            name="access"
+                            value={a.label}
+                            checked={access === a.label}
+                            onChange={() => setAccess(a.label)}
+                            className="sr-only"
+                          />
+                          <span className={cx('block text-body font-medium', access === a.label && 'text-accent-fg')}>
+                            {a.label}
+                          </span>
                           <span className="block text-meta text-fg-3">{a.note}</span>
                         </label>
                       ))}
@@ -187,7 +217,11 @@ export function FieldSurveyPage() {
                     <ul className="divide-y divide-line border-t border-b border-line">
                       {data.obstacles.map((o) => (
                         <li key={o.label} className="flex items-center justify-between gap-3 py-3">
-                          <Checkbox checked={obstacles.has(o.label)} onChange={() => toggleObstacle(o.label)} label={o.label} />
+                          <Checkbox
+                            checked={obstacles.has(o.label)}
+                            onChange={() => toggleObstacle(o.label)}
+                            label={o.label}
+                          />
                           <Badge>{o.note}</Badge>
                         </li>
                       ))}
@@ -214,11 +248,7 @@ export function FieldSurveyPage() {
                 <PanelHeader
                   title="Ảnh khảo sát"
                   description={`Đã chụp ${data.photos.length}/${data.photos.length} vị trí bắt buộc`}
-                  action={
-                    <Button size="sm">
-                      Chụp ảnh
-                    </Button>
-                  }
+                  action={<Button size="sm">Chụp ảnh</Button>}
                 />
                 <PanelBody className="space-y-4">
                   <button
@@ -247,18 +277,18 @@ export function FieldSurveyPage() {
           </div>
 
           <ActionBar>
-              <Button>Lưu nháp</Button>
-              <Button variant="danger">
-                Báo trở ngại
+            <Button>Lưu nháp</Button>
+            <Button variant="danger">Báo trở ngại</Button>
+            <div className="flex w-full flex-wrap items-center gap-3 sm:ml-auto sm:w-auto">
+              <span className="tnum text-body text-fg-2">
+                {done
+                  ? 'Đã gửi khảo sát cho kinh doanh'
+                  : `Đã kiểm tra ${data.mandatory.done}/${data.mandatory.total} trường bắt buộc`}
+              </span>
+              <Button variant="primary" className="w-full sm:w-auto" disabled={done} onClick={() => setDone(true)}>
+                Hoàn thành khảo sát và gửi kinh doanh
               </Button>
-              <div className="flex w-full flex-wrap items-center gap-3 sm:ml-auto sm:w-auto">
-                <span className="tnum text-body text-fg-2">
-                  {done ? 'Đã gửi khảo sát cho kinh doanh' : `Đã kiểm tra ${data.mandatory.done}/${data.mandatory.total} trường bắt buộc`}
-                </span>
-                <Button variant="primary" className="w-full sm:w-auto" disabled={done} onClick={() => setDone(true)}>
-                  Hoàn thành khảo sát và gửi kinh doanh
-                </Button>
-              </div>
+            </div>
           </ActionBar>
         </>
       )}

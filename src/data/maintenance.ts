@@ -1,15 +1,11 @@
-/*
- * Dữ liệu giả cho màn 13 – maintenance_task (/tech/maintenance/:id).
- * Dựng theo maintenance_task/screen.png: work order bảo trì định kỳ Tier-1 của
- * một hệ thương mại 45 kW, kèm số liệu lịch sử, telemetry và ký xác nhận.
- */
+// Dữ liệu giả cho màn bảo trì (/tech/maintenance/:id)
 
 import type { EvidencePhotoItem } from '@/components/common/tech/EvidenceGallery'
 import type { ExecutionStepItem } from '@/components/common/tech/ExecutionStepList'
 import type { InfoTileData } from '@/components/common/tech/InfoTile'
 import type { JobHeaderAction } from '@/components/common/tech/JobHeaderCard'
 import type { StatTileProps } from '@/components/common/tech/StatTile'
-import type { YieldSeriesPoint } from '@/features/warranty/components/YieldImpactChart'
+import type { YieldSeriesPoint } from '@/features/warranty/YieldImpactChart'
 import type { StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 
 /** Một bước của "Standardized Protocol Checklist"; bước đang đo có bảng số liệu riêng. */

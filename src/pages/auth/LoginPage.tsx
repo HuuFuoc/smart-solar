@@ -4,8 +4,8 @@ import { useForm } from 'react-hook-form'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { AuthCard, RequiredMark } from '@/features/auth/components/AuthCard'
-import { AuthInput, PasswordInput } from '@/features/auth/components/AuthInput'
+import { AuthCard, RequiredMark } from '@/features/auth/AuthCard'
+import { AuthInput, PasswordInput } from '@/features/auth/AuthInput'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 import { demoAccounts } from '@/config/demoAccounts'
@@ -23,14 +23,14 @@ const schema = z.object({
 
 type LoginValues = z.infer<typeof schema>
 
-/** /login – view "Đăng nhập" của auth_portal, gọi POST /api/auth/login. */
+/** /login, view "Đăng nhập" của auth_portal, gọi POST /api/auth/login. */
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, status, signIn, expireSession } = useAuth()
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  // Đang đăng nhập bằng form này: để chính doSignIn điều hướng (về trang `from`), đừng để chốt "đã đăng nhập" bên dưới chen vào.
+  // Đang đăng nhập bằng form này thì để doSignIn tự điều hướng
   const signingIn = useRef(false)
 
   const {
@@ -56,11 +56,11 @@ export function LoginPage() {
     try {
       const user = await signIn(email, password, remember)
       toast.success(loginContent.toastSuccess)
-      // Quay lại trang đang muốn vào nếu bị RequireRole chặn, nếu không thì theo vai trò.
-      // `from` có thể là trang của tài khoản vừa đăng xuất (vai trò khác) → chỉ dùng khi thuộc portal của vai trò này.
+      // Quay lại trang đang muốn vào nếu thuộc portal của vai trò này, không thì về trang chủ của vai trò
       const home = homePathForRole(user.role)
       const from = (location.state as { from?: string } | null)?.from
-      const inPortal = from !== undefined && (from === home || from.startsWith(`${home}/`) || from.startsWith(`${home}?`))
+      const inPortal =
+        from !== undefined && (from === home || from.startsWith(`${home}/`) || from.startsWith(`${home}?`))
       navigate(inPortal ? from : home, { replace: true })
     } catch (error) {
       signingIn.current = false
@@ -72,7 +72,7 @@ export function LoginPage() {
 
   const onSubmit = handleSubmit((values) => doSignIn(values.email, values.password, values.remember))
 
-  // Đã đăng nhập sẵn (mở /login từ landing, hay gõ tay) thì vào thẳng trang làm việc thay vì hiện form.
+  // Đã đăng nhập thì vào thẳng trang làm việc
   if (status === 'ready' && user && !signingIn.current) return <Navigate to={homePathForRole(user.role)} replace />
 
   return (
@@ -88,10 +88,7 @@ export function LoginPage() {
           <div className="flex-1">
             <div className="text-label-lg font-bold">{loginContent.errorTitle}</div>
             <div className="text-body-sm">{formError}</div>
-            {/*
-              Backend chưa có bảng mã lỗi cố định nên không tự nhận ra được trường hợp
-              "email chưa xác thực"; để người dùng tự sang màn xác thực khi cần.
-            */}
+            {/* Backend chưa có mã lỗi cho "email chưa xác thực" nên để người dùng tự sang màn xác thực */}
             <Link
               to={`${ROUTES.verifyEmail}${emailValue ? `?email=${encodeURIComponent(emailValue)}` : ''}`}
               className="mt-1 inline-block text-label-sm font-semibold underline"
@@ -176,9 +173,7 @@ export function LoginPage() {
       {/* Chỉ hiện khi chạy dev và có khai báo tài khoản mẫu trong .env.development.local */}
       {import.meta.env.DEV && demoAccounts.length > 0 && (
         <div className="mt-space-lg border-t border-surface-container-highest pt-space-md">
-          <span className="mb-2 block text-label-sm text-on-surface-variant">
-            {loginContent.quickTitle}
-          </span>
+          <span className="mb-2 block text-label-sm text-on-surface-variant">{loginContent.quickTitle}</span>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {demoAccounts.map((account) => (
               <button

@@ -3,18 +3,15 @@ import { SearchInput, Select } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Pagination } from '@/components/common/ui/pagination'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
-import { CatalogTable } from '@/features/products/components/CatalogTable'
+import { CatalogTable } from '@/features/products/CatalogTable'
 import { PRODUCT_SORT_OPTIONS } from '@/common/product'
-import { isProductActive, parseSort } from '@/features/products/components/productDisplay'
+import { isProductActive, parseSort } from '@/features/products/productDisplay'
 import { useProductsQuery } from '@/hooks/useProducts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { ROUTES, withId } from '@/routes/paths'
 import { cx } from '@/utils/cx'
 
-/*
-  Danh mục sản phẩm trong portal khách hàng và kinh doanh, đọc GET /api/products như trang công khai.
-  Chỉ hiện sản phẩm đang bán: swagger không có tham số lọc trạng thái nên lọc ở client.
-*/
+// Danh mục sản phẩm trong portal. Chỉ hiện sản phẩm đang bán (lọc ở client)
 
 const PAGE_SIZE = 20
 

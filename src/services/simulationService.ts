@@ -1,27 +1,32 @@
-import type { CreateSimulationRequest } from '@/types/req/simulationsReq'
-import type { SimulationDetail, SimulationListItem } from '@/types/res/simulationsRes'
-import { get, post } from '@/services/api/client'
+import type { CreateSimulationRequest, SelectSimulationRequest } from '@/types/req/simulationsReq'
+import type { SelectedSimulation, SimulationDetail, SimulationList, SimulationView } from '@/types/res/simulationsRes'
+import { del, get, post } from '@/services/api/client'
+import { ENDPOINTS } from '@/services/api/endpoints'
 
-/*
- * Mô phỏng bố trí tấm pin + sản lượng do backend tính (PVGIS, NASA POWER) và lưu thành từng lần chạy.
- * - Tạo: chỉ khách hàng sở hữu, bản nháp còn là Draft; tối đa 10 lần / phút / người (429 + Retry-After).
- * - Đọc: khách hàng sở hữu hoặc sales đã nhận yêu cầu khảo sát của bản đánh giá đó.
- * Backend tự chọn lần vừa tạo hoặc dùng lại làm mô phỏng chính (isSelected); không có API chọn lại lần khác.
- */
+// Mô phỏng do backend tính. Tạo, chọn, bỏ chọn dùng chung giới hạn 10 lần / phút (429)
+// Kết quả chỉ giữ tạm 24 giờ; khách phải tự chọn một lần chạy làm mô phỏng chính thì mới được lưu lại
 
-const base = (preSurveyId: string) => `/pre-surveys/${encodeURIComponent(preSurveyId)}/simulations`
-
-/** POST – 201 tạo mới, 200 dùng lại lần chạy cùng đầu vào; có thể chờ nhà cung cấp dữ liệu tới ~25 giây. */
+/** 201 tạo mới, 200 dùng lại kết quả cũ; có thể mất khoảng 25 giây. Không tự chọn làm mô phỏng chính */
 export function createSimulation(preSurveyId: string, body: CreateSimulationRequest) {
-  return post<SimulationDetail>(base(preSurveyId), body)
+  return post<SimulationDetail>(ENDPOINTS.simulations.base(preSurveyId), body)
 }
 
-/** GET – mọi lần chạy, mới nhất trước, bản rút gọn (không có toạ độ tấm). */
+/** Các lần chạy còn hạn (bản rút gọn) và mô phỏng đã chọn */
 export function listSimulations(preSurveyId: string) {
-  return get<SimulationListItem[]>(base(preSurveyId))
+  return get<SimulationList>(ENDPOINTS.simulations.base(preSurveyId))
 }
 
-/** GET – bản đầy đủ để vẽ 2D / 3D, biểu đồ sản lượng và cảnh báo; payload có thể lớn (tới 5.000 tấm). */
+/** Bản đầy đủ để vẽ 2D / 3D. Kết quả đã hết hạn thì 410, riêng mô phỏng đã chọn thì trả bản tóm tắt */
 export function getSimulation(preSurveyId: string, simulationId: string) {
-  return get<SimulationDetail>(`${base(preSurveyId)}/${encodeURIComponent(simulationId)}`)
+  return get<SimulationView>(ENDPOINTS.simulations.byId(preSurveyId, simulationId))
+}
+
+/** Chọn làm mô phỏng chính. expectedGeometryVersion là phiên bản mặt lắp khách đang xem */
+export function selectSimulation(preSurveyId: string, simulationId: string, body: SelectSimulationRequest) {
+  return post<SelectedSimulation>(ENDPOINTS.simulations.select(preSurveyId, simulationId), body)
+}
+
+/** Bỏ mô phỏng chính, chỉ làm được khi bản đánh giá chưa gửi */
+export function clearSimulationSelection(preSurveyId: string) {
+  return del<void>(ENDPOINTS.simulations.selection(preSurveyId))
 }

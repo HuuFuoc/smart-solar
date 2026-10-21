@@ -5,7 +5,7 @@ import { AuthProvider } from '@/context/AuthProvider'
 import { isApiError } from '@/services/api/errors'
 import { cx } from '@/utils/cx'
 
-/* Lỗi 4xx (chưa đăng nhập, không có quyền, không tìm thấy…) thử lại cũng không khỏi: báo ngay. */
+// Lỗi 4xx thử lại cũng không khỏi nên không retry
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -17,12 +17,8 @@ const queryClient = new QueryClient({
   },
 })
 
-/*
- * Toast (sonner, unstyled) theo màu ngữ nghĩa của hệ token (08/10/2026): nền sáng có viền + bóng lớp nổi, icon tô theo
- * loại – thành công xanh (ok), thông tin xanh dương (info) –; lỗi và cảnh báo nằm trên nền đỏ / vàng nhạt để khác hẳn
- * thông báo thường. Nền và viền chỉ đặt trong class theo loại (sonner ghép `toast` + `[loại]`, cx không gộp class nên
- * đặt ở cả hai sẽ đè nhau tuỳ thứ tự CSS).
- */
+// Toast theo màu của token: thành công xanh, thông tin xanh dương, lỗi / cảnh báo nền đỏ / vàng nhạt
+// Nền và viền chỉ đặt trong class theo loại vì cx không gộp class
 const toastSurface = 'border-line bg-canvas'
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
@@ -30,7 +26,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <AuthProvider>
         {children}
         <Toaster
-          // Trên cùng: ở đáy toast đè nút chính của ActionBar (thanh thao tác dính đáy ở các màn nhiều bước).
+          // Đặt ở trên cùng để không đè nút của ActionBar
           position="top-right"
           toastOptions={{
             unstyled: true,

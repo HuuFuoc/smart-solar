@@ -2,13 +2,7 @@ import type { ReactNode } from 'react'
 import { Checkbox, Icon, StatusBadge } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 
-/*
- * Danh sách bước công việc dùng chung hai màn:
- * - variant "installation" (installation_task): có số thứ tự, bước đang làm nổi lên nền trắng
- *   + ring primary-container, giờ hoàn thành kèm icon check.
- * - variant "protocol" (maintenance_task): tiêu đề gạch ngang khi xong, trạng thái là pill,
- *   bước đang làm nền primary-fixed/20 với ô icon sync thay ô tick.
- */
+// Danh sách bước công việc. installation: có số thứ tự, protocol: trạng thái dạng pill
 export type ExecutionStepState = 'done' | 'active' | 'pending'
 
 export type ExecutionStepItem = {
@@ -20,7 +14,7 @@ export type ExecutionStepItem = {
   state: ExecutionStepState
   /** Giờ hoàn thành khi done, nhãn hàng đợi khi pending */
   statusText: string
-  /** installation: số liệu bên phải bước đang làm ("18 / 24 Mounted"). protocol: pill kết quả khi xong ("Passed") */
+  /** installation: số liệu của bước đang làm, protocol: kết quả khi xong */
   activeMetric?: string
 }
 
@@ -29,7 +23,7 @@ export type ExecutionStepListProps = {
   checkedIds: string[]
   onToggle: (id: string, checked: boolean) => void
   variant?: 'installation' | 'protocol'
-  /** Nội dung phụ dưới mô tả của một bước (bộ đếm panel, bảng số đo…) */
+  /** Nội dung phụ dưới mô tả của một bước (bộ đếm panel, bảng số đo...) */
   renderExtra?: (step: ExecutionStepItem) => ReactNode
   className?: string
 }
@@ -50,7 +44,11 @@ export function ExecutionStepList({
         const checked = checkedIds.includes(step.id)
         const isActive = step.state === 'active'
         const extra = renderExtra?.(step)
-        const protocolStatus = isActive ? step.statusText : checked ? step.activeMetric ?? step.statusText : step.statusText
+        const protocolStatus = isActive
+          ? step.statusText
+          : checked
+            ? (step.activeMetric ?? step.statusText)
+            : step.statusText
 
         return (
           <li
@@ -68,12 +66,7 @@ export function ExecutionStepList({
               step.state === 'pending' && (isProtocol ? 'opacity-90' : 'opacity-80'),
             )}
           >
-            <div
-              className={cn(
-                'flex min-w-0 flex-1 items-start',
-                isProtocol ? 'gap-space-md' : 'gap-space-sm',
-              )}
-            >
+            <div className={cn('flex min-w-0 flex-1 items-start', isProtocol ? 'gap-space-md' : 'gap-space-sm')}>
               {isProtocol && isActive ? (
                 <div className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary-container text-on-primary">
                   <Icon name="sync" className="text-[14px]" />
@@ -136,9 +129,7 @@ export function ExecutionStepList({
                         </span>
                       )}
                       {step.state === 'pending' && (
-                        <span className="mt-0.5 shrink-0 text-label-sm text-on-surface-variant">
-                          {step.statusText}
-                        </span>
+                        <span className="mt-0.5 shrink-0 text-label-sm text-on-surface-variant">{step.statusText}</span>
                       )}
                     </>
                   )}

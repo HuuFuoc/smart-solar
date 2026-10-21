@@ -2,14 +2,7 @@ import type { ComponentProps } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/*
- * 5 variant đầu theo bảng "Status & Lifecycle Palette" trong DESIGN.md (token status-* trong globals.css).
- * Các variant còn lại là cặp màu lặp lại nhiều nhất trong 16 code.html.
- *
- * Chỉ trạng thái cần chú ý (lỗi, cảnh báo, chờ duyệt) mới có nền màu. Các trạng thái
- * bình thường chỉ còn chấm màu + chữ: một màn hình thường có hàng chục nhãn, tô nền
- * tất cả thì không còn gì nổi lên.
- */
+// Chỉ trạng thái cần chú ý (lỗi, cảnh báo, chờ duyệt) mới có nền màu, còn lại chỉ có chấm màu + chữ
 export type StatusVariant =
   | 'submitted'
   | 'review'

@@ -1,18 +1,7 @@
 import type { ApiErrorBody } from '@/types/res/apiRes'
 
-/*
- * Lỗi API.
- *
- * Wrapper *ApiResponse trong swagger có dạng { isSuccess, traceId, data, error },
- * `error` là ApiError { code, message, details }. Swagger KHÔNG khai kiểu của
- * `details` (chỉ "nullable": true) nên parser dưới đây nhận mọi dạng thường gặp
- * và bỏ qua dạng lạ.
- *
- * Thứ tự chọn câu hiển thị:
- *   1. bản dịch theo `code` trong ERROR_MESSAGES (mã đã quan sát được từ backend thật);
- *   2. `message` của server (hiện đang là tiếng Anh) cho mã lạ;
- *   3. câu tiếng Việt theo HTTP status khi không có message.
- */
+// Lỗi API. `details` không có kiểu trong swagger nên parser nhận nhiều dạng
+// Câu hiển thị: bản dịch theo `code`, nếu không có thì message của server, cuối cùng là câu theo HTTP status
 
 /** Lỗi theo từng field, đã chuẩn hoá về { tenField: "thông báo đầu tiên" }. */
 export type FieldErrors = Record<string, string>
@@ -25,7 +14,7 @@ export class ApiError extends Error {
   readonly details: unknown
   /** Số giây phải chờ theo header Retry-After (429); null khi server không gửi. */
   readonly retryAfter: number | null
-  /** Câu gốc (tiếng Anh) của server; có khi kèm mã lý do trong ngoặc, vd. "(DAILY_LIMIT_REACHED)". */
+  /** Câu gốc tiếng Anh của server, có khi kèm mã lý do trong ngoặc */
   readonly serverMessage: string | null
 
   constructor(init: {
@@ -54,11 +43,7 @@ export class ApiError extends Error {
   }
 }
 
-/*
- * Mã lỗi quan sát trực tiếp từ backend (POST /api/auth/* ngày 21/09/2026).
- * Server trả message tiếng Anh nên cần bản dịch; mã chưa có ở đây sẽ rơi về
- * message của server.
- */
+// Bản dịch theo mã lỗi. Mã chưa có ở đây thì dùng message của server
 const ERROR_MESSAGES: Record<string, string> = {
   AUTH_INVALID_CREDENTIALS: 'Email hoặc mật khẩu không chính xác, hoặc tài khoản chưa thể đăng nhập.',
   AUTH_EMAIL_ALREADY_EXISTS: 'Email này đã được đăng ký. Hãy đăng nhập hoặc dùng email khác.',
@@ -68,17 +53,21 @@ const ERROR_MESSAGES: Record<string, string> = {
   AUTH_REFRESH_TOKEN_INVALID: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
   AUTH_UNAUTHORIZED: 'Bạn cần đăng nhập để thực hiện thao tác này.',
   AUTH_TOO_MANY_REQUESTS: 'Bạn thao tác quá nhanh. Vui lòng chờ ít phút rồi thử lại.',
-  // POST /api/auth/change-password sai mật khẩu hiện tại (quan sát 06/10/2026)
+  // Đổi mật khẩu
   AUTH_CURRENT_PASSWORD_INVALID: 'Mật khẩu hiện tại không đúng.',
-  // /api/products và /api/admin/products (quan sát ngày 29/09/2026)
+  // Sản phẩm
   CATALOG_PRODUCT_NOT_FOUND: 'Không tìm thấy sản phẩm. Có thể sản phẩm đã bị xoá.',
-  // /api/customers, /api/pre-surveys, /api/survey-requests (PreSurveyErrorCodes trong image 05/10/2026)
+  // Khách hàng, đánh giá sơ bộ, yêu cầu khảo sát
   PRESURVEY_UNAUTHORIZED: 'Bạn cần đăng nhập để thực hiện thao tác này.',
   PRESURVEY_VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
   CUSTOMER_ALREADY_EXISTS: 'Tài khoản này đã có hồ sơ khách hàng.',
   CUSTOMER_PROFILE_NOT_FOUND: 'Tài khoản chưa có hồ sơ khách hàng. Hãy khai báo thông tin khách hàng trước.',
   PROPERTY_SITE_NOT_FOUND: 'Không tìm thấy địa điểm lắp đặt.',
   PROPERTY_SITE_NOT_OWNED: 'Địa điểm này không thuộc tài khoản của bạn.',
+  ADMINISTRATIVE_LOCATION_UNKNOWN: 'Phường, xã này không có trong danh mục. Chọn lại trong danh sách.',
+  ADMINISTRATIVE_LOCATION_SUPERSEDED:
+    'Phường, xã này đã sáp nhập hoặc đổi tên. Chọn phường, xã hiện tại trong danh sách.',
+  ADMINISTRATIVE_LOCATION_OUT_OF_SERVICE_AREA: 'Hiện Smart Solar chỉ nhận công trình tại TP.HCM.',
   PRE_SURVEY_NOT_FOUND: 'Không tìm thấy bản đánh giá.',
   PRE_SURVEY_NOT_OWNED: 'Bản đánh giá này không thuộc tài khoản của bạn.',
   PRE_SURVEY_NOT_EDITABLE: 'Bản đánh giá đã gửi nên không sửa được nữa.',
@@ -87,51 +76,68 @@ const ERROR_MESSAGES: Record<string, string> = {
   SURVEY_REQUEST_UNAVAILABLE: 'Yêu cầu này đã có người nhận hoặc không còn chờ xử lý.',
   SURVEY_REQUEST_NOT_FOUND: 'Không tìm thấy yêu cầu khảo sát.',
   SURVEY_REQUEST_NOT_ASSIGNED: 'Yêu cầu này không do bạn phụ trách nên không xem được chi tiết.',
-  // Mặt lắp + mô phỏng (PreSurveyErrorCodes, SimulationErrorCodes trong image 09/10/2026, dò ngày 09/10/2026)
-  PRE_SURVEY_CONCURRENTLY_MODIFIED: 'Bản đánh giá vừa được sửa ở nơi khác (tab hoặc máy khác). Tải lại bản mới nhất rồi lưu lại.',
+  // Mặt lắp và mô phỏng
+  PRE_SURVEY_CONCURRENTLY_MODIFIED:
+    'Bản đánh giá vừa được sửa ở nơi khác (tab hoặc máy khác). Tải lại bản mới nhất rồi lưu lại.',
   SIMULATION_VALIDATION_FAILED: 'Cấu hình mô phỏng chưa hợp lệ. Kiểm tra lại các ô được đánh dấu.',
   SURFACE_NOT_DEFINED: 'Chưa lưu mặt lắp. Lưu kích thước mặt lắp rồi chạy mô phỏng.',
   PRODUCT_NOT_FOUND: 'Tấm pin này không còn bán. Chọn tấm pin khác.',
   PRODUCT_NOT_SOLAR_PANEL: 'Sản phẩm đã chọn không phải tấm pin. Chọn tấm pin khác.',
   PRODUCT_SPEC_INCOMPLETE: 'Tấm pin này thiếu công suất hoặc kích thước nên chưa mô phỏng được. Chọn tấm pin khác.',
-  INSTALLATION_BELOW_DOCUMENTED_MINIMUM: 'Khoảng cách đã nhập nhỏ hơn mức tối thiểu trong tài liệu của nhà sản xuất. Tăng khoảng cách rồi chạy lại.',
+  INSTALLATION_BELOW_DOCUMENTED_MINIMUM:
+    'Khoảng cách đã nhập nhỏ hơn mức tối thiểu trong tài liệu của nhà sản xuất. Tăng khoảng cách rồi chạy lại.',
   INSTALLATION_PARAMETER_REQUIRED: 'Thiếu một khoảng cách lắp đặt bắt buộc. Nhập đủ các ô khoảng cách rồi chạy lại.',
-  PANEL_FACES_INTO_SURFACE: 'Với góc và hướng này, mặt tấm pin sẽ quay vào mặt mái. Đổi hướng tấm hoặc giảm góc nghiêng.',
+  PANEL_FACES_INTO_SURFACE:
+    'Với góc và hướng này, mặt tấm pin sẽ quay vào mặt mái. Đổi hướng tấm hoặc giảm góc nghiêng.',
   PANEL_ORIENTATION_UNSUPPORTED: 'Bản mô phỏng chưa hỗ trợ góc và hướng tấm pin này. Thử góc nghiêng hoặc hướng khác.',
-  SIMULATION_LAYOUT_LIMIT_EXCEEDED: 'Bố trí vượt 5.000 tấm, giới hạn của bản mô phỏng sơ bộ. Thu nhỏ mặt lắp hoặc chọn tấm pin lớn hơn.',
+  SIMULATION_LAYOUT_LIMIT_EXCEEDED:
+    'Bố trí vượt 5.000 tấm, giới hạn của bản mô phỏng sơ bộ. Thu nhỏ mặt lắp hoặc chọn tấm pin lớn hơn.',
   SIMULATION_SOURCE_CHANGED: 'Mặt lắp vừa thay đổi sau lần tải trước. Đã tải lại mặt lắp, hãy chạy mô phỏng lại.',
   SIMULATION_NOT_FOUND: 'Không tìm thấy lần mô phỏng này.',
   SIMULATION_ACCESS_DENIED: 'Bạn không có quyền xem mô phỏng của bản đánh giá này.',
-  // Lịch khảo sát: SchedulingErrorCodes (backend main 4d12e4d, 12/10/2026)
+  SIMULATION_EXPIRED: 'Kết quả lần chạy này đã hết hạn (hệ thống chỉ giữ 24 giờ). Chạy lại mô phỏng.',
+  SIMULATION_CACHE_UNAVAILABLE: 'Tạm thời không đọc được kết quả mô phỏng. Thử lại sau ít phút.',
+  SIMULATION_SELECTION_CONFLICT: 'Mô phỏng chính vừa được đổi ở nơi khác. Đã tải lại, hãy chọn lại.',
+  // Lịch khảo sát
   SCHEDULING_VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
   SURVEY_SLOT_UNAVAILABLE: 'Giờ vừa chọn không còn trống. Danh sách giờ đã được tải lại, hãy chọn giờ khác.',
   SURVEY_BOOKING_ALREADY_EXISTS: 'Yêu cầu này đã có lịch hẹn. Tải lại trang để xem lịch hiện tại.',
   SURVEY_BOOKING_NOT_FOUND: 'Yêu cầu này chưa có lịch hẹn đang hiệu lực.',
   INVALID_BOOKING_TIME:
     'Giờ này không đặt được: giờ bắt đầu phải theo mốc 30 phút, nằm trọn trong giờ làm của kỹ thuật viên, chưa qua và trong 30 ngày tới.',
-  INVALID_BOOKING_STATE: 'Lịch hẹn đã đổi trạng thái (đã phân công, đã qua giờ hoặc đã huỷ) nên không làm được thao tác này. Tải lại để xem trạng thái mới.',
+  INVALID_BOOKING_STATE:
+    'Lịch hẹn đã đổi trạng thái (đã phân công, đã qua giờ hoặc đã huỷ) nên không làm được thao tác này. Tải lại để xem trạng thái mới.',
   TECHNICIAN_NOT_AVAILABLE: 'Kỹ thuật viên này không nhận được lịch vào giờ đó. Tải lại danh sách và chọn người khác.',
   TECHNICIAN_NOT_FOUND: 'Không tìm thấy kỹ thuật viên.',
   TECHNICIAN_NOT_ASSIGNED: 'Lịch này không giao cho bạn.',
-  TRAVEL_ROUTE_UNAVAILABLE: 'Không tìm được đường đi tới công trình. Kiểm tra lại toạ độ của địa điểm.',
-  TRAVEL_PROVIDER_UNAVAILABLE: 'Dịch vụ tính đường đi (Vietmap) đang lỗi nên chưa kiểm tra được giờ này. Thử lại sau ít phút.',
-  TRAVEL_PROVIDER_QUOTA_EXCEEDED: 'Đã hết lượt tính đường đi của Vietmap. Thử lại sau.',
   APPOINTMENT_CONCURRENCY_CONFLICT: 'Lịch hẹn vừa được thay đổi ở nơi khác. Đã tải lại, hãy thử lại.',
-  PROPERTY_SITE_LOCATION_REQUIRED: 'Địa điểm chưa có toạ độ GPS hợp lệ nên chưa tính được đường đi và giờ khảo sát.',
+  SITE_LOCATION_REQUIRED: 'Địa điểm chưa có mã phường, xã nên chưa biết thuộc khu vực nào để xếp kỹ thuật viên.',
+  NO_ZONE_COVERAGE: 'Phường, xã của công trình chưa thuộc khu vực phục vụ nào. Bộ phận kinh doanh sẽ liên hệ xếp lịch.',
+  ZONE_NOT_SERVICEABLE: 'Khu vực của công trình đang tạm ngừng nhận lịch.',
+  NO_ZONE_TECHNICIAN: 'Khu vực của công trình chưa có kỹ thuật viên. Bộ phận kinh doanh sẽ liên hệ xếp lịch.',
+  NO_AVAILABLE_TECHNICIAN: 'Kỹ thuật viên của khu vực đã kín lịch. Chọn ngày khác.',
+  SCHEDULE_CONFLICT: 'Giờ này kỹ thuật viên của khu vực đã kín lịch. Chọn giờ khác.',
+  APPOINTMENT_ALREADY_TAKEN: 'Lịch này vừa có người nhận trước. Danh sách đã được tải lại.',
+  SURVEY_REQUEST_NOT_OWNED: 'Bạn chưa nhận yêu cầu này nên chưa phân công được. Nhận yêu cầu trước.',
+  ASSIGNMENT_REASON_REQUIRED: 'Ghi lý do phân công.',
+  TECHNICIAN_OUTSIDE_ZONE: 'Kỹ thuật viên này không thuộc khu vực của công trình.',
+  SITE_HAS_ACTIVE_BOOKING: 'Địa điểm đang có lịch khảo sát nên chưa đổi được vị trí.',
   APPOINTMENT_NOT_FOUND: 'Không tìm thấy lịch hẹn, hoặc lịch không còn giao cho bạn.',
-  TECHNICIAN_HAS_CONFLICTING_APPOINTMENTS: 'Thay đổi này làm hỏng lịch hẹn đã có. Đổi giờ hoặc chuyển các lịch bên dưới cho người khác trước.',
-  TECHNICIAN_PROFILE_REQUIRED: 'Lưu hồ sơ lịch của kỹ thuật viên (nơi xuất phát) trước.',
-  // Quản lý tài khoản: AdminUserErrorCodes (backend main 4d12e4d, 12/10/2026)
+  TECHNICIAN_HAS_CONFLICTING_APPOINTMENTS:
+    'Thay đổi này làm hỏng lịch hẹn đã có. Đổi giờ hoặc chuyển các lịch bên dưới cho người khác trước.',
+  TECHNICIAN_PROFILE_REQUIRED: 'Lưu hồ sơ nhận lịch của kỹ thuật viên trước.',
+  // Quản lý tài khoản
   ADMIN_USER_NOT_FOUND: 'Không tìm thấy tài khoản.',
   ADMIN_INVALID_ROLE: 'Vai trò không hợp lệ.',
   ADMIN_INVALID_STATUS_TRANSITION:
     'Không chuyển được sang trạng thái này. Tài khoản chưa xác minh email thì gửi link kích hoạt; chỉ tài khoản đang hoạt động mới tạm khoá được.',
   ADMIN_LAST_ACTIVE_ADMIN: 'Đây là quản trị viên đang hoạt động cuối cùng. Cấp quyền quản trị cho người khác trước.',
   ADMIN_CANNOT_MODIFY_OWN_ACCOUNT: 'Bạn không thể đổi trạng thái hay xoá chính tài khoản của mình.',
-  ACCOUNT_HAS_ACTIVE_WORK: 'Tài khoản còn lịch khảo sát sắp tới hoặc yêu cầu khảo sát đang xử lý. Chuyển các việc này cho người khác trước.',
+  ACCOUNT_HAS_ACTIVE_WORK:
+    'Tài khoản còn lịch khảo sát sắp tới hoặc yêu cầu khảo sát đang xử lý. Chuyển các việc này cho người khác trước.',
   ADMIN_USER_DELETED: 'Tài khoản đã bị xoá nên không sửa được.',
   ADMIN_RECOVERY_NOT_ALLOWED: 'Tài khoản đang tạm khoá hoặc bị vô hiệu: kích hoạt lại trước khi gửi link.',
-  // Mã chung của backend (dò GET bằng từng vai trò ngày 08/10/2026)
+  // Mã chung
   AUTH_FORBIDDEN: 'Tài khoản của bạn không có quyền xem nội dung này.',
   RESOURCE_NOT_FOUND: 'Không tìm thấy dữ liệu yêu cầu. Kiểm tra lại đường dẫn.',
   REQUEST_NOT_ACCEPTABLE: 'Máy chủ không hỗ trợ thao tác này.',
@@ -181,13 +187,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-/*
- * Chuẩn hoá `details` về { field: message }. Nhận 3 dạng hay gặp:
- *   1. { email: ["..."], password: ["..."] }        (ModelState / ProblemDetails của .NET)
- *   2. [{ field: "email", message: "..." }, ...]    (mảng lỗi)
- *   3. { errors: { email: [...] } }                 (ProblemDetails bọc thêm 1 lớp)
- * Dạng khác (chuỗi mô tả, null…) trả về {} và để message chung hiển thị ở alert.
- */
+// Chuẩn hoá `details` về { field: message }. Nhận 3 dạng:
+// { email: ["..."] }, [{ field, message }], { errors: { ... } }
+// Dạng khác trả về {}
 export function parseFieldErrors(details: unknown): FieldErrors {
   if (!details) return {}
 
@@ -221,7 +223,7 @@ export function parseFieldErrors(details: unknown): FieldErrors {
   return {}
 }
 
-/** Header Retry-After dạng số giây (backend gửi "60"); dạng ngày giờ HTTP cũng đổi về số giây còn lại. */
+/** Retry-After dạng số giây hoặc ngày giờ HTTP */
 export function parseRetryAfter(value: unknown): number | null {
   if (typeof value !== 'string' || !value.trim()) return null
   const seconds = Number(value)
@@ -247,12 +249,9 @@ export function toApiError(status: number, body: unknown, retryAfter: number | n
 
   return new ApiError({
     status,
-    // Bản dịch theo mã → message của server → câu theo status.
+    // Ưu tiên bản dịch theo mã, rồi message của server, cuối cùng là câu theo status
     message:
-      messageForCode(code) ??
-      serverMessage ??
-      firstString(Object.values(fieldErrors)) ??
-      messageForStatus(status),
+      messageForCode(code) ?? serverMessage ?? firstString(Object.values(fieldErrors)) ?? messageForStatus(status),
     code,
     fieldErrors,
     traceId,
@@ -266,7 +265,6 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError
 }
 
-/** Lấy câu hiển thị cho người dùng từ bất kỳ lỗi nào. */
 export function errorMessage(error: unknown, fallback = 'Đã xảy ra lỗi. Vui lòng thử lại.') {
   if (isApiError(error)) return error.message
   if (error instanceof Error && error.message) return error.message

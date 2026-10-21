@@ -1,13 +1,10 @@
-import type { TaskBucket, TaskPriorityFilter, TaskTypeFilter } from '@/features/tasks/components/TaskFilterBar'
-import type { ViewOption } from '@/features/tasks/components/ViewToggle'
+import type { TaskBucket, TaskPriorityFilter, TaskTypeFilter } from '@/features/tasks/TaskFilterBar'
+import type { ViewOption } from '@/features/tasks/ViewToggle'
 import type { ButtonVariant } from '@/components/common/stitch-ui/Button'
 import type { StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 import type { TaskAccent } from '@/components/common/stitch-ui/TaskCard'
 
-/*
- * Dữ liệu giả cho /tech/tasks, nội dung lấy từ my_tasks_1/screen.png.
- * Elena Rostova (ORD-8821) và David Chen (ORD-8824) dùng chung id với data/techDashboard.ts.
- */
+// Dữ liệu giả cho /tech/tasks, dùng chung id với data/techDashboard.ts
 
 export const tasksHeader = {
   title: 'Phiếu công việc',
@@ -74,7 +71,7 @@ export type WorkOrder = {
   typeKey: 'survey' | 'installation' | 'warranty' | 'maintenance'
   /** Loại việc + icon màu theo loại */
   work: { label: string; icon: string; iconClassName: string }
-  /** Dòng phụ dưới loại việc: serial, thiết bị… */
+  /** Dòng phụ dưới loại việc: serial, thiết bị... */
   reference: string
   customer: { name: string; phone: string; property: string; propertyIcon: string }
   site: { street: string; zone: string; distance: string }
@@ -175,10 +172,7 @@ export const workOrders: WorkOrder[] = [
   },
 ]
 
-/*
- * Quick Status Drawer (#quickStatusDrawer trong my_tasks_1/code.html).
- * Phần đầu drawer lấy theo work order đang chọn; các khối dưới là nội dung dùng chung của thiết kế.
- */
+// Nội dung của Quick Status Drawer, phần đầu theo work order đang chọn
 export type LifecycleStage = {
   /** 1-4, khớp WorkOrder.lifecycleStage */
   value: 1 | 2 | 3 | 4
@@ -241,11 +235,10 @@ export const quickStatusDrawer = {
     title: 'Ghi chú tại hiện trường',
     dictateLabel: 'Ghi âm ghi chú',
     dictateIcon: 'mic',
-    placeholder:
-      'Ghi chú tại chỗ (ví dụ: xà gồ hướng nam cách nhau 60cm, có bóng cây che sau 16 giờ)…',
+    placeholder: 'Ghi chú tại chỗ (ví dụ: xà gồ hướng nam cách nhau 60cm, có bóng cây che sau 16 giờ)…',
   },
   photos: {
-    /** "Job Site Photos (3 uploaded)" – 2 ảnh + 1 ô Add Slot như code.html */
+    /** "Job Site Photos (3 uploaded)", 2 ảnh + 1 ô Add Slot như code.html */
     titleTemplate: 'Ảnh công trình ({count} ảnh)',
     uploadedCount: 3,
     captureLabel: 'Chụp ảnh',

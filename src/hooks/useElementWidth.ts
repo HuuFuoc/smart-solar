@@ -1,9 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
-/**
- * Bề rộng nội dung của một phần tử, cập nhật khi khung đổi cỡ (ResizeObserver). Dùng cho hình SVG vẽ bằng pixel
- * (mặt bằng mặt lắp, biểu đồ) để chữ giữ đúng 13px thay vì co giãn theo viewBox.
- */
+/** Bề rộng của phần tử, cập nhật bằng ResizeObserver. Dùng cho SVG vẽ bằng pixel */
 export function useElementWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null)
   const [width, setWidth] = useState(0)

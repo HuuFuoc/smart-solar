@@ -1,23 +1,20 @@
-/*
- * VIẾT TAY – swagger chỉ khai "200 OK" cho tag TechnicianAppointments (và TechnicianSchedule), không có
- * schema response. Tên kiểu và field lấy đúng theo SmartSolar.Modules.Scheduling.PreSurveyAppointments.Views
- * (TechnicianAppointmentListItem, TechnicianJobView, AcknowledgementView, TechnicianScheduleView – backend
- * main 4d12e4d, 12/10/2026). Khi backend khai response trong swagger, `npm run gen:api` sẽ ghi đè file này.
- */
-import type { TravelEstimateView } from '@/types/res/technicianAvailabilityRes'
-import type { AppointmentStatus, SelectedSimulationSummary } from '@/types/res/surveyRequestsRes'
+// Viết tay vì swagger không có schema response (tag TechnicianAppointments, TechnicianSchedule)
+import type { AppointmentStatus, SelectedSimulationSummary, ZoneView } from '@/types/res/surveyRequestsRes'
 
+/** Việc đã xác nhận của kỹ thuật viên (GET /api/technicians/me/appointments) */
 export type TechnicianAppointmentListItem = {
   appointmentId: string
-  /** Đang chỉ có "PRE_SURVEY". */
+  /** Đang chỉ có "PRE_SURVEY" */
   appointmentType: string
   startsAt: string
   endsAt: string
   status: AppointmentStatus
+  /** SELF_ACCEPTED (tự nhận) hoặc do sales / quản lý phân công */
+  assignmentSource: string | null
   propertyName: string
   province: string
   district: string | null
-  acknowledgedAt: string | null
+  assignedAt: string | null
 }
 
 export type TechnicianJobCustomer = {
@@ -35,7 +32,7 @@ export type TechnicianJobProperty = {
   streetLine: string | null
   latitude: number | null
   longitude: number | null
-  /** Tên enum (Rooftop, Ground, Carport, Facade, Other), không phải số như ở màn sales. */
+  /** Tên enum (Rooftop, Ground, Carport, Facade, Other), không phải số như ở màn sales */
   installationSurfaceType: string | null
   surfaceMaterial: string | null
 }
@@ -58,29 +55,56 @@ export type TechnicianJobView = {
   startsAt: string
   endsAt: string
   status: AppointmentStatus
+  assignmentSource: string | null
   assignedAt: string | null
-  acknowledgedAt: string | null
+  acceptedAt: string | null
   customerNote: string | null
   surveyRequestId: string
+  revision: number
   customer: TechnicianJobCustomer
   property: TechnicianJobProperty
   preSurvey: TechnicianJobPreSurvey
   selectedSimulation: SelectedSimulationSummary | null
-  /** "/api/pre-surveys/{id}/simulations/{simulationId}" – kỹ thuật viên được phân công đọc được. */
+  /** "/api/pre-surveys/{id}/simulations/{simulationId}", kỹ thuật viên đã xác nhận đọc được */
   simulationDetailPath: string | null
-  inboundTravelEstimate: TravelEstimateView | null
 }
 
-/** POST …/acknowledge; gửi lại khi đã nhận thì `alreadyAcknowledged` = true (không phải lỗi). */
-export type AcknowledgementView = {
+/**
+ * Lịch đang chờ người nhận trong khu vực của kỹ thuật viên (GET /api/technicians/me/open-appointments).
+ * Chưa có địa chỉ cụ thể và liên hệ của khách cho tới khi nhận việc.
+ */
+export type OpenAppointmentView = {
   appointmentId: string
+  surveyRequestId: string
+  startsAt: string
+  endsAt: string
   status: AppointmentStatus
-  acknowledgedAt: string
-  alreadyAcknowledged: boolean
+  acceptanceDeadlineAt: string | null
+  /** Gửi lại làm expectedRevision khi nhận việc */
+  revision: number
+  zone: ZoneView | null
+  propertyName: string
+  province: string
+  district: string | null
+  ward: string | null
+  installationSurfaceType: string | null
+  totalAreaM2: number | null
+  usableAreaM2: number | null
+  /** Chỉ để gợi ý, lúc nhận việc backend kiểm tra lại */
+  canAccept: boolean
+  /** Lý do không nhận được (trùng lịch, đủ số lịch trong ngày...) */
+  reason: string | null
+  requiresHoldRehoming: boolean
 }
 
-/** OK | PENDING_RECALCULATION | STALE | FAILED | MISSING */
-export type ScheduleRoutingStatus = 'OK' | 'PENDING_RECALCULATION' | 'STALE' | 'FAILED' | 'MISSING' | (string & {})
+/** POST .../release */
+export type ReleaseView = {
+  appointmentId: string
+  appointmentStatus: AppointmentStatus
+  /** Đã có kỹ thuật viên khác giữ chỗ thay */
+  hasNewHolder: boolean
+  message: string
+}
 
 export type ScheduleAppointmentView = {
   appointmentId: string
@@ -88,46 +112,23 @@ export type ScheduleAppointmentView = {
   startsAt: string
   endsAt: string
   status: AppointmentStatus
+  /** Chỗ giữ tạm cho lịch chưa ai nhận, chưa phải việc đã nhận */
+  isCapacityHold: boolean
   propertyName: string
-  latitude: number | null
-  longitude: number | null
-  /** Điểm xuất phát đúng của chặng tới lịch này: BASE (lịch đầu ngày) hoặc APPOINTMENT. */
-  expectedOriginKind: string
-  expectedOriginAppointmentId: string | null
-  /** Chỉ có khi routingStatus = OK. */
-  inboundTravel: TravelEstimateView | null
-  /** Ước tính cũ không còn đúng (đổi lịch trước đó…): chỉ để tham khảo, không dùng như hiện tại. */
-  nonCurrentEstimate: TravelEstimateView | null
-  routingStatus: ScheduleRoutingStatus
-  snapshotAgeMinutes: number | null
+  /** Lịch trước kết thúc cộng khoảng nghỉ vẫn muộn hơn giờ bắt đầu lịch này */
   potentialConflict: boolean
 }
 
-/** Lần tính lại đường đi đang chờ cho ngày này (null khi không có). */
-export type RecalculationStateView = {
-  /** PENDING | FAILED */
-  status: string
-  reason: string
-  requestedAt: string
-  attempts: number
-  nextAttemptAt: string
-  lastError: string | null
-}
-
+/** Lịch một ngày của kỹ thuật viên */
 export type TechnicianScheduleView = {
   technicianUserId: string
   /** Format: date */
   date: string
   timeZone: string
   appointmentCount: number
-  /** Chỉ cộng các chặng OK. */
-  estimatedTravelDistanceMeters: number
-  estimatedTravelSeconds: number
-  safetyBufferMinutesTotal: number
+  /** Khoảng nghỉ cố định giữa hai lịch (phút), không phải thời gian đi đường */
+  bufferBetweenAppointmentsMinutes: number
   conflictCount: number
-  routesNeedingReview: number
-  earliestBaseDeparture: string
-  recalculation: RecalculationStateView | null
   appointments: ScheduleAppointmentView[]
   note: string
 }

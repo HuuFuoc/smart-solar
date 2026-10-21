@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { AdvisoryCard } from '@/features/dashboard/components/AdvisoryCard'
-import { AuditTrailTable } from '@/features/dashboard/components/AuditTrailTable'
-import { DistributionBar } from '@/features/dashboard/components/DistributionBar'
-import { KeyValueList, KeyValueRow } from '@/features/dashboard/components/KeyValueList'
-import { QuickLaunchCard } from '@/features/dashboard/components/QuickLaunchCard'
+import { AdvisoryCard } from '@/features/dashboard/AdvisoryCard'
+import { AuditTrailTable } from '@/features/dashboard/AuditTrailTable'
+import { DistributionBar } from '@/features/dashboard/DistributionBar'
+import { KeyValueList, KeyValueRow } from '@/features/dashboard/KeyValueList'
+import { QuickLaunchCard } from '@/features/dashboard/QuickLaunchCard'
 import {
   Button,
   Card,
@@ -172,7 +172,6 @@ export function AdminDashboardPage() {
       </section>
 
       <div className="grid grid-cols-1 gap-space-xl lg:grid-cols-12">
-        {/* Cột trái: audit trail + launchpads */}
         <div className="flex flex-col gap-space-xl lg:col-span-8">
           <Card className="flex flex-col">
             <div className="mb-space-lg flex flex-col justify-between gap-space-sm sm:flex-row sm:items-center">
@@ -185,8 +184,7 @@ export function AdminDashboardPage() {
             <AuditTrailTable entries={auditTrail.entries} />
             <div className="mt-space-md flex flex-col justify-between gap-space-xs pt-space-xs text-body-sm text-outline sm:flex-row sm:items-center">
               <span>
-                Hiển thị {auditTrail.entries.length} trên {auditTrail.total.toLocaleString()}{' '}
-                {auditTrail.periodLabel}
+                Hiển thị {auditTrail.entries.length} trên {auditTrail.total.toLocaleString()} {auditTrail.periodLabel}
               </span>
               <Link
                 to={ROUTES.admin.reports}
@@ -212,10 +210,7 @@ export function AdminDashboardPage() {
           <Card>
             <CardHeader className="mb-space-md">
               <CardTitle icon="display_settings">{engineDefaults.title}</CardTitle>
-              <Link
-                to={ROUTES.admin.techConfig}
-                className="text-label-sm font-semibold text-primary hover:underline"
-              >
+              <Link to={ROUTES.admin.techConfig} className="text-label-sm font-semibold text-primary hover:underline">
                 {engineDefaults.editLabel}
               </Link>
             </CardHeader>

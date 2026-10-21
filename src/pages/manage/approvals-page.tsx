@@ -54,7 +54,10 @@ export function ManageApprovalsPage() {
                 <Button
                   disabled={eligible.length === 0}
                   onClick={() => {
-                    setDecided((d) => ({ ...d, ...Object.fromEntries(eligible.map((a) => [a.id, 'approved' as const])) }))
+                    setDecided((d) => ({
+                      ...d,
+                      ...Object.fromEntries(eligible.map((a) => [a.id, 'approved' as const])),
+                    }))
                     setToast(`Đã duyệt hàng loạt ${eligible.length} báo giá hợp lệ.`)
                   }}
                 >
@@ -78,7 +81,17 @@ export function ManageApprovalsPage() {
 
           <div className="grid gap-x-12 gap-y-12 lg:grid-cols-5">
             <div className="space-y-8 lg:col-span-3">
-              <FilterBar className="mb-0" tabs={<FilterChips chips={[...data.chips]} value={filter} onChange={setFilter} label="Lọc báo giá chờ duyệt" />}>
+              <FilterBar
+                className="mb-0"
+                tabs={
+                  <FilterChips
+                    chips={[...data.chips]}
+                    value={filter}
+                    onChange={setFilter}
+                    label="Lọc báo giá chờ duyệt"
+                  />
+                }
+              >
                 <label className="flex items-center gap-2 text-meta whitespace-nowrap text-fg-2">
                   Sắp xếp theo
                   <Select size="sm" className="w-auto" aria-label="Sắp xếp theo">
@@ -90,51 +103,65 @@ export function ManageApprovalsPage() {
               </FilterBar>
 
               {rows.length === 0 ? (
-                <EmptyState title="Không còn báo giá chờ" description={`Không có báo giá nào chờ duyệt theo bộ lọc này. Gần đây đã duyệt ${data.recentlyApproved} báo giá.`} />
+                <EmptyState
+                  title="Không còn báo giá chờ"
+                  description={`Không có báo giá nào chờ duyệt theo bộ lọc này. Gần đây đã duyệt ${data.recentlyApproved} báo giá.`}
+                />
               ) : (
                 <ul className="divide-y divide-line border-t border-line">
                   {rows.map((a) => {
                     const active = a.id === selectedId
                     return (
                       <ListRow key={a.id} tone={a.slaHours ? 'danger' : undefined} selected={active}>
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div className="min-w-0 flex-1 basis-64">
-                                <button type="button" onClick={() => setSelectedId(a.id)} className="tap text-left text-body font-semibold hover:underline">
-                                  {a.customer}
-                                </button>
-                                <span className="ml-2 text-meta text-fg-3">{a.id}</span>
-                                <div className="mt-1 flex flex-wrap items-center gap-2">
-                                  <Badge tone={a.flagTone}>{a.flag}</Badge>
-                                  <span className="text-meta text-fg-3">
-                                    {a.address}. Kinh doanh: {a.rep}.
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="shrink-0 text-right">
-                                {a.gross !== a.net && <p className="tnum text-meta text-fg-3 line-through">{fmt.usd(a.gross)}</p>}
-                                <p className="tnum text-figure font-semibold">{fmt.usd(a.net)}</p>
-                                {a.gross !== a.net && <p className="text-meta text-warn">Giảm {fmt.usd(a.gross - a.net)}, cần duyệt vượt mức</p>}
-                              </div>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1 basis-64">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedId(a.id)}
+                              className="tap text-left text-body font-semibold hover:underline"
+                            >
+                              {a.customer}
+                            </button>
+                            <span className="ml-2 text-meta text-fg-3">{a.id}</span>
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                              <Badge tone={a.flagTone}>{a.flag}</Badge>
+                              <span className="text-meta text-fg-3">
+                                {a.address}. Kinh doanh: {a.rep}.
+                              </span>
                             </div>
-                            <dl className="mt-3 grid gap-x-6 gap-y-2 border-t border-line pt-3 text-body sm:grid-cols-3">
-                              {a.specs.map((s) => (
-                                <div key={s.k}>
-                                  <dt className="text-meta text-fg-3">{s.k}</dt>
-                                  <dd className="font-medium">{s.v}</dd>
-                                </div>
-                              ))}
-                            </dl>
-                            <p className="mt-2 text-meta text-fg-3">
-                              Gửi {a.submitted}. {a.stage}.
-                            </p>
-                          <ListRowActions>
-                            <ButtonLink to={withId(ROUTES.manage.approval, a.id)} size="sm">
-                              {a.actionLabel}
-                            </ButtonLink>
-                            <Button size="sm" onClick={() => decide(a.id, 'approved', `Đã duyệt ${a.id} và gửi cho ${a.customer}.`)}>
-                              Duyệt nhanh
-                            </Button>
-                          </ListRowActions>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            {a.gross !== a.net && (
+                              <p className="tnum text-meta text-fg-3 line-through">{fmt.usd(a.gross)}</p>
+                            )}
+                            <p className="tnum text-figure font-semibold">{fmt.usd(a.net)}</p>
+                            {a.gross !== a.net && (
+                              <p className="text-meta text-warn">Giảm {fmt.usd(a.gross - a.net)}, cần duyệt vượt mức</p>
+                            )}
+                          </div>
+                        </div>
+                        <dl className="mt-3 grid gap-x-6 gap-y-2 border-t border-line pt-3 text-body sm:grid-cols-3">
+                          {a.specs.map((s) => (
+                            <div key={s.k}>
+                              <dt className="text-meta text-fg-3">{s.k}</dt>
+                              <dd className="font-medium">{s.v}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                        <p className="mt-2 text-meta text-fg-3">
+                          Gửi {a.submitted}. {a.stage}.
+                        </p>
+                        <ListRowActions>
+                          <ButtonLink to={withId(ROUTES.manage.approval, a.id)} size="sm">
+                            {a.actionLabel}
+                          </ButtonLink>
+                          <Button
+                            size="sm"
+                            onClick={() => decide(a.id, 'approved', `Đã duyệt ${a.id} và gửi cho ${a.customer}.`)}
+                          >
+                            Duyệt nhanh
+                          </Button>
+                        </ListRowActions>
                       </ListRow>
                     )
                   })}
@@ -146,7 +173,9 @@ export function ManageApprovalsPage() {
               <Panel raised>
                 <PanelHeader
                   title={`${selected.id}, ${selected.customer}`}
-                  action={selected.slaHours ? <Badge tone="danger">Quá hạn SLA</Badge> : <Badge tone="warn">Ưu tiên 1</Badge>}
+                  action={
+                    selected.slaHours ? <Badge tone="danger">Quá hạn SLA</Badge> : <Badge tone="warn">Ưu tiên 1</Badge>
+                  }
                 />
                 <PanelBody className="space-y-4">
                   <div>
@@ -177,21 +206,53 @@ export function ManageApprovalsPage() {
                     {selected.note}
                   </blockquote>
                   {decided[selected.id] ? (
-                    <Notice tone={decided[selected.id] === 'rejected' ? 'danger' : 'ok'}>Báo giá này đã được đánh dấu {DECISION_LABEL[decided[selected.id]!]}.</Notice>
+                    <Notice tone={decided[selected.id] === 'rejected' ? 'danger' : 'ok'}>
+                      Báo giá này đã được đánh dấu {DECISION_LABEL[decided[selected.id]!]}.
+                    </Notice>
                   ) : (
                     <Field label="Ghi chú của quản lý hoặc điều kiện sửa" htmlFor="memo">
-                      <Textarea id="memo" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="Duyệt với điều kiện khách ký trong 48 giờ" rows={3} />
+                      <Textarea
+                        id="memo"
+                        value={memo}
+                        onChange={(e) => setMemo(e.target.value)}
+                        placeholder="Duyệt với điều kiện khách ký trong 48 giờ"
+                        rows={3}
+                      />
                     </Field>
                   )}
                 </PanelBody>
                 {!decided[selected.id] && (
                   <PanelFooter className="flex-col items-stretch gap-2">
-                    <Button variant="primary" onClick={() => decide(selected.id, 'approved', `Đã duyệt ${selected.id} bằng dấu điện tử của quản lý và gửi cho khách.`)}>
+                    <Button
+                      variant="primary"
+                      onClick={() =>
+                        decide(
+                          selected.id,
+                          'approved',
+                          `Đã duyệt ${selected.id} bằng dấu điện tử của quản lý và gửi cho khách.`,
+                        )
+                      }
+                    >
                       Duyệt và gửi cho khách
                     </Button>
                     <div className="grid grid-cols-2 gap-3">
-                      <Button onClick={() => decide(selected.id, 'redline', `Đã gửi yêu cầu sửa ${selected.id} lại cho ${selected.rep}.`)}>Yêu cầu sửa</Button>
-                      <Button variant="danger" onClick={() => decide(selected.id, 'rejected', `Đã từ chối ${selected.id}. ${selected.rep} sẽ nhận thông báo.`)}>
+                      <Button
+                        onClick={() =>
+                          decide(selected.id, 'redline', `Đã gửi yêu cầu sửa ${selected.id} lại cho ${selected.rep}.`)
+                        }
+                      >
+                        Yêu cầu sửa
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() =>
+                          decide(
+                            selected.id,
+                            'rejected',
+                            `Đã từ chối ${selected.id}. ${selected.rep} sẽ nhận thông báo.`,
+                          )
+                        }
+                      >
                         Từ chối điều khoản
                       </Button>
                     </div>
@@ -202,7 +263,13 @@ export function ManageApprovalsPage() {
               <Panel>
                 <PanelHeader title="Xem trước bố trí mái (CAD)" />
                 <PanelBody>
-                  <Photo src={data.cad.src} alt="Bố trí mái trên bản CAD" ratio="aspect-[16/10]" caption={data.cad.caption} meta={data.cad.meta} />
+                  <Photo
+                    src={data.cad.src}
+                    alt="Bố trí mái trên bản CAD"
+                    ratio="aspect-[16/10]"
+                    caption={data.cad.caption}
+                    meta={data.cad.meta}
+                  />
                 </PanelBody>
               </Panel>
             </div>

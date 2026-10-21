@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { UserFormDialog, type UserFormValues } from '@/features/users/components/UserFormDialog'
-import { UsersTable } from '@/features/users/components/UsersTable'
+import { UserFormDialog, type UserFormValues } from '@/features/users/UserFormDialog'
+import { UsersTable } from '@/features/users/UsersTable'
 import { Button, FilterBar, Icon, MetricCard, PageHeader } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 import {
@@ -117,7 +117,12 @@ export function UsersPage() {
             <Button variant="tonal" size="md" iconLeft="file_download" className="h-11 hover:bg-surface-container-high">
               {usersPageHeader.actions.export}
             </Button>
-            <Button size="md" iconLeft="person_add" className="h-11 px-5 shadow-md" onClick={() => setDialog({ mode: 'create' })}>
+            <Button
+              size="md"
+              iconLeft="person_add"
+              className="h-11 px-5 shadow-md"
+              onClick={() => setDialog({ mode: 'create' })}
+            >
               {usersPageHeader.actions.invite}
             </Button>
           </>

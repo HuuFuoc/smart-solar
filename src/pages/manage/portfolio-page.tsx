@@ -30,7 +30,10 @@ export function ManagePortfolioPage() {
     return portfolioRows.filter(
       (r) =>
         (stage === 'all' || r.stage === stage) &&
-        (!q || r.id.toLowerCase().includes(q) || r.customer.toLowerCase().includes(q) || r.address.toLowerCase().includes(q)),
+        (!q ||
+          r.id.toLowerCase().includes(q) ||
+          r.customer.toLowerCase().includes(q) ||
+          r.address.toLowerCase().includes(q)),
     )
   }, [stage, search])
 
@@ -59,35 +62,42 @@ export function ManagePortfolioPage() {
           </StatRow>
 
           <Panel>
-            <FilterBar tabs={<FilterChips chips={portfolioStages} value={stage} onChange={setStage} label="Lọc theo giai đoạn" />}>
-                <Input
-                  type="search"
-                  aria-label="Tìm dự án"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Mã dự án, tên khách hàng hoặc địa chỉ"
-                  className="w-full md:max-w-xs"
-                />
-                <Select aria-label="Nhân viên kinh doanh" className="w-auto">
-                  {data.filters.staff.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </Select>
-                <Select aria-label="Tình trạng" className="w-auto">
-                  {data.filters.health.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </Select>
-                <Select aria-label="Khoảng thời gian" className="w-auto">
-                  {data.filters.period.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </Select>
+            <FilterBar
+              tabs={
+                <FilterChips chips={portfolioStages} value={stage} onChange={setStage} label="Lọc theo giai đoạn" />
+              }
+            >
+              <Input
+                type="search"
+                aria-label="Tìm dự án"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Mã dự án, tên khách hàng hoặc địa chỉ"
+                className="w-full md:max-w-xs"
+              />
+              <Select aria-label="Nhân viên kinh doanh" className="w-auto">
+                {data.filters.staff.map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </Select>
+              <Select aria-label="Tình trạng" className="w-auto">
+                {data.filters.health.map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </Select>
+              <Select aria-label="Khoảng thời gian" className="w-auto">
+                {data.filters.period.map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </Select>
             </FilterBar>
 
             {rows.length === 0 ? (
               <PanelBody>
-                <EmptyState title="Không có dự án nào khớp" description="Thử giai đoạn khác hoặc xoá từ khoá tìm kiếm." />
+                <EmptyState
+                  title="Không có dự án nào khớp"
+                  description="Thử giai đoạn khác hoặc xoá từ khoá tìm kiếm."
+                />
               </PanelBody>
             ) : (
               <Table stack>
@@ -134,7 +144,10 @@ export function ManagePortfolioPage() {
                         />
                       </Td>
                       <Td label="Dự án">
-                        <Link to={withId(ROUTES.manage.project, r.id)} className="tap font-medium whitespace-nowrap text-accent-fg hover:underline">
+                        <Link
+                          to={withId(ROUTES.manage.project, r.id)}
+                          className="tap font-medium whitespace-nowrap text-accent-fg hover:underline"
+                        >
                           {r.id}
                         </Link>
                         <p className="text-meta text-fg-3">{r.type}</p>
@@ -181,7 +194,8 @@ export function ManagePortfolioPage() {
 
             <PanelFooter className="justify-between text-body text-fg-2">
               <span className="tnum">
-                Hiển thị 1–{rows.length} trên {data.total} dự án. Giá trị hợp đồng đang hiển thị {fmt.usd(data.valueInView)}.
+                Hiển thị 1–{rows.length} trên {data.total} dự án. Giá trị hợp đồng đang hiển thị{' '}
+                {fmt.usd(data.valueInView)}.
               </span>
               <Pagination page={1} pages={15} />
             </PanelFooter>
@@ -196,7 +210,13 @@ export function ManagePortfolioPage() {
               <PanelBody>
                 <StatRow>
                   {data.interconnection.queues.map((q) => (
-                    <Stat key={q.utility} label={q.utility} value={q.days} unit="ngày" note={<Badge tone={q.tone}>{q.note}</Badge>} />
+                    <Stat
+                      key={q.utility}
+                      label={q.utility}
+                      value={q.days}
+                      unit="ngày"
+                      note={<Badge tone={q.tone}>{q.note}</Badge>}
+                    />
                   ))}
                 </StatRow>
               </PanelBody>
@@ -209,7 +229,10 @@ export function ManagePortfolioPage() {
             </Panel>
 
             <Panel>
-              <PanelHeader title="Tình trạng đội hiện trường" description={`${data.crews.active} xe lắp đặt đang hoạt động ở Nam California.`} />
+              <PanelHeader
+                title="Tình trạng đội hiện trường"
+                description={`${data.crews.active} xe lắp đặt đang hoạt động ở Nam California.`}
+              />
               <PanelBody>
                 <ul className="divide-y divide-line">
                   {data.crews.rows.map((c) => (

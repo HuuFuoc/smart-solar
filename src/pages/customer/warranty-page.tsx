@@ -13,9 +13,18 @@ import { useMockQuery } from '@/hooks/useMockQuery'
 
 export function WarrantyPage() {
   const query = useMockQuery(['customer', 'warranty'], warranty)
-  const [form, setForm] = useState({ system: warranty.systems[0], type: warranty.serviceTypes[0], issue: '', phone: warranty.contact.phone, email: warranty.contact.email })
+  const [form, setForm] = useState({
+    system: warranty.systems[0],
+    type: warranty.serviceTypes[0],
+    issue: '',
+    phone: warranty.contact.phone,
+    email: warranty.contact.email,
+  })
   const [submitted, setSubmitted] = useState(false)
-  const issueError = submitted === false && form.issue.length > 0 && form.issue.trim().length < 10 ? 'Mô tả sự cố chi tiết hơn một chút.' : undefined
+  const issueError =
+    submitted === false && form.issue.length > 0 && form.issue.trim().length < 10
+      ? 'Mô tả sự cố chi tiết hơn một chút.'
+      : undefined
 
   return (
     <QueryBoundary query={query}>
@@ -36,9 +45,22 @@ export function WarrantyPage() {
           <Panel className="mb-12">
             <PanelBody className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <StatRow className="md:grid-cols-3">
-                <Stat label="Hết hạn bảo hành" value={<span className="text-title">{data.expires}</span>} note={data.remaining} />
-                <Stat label="Hiệu suất dàn pin" value={`${data.telemetry.efficiencyPct}%`} note="Ở mức tối ưu" tone="ok" />
-                <Stat label="Công trình" value={<span className="text-title">{data.site.split(',')[0]}</span>} note={data.site.split(', ')[1]} />
+                <Stat
+                  label="Hết hạn bảo hành"
+                  value={<span className="text-title">{data.expires}</span>}
+                  note={data.remaining}
+                />
+                <Stat
+                  label="Hiệu suất dàn pin"
+                  value={`${data.telemetry.efficiencyPct}%`}
+                  note="Ở mức tối ưu"
+                  tone="ok"
+                />
+                <Stat
+                  label="Công trình"
+                  value={<span className="text-title">{data.site.split(',')[0]}</span>}
+                  note={data.site.split(', ')[1]}
+                />
               </StatRow>
               <div className="lg:border-l lg:border-line lg:pl-6">
                 <p className="text-body font-medium">Phạm vi bảo hành</p>
@@ -126,7 +148,11 @@ export function WarrantyPage() {
                   >
                     <PanelBody className="space-y-4">
                       <Field label="Hệ thống" htmlFor="system">
-                        <Select id="system" value={form.system} onChange={(e) => setForm({ ...form, system: e.target.value })}>
+                        <Select
+                          id="system"
+                          value={form.system}
+                          onChange={(e) => setForm({ ...form, system: e.target.value })}
+                        >
                           {data.systems.map((s) => (
                             <option key={s}>{s}</option>
                           ))}
@@ -136,7 +162,13 @@ export function WarrantyPage() {
                         <legend className="mb-2 text-body font-medium">Loại dịch vụ cần hỗ trợ</legend>
                         <div className="grid grid-cols-2 gap-2">
                           {data.serviceTypes.map((t) => (
-                            <Radio key={t} name="type" label={t} checked={form.type === t} onChange={() => setForm({ ...form, type: t })} />
+                            <Radio
+                              key={t}
+                              name="type"
+                              label={t}
+                              checked={form.type === t}
+                              onChange={() => setForm({ ...form, type: t })}
+                            />
                           ))}
                         </div>
                       </fieldset>
@@ -161,13 +193,24 @@ export function WarrantyPage() {
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Số điện thoại liên hệ" htmlFor="phone">
-                          <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                          <Input
+                            id="phone"
+                            value={form.phone}
+                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                          />
                         </Field>
                         <Field label="Email" htmlFor="email">
-                          <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                          <Input
+                            id="email"
+                            type="email"
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          />
                         </Field>
                       </div>
-                      <p className="text-meta text-fg-3">Chi phí tới kiểm tra, thay thiết bị và phí thang đều được bảo hành, không mất phí.</p>
+                      <p className="text-meta text-fg-3">
+                        Chi phí tới kiểm tra, thay thiết bị và phí thang đều được bảo hành, không mất phí.
+                      </p>
                     </PanelBody>
                     <PanelFooter>
                       <Button type="submit" variant="primary">

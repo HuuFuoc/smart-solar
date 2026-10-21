@@ -3,15 +3,7 @@ import { Card } from '@/components/common/stitch-ui/Card'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/*
- * Ba bố cục KPI trong thiết kế:
- * - stacked: user_management (delta dưới giá trị)
- * - inline:  admin_dashboard (delta cạnh giá trị, nhãn label-md, slot footer)
- * - compact: product_catalogue (thẻ ngang: chữ bên trái, ô icon phân loại bên phải)
- *
- * Chỉ compact còn ô icon: ở đó icon phân biệt nhóm sản phẩm. Trên dashboard icon
- * lặp lại cho mọi thẻ nên đã bỏ.
- */
+// Ba kiểu thẻ KPI: stacked (delta dưới giá trị), inline (delta cạnh giá trị), compact (thẻ ngang có icon)
 export type MetricTone = 'primary' | 'secondary' | 'tertiary' | 'error' | 'muted'
 export type MetricLayout = 'stacked' | 'inline' | 'compact'
 
@@ -60,13 +52,13 @@ export type MetricCardProps = {
   /** Màu nhãn; mặc định theo layout */
   labelTone?: 'default' | MetricTone
   valueTone?: 'default' | MetricTone
-  /** metric = data-metric 36px; headline = headline-lg cho giá trị dạng chữ ("Optimal / Green") */
+  /** metric: số lớn, headline: giá trị dạng chữ */
   valueSize?: 'metric' | 'headline'
   delta?: MetricDelta
   description?: string
   descriptionTone?: 'default' | 'muted'
   layout?: MetricLayout
-  /** Slot dưới cùng: chip phân bố, progress… (stacked / inline) */
+  /** Slot dưới cùng: chip phân bố, progress... (stacked / inline) */
   children?: ReactNode
   className?: string
 }
@@ -106,12 +98,7 @@ export function MetricCard({
     return (
       <Card padding="md" className={cn('flex items-center justify-between gap-space-sm', className)}>
         <div className="flex min-w-0 flex-col">
-          <span
-            className={cn(
-              'text-label-sm',
-              labelTone === 'default' ? 'text-outline' : labelToneClasses[labelTone],
-            )}
-          >
+          <span className={cn('text-label-sm', labelTone === 'default' ? 'text-outline' : labelToneClasses[labelTone])}>
             {label}
           </span>
           <span className={cn('mt-1 text-headline-lg font-bold', valueToneClasses[valueTone])}>{value}</span>
@@ -126,7 +113,9 @@ export function MetricCard({
             </span>
           ) : (
             description && (
-              <span className={cn('text-body-sm', descriptionTone === 'muted' ? 'text-outline' : 'text-on-surface-variant')}>
+              <span
+                className={cn('text-body-sm', descriptionTone === 'muted' ? 'text-outline' : 'text-on-surface-variant')}
+              >
                 {description}
               </span>
             )
@@ -203,7 +192,12 @@ export function MetricCard({
             <div>{valueNode}</div>
             {deltaNode}
             {description && (
-              <p className={cn('mt-1 text-body-sm', descriptionTone === 'muted' ? 'text-outline' : 'text-on-surface-variant')}>
+              <p
+                className={cn(
+                  'mt-1 text-body-sm',
+                  descriptionTone === 'muted' ? 'text-outline' : 'text-on-surface-variant',
+                )}
+              >
                 {description}
               </p>
             )}
@@ -212,7 +206,6 @@ export function MetricCard({
       </div>
 
       {children && <div className={cn(!inline && 'mt-space-md')}>{children}</div>}
-
     </Card>
   )
 }

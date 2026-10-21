@@ -4,11 +4,11 @@ import { Controller, useForm, useWatch } from 'react-hook-form'
 import { Link, useParams } from 'react-router'
 import { z } from 'zod'
 import { ActionDock } from '@/components/common/tech/ActionDock'
-import { FieldSection } from '@/features/surveys/components/FieldSection'
+import { FieldSection } from '@/features/surveys/FieldSection'
 import { RadioCardGroup } from '@/components/common/tech/RadioCardGroup'
 import { SectionCard } from '@/components/common/tech/SectionCard'
-import { SurveyBaselineAside } from '@/features/surveys/components/SurveyBaselineAside'
-import { TaskHeaderCard } from '@/features/surveys/components/TaskHeaderCard'
+import { SurveyBaselineAside } from '@/features/surveys/SurveyBaselineAside'
+import { TaskHeaderCard } from '@/features/surveys/TaskHeaderCard'
 import {
   Breadcrumb,
   Button,
@@ -28,12 +28,7 @@ import {
 import { ROUTES, surveyPhotosPath } from '@/routes/paths'
 import { cn } from '@/utils/cn'
 import { notFound } from '@/routes/notFound'
-import {
-  getSurveyById,
-  getSurveyVerificationById,
-  type SurveyRecord,
-  type SurveyVerification,
-} from '@/data/surveys'
+import { getSurveyById, getSurveyVerificationById, type SurveyRecord, type SurveyVerification } from '@/data/surveys'
 
 /* Dựng từ site_survey_verification/code.html + screen.png. */
 
@@ -84,13 +79,7 @@ export function SurveyVerificationPage() {
   return <SurveyVerificationView survey={survey} verification={verification} />
 }
 
-function SurveyVerificationView({
-  survey,
-  verification,
-}: {
-  survey: SurveyRecord
-  verification: SurveyVerification
-}) {
+function SurveyVerificationView({ survey, verification }: { survey: SurveyRecord; verification: SurveyVerification }) {
   const { dimensions, accessibility, proposal } = verification
 
   const {
@@ -172,9 +161,7 @@ function SurveyVerificationView({
         <TaskHeaderCard
           eyebrow={
             <>
-              <span className="text-label-sm font-bold text-primary">
-                {verification.cluster}
-              </span>
+              <span className="text-label-sm font-bold text-primary">{verification.cluster}</span>
               <span className="text-label-sm text-on-surface-variant">{verification.assignee}</span>
             </>
           }
@@ -219,10 +206,7 @@ function SurveyVerificationView({
         </TaskHeaderCard>
       </div>
 
-      {/*
-       * Thiết kế chia 5/7 từ lg trở lên, cột trái là aside dữ liệu chủ nhà.
-       * Dưới lg xếp một cột và `order` đẩy aside xuống dưới form xác minh.
-       */}
+      {/* Từ lg chia 5/7, dưới lg xếp một cột và `order` đẩy aside xuống dưới */}
       <form id={FORM_ID} noValidate onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 items-start gap-space-lg lg:grid-cols-12">
           <aside className="order-2 flex flex-col gap-space-lg lg:order-1 lg:col-span-5">
@@ -375,9 +359,7 @@ function SurveyVerificationView({
             <SectionCard
               step={2}
               title={accessibility.title}
-              trailing={
-                <span className="shrink-0 text-label-sm text-on-surface-variant">{accessibility.badge}</span>
-              }
+              trailing={<span className="shrink-0 text-label-sm text-on-surface-variant">{accessibility.badge}</span>}
             >
               <FieldSection
                 label={accessibility.shading.label}
@@ -567,7 +549,7 @@ function SurveyVerificationView({
         </ActionDock>
       </form>
 
-      {/* Modal ký xác nhận – chỉ mở khi zod validate xong toàn bộ form */}
+      {/* Modal ký xác nhận, chỉ mở khi zod validate xong toàn bộ form */}
       <Dialog open={signOffOpen} onOpenChange={setSignOffOpen}>
         <DialogContent size="lg">
           <DialogHeader>

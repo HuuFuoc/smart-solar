@@ -9,10 +9,7 @@ export const fmt = {
   pct: (n: number, digits = 1) => `${n.toFixed(digits)}%`,
 }
 
-/**
- * Tiền theo mã tiền tệ backend trả về (VND, USD…), định dạng kiểu Việt Nam: "12.500.000 ₫", "7.200,00 US$".
- * Mã lạ hoặc thiếu thì chỉ in số kèm mã để không làm vỡ trang.
- */
+/** Định dạng tiền kiểu Việt Nam theo mã tiền tệ. Mã lạ thì in số kèm mã */
 export function formatMoney(amount: number | null | undefined, currency: string | null | undefined) {
   if (amount == null) return '—'
   const code = currency?.trim().toUpperCase() || 'VND'

@@ -2,11 +2,7 @@ import { useImperativeHandle, useRef, useState, type PointerEvent as ReactPointe
 import { Icon } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 
-/*
- * Ô ký tay bằng chuột / bút cảm ứng.
- * Dùng cho hộp thoại bàn giao của installation_task_checklist và khối
- * "Field Sign-Off & Closeout" của warranty_request.
- */
+// Ô ký tay bằng chuột hoặc bút cảm ứng
 export type SignaturePadHandle = { clear: () => void }
 
 export type SignaturePadProps = {

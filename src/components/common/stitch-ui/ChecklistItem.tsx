@@ -5,7 +5,7 @@ import { ProgressBar } from '@/components/common/stitch-ui/ProgressBar'
 import { StatusBadge } from '@/components/common/stitch-ui/StatusBadge'
 import { cn } from '@/utils/cn'
 
-/* Theo checklist trong installation_task_checklist: done / pending / active (đang làm, có progress). */
+// Trạng thái: done / pending / active (đang làm, có progress)
 export type ChecklistState = 'done' | 'active' | 'pending'
 
 export type ChecklistItemProps = {
@@ -17,7 +17,7 @@ export type ChecklistItemProps = {
   description?: string
   /** Mặc định suy từ checked: done / pending */
   state?: ChecklistState
-  /** Chữ bên phải: "Verified 13:05", "Pending", "Active Now"… */
+  /** Chữ bên phải: "Verified 13:05", "Pending", "Active Now"... */
   status?: ReactNode
   /** Icon cạnh status khi done (mặc định verified) */
   statusIcon?: string

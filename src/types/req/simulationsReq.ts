@@ -1,4 +1,4 @@
-/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api` – KHÔNG sửa tay. */
+/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
 
 export type CreateSimulationRequest = {
   /** Format: int32 */
@@ -26,4 +26,9 @@ export type InstallationSpacingRequest = {
   obstacleClearanceMm?: number | null
   /** Format: double */
   rackLowEdgeClearanceMm?: number | null
+}
+
+export type SelectSimulationRequest = {
+  /** Format: int32 */
+  expectedGeometryVersion?: number | null
 }

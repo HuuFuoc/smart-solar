@@ -17,10 +17,7 @@ const toneClasses = {
     'data-[state=checked]:border-error data-[state=checked]:bg-error data-[state=indeterminate]:border-error data-[state=indeterminate]:bg-error',
 } as const
 
-/**
- * Checkbox shadcn (Radix) theo DESIGN.md "Form Inputs & Checkboxes": 20px, rounded-md,
- * tô primary khi checked, dấu check trắng. `checked="indeterminate"` cho ô "chọn tất cả".
- */
+/** Checkbox Radix 20px. `checked="indeterminate"` cho ô chọn tất cả */
 export function Checkbox({ className, size = 'md', tone = 'primary', ...rest }: CheckboxProps) {
   const iconSize = size === 'md' ? 'text-[14px]' : 'text-[12px]'
   return (

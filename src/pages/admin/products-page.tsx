@@ -8,10 +8,10 @@ import { FilterBar } from '@/components/common/ui/filter-bar'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Pagination } from '@/components/common/ui/pagination'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
-import { formatDateTime } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { DeleteProductDialog } from '@/features/products/components/DeleteProductDialog'
-import { ProductFormDialog } from '@/features/products/components/ProductFormDialog'
-import { ProductsTable } from '@/features/products/components/ProductsTable'
+import { formatDateTime } from '@/features/pre-surveys/preSurveyDisplay'
+import { DeleteProductDialog } from '@/features/products/DeleteProductDialog'
+import { ProductFormDialog } from '@/features/products/ProductFormDialog'
+import { ProductsTable } from '@/features/products/ProductsTable'
 import { PRODUCT_SORT_OPTIONS, SOLAR_PANEL_TYPE } from '@/common/product'
 import {
   SOLAR_PANEL_QUERY,
@@ -19,7 +19,7 @@ import {
   panelSpecGaps,
   parseSort,
   productTypeLabel,
-} from '@/features/products/components/productDisplay'
+} from '@/features/products/productDisplay'
 import { readHiddenProducts, writeHiddenProducts, type HiddenProduct } from '@/features/products/hiddenProducts'
 import { useChangeProductStatusMutation, useProductsQuery } from '@/hooks/useProducts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
@@ -27,22 +27,21 @@ import { errorMessage, isApiError } from '@/services/api/errors'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { cx } from '@/utils/cx'
 
-/*
-  Quản lý sản phẩm (bộ portal kit, cùng kiểu với danh mục của khách hàng và sales): đọc GET /api/products
-  (lọc, sắp xếp, phân trang phía server), thêm / sửa / xoá / đổi trạng thái qua /api/admin/products.
-  Swagger không có API danh sách riêng cho admin nên dùng chung GET /api/products, và API đó không trả sản phẩm
-  ngừng bán (xem hiddenProducts.ts): danh sách ở đây chỉ có sản phẩm đang bán.
-*/
+// Quản lý sản phẩm: danh sách đọc GET /api/products, bấm dòng mở trang chi tiết
+// API này không trả sản phẩm ngừng bán nên cuối trang có mục "Đã ngừng bán" (hiddenProducts.ts)
+// Bộ lọc và trang lưu trên URL để Back quay lại đúng chỗ
 
 const PAGE_SIZE = 20
-/** Toàn bộ danh mục (100 là PageSize tối đa backend nhận) để lấy các loại và hãng đang có cho bộ lọc và form. */
+/** Lấy cả danh mục (PageSize tối đa 100) để có danh sách loại và hãng cho bộ lọc, form */
 const ALL_PRODUCTS = { PageSize: 100, SortBy: 'name', SortDirection: 'asc' } as const
 
 type Filter = { search: string; productType: string; brand: string; sort: string }
 const defaultFilter: Filter = { search: '', productType: '', brand: '', sort: PRODUCT_SORT_OPTIONS[0]!.value }
 
 const unique = (values: (string | null | undefined)[]) =>
-  [...new Set(values.map((v) => v?.trim()).filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b, 'vi'))
+  [...new Set(values.map((v) => v?.trim()).filter((v): v is string => Boolean(v)))].sort((a, b) =>
+    a.localeCompare(b, 'vi'),
+  )
 
 export function AdminProductsPage() {
   const [filter, setFilter] = useState<Filter>(defaultFilter)
@@ -50,13 +49,13 @@ export function AdminProductsPage() {
   const [form, setForm] = useState<{ open: boolean; product: ProductResponse | null }>({ open: false, product: null })
   const [deleting, setDeleting] = useState<ProductResponse | null>(null)
   const [hiding, setHiding] = useState<ProductResponse | null>(null)
-  // Sản phẩm đã ngừng bán từ trình duyệt này (backend không còn trả về chúng), xem hiddenProducts.ts.
+  // Sản phẩm đã ngừng bán từ trình duyệt này, vì backend không trả về nữa (hiddenProducts.ts)
   const [hidden, setHidden] = useState<HiddenProduct[]>(readHiddenProducts)
-  // Một mutation dùng chung cho ngừng bán / mở bán / hoàn tác, nên tự giữ các id đang chờ thay vì dựa vào isPending.
+  // Ngừng bán / mở bán / hoàn tác dùng chung một mutation nên tự giữ các id đang chờ
   const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set())
   const listRef = useRef<HTMLElement>(null)
   const hiddenHeadingRef = useRef<HTMLHeadingElement>(null)
-  // Chỗ nhận focus khi hộp thoại (xoá / ngừng bán) đóng xong; null = để trình duyệt trả focus như bình thường.
+  // Nhận focus khi dialog đóng, vì dòng chứa nút vừa bấm đã mất
   const focusAfterDialog = useRef<HTMLElement | null>(null)
   const restoreFocus = () => {
     focusAfterDialog.current?.focus()
@@ -74,7 +73,7 @@ export function AdminProductsPage() {
   })
   const statusMutation = useChangeProductStatusMutation()
   const all = useProductsQuery(ALL_PRODUCTS)
-  // Cảnh báo ở đầu trang tính trên toàn bộ tấm pin, không chỉ trang đang xem (cùng cache với mô phỏng 3D).
+  // Cảnh báo tính trên toàn bộ tấm pin, không chỉ trang đang xem
   const panels = useProductsQuery(SOLAR_PANEL_QUERY)
   const incompletePanels = (panels.data?.items ?? []).filter((p) => {
     const gaps = panelSpecGaps(p)
@@ -85,14 +84,14 @@ export function AdminProductsPage() {
   const total = query.data?.totalItems ?? 0
   const pages = query.data?.totalPages ?? 0
   const isFiltering = filter.search !== '' || filter.productType !== '' || filter.brand !== ''
-  // Trang cũ giữ trên màn hình trong lúc tải trang khác; nếu trang cũ trống thì coi như đang tải, đừng báo "chưa có".
+  // Đang giữ trang cũ mà trang cũ trống thì coi như đang tải
   const loading = query.isPending || (query.isPlaceholderData && products.length === 0)
 
-  // Trang hiện tại vượt quá số trang (vừa xoá hoặc ngừng bán dòng cuối, hoặc dữ liệu đổi ở nơi khác): backend vẫn
-  // trả 200 với danh sách rỗng, nên tự lùi về trang cuối còn dữ liệu. Có điều kiện nên không lặp vô hạn.
-  if (query.data && !query.isFetching && !query.isPlaceholderData && page > Math.max(1, pages)) setPage(Math.max(1, pages))
+  // Trang hiện tại vượt quá số trang (vd. vừa xoá dòng cuối) thì lùi về trang cuối còn dữ liệu
+  if (query.data && !query.isFetching && !query.isPlaceholderData && page > Math.max(1, pages))
+    setPage(Math.max(1, pages))
 
-  // Bộ lọc và gợi ý cho form lấy từ toàn bộ danh mục; luôn kèm SOLAR_PANEL vì backend kiểm tra riêng mã này.
+  // Luôn có SOLAR_PANEL trong bộ lọc vì backend kiểm tra riêng mã này
   const options = useMemo(() => {
     const items = all.data?.items ?? []
     return {
@@ -116,7 +115,7 @@ export function AdminProductsPage() {
       return next
     })
 
-  // Cập nhật state và storage cùng lúc, dựa trên giá trị mới nhất (nút "Hoàn tác" trong toast giữ closure cũ).
+  // Dựa trên giá trị mới nhất vì nút "Hoàn tác" trong toast giữ closure cũ
   const updateHidden = (change: (list: HiddenProduct[]) => HiddenProduct[]) =>
     setHidden((prev) => {
       const next = change(prev)
@@ -124,7 +123,7 @@ export function AdminProductsPage() {
       return next
     })
 
-  /* Dòng vừa thao tác biến khỏi bảng: chuyển focus tới chỗ còn đó, không để rơi về đầu trang. */
+  // Dòng vừa thao tác biến khỏi bảng thì chuyển focus tới chỗ còn đó
   const focusLater = (target: { current: HTMLElement | null }) => requestAnimationFrame(() => target.current?.focus())
 
   const reopen = async (entry: HiddenProduct) => {
@@ -135,7 +134,7 @@ export function AdminProductsPage() {
       toast.success(`Đã mở bán lại ${entry.name}`)
       focusLater(listRef)
     } catch (error) {
-      // 404: sản phẩm đã bị xoá hẳn, không còn gì để mở bán.
+      // 404 là sản phẩm đã bị xoá hẳn
       if (isApiError(error) && error.status === 404) updateHidden((list) => list.filter((h) => h.id !== entry.id))
       toast.error(errorMessage(error))
     } finally {
@@ -145,8 +144,13 @@ export function AdminProductsPage() {
 
   const hide = async (product: ProductResponse) => {
     if (!product.id) return
-    const entry: HiddenProduct = { id: product.id, name: product.name ?? '', sku: product.sku ?? '', hiddenAt: new Date().toISOString() }
-    // Ghi nhớ TRƯỚC khi gọi API: nếu tải lại trang lúc đang chờ, sản phẩm đã ẩn vẫn còn trong danh sách để mở bán lại.
+    const entry: HiddenProduct = {
+      id: product.id,
+      name: product.name ?? '',
+      sku: product.sku ?? '',
+      hiddenAt: new Date().toISOString(),
+    }
+    // Ghi nhớ trước khi gọi API, để tải lại trang giữa chừng vẫn mở bán lại được
     updateHidden((list) => [entry, ...list.filter((h) => h.id !== entry.id)])
     markPending(entry.id, true)
     try {
@@ -155,15 +159,16 @@ export function AdminProductsPage() {
       setHiding(null)
       toast.success(`Đã ngừng bán ${entry.name}`, { action: { label: 'Hoàn tác', onClick: () => void reopen(entry) } })
     } catch (error) {
-      // 4xx: chắc chắn chưa đổi trạng thái thì bỏ ghi nhớ; lỗi mạng/5xx thì có thể đã đổi, giữ lại để còn mở bán lại.
-      if (isApiError(error) && error.status >= 400 && error.status < 500) updateHidden((list) => list.filter((h) => h.id !== entry.id))
+      // 4xx là chắc chắn chưa đổi nên bỏ ghi nhớ, lỗi mạng / 5xx thì có thể đã đổi nên giữ lại
+      if (isApiError(error) && error.status >= 400 && error.status < 500)
+        updateHidden((list) => list.filter((h) => h.id !== entry.id))
       toast.error(errorMessage(error))
     } finally {
       markPending(entry.id, false)
     }
   }
 
-  /* Danh sách chỉ có sản phẩm đang bán (backend ẩn sản phẩm ngừng bán), nên thao tác trong bảng là ngừng bán. */
+  // Bảng chỉ có sản phẩm đang bán nên thao tác trên dòng là ngừng bán
   const toggleStatus = (product: ProductResponse) => {
     if (isProductActive(product.status)) setHiding(product)
     else if (product.id) void reopen({ id: product.id, name: product.name ?? '', sku: product.sku ?? '', hiddenAt: '' })
@@ -201,7 +206,7 @@ export function AdminProductsPage() {
             onChange={(e) => updateFilter({ search: e.target.value })}
           />
         </label>
-        {/* Loại và hãng là danh sách chọn từ dữ liệu thật: backend chỉ lọc khớp đúng cả chuỗi. Đang lọc thì ô tô màu. */}
+        {/* Backend chỉ lọc khớp đúng cả chuỗi nên dùng danh sách chọn */}
         <label className="w-full sm:w-52">
           <span className="sr-only">Loại sản phẩm</span>
           <Select
@@ -220,7 +225,12 @@ export function AdminProductsPage() {
         </label>
         <label className="w-full sm:w-44">
           <span className="sr-only">Hãng</span>
-          <Select name="brand" active={filter.brand !== ''} value={filter.brand} onChange={(e) => updateFilter({ brand: e.target.value })}>
+          <Select
+            name="brand"
+            active={filter.brand !== ''}
+            value={filter.brand}
+            onChange={(e) => updateFilter({ brand: e.target.value })}
+          >
             <option value="">Tất cả hãng</option>
             {options.brands.map((brand) => (
               <option key={brand} value={brand}>
@@ -246,9 +256,18 @@ export function AdminProductsPage() {
         )}
       </FilterBar>
 
-      <section ref={listRef} tabIndex={-1} aria-label="Danh sách sản phẩm" aria-live="polite" aria-busy={query.isFetching}>
+      <section
+        ref={listRef}
+        tabIndex={-1}
+        aria-label="Danh sách sản phẩm"
+        aria-live="polite"
+        aria-busy={query.isFetching}
+      >
         {query.isError ? (
-          <ErrorState message={errorMessage(query.error, 'Không tải được danh sách sản phẩm.')} onRetry={() => query.refetch()} />
+          <ErrorState
+            message={errorMessage(query.error, 'Không tải được danh sách sản phẩm.')}
+            onRetry={() => query.refetch()}
+          />
         ) : loading ? (
           <div aria-label="Đang tải" className="space-y-4">
             {Array.from({ length: 5 }, (_, i) => (

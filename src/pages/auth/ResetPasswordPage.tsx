@@ -4,9 +4,9 @@ import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { AuthCard } from '@/features/auth/components/AuthCard'
-import { PasswordInput } from '@/features/auth/components/AuthInput'
-import { PasswordRules } from '@/features/auth/components/PasswordRules'
+import { AuthCard } from '@/features/auth/AuthCard'
+import { PasswordInput } from '@/features/auth/AuthInput'
+import { PasswordRules } from '@/features/auth/PasswordRules'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 import { useResetPasswordMutation } from '@/hooks/useAuthMutations'
@@ -26,11 +26,7 @@ const schema = z
 
 type ResetValues = z.infer<typeof schema>
 
-/*
- * /reset-password?token=…
- * ResetPasswordRequest trong swagger = { token, newPassword } – KHÔNG có email,
- * nên trang chỉ đọc `token` từ query.
- */
+// /reset-password?token=... Request chỉ có token, không có email
 export function ResetPasswordPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -93,7 +89,7 @@ export function ResetPasswordPage() {
         </div>
       )}
 
-      {/* Thiếu token hoặc token bị từ chối → gợi ý xin liên kết mới */}
+      {/* Thiếu token hoặc token bị từ chối thì gợi ý xin liên kết mới */}
       {(!token || formError) && !done && (
         <div
           role="alert"
@@ -102,10 +98,7 @@ export function ResetPasswordPage() {
           <Icon name="error" className="mt-0.5 shrink-0 text-[22px] text-error" />
           <div className="flex-1 text-body-sm">
             <p>{formError ?? resetContent.missingToken}</p>
-            <Link
-              to={ROUTES.forgotPassword}
-              className="mt-1 inline-block text-label-sm font-semibold underline"
-            >
+            <Link to={ROUTES.forgotPassword} className="mt-1 inline-block text-label-sm font-semibold underline">
               {resetContent.requestNewLink}
             </Link>
           </div>

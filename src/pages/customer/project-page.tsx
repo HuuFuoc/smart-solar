@@ -28,11 +28,7 @@ export function ProjectPage() {
             }
             title={data.title}
             description={data.address}
-            actions={
-              <Button variant="primary">
-                Gọi trưởng nhóm thi công
-              </Button>
-            }
+            actions={<Button variant="primary">Gọi trưởng nhóm thi công</Button>}
           />
 
           <Panel className="mb-12">
@@ -135,7 +131,10 @@ export function ProjectPage() {
                       <p className="text-meta text-fg-3">
                         {data.crew.lead.role}, {data.crew.lead.exp}
                       </p>
-                      <a href={`tel:${data.crew.lead.phone}`} className="tap tnum text-body text-accent-fg hover:underline">
+                      <a
+                        href={`tel:${data.crew.lead.phone}`}
+                        className="tap tnum text-body text-accent-fg hover:underline"
+                      >
                         {data.crew.lead.phone}
                       </a>
                     </div>
@@ -164,7 +163,10 @@ export function ProjectPage() {
               </Panel>
 
               <Panel>
-                <PanelHeader title="Tài liệu dự án" description={`${data.documents.length} tệp chính thức, lưu trữ 25 năm`} />
+                <PanelHeader
+                  title="Tài liệu dự án"
+                  description={`${data.documents.length} tệp chính thức, lưu trữ 25 năm`}
+                />
                 <PanelBody>
                   <ul className="divide-y divide-line">
                     {data.documents.map((d) => (
@@ -190,10 +192,7 @@ export function ProjectPage() {
               Nhắn cho bộ phận hỗ trợ
             </Link>{' '}
             hoặc đọc{' '}
-            <PlaceholderLink className="text-accent-fg hover:underline">
-              câu hỏi thường gặp về lắp đặt
-            </PlaceholderLink>
-            .
+            <PlaceholderLink className="text-accent-fg hover:underline">câu hỏi thường gặp về lắp đặt</PlaceholderLink>.
           </p>
         </>
       )}

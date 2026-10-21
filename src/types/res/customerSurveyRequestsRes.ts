@@ -1,14 +1,12 @@
-/*
- * VIẾT TAY – swagger chỉ khai "200 OK" cho tag CustomerSurveyRequests, không có schema response.
- * Tên kiểu và field lấy đúng theo SmartSolar.Modules.Scheduling.PreSurveyAppointments.Views
- * (CustomerSurveyRequestView, CustomerAppointmentView, BookingConfirmation – backend main 4d12e4d,
- * 12/10/2026). Khách không bao giờ thấy kỹ thuật viên đang được giữ chỗ, chỉ thấy tên người
- * được phân công chính thức. Khi backend khai response trong swagger, `npm run gen:api` sẽ ghi đè file này.
- */
+// Viết tay vì swagger không có schema response. Khách không bao giờ thấy kỹ thuật viên đang giữ chỗ
 import type { AppointmentStatus } from '@/types/res/surveyRequestsRes'
 
-/** PENDING, ASSIGNED, REVIEWING, SCHEDULED, COMPLETED, CANCELLED (tên enum SurveyRequestStatus viết hoa). */
-export type CustomerSurveyRequestStatus = 'PENDING' | 'ASSIGNED' | 'REVIEWING' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | (string & {})
+/** PENDING (chưa có kỹ thuật viên xác nhận), SCHEDULED, COMPLETED, CANCELLED */
+export type CustomerSurveyRequestStatus = 'PENDING' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | (string & {})
+
+/** Trạng thái khách thấy: chờ kỹ thuật viên nhận, đã xác nhận, cần nhân viên xếp người, đã huỷ, đã xong */
+export type AcceptanceStatus =
+  'WAITING_FOR_TECHNICIAN' | 'CONFIRMED' | 'NEEDS_STAFF' | 'CANCELLED' | 'COMPLETED' | (string & {})
 
 export type CustomerAppointmentView = {
   appointmentId: string
@@ -16,12 +14,13 @@ export type CustomerAppointmentView = {
   startsAt: string
   endsAt: string
   status: AppointmentStatus
+  acceptanceStatus: AcceptanceStatus
   technicianAssigned: boolean
-  /** Chỉ có khi đã phân công chính thức (ASSIGNED / ACKNOWLEDGED). */
+  /** Chỉ có khi kỹ thuật viên đã xác nhận (ACCEPTED / ASSIGNED) */
   assignedTechnicianName: string | null
   customerNote: string | null
   bookedAt: string
-  /** BOOKED và còn ở tương lai: khách tự đổi giờ / huỷ được. */
+  /** Lịch còn ở tương lai và đủ xa giờ hẹn: khách tự đổi giờ / huỷ được */
   canCustomerChange: boolean
 }
 
@@ -52,13 +51,16 @@ export type CustomerSurveyRequestDetailView = {
   history: CustomerAppointmentHistoryItem[]
 }
 
-/** POST (201 tạo mới, 200 gửi lại đúng giờ cũ – created=false) và PUT …/booking. */
+/** POST (201 tạo mới, 200 gửi lại đúng giờ cũ, created=false) và PUT .../booking. */
 export type BookingConfirmation = {
   appointmentId: string
   surveyRequestId: string
   startsAt: string
   endsAt: string
   appointmentStatus: AppointmentStatus
+  acceptanceStatus: AcceptanceStatus
+  /** Hạn để kỹ thuật viên nhận, quá hạn thì nhân viên xếp người */
+  acceptanceDeadlineAt: string | null
   created: boolean
   message: string
 }

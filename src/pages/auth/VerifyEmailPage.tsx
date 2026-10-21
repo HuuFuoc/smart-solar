@@ -1,43 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
-import { AuthCard } from '@/features/auth/components/AuthCard'
-import { AuthInput } from '@/features/auth/components/AuthInput'
+import { AuthCard } from '@/features/auth/AuthCard'
+import { AuthInput } from '@/features/auth/AuthInput'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 import { useResendVerificationMutation, useVerifyEmailMutation } from '@/hooks/useAuthMutations'
 import { errorMessage } from '@/services/api/errors'
 import { verifyContent } from '@/data/auth'
 
-/** Che bớt email: "khachhang@gmail.com" → "k***@gmail.com" (theo thiết kế). */
+/** Che bớt email: "khachhang@gmail.com" thành "k***@gmail.com" (theo thiết kế) */
 function maskEmail(email: string) {
   const [local, domain] = email.split('@')
   if (!domain || !local) return email
   return `${local.slice(0, 1)}***@${domain}`
 }
 
-/*
- * /verify-email
- *
- * - Có ?token= (link trong email) → tự gọi POST /api/auth/verify-email.
- *   VerifyEmailRequest trong swagger CHỈ có `token`, không có email.
- * - Không có token → màn "kiểm tra hộp thư", nút gửi lại gọi resend-verification
- *   (ResendVerificationRequest = { email }) kèm đếm ngược 60 giây.
- */
+// /verify-email
+// Có ?token= thì tự gọi POST /api/auth/verify-email
+// Không có token thì hiện màn kiểm tra hộp thư, có nút gửi lại (đếm ngược 60 giây)
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
   const emailParam = searchParams.get('email')
-  // Link trong email chỉ có ?token, không có ?email: link hết hạn thì cho khách tự gõ email để gửi lại.
+  // Link trong email không có email, nên link hết hạn thì cho khách tự nhập email
   const [typedEmail, setTypedEmail] = useState('')
   const resendEmail = emailParam ?? typedEmail.trim()
 
   const verifyMutation = useVerifyEmailMutation()
   const resendMutation = useResendVerificationMutation()
 
-  const [verifyState, setVerifyState] = useState<'idle' | 'pending' | 'success' | 'error'>(
-    token ? 'pending' : 'idle',
-  )
+  const [verifyState, setVerifyState] = useState<'idle' | 'pending' | 'success' | 'error'>(token ? 'pending' : 'idle')
   const [verifyError, setVerifyError] = useState<string | null>(null)
   const [secondsLeft, setSecondsLeft] = useState(0)
   const verifiedRef = useRef(false)
@@ -85,7 +78,6 @@ export function VerifyEmailPage() {
     }
   }
 
-  /* ----------------------------------------- mở từ link trong email: đang xác thực */
   if (verifyState === 'pending') {
     return (
       <AuthCard className="items-center text-center">
@@ -165,8 +157,6 @@ export function VerifyEmailPage() {
     )
   }
 
-  /* ------------------------------------------------- không có token: kiểm tra hộp thư */
-
   return (
     <AuthCard className="items-center text-center">
       <div className="relative mb-space-md flex h-20 w-20 items-center justify-center rounded-full bg-surface-container-high text-accent-fg shadow-sm">
@@ -176,7 +166,7 @@ export function VerifyEmailPage() {
       <h1 className="mb-1 text-headline-xl text-on-surface">{verifyContent.title}</h1>
       <p className="mb-space-md max-w-md text-body-lg text-on-surface-variant">{verifyContent.description}</p>
 
-      {/* Mở trang trực tiếp (không có ?email): hỏi email để gửi lại, thay vì vừa ghi "đã gửi tới email" vừa báo lỗi thiếu email. */}
+      {/* Không có ?email thì hỏi email để gửi lại */}
       {emailParam ? (
         <div className="mb-space-lg inline-flex items-center gap-2 rounded-xl bg-surface-container px-4 py-2 text-headline-md text-accent-fg">
           <Icon name="alternate_email" className="text-[20px]" />
@@ -212,9 +202,7 @@ export function VerifyEmailPage() {
             className={resendMutation.isPending ? 'animate-spin text-[18px]' : 'text-[18px]'}
           />
           <span>
-            {secondsLeft > 0
-              ? verifyContent.resendCountdown.replace('%s', String(secondsLeft))
-              : verifyContent.resend}
+            {secondsLeft > 0 ? verifyContent.resendCountdown.replace('%s', String(secondsLeft)) : verifyContent.resend}
           </span>
         </button>
         <Link
@@ -225,7 +213,6 @@ export function VerifyEmailPage() {
           {verifyContent.backToLogin}
         </Link>
       </div>
-
 
       <div className="mt-space-xl w-full max-w-md border-t border-surface-container pt-space-md text-center">
         <span className="text-body-sm text-on-surface-variant">

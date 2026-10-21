@@ -18,7 +18,7 @@ export type PaginationProps = {
 
 type PageItem = number | 'gap'
 
-/** 1 2 3 … N, mở rộng quanh trang hiện tại */
+/** 1 2 3 ... N, mở rộng quanh trang hiện tại */
 function pageItems(page: number, count: number): PageItem[] {
   if (count <= 6) return Array.from({ length: count }, (_, i) => i + 1)
   const items: PageItem[] = [1, 2, 3]
@@ -46,8 +46,7 @@ export function Pagination({
 }: PaginationProps) {
   const pageCount = Math.max(1, Math.ceil(total / pageSize))
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1
-  const to =
-    visibleCount !== undefined ? Math.min(from + visibleCount - 1, total) : Math.min(page * pageSize, total)
+  const to = visibleCount !== undefined ? Math.min(from + visibleCount - 1, total) : Math.min(page * pageSize, total)
 
   return (
     <div

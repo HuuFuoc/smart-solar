@@ -1,16 +1,17 @@
-import { Fragment } from 'react'
-import { useParams } from 'react-router'
+import { Fragment, useState } from 'react'
+import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink, buttonClass } from '@/components/common/ui/button'
-import { Notice } from '@/components/common/ui/lists'
+import { Field, Textarea } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
+import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { Stat, StatRow } from '@/components/common/ui/stat'
 import { usePageCrumb } from '@/components/layout/page-crumb'
-import { Facts } from '@/features/pre-surveys/components/Facts'
+import { Facts } from '@/features/pre-surveys/Facts'
 import {
   directionLabel,
   formatAddress,
@@ -19,17 +20,18 @@ import {
   hasCoordinates,
   mapsUrl,
   shortCode,
-} from '@/features/pre-surveys/components/preSurveyDisplay'
-import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/components/simulationDisplay'
-import { SimulationViewer } from '@/features/pre-surveys/components/SimulationViewer'
-import { TravelSummary } from '@/features/scheduling/components/TravelSummary'
+} from '@/features/pre-surveys/preSurveyDisplay'
+import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/simulationDisplay'
+import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
 import {
   appointmentStatusMeta,
   formatAppointment,
+  formatTimeRange,
+  relativeDay,
   surfaceNameLabel,
   vnDate,
-} from '@/features/scheduling/components/schedulingDisplay'
-import { useAcknowledgeMutation, useMyAppointmentQuery } from '@/hooks/useTechnicianJobs'
+} from '@/features/scheduling/schedulingDisplay'
+import { useMyAppointmentQuery, useReleaseAppointmentMutation } from '@/hooks/useTechnicianJobs'
 import { ROUTES } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 import type { TechnicianJobView } from '@/types/res/technicianAppointmentsRes'
@@ -37,40 +39,134 @@ import type { TechnicianJobView } from '@/types/res/technicianAppointmentsRes'
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
 const n = (v: number | null | undefined) => (v == null ? '—' : num.format(v))
 
-function AcknowledgePanel({ job }: { job: TechnicianJobView }) {
-  const acknowledge = useAcknowledgeMutation()
-  async function confirm() {
+const ACCEPTED_BY: Record<string, string> = {
+  SELF_ACCEPTED: 'Bạn tự nhận lịch này',
+  SALES_ASSIGNED: 'Kinh doanh phân công lịch này cho bạn',
+  MANAGER_OVERRIDE: 'Quản lý phân công lịch này cho bạn',
+  MANAGER_DISPATCH: 'Quản lý điều phối lịch này cho bạn',
+}
+
+/** "Ngày mai, 09:00-10:30" */
+function whenText(job: TechnicianJobView) {
+  return `${relativeDay(vnDate(job.startsAt))}, ${formatTimeRange(job.startsAt, job.endsAt)}`
+}
+
+// Các bước của lịch theo góc nhìn kỹ thuật viên và việc tiếp theo
+function jobTracker(job: TechnicianJobView, now: number): { steps: TrackerStep[]; next: TrackerNext } {
+  const completed = job.status === 'COMPLETED'
+  const steps: TrackerStep[] = [
+    { label: 'Bạn nhận lịch', detail: formatDateTime(job.acceptedAt ?? job.assignedAt), state: 'done' },
+    { label: 'Khảo sát tại công trình', detail: whenText(job), state: completed ? 'done' : 'current' },
+    {
+      label: 'Ghi kết quả khảo sát',
+      detail: completed ? undefined : 'Chưa có trên hệ thống',
+      state: completed ? 'done' : 'todo',
+    },
+  ]
+  if (completed) return { steps, next: { tone: 'neutral', title: 'Đã khảo sát xong' } }
+  if (new Date(job.endsAt).getTime() < now)
+    return {
+      steps,
+      next: {
+        tone: 'warn',
+        title: 'Đã qua giờ hẹn',
+        body: 'Phần ghi kết quả khảo sát tại công trình chưa có trên hệ thống. Báo kết quả cho bộ phận kinh doanh.',
+      },
+    }
+  const call = job.customer.phone ? `Gọi khách ${job.customer.phone} trước khi tới. ` : ''
+  return {
+    steps,
+    next: {
+      tone: 'info',
+      title: `Khảo sát tại công trình: ${whenText(job)}`,
+      body: `${call}Mang theo số liệu khách khai bên dưới để đối chiếu.`,
+    },
+  }
+}
+
+// Lịch đã nhận. Bận thì trả lại (lý do bắt buộc), lịch quay về chờ kỹ thuật viên khác trong khu vực nhận
+function JobActions({ job }: { job: TechnicianJobView }) {
+  const release = useReleaseAppointmentMutation()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [reason, setReason] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [now] = useState(() => Date.now())
+  const upcoming = new Date(job.startsAt).getTime() > now
+  const source = job.assignmentSource
+    ? (ACCEPTED_BY[job.assignmentSource] ?? 'Bạn đã nhận lịch này')
+    : 'Bạn đã nhận lịch này'
+
+  async function submit() {
+    if (!reason.trim()) {
+      setError('Ghi lý do trả lại việc.')
+      return
+    }
     try {
-      const result = await acknowledge.mutateAsync(job.appointmentId)
-      // Gửi lại khi đã nhận (mất phản hồi lần trước) vẫn là thành công.
-      toast.success(result.alreadyAcknowledged ? 'Bạn đã nhận việc này trước đó.' : 'Đã nhận việc. Kinh doanh và khách sẽ thấy bạn đã xác nhận.')
+      await release.mutateAsync({ id: job.appointmentId, reason: reason.trim() })
+      toast.success('Đã trả lại việc. Lịch quay về chờ kỹ thuật viên khác nhận.')
+      navigate(ROUTES.tech.jobs)
     } catch (e) {
-      toast.error(errorMessage(e))
+      setError(errorMessage(e))
     }
   }
+
   return (
-    <Panel raised>
-      <PanelHeader
-        title="Xác nhận nhận việc"
-        description={`Kinh doanh giao lịch này cho bạn lúc ${formatDateTime(job.assignedAt)}. Xem địa chỉ và số liệu bên dưới rồi xác nhận để mọi người biết bạn đã nhận.`}
-      />
-      <PanelBody>
-        <Button variant="primary" disabled={acknowledge.isPending} onClick={() => void confirm()} className="w-full sm:w-auto">
-          {acknowledge.isPending ? 'Đang xác nhận…' : 'Nhận việc'}
-        </Button>
-      </PanelBody>
-    </Panel>
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-body text-fg-2">
+          {source} lúc {formatDateTime(job.acceptedAt ?? job.assignedAt)}.
+        </p>
+        <span className="flex flex-wrap gap-3">
+          <ButtonLink to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`} size="sm" icon="calendar_month">
+            Lịch cả ngày
+          </ButtonLink>
+          {upcoming && !open && (
+            <Button size="sm" variant="danger" icon="undo" onClick={() => setOpen(true)}>
+              Trả lại việc
+            </Button>
+          )}
+        </span>
+      </div>
+      {open && (
+        <span className="mt-4 block space-y-3">
+          <Field label="Lý do trả lại" htmlFor="release-reason" required>
+            <Textarea
+              id="release-reason"
+              rows={2}
+              maxLength={500}
+              value={reason}
+              onChange={(e) => {
+                setReason(e.target.value)
+                setError(null)
+              }}
+            />
+          </Field>
+          <span className="flex flex-wrap items-center gap-3">
+            <Button size="sm" variant="ghost" bleed={false} disabled={release.isPending} onClick={() => setOpen(false)}>
+              Huỷ
+            </Button>
+            <Button size="sm" variant="danger" disabled={release.isPending} onClick={() => void submit()}>
+              {release.isPending ? 'Đang trả lại…' : 'Xác nhận trả lại'}
+            </Button>
+            {error && (
+              <span className="flex items-center gap-1.5 text-body font-medium text-danger" role="alert">
+                <Icon name="error" className="shrink-0 text-[20px]" />
+                {error}
+              </span>
+            )}
+          </span>
+        </span>
+      )}
+    </div>
   )
 }
 
-/*
-  Chi tiết một lịch khảo sát được giao (GET /api/technicians/me/appointments/{id}): giờ, đường tới, công trình, khách hàng,
-  số liệu khách khai, mô phỏng khách chọn (kỹ thuật viên được phân công đọc được). Luồng 1 dừng ở "Nhận việc": không có
-  thao tác "Hoàn thành khảo sát" ở đây.
-*/
+// Chi tiết một lịch khảo sát đã nhận. Khảo sát tại công trình thuộc luồng sau nên chưa có ở đây
 export function TechJobPage() {
   const { id } = useParams()
   const query = useMyAppointmentQuery(id)
+  const [now] = useState(() => Date.now())
   usePageCrumb(query.data?.property.name ?? null)
 
   return (
@@ -96,7 +192,7 @@ export function TechJobPage() {
               actions={
                 <>
                   {job.customer.phone && (
-                    <a className={buttonClass('secondary')} href={`tel:${job.customer.phone}`}>
+                    <a className={buttonClass('soft')} href={`tel:${job.customer.phone}`}>
                       <Icon name="call" className="-ml-0.5 text-[20px]" />
                       Gọi khách
                     </a>
@@ -112,30 +208,18 @@ export function TechJobPage() {
               }
             />
 
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="min-w-0 space-y-4 lg:col-span-2">
-                {job.status === 'ASSIGNED' && <AcknowledgePanel job={job} />}
-                {job.status === 'ACKNOWLEDGED' && (
-                  <Notice tone="ok">Bạn đã nhận việc lúc {formatDateTime(job.acknowledgedAt)}. Tới công trình đúng giờ hẹn.</Notice>
-                )}
+            <ProgressTracker {...jobTracker(job, now)} />
 
-                <Panel>
-                  <PanelHeader
-                    title="Đường tới công trình"
-                    action={
-                      <ButtonLink to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`} size="sm" icon="calendar_month">
-                        Lịch cả ngày
-                      </ButtonLink>
-                    }
-                  />
-                  <PanelBody>
-                    {job.inboundTravelEstimate ? (
-                      <TravelSummary leg={job.inboundTravelEstimate} />
-                    ) : (
-                      <p className="text-body text-fg-2">Chưa có ước tính đường đi cho lịch này.</p>
-                    )}
-                  </PanelBody>
-                </Panel>
+            <div className="mt-6 grid gap-6 lg:grid-cols-3">
+              <div className="min-w-0 space-y-4 lg:col-span-2">
+                {(job.status === 'ACCEPTED' || job.status === 'ASSIGNED') && (
+                  <Panel>
+                    <PanelHeader title="Lịch của bạn" />
+                    <PanelBody>
+                      <JobActions job={job} />
+                    </PanelBody>
+                  </Panel>
+                )}
 
                 <Panel>
                   <PanelHeader title="Công trình" />
@@ -162,50 +246,33 @@ export function TechJobPage() {
 
                 <Panel>
                   <PanelHeader title="Số liệu khách khai" description="Đo lại tại công trình để đối chiếu." />
-                  <PanelBody className="space-y-6">
-                    <StatRow className="lg:grid-cols-3">
-                      <Stat label="Mặt lắp (rộng × dài)" value={s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)}`} unit="m" />
+                  <PanelBody>
+                    <StatRow className="lg:grid-cols-5">
+                      <Stat
+                        label="Mặt lắp (rộng × dài)"
+                        value={s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)}`}
+                        unit="m"
+                      />
                       <Stat label="Dùng được / tổng" value={`${n(s.usableAreaM2)} / ${n(s.totalAreaM2)}`} unit="m²" />
                       <Stat label="Độ dốc" value={n(s.surfaceTiltDegree)} unit="độ" />
-                    </StatRow>
-                    <Facts
-                      items={[
-                        {
-                          k: 'Hướng mái',
-                          v: s.surfaceAzimuthDegree == null ? '—' : `${directionLabel(s.surfaceAzimuthDegree)} (${n(s.surfaceAzimuthDegree)}°)`,
-                        },
-                        { k: 'Vật cản', v: s.obstacleCount > 0 ? `${s.obstacleCount} vật cản` : s.hasObstruction ? 'Có' : 'Không' },
-                      ]}
-                    />
-                  </PanelBody>
-                </Panel>
-
-                <Panel>
-                  <PanelHeader
-                    title="Mô phỏng khách chọn"
-                    description={
-                      sim
-                        ? `${mountingLabel(sim.mountingType)}, ${sim.productName}: ${sim.panelCount} tấm, ${formatOne(sim.installedCapacityKwp)} kWp${
-                            sim.annualEnergyKwh != null ? `, ${formatKwh(sim.annualEnergyKwh)} kWh/năm` : ''
-                          }.`
-                        : undefined
-                    }
-                  />
-                  <PanelBody>
-                    {sim ? (
-                      <SimulationViewer
-                        preSurveyId={s.preSurveyId}
-                        simulationId={sim.simulationId}
-                        staleNote="Khách đã sửa mặt lắp sau lần chạy này; đo thực tế để chốt số tấm."
+                      <Stat
+                        label="Hướng mái"
+                        value={n(s.surfaceAzimuthDegree)}
+                        unit={
+                          s.surfaceAzimuthDegree == null ? undefined : `độ, ${directionLabel(s.surfaceAzimuthDegree)}`
+                        }
                       />
-                    ) : (
-                      <p className="text-body text-fg-2">Khách gửi yêu cầu khi chưa chạy mô phỏng.</p>
-                    )}
+                      <Stat
+                        label="Vật cản"
+                        value={s.obstacleCount > 0 ? s.obstacleCount : s.hasObstruction ? 'Có' : 'Không'}
+                        unit={s.obstacleCount > 0 ? 'vật cản' : undefined}
+                      />
+                    </StatRow>
                   </PanelBody>
                 </Panel>
               </div>
 
-              <PanelAside aria-label="Khách hàng" className="lg:sticky lg:top-16">
+              <PanelAside aria-label="Khách hàng">
                 <Panel>
                   <PanelHeader title="Khách hàng" />
                   <PanelBody>
@@ -227,7 +294,16 @@ export function TechJobPage() {
                           k: 'Email',
                           v: job.customer.email ? (
                             <a className="ui-link wrap-anywhere" href={`mailto:${job.customer.email}`}>
-                              {job.customer.email.split('@').map((part, i) => (i === 0 ? part : [<Fragment key={i}>@<wbr /></Fragment>, part]))}
+                              {job.customer.email.split('@').map((part, i) =>
+                                i === 0
+                                  ? part
+                                  : [
+                                      <Fragment key={i}>
+                                        @<wbr />
+                                      </Fragment>,
+                                      part,
+                                    ],
+                              )}
                             </a>
                           ) : (
                             '—'
@@ -245,6 +321,31 @@ export function TechJobPage() {
                 </Panel>
               </PanelAside>
             </div>
+
+            {/* Mô phỏng trải hết chiều ngang để hình bố trí to và không chừa cột trống bên phải */}
+            <Panel className="mt-6">
+              <PanelHeader
+                title="Mô phỏng khách chọn"
+                description={
+                  sim
+                    ? `${mountingLabel(sim.mountingType)}, ${sim.productName}: ${sim.panelCount} tấm, ${formatOne(sim.installedCapacityKwp)} kWp${
+                        sim.annualEnergyKwh != null ? `, ${formatKwh(sim.annualEnergyKwh)} kWh/năm` : ''
+                      }.`
+                    : undefined
+                }
+              />
+              <PanelBody>
+                {sim ? (
+                  <SimulationViewer
+                    preSurveyId={s.preSurveyId}
+                    simulationId={sim.simulationId}
+                    staleNote="Khách đã sửa mặt lắp sau lần chạy này; đo thực tế để chốt số tấm."
+                  />
+                ) : (
+                  <p className="text-body text-fg-2">Khách gửi yêu cầu khi chưa chạy mô phỏng.</p>
+                )}
+              </PanelBody>
+            </Panel>
           </>
         )
       }}

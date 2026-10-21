@@ -4,16 +4,13 @@ import { ListRow } from '@/components/common/ui/list-row'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
-import { formatRelative, shortCode } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { canBook, customerProgress, formatAppointment } from '@/features/scheduling/components/schedulingDisplay'
+import { formatRelative, shortCode } from '@/features/pre-surveys/preSurveyDisplay'
+import { canBook, customerProgress, formatAppointment } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { ROUTES, withId } from '@/routes/paths'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 
-/*
-  Các yêu cầu khảo sát của khách (GET /api/customers/me/survey-requests). Việc của khách đứng đầu: yêu cầu chưa đặt giờ,
-  rồi lịch sắp tới theo thứ tự thời gian, cuối cùng là phần còn lại (mới gửi lên trước).
-*/
+// Yêu cầu khảo sát của khách. Chưa đặt giờ lên đầu, rồi lịch sắp tới, rồi còn lại
 function rank(r: CustomerSurveyRequestView) {
   if (canBook(r)) return 0
   if (r.appointment) return 1
@@ -23,7 +20,8 @@ function rank(r: CustomerSurveyRequestView) {
 function byNextAction(a: CustomerSurveyRequestView, b: CustomerSurveyRequestView) {
   const diff = rank(a) - rank(b)
   if (diff !== 0) return diff
-  if (a.appointment && b.appointment) return new Date(a.appointment.startsAt).getTime() - new Date(b.appointment.startsAt).getTime()
+  if (a.appointment && b.appointment)
+    return new Date(a.appointment.startsAt).getTime() - new Date(b.appointment.startsAt).getTime()
   return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
 }
 
@@ -43,7 +41,7 @@ export function CustomerRequestsPage() {
           ) : undefined
         }
         actions={
-          <ButtonLink to={ROUTES.customer.assessment} icon="add">
+          <ButtonLink to={ROUTES.customer.assessment} variant="soft" icon="add">
             Đánh giá địa điểm khác
           </ButtonLink>
         }
@@ -71,12 +69,15 @@ export function CustomerRequestsPage() {
                       <div className="min-w-0">
                         <h2 className="text-title font-semibold">{r.propertyName || 'Công trình chưa đặt tên'}</h2>
                         <p className="mt-1 text-body text-fg-2">
-                          Gửi {formatRelative(r.submittedAt)}, mã <span className="tnum">{shortCode(r.surveyRequestId)}</span>
+                          Gửi {formatRelative(r.submittedAt)}, mã{' '}
+                          <span className="tnum">{shortCode(r.surveyRequestId)}</span>
                         </p>
                         {a && (
                           <p className="mt-2 text-body text-fg">
                             Khảo sát {formatAppointment(a.startsAt, a.endsAt)}
-                            {a.assignedTechnicianName && <span className="text-fg-2">, kỹ thuật viên {a.assignedTechnicianName}</span>}
+                            {a.assignedTechnicianName && (
+                              <span className="text-fg-2">, kỹ thuật viên {a.assignedTechnicianName}</span>
+                            )}
                           </p>
                         )}
                       </div>

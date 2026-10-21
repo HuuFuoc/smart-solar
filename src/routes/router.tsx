@@ -5,14 +5,14 @@ import { protectedRoutes } from '@/routes/protectedRoutes'
 import { publicRoutes } from '@/routes/publicRoutes'
 
 /*
-  Điều hướng (đường dẫn ở paths.ts):
-    /            trang chủ công khai, /products, /login … /verify-email, /403, /coming-soon   → publicRoutes.tsx
-    /customer    khách hàng        (role customer)                                            → protectedRoutes.tsx
+  Điều hướng:
+    /            trang chủ công khai, /products, /login ... /verify-email, /403, /coming-soon
+    /customer    khách hàng        (role customer)
     /ops         kinh doanh        (role sales)
+    /admin       quản trị viên     (role admin)
     /tech        kỹ thuật viên     (role technician; /field chuyển về đây)
     /manage      quản lý           (role manager)
-    /admin       quản trị viên     (role admin)
-  Khách hàng dùng customer-shell.tsx, các portal nhân viên dùng chung app-shell.tsx (components/layout).
+  Khách hàng dùng customer-shell.tsx, các portal nhân viên dùng chung app-shell.tsx.
   Sau đăng nhập, homePathForRole (src/config/roles.ts) đưa mỗi vai trò về portal của mình.
 */
 export const router = createBrowserRouter([

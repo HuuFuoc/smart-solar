@@ -2,13 +2,7 @@ import { useId } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/*
- * Nhóm radio hiện rõ ô tròn như site_survey_verification.
- * stacked = thẻ có nhãn + mô tả ("Roof Condition & Rafter Spacing").
- * inline  = thẻ gọn căn giữa ("Technical Risk Assessment").
- * card    = thẻ không hiện ô radio, tô primary-container khi chọn
- *           ("Root Cause Identification" trong warranty_request).
- */
+// Nhóm radio dạng thẻ. stacked: nhãn + mô tả, inline: thẻ gọn, card: không hiện ô tròn
 export type RadioCardOption<T extends string> = { value: T; label: string; description?: string }
 
 export type RadioCardGroupProps<T extends string> = {

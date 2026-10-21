@@ -5,7 +5,7 @@ import { ExecutionStepList } from '@/components/common/tech/ExecutionStepList'
 import { JobHeaderCard } from '@/components/common/tech/JobHeaderCard'
 import { SectionCard } from '@/components/common/tech/SectionCard'
 import { StatTile } from '@/components/common/tech/StatTile'
-import { YieldImpactChart } from '@/features/warranty/components/YieldImpactChart'
+import { YieldImpactChart } from '@/features/warranty/YieldImpactChart'
 import { Icon, ProgressBar, Toast } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 import { getMaintenanceTask, protocolVerifiedLabel, type MaintenanceStep } from '@/data/maintenance'
@@ -36,11 +36,9 @@ function MaintenanceTaskView({ task }: { task: Task }) {
   const toggleStep = (stepId: string, checked: boolean) =>
     setCheckedIds((current) => (checked ? [...current, stepId] : current.filter((value) => value !== stepId)))
 
-  /* Như code.html: bước đang đo cũng tính vào tiến độ nên mở màn là 4/6 = 66%. */
+  // Bước đang đo cũng tính vào tiến độ nên mở màn là 4/6
   const totalSteps = task.protocol.steps.length
-  const doneSteps = task.protocol.steps.filter(
-    (step) => checkedIds.includes(step.id) || step.state === 'active',
-  ).length
+  const doneSteps = task.protocol.steps.filter((step) => checkedIds.includes(step.id) || step.state === 'active').length
   const percent = totalSteps === 0 ? 0 : Math.round((doneSteps / totalSteps) * 100)
 
   const showToast = (message: string) => {
@@ -56,10 +54,7 @@ function MaintenanceTaskView({ task }: { task: Task }) {
           <div key={item.label} className="flex items-center gap-space-xs">
             <span className="text-label-sm text-on-surface-variant">{item.label}</span>
             <span
-              className={cn(
-                'text-label-md font-bold',
-                item.tone === 'primary' ? 'text-primary' : 'text-on-surface',
-              )}
+              className={cn('text-label-md font-bold', item.tone === 'primary' ? 'text-primary' : 'text-on-surface')}
             >
               {item.value}
             </span>
@@ -91,8 +86,7 @@ function MaintenanceTaskView({ task }: { task: Task }) {
         summary={task.summary}
         actions={task.headerActions.map((action) => ({
           ...action,
-          onClick: () =>
-            showToast(action.tone === 'solid' ? task.toasts.completed : task.toasts.draftSaved),
+          onClick: () => showToast(action.tone === 'solid' ? task.toasts.completed : task.toasts.draftSaved),
         }))}
         meta={task.meta}
       />
@@ -222,16 +216,13 @@ function MaintenanceTaskView({ task }: { task: Task }) {
               {task.signOff.cards.map((card) => (
                 <div key={card.label} className="flex flex-col rounded-xl bg-surface-container p-space-sm">
                   <span className="text-label-sm text-on-surface-variant">{card.label}</span>
-                  <span
-                    className={cn('mt-0.5 text-label-lg font-bold', signOffToneClasses[card.tone ?? 'default'])}
-                  >
+                  <span className={cn('mt-0.5 text-label-lg font-bold', signOffToneClasses[card.tone ?? 'default'])}>
                     {card.value}
                   </span>
                   <span className="text-body-sm text-on-surface-variant">{card.caption}</span>
                 </div>
               ))}
             </div>
-
           </SectionCard>
         </div>
       </div>

@@ -1,4 +1,4 @@
-/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api` – KHÔNG sửa tay. */
+/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
 
 /** Phần `error` trong wrapper *ApiResponse (schema ApiError). */
 export type ApiErrorBody = {

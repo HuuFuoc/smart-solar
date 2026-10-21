@@ -1,11 +1,7 @@
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cn } from '@/utils/cn'
 
-/*
- * Ô tăng/giảm số đo hiện trường (site_survey_task – "Verified Usable Area").
- * md: hai nút 44px hai đầu, giá trị headline-md ở giữa.
- * sm: bản gọn nằm trong một bước của installation_task ("Mounted Panels: - 18 +"), nút 28px.
- */
+// Ô tăng / giảm số đo. md: nút 44px, sm: bản gọn nút 28px
 export type StepperInputProps = {
   value: number
   onChange: (value: number) => void

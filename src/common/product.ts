@@ -1,14 +1,7 @@
 import type { Tone } from '@/components/common/ui/badge'
 import type { ProductSortBy, ProductSortDirection } from '@/services/productService'
 
-/*
- * Enum của sản phẩm (trang admin, danh mục của các portal và trang công khai). Hàm tra nhãn ở
- * features/products/components/productDisplay.ts.
- *
- * Swagger khai `status` là string tự do. Danh sách dưới đây là các giá trị backend nhận
- * (backend trả "'Status' must be ACTIVE or INACTIVE." khi dò PATCH .../status ngày 29/09/2026);
- * so khớp không phân biệt hoa thường, giá trị lạ thì in nguyên văn thay vì đoán nghĩa.
- */
+// Swagger khai `status` là chuỗi tự do, backend chỉ nhận ACTIVE hoặc INACTIVE. Giá trị lạ thì in nguyên văn
 export const PRODUCT_STATUSES = [
   { value: 'ACTIVE', label: 'Đang bán', tone: 'ok' },
   { value: 'INACTIVE', label: 'Ngừng bán', tone: 'neutral' },
@@ -16,14 +9,10 @@ export const PRODUCT_STATUSES = [
 
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number]['value']
 
-/*
- * Loại sản phẩm là chữ tự do; riêng tấm pin có mã SOLAR_PANEL mà backend kiểm tra thêm (dò validator
- * 05/10/2026, không phân biệt hoa thường): bắt buộc ratedPowerW, widthMm, heightMm. Mô phỏng 3D cũng
- * chỉ lấy sản phẩm loại này.
- */
+// Loại sản phẩm là chữ tự do, riêng SOLAR_PANEL bị backend kiểm tra thêm công suất và kích thước
 export const SOLAR_PANEL_TYPE = 'SOLAR_PANEL'
 
-/** Tuỳ chọn sắp xếp; value = "SortBy:SortDirection" theo giá trị backend chấp nhận. */
+/** Tuỳ chọn sắp xếp, value là "SortBy:SortDirection" theo giá trị backend nhận */
 export const PRODUCT_SORT_OPTIONS: { value: `${ProductSortBy}:${ProductSortDirection}`; label: string }[] = [
   { value: 'createdAt:desc', label: 'Mới thêm gần đây' },
   { value: 'name:asc', label: 'Tên A–Z' },

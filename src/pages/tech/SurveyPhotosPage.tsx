@@ -1,8 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router'
-import { PhotoInspector } from '@/features/surveys/components/PhotoInspector'
-import { PhotoSectionHeader } from '@/features/surveys/components/PhotoSectionHeader'
-import { Button, Card, Icon, PhotoCard, PhotoDropzone, PhotoGrid, ProgressBar, StatusBadge, Toast } from '@/components/common/stitch-ui'
+import { PhotoInspector } from '@/features/surveys/PhotoInspector'
+import { PhotoSectionHeader } from '@/features/surveys/PhotoSectionHeader'
+import {
+  Button,
+  Card,
+  Icon,
+  PhotoCard,
+  PhotoDropzone,
+  PhotoGrid,
+  ProgressBar,
+  StatusBadge,
+  Toast,
+} from '@/components/common/stitch-ui'
 import { notFound } from '@/routes/notFound'
 import {
   findSurveyPhotoById,
@@ -57,7 +67,6 @@ function SurveyPhotosView({
 
   return (
     <div className="flex w-full flex-col gap-space-xl">
-      {/* Header ngữ cảnh + chỉ báo bước 2/2 (thanh Audit Completeness Target) */}
       <Card padding="lg" className="flex w-full flex-col gap-space-md">
         <div className="flex flex-col justify-between gap-space-md lg:flex-row lg:items-center">
           <div className="flex flex-col gap-1">
@@ -141,10 +150,7 @@ function SurveyPhotosView({
         </div>
       </Card>
 
-      {/*
-       * Thiết kế chia 8/4 từ xl trở lên, aside Photo Inspector bám dính bên phải.
-       * Dưới xl (gồm cả dưới lg) xếp một cột, aside nằm sau nội dung chính trong DOM nên tự xuống dưới.
-       */}
+      {/* Từ xl chia 8/4, dưới xl xếp một cột và aside xuống dưới */}
       <div className="grid grid-cols-1 items-start gap-space-xl xl:grid-cols-12">
         <div className="flex flex-col gap-space-xl xl:col-span-8">
           {doc.sections.map((section) => {

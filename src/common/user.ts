@@ -1,11 +1,8 @@
 import type { Tone } from '@/components/common/ui/badge'
 
-/*
- * Enum của quản lý tài khoản (AdminUserContracts, backend main 4d12e4d, 12/10/2026). Mã là chuỗi IN HOA của backend; hàm
- * tra nhãn ở features/users/components/userDisplay.ts, mã lạ in nguyên văn thay vì đoán nghĩa.
- */
+// Vai trò và trạng thái tài khoản theo mã của backend. Mã lạ thì in nguyên văn
 
-/** Mã vai trò của API tài khoản (IN HOA). Vai trò của phiên đăng nhập là USER_ROLES trong common/role.ts. */
+/** Mã vai trò của API tài khoản. Vai trò của phiên đăng nhập ở common/role.ts */
 export const ROLE_CODES = [
   { value: 'CUSTOMER', label: 'Khách hàng' },
   { value: 'SALES', label: 'Kinh doanh' },
@@ -14,10 +11,7 @@ export const ROLE_CODES = [
   { value: 'ADMIN', label: 'Quản trị viên' },
 ] as const
 
-/*
-  Đang hoạt động là ok; chờ kích hoạt là đang xử lý (người dùng chưa đặt mật khẩu / xác minh email); tạm khoá là lưu ý;
-  vô hiệu (và đã xoá, xem userStatusMeta) là không còn hoạt động.
-*/
+// Chờ kích hoạt là người dùng chưa đặt mật khẩu hoặc chưa xác minh email
 export const USER_STATUSES = [
   { value: 'PENDING_VERIFICATION', label: 'Chờ kích hoạt', tone: 'info' },
   { value: 'ACTIVE', label: 'Đang hoạt động', tone: 'ok' },

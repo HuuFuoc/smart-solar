@@ -3,11 +3,7 @@ import { cx } from '@/utils/cx'
 
 export type Step = { label: string; meta?: string; state: 'done' | 'active' | 'upcoming' }
 
-/*
-  Progress rail: each stage is a segment of a line. Done and current segments carry the accent, so the
-  stretch already covered reads as one green run; upcoming ones are faint. A done stage adds a check,
-  the current one is bold. No circles, no numbers.
-*/
+// Thanh tiến độ: giai đoạn đã xong và đang làm tô màu chính, sắp tới thì nhạt
 export function Stepper({ steps, className }: { steps: Step[]; className?: string }) {
   return (
     <ol className={cx('grid gap-3 md:grid-flow-col md:auto-cols-fr md:gap-4', className)}>
@@ -28,7 +24,9 @@ export function Stepper({ steps, className }: { steps: Step[]; className?: strin
               step.state === 'active' && 'font-semibold text-fg',
             )}
           >
-            {step.state === 'done' && <Icon name="check_circle" className="icon-fill shrink-0 text-[20px] text-accent-fg" />}
+            {step.state === 'done' && (
+              <Icon name="check_circle" className="icon-fill shrink-0 text-[20px] text-accent-fg" />
+            )}
             {step.label}
             {step.state === 'done' && <span className="sr-only"> (đã xong)</span>}
           </p>

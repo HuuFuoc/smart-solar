@@ -10,11 +10,8 @@ import type {
 } from '@/types/res/customerSurveyRequestsRes'
 import type { SurveySlotsView } from '@/types/res/surveySlotsRes'
 
-/*
- * Query + mutation đặt lịch khảo sát của khách. Danh sách giờ chỉ là ảnh chụp ngắn hạn: người khác có thể lấy mất giờ
- * bất cứ lúc nào, nên sau mỗi lần đặt / đổi / huỷ (kể cả khi lỗi) đều tải lại giờ trống và yêu cầu của khách.
- * Không cập nhật lạc quan: backend giữ chỗ trong transaction, kiểm tra đường đi; chờ server rồi tải lại.
- */
+// Đặt lịch khảo sát của khách. Giờ trống có thể bị người khác lấy bất cứ lúc nào
+// nên sau mỗi lần đặt / đổi / huỷ (kể cả lỗi) đều tải lại. Không cập nhật lạc quan
 
 export const bookingKeys = {
   all: ['customer-survey-requests'] as const,
@@ -39,11 +36,7 @@ export function useMyRequestQuery(id: string | undefined) {
   })
 }
 
-/*
- * Giờ trống của một ngày. Backend giới hạn 20 lần đọc / phút / người (cả kiểm tra đường đi): giữ kết quả 30 giây, không
- * tự tải lại khi quay về tab, không tự thử lại khi Vietmap lỗi (503) – khách bấm "Thử lại" –, để bấm qua lại vài ngày
- * không chạm giới hạn.
- */
+// Backend giới hạn 20 lần / phút nên cache 30 giây và không tự retry
 export function useSurveySlotsQuery(propertySiteId: string | undefined, date: string | null) {
   return useQuery<SurveySlotsView, ApiError>({
     queryKey: bookingKeys.slots(propertySiteId ?? '', date ?? ''),

@@ -1,34 +1,43 @@
+import type { AcceptAppointmentRequest, ReleaseAppointmentRequest } from '@/types/req/technicianAppointmentsReq'
+import type { AssignmentView } from '@/types/res/surveyRequestsRes'
 import type {
-  AcknowledgementView,
+  OpenAppointmentView,
+  ReleaseView,
   TechnicianAppointmentListItem,
   TechnicianJobView,
   TechnicianScheduleView,
 } from '@/types/res/technicianAppointmentsRes'
 import { get, post } from '@/services/api/client'
+import { ENDPOINTS } from '@/services/api/endpoints'
 
-/*
- * Việc của kỹ thuật viên (role TECHNICIAN, tag TechnicianAppointments): chỉ lịch đã được kinh doanh phân công chính thức.
- * Luồng 1 dừng ở bước kỹ thuật viên xác nhận đã nhận việc (ACKNOWLEDGED) – không phải "đã khảo sát xong".
- */
+// Việc của kỹ thuật viên. Lịch khách đặt hiện cho mọi kỹ thuật viên trong khu vực, ai nhận trước thì được
 
-const base = '/technicians/me'
-
-/** GET /api/technicians/me/appointments */
+/** Việc đã xác nhận (tự nhận hoặc được phân công) */
 export function listMyAppointments() {
-  return get<TechnicianAppointmentListItem[]>(`${base}/appointments`)
+  return get<TechnicianAppointmentListItem[]>(ENDPOINTS.technicianAppointments.base)
 }
 
-/** GET /api/technicians/me/appointments/{id} – khách, địa điểm, số liệu khách khai, mô phỏng đã chọn, chặng đường tới. */
+/** Khách, địa điểm, số liệu khai và mô phỏng đã chọn */
 export function getMyAppointment(id: string) {
-  return get<TechnicianJobView>(`${base}/appointments/${encodeURIComponent(id)}`)
+  return get<TechnicianJobView>(ENDPOINTS.technicianAppointments.byId(id))
 }
 
-/** POST …/acknowledge – gửi lại khi đã nhận thì trả alreadyAcknowledged=true. */
-export function acknowledgeAppointment(id: string) {
-  return post<AcknowledgementView>(`${base}/appointments/${encodeURIComponent(id)}/acknowledge`)
+/** Lịch đang chờ người nhận trong các khu vực của mình */
+export function listOpenAppointments() {
+  return get<OpenAppointmentView[]>(ENDPOINTS.technicianAppointments.open)
 }
 
-/** GET /api/technicians/me/schedule?date=YYYY-MM-DD – lịch một ngày kèm đường đi đã lưu (không gọi Vietmap). */
+/** Người khác nhận trước thì trả 409 APPOINTMENT_ALREADY_TAKEN */
+export function acceptAppointment(id: string, body: AcceptAppointmentRequest) {
+  return post<AssignmentView>(ENDPOINTS.technicianAppointments.accept(id), body)
+}
+
+/** Trả lại việc đã nhận, lịch quay về chờ người khác nhận */
+export function releaseAppointment(id: string, body: ReleaseAppointmentRequest) {
+  return post<ReleaseView>(ENDPOINTS.technicianAppointments.release(id), body)
+}
+
+/** GET /api/technicians/me/schedule?date=YYYY-MM-DD */
 export function getMySchedule(date: string) {
-  return get<TechnicianScheduleView>(`${base}/schedule`, { params: { date } })
+  return get<TechnicianScheduleView>(ENDPOINTS.technicianAppointments.schedule, { params: { date } })
 }

@@ -6,21 +6,10 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 import { authImages, authLayoutContent } from '@/data/auth'
 
-/*
- * Shell các màn xác thực (/login, /register, /forgot-password, /reset-password, /verify-email, /403).
- *
- * Desktop: cao đúng một màn hình – ảnh 5/12 bên trái, form 7/12 bên phải (logo + về trang chủ ở trên,
- * form ở giữa, bản quyền ở dưới). Màn thấp hơn 720px (variant `short`) thu khoảng đệm; nếu vẫn không
- * đủ thì chỉ cột form cuộn bên trong, trang không cuộn.
- * Mobile: dải ảnh thấp ở trên, form bên dưới, cuộn bình thường.
- *
- * Ảnh do người dùng cung cấp đã in sẵn chữ ở góc trên trái, nên cắt giữ phần trên (object-top).
- * /register dùng ảnh đăng ký, các màn còn lại dùng ảnh đăng nhập. Font Be Vietnam Pro vì
- * Schibsted Grotesk của portal thiếu dấu tiếng Việt.
- */
+// Layout các màn xác thực. Desktop: ảnh bên trái, form bên phải, cao đúng một màn hình. Mobile: ảnh nằm trên form
 export function AuthLayout() {
   const { pathname } = useLocation()
-  // Ảnh đăng nhập in sẵn chữ "Chào mừng trở lại": trang 403 dùng ảnh đăng ký (lời chào chung) cho khỏi lạc giọng.
+  // Ảnh đăng nhập có sẵn chữ "Chào mừng trở lại" nên trang 403 dùng ảnh đăng ký
   const image = pathname === ROUTES.register || pathname === ROUTES.forbidden ? authImages.register : authImages.login
 
   return (

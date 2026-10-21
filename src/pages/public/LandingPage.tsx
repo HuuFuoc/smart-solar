@@ -1,12 +1,9 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router'
-import { CtaSection, HeroSection, SolutionSection, WorkflowSection } from '@/features/landing/components'
+import { CtaSection, HeroSection, SolutionSection, WorkflowSection } from '@/features/landing'
 import { pageTitle } from '@/data/landing'
 
-/*
-  Trang chủ công khai "/" – nền tảng tư vấn lắp đặt, bảo hành và bảo trì điện mặt trời cho hộ gia đình.
-  Hero ảnh ngày / đêm theo giao diện → giải pháp → quy trình bốn bước → mời đăng ký khảo sát.
-*/
+// Trang chủ công khai, website bán hàng cho doanh nghiệp
 export function LandingPage() {
   const { hash } = useLocation()
 

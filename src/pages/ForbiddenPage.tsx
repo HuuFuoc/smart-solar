@@ -1,11 +1,11 @@
 import { Link } from 'react-router'
 import { homePathForRole } from '@/config/roles'
 import { useAuth } from '@/context/AuthProvider'
-import { ForbiddenCard } from '@/features/auth/components/ForbiddenCard'
+import { ForbiddenCard } from '@/features/auth/ForbiddenCard'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 
-/** /403 – render trong AuthLayout, phần <main> là ForbiddenCard. */
+/** /403, render trong AuthLayout, phần <main> là ForbiddenCard. */
 export function ForbiddenPage() {
   // Đã đăng nhập thì về trang làm việc của vai trò mình, không phải landing công khai.
   const { user } = useAuth()

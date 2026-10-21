@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router'
-import { LANDING_CONTAINER, TEXT_LINK, ctaClass } from '@/features/landing/components/classes'
-import { CatalogError } from '@/features/products/components/CatalogError'
+import { LANDING_CONTAINER, TEXT_LINK, ctaClass } from '@/features/landing/classes'
+import { CatalogError } from '@/features/products/CatalogError'
 import {
   formatPower,
   formatSize,
@@ -8,14 +8,14 @@ import {
   isProductActive,
   productTypeLabel,
   specEntries,
-} from '@/features/products/components/productDisplay'
+} from '@/features/products/productDisplay'
 import { useProductQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { cx } from '@/utils/cx'
 import { formatMoney } from '@/utils/format'
 
-/* /products/:id – chi tiết một sản phẩm, đọc GET /api/products/{id}. */
+/* /products/:id, chi tiết một sản phẩm, đọc GET /api/products/{id}. */
 export function ProductDetailPage() {
   const { id } = useParams()
   const query = useProductQuery(id)

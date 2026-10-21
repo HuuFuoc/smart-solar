@@ -124,9 +124,7 @@ export function ConsultationPage() {
                   </ul>
                 </PanelBody>
                 <PanelFooter>
-                  <Button size="sm">
-                    Thêm vào lịch
-                  </Button>
+                  <Button size="sm">Thêm vào lịch</Button>
                 </PanelFooter>
               </Panel>
 

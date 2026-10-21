@@ -1,10 +1,4 @@
-/*
- * VIẾT TAY – swagger chỉ khai "200 OK" cho tag AdminUsers, không có schema response.
- * Tên kiểu và field lấy đúng theo SmartSolar.Modules.Identity.AdminUsers.AdminUserContracts và
- * Contracts.Persistence.IAdminUserStore (backend main 4d12e4d, 12/10/2026). Phản hồi không bao giờ
- * chứa mật khẩu, token hay link kích hoạt. Khi backend khai response trong swagger, `npm run gen:api`
- * sẽ ghi đè file này bằng bản sinh tự động.
- */
+// Viết tay vì swagger không có schema response. Theo AdminUserContracts của backend
 
 /** PENDING_VERIFICATION | ACTIVE | SUSPENDED | DISABLED */
 export type UserStatusCode = 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'DISABLED' | (string & {})
@@ -30,12 +24,10 @@ export type AdminUserListItem = {
 export type TechnicianProfileSummary = {
   hasProfile: boolean
   isSchedulingActive: boolean
-  hasBaseLocation: boolean
-  baseLabel: string | null
   maxAppointmentsPerDay: number | null
   hasCustomWorkingSchedule: boolean
-  /** "HH:mm:ss" (TimeOnly) hoặc null = mặc định. */
-  earliestBaseDeparture: string | null
+  /** Mã các khu vực phục vụ, vd. "KHU-THU-DUC" */
+  zoneCodes: string[]
 }
 
 export type AdminUserDetail = AdminUserListItem & {
@@ -75,7 +67,7 @@ export type UpdatedAdminUser = {
   activation: ActivationState | null
 }
 
-/** POST …/send-password-reset (202). */
+/** POST .../send-password-reset (202). */
 export type RecoveryIssued = {
   userId: string
   activation: ActivationState

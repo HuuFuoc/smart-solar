@@ -1,12 +1,7 @@
-/*
- * VIẾT TAY – swagger chỉ khai "200 OK" cho tag Simulations, không có schema response.
- * Tên kiểu và field lấy đúng theo SmartSolar.Modules.SolarSimulation (Models/SimulationDocuments.cs,
- * Energy/EnergyContracts.cs) của image 09/10/2026 (commit 833ff3c), đã đối chiếu response thật.
- * Chuỗi mã (status, source, reason, code…) để kiểu string: giá trị đã biết liệt kê ở simulationDisplay.ts,
- * giá trị lạ thì giao diện in nguyên văn. Khi backend khai response trong swagger, `npm run gen:api` sẽ ghi đè file này.
- */
+// Viết tay vì swagger không có schema response (tag Simulations)
+// Các mã (status, source, reason...) để kiểu string, mã đã biết liệt kê ở simulationDisplay.ts
 
-/** Điểm trong hệ thế giới, mét: e = Đông, n = Bắc, u = lên; gốc là gốc mặt lắp (góc trên-trái). */
+/** e = Đông, n = Bắc, u = lên (mét), gốc là góc trên-trái mặt lắp */
 export type WorldPoint = { e: number; n: number; u: number }
 
 /** Quaternion theo thứ tự thành phần của Three.js. */
@@ -114,7 +109,7 @@ export type FrameInfo = {
   localFrame: string
   worldFrame: string
   azimuth: string
-  /** Trục của tấm: x ngang theo bề rộng, y ngược dốc, z pháp tuyến mặt trước; mặt trước ở z = 0, độ dày về -z. */
+  /** x theo bề rộng tấm, y ngược dốc, z pháp tuyến. Mặt trước ở z = 0 */
   panelFrame: string
   note: string
   /** Gốc, +X, +X+Y, +Y của mặt lắp trong hệ thế giới. */
@@ -191,10 +186,10 @@ export type EnergyScenario = {
 export type EnergyInfo = {
   /** SUCCEEDED | NOT_APPLICABLE | UNAVAILABLE | FAILED */
   status: string
-  /** NO_PANELS | LOCATION_MISSING … */
+  /** NO_PANELS | LOCATION_MISSING ... */
   reason: string | null
   estimateType: string
-  /** null khi chưa ước tính được – hiển thị "chưa có dữ liệu", không phải 0. */
+  /** null khi chưa ước tính được, hiển thị "chưa có dữ liệu", không phải 0. */
   annualEnergyKwh: number | null
   specificYieldKwhPerKwpYear: number | null
   monthly: MonthlyPvEnergy[]
@@ -244,11 +239,14 @@ export type ClimateInfo = {
 
 export type SimulationWarning = { code: string; message: string }
 
-/** POST /api/pre-surveys/{id}/simulations (201 tạo mới, 200 dùng lại) và GET …/simulations/{simulationId}. */
+/**
+ * POST /api/pre-surveys/{id}/simulations (201 tạo mới, 200 dùng lại) và GET .../simulations/{simulationId}.
+ * Kết quả chỉ được giữ tạm (mặc định 24 giờ), riêng mô phỏng khách đã chọn được lưu lại.
+ */
 export type SimulationDetail = {
   simulationId: string
   preSurveyId: string
-  /** COMPLETED | PARTIALLY_COMPLETED – cả hai đều là kết quả đã lưu; xem riêng energy.status, climate.status. */
+  /** COMPLETED | PARTIALLY_COMPLETED, cả hai đều là kết quả đã lưu; xem riêng energy.status, climate.status. */
   status: string
   /** Tính theo hình học cũ (geometryVersion đã đổi). */
   isStale: boolean
@@ -266,9 +264,13 @@ export type SimulationDetail = {
   climate: ClimateInfo
   warnings: SimulationWarning[]
   limitations: string[]
+  /** Lúc kết quả bị xoá khỏi bộ nhớ tạm, null nếu là bản lưu lâu dài */
+  expiresAt: string | null
+  /** CACHE (bộ nhớ tạm) | SNAPSHOT (bản lưu đầy đủ của mô phỏng đã chọn) */
+  source: string
 }
 
-/** GET /api/pre-surveys/{id}/simulations – mảng, mới nhất trước, chưa phân trang. */
+/** Một lần chạy còn trong bộ nhớ tạm, hết hạn thì tự biến khỏi danh sách */
 export type SimulationListItem = {
   simulationId: string
   status: string
@@ -285,4 +287,49 @@ export type SimulationListItem = {
   installedCapacityKwp: number
   annualEnergyKwh: number | null
   createdAt: string
+  expiresAt: string
 }
+
+/**
+ * Bản tóm tắt của mô phỏng khách đã chọn, lưu lâu dài trong database.
+ * Trả về khi chọn, trong danh sách, và ở GET .../{simulationId} khi kết quả đầy đủ đã hết hạn.
+ */
+export type SelectedSimulation = {
+  simulationId: string
+  preSurveyId: string
+  isStale: boolean
+  preSurveyGeometryVersion: number
+  algorithmVersion: string
+  status: string
+  energyStatus: string
+  mountingType: string
+  productId: string
+  productSku: string
+  productName: string
+  panelCount: number
+  installedCapacityKwp: number
+  annualEnergyKwh: number | null
+  specificYieldKwhPerKwpYear: number | null
+  panelTiltDegree: number
+  panelAzimuthDegree: number
+  createdAt: string
+  selectedAt: string
+  snapshotStored: boolean
+  /** NONE | STORED | VERIFIED | MISSING | UNAVAILABLE | INTEGRITY_FAILED */
+  snapshotStatus: string
+  /** Luôn là SUMMARY */
+  source: string
+}
+
+/** GET /api/pre-surveys/{id}/simulations */
+export type SimulationList = {
+  /** Các lần chạy còn trong bộ nhớ tạm, mới nhất trước */
+  items: SimulationListItem[]
+  /** Mô phỏng khách đã chọn, null khi chưa chọn */
+  selected: SelectedSimulation | null
+  /** false khi không đọc được bộ nhớ tạm: items rỗng nhưng không có nghĩa là đã hết hạn */
+  cacheAvailable: boolean
+}
+
+/** GET .../{simulationId} trả bản đầy đủ, hoặc chỉ bản tóm tắt khi kết quả đầy đủ đã hết hạn */
+export type SimulationView = SimulationDetail | SelectedSimulation

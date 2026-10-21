@@ -1,0 +1,115 @@
+// Endpoint của backend, tính từ /api: '/products' là GET /api/products. Khác ROUTES là đường dẫn trang trên trình duyệt
+// Mỗi tag swagger một nhóm, method nằm ở service. Tham số đã được encodeURIComponent ở đây
+
+const encode = (value: string) => encodeURIComponent(value)
+
+export const ENDPOINTS = {
+  // Xác thực
+  auth: {
+    register: '/auth/register',
+    verifyEmail: '/auth/verify-email',
+    resendVerification: '/auth/resend-verification',
+    login: '/auth/login',
+    refresh: '/auth/refresh',
+    logout: '/auth/logout',
+    forgotPassword: '/auth/forgot-password',
+    resetPassword: '/auth/reset-password',
+    changePassword: '/auth/change-password',
+  },
+
+  // Sản phẩm
+  products: {
+    base: '/products',
+    byId: (id: string) => `/products/${encode(id)}`,
+  },
+  adminProducts: {
+    base: '/admin/products',
+    byId: (id: string) => `/admin/products/${encode(id)}`,
+    status: (id: string) => `/admin/products/${encode(id)}/status`,
+  },
+
+  // Khách hàng: hồ sơ, địa điểm, đánh giá sơ bộ, mặt lắp, mô phỏng, đặt giờ khảo sát
+  customers: {
+    base: '/customers/me',
+    sites: '/customers/me/sites',
+  },
+  administrativeUnits: {
+    communes: '/administrative-units/communes',
+  },
+  preSurveys: {
+    base: '/pre-surveys',
+    byId: (preSurveyId: string) => `/pre-surveys/${encode(preSurveyId)}`,
+    submit: (preSurveyId: string) => `/pre-surveys/${encode(preSurveyId)}/submit`,
+  },
+  preSurveySurface: {
+    surface: (preSurveyId: string) => `/pre-surveys/${encode(preSurveyId)}/surface`,
+  },
+  simulations: {
+    base: (preSurveyId: string) => `/pre-surveys/${encode(preSurveyId)}/simulations`,
+    byId: (preSurveyId: string, simulationId: string) =>
+      `/pre-surveys/${encode(preSurveyId)}/simulations/${encode(simulationId)}`,
+    select: (preSurveyId: string, simulationId: string) =>
+      `/pre-surveys/${encode(preSurveyId)}/simulations/${encode(simulationId)}/select`,
+    selection: (preSurveyId: string) => `/pre-surveys/${encode(preSurveyId)}/simulations/selection`,
+  },
+  surveySlots: {
+    base: '/survey-slots',
+  },
+  customerSurveyRequests: {
+    base: '/customers/me/survey-requests',
+    byId: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}`,
+    booking: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/booking`,
+    bookingCancel: (surveyRequestId: string) =>
+      `/customers/me/survey-requests/${encode(surveyRequestId)}/booking/cancel`,
+  },
+
+  // Kinh doanh
+  surveyRequests: {
+    pending: '/survey-requests/pending',
+    my: '/survey-requests/my',
+    escalated: '/survey-requests/escalated',
+    byId: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}`,
+    claim: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/claim`,
+    assignTechnician: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/assign-technician`,
+    reassignTechnician: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/reassign-technician`,
+    reschedule: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/reschedule`,
+  },
+  technicianAvailability: {
+    base: '/technicians/availability',
+  },
+
+  // Kỹ thuật viên
+  technicianAppointments: {
+    base: '/technicians/me/appointments',
+    byId: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}`,
+    open: '/technicians/me/open-appointments',
+    accept: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/accept`,
+    release: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/release`,
+    schedule: '/technicians/me/schedule',
+  },
+  technicianSchedule: {
+    schedule: (technicianUserId: string) => `/technicians/${encode(technicianUserId)}/schedule`,
+  },
+
+  // Quản trị
+  adminUsers: {
+    base: '/admin/users',
+    byId: (userId: string) => `/admin/users/${encode(userId)}`,
+    status: (userId: string) => `/admin/users/${encode(userId)}/status`,
+    roles: (userId: string) => `/admin/users/${encode(userId)}/roles`,
+    sendPasswordReset: (userId: string) => `/admin/users/${encode(userId)}/send-password-reset`,
+  },
+  adminTechnicians: {
+    base: '/admin/technicians',
+    profile: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/profile`,
+    zones: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/zones`,
+    workingSchedule: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/working-schedule`,
+    unavailablePeriods: (technicianUserId: string) =>
+      `/admin/technicians/${encode(technicianUserId)}/unavailable-periods`,
+    unavailablePeriod: (technicianUserId: string, periodId: string) =>
+      `/admin/technicians/${encode(technicianUserId)}/unavailable-periods/${encode(periodId)}`,
+  },
+  operationalZones: {
+    base: '/admin/operational-zones',
+  },
+} as const

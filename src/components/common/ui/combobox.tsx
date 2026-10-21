@@ -4,14 +4,8 @@ import { Input } from '@/components/common/ui/field'
 import { cx } from '@/utils/cx'
 import { keepInView } from '@/utils/scroll'
 
-/*
-  Ô nhập kèm danh sách để chọn (mẫu "editable combobox, list autocomplete" của WAI-ARIA APG), cho danh sách dài mà
-  <select> không tìm được (phường, xã: mọi tên đều bắt đầu bằng "Phường"/"Xã" nên gõ chữ đầu không nhảy tới đâu).
-  - Gõ để lọc, không phân biệt hoa thường và dấu: "ben thanh" ra "Phường Bến Thành"; mỗi từ gõ vào phải có trong tên.
-  - Mũi tên lên / xuống đi trong danh sách, Enter điền mục đang trỏ, Esc đóng. Danh sách đóng thì Enter vẫn gửi form.
-  - Giá trị là chữ trong ô (form giữ chuỗi như mọi ô khác). Rời ô mà chữ khớp đúng một mục thì đổi về đúng tên trong
-    danh sách (sửa hoa thường, dấu); có nằm trong danh sách không là việc của trang kiểm tra khi gửi.
-*/
+// Ô nhập kèm danh sách gợi ý (combobox) cho danh sách dài như phường, xã
+// Lọc không phân biệt hoa thường và dấu. Giá trị vẫn là chuỗi trong ô
 
 export function normalizeSearch(text: string) {
   return text
@@ -54,7 +48,7 @@ export function Combobox({
   const indexed = useMemo(() => options.map((label) => ({ label, key: normalizeSearch(label) })), [options])
   const query = normalizeSearch(value)
   const exact = query ? indexed.find((o) => o.key === query) : undefined
-  // Ô đang chứa đúng một mục (vừa chọn) thì mở ra vẫn thấy đủ danh sách để đổi, không chỉ mỗi mục đó.
+  // Đã chọn đúng một mục thì mở ra vẫn hiện đủ danh sách
   const words = exact ? [] : query.split(' ').filter(Boolean)
   const shown = words.length === 0 ? indexed : indexed.filter((o) => words.every((w) => o.key.includes(w)))
   const optionId = (i: number) => `${listId}-${i}`
@@ -128,7 +122,7 @@ export function Combobox({
           if (exact && exact.label !== value) onChange(exact.label)
         }}
       />
-      {/* Nút mở như mũi tên của <select>: chuột bấm được, bàn phím dùng mũi tên xuống nên bỏ khỏi thứ tự Tab. */}
+      {/* Bàn phím dùng mũi tên xuống nên bỏ nút này khỏi thứ tự Tab */}
       <button
         type="button"
         tabIndex={-1}

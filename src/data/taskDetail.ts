@@ -1,16 +1,11 @@
-import type { TimelineEntry } from '@/features/tasks/components/VerticalTimeline'
-import type { WorkOrderFact, WorkOrderMetric } from '@/features/tasks/components/WorkOrderHeaderCard'
+import type { TimelineEntry } from '@/features/tasks/VerticalTimeline'
+import type { WorkOrderFact, WorkOrderMetric } from '@/features/tasks/WorkOrderHeaderCard'
 import type { Crumb } from '@/components/common/stitch-ui/PageHeader'
 import type { StatusVariant } from '@/components/common/stitch-ui/StatusBadge'
 import type { TimelineStepProps } from '@/components/common/stitch-ui/Timeline'
 import { ROUTES } from '@/routes/paths'
 
-/*
- * Dữ liệu giả cho /tech/tasks/:id, nội dung ORD-8821 lấy từ task_detail_timeline/screen.png.
- * id, tên khách và trạng thái khớp data/tasks.ts (bảng work order) và data/techDashboard.ts.
- * Thiết kế ghi chủ nhà là "Marcus Vance" – trùng tên kỹ thuật viên – nên dùng Elena Rostova
- * theo my_tasks_1 để ba màn nhất quán.
- */
+// Dữ liệu giả cho /tech/tasks/:id, id và tên khách khớp với data/tasks.ts và data/techDashboard.ts
 
 export type TaskDetail = {
   id: string
@@ -84,7 +79,7 @@ const actions = {
   dossier: { label: 'Mở hồ sơ khảo sát', icon: 'menu_book' },
 }
 
-/** ORD-8821 – bản đầy đủ dựng đúng theo task_detail_timeline. */
+/** ORD-8821, bản đầy đủ dựng đúng theo task_detail_timeline. */
 const ord8821: TaskDetail = {
   id: 'ORD-8821',
   code: '#ORD-8821',
@@ -234,7 +229,12 @@ const ord8821: TaskDetail = {
       coords: 'Vĩ độ: 37.77, Kinh độ: -122.41',
     },
     checklistTitle: 'Kết quả kiểm tra hiện trường',
-    checklist: ['Xà gồ trên trần: nguyên vẹn', 'Tủ điện chính: 200A, sạch', 'Độ dốc mái: 28°, hướng Nam', 'Bóng cây: ít'],
+    checklist: [
+      'Xà gồ trên trần: nguyên vẹn',
+      'Tủ điện chính: 200A, sạch',
+      'Độ dốc mái: 28°, hướng Nam',
+      'Bóng cây: ít',
+    ],
   },
   signOff: {
     title: 'Khách hàng ký xác nhận',
@@ -249,7 +249,7 @@ const ord8821: TaskDetail = {
   },
 }
 
-/** ORD-8824 – đang trên đường tới hiện trường (khớp trạng thái "En Route" ở bảng work order). */
+/** ORD-8824, đang trên đường tới hiện trường */
 const ord8824: TaskDetail = {
   id: 'ORD-8824',
   code: '#ORD-8824',
@@ -308,7 +308,9 @@ const ord8824: TaskDetail = {
         author: { name: 'Marcus Vance', initials: 'MV' },
         role: { label: 'Trưởng nhóm kỹ thuật', variant: 'ready' },
         timestamp: 'Hôm nay, 09:20',
-        body: { text: 'Inverter thay thế đã chất lên xe và quét đối chiếu với phiếu. Đã kiểm cờ lê lực và bộ cách ly DC.' },
+        body: {
+          text: 'Inverter thay thế đã chất lên xe và quét đối chiếu với phiếu. Đã kiểm cờ lê lực và bộ cách ly DC.',
+        },
         note: { icon: 'verified_user', text: 'Serial SE-7600H-US khớp hồ sơ thiết bị của khách.' },
       },
       {
@@ -318,7 +320,9 @@ const ord8824: TaskDetail = {
         author: { name: 'Sarah Jenkins', initials: 'SJ', tone: 'secondary' },
         role: { label: 'Giám sát điều phối', variant: 'warning' },
         timestamp: '22/10, 13:05',
-        body: { text: 'Khách đã xác nhận khung 11:00 qua điện thoại. Mã cổng chỉ chia sẻ cho kỹ thuật viên được giao.' },
+        body: {
+          text: 'Khách đã xác nhận khung 11:00 qua điện thoại. Mã cổng chỉ chia sẻ cho kỹ thuật viên được giao.',
+        },
       },
     ],
   },
@@ -338,7 +342,7 @@ const ord8824: TaskDetail = {
   signOff: null,
 }
 
-/** ORD-8827 – đã lên lịch, chưa bắt đầu. */
+/** ORD-8827, đã lên lịch, chưa bắt đầu. */
 const ord8827: TaskDetail = {
   id: 'ORD-8827',
   code: '#ORD-8827',
@@ -386,7 +390,9 @@ const ord8827: TaskDetail = {
         author: { name: 'Hệ thống tự ghi', initials: 'SYS', tone: 'neutral' },
         role: { label: 'Tin nhắn', variant: 'neutral' },
         timestamp: 'Hôm nay, 07:05',
-        body: { text: 'Khách đã xác nhận khung 14:30 chiều qua SMS. Lưu ý: đỗ xe ngoài đường, cổng sân thượng không khoá.' },
+        body: {
+          text: 'Khách đã xác nhận khung 14:30 chiều qua SMS. Lưu ý: đỗ xe ngoài đường, cổng sân thượng không khoá.',
+        },
       },
       {
         id: 'log-8827-1640',
@@ -413,12 +419,17 @@ const ord8827: TaskDetail = {
       coords: 'Vĩ độ: 37.90, Kinh độ: -122.54',
     },
     checklistTitle: 'Kiểm tra trước chuyến đi',
-    checklist: ['Bảo hành còn hiệu lực', 'Có BMS dự phòng trên xe', 'Đã ghi lối lên sân thượng', 'Liên lạc được với khách'],
+    checklist: [
+      'Bảo hành còn hiệu lực',
+      'Có BMS dự phòng trên xe',
+      'Đã ghi lối lên sân thượng',
+      'Liên lạc được với khách',
+    ],
   },
   signOff: null,
 }
 
-/** ORD-8819 – đã xong phần việc, chờ khách ký. */
+/** ORD-8819, đã xong phần việc, chờ khách ký. */
 const ord8819: TaskDetail = {
   id: 'ORD-8819',
   code: '#ORD-8819',
@@ -462,7 +473,9 @@ const ord8819: TaskDetail = {
         author: { name: 'Marcus Vance', initials: 'MV' },
         role: { label: 'Trưởng nhóm kỹ thuật', variant: 'ready' },
         timestamp: 'Hôm nay, 16:31',
-        body: { text: 'Đã gửi yêu cầu ký tới máy tính bảng của chủ nhà, kèm biên bản dịch vụ và chứng nhận lực siết để xem lại.' },
+        body: {
+          text: 'Đã gửi yêu cầu ký tới máy tính bảng của chủ nhà, kèm biên bản dịch vụ và chứng nhận lực siết để xem lại.',
+        },
         chips: [
           { icon: 'check_circle', label: 'Optimizer: 24 đang hoạt động' },
           { icon: 'straighten', label: 'Điện áp chuỗi: bình thường' },
@@ -488,7 +501,9 @@ const ord8819: TaskDetail = {
         author: { name: 'Sarah Jenkins', initials: 'SJ', tone: 'secondary' },
         role: { label: 'Giám sát điều phối', variant: 'warning' },
         timestamp: '21/10, 11:20',
-        body: { text: 'Phiếu bảo trì tạo từ cảnh báo giám sát trên chuỗi A+B và chuyển vào hàng chờ khu vực phía Bắc.' },
+        body: {
+          text: 'Phiếu bảo trì tạo từ cảnh báo giám sát trên chuỗi A+B và chuyển vào hàng chờ khu vực phía Bắc.',
+        },
       },
     ],
   },
@@ -503,7 +518,12 @@ const ord8819: TaskDetail = {
       coords: 'Vĩ độ: 37.87, Kinh độ: -122.45',
     },
     checklistTitle: 'Kết quả kiểm tra hiện trường',
-    checklist: ['Chuỗi A+B: đã đi lại dây', 'Optimizer: 24 đang hoạt động', 'Chứng nhận lực siết: đã lưu', 'Chống thấm mái: nguyên vẹn'],
+    checklist: [
+      'Chuỗi A+B: đã đi lại dây',
+      'Optimizer: 24 đang hoạt động',
+      'Chứng nhận lực siết: đã lưu',
+      'Chống thấm mái: nguyên vẹn',
+    ],
   },
   signOff: {
     title: 'Khách hàng ký xác nhận',
@@ -518,7 +538,7 @@ const ord8819: TaskDetail = {
   },
 }
 
-/** ORD-8830 – phiếu bảo hành trên dashboard (Garrett, Highland Plaza). */
+/** ORD-8830, phiếu bảo hành trên dashboard (Garrett, Highland Plaza). */
 const ord8830: TaskDetail = {
   id: 'ORD-8830',
   code: '#ORD-8830',
@@ -544,7 +564,12 @@ const ord8830: TaskDetail = {
     badge: 'Đã xác nhận 2/5 mốc',
     steps: [
       { title: 'Đã giao', description: 'Tự chuyển từ cảnh báo', timestamp: '23/10, 06:40', state: 'done' },
-      { title: 'Đã hẹn & xác nhận', description: 'Đã báo quản lý toà nhà', timestamp: '23/10, 07:15', state: 'current' },
+      {
+        title: 'Đã hẹn & xác nhận',
+        description: 'Đã báo quản lý toà nhà',
+        timestamp: '23/10, 07:15',
+        state: 'current',
+      },
       { title: 'Đang di chuyển', description: 'Đi sau ORD-8827', state: 'upcoming' },
       { title: 'Đang làm tại công trình', description: 'Kiểm tra lỗi hồ quang', state: 'upcoming' },
       { title: 'Hồ sơ & nghiệm thu', description: 'Chờ ký & đồng bộ', state: 'upcoming' },
@@ -593,7 +618,7 @@ const ord8830: TaskDetail = {
   signOff: null,
 }
 
-/** ORD-8833 – khảo sát cuối ngày trên dashboard (Theresa Montgomery). */
+/** ORD-8833, khảo sát cuối ngày trên dashboard (Theresa Montgomery). */
 const ord8833: TaskDetail = {
   id: 'ORD-8833',
   code: '#ORD-8833',
@@ -619,7 +644,12 @@ const ord8833: TaskDetail = {
     badge: 'Đã xác nhận 2/5 mốc',
     steps: [
       { title: 'Đã giao', description: 'Sarah Jenkins (điều phối)', timestamp: '22/10, 17:05', state: 'done' },
-      { title: 'Đã hẹn & xác nhận', description: 'Khách xác nhận qua SMS', timestamp: '23/10, 08:00', state: 'current' },
+      {
+        title: 'Đã hẹn & xác nhận',
+        description: 'Khách xác nhận qua SMS',
+        timestamp: '23/10, 08:00',
+        state: 'current',
+      },
       { title: 'Đang di chuyển', description: 'Điểm cuối trong ngày', state: 'upcoming' },
       { title: 'Đang làm tại công trình', description: 'Kiểm tra trần mái và tủ điện chính', state: 'upcoming' },
       { title: 'Hồ sơ & nghiệm thu', description: 'Chờ ký & đồng bộ', state: 'upcoming' },
@@ -661,7 +691,12 @@ const ord8833: TaskDetail = {
       coords: 'Vĩ độ: 37.32, Kinh độ: -122.05',
     },
     checklistTitle: 'Kiểm tra trước chuyến đi',
-    checklist: ['Đã có phép bay drone', 'Đã xác nhận lối lên trần mái', 'Cần ảnh tủ điện chính', 'Đã ghi phạm vi xà gồ'],
+    checklist: [
+      'Đã có phép bay drone',
+      'Đã xác nhận lối lên trần mái',
+      'Cần ảnh tủ điện chính',
+      'Đã ghi phạm vi xà gồ',
+    ],
   },
   signOff: null,
 }

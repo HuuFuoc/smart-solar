@@ -1,14 +1,10 @@
-/* =====================================================================
-   Trang công khai (PublicLayout: "/", "/coming-soon").
-   Chỉ thêm tên mới (font-vn, max-w-landing, max-w-copy, ease-ld, ld-*); không đổi token của portal.
-   Màu dùng lại token portal (canvas, fg, fg-2, fg-3, line, line-2, accent) nên dark mode tự theo.
-   ===================================================================== */
+/* Trang công khai (PublicLayout). Chỉ thêm token mới (font-vn, max-w-landing, ld-*), màu dùng lại token của portal */
 
 @theme {
-  /* Be Vietnam Pro có subset vietnamese; Schibsted Grotesk của portal thiếu U+1EA0–1EF1. */
+  /* Be Vietnam Pro có subset vietnamese; Schibsted Grotesk của portal thiếu U+1EA0-1EF1. */
   --font-vn: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
 
-  /* 12 cột × 78px + gutter 24px. */
+  /* 12 cột x 78px + gutter 24px. */
   --container-landing: 75rem;
   /* Đoạn văn 17px: khoảng 66 ký tự mỗi dòng. */
   --container-copy: 31rem;
@@ -17,20 +13,16 @@
   --ease-ld: cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* Màn hình thấp (laptop 1366 × 657 sau thanh trình duyệt): màn xác thực thu khoảng đệm để vừa một màn. */
+/* Màn hình thấp: màn xác thực thu khoảng đệm cho vừa một màn */
 @custom-variant short (@media (height < 45rem));
 
-/* Header dính cao 64px: cuộn tới anchor hay focus bằng bàn phím không bị header che (WCAG 2.4.11). */
+/* Chừa chỗ cho header dính 64px */
 :root:has(.public-shell) {
   scroll-padding-top: 80px;
 }
 
-/*
-  Thang chữ landing: mobile trước, desktop từ 64rem (lg của portal).
-  Line-height tiêu đề 1,25–1,38 vì dấu chồng của Be Vietnam Pro (Ỗ, Ễ) cao 1,21em trên
-  baseline; thấp hơn thì dấu chạm chân chữ dòng trên.
-*/
-/* Tiêu đề hero: hai dòng trên màn rộng để vừa vùng trời của ảnh, không che nhà và dãy pin. */
+/* Thang chữ landing. Line-height tiêu đề 1,25-1,38 vì dấu chồng của Be Vietnam Pro cao */
+/* Tiêu đề hero: trang công ty cần một câu định vị đọc được từ xa. */
 @utility ld-display {
   font-size: 32px;
   line-height: 44px;
@@ -45,12 +37,12 @@
     line-height: 72px;
     letter-spacing: -0.025em;
   }
-  /* Màn lớn (từ 1920px, khung ≥ 1000px): ảnh to hơn nên vùng trời đủ chỗ cho tiêu đề lớn hơn một bậc. */
+  /* Màn lớn có vùng trời rộng nên tiêu đề lớn hơn một bậc */
   @media (width >= 120rem) and (height >= 62.5rem) {
     font-size: 64px;
     line-height: 80px;
   }
-  /* Laptop thấp (1366 × 657): vùng trời chỉ còn ~300px, giữ cỡ 44px để cụm nút không chạm ngọn cây, mái nhà. */
+  /* Laptop màn thấp: giữ cỡ 44px để cụm nút không chạm mái nhà */
   @media (width >= 80rem) and (height < 45rem) {
     font-size: 44px;
     line-height: 58px;
@@ -123,13 +115,7 @@
   }
 }
 
-/*
-  Hero ảnh ngày / đêm (hero-section.tsx). Lớp phủ pha từ màu nền trang (--canvas) nên tự theo giao diện: giao diện sáng
-  làm trời sáng nhẹ sau chữ tối, giao diện tối làm trời đêm sẫm thêm sau chữ sáng.
-    dưới lg  ảnh nằm dưới khối chữ: 64px đầu (phần lấn lên sau cụm nút) đặc màu nền, rồi tan dần vào trời
-    từ lg    chữ nằm trên vùng trời: một vầng elip quanh khối chữ + dải mờ ở mép trên nối với header; nhà hai bên và dãy
-             pin nửa dưới không bị phủ
-*/
+/* Hero: lớp phủ pha từ --canvas nên tự theo giao diện. Dưới lg ảnh nằm dưới chữ, từ lg chữ nằm trên vùng trời */
 @utility ld-hero-veil {
   background: linear-gradient(
     to bottom,
@@ -151,11 +137,7 @@
 }
 
 @layer components {
-  /*
-    Hai ảnh chồng nhau. Ảnh đang hiện (data-shown) nằm trên và hiện dần 600ms; ảnh vừa thôi hiện xuống dưới nhưng giữ
-    nguyên tới khi ảnh mới hiện hẳn rồi mới ẩn (trễ 650ms), nên giữa chừng không lộ nền. Chỉ đổi opacity: không xê dịch
-    bố cục. Giảm chuyển động: rule chung ở globals.css tắt transition, ảnh đổi ngay.
-  */
+  /* Ảnh mới hiện dần đè lên, ảnh cũ chỉ ẩn sau khi ảnh mới hiện hẳn để không lộ nền */
   .ld-hero-img {
     position: absolute;
     inset: 0;
@@ -173,12 +155,8 @@
 }
 
 /*
-  Chuyển động – nhẹ, chỉ transform và opacity (không đẩy layout), không thư viện.
-    ld-settle  ảnh của màn xác thực (AuthLayout) thu từ 108% về 100% khi tải trang
-    ld-rise    chữ và nút hero trượt lên 16px và hiện dần, lệch nhau bằng ld-delay-*
-    ld-reveal  khối nội dung trượt lên khi cuộn tới (component Reveal gắn data-shown)
-  prefers-reduced-motion: rule chung trong globals.css đưa animation về 0,01ms và tắt transition,
-  còn ld-reveal được hiện ngay (xem @media cuối file).
+  Chuyển động chỉ dùng transform và opacity
+  ld-settle: ảnh hero thu về 100%, ld-rise: chữ trượt lên, ld-reveal: khối hiện khi cuộn tới
 */
 @keyframes ld-settle {
   from {

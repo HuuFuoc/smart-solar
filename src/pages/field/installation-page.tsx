@@ -64,7 +64,11 @@ export function FieldInstallationPage() {
               <Panel>
                 <PanelHeader
                   title="Danh sách kiểm tra hiện trường"
-                  action={<Badge>Xong {completed}/{data.steps.length}</Badge>}
+                  action={
+                    <Badge>
+                      Xong {completed}/{data.steps.length}
+                    </Badge>
+                  }
                 />
                 <PanelBody>
                   <ol className="divide-y divide-line">
@@ -72,7 +76,10 @@ export function FieldInstallationPage() {
                       const isDone = doneSteps[i]
                       const isActive = i === activeIndex
                       return (
-                        <li key={step.title} className={cx('flex gap-3 py-4 first:pt-0 last:pb-0', !isDone && !isActive && 'opacity-70')}>
+                        <li
+                          key={step.title}
+                          className={cx('flex gap-3 py-4 first:pt-0 last:pb-0', !isDone && !isActive && 'opacity-70')}
+                        >
                           <input
                             type="checkbox"
                             aria-label={`Đã xong bước ${i + 1}`}
@@ -86,7 +93,13 @@ export function FieldInstallationPage() {
                               <p className="font-medium">
                                 Bước {i + 1}: {step.title}
                               </p>
-                              {isDone ? <Badge tone="ok">Đã xong</Badge> : isActive ? <Badge tone="accent">Đang làm</Badge> : <Badge>Chờ làm</Badge>}
+                              {isDone ? (
+                                <Badge tone="ok">Đã xong</Badge>
+                              ) : isActive ? (
+                                <Badge tone="accent">Đang làm</Badge>
+                              ) : (
+                                <Badge>Chờ làm</Badge>
+                              )}
                             </div>
                             <p className="mt-1 text-body text-fg-2">{step.body}</p>
                             {'signed' in step && isDone && (
@@ -99,13 +112,23 @@ export function FieldInstallationPage() {
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <p className="text-body font-medium">Tấm pin đã kẹp và đấu dây</p>
                                   <div className="flex flex-wrap items-center gap-2">
-                                    <Button size="sm" aria-label="Bớt một tấm" onClick={() => setPanels((p) => Math.max(0, p - 1))} disabled={isDone}>
+                                    <Button
+                                      size="sm"
+                                      aria-label="Bớt một tấm"
+                                      onClick={() => setPanels((p) => Math.max(0, p - 1))}
+                                      disabled={isDone}
+                                    >
                                       Bớt một
                                     </Button>
                                     <span className="tnum min-w-20 text-center text-body font-semibold">
                                       {panels}/{total}
                                     </span>
-                                    <Button size="sm" aria-label="Thêm một tấm" onClick={() => setPanels((p) => Math.min(total, p + 1))} disabled={isDone}>
+                                    <Button
+                                      size="sm"
+                                      aria-label="Thêm một tấm"
+                                      onClick={() => setPanels((p) => Math.min(total, p + 1))}
+                                      disabled={isDone}
+                                    >
                                       Thêm một
                                     </Button>
                                   </div>
@@ -150,7 +173,11 @@ export function FieldInstallationPage() {
 
               <Panel>
                 <PanelBody>
-                  <Field label="Ghi chú hiện trường cho cán bộ nghiệm thu và điện lực" htmlFor="notes" hint={`Tự lưu trên máy. ${notes.length} ký tự.`}>
+                  <Field
+                    label="Ghi chú hiện trường cho cán bộ nghiệm thu và điện lực"
+                    htmlFor="notes"
+                    hint={`Tự lưu trên máy. ${notes.length} ký tự.`}
+                  >
                     <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
                   </Field>
                 </PanelBody>
@@ -159,14 +186,7 @@ export function FieldInstallationPage() {
 
             <div className="space-y-8 lg:col-span-2">
               <Panel>
-                <PanelHeader
-                  title="Ảnh hiện trường"
-                  action={
-                    <Button size="sm">
-                      Chụp ảnh
-                    </Button>
-                  }
-                />
+                <PanelHeader title="Ảnh hiện trường" action={<Button size="sm">Chụp ảnh</Button>} />
                 <PanelBody className="space-y-6">
                   <div>
                     <div className="mb-2 flex items-center justify-between">
@@ -187,14 +207,23 @@ export function FieldInstallationPage() {
                       <Badge tone="warn">Còn thiếu 1 ảnh sau thi công</Badge>
                     </div>
                     {data.during.map((p) => (
-                      <Photo key={p.caption} src={p.src} alt={p.caption} ratio="aspect-[16/9]" caption={p.caption} meta={p.meta} />
+                      <Photo
+                        key={p.caption}
+                        src={p.src}
+                        alt={p.caption}
+                        ratio="aspect-[16/9]"
+                        caption={p.caption}
+                        meta={p.meta}
+                      />
                     ))}
                     <button
                       type="button"
                       className="press mt-3 flex w-full flex-col items-center gap-1 rounded-container border border-dashed border-line-2 px-4 py-6 text-body text-fg-2 hover:bg-surface-2"
                     >
                       <span className="font-medium text-fg">Tải ảnh inverter và pin lưu trữ sau lắp đặt</span>
-                      <span className="text-center text-meta text-fg-3">Cầu dao cách ly AC, nhãn định mức inverter và dàn pin hoàn thiện để bàn giao nghiệm thu.</span>
+                      <span className="text-center text-meta text-fg-3">
+                        Cầu dao cách ly AC, nhãn định mức inverter và dàn pin hoàn thiện để bàn giao nghiệm thu.
+                      </span>
                     </button>
                   </div>
                 </PanelBody>
@@ -207,20 +236,25 @@ export function FieldInstallationPage() {
           </div>
 
           <ActionBar>
-              <div className="text-body">
-                <p className="font-medium">Đang làm: {data.session.tech}</p>
-                <p className="tnum text-meta text-fg-3">
-                  {data.session.timer}. {data.session.wrap}.
-                </p>
-              </div>
-              <div className="flex w-full flex-wrap items-center gap-3 sm:ml-auto sm:w-auto">
-                <Button>Ghi tạm dừng</Button>
-                <Button>Yêu cầu hỗ trợ</Button>
-                <Button variant="ghost">Đồng bộ nhật ký</Button>
-                <Button variant="primary" className="w-full sm:w-auto" disabled={activeIndex === -1} onClick={completeActive}>
-                  {activeIndex === -1 ? 'Đã xong tất cả các bước' : `Hoàn thành bước ${activeIndex + 1}`}
-                </Button>
-              </div>
+            <div className="text-body">
+              <p className="font-medium">Đang làm: {data.session.tech}</p>
+              <p className="tnum text-meta text-fg-3">
+                {data.session.timer}. {data.session.wrap}.
+              </p>
+            </div>
+            <div className="flex w-full flex-wrap items-center gap-3 sm:ml-auto sm:w-auto">
+              <Button>Ghi tạm dừng</Button>
+              <Button>Yêu cầu hỗ trợ</Button>
+              <Button variant="ghost">Đồng bộ nhật ký</Button>
+              <Button
+                variant="primary"
+                className="w-full sm:w-auto"
+                disabled={activeIndex === -1}
+                onClick={completeActive}
+              >
+                {activeIndex === -1 ? 'Đã xong tất cả các bước' : `Hoàn thành bước ${activeIndex + 1}`}
+              </Button>
+            </div>
           </ActionBar>
         </>
       )}

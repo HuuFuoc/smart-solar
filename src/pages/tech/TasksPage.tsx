@@ -1,10 +1,19 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { NoticeBar } from '@/features/tasks/components/NoticeBar'
-import { QuickStatusDrawer } from '@/features/tasks/components/QuickStatusDrawer'
-import { TaskFilterBar, type TaskFilterValue } from '@/features/tasks/components/TaskFilterBar'
-import { ViewToggle } from '@/features/tasks/components/ViewToggle'
-import { Button, DataTable, Icon, IconButton, PageHeader, StatusBadge, TaskCard, Toast } from '@/components/common/stitch-ui'
+import { NoticeBar } from '@/features/tasks/NoticeBar'
+import { QuickStatusDrawer } from '@/features/tasks/QuickStatusDrawer'
+import { TaskFilterBar, type TaskFilterValue } from '@/features/tasks/TaskFilterBar'
+import { ViewToggle } from '@/features/tasks/ViewToggle'
+import {
+  Button,
+  DataTable,
+  Icon,
+  IconButton,
+  PageHeader,
+  StatusBadge,
+  TaskCard,
+  Toast,
+} from '@/components/common/stitch-ui'
 import type { DataTableColumn } from '@/components/common/stitch-ui/DataTable'
 import { techTaskPath } from '@/routes/paths'
 import { cn } from '@/utils/cn'
@@ -115,7 +124,6 @@ export function TasksPage() {
   const navigate = useNavigate()
   const [view, setView] = useState<TaskView>('list')
   const [filter, setFilter] = useState<TaskFilterValue>(initialFilter)
-  /* openDrawer(...) trong code.html: nút Rapid Action của dòng, nút thẻ Bento và "Quick Dispatch Action". */
   const [drawerOrder, setDrawerOrder] = useState<WorkOrder | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [toast, setToast] = useState(false)
@@ -204,12 +212,7 @@ export function TasksPage() {
                 >
                   {row.action.label}
                 </Button>
-                <IconButton
-                  size="md"
-                  icon="add_a_photo"
-                  label="Tải nhanh ảnh"
-                  className="bg-surface-container"
-                />
+                <IconButton size="md" icon="add_a_photo" label="Tải nhanh ảnh" className="bg-surface-container" />
                 <IconButton size="md" icon="directions" label="Chỉ đường" className="bg-surface-container" />
               </>
             )}

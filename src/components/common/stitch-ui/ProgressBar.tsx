@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn'
 
 export type ProgressBarProps = {
-  /** 0–100 */
+  /** 0-100 */
   value: number
   tone?: 'primary' | 'secondary' | 'error'
   size?: 'sm' | 'md'

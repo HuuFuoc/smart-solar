@@ -1,19 +1,16 @@
 import { useState } from 'react'
 import { Pagination } from '@/components/common/ui/pagination'
 import { SearchInput, Select } from '@/components/common/ui/field'
-import { LANDING_CONTAINER } from '@/features/landing/components/classes'
-import { CatalogError } from '@/features/products/components/CatalogError'
-import { ProductCard } from '@/features/products/components/ProductCard'
+import { LANDING_CONTAINER } from '@/features/landing/classes'
+import { CatalogError } from '@/features/products/CatalogError'
+import { ProductCard } from '@/features/products/ProductCard'
 import { PRODUCT_SORT_OPTIONS } from '@/common/product'
-import { isProductActive, parseSort } from '@/features/products/components/productDisplay'
+import { isProductActive, parseSort } from '@/features/products/productDisplay'
 import { useProductsQuery } from '@/hooks/useProducts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { cx } from '@/utils/cx'
 
-/*
- * /products – danh mục sản phẩm công khai, đọc GET /api/products.
- * Chỉ hiện sản phẩm ACTIVE: swagger không có tham số lọc theo trạng thái nên lọc ở client.
- */
+// /products, danh mục công khai. Chỉ hiện sản phẩm ACTIVE (lọc ở client)
 
 const PAGE_SIZE = 12
 

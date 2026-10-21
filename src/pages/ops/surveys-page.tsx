@@ -6,10 +6,11 @@ import { FilterChips } from '@/components/common/ui/chips'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
-import { isOverdue, needsScheduling } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { MyRequestList, PendingRequestList } from '@/features/pre-surveys/components/SurveyRequestLists'
+import { isOverdue } from '@/features/pre-surveys/preSurveyDisplay'
+import { MyRequestList, PendingRequestList } from '@/features/pre-surveys/SurveyRequestLists'
 import {
   useClaimSurveyRequestMutation,
+  useEscalatedAppointmentsQuery,
   useMySurveyRequestsQuery,
   usePendingSurveyRequestsQuery,
 } from '@/hooks/useSurveyRequests'
@@ -19,20 +20,22 @@ import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
 
 type Tab = 'pending' | 'my'
 
-/* Yêu cầu khảo sát sinh ra khi khách hàng gửi bản đánh giá sơ bộ. Sales nhận yêu cầu rồi xem chi tiết để liên hệ. */
 export function OpsSurveysPage() {
   const navigate = useNavigate()
   // Tab theo đường dẫn (/ops/surveys và /ops/surveys/mine) để menu bên trái đánh dấu đúng mục.
   const { pathname } = useLocation()
-  // matchPath (không so chuỗi): "/ops/surveys/mine/" có dấu "/" cuối vẫn là tab "Của tôi", khớp với menu.
+  // Dùng matchPath để "/ops/surveys/mine/" vẫn khớp tab "Của tôi"
   const tab: Tab = matchPath(ROUTES.ops.surveysMine, pathname) ? 'my' : 'pending'
   const setTab = (next: Tab) => navigate(next === 'my' ? ROUTES.ops.surveysMine : ROUTES.ops.surveys)
   const pending = usePendingSurveyRequestsQuery()
   const my = useMySurveyRequestsQuery()
+  const escalated = useEscalatedAppointmentsQuery()
   const claim = useClaimSurveyRequestMutation()
   // Việc đang chờ, hiện ngay dưới tiêu đề để không phải mở từng tab mới biết.
   const overdue = pending.data?.filter((r) => isOverdue(r.submittedAt)).length ?? 0
-  const unscheduled = my.data?.filter((r) => needsScheduling(r.status)).length ?? 0
+  // Lịch quá hạn không kỹ thuật viên nào nhận, thuộc yêu cầu của bạn
+  const needAssign = new Set(escalated.data?.filter((item) => item.ownedByMe).map((item) => item.surveyRequestId) ?? [])
+  const unscheduled = needAssign.size
 
   async function onClaim(row: PendingSurveyRequestItem) {
     try {
@@ -59,7 +62,7 @@ export function OpsSurveysPage() {
               )}
               {unscheduled > 0 && (
                 <Badge tone="danger" icon="event_busy">
-                  {unscheduled} yêu cầu của bạn chưa phân công kỹ thuật viên
+                  {unscheduled} yêu cầu của bạn cần phân công kỹ thuật viên
                 </Badge>
               )}
             </span>
@@ -72,7 +75,7 @@ export function OpsSurveysPage() {
         className="mb-4"
         value={tab}
         onChange={setTab}
-        // Số trên tab chỉ để tham khảo (xám): số đỏ báo việc chờ đã nằm ở menu bên trái, cùng màn hình, không nói hai lần.
+        // Số trên tab để xám vì số đỏ đã có ở menu
         chips={[
           { value: 'pending', label: 'Chờ nhận', count: pending.data?.length },
           { value: 'my', label: 'Của tôi', count: my.data?.length },
@@ -83,9 +86,16 @@ export function OpsSurveysPage() {
         <QueryBoundary query={pending}>
           {(rows) =>
             rows.length === 0 ? (
-              <EmptyState title="Chưa có yêu cầu nào chờ nhận" description="Yêu cầu mới xuất hiện ở đây khi khách hàng gửi bản đánh giá sơ bộ." />
+              <EmptyState
+                title="Chưa có yêu cầu nào chờ nhận"
+                description="Yêu cầu mới xuất hiện ở đây khi khách hàng gửi bản đánh giá sơ bộ."
+              />
             ) : (
-              <PendingRequestList rows={rows} claimingId={claim.isPending ? (claim.variables ?? null) : null} onClaim={onClaim} />
+              <PendingRequestList
+                rows={rows}
+                claimingId={claim.isPending ? (claim.variables ?? null) : null}
+                onClaim={onClaim}
+              />
             )
           }
         </QueryBoundary>
@@ -102,7 +112,7 @@ export function OpsSurveysPage() {
                 }
               />
             ) : (
-              <MyRequestList rows={rows} />
+              <MyRequestList rows={rows} needAssign={needAssign} />
             )
           }
         </QueryBoundary>

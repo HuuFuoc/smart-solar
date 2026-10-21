@@ -3,62 +3,59 @@ import type { TechnicianAvailabilityView } from '@/types/res/technicianAvailabil
 import type {
   AssignmentView,
   ClaimSurveyRequestResponse,
+  EscalatedAppointmentView,
   MySurveyRequestItem,
   PendingSurveyRequestItem,
   SalesRescheduleView,
   SurveyRequestDetail,
 } from '@/types/res/surveyRequestsRes'
 import { get, post, put } from '@/services/api/client'
+import { ENDPOINTS } from '@/services/api/endpoints'
 
-/*
- * Endpoint phía kinh doanh (role SALES). Khách gửi bản đánh giá thì sinh một yêu cầu
- * trạng thái Pending; sales nhận (claim) thì yêu cầu chuyển sang Assigned và thuộc về người đó.
- * Chỉ sales đã nhận mới xem được chi tiết (SURVEY_REQUEST_NOT_ASSIGNED).
- * Từ 12/10/2026: khách tự đặt giờ (hệ thống giữ chỗ một kỹ thuật viên); sales xem kỹ thuật viên rảnh, phân công chính
- * thức (yêu cầu thành Scheduled), đổi người hoặc đổi giờ. Kỹ thuật viên mới / giờ mới thì phải xác nhận nhận việc lại.
- */
+// API phía sales. Nhận yêu cầu chỉ là nhận chăm sóc khách (không đổi trạng thái lịch)
+// Kỹ thuật viên trong khu vực tự nhận lịch; sales chỉ phân công khi quá hạn không ai nhận (lý do bắt buộc)
 
-/** GET /api/survey-requests/pending – yêu cầu chưa ai nhận */
+/** Yêu cầu chưa ai nhận */
 export function listPendingSurveyRequests() {
-  return get<PendingSurveyRequestItem[]>('/survey-requests/pending')
+  return get<PendingSurveyRequestItem[]>(ENDPOINTS.surveyRequests.pending)
 }
 
-/** GET /api/survey-requests/my – yêu cầu sales đang đăng nhập đã nhận */
+/** Yêu cầu sales đang đăng nhập đã nhận */
 export function listMySurveyRequests() {
-  return get<MySurveyRequestItem[]>('/survey-requests/my')
+  return get<MySurveyRequestItem[]>(ENDPOINTS.surveyRequests.my)
 }
 
 /** GET /api/survey-requests/{id} */
 export function getSurveyRequest(id: string) {
-  return get<SurveyRequestDetail>(`/survey-requests/${encodeURIComponent(id)}`)
+  return get<SurveyRequestDetail>(ENDPOINTS.surveyRequests.byId(id))
 }
 
-/** POST /api/survey-requests/{id}/claim – người khác nhận trước thì trả SURVEY_REQUEST_UNAVAILABLE */
+/** Người khác nhận trước thì trả SURVEY_REQUEST_UNAVAILABLE */
 export function claimSurveyRequest(id: string) {
-  return post<ClaimSurveyRequestResponse>(`/survey-requests/${encodeURIComponent(id)}/claim`)
+  return post<ClaimSurveyRequestResponse>(ENDPOINTS.surveyRequests.claim(id))
 }
 
-/**
- * GET /api/technicians/availability?surveyRequestId=…[&startsAt=…&endsAt=…] – kỹ thuật viên nhận được lịch, đã kiểm tra
- * đường đi. Không truyền giờ thì dùng giờ khách đã đặt; truyền `startsAt` (có offset) để thử một giờ khác trước khi đổi giờ.
- */
-export function getTechnicianAvailability(surveyRequestId: string, startsAt?: string) {
-  return get<TechnicianAvailabilityView>('/technicians/availability', {
-    params: startsAt ? { surveyRequestId, startsAt } : { surveyRequestId },
-  })
+/** Kỹ thuật viên nhận được giờ khách đã đặt, kèm người không nhận được và lý do */
+export function getTechnicianAvailability(surveyRequestId: string) {
+  return get<TechnicianAvailabilityView>(ENDPOINTS.technicianAvailability.base, { params: { surveyRequestId } })
 }
 
-/** POST /api/survey-requests/{id}/assign-technician – phân công chính thức; yêu cầu thành Scheduled. */
+/** Lịch quá hạn không ai nhận, cần nhân viên phân công */
+export function listEscalatedAppointments() {
+  return get<EscalatedAppointmentView[]>(ENDPOINTS.surveyRequests.escalated)
+}
+
+/** Phân công khi lịch quá hạn không ai nhận (lý do bắt buộc) */
 export function assignTechnician(id: string, body: AssignTechnicianRequest) {
-  return post<AssignmentView>(`/survey-requests/${encodeURIComponent(id)}/assign-technician`, body)
+  return post<AssignmentView>(ENDPOINTS.surveyRequests.assignTechnician(id), body)
 }
 
-/** PUT /api/survey-requests/{id}/reassign-technician – đổi người; người cũ đã xác nhận thì xác nhận đó mất hiệu lực. */
+/** Đổi người phụ trách lịch đã xác nhận (lý do bắt buộc) */
 export function reassignTechnician(id: string, body: AssignTechnicianRequest) {
-  return put<AssignmentView>(`/survey-requests/${encodeURIComponent(id)}/reassign-technician`, body)
+  return put<AssignmentView>(ENDPOINTS.surveyRequests.reassignTechnician(id), body)
 }
 
-/** PUT /api/survey-requests/{id}/reschedule – đổi giờ (kèm `technicianUserId` để đổi cả người); lỗi thì lịch cũ giữ nguyên. */
+/** Không truyền technicianUserId thì giữ người cũ nếu vẫn rảnh, không thì lịch quay về chờ nhận */
 export function rescheduleSurveyRequest(id: string, body: SalesRescheduleRequest) {
-  return put<SalesRescheduleView>(`/survey-requests/${encodeURIComponent(id)}/reschedule`, body)
+  return put<SalesRescheduleView>(ENDPOINTS.surveyRequests.reschedule(id), body)
 }

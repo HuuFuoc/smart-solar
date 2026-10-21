@@ -1,8 +1,8 @@
 import { Link, useParams } from 'react-router'
-import { FieldNoteComposer } from '@/features/tasks/components/FieldNoteComposer'
+import { FieldNoteComposer } from '@/features/tasks/FieldNoteComposer'
 import { SectionCard } from '@/components/common/tech/SectionCard'
-import { VerticalTimeline } from '@/features/tasks/components/VerticalTimeline'
-import { WorkOrderHeaderCard } from '@/features/tasks/components/WorkOrderHeaderCard'
+import { VerticalTimeline } from '@/features/tasks/VerticalTimeline'
+import { WorkOrderHeaderCard } from '@/features/tasks/WorkOrderHeaderCard'
 import { Avatar, Breadcrumb, Button, Card, Icon, StatusBadge, Timeline } from '@/components/common/stitch-ui'
 import { ROUTES } from '@/routes/paths'
 import { getTaskDetail, type TaskDetail } from '@/data/taskDetail'
@@ -58,7 +58,7 @@ function TaskDetailView({ detail }: { detail: TaskDetail }) {
         metrics={summary.metrics}
       />
 
-      {/* Lifecycle Progression – stepper ngang dùng Timeline của components/common/stitch-ui */}
+      {/* Lifecycle Progression, stepper ngang dùng Timeline của components/common/stitch-ui */}
       <Card padding="lg">
         <div className="flex items-center justify-between gap-space-sm pb-space-md">
           <div>

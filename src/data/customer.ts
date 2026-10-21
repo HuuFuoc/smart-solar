@@ -170,10 +170,26 @@ export const consultation = {
     { src: img('cr-obstruction', 640, 480), name: 'Obstruction View.jpg', meta: '5.1 MB, hàng cây chắn' },
   ],
   activity: [
-    { time: 'Hôm nay 09:40', title: 'Đã xác nhận lịch khảo sát', body: 'Marcus Chen đã xác nhận khung 24/10, 10:00. Lời mời lịch đã gửi tới eleanor.vance@example.com.' },
-    { time: '19/10 15:12', title: 'Đã giao tư vấn viên cấp cao', body: 'Chọn Marcus Chen vì có kinh nghiệm với mái ngói bitum nhà ở tại Springfield.' },
-    { time: '19/10 11:04', title: 'Đã phân tích LiDAR từ vệ tinh', body: 'Mô hình bức xạ mái cho 1,480 giờ nắng đỉnh mỗi năm với hướng Nam. Mức phù hợp ước tính: 98%.' },
-    { time: '18/10 14:15', title: 'Đã tạo yêu cầu tư vấn', body: 'Eleanor Vance đã gửi thông tin nhà và 3 ảnh tham khảo.' },
+    {
+      time: 'Hôm nay 09:40',
+      title: 'Đã xác nhận lịch khảo sát',
+      body: 'Marcus Chen đã xác nhận khung 24/10, 10:00. Lời mời lịch đã gửi tới eleanor.vance@example.com.',
+    },
+    {
+      time: '19/10 15:12',
+      title: 'Đã giao tư vấn viên cấp cao',
+      body: 'Chọn Marcus Chen vì có kinh nghiệm với mái ngói bitum nhà ở tại Springfield.',
+    },
+    {
+      time: '19/10 11:04',
+      title: 'Đã phân tích LiDAR từ vệ tinh',
+      body: 'Mô hình bức xạ mái cho 1,480 giờ nắng đỉnh mỗi năm với hướng Nam. Mức phù hợp ước tính: 98%.',
+    },
+    {
+      time: '18/10 14:15',
+      title: 'Đã tạo yêu cầu tư vấn',
+      body: 'Eleanor Vance đã gửi thông tin nhà và 3 ảnh tham khảo.',
+    },
   ],
   homeownerNote:
     'Cổng sân bên có khoá số cơ: 4182. Nếu lúc anh tới tôi đang bận họp, cứ vào thẳng sân sau. Nhờ anh kiểm tra giúp ống khói có che bóng một phần mái phía Đông sau 3 giờ chiều không.',
@@ -199,26 +215,67 @@ export const quotation = {
   year1Kwh: 11400,
   offsetPct: 102,
   lines: [
-    { name: 'Tấm pin điện mặt trời', qty: '21 tấm', detail: 'Tấm đơn tinh thể Smart Solar Black 400W, $380 mỗi tấm', amount: 7980 },
-    { name: 'Micro-inverter', qty: '21 bộ', detail: 'Enphase IQ8+ có ngắt nhanh cấp tấm pin, $185 mỗi bộ', amount: 3885 },
-    { name: 'Khung giá đỡ và lắp đặt trên mái', qty: 'Trọn gói', detail: 'Bát QuickMount PV có tấm chống thấm, thanh ray nhôm anod hoá và kẹp tiếp địa', amount: 1250 },
-    { name: 'Gateway giám sát thông minh', qty: '4G + WiFi', detail: 'Công tơ sản lượng Envoy kèm kẹp dòng CT đo tiêu thụ', amount: 650 },
-    { name: 'Thiết kế, xin phép và đấu nối lưới', qty: '', detail: 'Bản vẽ điện CAD có dấu kỹ sư PE, thẩm định kết cấu của thành phố Springfield, hồ sơ đấu nối với điện lực', amount: 1150 },
-    { name: 'Lắp đặt bởi thợ có chứng chỉ', qty: 'NABCEP', detail: 'Toàn bộ nhân công, cầu dao cách ly AC, ống luồn dây và nghiệm thu an toàn của thành phố', amount: 2850 },
+    {
+      name: 'Tấm pin điện mặt trời',
+      qty: '21 tấm',
+      detail: 'Tấm đơn tinh thể Smart Solar Black 400W, $380 mỗi tấm',
+      amount: 7980,
+    },
+    {
+      name: 'Micro-inverter',
+      qty: '21 bộ',
+      detail: 'Enphase IQ8+ có ngắt nhanh cấp tấm pin, $185 mỗi bộ',
+      amount: 3885,
+    },
+    {
+      name: 'Khung giá đỡ và lắp đặt trên mái',
+      qty: 'Trọn gói',
+      detail: 'Bát QuickMount PV có tấm chống thấm, thanh ray nhôm anod hoá và kẹp tiếp địa',
+      amount: 1250,
+    },
+    {
+      name: 'Gateway giám sát thông minh',
+      qty: '4G + WiFi',
+      detail: 'Công tơ sản lượng Envoy kèm kẹp dòng CT đo tiêu thụ',
+      amount: 650,
+    },
+    {
+      name: 'Thiết kế, xin phép và đấu nối lưới',
+      qty: '',
+      detail:
+        'Bản vẽ điện CAD có dấu kỹ sư PE, thẩm định kết cấu của thành phố Springfield, hồ sơ đấu nối với điện lực',
+      amount: 1150,
+    },
+    {
+      name: 'Lắp đặt bởi thợ có chứng chỉ',
+      qty: 'NABCEP',
+      detail: 'Toàn bộ nhân công, cầu dao cách ly AC, ống luồn dây và nghiệm thu an toàn của thành phố',
+      amount: 2850,
+    },
   ],
   gross: 17765,
   incentives: [
-    { name: 'Tín dụng thuế điện mặt trời liên bang (ITC)', detail: 'Giảm 30% thuế, không hoàn tiền mặt', amount: -5329.5 },
+    {
+      name: 'Tín dụng thuế điện mặt trời liên bang (ITC)',
+      detail: 'Giảm 30% thuế, không hoàn tiền mặt',
+      amount: -5329.5,
+    },
     { name: 'Hỗ trợ năng lượng sạch của bang', detail: 'Ưu đãi trả trước tự động qua điện lực', amount: -750 },
   ],
   net: 11685.5,
-  cashflow: { currentBill: 195, loanPayment: 89, savings: 106, terms: 'Khoản vay năng lượng sạch 15 năm, lãi suất 5.49%/năm, không cần trả trước.' },
+  cashflow: {
+    currentBill: 195,
+    loanPayment: 89,
+    savings: 106,
+    terms: 'Khoản vay năng lượng sạch 15 năm, lãi suất 5.49%/năm, không cần trả trước.',
+  },
   warranties: [
     { name: 'Sản lượng 25 năm', detail: 'Tối thiểu 85% sản lượng ở năm thứ 25' },
     { name: 'Chống thấm 10 năm', detail: 'Bảo hành không rò rỉ tại các điểm khoan mái' },
     { name: 'Tay nghề thi công', detail: 'Bảo hành toàn bộ nhân công và dịch vụ' },
   ],
-  license: 'Thợ lắp đặt bậc thầy có chứng chỉ NABCEP và thợ điện bậc thầy có giấy phép. Giấy phép nhà thầu SOL-98442-SP, có bảo hiểm và bảo lãnh (trách nhiệm chung $2,000,000).',
+  license:
+    'Thợ lắp đặt bậc thầy có chứng chỉ NABCEP và thợ điện bậc thầy có giấy phép. Giấy phép nhà thầu SOL-98442-SP, có bảo hiểm và bảo lãnh (trách nhiệm chung $2,000,000).',
 }
 
 /* Project lifecycle */
@@ -240,29 +297,81 @@ export const project = {
   ] satisfies Step[],
   current: {
     title: 'Đang lắp đặt trên mái',
-    summary: 'Đội lắp đặt đang ở công trình: gắn tấm pin hai mặt, chống thấm các điểm khoan và đi dây micro-inverter Enphase.',
+    summary:
+      'Đội lắp đặt đang ở công trình: gắn tấm pin hai mặt, chống thấm các điểm khoan và đi dây micro-inverter Enphase.',
     window: '28/10 đến 30/10/2024',
     health: 'Đúng tiến độ',
     pct: 68,
   },
   crew: {
     squad: 'Đội 3 khu vực Bay Area',
-    lead: { name: 'David Miller', role: 'Thợ điện bậc thầy, trưởng nhóm lắp đặt kiêm phụ trách an toàn', exp: '12 năm', phone: '+1 (555) 714-2209' },
+    lead: {
+      name: 'David Miller',
+      role: 'Thợ điện bậc thầy, trưởng nhóm lắp đặt kiêm phụ trách an toàn',
+      exp: '12 năm',
+      phone: '+1 (555) 714-2209',
+    },
     size: '4 kỹ thuật viên',
     vehicle: 'Xe 14 (Ford điện)',
     license: 'C-10 104829',
   },
   schedule: [
-    { day: 'Ngày 1', title: 'Lắp khung và neo an toàn trên mái', when: '28/10', status: 'Hoàn thành', tone: 'ok', body: 'Thanh ray IronRidge XR100 đã bắt vào xà gồ kèm tấm chống thấm. Keo cách nhiệt đã khô.', notes: ['Đã siết lực 42 điểm khoan mái', 'Đã ký biên bản kiểm tra chất lượng'] },
-    { day: 'Ngày 2', title: 'Đi dây dàn 21 tấm và đặt micro-inverter', when: 'Hôm nay', status: 'Đang thực hiện', tone: 'accent', body: 'Đang đặt tấm REC Alpha Pure-R 400W, mỗi tấm một micro-inverter Enphase IQ8+. Cáp trục đã kẹp vào máng bảo vệ.', progress: { done: 14, total: 21 } },
-    { day: 'Ngày 3', title: 'Đấu ống luồn dây vào tủ điện và đồng bộ gateway', when: '30/10', status: 'Đã lên lịch', tone: 'neutral', body: 'Lắp cầu dao cách ly AC, khoá liên động CB tổng 200A và ghép nối gateway Envoy qua mạng di động.' },
-    { day: 'Nghiệm thu', title: 'Thành phố nghiệm thu xây dựng và điện', when: '4/11', status: 'Theo kế hoạch', tone: 'neutral', body: 'Cán bộ thành phố Santa Clara kiểm tra để cấp phép vận hành và đóng giấy phép SF-9912.' },
+    {
+      day: 'Ngày 1',
+      title: 'Lắp khung và neo an toàn trên mái',
+      when: '28/10',
+      status: 'Hoàn thành',
+      tone: 'ok',
+      body: 'Thanh ray IronRidge XR100 đã bắt vào xà gồ kèm tấm chống thấm. Keo cách nhiệt đã khô.',
+      notes: ['Đã siết lực 42 điểm khoan mái', 'Đã ký biên bản kiểm tra chất lượng'],
+    },
+    {
+      day: 'Ngày 2',
+      title: 'Đi dây dàn 21 tấm và đặt micro-inverter',
+      when: 'Hôm nay',
+      status: 'Đang thực hiện',
+      tone: 'accent',
+      body: 'Đang đặt tấm REC Alpha Pure-R 400W, mỗi tấm một micro-inverter Enphase IQ8+. Cáp trục đã kẹp vào máng bảo vệ.',
+      progress: { done: 14, total: 21 },
+    },
+    {
+      day: 'Ngày 3',
+      title: 'Đấu ống luồn dây vào tủ điện và đồng bộ gateway',
+      when: '30/10',
+      status: 'Đã lên lịch',
+      tone: 'neutral',
+      body: 'Lắp cầu dao cách ly AC, khoá liên động CB tổng 200A và ghép nối gateway Envoy qua mạng di động.',
+    },
+    {
+      day: 'Nghiệm thu',
+      title: 'Thành phố nghiệm thu xây dựng và điện',
+      when: '4/11',
+      status: 'Theo kế hoạch',
+      tone: 'neutral',
+      body: 'Cán bộ thành phố Santa Clara kiểm tra để cấp phép vận hành và đóng giấy phép SF-9912.',
+    },
   ] as const,
   feed: [
-    { time: '13:42', title: 'Đã kiểm tra điện trở cáp trục', body: 'David Miller đã đo thông mạch nhánh dàn phía Nam. Cả 14 micro-inverter đều đạt trở kháng.' },
-    { time: '11:15', title: 'Đã tải ảnh kiểm tra giữa ca', body: 'Ảnh neo vào xà gồ đã thêm vào hồ sơ tuân thủ của thành phố.' },
-    { time: '08:30', title: 'Thiết bị đã giao tới công trình', body: '21 tấm REC Alpha và bộ gom Enphase đã dỡ xuống khu tập kết ở lối xe vào.' },
-    { time: 'Hôm qua', title: 'Xong danh sách kiểm tra chống thấm ngày 1', body: 'Các tấm chống thấm đã đạt kiểm tra keo bằng thiết bị điện tử.' },
+    {
+      time: '13:42',
+      title: 'Đã kiểm tra điện trở cáp trục',
+      body: 'David Miller đã đo thông mạch nhánh dàn phía Nam. Cả 14 micro-inverter đều đạt trở kháng.',
+    },
+    {
+      time: '11:15',
+      title: 'Đã tải ảnh kiểm tra giữa ca',
+      body: 'Ảnh neo vào xà gồ đã thêm vào hồ sơ tuân thủ của thành phố.',
+    },
+    {
+      time: '08:30',
+      title: 'Thiết bị đã giao tới công trình',
+      body: '21 tấm REC Alpha và bộ gom Enphase đã dỡ xuống khu tập kết ở lối xe vào.',
+    },
+    {
+      time: 'Hôm qua',
+      title: 'Xong danh sách kiểm tra chống thấm ngày 1',
+      body: 'Các tấm chống thấm đã đạt kiểm tra keo bằng thiết bị điện tử.',
+    },
   ],
   feedTotal: 18,
   documents: [
@@ -271,9 +380,24 @@ export const project = {
     { name: 'Sơ đồ điện một sợi (SLD)', meta: 'Bản vẽ có dấu kỹ sư PE, sơ đồ bản sửa 3' },
   ],
   photos: [
-    { src: img('oakwood-before', 800, 600), caption: 'Đánh giá mái ban đầu', meta: 'Trước lắp đặt, 24/9/2024', body: 'Độ dốc mái hướng Nam đo được 24°. Lớp ngói không mục, khung không xuống cấp.' },
-    { src: img('oakwood-day2', 800, 600), caption: 'Tập kết thiết bị và bát neo xà gồ', meta: 'Ngày 2, hôm nay 11:15', body: 'Khung IronRidge bắt bằng bu lông inox vào giữa xà gồ. Cáp trục micro-inverter đã đi sẵn.' },
-    { src: img('oakwood-cad', 800, 600), caption: 'Mô phỏng bố trí 3D', meta: 'Dự kiến khi hoàn thành, bản CAD', body: 'Hình dung cuối cùng với 21 tấm đen xếp đối xứng. Sản lượng ước tính 11,240 kWh mỗi năm.' },
+    {
+      src: img('oakwood-before', 800, 600),
+      caption: 'Đánh giá mái ban đầu',
+      meta: 'Trước lắp đặt, 24/9/2024',
+      body: 'Độ dốc mái hướng Nam đo được 24°. Lớp ngói không mục, khung không xuống cấp.',
+    },
+    {
+      src: img('oakwood-day2', 800, 600),
+      caption: 'Tập kết thiết bị và bát neo xà gồ',
+      meta: 'Ngày 2, hôm nay 11:15',
+      body: 'Khung IronRidge bắt bằng bu lông inox vào giữa xà gồ. Cáp trục micro-inverter đã đi sẵn.',
+    },
+    {
+      src: img('oakwood-cad', 800, 600),
+      caption: 'Mô phỏng bố trí 3D',
+      meta: 'Dự kiến khi hoàn thành, bản CAD',
+      body: 'Hình dung cuối cùng với 21 tấm đen xếp đối xứng. Sản lượng ước tính 11,240 kWh mỗi năm.',
+    },
   ],
 }
 
@@ -291,13 +415,36 @@ export const warranty = {
     { k: 'Micro-inverter và bộ gom', v: '25 năm' },
     { k: 'Tay nghề thi công và mái', v: '10 năm' },
   ],
-  telemetry: { status: 'Hệ thống hoạt động bình thường', detail: 'Cập nhật tình trạng 4 phút trước. Cả 24 tấm đã đồng bộ.', efficiencyPct: 99.8 },
+  telemetry: {
+    status: 'Hệ thống hoạt động bình thường',
+    detail: 'Cập nhật tình trạng 4 phút trước. Cả 24 tấm đã đồng bộ.',
+    efficiencyPct: 99.8,
+  },
   activeRequests: [
-    { id: 'WR-3091', title: 'Kiểm tra và chỉnh lưới chắn chim quanh tấm pin', status: 'Đã hẹn ngày 12/11', body: 'Kiểm tra định kỳ hằng năm quanh mép dàn pin và căn chỉnh lưới chắn động vật.', technician: 'Alex Roy', window: '09:00 đến 11:30' },
+    {
+      id: 'WR-3091',
+      title: 'Kiểm tra và chỉnh lưới chắn chim quanh tấm pin',
+      status: 'Đã hẹn ngày 12/11',
+      body: 'Kiểm tra định kỳ hằng năm quanh mép dàn pin và căn chỉnh lưới chắn động vật.',
+      technician: 'Alex Roy',
+      window: '09:00 đến 11:30',
+    },
   ],
   history: [
-    { title: 'Kiểm tra định kỳ hằng năm', result: 'Đạt', body: 'Kiểm tra hiện trường có chứng nhận. Điện áp DC các chuỗi cân bằng, công tắc ngắt nhanh hoạt động, chụp ảnh nhiệt không thấy vết nứt vi mô.', when: '18/10/2024', ref: 'Chứng nhận dịch vụ SS-8831' },
-    { title: 'Cập nhật firmware inverter', result: 'Tự động qua mạng', body: 'Phần mềm micro-inverter đã cập nhật lên bản v4.19.2 để phản ứng công suất phản kháng tốt hơn khi điện áp lưới tăng đột ngột. Không gián đoạn.', when: '2/10/2024, 02:30 UTC', ref: 'Máy chủ: SolarCloud Edge 04' },
+    {
+      title: 'Kiểm tra định kỳ hằng năm',
+      result: 'Đạt',
+      body: 'Kiểm tra hiện trường có chứng nhận. Điện áp DC các chuỗi cân bằng, công tắc ngắt nhanh hoạt động, chụp ảnh nhiệt không thấy vết nứt vi mô.',
+      when: '18/10/2024',
+      ref: 'Chứng nhận dịch vụ SS-8831',
+    },
+    {
+      title: 'Cập nhật firmware inverter',
+      result: 'Tự động qua mạng',
+      body: 'Phần mềm micro-inverter đã cập nhật lên bản v4.19.2 để phản ứng công suất phản kháng tốt hơn khi điện áp lưới tăng đột ngột. Không gián đoạn.',
+      when: '2/10/2024, 02:30 UTC',
+      ref: 'Máy chủ: SolarCloud Edge 04',
+    },
   ],
   systems: ['Nhà Oakwood, hệ thống 8.4 kW (24 tấm)', 'Nhà gỗ Pine Cabin, dàn phụ 4.2 kW'],
   serviceTypes: ['Kiểm tra chẩn đoán', 'Sửa chữa', 'Vệ sinh tấm pin', 'Yêu cầu khác'],
@@ -345,10 +492,16 @@ export const warrantyRequest = {
   },
   verification: {
     protocol: 'SEC-PV-2024',
-    before: { date: '22/10/2024', src: img('wr-baseline', 640, 480), body: 'Ảnh ban đầu khách chụp, cho thấy một khe hở nhỏ (dưới 2.5 cm) dọc mép khung.' },
-    after: 'Alex Roy sẽ tải ảnh xác nhận đã bịt kín và tạo chứng nhận chất lượng điện tử ngay tại nhà. Cả hai được lưu trong hồ sơ bảo hành của bạn.',
+    before: {
+      date: '22/10/2024',
+      src: img('wr-baseline', 640, 480),
+      body: 'Ảnh ban đầu khách chụp, cho thấy một khe hở nhỏ (dưới 2.5 cm) dọc mép khung.',
+    },
+    after:
+      'Alex Roy sẽ tải ảnh xác nhận đã bịt kín và tạo chứng nhận chất lượng điện tử ngay tại nhà. Cả hai được lưu trong hồ sơ bảo hành của bạn.',
   },
-  guarantee: 'Mọi hạng mục trong yêu cầu này được gia hạn bảo hành tay nghề vô điều kiện 24 tháng cho phần chỉnh lưới và gioăng chống thời tiết.',
+  guarantee:
+    'Mọi hạng mục trong yêu cầu này được gia hạn bảo hành tay nghề vô điều kiện 24 tháng cho phần chỉnh lưới và gioăng chống thời tiết.',
   supportPhone: '1-800-555-SOLAR (24/7)',
 }
 
@@ -357,9 +510,21 @@ export const assistant = {
   profile: { system: 'Oakwood 8.8 kW', contract: 'SS-2024-884', status: 'Đã kết nối' },
   domains: ['Sản phẩm & thiết bị', 'Tiến độ lắp đặt', 'Bảo hành & chăm sóc', 'Thanh toán & giấy phép'],
   recent: [
-    { when: 'Hôm qua', title: 'Bảo hành inverter và bảo hành tấm pin khác nhau thế nào', meta: '3 điểm chính, hợp đồng SS-PRT-88291' },
-    { when: 'Hôm nay, 10:14', title: 'Tín dụng thuế và ưu đãi điện mặt trời liên bang', meta: 'Xem mẫu IRS 5695, ước tính $7,920' },
-    { when: '3 ngày trước', title: 'Bù trừ điện năng với PG&E hoạt động thế nào?', meta: 'Tín chỉ phát lưới NEM 3.0 và tháng quyết toán' },
+    {
+      when: 'Hôm qua',
+      title: 'Bảo hành inverter và bảo hành tấm pin khác nhau thế nào',
+      meta: '3 điểm chính, hợp đồng SS-PRT-88291',
+    },
+    {
+      when: 'Hôm nay, 10:14',
+      title: 'Tín dụng thuế và ưu đãi điện mặt trời liên bang',
+      meta: 'Xem mẫu IRS 5695, ước tính $7,920',
+    },
+    {
+      when: '3 ngày trước',
+      title: 'Bù trừ điện năng với PG&E hoạt động thế nào?',
+      meta: 'Tín chỉ phát lưới NEM 3.0 và tháng quyết toán',
+    },
   ],
   suggestions: [
     'Trời mưa ảnh hưởng sản lượng hằng ngày thế nào?',
@@ -379,15 +544,29 @@ export const assistant = {
       title: 'Gói bảo hành nhiều tầng của Smart Solar',
       text: 'Chào chị Eleanor. Hệ thống ở nhà Oakwood có hai tầng bảo hành bổ trợ nhau:',
       tiers: [
-        { years: '25 năm', name: 'Tấm pin đơn tinh thể', body: 'Sản lượng tối thiểu 85% theo đường thẳng tới năm thứ 25. Bao gồm sửa lỗi vật lý và linh kiện chính hãng.' },
-        { years: '25 năm', name: 'Micro-inverter Enphase', body: 'Thay mới toàn bộ thiết bị và cử kỹ thuật viên có chứng chỉ nếu inverter hỏng. Không mất phí.' },
-        { years: '10 năm', name: 'Điểm khoan mái & chống thấm', body: 'Cam kết kín nước tại mọi bu lông và tấm chống thấm, không rò nước hay xô lệch ngói.' },
+        {
+          years: '25 năm',
+          name: 'Tấm pin đơn tinh thể',
+          body: 'Sản lượng tối thiểu 85% theo đường thẳng tới năm thứ 25. Bao gồm sửa lỗi vật lý và linh kiện chính hãng.',
+        },
+        {
+          years: '25 năm',
+          name: 'Micro-inverter Enphase',
+          body: 'Thay mới toàn bộ thiết bị và cử kỹ thuật viên có chứng chỉ nếu inverter hỏng. Không mất phí.',
+        },
+        {
+          years: '10 năm',
+          name: 'Điểm khoan mái & chống thấm',
+          body: 'Cam kết kín nước tại mọi bu lông và tấm chống thấm, không rò nước hay xô lệch ngói.',
+        },
       ],
       attachment: { name: 'Oakwood-Warranty-Summary.pdf', meta: 'Hợp đồng SS-PRT-88291, 1.4 MB' },
-      footer: 'Cả hai bảo hành được chuyển miễn phí cho chủ mới nếu chị bán nhà Oakwood. Chị có muốn xem thủ tục chuyển nhượng không?',
+      footer:
+        'Cả hai bảo hành được chuyển miễn phí cho chủ mới nếu chị bán nhà Oakwood. Chị có muốn xem thủ tục chuyển nhượng không?',
     },
   ],
   cannedReply:
     'Theo dữ liệu micro-inverter ở nhà Oakwood: kể cả khi trời nhiều mây hay mưa, dàn pin vẫn nhận bức xạ tán xạ và phát từ 18% đến 32% công suất đỉnh. Ngày âm u, lượng điện dư trung bình khoảng 1.8 kWh.',
-  disclaimer: 'Trợ lý trả lời dựa trên hồ sơ thiết kế nhà Oakwood của bạn. Nếu có sự cố điện khẩn cấp, gọi đường dây nóng 24/7 (800) 555-SOLAR.',
+  disclaimer:
+    'Trợ lý trả lời dựa trên hồ sơ thiết kế nhà Oakwood của bạn. Nếu có sự cố điện khẩn cấp, gọi đường dây nóng 24/7 (800) 555-SOLAR.',
 }

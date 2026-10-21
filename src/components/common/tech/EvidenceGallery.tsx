@@ -1,12 +1,7 @@
 import { Icon } from '@/components/common/stitch-ui'
 import { cn } from '@/utils/cn'
 
-/*
- * Lưới ảnh hiện trường của nhóm màn lắp đặt:
- * - installation_task: 2 cột tỉ lệ 16:9, caption đè lên ảnh, ô tải ảnh nền phẳng.
- * - installation_task_checklist: 4 ô vuông, có dấu tích xác minh và ô tải ảnh viền đứt.
- * Khác PhotoGrid trong components/common/stitch-ui (thẻ ảnh có ô ghi chú) nên tách riêng.
- */
+// Lưới ảnh hiện trường của các màn lắp đặt (khác PhotoGrid vì không có ô ghi chú)
 export type EvidencePhotoItem = {
   src: string
   alt: string
@@ -61,9 +56,7 @@ export function EvidenceGroup({
 
   return (
     <div className={cn('flex flex-col gap-space-xs', className)}>
-      {!hideTitle && (
-        <span className="text-label-sm font-bold text-on-surface-variant">{title}</span>
-      )}
+      {!hideTitle && <span className="text-label-sm font-bold text-on-surface-variant">{title}</span>}
       <div className={cn('grid gap-space-sm', columnClasses[columns], isSquare && 'gap-space-md')}>
         {photos.map((photo) => (
           <button

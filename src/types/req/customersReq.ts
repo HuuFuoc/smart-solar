@@ -1,4 +1,4 @@
-/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api` – KHÔNG sửa tay. */
+/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
 
 export type CreateCustomerProfileRequest = {
   customerType?: CustomerType
@@ -20,6 +20,8 @@ export type CreatePropertySiteRequest = {
   installationSurfaceType?: InstallationSurfaceType
   surfaceMaterial?: string | null
   note?: string | null
+  provinceCode?: string | null
+  communeCode?: string | null
 }
 
 export type CustomerType = 1 | 2

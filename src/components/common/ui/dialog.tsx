@@ -1,11 +1,13 @@
 import { useLayoutEffect, useRef, type DialogHTMLAttributes, type ReactNode, type Ref } from 'react'
 import { cx } from '@/utils/cx'
 
-/*
-  Native <dialog>, opened with ref.current.showModal(). The only floating layer
-  in the product, so the only place --shadow-pop is used.
-*/
-export function Dialog({ ref, className, children, ...rest }: DialogHTMLAttributes<HTMLDialogElement> & { ref: Ref<HTMLDialogElement> }) {
+// Dialog native, mở bằng ref.current.showModal()
+export function Dialog({
+  ref,
+  className,
+  children,
+  ...rest
+}: DialogHTMLAttributes<HTMLDialogElement> & { ref: Ref<HTMLDialogElement> }) {
   return (
     <dialog
       ref={ref}
@@ -22,10 +24,7 @@ export function Dialog({ ref, className, children, ...rest }: DialogHTMLAttribut
   )
 }
 
-/*
-  Controlled variant for dialogs the parent opens with state. Children mount only while open, so a form
-  inside starts fresh each time. Esc closes through onOpenChange unless `dismissible` is false (e.g. while saving).
-*/
+// Dialog điều khiển bằng state. Children chỉ mount khi mở nên form bên trong luôn mới
 export function ModalDialog({
   open,
   onOpenChange,
@@ -38,10 +37,7 @@ export function ModalDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
   dismissible?: boolean
-  /**
-   * Chạy ngay sau khi hộp thoại đóng, tức là SAU khi trình duyệt trả focus về nút đã mở nó. Dùng để chuyển focus
-   * tới chỗ khác khi nút đó không còn (dòng vừa xoá / vừa ngừng bán biến khỏi bảng).
-   */
+  /** Chạy sau khi dialog đóng, dùng để chuyển focus khi nút mở dialog không còn nữa */
   onAfterClose?: () => void
 }) {
   const ref = useRef<HTMLDialogElement>(null)
@@ -50,7 +46,7 @@ export function ModalDialog({
   useLayoutEffect(() => {
     afterCloseRef.current = onAfterClose
   })
-  // Layout effect: đóng trước khi trình duyệt vẽ, nếu không sẽ loé một khung dialog rỗng (children đã gỡ).
+  // Dùng layout effect để không loé khung dialog rỗng
   useLayoutEffect(() => {
     const dialog = ref.current
     if (!dialog) return
@@ -68,7 +64,7 @@ export function ModalDialog({
         if (!dismissible) e.preventDefault()
       }}
       onClose={() => {
-        // Chrome cho lần Esc thứ hai đóng hộp thoại dù sự kiện cancel đã bị chặn: đang bận thì mở lại ngay.
+        // Chrome vẫn đóng dialog ở lần Esc thứ hai, nên đang bận thì mở lại
         if (!dismissible && open) {
           ref.current?.showModal()
           return

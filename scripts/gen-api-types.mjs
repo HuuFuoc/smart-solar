@@ -1,14 +1,5 @@
-/*
- * Sinh kiểu DTO từ docs/api/swagger.json vào src/types/req và src/types/res.
- * Chạy bằng `npm run gen:api`. Mọi file sinh ra đều bị ghi đè – không sửa tay.
- *
- * - Request body của endpoint thuộc tag X   → src/types/req/<x>Req.ts
- * - Response 2xx của endpoint thuộc tag X   → src/types/res/<x>Res.ts
- *   Wrapper *ApiResponse được bỏ: client.ts đã mở wrapper, service chỉ nhận `data`,
- *   nên file res chứa schema của `data`.
- * - ApiError + dạng chung của wrapper       → src/types/res/apiRes.ts
- * Schema lồng bên trong đi cùng file của schema đầu tiên dùng nó.
- */
+// Sinh type DTO từ docs/api/swagger.json vào src/types/req và src/types/res (npm run gen:api)
+// File sinh ra luôn bị ghi đè, không sửa tay. File res chỉ chứa schema của `data` vì client.ts đã bỏ wrapper
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -24,8 +15,7 @@ const isWrapper = (name) => {
 }
 const fileKey = (tag) => tag.charAt(0).toLowerCase() + tag.slice(1).replace(/[^A-Za-z0-9]/g, '')
 
-/* ------------------------------------------------ gán mỗi schema vào một file */
-const owner = new Map() // schema -> 'req/authReq' | 'res/authRes' | 'res/apiRes'
+const owner = new Map() // schema thuộc file nào: 'req/authReq' | 'res/authRes' | 'res/apiRes'
 owner.set('ApiError', 'res/apiRes')
 
 function claim(name, file) {
@@ -58,9 +48,10 @@ for (const ops of Object.values(swagger.paths ?? {})) {
   }
 }
 
-/* ------------------------------------------------------------ JSON schema → TS */
+// Đổi JSON schema sang type TS
 function tsType(schema, file, imports) {
-  if (!schema || Object.keys(schema).filter((k) => k !== 'nullable' && k !== 'description').length === 0) return 'unknown'
+  if (!schema || Object.keys(schema).filter((k) => k !== 'nullable' && k !== 'description').length === 0)
+    return 'unknown'
   let type
   if (schema.$ref) {
     const name = refName(schema.$ref)
@@ -73,7 +64,8 @@ function tsType(schema, file, imports) {
   else if (schema.type === 'string') type = schema.format === 'binary' ? 'Blob' : 'string'
   else if (schema.type === 'boolean') type = 'boolean'
   else if (schema.type === 'object' || schema.properties) {
-    if (!schema.properties && schema.additionalProperties) type = `Record<string, ${tsType(schema.additionalProperties, file, imports)}>`
+    if (!schema.properties && schema.additionalProperties)
+      type = `Record<string, ${tsType(schema.additionalProperties, file, imports)}>`
     else type = objectType(schema, file, imports, '')
   } else type = 'unknown'
   return schema.nullable && type !== 'unknown' ? `${type} | null` : type
@@ -90,8 +82,7 @@ function objectType(schema, file, imports, indent) {
   return lines.length ? `{\n${lines.join('\n')}\n${indent}}` : 'Record<string, never>'
 }
 
-/* ------------------------------------------------------------------ ghi file */
-const HEADER = '/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api` – KHÔNG sửa tay. */\n'
+const HEADER = '/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */\n'
 
 const files = new Map()
 for (const [name, file] of owner) (files.get(file) ?? files.set(file, []).get(file)).push(name)
@@ -101,7 +92,8 @@ if (!files.has('res/apiRes')) files.set('res/apiRes', [])
 for (const dir of ['req', 'res']) {
   const full = path.join(outDir, dir)
   fs.mkdirSync(full, { recursive: true })
-  for (const f of fs.readdirSync(full)) if (fs.readFileSync(path.join(full, f), 'utf8').startsWith(HEADER)) fs.rmSync(path.join(full, f))
+  for (const f of fs.readdirSync(full))
+    if (fs.readFileSync(path.join(full, f), 'utf8').startsWith(HEADER)) fs.rmSync(path.join(full, f))
 }
 
 for (const [file, names] of files) {
@@ -125,7 +117,13 @@ for (const [file, names] of files) {
     )
   }
   const importLines = [...imports]
-    .map(([from, set]) => `import type { ${[...set].sort().map((n) => (n === 'ApiError' ? 'ApiErrorBody' : n)).join(', ')} } from '@/types/${from}'`)
+    .map(
+      ([from, set]) =>
+        `import type { ${[...set]
+          .sort()
+          .map((n) => (n === 'ApiError' ? 'ApiErrorBody' : n))
+          .join(', ')} } from '@/types/${from}'`,
+    )
     .join('\n')
   const text = HEADER + (importLines ? `${importLines}\n` : '') + '\n' + blocks.join('\n\n') + '\n'
   fs.writeFileSync(path.join(outDir, `${file}.ts`), text)

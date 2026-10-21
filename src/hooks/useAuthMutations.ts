@@ -17,13 +17,8 @@ import type {
 } from '@/types/res/authRes'
 import type { ApiError } from '@/services/api/errors'
 
-/*
- * Mutation cho 9 endpoint Auth (trừ refresh – interceptor trong client.ts tự lo).
- * Lỗi luôn là ApiError nên component đọc được `status`, `code`, `fieldErrors`.
- *
- * Hai mutation có ảnh hưởng tới phiên đăng nhập (login / logout) nằm trong
- * AuthProvider vì còn phải lưu token và dựng user.
- */
+// Mutation cho các endpoint Auth (refresh do client.ts tự lo). Lỗi luôn là ApiError
+// login / logout nằm trong AuthProvider vì còn phải lưu token
 
 export function useRegisterMutation() {
   return useMutation<RegisterResponse, ApiError, RegisterRequest>({

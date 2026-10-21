@@ -4,26 +4,26 @@ import { Count } from '@/components/common/ui/badge'
 import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
-import { needsScheduling } from '@/features/pre-surveys/components/preSurveyDisplay'
-import { useMySurveyRequestsQuery, usePendingSurveyRequestsQuery } from '@/hooks/useSurveyRequests'
+import {
+  useEscalatedAppointmentsQuery,
+  useMySurveyRequestsQuery,
+  usePendingSurveyRequestsQuery,
+} from '@/hooks/useSurveyRequests'
 import { ROUTES } from '@/routes/paths'
 
-/*
-  Children replace the Outlet while the first page module is still loading, so the rail never pops in late.
-  Số đếm trên menu lấy từ chính API hàng chờ (cùng cache với trang, tự làm mới mỗi phút). Tô đỏ khi có việc
-  đang chờ: còn yêu cầu chưa ai nhận, hoặc yêu cầu đã nhận mà chưa phân công kỹ thuật viên.
-*/
+// Số đếm trên menu lấy từ API hàng chờ, tô đỏ khi còn yêu cầu chưa nhận hoặc có lịch cần phân công
 export function OpsLayout({ children }: { children?: ReactNode }) {
-  // Layout còn là khung chờ trước RequireRole: chỉ gọi hàng chờ khi phiên sales đã khôi phục xong.
+  // Chỉ gọi khi phiên sales đã khôi phục xong
   const isSales = useAuth().user?.role === 'sales'
   const pending = usePendingSurveyRequestsQuery({ enabled: isSales }).data?.length
   const mine = useMySurveyRequestsQuery({ enabled: isSales }).data
+  const escalated = useEscalatedAppointmentsQuery({ enabled: isSales }).data
   return (
     <AppShell
       portal={PORTALS.ops}
       badges={{
         [ROUTES.ops.surveys]: { value: pending, attention: true },
-        [ROUTES.ops.surveysMine]: { value: mine?.length, attention: mine?.some((r) => needsScheduling(r.status)) },
+        [ROUTES.ops.surveysMine]: { value: mine?.length, attention: escalated?.some((item) => item.ownedByMe) },
       }}
       collapsedHint={
         pending ? (
