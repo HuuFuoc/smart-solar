@@ -26,6 +26,9 @@ export const ROUTES = {
     project: '/customer/projects/:id',
     /** Gói bảo vệ thiên tai: mua, thanh toán PayOS, huỷ trước khi hiệu lực */
     packages: '/customer/packages',
+    /** Bảo hành, sửa chữa, bảo trì lẻ: yêu cầu đã gửi */
+    afterSales: '/customer/after-sales',
+    afterSalesRequest: '/customer/after-sales/:id',
     products: '/customer/products',
     product: '/customer/products/:id',
     // Màn mock đã ẩn
@@ -45,6 +48,9 @@ export const ROUTES = {
     /** Tab "Của tôi" có đường dẫn riêng để menu đánh dấu đúng */
     surveysMine: '/ops/surveys/mine',
     survey: '/ops/surveys/:id',
+    /** Việc báo giá sửa chữa, bảo trì; chi tiết theo mã yêu cầu */
+    afterSales: '/ops/after-sales',
+    afterSalesRequest: '/ops/after-sales/:id',
     products: '/ops/products',
     product: '/ops/products/:id',
     // Màn mock đã ẩn
@@ -63,6 +69,9 @@ export const ROUTES = {
     /** Công trình lắp đặt quản lý giao */
     installations: '/tech/installations',
     installation: '/tech/installations/:id',
+    /** Buổi hẹn bảo hành, sửa chữa, bảo trì; chi tiết theo mã buổi hẹn */
+    afterSales: '/tech/after-sales',
+    afterSalesVisit: '/tech/after-sales/:id',
     schedule: '/tech/schedule',
     products: '/tech/products',
     product: '/tech/products/:id',
@@ -85,6 +94,9 @@ export const ROUTES = {
     /** Dự án thi công + hợp đồng chờ tạo dự án (quản lý dùng chung trang với quản trị) */
     installations: '/manage/installations',
     installation: '/manage/installations/:id',
+    /** Yêu cầu bảo hành, sửa chữa, bảo trì (quản lý dùng chung trang với quản trị) */
+    afterSales: '/manage/after-sales',
+    afterSalesRequest: '/manage/after-sales/:id',
     // Màn mock đã ẩn
     projects: '/manage/projects',
     project: '/manage/projects/:id',
@@ -107,6 +119,8 @@ export const ROUTES = {
     installations: '/admin/installations',
     installation: '/admin/installations/:id',
     packages: '/admin/packages',
+    afterSales: '/admin/after-sales',
+    afterSalesRequest: '/admin/after-sales/:id',
     // Màn mock đã ẩn
     roles: '/admin/roles',
     services: '/admin/services',

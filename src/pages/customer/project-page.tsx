@@ -11,6 +11,7 @@ import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { ProjectAfterSalesPanel } from '@/features/after-sales/ProjectAfterSalesPanel'
 import { AcceptanceDialog } from '@/features/installations/AcceptanceDialog'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
 import {
@@ -133,7 +134,7 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
       return {
         tone: 'ok',
         title: 'Công trình đã bàn giao',
-        body: 'Thiết bị đã lắp và hạn bảo hành của từng thiết bị nằm ở bảng Bàn giao ngay bên dưới.',
+        body: 'Thiết bị có vấn đề hoặc cần bảo trì thì gửi yêu cầu ở mục Bảo hành, sửa chữa.',
       }
     case 'CANCELLED':
       return {
@@ -365,6 +366,7 @@ export function CustomerProjectPage() {
                       onDecide={(choice) => setDialog({ choice, round: pending.round })}
                     />
                   )}
+                  {completed && <ProjectAfterSalesPanel projectId={p.projectId} />}
                   {completed && <HandoverPanel projectId={p.projectId} />}
                   <EvidencePanel projectId={p.projectId} />
                   {!completed && p.assets.length > 0 && (

@@ -97,9 +97,9 @@ function storageFailureMessage(status: number) {
   if (status === 0)
     return typeof navigator !== 'undefined' && !navigator.onLine
       ? messageForStatus(0)
-      : 'Trình duyệt không gửi được tệp lên kho lưu trữ. Mạng vẫn ổn thì báo quản trị kiểm tra cấu hình kho (vùng, CORS).'
+      : 'Không tải được tệp lên. Mạng vẫn ổn thì báo quản trị hệ thống.'
   if (status === 403) return 'Link tải lên đã hết hạn hoặc không hợp lệ. Thử lại.'
-  return 'Kho lưu trữ không nhận tệp. Thử lại sau ít phút.'
+  return 'Chưa tải được tệp lên. Thử lại sau ít phút.'
 }
 
 function notVerified(view: FileView) {
@@ -113,7 +113,7 @@ function notVerified(view: FileView) {
   const known = Object.entries(FILE_REJECTION_REASONS).find(([prefix]) => reason.startsWith(prefix))
   return new ApiError({
     status: 422,
-    message: known?.[1] ?? `Kho lưu trữ không nhận tệp${reason ? ` (${reason})` : ''}.`,
+    message: known?.[1] ?? 'Hệ thống không nhận tệp này. Chọn tệp khác hoặc thử lại.',
     serverMessage: reason || null,
   })
 }
