@@ -13,12 +13,10 @@ import { Stat, StatRow } from '@/components/common/ui/stat'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { Facts } from '@/features/pre-surveys/Facts'
 import {
+  addressMapUrl,
   directionLabel,
   formatAddress,
-  formatCoordinates,
   formatDateTime,
-  hasCoordinates,
-  mapsUrl,
   shortCode,
 } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/simulationDisplay'
@@ -174,8 +172,7 @@ export function TechJobPage() {
       {(job) => {
         const status = appointmentStatusMeta(job.status, 'technician')
         const p = job.property
-        const located = hasCoordinates(p.latitude, p.longitude)
-        const map = located ? mapsUrl(p.latitude!, p.longitude!) : null
+        const map = addressMapUrl(formatAddress(p))
         const s = job.preSurvey
         const sim = job.selectedSimulation
         return (
@@ -227,16 +224,6 @@ export function TechJobPage() {
                     <Facts
                       items={[
                         { k: 'Địa chỉ', v: formatAddress(p) },
-                        {
-                          k: 'Toạ độ',
-                          v: located ? (
-                            <a className="tnum ui-link" href={map!} target="_blank" rel="noreferrer">
-                              {formatCoordinates(p.latitude!, p.longitude!)}
-                            </a>
-                          ) : (
-                            '—'
-                          ),
-                        },
                         { k: 'Bề mặt', v: surfaceNameLabel(p.installationSurfaceType) },
                         { k: 'Vật liệu', v: p.surfaceMaterial || '—' },
                       ]}

@@ -57,7 +57,7 @@ import {
   type SiteForm,
 } from '@/features/pre-surveys/assessmentForm'
 import { STEP, STEP_HINTS, STEP_LABELS, STEP_SLUGS } from '@/features/pre-surveys/assessmentSteps'
-import { customerTypeLabel, hasCoordinates } from '@/features/pre-surveys/preSurveyDisplay'
+import { customerTypeLabel, hasCoordinates, isInHcm } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatOne, formatTwo } from '@/features/pre-surveys/simulationDisplay'
 import { EMPTY_SIMULATION_FORM, type SimulationForm } from '@/features/pre-surveys/simulationForm'
 import {
@@ -405,13 +405,14 @@ export function AssessmentPage() {
 
   async function saveSite() {
     // Khách không sửa gì (chỉ bấm Quay lại rồi Tiếp tục) thì đi tiếp, không tạo địa điểm mới.
-    // Trừ khi địa điểm cũ thiếu toạ độ hoặc chưa có mã phường, xã (tạo trước khi backend có danh mục phường).
+    // Trừ địa điểm cũ thiếu toạ độ, toạ độ ngoài TP.HCM hoặc chưa có mã phường, xã: lưu lại thì có đủ.
     const savedSite = draft.site
     const unchanged =
       draft.siteId &&
       savedSite &&
       isSameJson(site, siteToForm(savedSite)) &&
       hasCoordinates(savedSite.latitude, savedSite.longitude) &&
+      isInHcm(savedSite.latitude!, savedSite.longitude!) &&
       Boolean(savedSite.communeCode)
     if (unchanged) {
       goToStep(STEP.SURFACE)
@@ -606,7 +607,7 @@ export function AssessmentPage() {
     // Địa điểm cũ thiếu toạ độ hoặc mã phường, xã thì bắt sửa trước khi gửi
     if (draft.site && !hasCoordinates(draft.site.latitude, draft.site.longitude)) {
       goToStep(STEP.SITE)
-      showFieldErrors({ latitude: 'Nhập toạ độ công trình để ước tính được sản lượng điện.' })
+      showFieldErrors({ ward: 'Chọn lại phường, xã rồi lưu địa điểm để ước tính được sản lượng điện.' })
       return
     }
     if (draft.site && !draft.site.communeCode) {

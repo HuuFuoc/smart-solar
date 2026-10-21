@@ -199,7 +199,7 @@ function ResultNotices({
         <Notice tone="warn" title="Toạ độ địa điểm nằm ngoài TP.HCM">
           Khí hậu và sản lượng dưới đây tính tại{' '}
           <span className="tnum">{formatCoordinates(location.latitude, location.longitude)}</span>, không phải công
-          trình. Sửa toạ độ của địa điểm rồi chạy lại mô phỏng.
+          trình. Chọn lại phường, xã của địa điểm rồi chạy lại mô phỏng.
         </Notice>
       )}
       {layout.panelCount > 0 && energy.annualEnergyKwh == null && (

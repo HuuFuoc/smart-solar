@@ -2,13 +2,10 @@ import { useMemo } from 'react'
 import { Button } from '@/components/common/ui/button'
 import { Combobox } from '@/components/common/ui/combobox'
 import { Field, Input, Radio, Textarea } from '@/components/common/ui/field'
-import { Notice } from '@/components/common/ui/lists'
 import { useHcmCommunesQuery } from '@/hooks/useCommunes'
 import { HCM_PROVINCE } from '@/services/administrativeUnitService'
 import type { FormErrors, SiteForm } from '@/features/pre-surveys/assessmentForm'
 import { SURFACE_TYPES } from '@/common/preSurvey'
-import { HCM_COORDINATE_HINT, isInHcm, mapsUrl } from '@/features/pre-surveys/preSurveyDisplay'
-import { readDecimal } from '@/utils/number'
 
 type Props = {
   value: SiteForm
@@ -57,8 +54,6 @@ export function SiteFields({ value, errors, onChange }: Props) {
         {/* Ô chỉ đọc nền xám. Dùng dấu ! vì cx không gộp class trùng nhau */}
         <Input id="province" value={HCM_PROVINCE.name} readOnly className="bg-surface-2! text-fg-2!" />
       </Field>
-
-      <CoordinateFields value={value} errors={errors} onChange={onChange} />
 
       <fieldset className="sm:col-span-2">
         <legend className="mb-3 text-body font-medium text-fg">Lắp trên bề mặt nào?</legend>
@@ -155,74 +150,5 @@ function WardField({
         </span>
       )}
     </Field>
-  )
-}
-
-/** Toạ độ hợp lệ (đọc được số, nằm trong khoảng vĩ độ / kinh độ) mà ở ngoài TP.HCM */
-function isValidButOutsideHcm(latitude: number | null, longitude: number | null) {
-  if (latitude === null || longitude === null) return false
-  if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return false
-  return !isInHcm(latitude, longitude)
-}
-
-// Toạ độ là bắt buộc: cần để lấy dữ liệu nắng (PVGIS), khí hậu (NASA POWER)
-// và để kỹ thuật viên mở bản đồ tới công trình
-function CoordinateFields({ value, errors, onChange }: Props) {
-  const latitude = readDecimal(value.latitude)
-  const longitude = readDecimal(value.longitude)
-  // Toạ độ ngoài TP.HCM (gõ ngược 2 số, sai dấu...) thì chỉ cảnh báo, vẫn cho lưu
-  const outsideHcm = isValidButOutsideHcm(latitude, longitude)
-
-  return (
-    <fieldset className="sm:col-span-2">
-      <legend className="text-body font-medium text-fg">Toạ độ công trình</legend>
-      <p className="mt-1 max-w-prose text-meta text-fg-2">
-        Cần để ước tính sản lượng điện và để kỹ thuật viên tìm tới công trình. Trên Google Maps, nhấn giữ vào công
-        trình: cặp số hiện ra là vĩ độ, kinh độ.
-      </p>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Vĩ độ"
-          htmlFor="latitude"
-          required
-          hint="Số đầu trong cặp toạ độ, ví dụ 10.9036."
-          error={errors.latitude}
-        >
-          <Input
-            id="latitude"
-            inputMode="decimal"
-            value={value.latitude}
-            onChange={(e) => onChange({ latitude: e.target.value })}
-            aria-invalid={Boolean(errors.latitude)}
-            aria-required
-          />
-        </Field>
-        <Field
-          label="Kinh độ"
-          htmlFor="longitude"
-          required
-          hint="Số thứ hai trong cặp toạ độ, ví dụ 106.7686."
-          error={errors.longitude}
-        >
-          <Input
-            id="longitude"
-            inputMode="decimal"
-            value={value.longitude}
-            onChange={(e) => onChange({ longitude: e.target.value })}
-            aria-invalid={Boolean(errors.longitude)}
-            aria-required
-          />
-        </Field>
-        {outsideHcm && latitude !== null && longitude !== null && (
-          <Notice tone="warn" className="sm:col-span-2">
-            Toạ độ này nằm ngoài TP.HCM, nơi Smart Solar đang nhận công trình. Kiểm tra lại: {HCM_COORDINATE_HINT}.{' '}
-            <a className="ui-link font-medium" href={mapsUrl(latitude, longitude)} target="_blank" rel="noreferrer">
-              Xem trên bản đồ
-              <span className="sr-only"> (mở tab mới)</span>
-            </a>
-          </Notice>
-        )}
-      </div>
-    </fieldset>
   )
 }

@@ -101,9 +101,6 @@ function SiteReview({
       { k: 'Bề mặt', v: surfaceTypeLabel(site.installationSurfaceType) },
       { k: 'Vật liệu', v: site.surfaceMaterial ?? '—' },
     ]
-    if (site.latitude != null && site.longitude != null) {
-      items.push({ k: 'Toạ độ', v: `${site.latitude}, ${site.longitude}` })
-    }
     // Một cột vì địa chỉ dài, chia hai cột thì xuống dòng liên tục
     content = <KeyValueList items={items} />
   }

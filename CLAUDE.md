@@ -264,11 +264,16 @@ nhập làm nguồn chính + kéo thả vật cản.
   `src/hooks/useCommunes.ts`, tải một lần mỗi phiên). Chọn trong danh sách thì form giữ cả tên (`ward`, để hiển thị) và mã
   (`communeCode`); gõ tay không khớp tên nào thì báo "Chọn phường, xã trong danh sách." vì backend cần mã để xếp kỹ thuật
   viên theo khu vực (thiếu mã thì đặt lịch bị `SITE_LOCATION_REQUIRED`). POST `/customers/me/sites` gửi `provinceCode` +
-  `communeCode`; 422 `ADMINISTRATIVE_LOCATION_*` báo ở ô phường, xã. Không còn ô quận/huyện (`district` gửi null). Địa điểm
-  đã lưu mà không sửa gì thì đi tiếp, trừ khi thiếu toạ độ hoặc chưa có mã phường (địa điểm tạo trước khi có danh mục):
-  khi đó bắt chọn lại, tạo địa điểm + bản nháp mới; nút Gửi cũng chặn trường hợp này. Toạ độ vẫn bắt buộc (để ước tính sản
-  lượng và để kỹ thuật viên mở bản đồ); nằm ngoài khung TP.HCM (`isInHcm` ở `preSurveyDisplay.ts`) thì cảnh báo vàng, vẫn
-  cho lưu, lặp lại ở bước mô phỏng và kết quả; mục khí hậu ghi toạ độ + link bản đồ.
+  `communeCode`; 422 `ADMINISTRATIVE_LOCATION_*` báo ở ô phường, xã. Không còn ô quận/huyện (`district` gửi null).
+- Không có ô vĩ độ, kinh độ (người dùng bỏ 21/10/2026): toạ độ gửi kèm địa điểm là điểm giữa của phường, xã đã chọn
+  (`features/pre-surveys/hcmWardCenters.ts`, tra theo `communeCode`). Bảng này lấy toạ độ giữa của quận, huyện cũ mà phường được sáp nhập
+  từ (bảng sáp nhập `legacy-commune-map.csv` của backend), toạ độ 39 quận, huyện cũ đối chiếu với ranh giới cũ trên
+  OpenStreetMap; tra từng tên phường mới qua dịch vụ bản đồ công khai cho kết quả sai nên không dùng. Đủ để ước tính sản
+  lượng (dữ liệu nắng tính theo ô lưới rộng hơn), không dùng để chỉ đường: nút "Xem bản đồ" của sales và kỹ thuật viên
+  tìm theo địa chỉ (`addressMapUrl`). Địa điểm đã lưu mà không sửa gì thì đi tiếp, trừ địa điểm cũ thiếu toạ độ, toạ độ
+  ngoài TP.HCM (khách từng tự nhập) hoặc chưa có mã phường: khi đó chọn lại phường, xã là tạo địa điểm + bản nháp mới; nút
+  Gửi cũng chặn trường hợp này. Bản nháp trên máy khôi phục chỉ các ô form hiện có (`knownFields` ở `assessmentDraft.ts`),
+  để khoá toạ độ cũ còn lưu không làm form bị coi là đã sửa.
 - Lưu mặt lắp (`saveSurface` ở `assessment-page.tsx`): lần đầu POST /pre-surveys (số liệu khai + độ dốc + hướng) rồi PUT
   .../surface; các lần sau chỉ ghi phần đổi (`surfaceDiffers`, `declaredDiffers`). **Độ dốc / hướng của mặt lắp dùng chung cột
   với form cũ** (PUT /pre-surveys/{id} ghi đè, đổi giá trị là mọi mô phỏng thành "cũ"), nên PUT surface trước rồi mới PUT số
