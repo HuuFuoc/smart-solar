@@ -4,6 +4,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import {
   BOOKING_HORIZON_DAYS,
   addDays,
+  coverageText,
   dayChip,
   formatDay,
   formatTime,
@@ -16,7 +17,7 @@ import type { SurveySlot } from '@/types/res/surveySlotsRes'
 import { cx } from '@/utils/cx'
 
 // Chọn giờ khảo sát: lưới 30 ngày rồi các giờ trống backend trả cho ngày đó
-// Không tự đoán giờ trống. Khách chỉ chọn giờ, hệ thống tự giữ chỗ một kỹ thuật viên
+// Không tự đoán giờ trống. Khách chỉ chọn giờ, rồi kỹ thuật viên trong khu vực của công trình tự nhận lịch
 
 const WEEK_HEADER = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
 
@@ -31,12 +32,8 @@ const choice = cx(
 /* Ghi chú của backend (tiếng Anh) khi ngày không còn giờ. Câu lạ thì in nguyên văn. */
 function noteText(note: string | null | undefined) {
   if (!note) return null
-  if (/no technician with a configured base/i.test(note)) return 'Chưa có kỹ thuật viên nào nhận lịch vào ngày này.'
   if (/no technician works on this date|start time has passed/i.test(note))
     return 'Ngày này không có ca làm, hoặc các giờ đã qua.'
-  const unverified = note.match(/^(\d+) time\(s\) could not be verified/i)
-  if (unverified)
-    return `${unverified[1]} giờ chưa kiểm tra được đường đi (dịch vụ bản đồ đang lỗi) nên chưa hiện. Thử lại sau ít phút.`
   return note
 }
 
@@ -193,12 +190,6 @@ export function SlotPicker({
                 <Skeleton key={i} className="h-11 lg:h-12" />
               ))}
             </div>
-          ) : slots.isError && slots.error.code === 'PROPERTY_SITE_LOCATION_REQUIRED' ? (
-            // Địa điểm cũ thiếu toạ độ, không có API sửa nên chỉ hướng dẫn
-            <Notice tone="warn" title="Địa điểm chưa có toạ độ">
-              Không có toạ độ công trình nên chưa tính được đường đi và giờ khảo sát. Liên hệ bộ phận kinh doanh, hoặc
-              làm lại đánh giá sơ bộ với toạ độ công trình.
-            </Notice>
           ) : slots.isError ? (
             <ErrorState
               title="Không tải được giờ trống."
@@ -209,6 +200,11 @@ export function SlotPicker({
                   : () => slots.refetch()
               }
             />
+          ) : slots.data && coverageText(slots.data.coverageStatus) ? (
+            // Khu vực của công trình chưa có kỹ thuật viên nhận lịch: báo lý do, khách liên hệ kinh doanh
+            <Notice tone="warn" title="Chưa đặt được giờ khảo sát">
+              {coverageText(slots.data.coverageStatus)} Bộ phận kinh doanh sẽ liên hệ để xếp lịch cho bạn.
+            </Notice>
           ) : list.length === 0 ? (
             <EmptyState title="Ngày này không còn giờ trống" description={note ?? 'Chọn một ngày khác trong lịch.'} />
           ) : (
@@ -229,7 +225,6 @@ export function SlotPicker({
                 name={name}
                 disabledStart={currentStartsAt}
               />
-              {slots.data && slots.data.unverifiedSlotCount > 0 && note && <Notice tone="warn">{note}</Notice>}
             </div>
           )}
         </fieldset>

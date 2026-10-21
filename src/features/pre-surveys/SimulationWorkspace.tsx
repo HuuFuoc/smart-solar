@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
-import { Field, Input, Select } from '@/components/common/ui/field'
+import { Field, Input, Select, WithUnit } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { Segmented } from '@/components/common/ui/segmented'
 import { EmptyState, Skeleton } from '@/components/common/ui/states'
-import { CompassPicker, WithUnit } from '@/features/pre-surveys/AssessmentFields'
+import { CompassPicker } from '@/features/pre-surveys/CompassPicker'
+import { SimulationSelection } from '@/features/pre-surveys/SimulationSelection'
+import { SimulationSkeleton, SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
+import { useRetryCountdown } from '@/hooks/useRetryCountdown'
+import { useCreateSimulationMutation } from '@/hooks/useSimulations'
 import {
   HCM_COORDINATE_HINT,
   directionLabel,
@@ -26,12 +30,12 @@ import {
   type SimulationErrors,
   type SimulationForm,
 } from '@/features/pre-surveys/simulationForm'
-import { SimulationSkeleton, SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
-import { useCreateSimulationMutation } from '@/hooks/useSimulations'
 import { SOLAR_PANEL_QUERY } from '@/features/products/productDisplay'
 import { useProductsQuery } from '@/hooks/useProducts'
-import { isApiError } from '@/services/api/errors'
+import { isApiError, type ApiError } from '@/services/api/errors'
+import type { ProductResponse } from '@/types/res/adminProductsRes'
 import type { PreSurveySurfaceView } from '@/types/res/preSurveySurfaceRes'
+import type { SimulationDetail } from '@/types/res/simulationsRes'
 import { cx } from '@/utils/cx'
 
 type Props = {
@@ -52,14 +56,31 @@ type Props = {
   aside?: ReactNode
 }
 
+type RunError = { message: string; showSurfaceLink?: boolean }
+
 const FIX_FIELDS = 'Sửa các ô được đánh dấu rồi chạy lại.'
 /** Các ô nằm trong mục gập "Khoảng cách lắp đặt và tổn hao" */
-const SPACING_KEYS = [...SPACING_FIELDS.map((f) => f.field), 'systemLossPercent'] as const
+const SPACING_KEYS: (keyof SimulationForm)[] = [...SPACING_FIELDS.map((spacing) => spacing.field), 'systemLossPercent']
 /** Server không gửi Retry-After thì chờ đủ 1 phút */
 const DEFAULT_RETRY_SECONDS = 60
 
+/** Câu đọc cho trình đọc màn hình sau khi chạy xong */
+function runAnnouncement(detail: SimulationDetail) {
+  const panels = `${detail.layout.panelCount} tấm, ${formatOne(detail.layout.installedCapacityKwp)} kWp`
+  const energy = detail.energy.annualEnergyKwh
+  if (energy == null) return `Đã chạy xong: ${panels}.`
+  return `Đã chạy xong: ${panels}, ${formatKwh(energy)} kWh mỗi năm.`
+}
+
+function runButtonLabel(running: boolean, secondsLeft: number) {
+  if (running) return 'Đang tính…'
+  if (secondsLeft > 0) return `Chạy lại sau ${secondsLeft} giây`
+  return 'Chạy mô phỏng'
+}
+
 // Bước "Mô phỏng": khách chọn tấm pin và kiểu lắp, rồi backend xếp tấm trên mặt lắp đã lưu và ước tính sản lượng.
-// Mỗi lần chạy được lưu lại. Chạy lại đúng cấu hình cũ thì backend trả lại kết quả cũ (200) thay vì tính lại.
+// Mỗi lần chạy chỉ được giữ 24 giờ; khách chọn một lần làm mô phỏng chính thì mới được lưu lại.
+// Chạy lại đúng cấu hình cũ trong 24 giờ thì backend trả lại kết quả cũ (200) thay vì tính lại.
 export function SimulationWorkspace({
   preSurveyId,
   surface,
@@ -74,113 +95,106 @@ export function SimulationWorkspace({
 }: Props) {
   const catalog = useProductsQuery(SOLAR_PANEL_QUERY)
   const panels = useMemo(() => (catalog.data?.items ?? []).filter(canSimulate), [catalog.data])
-  const create = useCreateSimulationMutation()
+  const createSimulation = useCreateSimulationMutation()
+  const running = createSimulation.isPending
   const [errors, setErrors] = useState<SimulationErrors>({})
-  const [formError, setFormError] = useState<{ message: string; surfaceLink?: boolean } | null>(null)
-  const [retryAt, setRetryAt] = useState<number | null>(null)
+  const [runError, setRunError] = useState<RunError | null>(null)
   // Mục "Khoảng cách lắp đặt" mở / đóng theo khách, tự mở khi có ô bên trong bị lỗi
   const [spacingOpen, setSpacingOpen] = useState(false)
   // Câu đọc kết quả cho trình đọc màn hình (focus vẫn ở nút chạy nên phải đọc ra)
   const [announcement, setAnnouncement] = useState('')
-  const [now, setNow] = useState(() => Date.now())
   const resultRef = useRef<HTMLDivElement>(null)
+  // Hết giờ chờ sau lỗi 429 thì tắt câu báo lỗi
+  const countdown = useRetryCountdown(() => setRunError(null))
 
-  // Chưa chọn tấm hoặc tấm đã nhớ không còn bán thì chọn sẵn tấm đầu danh sách
-  const firstPanel = panels[0]?.id
-  const known = panels.some((p) => p.id === form.productId)
+  // Chưa chọn tấm, hoặc tấm đang nhớ đã ngừng bán, thì chọn sẵn tấm đầu danh sách
+  // (nếu giữ id cũ thì ô chọn trống và backend trả 404)
+  const firstPanelId = panels[0]?.id
+  const selectedPanelKnown = panels.some((panel) => panel.id === form.productId)
   useEffect(() => {
-    if (firstPanel && (!form.productId || !known)) onFormChange({ ...form, productId: firstPanel })
-  }, [firstPanel, form, known, onFormChange])
+    if (firstPanelId && (!form.productId || !selectedPanelKnown)) {
+      onFormChange({ ...form, productId: firstPanelId })
+    }
+  }, [firstPanelId, form, selectedPanelKnown, onFormChange])
 
-  useEffect(() => {
-    if (retryAt === null) return
-    const timer = window.setInterval(() => {
-      const t = Date.now()
-      setNow(t)
-      if (t >= retryAt) {
-        setRetryAt(null)
-        setFormError(null)
-      }
-    }, 1000)
-    return () => window.clearInterval(timer)
-  }, [retryAt])
-  const waitSeconds = retryAt === null ? 0 : Math.max(0, Math.ceil((retryAt - now) / 1000))
+  const isRack = form.mountingType === 'RACK'
 
-  const rack = form.mountingType === 'RACK'
-  const hasLocation = surface.latitude != null && surface.longitude != null
-  // Toạ độ ngoài TP.HCM thì khí hậu, sản lượng sẽ tính ở nơi khác nên báo trước khi chạy
-  const outsideHcm =
-    surface.latitude != null && surface.longitude != null && !isInHcm(surface.latitude, surface.longitude)
-
-  function patch(next: Partial<SimulationForm>) {
-    onFormChange({ ...form, ...next })
-    const copy = { ...errors }
-    for (const key of Object.keys(next)) delete copy[key as keyof SimulationForm]
-    setErrors(copy)
-    // Sửa hết các ô bị đánh dấu thì tắt câu nhắc chung, câu lỗi của server giữ đến lần chạy sau
-    if (Object.keys(copy).length === 0 && formError?.message === FIX_FIELDS) setFormError(null)
+  /** Sửa form, xoá lỗi của các ô vừa sửa. Hết lỗi thì tắt câu nhắc chung */
+  function changeForm(patch: Partial<SimulationForm>) {
+    onFormChange({ ...form, ...patch })
+    const remaining = { ...errors }
+    for (const field of Object.keys(patch)) delete remaining[field as keyof SimulationForm]
+    setErrors(remaining)
+    if (Object.keys(remaining).length === 0 && runError?.message === FIX_FIELDS) setRunError(null)
   }
 
-  function setMounting(mountingType: MountingType) {
-    // Khung nghiêng: điền sẵn hướng mái để khách chỉ cần nhập góc nghiêng
-    const azimuth =
-      mountingType === 'RACK' && !form.panelAzimuthDegree && surface.surfaceAzimuthDegree != null
-        ? String(surface.surfaceAzimuthDegree)
-        : form.panelAzimuthDegree
-    patch({ mountingType, panelAzimuthDegree: azimuth })
+  function changeMounting(mountingType: MountingType) {
+    // Khung nghiêng: gợi ý hướng tấm trùng hướng mái, để khách chỉ cần nhập góc nghiêng
+    let panelAzimuthDegree = form.panelAzimuthDegree
+    if (mountingType === 'RACK' && !panelAzimuthDegree && surface.surfaceAzimuthDegree != null) {
+      panelAzimuthDegree = String(surface.surfaceAzimuthDegree)
+    }
+    changeForm({ mountingType, panelAzimuthDegree })
   }
 
-  async function run() {
-    if (create.isPending || waitSeconds > 0) return
-    const found = validateSimulation(form)
+  function showErrors(found: SimulationErrors) {
+    if (SPACING_KEYS.some((key) => found[key])) setSpacingOpen(true)
     setErrors(found)
+  }
+
+  async function runSimulation() {
+    if (running || countdown.secondsLeft > 0) return
+    const found = validateSimulation(form)
     if (Object.keys(found).length > 0) {
-      if (SPACING_KEYS.some((k) => found[k])) setSpacingOpen(true)
-      setFormError({ message: FIX_FIELDS })
+      showErrors(found)
+      setRunError({ message: FIX_FIELDS })
       return
     }
-    setFormError(null)
+    setErrors({})
+    setRunError(null)
     setAnnouncement('')
     try {
-      const detail = await create.mutateAsync({ preSurveyId, body: toSimulationRequest(form, surface.geometryVersion) })
+      const body = toSimulationRequest(form, surface.geometryVersion)
+      const detail = await createSimulation.mutateAsync({ preSurveyId, body })
       onView(detail.simulationId)
-      setAnnouncement(
-        `Đã chạy xong: ${detail.layout.panelCount} tấm, ${formatOne(detail.layout.installedCapacityKwp)} kWp${
-          detail.energy.annualEnergyKwh != null ? `, ${formatKwh(detail.energy.annualEnergyKwh)} kWh mỗi năm` : ''
-        }.`,
-      )
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      resultRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+      setAnnouncement(runAnnouncement(detail))
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      resultRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
     } catch (error) {
-      if (!isApiError(error)) return setFormError({ message: 'Không chạy được mô phỏng. Thử lại.' })
-      if (error.status === 429) {
-        const seconds = error.retryAfter ?? DEFAULT_RETRY_SECONDS
-        setRetryAt(Date.now() + seconds * 1000)
-        setNow(Date.now())
-        return setFormError({ message: 'Bạn đã chạy mô phỏng 10 lần trong một phút.' })
-      }
-      if (error.code === 'PRE_SURVEY_NOT_EDITABLE') return onDraftClosed()
-      if (error.code === 'PRODUCT_NOT_FOUND') void catalog.refetch()
-      const mapped = serverSimulationErrors(error)
-      if (SPACING_KEYS.some((k) => mapped[k])) setSpacingOpen(true)
-      setErrors(mapped)
-      setFormError({ message: error.message, surfaceLink: error.code === 'SURFACE_NOT_DEFINED' })
+      if (isApiError(error)) handleRunError(error)
+      else setRunError({ message: 'Không chạy được mô phỏng. Thử lại.' })
     }
   }
 
-  const selectedPanel = panels.find((p) => p.id === form.productId)
-  const mountingHint = MOUNTING_TYPES.find((m) => m.value === form.mountingType)?.hint
+  function handleRunError(error: ApiError) {
+    if (error.status === 429) {
+      countdown.start(error.retryAfter ?? DEFAULT_RETRY_SECONDS)
+      setRunError({ message: 'Bạn đã chạy mô phỏng 10 lần trong một phút.' })
+      return
+    }
+    if (error.code === 'PRE_SURVEY_NOT_EDITABLE') {
+      onDraftClosed()
+      return
+    }
+    // Tấm pin vừa bị ngừng bán: tải lại danh mục để chọn tấm khác
+    if (error.code === 'PRODUCT_NOT_FOUND') void catalog.refetch()
+    showErrors(serverSimulationErrors(error))
+    setRunError({ message: error.message, showSurfaceLink: error.code === 'SURFACE_NOT_DEFINED' })
+  }
+
+  const selectedPanel = panels.find((panel) => panel.id === form.productId)
+  const mountingHint = MOUNTING_TYPES.find((mounting) => mounting.value === form.mountingType)?.hint
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <Panel
         raised
         className="min-w-0 lg:col-span-2"
-        // Ô nằm trong <form> của wizard, Enter ở đây là chạy mô phỏng chứ không gửi form
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-            e.preventDefault()
-            void run()
+        // Ô cấu hình nằm trong <form> của wizard: Enter mặc định sẽ sang bước sau. Ở đây Enter là chạy mô phỏng
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
+            event.preventDefault()
+            void runSimulation()
           }
         }}
       >
@@ -189,97 +203,27 @@ export function SimulationWorkspace({
           description="Hệ thống xếp tấm trên mặt lắp đã lưu và ước tính sản lượng điện theo số liệu bức xạ của PVGIS tại địa điểm."
         />
         <PanelBody className="space-y-5">
-          <p className="text-body text-fg-2">
-            Mặt lắp {formatTwo(surface.surfaceWidthM)} × {formatTwo(surface.surfaceLengthM)} m, dốc{' '}
-            {formatTwo(surface.surfaceTiltDegree)}°, quay hướng {directionLabel(surface.surfaceAzimuthDegree)},{' '}
-            {surface.obstacles.length} vật cản.{' '}
-            <button type="button" className="tap ui-link font-medium" onClick={onEditSurface}>
-              Sửa mặt lắp
-            </button>
-            {surface.latitude != null && surface.longitude != null && !outsideHcm && (
-              <span className="block">
-                Toạ độ <span className="tnum">{formatCoordinates(surface.latitude, surface.longitude)}</span>.{' '}
-                <a
-                  className="tap ui-link font-medium"
-                  href={mapsUrl(surface.latitude, surface.longitude)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Xem trên bản đồ
-                  <span className="sr-only"> (mở tab mới)</span>
-                </a>
-              </span>
-            )}
-          </p>
-
-          {outsideHcm && surface.latitude != null && surface.longitude != null && (
-            <Notice tone="warn" title="Toạ độ địa điểm nằm ngoài TP.HCM">
-              Khí hậu và sản lượng sẽ tính tại{' '}
-              <span className="tnum">{formatCoordinates(surface.latitude, surface.longitude)}</span>, không phải công
-              trình của bạn. Toạ độ ở TP.HCM có {HCM_COORDINATE_HINT}.
-              <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                <button type="button" className="tap ui-link font-medium" onClick={onEditSite}>
-                  Sửa toạ độ ở bước Địa điểm
-                </button>
-                <a
-                  className="tap ui-link font-medium"
-                  href={mapsUrl(surface.latitude, surface.longitude)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Xem trên bản đồ
-                  <span className="sr-only"> (mở tab mới)</span>
-                </a>
-              </span>
-            </Notice>
-          )}
-
-          {!hasLocation && (
-            <Notice tone="warn" title="Địa điểm chưa có toạ độ">
-              Kết quả sẽ chỉ có bố trí tấm, chưa có sản lượng điện.{' '}
-              <button type="button" className="tap ui-link font-medium" onClick={onEditSite}>
-                Thêm toạ độ ở bước Địa điểm
-              </button>
-            </Notice>
-          )}
+          <SurfaceSummary surface={surface} onEditSurface={onEditSurface} />
+          <LocationNotices surface={surface} onEditSite={onEditSite} />
 
           <div className="grid gap-4 md:grid-cols-2">
-            {panels.length > 0 ? (
-              <Field label="Tấm pin" htmlFor="simPanel" error={errors.productId}>
-                <Select
-                  id="simPanel"
-                  value={form.productId}
-                  onChange={(e) => patch({ productId: e.target.value })}
-                  aria-invalid={Boolean(errors.productId)}
-                >
-                  {panels.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({formatKwh(p.ratedPowerW)} W)
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            ) : catalog.isPending ? (
-              <div aria-busy="true" aria-label="Đang tải danh mục tấm pin" className="flex flex-col gap-2">
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="h-11 lg:h-10" />
-              </div>
-            ) : (
-              <Notice tone="warn">
-                {catalog.isError
-                  ? 'Không tải được danh mục tấm pin.'
-                  : 'Danh mục chưa có tấm pin đang bán đủ công suất và kích thước để mô phỏng.'}
-              </Notice>
-            )}
+            <PanelSelect
+              panels={panels}
+              loading={catalog.isPending}
+              failed={catalog.isError}
+              value={form.productId}
+              error={errors.productId}
+              onChange={(productId) => changeForm({ productId })}
+            />
             <div className="flex flex-col gap-2">
               <span aria-hidden className="text-body font-medium text-fg">
                 Kiểu lắp
               </span>
               <Segmented
                 label="Kiểu lắp"
-                options={MOUNTING_TYPES.map((m) => ({ value: m.value, label: m.label }))}
+                options={MOUNTING_TYPES.map((mounting) => ({ value: mounting.value, label: mounting.label }))}
                 value={form.mountingType}
-                onChange={setMounting}
+                onChange={changeMounting}
                 className="w-full sm:w-fit"
               />
               {mountingHint && <p className="text-meta text-fg-3">{mountingHint}</p>}
@@ -292,98 +236,29 @@ export function SimulationWorkspace({
             </p>
           )}
 
-          {rack && (
-            <div className="grid gap-4 md:grid-cols-[minmax(0,14rem)_1fr]">
-              <Field
-                label="Góc nghiêng tấm"
-                htmlFor="simTilt"
-                hint="So với mặt phẳng ngang."
-                error={errors.panelTiltDegree}
-              >
-                <WithUnit unit="độ">
-                  <Input
-                    id="simTilt"
-                    inputMode="decimal"
-                    value={form.panelTiltDegree}
-                    onChange={(e) => patch({ panelTiltDegree: e.target.value })}
-                    aria-invalid={Boolean(errors.panelTiltDegree)}
-                  />
-                </WithUnit>
-              </Field>
-              <CompassPicker
-                name="panelAzimuth"
-                legend="Tấm pin quay về hướng nào?"
-                hint="Hướng mặt tấm nhìn ra, độc lập với hướng mái."
-                className=""
-                value={form.panelAzimuthDegree}
-                error={errors.panelAzimuthDegree}
-                onChange={(panelAzimuthDegree) => patch({ panelAzimuthDegree })}
-              />
-            </div>
-          )}
+          {isRack && <RackFields form={form} errors={errors} onChange={changeForm} />}
 
-          <details
-            className="border-t border-line pt-3"
+          <SpacingFields
+            form={form}
+            errors={errors}
             open={spacingOpen}
-            onToggle={(e) => setSpacingOpen(e.currentTarget.open)}
-          >
-            <summary className="tap w-fit cursor-pointer text-body font-medium text-accent-fg underline-offset-4 hover:underline">
-              Khoảng cách lắp đặt và tổn hao (không bắt buộc)
-            </summary>
-            <p className="mt-2 text-meta text-fg-3">
-              Không chắc thì để trống: hệ thống dùng số mặc định đang hiện mờ trong ô, kết quả ghi rõ giá trị đã dùng.
-              Đơn vị mm (20 mm = 2 cm).
-            </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {SPACING_FIELDS.filter((s) => rack || !s.rackOnly).map((s) => (
-                <Field
-                  key={s.field}
-                  label={s.label}
-                  htmlFor={`sim-${s.field}`}
-                  hint={s.hint(form.mountingType)}
-                  error={errors[s.field]}
-                >
-                  <WithUnit unit="mm">
-                    <Input
-                      id={`sim-${s.field}`}
-                      inputMode="decimal"
-                      placeholder={s.placeholder(form.mountingType)}
-                      value={form[s.field]}
-                      onChange={(e) => patch({ [s.field]: e.target.value })}
-                      aria-invalid={Boolean(errors[s.field])}
-                    />
-                  </WithUnit>
-                </Field>
-              ))}
-              <Field
-                label="Tổn hao hệ thống"
-                htmlFor="simLoss"
-                hint={`Mặc định ${DEFAULT_SYSTEM_LOSS_PERCENT}% (theo PVGIS).`}
-                error={errors.systemLossPercent}
-              >
-                <WithUnit unit="%">
-                  <Input
-                    id="simLoss"
-                    inputMode="decimal"
-                    placeholder={DEFAULT_SYSTEM_LOSS_PERCENT}
-                    value={form.systemLossPercent}
-                    onChange={(e) => patch({ systemLossPercent: e.target.value })}
-                    aria-invalid={Boolean(errors.systemLossPercent)}
-                  />
-                </WithUnit>
-              </Field>
-            </div>
-          </details>
+            onOpenChange={setSpacingOpen}
+            onChange={changeForm}
+          />
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line pt-4">
-            <Button variant="soft" onClick={run} disabled={create.isPending || waitSeconds > 0 || panels.length === 0}>
-              {create.isPending ? 'Đang tính…' : waitSeconds > 0 ? `Chạy lại sau ${waitSeconds} giây` : 'Chạy mô phỏng'}
+            <Button
+              variant="soft"
+              onClick={runSimulation}
+              disabled={running || countdown.secondsLeft > 0 || panels.length === 0}
+            >
+              {runButtonLabel(running, countdown.secondsLeft)}
             </Button>
-            {formError && (
+            {runError && (
               <span className="flex items-center gap-1.5 text-body font-medium text-danger" role="alert">
                 <Icon name="error" className="shrink-0 text-[20px]" />
-                {formError.message}
-                {formError.surfaceLink && (
+                {runError.message}
+                {runError.showSurfaceLink && (
                   <button type="button" className="tap ui-link ml-1" onClick={onEditSurface}>
                     Về bước mặt lắp
                   </button>
@@ -395,36 +270,290 @@ export function SimulationWorkspace({
       </Panel>
 
       <div ref={resultRef} className="min-w-0 scroll-mt-20 lg:col-span-3 lg:row-start-2">
-        <Panel>
-          <PanelHeader title="Kết quả mô phỏng" />
-          <PanelBody className="space-y-4">
-            <div aria-live="polite">
-              {create.isPending && (
-                <Notice tone="info">
-                  Đang xếp tấm và lấy số liệu bức xạ từ PVGIS, NASA POWER. Có thể mất tới 30 giây.
-                </Notice>
-              )}
-              {!create.isPending && announcement && <p className="sr-only">{announcement}</p>}
-            </div>
-            {viewId ? (
-              // Đang chạy lần mới thì giữ kết quả cũ (mờ đi) thay vì nháy khung chờ
-              <div className={cx(create.isPending && 'opacity-50 transition-opacity')}>
-                <SimulationViewer
-                  preSurveyId={preSurveyId}
-                  simulationId={viewId}
-                  staleNote="Mặt lắp đã sửa sau lần chạy này. Chạy lại để có kết quả theo mặt lắp mới."
-                />
-              </div>
-            ) : create.isPending ? (
-              <SimulationSkeleton />
-            ) : (
-              <EmptyState title="Chưa chạy mô phỏng" description="Chọn tấm pin và kiểu lắp rồi bấm Chạy mô phỏng." />
-            )}
-          </PanelBody>
-        </Panel>
+        <ResultPanel
+          preSurveyId={preSurveyId}
+          geometryVersion={surface.geometryVersion}
+          viewId={viewId}
+          running={running}
+          announcement={announcement}
+          onDraftClosed={onDraftClosed}
+        />
       </div>
 
+      {/* Thứ tự DOM là thứ tự trên điện thoại (cột phụ ở cuối), từ lg cột phụ mới lên hàng đầu */}
       {aside && <div className="min-w-0 space-y-4 self-start lg:col-start-3 lg:row-start-1">{aside}</div>}
     </div>
+  )
+}
+
+function MapLink({ latitude, longitude }: { latitude: number; longitude: number }) {
+  return (
+    <a className="tap ui-link font-medium" href={mapsUrl(latitude, longitude)} target="_blank" rel="noreferrer">
+      Xem trên bản đồ
+      <span className="sr-only"> (mở tab mới)</span>
+    </a>
+  )
+}
+
+/** Toạ độ của địa điểm nếu có (null khi chưa khai) */
+function surfaceLocation(surface: PreSurveySurfaceView) {
+  if (surface.latitude == null || surface.longitude == null) return null
+  return { latitude: surface.latitude, longitude: surface.longitude }
+}
+
+/** Một dòng tóm tắt mặt lắp đã lưu, kèm toạ độ nếu nằm trong TP.HCM */
+function SurfaceSummary({ surface, onEditSurface }: { surface: PreSurveySurfaceView; onEditSurface: () => void }) {
+  const location = surfaceLocation(surface)
+  const showLocation = location !== null && isInHcm(location.latitude, location.longitude)
+  return (
+    <p className="text-body text-fg-2">
+      Mặt lắp {formatTwo(surface.surfaceWidthM)} × {formatTwo(surface.surfaceLengthM)} m, dốc{' '}
+      {formatTwo(surface.surfaceTiltDegree)}°, quay hướng {directionLabel(surface.surfaceAzimuthDegree)},{' '}
+      {surface.obstacles.length} vật cản.{' '}
+      <button type="button" className="tap ui-link font-medium" onClick={onEditSurface}>
+        Sửa mặt lắp
+      </button>
+      {showLocation && (
+        <span className="block">
+          Toạ độ <span className="tnum">{formatCoordinates(location.latitude, location.longitude)}</span>.{' '}
+          <MapLink latitude={location.latitude} longitude={location.longitude} />
+        </span>
+      )}
+    </p>
+  )
+}
+
+/** Cảnh báo về toạ độ trước khi chạy: chưa có toạ độ, hoặc toạ độ nằm ngoài TP.HCM */
+function LocationNotices({ surface, onEditSite }: { surface: PreSurveySurfaceView; onEditSite: () => void }) {
+  const location = surfaceLocation(surface)
+
+  if (location === null) {
+    return (
+      <Notice tone="warn" title="Địa điểm chưa có toạ độ">
+        Kết quả sẽ chỉ có bố trí tấm, chưa có sản lượng điện.{' '}
+        <button type="button" className="tap ui-link font-medium" onClick={onEditSite}>
+          Thêm toạ độ ở bước Địa điểm
+        </button>
+      </Notice>
+    )
+  }
+
+  // Toạ độ ngoài TP.HCM thì khí hậu, sản lượng sẽ tính ở nơi khác
+  if (!isInHcm(location.latitude, location.longitude)) {
+    return (
+      <Notice tone="warn" title="Toạ độ địa điểm nằm ngoài TP.HCM">
+        Khí hậu và sản lượng sẽ tính tại{' '}
+        <span className="tnum">{formatCoordinates(location.latitude, location.longitude)}</span>, không phải công trình
+        của bạn. Toạ độ ở TP.HCM có {HCM_COORDINATE_HINT}.
+        <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+          <button type="button" className="tap ui-link font-medium" onClick={onEditSite}>
+            Sửa toạ độ ở bước Địa điểm
+          </button>
+          <MapLink latitude={location.latitude} longitude={location.longitude} />
+        </span>
+      </Notice>
+    )
+  }
+  return null
+}
+
+/** Ô chọn tấm pin, hoặc khung chờ / thông báo khi danh mục chưa có tấm dùng được */
+function PanelSelect({
+  panels,
+  loading,
+  failed,
+  value,
+  error,
+  onChange,
+}: {
+  panels: ProductResponse[]
+  loading: boolean
+  failed: boolean
+  value: string
+  error: string | undefined
+  onChange: (productId: string) => void
+}) {
+  if (panels.length > 0) {
+    return (
+      <Field label="Tấm pin" htmlFor="simPanel" error={error}>
+        <Select id="simPanel" value={value} onChange={(e) => onChange(e.target.value)} aria-invalid={Boolean(error)}>
+          {panels.map((panel) => (
+            <option key={panel.id} value={panel.id}>
+              {panel.name} ({formatKwh(panel.ratedPowerW)} W)
+            </option>
+          ))}
+        </Select>
+      </Field>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div aria-busy="true" aria-label="Đang tải danh mục tấm pin" className="flex flex-col gap-2">
+        <Skeleton className="h-5 w-16" />
+        <Skeleton className="h-11 lg:h-10" />
+      </div>
+    )
+  }
+
+  const message = failed
+    ? 'Không tải được danh mục tấm pin.'
+    : 'Danh mục chưa có tấm pin đang bán đủ công suất và kích thước để mô phỏng.'
+  return <Notice tone="warn">{message}</Notice>
+}
+
+type FormFieldsProps = {
+  form: SimulationForm
+  errors: SimulationErrors
+  onChange: (patch: Partial<SimulationForm>) => void
+}
+
+/** Góc nghiêng và hướng riêng của tấm, chỉ có ở kiểu khung nghiêng */
+function RackFields({ form, errors, onChange }: FormFieldsProps) {
+  return (
+    <div className="grid gap-4 md:grid-cols-[minmax(0,14rem)_1fr]">
+      <Field label="Góc nghiêng tấm" htmlFor="simTilt" hint="So với mặt phẳng ngang." error={errors.panelTiltDegree}>
+        <WithUnit unit="độ">
+          <Input
+            id="simTilt"
+            inputMode="decimal"
+            value={form.panelTiltDegree}
+            onChange={(e) => onChange({ panelTiltDegree: e.target.value })}
+            aria-invalid={Boolean(errors.panelTiltDegree)}
+          />
+        </WithUnit>
+      </Field>
+      <CompassPicker
+        name="panelAzimuth"
+        legend="Tấm pin quay về hướng nào?"
+        hint="Hướng mặt tấm nhìn ra, độc lập với hướng mái."
+        className=""
+        value={form.panelAzimuthDegree}
+        error={errors.panelAzimuthDegree}
+        onChange={(panelAzimuthDegree) => onChange({ panelAzimuthDegree })}
+      />
+    </div>
+  )
+}
+
+/** Mục gập "Khoảng cách lắp đặt và tổn hao". Ô để trống thì backend dùng số mặc định (hiện mờ trong ô) */
+function SpacingFields({
+  form,
+  errors,
+  open,
+  onOpenChange,
+  onChange,
+}: FormFieldsProps & { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const isRack = form.mountingType === 'RACK'
+  const visibleFields = SPACING_FIELDS.filter((spacing) => isRack || !spacing.rackOnly)
+  return (
+    <details className="border-t border-line pt-3" open={open} onToggle={(e) => onOpenChange(e.currentTarget.open)}>
+      <summary className="tap w-fit cursor-pointer text-body font-medium text-accent-fg underline-offset-4 hover:underline">
+        Khoảng cách lắp đặt và tổn hao (không bắt buộc)
+      </summary>
+      <p className="mt-2 text-meta text-fg-3">
+        Không chắc thì để trống: hệ thống dùng số mặc định đang hiện mờ trong ô, kết quả ghi rõ giá trị đã dùng. Đơn vị
+        mm (20 mm = 2 cm).
+      </p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {visibleFields.map((spacing) => (
+          <Field
+            key={spacing.field}
+            label={spacing.label}
+            htmlFor={`sim-${spacing.field}`}
+            hint={spacing.hint(form.mountingType)}
+            error={errors[spacing.field]}
+          >
+            <WithUnit unit="mm">
+              <Input
+                id={`sim-${spacing.field}`}
+                inputMode="decimal"
+                placeholder={spacing.placeholder(form.mountingType)}
+                value={form[spacing.field]}
+                onChange={(e) => onChange({ [spacing.field]: e.target.value })}
+                aria-invalid={Boolean(errors[spacing.field])}
+              />
+            </WithUnit>
+          </Field>
+        ))}
+        <Field
+          label="Tổn hao hệ thống"
+          htmlFor="simLoss"
+          hint={`Mặc định ${DEFAULT_SYSTEM_LOSS_PERCENT}% (theo PVGIS).`}
+          error={errors.systemLossPercent}
+        >
+          <WithUnit unit="%">
+            <Input
+              id="simLoss"
+              inputMode="decimal"
+              placeholder={DEFAULT_SYSTEM_LOSS_PERCENT}
+              value={form.systemLossPercent}
+              onChange={(e) => onChange({ systemLossPercent: e.target.value })}
+              aria-invalid={Boolean(errors.systemLossPercent)}
+            />
+          </WithUnit>
+        </Field>
+      </div>
+    </details>
+  )
+}
+
+/** Khối kết quả: lần chạy đang xem, khung chờ khi đang chạy lần đầu, hoặc thông báo chưa chạy */
+function ResultPanel({
+  preSurveyId,
+  geometryVersion,
+  viewId,
+  running,
+  announcement,
+  onDraftClosed,
+}: {
+  preSurveyId: string
+  geometryVersion: number
+  viewId: string | null
+  running: boolean
+  announcement: string
+  onDraftClosed: () => void
+}) {
+  let content: ReactNode
+  if (viewId) {
+    // Đang chạy lần mới: giữ kết quả cũ trên màn (mờ đi) thay vì nháy khung chờ
+    content = (
+      <div className={cx(running && 'opacity-50 transition-opacity')}>
+        <SimulationViewer
+          preSurveyId={preSurveyId}
+          simulationId={viewId}
+          staleNote="Mặt lắp đã sửa sau lần chạy này. Chạy lại để có kết quả theo mặt lắp mới."
+        />
+      </div>
+    )
+  } else if (running) {
+    content = <SimulationSkeleton />
+  } else {
+    content = <EmptyState title="Chưa chạy mô phỏng" description="Chọn tấm pin và kiểu lắp rồi bấm Chạy mô phỏng." />
+  }
+
+  return (
+    <Panel>
+      <PanelHeader title="Kết quả mô phỏng" />
+      <PanelBody className="space-y-4">
+        <div aria-live="polite">
+          {running && (
+            <Notice tone="info">
+              Đang xếp tấm và lấy số liệu bức xạ từ PVGIS, NASA POWER. Có thể mất tới 30 giây.
+            </Notice>
+          )}
+          {!running && announcement && <p className="sr-only">{announcement}</p>}
+        </div>
+        {viewId && !running && (
+          <SimulationSelection
+            preSurveyId={preSurveyId}
+            geometryVersion={geometryVersion}
+            viewId={viewId}
+            onDraftClosed={onDraftClosed}
+          />
+        )}
+        {content}
+      </PanelBody>
+    </Panel>
   )
 }

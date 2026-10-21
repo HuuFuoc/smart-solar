@@ -1,8 +1,10 @@
 import type {
   AddUnavailablePeriodRequest,
+  SetTechnicianZonesRequest,
   SetWorkingScheduleRequest,
   UpsertTechnicianProfileRequest,
 } from '@/types/req/adminTechniciansReq'
+import type { OperationalZoneListItem } from '@/types/res/operationalZonesRes'
 import type { TechnicianProfileView, UnavailablePeriodView, WorkingScheduleView } from '@/types/res/adminTechniciansRes'
 import type { TechnicianScheduleView } from '@/types/res/technicianAppointmentsRes'
 import { get, post, put, del } from '@/services/api/client'
@@ -15,9 +17,19 @@ export function listTechnicians() {
   return get<TechnicianProfileView[]>(ENDPOINTS.adminTechnicians.base)
 }
 
-/** Nơi xuất phát, nhận lịch, số lịch tối đa / ngày, giờ rời nơi xuất phát sớm nhất */
+/** Bật / tắt nhận lịch và số lịch tối đa mỗi ngày */
 export function upsertTechnicianProfile(id: string, body: UpsertTechnicianProfileRequest) {
   return put<TechnicianProfileView>(ENDPOINTS.adminTechnicians.profile(id), body)
+}
+
+/** Thay cả danh sách khu vực phục vụ của kỹ thuật viên ([] là bỏ hết) */
+export function setTechnicianZones(id: string, body: SetTechnicianZonesRequest) {
+  return put<unknown>(ENDPOINTS.adminTechnicians.zones(id), body)
+}
+
+/** Mọi khu vực phục vụ (ADMIN, MANAGER) */
+export function listOperationalZones() {
+  return get<OperationalZoneListItem[]>(ENDPOINTS.operationalZones.base)
 }
 
 /** GET .../working-schedule */

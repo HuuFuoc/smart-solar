@@ -49,7 +49,7 @@ export function BookingPanel({
         : await book.mutateAsync({ id: surveyRequestId, body })
       const when = formatAppointment(result.startsAt, result.endsAt)
       if (rescheduling) toast.success(`Đã đổi lịch khảo sát sang ${when}.`)
-      else if (result.created) toast.success(`Đã đặt lịch khảo sát ${when}.`)
+      else if (result.created) toast.success(`Đã đặt lịch khảo sát ${when}. Đang chờ kỹ thuật viên trong khu vực nhận.`)
       else toast.success(`Lịch khảo sát ${when} đã được đặt trước đó.`)
       onDone?.()
     } catch (e) {
@@ -67,7 +67,7 @@ export function BookingPanel({
         description={
           rescheduling
             ? 'Lịch hiện tại giữ nguyên cho tới khi bạn xác nhận giờ mới.'
-            : 'Kỹ thuật viên tới công trình đo đạc và kiểm tra mái. Danh sách chỉ có giờ còn người nhận và đã tính đường đi.'
+            : 'Kỹ thuật viên tới công trình đo đạc và kiểm tra mái. Danh sách chỉ có giờ còn kỹ thuật viên trong khu vực rảnh.'
         }
       />
       <PanelBody className="space-y-6">

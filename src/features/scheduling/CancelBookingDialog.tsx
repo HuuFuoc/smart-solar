@@ -10,7 +10,7 @@ import type { CustomerAppointmentView } from '@/types/res/customerSurveyRequests
 
 const REASON_MAX = 200
 
-// Khách huỷ lịch còn BOOKED. Yêu cầu vẫn còn và đặt lại được nên dùng nút `danger` thường
+// Khách huỷ lịch khi còn đủ xa giờ hẹn. Yêu cầu vẫn còn và đặt lại được nên dùng nút `danger` thường
 export function CancelBookingDialog({
   surveyRequestId,
   appointment,

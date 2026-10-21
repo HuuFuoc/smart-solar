@@ -215,7 +215,11 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   `gen:api` không xoá); backend khai response thì `gen:api` ghi đè. Cùng lý do, luồng 1 (12/10/2026) viết tay
   `surveySlotsRes.ts`, `customerSurveyRequestsRes.ts`, `technicianAvailabilityRes.ts`, `technicianAppointmentsRes.ts`,
   `adminTechniciansRes.ts`, `adminUsersRes.ts` theo record C# của backend `main` (4d12e4d); request của các tag đó sinh
-  bình thường. `provincesRes.ts` cũng viết tay: kiểu của API công khai provinces.open-api.vn (không thuộc swagger).
+  bình thường. `administrativeUnitsRes.ts` (danh mục phường, xã) và `operationalZonesRes.ts` cũng viết tay theo record C#.
+- Image backend hiện tại (nhánh `fix/business-rules-flow-1-2`) lỗi khi xuất swagger (trùng schemaId
+  `AssignTechnicianRequest`), nên `docs/api/swagger.json` được bổ sung tay các hợp đồng mới theo record C#: `provinceCode`,
+  `communeCode` của `CreatePropertySiteRequest`, `SelectSimulationRequest` (kèm 2 đường dẫn chọn / bỏ chọn mô phỏng), nhận /
+  trả lịch của kỹ thuật viên, khu vực phục vụ. Khi backend sửa swagger thì xuất lại file này rồi chạy `gen:api`.
 - `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
   repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
   JWT; không đụng DB nào.
@@ -254,16 +258,17 @@ nhập làm nguồn chính + kéo thả vật cản.
   Ô số của vật cản báo lỗi ngay khi gõ (`liveObstacleErrors`, ô trống chưa báo); vật cản to hơn mặt lắp báo ở ô cỡ ("Bề dọc lớn
   hơn chiều dài mặt lắp") – theo chiều đó kéo trên hình đứng im là đúng; hình chỉ vẽ phần vật cản nằm trong mặt lắp (người test
   10/10/2026: gõ 1000000 thì hình "tràn", kéo dọc "không được").
-- Địa điểm (`SiteFields` ở `AssessmentFields.tsx`): dự án chỉ nhận công trình ở TP.HCM (người dùng 10/10/2026). Địa chỉ 2 cấp
-  theo đơn vị hành chính từ 01/07/2025 (người dùng chốt): tỉnh cố định "Thành phố Hồ Chí Minh" (ô chỉ đọc), phường/xã bắt buộc,
-  chọn bằng `Combobox` từ API công khai provinces.open-api.vn v2 (`/api/v2/p/79?depth=2`, 168 phường/xã/đặc khu, gồm Bình
-  Dương và Bà Rịa – Vũng Tàu cũ) – backend không có API địa giới nên FE gọi thẳng bằng fetch (`src/services/provinceService.ts`,
-  `src/hooks/useHcmWards.ts`, tải một lần mỗi phiên; địa chỉ gốc ở `VITE_PROVINCES_API_URL`, không khai thì dùng
-  `https://provinces.open-api.vn/api/v2`); không còn ô quận/huyện (`district` gửi null). API lỗi thì vẫn gõ tay được
-  - nút thử lại. Địa điểm đã lưu mà không sửa gì thì đi tiếp, không kiểm tra lại (địa chỉ cũ khai tự do trước ngày đó không
-    bị bắt chọn lại và tạo bản nháp mới). Toạ độ nằm ngoài khung TP.HCM (`isInHcm` ở `preSurveyDisplay.ts`) thì cảnh báo vàng,
-    vẫn cho lưu (người dùng chốt), lặp lại ở bước mô phỏng và kết quả; mục khí hậu ghi toạ độ + link bản đồ. Lý do: một bản
-    nháp thật nhập sai toạ độ ra khí hậu Nam Cực (−49 °C) và mọi lần chạy "chưa có sản lượng".
+- Địa điểm (`SiteFields.tsx`): dự án chỉ nhận công trình ở TP.HCM. Địa chỉ 2 cấp theo đơn vị hành chính từ 01/07/2025:
+  tỉnh cố định "Thành phố Hồ Chí Minh" (ô chỉ đọc, mã `79`), phường/xã bắt buộc, chọn bằng `Combobox` từ danh mục của backend
+  (`GET /api/administrative-units/communes?provinceCode=79`, 168 phường/xã/đặc khu; `src/services/administrativeUnitService.ts`,
+  `src/hooks/useCommunes.ts`, tải một lần mỗi phiên). Chọn trong danh sách thì form giữ cả tên (`ward`, để hiển thị) và mã
+  (`communeCode`); gõ tay không khớp tên nào thì báo "Chọn phường, xã trong danh sách." vì backend cần mã để xếp kỹ thuật
+  viên theo khu vực (thiếu mã thì đặt lịch bị `SITE_LOCATION_REQUIRED`). POST `/customers/me/sites` gửi `provinceCode` +
+  `communeCode`; 422 `ADMINISTRATIVE_LOCATION_*` báo ở ô phường, xã. Không còn ô quận/huyện (`district` gửi null). Địa điểm
+  đã lưu mà không sửa gì thì đi tiếp, trừ khi thiếu toạ độ hoặc chưa có mã phường (địa điểm tạo trước khi có danh mục):
+  khi đó bắt chọn lại, tạo địa điểm + bản nháp mới; nút Gửi cũng chặn trường hợp này. Toạ độ vẫn bắt buộc (để ước tính sản
+  lượng và để kỹ thuật viên mở bản đồ); nằm ngoài khung TP.HCM (`isInHcm` ở `preSurveyDisplay.ts`) thì cảnh báo vàng, vẫn
+  cho lưu, lặp lại ở bước mô phỏng và kết quả; mục khí hậu ghi toạ độ + link bản đồ.
 - Lưu mặt lắp (`saveSurface` ở `assessment-page.tsx`): lần đầu POST /pre-surveys (số liệu khai + độ dốc + hướng) rồi PUT
   .../surface; các lần sau chỉ ghi phần đổi (`surfaceDiffers`, `declaredDiffers`). **Độ dốc / hướng của mặt lắp dùng chung cột
   với form cũ** (PUT /pre-surveys/{id} ghi đè, đổi giá trị là mọi mô phỏng thành "cũ"), nên PUT surface trước rồi mới PUT số
@@ -282,17 +287,32 @@ nhập làm nguồn chính + kéo thả vật cản.
   `SOLAR_PANEL` đang bán đủ công suất + kích thước, Áp mái (FLUSH) / Khung nghiêng (RACK: góc + hướng riêng), khoảng cách mm
   (để trống = mặc định của BE; số mặc định hiện mờ trong ô bằng placeholder – không điền sẵn vì gửi số lên sẽ mất nguồn
   "mặc định" trong kết quả), tổn hao %. POST gửi `expectedGeometryVersion`; 201 tạo mới / 200 dùng lại; giới hạn 10 lần /
-  phút / người (429 + Retry-After, mã lỗi `AUTH_TOO_MANY_REQUESTS`) → nút đếm ngược. BE tự chọn lần tạo / dùng lại gần nhất làm
-  "Mô phỏng chính" (không có API chọn lại); `isStale` = tính theo mặt lắp cũ.
+  phút / người (429 + Retry-After, mã lỗi `AUTH_TOO_MANY_REQUESTS`) → nút đếm ngược. Kết quả chỉ được giữ tạm 24 giờ
+  (`expiresAt`), POST không tự chọn: khách bấm "Chọn làm mô phỏng chính" (`SimulationSelection.tsx`, POST
+  `.../simulations/{id}/select` kèm `expectedGeometryVersion`) thì backend mới lưu bản tóm tắt; "Bỏ chọn" là DELETE
+  `.../simulations/selection`. Lần chạy theo mặt lắp cũ (`isStale`) hoặc đã hết hạn thì không chọn được. GET danh sách trả
+  `{ items, selected, cacheAvailable }`: `items` là các lần còn hạn, `selected` là mô phỏng chính (bước xem lại và tóm tắt
+  của thanh các bước đọc `selected`). Gửi khi chưa chọn vẫn được, bước xem lại nhắc vàng.
 - Kết quả (`SimulationResult.tsx`, dùng chung khách hàng / sales, nạp qua `SimulationViewer.tsx`): số tấm, kWp, kWh/năm
   (null là "chưa có dữ liệu", không bao giờ 0), mặt bằng 2D / 3D, `EnergyChart.tsx` (cột một chuỗi theo skill dataviz, tooltip +
   phím mũi tên + bảng số liệu), cảnh báo kỹ thuật và giới hạn dịch theo mã (bảng mã ở `common/simulation.ts`, hàm ở `simulationDisplay.ts`; mã lạ in câu
   gốc của BE).
   3D `SimulationScene.tsx` dựng thẳng từ toạ độ BE (E/N/U, trục Z lên, `camera.up = (0,0,1)`, tấm pin là một `InstancedMesh`
   hộp đơn vị mặt trước ở z = 0), `three` + `@react-three/fiber` nạp bằng `React.lazy`. Lịch sử các lần chạy: `SimulationHistory.tsx`
-  (cao khoảng ba dòng rưỡi rồi cuộn trong khung, lần đang xem luôn cuộn tới; tiêu đề có số lần chạy – người dùng 10/10/2026).
-- Sales (`pages/ops/survey-request-page.tsx`): `selectedSimulation` của yêu cầu + các lần chạy khác, chỉ đọc (BE trả 403 nếu
-  sales POST); yêu cầu gửi khi chưa có mô phỏng thì hiện "Khách chưa chạy mô phỏng".
+  (cao khoảng ba dòng rưỡi rồi cuộn trong khung, lần đang xem luôn cuộn tới; tiêu đề có số lần chạy).
+- Bóng nắng trong 3D: đèn chính là mặt trời đặt theo vị trí thật tại toạ độ công trình (chưa có toạ độ thì giữa TP.HCM) vào
+  hôm nay, giờ do khách kéo ở `SunTimeSlider.tsx` (6:00 đến 18:00, nấc 15 phút, nằm đè mép dưới khung 3D, ngoài khung
+  `role="img"`). Vị trí mặt trời tính bằng công thức NOAA ở `features/pre-surveys/sunPosition.ts` (không thêm thư viện). Nhà,
+  vật cản, tấm pin đổ bóng xuống mái và mặt đất (`shadows="percentage"`, PCFSoft đã bị bỏ ở three.js bản mới). Mỗi tấm chia
+  lưới 3×3 ô, bắn tia từ tâm từng ô về phía mặt trời, trúng vật cản thì ô đó bị che và được phủ cam; mặt tấm quay lưng với
+  mặt trời thì cả tấm mất nắng; mặt trời dưới chân trời thì 100% tấm không có nắng. Thanh kéo ghi phần trăm diện tích tấm bị
+  che và số tấm bị che một phần, che rất ít ghi "dưới 1%". Chỉ là hình học: số sản lượng vẫn do backend tính và chưa trừ
+  bóng che (backend ghi rõ đây là giới hạn); tính tổn thất do bóng che là việc của backend.
+- Kết quả đầy đủ hết hạn sau 24 giờ: GET `.../simulations/{id}` của mô phỏng chính khi đó trả bản tóm tắt
+  (`source: "SUMMARY"`, không có bố trí); `SimulationViewer` hiện `SelectedSimulationSummary.tsx` (số tấm, kWp, sản lượng,
+  tấm pin, góc + hướng tấm) thay cho hình. Lần chạy khác đã hết hạn thì 410 `SIMULATION_EXPIRED`.
+- Sales (`pages/ops/survey-request-page.tsx`): `selectedSimulation` của yêu cầu + các lần chạy khác còn hạn, chỉ đọc (BE trả 403
+  nếu sales POST); yêu cầu gửi khi chưa có mô phỏng thì hiện "Khách chưa chạy mô phỏng".
 - **Hình vẽ to và nằm giữa** (người dùng 10/10/2026: "những chỗ cần phải to và nằm ở giữa thì lại là một mẩu"):
   - Bước mặt lắp và mô phỏng rộng hết trang: khối nhập liệu (kích thước + hướng / cấu hình mô phỏng) chiếm 2/3 hàng đầu cạnh
     cột phụ của trang (truyền qua prop `aside`), hình vẽ và kết quả rộng hết ở dưới (ở bước mặt lắp, khối vật cản chia hình +
@@ -301,8 +321,8 @@ nhập làm nguồn chính + kéo thả vật cản.
   - `SurfacePlan` phóng vừa khung như "vừa khung" của phần mềm vẽ: rộng bằng khung, cao tới phần khung nhìn còn thấy
     (`useViewportHeight` trừ 200px cho thanh trên, thanh thao tác và nhãn), không còn trần 420px / 80 px/m; hình căn giữa,
     chú thích (`caption`) nằm ngay dưới hình. Khung 3D 4:3, khung rộng từ 60rem (container query) thì cao vừa khung nhìn.
-  - Trang sales giữ cột 2/3 (cột phụ khách hàng + tiến độ cao hơn phần số liệu, đưa mô phỏng xuống rộng hết trang sẽ để lại
-    khoảng trống lớn); cột phụ dính khi cuộn để cạnh mặt bằng / 3D không trống.
+  - Trang chi tiết của sales và kỹ thuật viên: lịch + số liệu khách khai chiếm 2/3 cạnh cột thông tin khách, mô phỏng nằm
+    dưới cùng và trải hết chiều ngang (người dùng thấy cột phải trống suốt chiều dài mô phỏng là phí chỗ).
 - `/admin` → `/admin/products`: quản lý sản phẩm (`pages/admin/products-page.tsx`, bộ portal kit; tấm pin thiếu
   công suất/kích thước được tô cảnh báo vì mô phỏng không dùng được). Backend ẩn sản phẩm INACTIVE khỏi GET danh sách
   và GET chi tiết với mọi vai trò (dò 08/10/2026), nên: tạo mới luôn ACTIVE; "Ngừng bán" hỏi xác nhận, có "Hoàn tác";
@@ -311,40 +331,45 @@ nhập làm nguồn chính + kéo thả vật cản.
 - `/tech/products(/:id)`, `/manage/products(/:id)`: danh mục sản phẩm thật (GET /api/products, bản portal kit) cho kỹ
   thuật viên và quản lý. Không còn trang giữ chỗ "chưa có chức năng" (08/10/2026); `/field/*` chuyển về `/tech`.
 
-**Luồng 1: đặt lịch khảo sát → phân công → kỹ thuật viên nhận việc** (backend `main` 4d12e4d, nối 12/10/2026; tài liệu bàn
-giao BE "SmartSolar – Tài liệu bàn giao tích hợp FE/BE" 12/10/2026, contract đối chiếu bằng code backend chứ không theo bảng
-"Agent/Hardening" của tài liệu). Hiển thị trong `features/scheduling` (`schedulingDisplay.ts`: giờ Việt Nam, nhãn trạng thái,
-đường đi, lý do không xếp được; bảng mã ở `common/scheduling.ts`), tài khoản trong `features/users`. Luồng dừng ở "Nhận việc": không có "Hoàn thành khảo sát".
+**Luồng 1: khách đặt giờ khảo sát, kỹ thuật viên trong khu vực tự nhận lịch** (backend nhánh `fix/business-rules-flow-1-2`,
+tài liệu `guides/scheduling-and-admin.md`, `guides/administrative-locations-and-zones.md`). Hiển thị trong `features/scheduling`
+(`schedulingDisplay.ts`: giờ Việt Nam, nhãn trạng thái lịch và trạng thái khách thấy, lý do không có giờ / không nhận được
+lịch; bảng mã ở `common/scheduling.ts`), tài khoản trong `features/users`. Không còn tính đường đi (Vietmap đã bỏ): giữa hai lịch của một kỹ thuật viên có khoảng
+nghỉ cố định. Luồng dừng ở "kỹ thuật viên đã nhận lịch": khảo sát tại công trình (bắt đầu, số đo, ảnh, hoàn thành) chưa làm vì
+BE chưa có API cấp link tải ảnh lên S3 mà hoàn thành lại bắt buộc ảnh mái.
 
-- Giờ nghiệp vụ là giờ Việt Nam bất kể máy: hiển thị qua `Intl` với `timeZone: 'Asia/Ho_Chi_Minh'` (cả `formatDateTime` cũ),
-  ngày gửi API là chuỗi `YYYY-MM-DD` tính theo giờ Việt Nam (không `new Date('2026-10-20')`), giờ hẹn gửi kèm `+07:00`.
-- Khách `/customer/requests(/:id)` (`pages/customer/request(s)-page.tsx`): gửi đánh giá xong hộp thoại dẫn thẳng tới "Chọn giờ
-  khảo sát". `SlotPicker`: lưới 30 ngày (giới hạn đặt trước của BE) theo cột thứ + các giờ BE trả (GET /survey-slots) –
-  không tự vẽ khung giờ rồi đoán giờ trống; sau 15:30 mở sẵn ngày mai. Đặt (201; gửi lại đúng giờ → 200 `created=false`, vẫn
-  là thành công), đổi giờ / huỷ khi lịch còn BOOKED và chưa tới giờ; 409 SURVEY_SLOT_UNAVAILABLE thì tải lại giờ và bỏ chọn.
-  Khách không bao giờ thấy kỹ thuật viên đang được giữ chỗ, chỉ thấy người được phân công chính thức.
-- **Toạ độ công trình bắt buộc** ở bước địa điểm (trước đó gập lại, không bắt buộc): không có toạ độ BE không xếp được giờ
-  (PROPERTY_SITE_LOCATION_REQUIRED) và không có API sửa địa điểm. Địa điểm cũ thiếu toạ độ thì bước địa điểm bắt khai lại (tạo
-  địa điểm + bản nháp mới), gửi bị chặn; yêu cầu đã gửi thiếu toạ độ thì trang đặt giờ hướng dẫn liên hệ kinh doanh.
-- Sales `/ops/surveys/:id`: khối lịch khảo sát đứng đầu cột chính (`SalesSchedulePanel`). Khách đã đặt → phân công (danh sách
-  kỹ thuật viên rảnh của BE, người đang giữ chỗ chọn sẵn, mỗi người kèm chặng đường Vietmap); đã phân công → "Đổi kỹ thuật
-  viên" (PUT reassign) hoặc "Đổi giờ" (chọn ngày + giờ, "Xem kỹ thuật viên rảnh" với `startsAt` rồi PUT reschedule kèm người).
-  Không cập nhật lạc quan; lỗi thì lịch cũ giữ nguyên. Nhãn đỏ đầu trang: "Chưa phân công kỹ thuật viên".
-- Kỹ thuật viên `/tech/jobs(/:id)` "Việc của tôi" (trang chủ), `/tech/schedule?ngay=` "Lịch làm việc": danh sách theo ngày,
-  chi tiết (đường tới, công trình, khách, số liệu khai, mô phỏng khách chọn qua `SimulationViewer`), nút "Nhận việc"
-  (gửi lại khi đã nhận vẫn là thành công). Số đỏ ở menu = lịch sắp tới chờ nhận việc.
-- Quản trị `/admin/users(/:id)` "Tài khoản" (trang chủ admin) và `/admin/technicians(/:id)`, quản lý `/manage/technicians(/:id)`
-  (trang chủ quản lý; dùng chung `pages/technician(s)-page.tsx`). Tài khoản: tạo không có mật khẩu (link đặt mật khẩu chỉ gửi qua
-  email, dùng chính trang `/reset-password`; môi trường tắt email thì báo rõ link CHƯA gửi), sửa, vai trò, trạng thái, gửi link,
-  xoá mềm; không tự khoá / xoá chính mình. Kỹ thuật viên: lịch theo ngày, hồ sơ nhận lịch (nơi xuất phát, số lịch / ngày, giờ rời
-  sớm nhất), giờ làm theo tuần, lịch nghỉ (`?muc=lich|nhan-lich|gio-lam|nghi`). Thay đổi làm hỏng lịch đã có bị BE từ chối
-  (409 + danh sách lịch, `ConflictList`; ACCOUNT_HAS_ACTIVE_WORK ở trang tài khoản) – không tự huỷ lịch nào. Số đỏ ở menu = kỹ
-  thuật viên chưa có nơi xuất phát.
-- Chặng đường không tính được thì ghi rõ trạng thái, không bao giờ in "0 phút"; thiếu dữ liệu kẹt xe ghi "Không có dữ liệu giao
-  thông", không suy ra "thông thoáng"; lịch ngày chỉ dùng số của chặng OK (đang tính lại / cũ / lỗi thì ghi trạng thái).
-- Thử cả luồng không cần DB thật: chạy pipeline backend bằng `AuthApiFactory` của bộ test (SQLite trong bộ nhớ, Vietmap /
-  PVGIS giả, email bắt lại) sau một proxy cổng 8090, rồi `API_PROXY_TARGET=http://localhost:8090 npm run dev -- --port 3000`.
-  Factory dùng một kết nối SQLite chung nên proxy phải phục vụ tuần tự (nhiều request song song làm EF ném NullReference).
+- Khu vực phục vụ: mỗi phường, xã thuộc một khu (admin lập); kỹ thuật viên thuộc một hoặc nhiều khu. Địa điểm phải có mã phường
+  (`communeCode`) thì mới biết khu nào phục vụ.
+- Giờ nghiệp vụ là giờ Việt Nam bất kể máy: hiển thị qua `Intl` với `timeZone: 'Asia/Ho_Chi_Minh'`, ngày gửi API là chuỗi
+  `YYYY-MM-DD` tính theo giờ Việt Nam (không `new Date('2026-10-20')`), giờ hẹn gửi kèm `+07:00`.
+- Khách `/customer/requests(/:id)`: gửi đánh giá xong hộp thoại dẫn thẳng tới "Chọn giờ khảo sát". `SlotPicker`: lưới 30 ngày
+  - các giờ BE trả (GET /survey-slots, luôn 200); không có giờ thì `coverageStatus` cho biết vì sao (khu vực chưa có kỹ thuật
+    viên, kín lịch...) và báo khách. Đặt xong lịch ở `PENDING_ACCEPTANCE`, khách thấy `acceptanceStatus` (chờ kỹ thuật viên nhận,
+    nhân viên đang xếp người, đã xác nhận) và chỉ thấy tên kỹ thuật viên khi đã xác nhận. Đổi giờ / huỷ khi `canCustomerChange`.
+    Yêu cầu điều phối cho khu chưa có kỹ thuật viên (`dispatchAvailable`) chưa làm.
+- Kỹ thuật viên `/tech/jobs`: tab "Chờ nhận" (GET /technicians/me/open-appointments, lịch trong khu vực của mình, chưa có địa
+  chỉ cụ thể / số khách) với nút "Nhận việc" (POST .../accept kèm `expectedRevision`; người khác nhận trước thì 409
+  APPOINTMENT_ALREADY_TAKEN), tab "Đã nhận" và "Đã qua". Chi tiết `/tech/jobs/:id`: công trình, khách, số liệu khai, mô phỏng
+  khách chọn, nút "Trả lại việc" (lý do bắt buộc, lịch quay về chờ người khác nhận). Số đỏ ở menu = lịch chờ nhận được.
+- Sales `/ops/surveys/:id`: "Nhận yêu cầu" chỉ là nhận chăm sóc khách (không đổi trạng thái lịch). Khối lịch (`SalesSchedulePanel`):
+  chờ kỹ thuật viên nhận → chỉ theo dõi hạn nhận, có "Phân công thay"; quá hạn không ai nhận (ESCALATED, GET
+  /survey-requests/escalated) → khối "Cần phân công" tô đỏ; đã xác nhận → "Đổi kỹ thuật viên" / "Đổi giờ". Phân công và đổi người
+  bắt buộc lý do, gửi `expectedRevision` lấy từ GET /technicians/availability. Đổi giờ không chọn người: người cũ giữ lịch nếu
+  vẫn rảnh, không thì lịch quay về chờ nhận. Trạng thái yêu cầu: 1 chưa có kỹ thuật viên, 4 đã hẹn, 5 xong, 6 huỷ.
+- Quản trị `/admin/users(/:id)` và `/admin/technicians(/:id)`, quản lý `/manage/technicians(/:id)` (dùng chung
+  `pages/technician(s)-page.tsx`). Kỹ thuật viên: lịch theo ngày, hồ sơ nhận lịch (bật / tắt, số lịch / ngày), khu vực phục vụ
+  (`TechnicianZonesForm`, PUT .../zones thay cả danh sách), giờ làm, lịch nghỉ (`?muc=lich|nhan-lich|khu-vuc|gio-lam|nghi`). Thay
+  đổi làm hỏng lịch đã có bị BE từ chối (409 + danh sách lịch, `ConflictList`). Số đỏ ở menu = kỹ thuật viên chưa thuộc khu nào.
+  Trang lập / sửa khu vực (admin) chưa làm.
+- Trang chi tiết của sales và kỹ thuật viên mở đầu bằng khối "Tình hình" (`components/common/ui/progress-tracker.tsx`):
+  các bước nằm ngang (đã xong / đang ở / chưa tới) và một thông báo việc tiếp theo là của ai. Màu theo người xem: đỏ khi người
+  đang xem phải làm, xanh dương khi chờ người khác, xanh lá khi đã ổn, vàng khi đã qua giờ hẹn. Mô phỏng nằm dưới cùng và
+  trải hết chiều ngang, cột phải chỉ để thông tin khách.
+- Danh sách của sales và kỹ thuật viên là danh sách dạng cột (`ListHead`, `ListCells`, `ListCell` ở `list-row.tsx`): mỗi dòng
+  trải ngang thẳng với dòng tiêu đề cột, các tab cùng một bộ cột để chuyển tab không nhảy cột; màn hẹp thì ô xếp lưới 2 cột
+  và hiện nhãn trong ô. Người dùng không chấp nhận dòng dồn chữ bên trái, khoảng giữa bỏ trống. "Của tôi" của sales xếp
+  cần phân công lên đầu, rồi lịch sắp tới, rồi chưa có kỹ thuật viên, cuối cùng là đã qua giờ hẹn (danh sách của backend
+  không cho biết khách đã đặt giờ chưa nên các yêu cầu chưa có kỹ thuật viên chỉ ghi vậy).
 
 Mở lại một màn: khai báo trang ở đầu `routes/protectedRoutes.tsx`, thêm một dòng vào `pages` của portal, chuyển đường dẫn của nó lên
 phần "có route" trong `routes/paths.ts`, rồi thêm mục menu trong `config/portals.ts` (mọi portal). Sidebar/header không đặt số liệu giả (tên người dùng,

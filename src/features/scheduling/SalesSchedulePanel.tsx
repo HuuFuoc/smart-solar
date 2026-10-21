@@ -5,7 +5,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
-import { Field, Input, Select, Textarea } from '@/components/common/ui/field'
+import { DateField, Field, Textarea, TimeSelect } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
@@ -14,13 +14,15 @@ import { formatDateTime } from '@/features/pre-surveys/preSurveyDisplay'
 import { TechnicianChoiceList } from '@/features/scheduling/TechnicianChoiceList'
 import {
   BOOKING_HORIZON_DAYS,
-  HALF_HOUR_TIMES,
   addDays,
   appointmentStatusMeta,
+  assignmentSourceLabel,
   formatAppointment,
   formatDay,
+  formatMoment,
   formatTime,
   formatTimeRange,
+  ineligibleLabel,
   schedulingErrorMessage,
   todayVn,
   vnDate,
@@ -31,22 +33,20 @@ import {
   useSalesRescheduleMutation,
   useTechnicianAvailabilityQuery,
 } from '@/hooks/useSurveyRequests'
-import { errorMessage, isApiError, type ApiError } from '@/services/api/errors'
+import { errorMessage, type ApiError } from '@/services/api/errors'
 import type { AvailableTechnicianView, TechnicianAvailabilityView } from '@/types/res/technicianAvailabilityRes'
 import type { SurveyAppointmentSummary, SurveyRequestDetail } from '@/types/res/surveyRequestsRes'
 
-// Lịch khảo sát ở trang chi tiết yêu cầu của sales
-// Khách chưa đặt giờ: chỉ báo. Đã đặt: phân công từ danh sách kỹ thuật viên rảnh
-// Đã phân công: đổi người hoặc đổi giờ. Không cập nhật lạc quan, luôn chờ server
+// Lịch khảo sát ở trang chi tiết yêu cầu của sales.
+// Khách đặt giờ thì kỹ thuật viên trong khu vực tự nhận; sales chỉ theo dõi.
+// Quá hạn không ai nhận (ESCALATED) thì sales phân công, lý do bắt buộc. Không cập nhật lạc quan, luôn chờ server
 
 /** Chọn sẵn người đang giữ chỗ nếu còn trong danh sách, không thì người đầu tiên */
 function defaultChoice(list: AvailableTechnicianView[], preferredId?: string | null) {
-  return (
-    list.find((t) => t.technicianUserId === preferredId) ?? list.find((t) => t.isCurrentReservation) ?? list[0] ?? null
-  )
+  return list.find((t) => t.technicianUserId === preferredId) ?? list.find((t) => t.isCapacityHolder) ?? list[0] ?? null
 }
 
-/* Trạng thái tải của danh sách kỹ thuật viên rảnh; có danh sách thì vẽ `children`. */
+/* Trạng thái tải của danh sách kỹ thuật viên rảnh; có danh sách thì vẽ `children` */
 function AvailabilityState({
   query,
   children,
@@ -57,8 +57,8 @@ function AvailabilityState({
   if (query.isPending)
     return (
       <div aria-label="Đang kiểm tra kỹ thuật viên rảnh" className="space-y-2">
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
+        <Skeleton className="h-16" />
+        <Skeleton className="h-16" />
       </div>
     )
   if (query.isError)
@@ -72,20 +72,17 @@ function AvailabilityState({
   const data = query.data
   return (
     <div className="space-y-3" aria-busy={query.isFetching}>
-      {data.routingStatus !== 'VERIFIED' && (
-        <Notice tone="warn">
-          Chưa kiểm tra được đường đi của một số kỹ thuật viên (dịch vụ bản đồ lỗi) nên họ không có trong danh sách.{' '}
-          <button type="button" className="tap ui-link font-medium" onClick={() => query.refetch()}>
-            Kiểm tra lại
-          </button>
-        </Notice>
-      )}
       {data.technicians.length === 0 ? (
         <Notice tone="warn" title="Không còn kỹ thuật viên nào nhận được giờ này">
-          Đổi giờ khảo sát, hoặc xem lại giờ làm và lịch nghỉ của kỹ thuật viên.
+          Đổi giờ khảo sát, hoặc nhờ quản lý thêm kỹ thuật viên vào khu vực {data.zone?.name ?? 'của công trình'}.
         </Notice>
       ) : (
         children(data)
+      )}
+      {data.ineligible.length > 0 && (
+        <p className="text-meta text-fg-2">
+          Không nhận được: {data.ineligible.map((t) => `${t.fullName} (${ineligibleLabel(t.reason)})`).join(', ')}.
+        </p>
       )}
     </div>
   )
@@ -101,14 +98,21 @@ function ErrorLine({ message }: { message: string | null }) {
   )
 }
 
+/** Ô lý do bắt buộc khi phân công / đổi người */
+function ReasonField({ id, value, onChange }: { id: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <Field label="Lý do" htmlFor={id} required hint="Bắt buộc, tối đa 500 ký tự. Lưu vào lịch sử của lịch hẹn.">
+      <Textarea id={id} rows={2} maxLength={500} value={value} onChange={(e) => onChange(e.target.value)} />
+    </Field>
+  )
+}
+
 function AssignPanel({
   request,
   appointment,
-  onReschedule,
 }: {
   request: SurveyRequestDetail
   appointment: SurveyAppointmentSummary
-  onReschedule: () => void
 }) {
   const availability = useTechnicianAvailabilityQuery(request.surveyRequestId)
   const [picked, setPicked] = useState<string | null>(null)
@@ -117,21 +121,27 @@ function AssignPanel({
   const assign = useAssignTechnicianMutation()
   const list = availability.data?.technicians ?? []
   const selected =
-    list.find((t) => t.technicianUserId === picked) ?? defaultChoice(list, appointment.reservedTechnicianUserId)
+    list.find((t) => t.technicianUserId === picked) ?? defaultChoice(list, appointment.capacityHolderUserId)
+  const escalated = appointment.status === 'ESCALATED'
 
   async function submit() {
-    if (!selected) return
+    if (!selected || !availability.data) return
+    if (!reason.trim()) {
+      setError('Ghi lý do phân công.')
+      return
+    }
     setError(null)
     try {
       const result = await assign.mutateAsync({
         id: request.surveyRequestId,
         technicianUserId: selected.technicianUserId,
-        reason: reason.trim() || null,
+        reason: reason.trim(),
+        revision: availability.data.revision,
         reassign: false,
       })
-      toast.success(`Đã phân công ${result.technicianName}. Kỹ thuật viên cần xác nhận nhận việc.`)
+      toast.success(`Đã phân công ${result.technicianName}.`)
     } catch (e) {
-      if (isApiError(e) && e.code === 'TECHNICIAN_NOT_AVAILABLE') setPicked(null)
+      setPicked(null)
       setError(schedulingErrorMessage(e))
     }
   }
@@ -139,16 +149,14 @@ function AssignPanel({
   return (
     <Panel raised>
       <PanelHeader
-        title="Phân công kỹ thuật viên"
-        description={`Khách đã đặt ${formatAppointment(appointment.startsAt, appointment.endsAt)}. Hệ thống đang giữ chỗ cho ${appointment.reservedTechnicianName}; đổi người nếu cần.`}
-        action={
-          <Button size="sm" icon="edit_calendar" onClick={onReschedule}>
-            Đổi giờ
-          </Button>
+        title={escalated ? 'Cần phân công kỹ thuật viên' : 'Phân công thay kỹ thuật viên'}
+        description={
+          escalated
+            ? `Lịch ${formatAppointment(appointment.startsAt, appointment.endsAt)} quá hạn mà không kỹ thuật viên nào nhận.`
+            : `Lịch ${formatAppointment(appointment.startsAt, appointment.endsAt)} đang chờ kỹ thuật viên nhận. Chỉ phân công khi cần.`
         }
       />
       <PanelBody className="space-y-4">
-        {appointment.customerNote && <Notice title="Ghi chú của khách">{appointment.customerNote}</Notice>}
         <AvailabilityState query={availability}>
           {(data) => (
             <TechnicianChoiceList
@@ -162,15 +170,14 @@ function AssignPanel({
             />
           )}
         </AvailabilityState>
-        <Field label="Ghi chú phân công" htmlFor="assign-reason" hint="Không bắt buộc. Lưu vào lịch sử của lịch hẹn.">
-          <Textarea
-            id="assign-reason"
-            rows={2}
-            maxLength={500}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
-        </Field>
+        <ReasonField
+          id="assign-reason"
+          value={reason}
+          onChange={(value) => {
+            setReason(value)
+            setError(null)
+          }}
+        />
       </PanelBody>
       <PanelFooter className="justify-end">
         <ErrorLine message={error} />
@@ -187,6 +194,46 @@ function AssignPanel({
   )
 }
 
+/** Lịch đang chờ kỹ thuật viên trong khu vực tự nhận: sales chỉ theo dõi, phân công thay khi cần */
+function WaitingPanel({
+  request,
+  appointment,
+  onReschedule,
+}: {
+  request: SurveyRequestDetail
+  appointment: SurveyAppointmentSummary
+  onReschedule: () => void
+}) {
+  const [assigning, setAssigning] = useState(false)
+  return (
+    <>
+      <Panel>
+        <PanelHeader
+          title="Lịch khảo sát"
+          action={
+            <>
+              <Button size="sm" variant="soft" icon="edit_calendar" onClick={onReschedule}>
+                Đổi giờ
+              </Button>
+              {!assigning && (
+                <Button size="sm" variant="soft" icon="person_add" onClick={() => setAssigning(true)}>
+                  Phân công thay
+                </Button>
+              )}
+            </>
+          }
+        />
+        <PanelBody className="space-y-4">
+          <ScheduleTime appointment={appointment} />
+          <Facts items={[{ k: 'Hạn kỹ thuật viên nhận', v: formatMoment(appointment.acceptanceDeadlineAt) }]} />
+          {appointment.customerNote && <Notice title="Ghi chú của khách">{appointment.customerNote}</Notice>}
+        </PanelBody>
+      </Panel>
+      {assigning && <AssignPanel request={request} appointment={appointment} />}
+    </>
+  )
+}
+
 function ReassignDialog({
   request,
   appointment,
@@ -198,7 +245,7 @@ function ReassignDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const availability = useTechnicianAvailabilityQuery(request.surveyRequestId, undefined, { enabled: open })
+  const availability = useTechnicianAvailabilityQuery(request.surveyRequestId, { enabled: open })
   const [picked, setPicked] = useState<string | null>(null)
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -208,19 +255,24 @@ function ReassignDialog({
   const selected = others.find((t) => t.technicianUserId === picked) ?? others[0] ?? null
 
   async function submit() {
-    if (!selected) return
+    if (!selected || !availability.data) return
+    if (!reason.trim()) {
+      setError('Ghi lý do đổi người.')
+      return
+    }
     setError(null)
     try {
       const result = await assign.mutateAsync({
         id: request.surveyRequestId,
         technicianUserId: selected.technicianUserId,
-        reason: reason.trim() || null,
+        reason: reason.trim(),
+        revision: availability.data.revision,
         reassign: true,
       })
-      toast.success(`Đã chuyển lịch cho ${result.technicianName}. Kỹ thuật viên cần xác nhận nhận việc.`)
+      toast.success(`Đã chuyển lịch cho ${result.technicianName}.`)
       onOpenChange(false)
     } catch (e) {
-      if (isApiError(e) && e.code === 'TECHNICIAN_NOT_AVAILABLE') setPicked(null)
+      setPicked(null)
       setError(schedulingErrorMessage(e))
     }
   }
@@ -239,12 +291,6 @@ function ReassignDialog({
         {appointment.assignedTechnicianName}.
       </p>
       <div className="mt-4 max-h-[55dvh] space-y-4 overflow-y-auto scrollbar-thin">
-        {appointment.status === 'ACKNOWLEDGED' && (
-          <Notice tone="warn">
-            {appointment.assignedTechnicianName} đã nhận việc. Đổi người thì xác nhận đó hết hiệu lực và người mới phải
-            xác nhận lại.
-          </Notice>
-        )}
         <AvailabilityState query={availability}>
           {() =>
             others.length === 0 ? (
@@ -262,15 +308,14 @@ function ReassignDialog({
             )
           }
         </AvailabilityState>
-        <Field label="Lý do đổi người" htmlFor="reassign-reason" hint="Lưu vào lịch sử và báo cho người cũ.">
-          <Textarea
-            id="reassign-reason"
-            rows={2}
-            maxLength={500}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
-        </Field>
+        <ReasonField
+          id="reassign-reason"
+          value={reason}
+          onChange={(value) => {
+            setReason(value)
+            setError(null)
+          }}
+        />
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
@@ -285,6 +330,7 @@ function ReassignDialog({
   )
 }
 
+// Đổi giờ: người đã xác nhận giữ lịch nếu vẫn rảnh giờ mới, không thì lịch quay về chờ kỹ thuật viên nhận
 function RescheduleDialog({
   request,
   appointment,
@@ -299,48 +345,23 @@ function RescheduleDialog({
   const today = todayVn()
   const [date, setDate] = useState(() => vnDate(appointment.startsAt))
   const [time, setTime] = useState(() => formatTime(appointment.startsAt))
-  /** Giờ đã bấm "Xem kỹ thuật viên rảnh"; đổi ngày / giờ thì phải kiểm tra lại. */
-  const [checked, setChecked] = useState<string | null>(null)
-  const [picked, setPicked] = useState<string | null>(null)
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const availability = useTechnicianAvailabilityQuery(request.surveyRequestId, checked ?? undefined, {
-    enabled: open && checked !== null,
-  })
   const reschedule = useSalesRescheduleMutation()
-  const currentId = appointment.assignedTechnicianUserId ?? appointment.reservedTechnicianUserId
-  const list = checked ? (availability.data?.technicians ?? []) : []
-  const selected = list.find((t) => t.technicianUserId === picked) ?? defaultChoice(list, currentId)
   const startsAt = vnTimestamp(date, time)
-  const unchanged =
-    checked !== null &&
-    new Date(checked).getTime() === new Date(appointment.startsAt).getTime() &&
-    selected?.technicianUserId === currentId
-
-  function edit(next: { date?: string; time?: string }) {
-    if (next.date !== undefined) setDate(next.date)
-    if (next.time !== undefined) setTime(next.time)
-    setChecked(null)
-    setPicked(null)
-    setError(null)
-  }
+  const unchanged = new Date(startsAt).getTime() === new Date(appointment.startsAt).getTime()
 
   async function submit() {
-    if (!checked || !selected) return
     setError(null)
     try {
       const result = await reschedule.mutateAsync({
         id: request.surveyRequestId,
-        body: { startsAt: checked, reason: reason.trim() || null, technicianUserId: selected.technicianUserId },
+        body: { startsAt, reason: reason.trim() || null },
       })
-      toast.success(
-        `Đã đổi lịch sang ${formatAppointment(result.startsAt, result.endsAt)}, ${result.technicianName} phụ trách.${
-          result.acknowledgementRequired ? ' Kỹ thuật viên cần xác nhận nhận việc.' : ''
-        }`,
-      )
+      const who = result.technicianName ? `, ${result.technicianName} phụ trách` : ', chờ kỹ thuật viên nhận'
+      toast.success(`Đã đổi lịch sang ${formatAppointment(result.startsAt, result.endsAt)}${who}.`)
       onOpenChange(false)
     } catch (e) {
-      if (isApiError(e) && e.code === 'TECHNICIAN_NOT_AVAILABLE') setPicked(null)
       setError(schedulingErrorMessage(e))
     }
   }
@@ -350,69 +371,31 @@ function RescheduleDialog({
       open={open}
       onOpenChange={onOpenChange}
       dismissible={!reschedule.isPending}
-      className="max-w-2xl"
+      className="max-w-xl"
       aria-label="Đổi giờ khảo sát"
     >
       <DialogTitle>Đổi giờ khảo sát</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Giờ hiện tại: {formatAppointment(appointment.startsAt, appointment.endsAt)}. Lịch cũ giữ nguyên cho tới khi đổi
-        xong.
+        Giờ hiện tại: {formatAppointment(appointment.startsAt, appointment.endsAt)}. Kỹ thuật viên đang phụ trách giữ
+        lịch nếu vẫn rảnh giờ mới, không thì lịch quay về chờ người trong khu vực nhận.
       </p>
-      <div className="mt-4 max-h-[60dvh] space-y-4 overflow-y-auto scrollbar-thin">
+      <div className="mt-4 space-y-4">
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Ngày" htmlFor="reschedule-date" className="w-full sm:w-48">
-            <Input
+            <DateField
               id="reschedule-date"
-              type="date"
               min={today}
               max={addDays(today, BOOKING_HORIZON_DAYS - 1)}
               value={date}
-              onChange={(e) => e.target.value && edit({ date: e.target.value })}
+              onChange={(value) => value && setDate(value)}
             />
           </Field>
           <Field label="Giờ bắt đầu" htmlFor="reschedule-time" className="w-full sm:w-36">
-            <Select id="reschedule-time" value={time} onChange={(e) => edit({ time: e.target.value })}>
-              {HALF_HOUR_TIMES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </Select>
+            <TimeSelect id="reschedule-time" from="07:00" to="17:00" value={time} onChange={setTime} />
           </Field>
-          <Button onClick={() => setChecked(startsAt)} disabled={checked === startsAt}>
-            Xem kỹ thuật viên rảnh
-          </Button>
         </div>
-        <p className="text-meta text-fg-2">
-          {formatDay(date)}, mỗi lần khảo sát 90 phút. Giờ phải nằm trọn trong giờ làm của kỹ thuật viên; hệ thống kiểm
-          tra lại khi xem.
-        </p>
-        {checked && (
-          <AvailabilityState query={availability}>
-            {(data) => (
-              <>
-                <p className="text-body font-medium text-fg">
-                  Kỹ thuật viên nhận được {formatTimeRange(data.startsAt, data.endsAt)}
-                </p>
-                <TechnicianChoiceList
-                  label="Kỹ thuật viên phụ trách giờ mới"
-                  technicians={data.technicians}
-                  value={selected?.technicianUserId ?? null}
-                  currentAssigneeId={appointment.assignedTechnicianUserId}
-                  onChange={(id) => {
-                    setPicked(id)
-                    setError(null)
-                  }}
-                />
-              </>
-            )}
-          </AvailabilityState>
-        )}
-        <Field
-          label="Lý do đổi giờ"
-          htmlFor="reschedule-reason"
-          hint="Không bắt buộc, tối đa 500 ký tự. Lưu vào lịch sử."
-        >
+        <p className="text-meta text-fg-2">{formatDay(date)}, mỗi lần khảo sát 90 phút.</p>
+        <Field label="Lý do đổi giờ" htmlFor="reschedule-reason" hint="Không bắt buộc, tối đa 500 ký tự.">
           <Textarea
             id="reschedule-reason"
             rows={2}
@@ -423,19 +406,26 @@ function RescheduleDialog({
         </Field>
       </div>
       <DialogFooter className="items-center">
-        <ErrorLine message={error ?? (unchanged ? 'Giờ và người phụ trách giống lịch hiện tại.' : null)} />
+        <ErrorLine message={error ?? (unchanged ? 'Giờ mới giống giờ hiện tại.' : null)} />
         <Button variant="ghost" disabled={reschedule.isPending} onClick={() => onOpenChange(false)}>
           Huỷ
         </Button>
-        <Button
-          variant="primary"
-          disabled={!checked || !selected || unchanged || reschedule.isPending}
-          onClick={() => void submit()}
-        >
+        <Button variant="primary" disabled={unchanged || reschedule.isPending} onClick={() => void submit()}>
           {reschedule.isPending ? 'Đang đổi…' : 'Đổi lịch'}
         </Button>
       </DialogFooter>
     </ModalDialog>
+  )
+}
+
+function ScheduleTime({ appointment }: { appointment: SurveyAppointmentSummary }) {
+  return (
+    <div>
+      <p className="text-title font-semibold text-fg">{formatDay(vnDate(appointment.startsAt), { year: true })}</p>
+      <p className="tnum text-figure font-semibold text-fg">
+        {formatTimeRange(appointment.startsAt, appointment.endsAt)}
+      </p>
+    </div>
   )
 }
 
@@ -459,10 +449,10 @@ function ScheduledPanel({
         action={
           upcoming ? (
             <>
-              <Button size="sm" icon="edit_calendar" onClick={onReschedule}>
+              <Button size="sm" variant="soft" icon="edit_calendar" onClick={onReschedule}>
                 Đổi giờ
               </Button>
-              <Button size="sm" icon="swap_horiz" onClick={onReassign}>
+              <Button size="sm" variant="soft" icon="swap_horiz" onClick={onReassign}>
                 Đổi kỹ thuật viên
               </Button>
             </>
@@ -470,29 +460,16 @@ function ScheduledPanel({
         }
       />
       <PanelBody className="space-y-4">
-        <div>
-          <p className="text-title font-semibold text-fg">{formatDay(vnDate(appointment.startsAt), { year: true })}</p>
-          <p className="tnum text-figure font-semibold text-fg">
-            {formatTimeRange(appointment.startsAt, appointment.endsAt)}
-          </p>
-        </div>
+        <ScheduleTime appointment={appointment} />
         <Facts
           items={[
             { k: 'Kỹ thuật viên', v: appointment.assignedTechnicianName ?? '—' },
-            {
-              k: 'Trạng thái',
-              v: (
-                <Badge tone={status.tone}>
-                  {appointment.status === 'ASSIGNED' ? 'Chờ kỹ thuật viên nhận việc' : status.label}
-                </Badge>
-              ),
-            },
-            { k: 'Phân công lúc', v: formatDateTime(appointment.assignedAt) },
-            ...(appointment.acknowledgedAt
-              ? [{ k: 'Nhận việc lúc', v: formatDateTime(appointment.acknowledgedAt) }]
-              : []),
+            { k: 'Trạng thái', v: <Badge tone={status.tone}>{status.label}</Badge> },
+            { k: 'Cách xếp', v: assignmentSourceLabel(appointment.assignmentSource, 'sales') },
+            { k: 'Xác nhận lúc', v: formatDateTime(appointment.acceptedAt ?? appointment.assignedAt) },
           ]}
         />
+        {appointment.assignmentReason && <Notice title="Lý do phân công">{appointment.assignmentReason}</Notice>}
         {appointment.customerNote && <Notice title="Ghi chú của khách">{appointment.customerNote}</Notice>}
       </PanelBody>
     </Panel>
@@ -516,8 +493,8 @@ export function SalesSchedulePanel({ request }: { request: SurveyRequestDetail }
         <PanelHeader title="Lịch khảo sát" />
         <PanelBody>
           <p className="max-w-prose text-body text-fg-2">
-            Khách chưa đặt giờ khảo sát. Khách tự chọn giờ trên cổng khách hàng; gọi khách để nhắc nếu yêu cầu chờ lâu.
-            Có giờ, bạn phân công kỹ thuật viên ở đây.
+            Khách chưa đặt giờ khảo sát. Khách tự chọn giờ trên cổng khách hàng, rồi kỹ thuật viên trong khu vực tự nhận
+            lịch. Gọi khách để nhắc nếu yêu cầu chờ lâu.
           </p>
         </PanelBody>
       </Panel>
@@ -525,9 +502,11 @@ export function SalesSchedulePanel({ request }: { request: SurveyRequestDetail }
 
   return (
     <>
-      {a.status === 'BOOKED' ? (
-        <AssignPanel key={a.appointmentId} request={request} appointment={a} onReschedule={() => open('reschedule')} />
-      ) : (
+      {a.status === 'ESCALATED' && <AssignPanel key={a.appointmentId} request={request} appointment={a} />}
+      {a.status === 'PENDING_ACCEPTANCE' && (
+        <WaitingPanel key={a.appointmentId} request={request} appointment={a} onReschedule={() => open('reschedule')} />
+      )}
+      {a.status !== 'ESCALATED' && a.status !== 'PENDING_ACCEPTANCE' && (
         <ScheduledPanel appointment={a} onReassign={() => open('reassign')} onReschedule={() => open('reschedule')} />
       )}
       <ReassignDialog

@@ -7,7 +7,7 @@ import { technicianReadiness } from '@/features/scheduling/schedulingDisplay'
 import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
 import { ROUTES } from '@/routes/paths'
 
-// Số đỏ cạnh "Kỹ thuật viên" là số người chưa có nơi xuất phát
+// Số đỏ cạnh "Kỹ thuật viên" là số người chưa thuộc khu vực nào
 export function ManageLayout({ children }: { children?: ReactNode }) {
   const isManager = useAuth().user?.role === 'manager'
   const missingBase = useTechniciansQuery({ enabled: isManager }).data?.filter(

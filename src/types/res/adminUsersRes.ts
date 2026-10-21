@@ -24,12 +24,10 @@ export type AdminUserListItem = {
 export type TechnicianProfileSummary = {
   hasProfile: boolean
   isSchedulingActive: boolean
-  hasBaseLocation: boolean
-  baseLabel: string | null
   maxAppointmentsPerDay: number | null
   hasCustomWorkingSchedule: boolean
-  /** "HH:mm:ss" (TimeOnly) hoặc null = mặc định. */
-  earliestBaseDeparture: string | null
+  /** Mã các khu vực phục vụ, vd. "KHU-THU-DUC" */
+  zoneCodes: string[]
 }
 
 export type AdminUserDetail = AdminUserListItem & {

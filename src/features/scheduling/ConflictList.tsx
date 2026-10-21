@@ -1,9 +1,9 @@
 import { Notice } from '@/components/common/ui/lists'
-import { appointmentStatusMeta, feasibilityLabel, formatAppointment } from '@/features/scheduling/schedulingDisplay'
+import { appointmentStatusMeta, formatAppointment, ineligibleLabel } from '@/features/scheduling/schedulingDisplay'
 import type { ConflictingAppointmentView } from '@/types/res/adminTechniciansRes'
 
 const PROBLEMS: Record<string, string> = {
-  SCHEDULING_DISABLED: 'phải chuyển cho người khác trước khi tắt nhận lịch',
+  TECHNICIAN_SCHEDULING_DISABLED: 'phải chuyển cho người khác trước khi tắt nhận lịch',
 }
 
 // Thay đổi bị từ chối vì đụng lịch đã có, liệt kê các lịch đó (backend không tự huỷ)
@@ -15,7 +15,7 @@ export function ConflictList({ conflicts }: { conflicts: ConflictingAppointmentV
         {conflicts.map((c) => (
           <li key={c.appointmentId}>
             <span className="font-medium text-fg">{formatAppointment(c.startsAt, c.endsAt)}</span>
-            {`: ${appointmentStatusMeta(c.status, 'staff').label.toLowerCase()}, ${PROBLEMS[c.problem] ?? feasibilityLabel(c.problem)}`}
+            {`: ${appointmentStatusMeta(c.status, 'staff').label.toLowerCase()}, ${PROBLEMS[c.problem] ?? ineligibleLabel(c.problem)}`}
           </li>
         ))}
       </ul>

@@ -1,7 +1,8 @@
 import { z } from 'zod'
-import { HCM_PROVINCE } from '@/services/provinceService'
+import { HCM_PROVINCE } from '@/services/administrativeUnitService'
 import type { ApiError } from '@/services/api/errors'
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
+import { capitalize, formatNumber, parseDecimal } from '@/utils/number'
 
 // Form của bước hồ sơ và bước địa điểm.
 // Ô nhập giữ dạng chuỗi, schema vừa kiểm tra vừa đổi form sang đúng kiểu request của backend.
@@ -21,6 +22,8 @@ export type SiteForm = {
   province: string
   district: string
   ward: string
+  /** Mã của phường, xã đã chọn trong danh sách, rỗng khi chưa chọn */
+  communeCode: string
   streetLine: string
   latitude: string
   longitude: string
@@ -29,13 +32,19 @@ export type SiteForm = {
   note: string
 }
 
-export const EMPTY_PROFILE: ProfileForm = { customerType: '2', companyName: '', taxCode: '', note: '' }
+export const EMPTY_PROFILE: ProfileForm = {
+  customerType: '2',
+  companyName: '',
+  taxCode: '',
+  note: '',
+}
 
 export const EMPTY_SITE: SiteForm = {
   name: '',
   province: HCM_PROVINCE.name,
   district: '',
   ward: '',
+  communeCode: '',
   streetLine: '',
   latitude: '',
   longitude: '',
@@ -54,6 +63,7 @@ export function siteToForm(site: CreatePropertySiteRequest): SiteForm {
     province: site.province ?? '',
     district: site.district ?? '',
     ward: site.ward ?? '',
+    communeCode: site.communeCode ?? '',
     streetLine: site.streetLine ?? '',
     latitude: site.latitude == null ? '' : String(site.latitude),
     longitude: site.longitude == null ? '' : String(site.longitude),
@@ -64,64 +74,43 @@ export function siteToForm(site: CreatePropertySiteRequest): SiteForm {
 }
 
 /** Chuỗi rỗng thành null, để backend hiểu là "không khai" */
-const text = (value: string) => value.trim() || null
-
-/** Cho phép dấu phẩy thập phân: "12,5" là 12.5. Ô trống trả về null, gõ sai trả về NaN */
-export function toNumber(value: string) {
-  const raw = value.trim().replace(',', '.')
-  return raw === '' ? null : Number(raw)
+function textOrNull(value: string) {
+  return value.trim() || null
 }
 
-/** Đọc số có dấu chấm ngăn hàng nghìn: "1.200" là 1200. Không dùng cho toạ độ hay góc */
-export function toArea(value: string) {
-  const raw = value.trim()
-  if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(raw)) return Number(raw.replace(/\./g, '').replace(',', '.'))
-  return toNumber(raw)
-}
-
-type Range = {
-  label: string
-  unit?: string
-  min: number
-  max: number
-  minExclusive?: boolean
-  parse?: (value: string) => number | null
-}
-
-/** Câu lỗi của một ô số, hoặc null nếu hợp lệ */
-function numberIssue(value: string, range: Range, required: boolean) {
-  const n = (range.parse ?? toNumber)(value)
-  if (n === null) return required ? `Nhập ${range.label}.` : null
-  // isFinite loại cả NaN lẫn "Infinity" / "1e400"
-  if (!Number.isFinite(n)) return `Nhập ${range.label} bằng số.`
-  const unit = range.unit ? ` ${range.unit}` : ''
-  if (range.minExclusive ? n <= range.min : n < range.min) {
-    return range.minExclusive
-      ? `${capitalize(range.label)} phải lớn hơn ${range.min}${unit}.`
-      : `${capitalize(range.label)} từ ${range.min} đến ${range.max}${unit}.`
-  }
-  if (n > range.max)
-    return `Kiểm tra lại ${range.label}; tối đa ${new Intl.NumberFormat('vi-VN').format(range.max)}${unit}.`
+/** Câu lỗi khi toạ độ trống, gõ sai hoặc nằm ngoài khoảng [min, max] */
+function coordinateIssue(text: string, label: string, min: number, max: number) {
+  const value = parseDecimal(text)
+  if (value === null) return `Nhập ${label}.`
+  if (!Number.isFinite(value)) return `Nhập ${label} bằng số.`
+  if (value < min) return `${capitalize(label)} từ ${min} đến ${max}.`
+  if (value > max) return `Kiểm tra lại ${label}; tối đa ${formatNumber(max)}.`
   return null
 }
 
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-
-function issue<F>(ctx: z.RefinementCtx, path: keyof F, message: string | null) {
-  if (message) ctx.addIssue({ code: 'custom', path: [path as string], message })
+function addIssue(ctx: z.RefinementCtx, field: keyof SiteForm, message: string | null) {
+  if (message) ctx.addIssue({ code: 'custom', path: [field], message })
 }
 
 // Luật kiểm tra lấy theo validator của backend.
-// Riêng toạ độ thì bắt buộc thêm, vì backend cần toạ độ để xếp lịch khảo sát.
+// Riêng toạ độ và mã phường, xã thì bắt buộc thêm: toạ độ để ước tính sản lượng, mã phường để xếp kỹ thuật viên.
 
 export const profileSchema = z
-  .object({ customerType: z.enum(['1', '2']), companyName: z.string(), taxCode: z.string(), note: z.string() })
-  .transform((f): CreateCustomerProfileRequest => ({
-    customerType: f.customerType === '2' ? 2 : 1,
-    companyName: f.customerType === '2' ? text(f.companyName) : null,
-    taxCode: text(f.taxCode),
-    note: text(f.note),
-  }))
+  .object({
+    customerType: z.enum(['1', '2']),
+    companyName: z.string(),
+    taxCode: z.string(),
+    note: z.string(),
+  })
+  .transform((form): CreateCustomerProfileRequest => {
+    const isBusiness = form.customerType === '2'
+    return {
+      customerType: isBusiness ? 2 : 1,
+      companyName: isBusiness ? textOrNull(form.companyName) : null,
+      taxCode: textOrNull(form.taxCode),
+      note: textOrNull(form.note),
+    }
+  })
 
 export const siteSchema = z
   .object({
@@ -129,42 +118,54 @@ export const siteSchema = z
     province: z.string(),
     district: z.string(),
     ward: z.string().trim().min(1, 'Chọn phường, xã.'),
+    communeCode: z.string(),
     streetLine: z.string(),
     latitude: z.string(),
     longitude: z.string(),
-    installationSurfaceType: z.enum(['1', '2', '3', '4', '5'], { error: 'Chọn bề mặt lắp đặt.' }),
+    installationSurfaceType: z.enum(['1', '2', '3', '4', '5'], {
+      error: 'Chọn bề mặt lắp đặt.',
+    }),
     surfaceMaterial: z.string(),
     note: z.string(),
   })
-  .superRefine((f, ctx) => {
-    issue<SiteForm>(ctx, 'latitude', numberIssue(f.latitude, { label: 'vĩ độ', min: -90, max: 90 }, true))
-    issue<SiteForm>(ctx, 'longitude', numberIssue(f.longitude, { label: 'kinh độ', min: -180, max: 180 }, true))
-    if (toNumber(f.latitude) === 0 && toNumber(f.longitude) === 0)
-      issue<SiteForm>(ctx, 'latitude', 'Toạ độ (0, 0) không phải vị trí công trình. Lấy toạ độ trên Google Maps.')
+  .superRefine((form, ctx) => {
+    // Gõ tay thì không có mã phường, xã mà backend cần để xếp kỹ thuật viên theo khu vực
+    if (form.ward.trim() && !form.communeCode) addIssue(ctx, 'ward', 'Chọn phường, xã trong danh sách.')
+    addIssue(ctx, 'latitude', coordinateIssue(form.latitude, 'vĩ độ', -90, 90))
+    addIssue(ctx, 'longitude', coordinateIssue(form.longitude, 'kinh độ', -180, 180))
+    // (0, 0) là giá trị mặc định khi bỏ trống, không phải vị trí thật
+    if (parseDecimal(form.latitude) === 0 && parseDecimal(form.longitude) === 0) {
+      addIssue(ctx, 'latitude', 'Toạ độ (0, 0) không phải vị trí công trình. Lấy toạ độ trên Google Maps.')
+    }
   })
-  .transform((f): CreatePropertySiteRequest => ({
-    name: text(f.name),
+  .transform((form): CreatePropertySiteRequest => ({
+    name: textOrNull(form.name),
     province: HCM_PROVINCE.name,
+    provinceCode: HCM_PROVINCE.code,
     district: null,
-    ward: text(f.ward),
-    streetLine: text(f.streetLine),
-    latitude: toNumber(f.latitude),
-    longitude: toNumber(f.longitude),
-    installationSurfaceType: Number(f.installationSurfaceType) as CreatePropertySiteRequest['installationSurfaceType'],
-    surfaceMaterial: text(f.surfaceMaterial),
-    note: text(f.note),
+    ward: textOrNull(form.ward),
+    communeCode: form.communeCode,
+    streetLine: textOrNull(form.streetLine),
+    latitude: parseDecimal(form.latitude),
+    longitude: parseDecimal(form.longitude),
+    installationSurfaceType: Number(
+      form.installationSurfaceType,
+    ) as CreatePropertySiteRequest['installationSurfaceType'],
+    surfaceMaterial: textOrNull(form.surfaceMaterial),
+    note: textOrNull(form.note),
   }))
 
-export function check<F, Out>(
-  schema: z.ZodType<Out>,
-  form: F,
-): { data: Out; errors?: undefined } | { data?: undefined; errors: FormErrors<F> } {
+/** Kết quả kiểm tra form: hoặc có `data` (đã đổi sang request), hoặc có `errors` theo từng ô */
+type CheckResult<F, Out> = { data: Out; errors?: undefined } | { data?: undefined; errors: FormErrors<F> }
+
+/** Chạy schema trên form, mỗi ô chỉ giữ lỗi đầu tiên */
+export function check<F, Out>(schema: z.ZodType<Out>, form: F): CheckResult<F, Out> {
   const result = schema.safeParse(form)
   if (result.success) return { data: result.data }
   const errors: FormErrors<F> = {}
-  for (const i of result.error.issues) {
-    const key = i.path[0] as keyof F | undefined
-    if (key !== undefined && !errors[key]) errors[key] = i.message
+  for (const issue of result.error.issues) {
+    const field = issue.path[0] as keyof F | undefined
+    if (field !== undefined && !errors[field]) errors[field] = issue.message
   }
   return { errors }
 }
@@ -172,10 +173,10 @@ export function check<F, Out>(
 /** Đổi lỗi theo field của server (PascalCase, có thể kèm tiền tố "request.") sang lỗi theo ô của form */
 export function serverFieldErrors<F extends object>(error: ApiError, form: F): FormErrors<F> {
   const errors: FormErrors<F> = {}
-  for (const [field, message] of Object.entries(error.fieldErrors)) {
-    const last = field.split('.').pop() ?? field
-    const key = (last.charAt(0).toLowerCase() + last.slice(1)) as keyof F
-    if (key in form && !errors[key]) errors[key] = message
+  for (const [serverField, message] of Object.entries(error.fieldErrors)) {
+    const lastPart = serverField.split('.').pop() ?? serverField
+    const field = (lastPart.charAt(0).toLowerCase() + lastPart.slice(1)) as keyof F
+    if (field in form && !errors[field]) errors[field] = message
   }
   return errors
 }

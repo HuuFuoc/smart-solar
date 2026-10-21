@@ -23,23 +23,22 @@ import {
 import { useMyRequestQuery } from '@/hooks/useBooking'
 import type { CustomerSurveyRequestDetailView, CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 
-/* Một câu nói khách đang ở đâu và việc tiếp theo là của ai. */
+/* Một câu nói khách đang ở đâu và việc tiếp theo là của ai */
 function describe(r: CustomerSurveyRequestView) {
   const a = r.appointment
   if (canBook(r)) return 'Chọn ngày giờ để kỹ thuật viên tới khảo sát công trình.'
   if (!a) return undefined
-  if (a.status === 'BOOKED') return 'Bộ phận kinh doanh sẽ phân công kỹ thuật viên cho giờ bạn đã đặt.'
-  if (a.status === 'ASSIGNED')
-    return `Kỹ thuật viên ${a.assignedTechnicianName ?? ''} sẽ tới khảo sát theo lịch bên dưới.`
-  if (a.status === 'ACKNOWLEDGED')
-    return `Kỹ thuật viên ${a.assignedTechnicianName ?? ''} đã nhận việc và sẽ tới theo lịch bên dưới.`
+  if (a.acceptanceStatus === 'WAITING_FOR_TECHNICIAN')
+    return 'Kỹ thuật viên phụ trách khu vực của công trình sẽ nhận lịch, bạn sẽ thấy tên người tới khảo sát ở đây.'
+  if (a.acceptanceStatus === 'NEEDS_STAFF') return 'Nhân viên đang xếp kỹ thuật viên cho giờ bạn đã đặt.'
+  if (a.acceptanceStatus === 'CONFIRMED')
+    return `Kỹ thuật viên ${a.assignedTechnicianName ?? ''} đã nhận lịch và sẽ tới khảo sát theo giờ bên dưới.`
   return undefined
 }
 
 function Progress({ r }: { r: CustomerSurveyRequestView }) {
   const a = r.appointment
-  const assigned = a?.technicianAssigned ?? false
-  const acknowledged = a?.status === 'ACKNOWLEDGED'
+  const confirmed = a?.acceptanceStatus === 'CONFIRMED' || a?.acceptanceStatus === 'COMPLETED'
   const completed = r.status === 'COMPLETED'
   return (
     <ActivityList
@@ -47,19 +46,14 @@ function Progress({ r }: { r: CustomerSurveyRequestView }) {
         { title: 'Gửi yêu cầu', time: formatDateTime(r.submittedAt), state: 'done' },
         { title: 'Đặt giờ khảo sát', time: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
         {
-          title: 'Phân công kỹ thuật viên',
-          time: assigned ? (a?.assignedTechnicianName ?? 'Đã phân công') : 'Sau khi bạn đặt giờ',
-          state: assigned ? 'done' : a ? 'current' : 'todo',
-        },
-        {
-          title: 'Kỹ thuật viên nhận việc',
-          time: acknowledged ? 'Đã nhận' : '—',
-          state: acknowledged ? 'done' : assigned ? 'current' : 'todo',
+          title: 'Kỹ thuật viên nhận lịch',
+          time: confirmed ? (a?.assignedTechnicianName ?? 'Đã nhận') : a ? 'Đang chờ' : 'Sau khi bạn đặt giờ',
+          state: confirmed ? 'done' : a ? 'current' : 'todo',
         },
         {
           title: 'Khảo sát tại công trình',
           time: a ? formatAppointment(a.startsAt, a.endsAt) : '—',
-          state: completed ? 'done' : acknowledged ? 'current' : 'todo',
+          state: completed ? 'done' : confirmed ? 'current' : 'todo',
         },
       ]}
     />
@@ -83,10 +77,10 @@ function AppointmentPanel({
         action={
           a.canCustomerChange ? (
             <>
-              <Button size="sm" icon="edit_calendar" onClick={onReschedule}>
+              <Button size="sm" variant="soft" icon="edit_calendar" onClick={onReschedule}>
                 Đổi giờ
               </Button>
-              <Button size="sm" variant="danger-quiet" icon="event_busy" onClick={onCancel}>
+              <Button size="sm" variant="danger" icon="event_busy" onClick={onCancel}>
                 Huỷ lịch
               </Button>
             </>
@@ -100,14 +94,14 @@ function AppointmentPanel({
         </div>
         <KeyValueList
           items={[
-            { k: 'Kỹ thuật viên', v: a.assignedTechnicianName ?? 'Đang chờ phân công' },
+            { k: 'Kỹ thuật viên', v: a.assignedTechnicianName ?? 'Đang chờ kỹ thuật viên nhận' },
             { k: 'Ghi chú của bạn', v: a.customerNote || '—' },
             { k: 'Đặt lúc', v: formatDateTime(a.bookedAt) },
           ]}
         />
-        {!a.canCustomerChange && a.technicianAssigned && (
+        {!a.canCustomerChange && (
           <Notice tone="info">
-            Kỹ thuật viên đã được phân công nên bạn không tự đổi giờ được. Cần đổi, hãy liên hệ bộ phận kinh doanh.
+            Lịch đã sát giờ hẹn nên bạn không tự đổi hoặc huỷ được. Cần đổi, hãy liên hệ bộ phận kinh doanh.
           </Notice>
         )}
       </PanelBody>

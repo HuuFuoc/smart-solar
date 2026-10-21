@@ -6,21 +6,19 @@ export type AddUnavailablePeriodRequest = {
   reason?: string | null
 }
 
+export type SetTechnicianZonesRequest = {
+  zoneIds?: string[] | null
+}
+
 export type SetWorkingScheduleRequest = {
   useDefault?: boolean
   periods?: WorkingPeriodRequest[] | null
 }
 
 export type UpsertTechnicianProfileRequest = {
-  /** Format: double */
-  baseLatitude?: number | null
-  /** Format: double */
-  baseLongitude?: number | null
-  baseLabel?: string | null
   isSchedulingActive?: boolean
   /** Format: int32 */
   maxAppointmentsPerDay?: number | null
-  earliestBaseDeparture?: string | null
 }
 
 export type WorkingPeriodRequest = {

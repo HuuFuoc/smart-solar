@@ -2,7 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { preSurveyKeys } from '@/hooks/usePreSurveys'
 import * as simulationService from '@/services/simulationService'
 import type { CreateSimulationRequest } from '@/types/req/simulationsReq'
-import type { SimulationDetail, SimulationListItem } from '@/types/res/simulationsRes'
+import type { SelectedSimulation, SimulationDetail, SimulationList, SimulationView } from '@/types/res/simulationsRes'
 import type { ApiError } from '@/services/api/errors'
 
 // Key nằm dưới preSurveyKeys.one nên invalidate bản nháp cũng làm mới mô phỏng
@@ -14,16 +14,16 @@ export const simulationKeys = {
 }
 
 export function useSimulationsQuery(preSurveyId: string | null | undefined) {
-  return useQuery<SimulationListItem[], ApiError>({
+  return useQuery<SimulationList, ApiError>({
     queryKey: simulationKeys.list(preSurveyId ?? ''),
     queryFn: () => simulationService.listSimulations(preSurveyId!),
     enabled: Boolean(preSurveyId),
   })
 }
 
-/** Kết quả không đổi sau khi lưu nên cache lâu, giữ kết quả cũ trên màn trong lúc tải bản mới */
+/** Giữ kết quả cũ trên màn trong lúc tải bản mới */
 export function useSimulationQuery(preSurveyId: string | null | undefined, simulationId: string | null | undefined) {
-  return useQuery<SimulationDetail, ApiError>({
+  return useQuery<SimulationView, ApiError>({
     queryKey: simulationKeys.detail(preSurveyId ?? '', simulationId ?? ''),
     queryFn: () => simulationService.getSimulation(preSurveyId!, simulationId!),
     enabled: Boolean(preSurveyId && simulationId),
@@ -43,15 +43,39 @@ export function useCreateSimulationMutation() {
     onSuccess: (detail, { preSurveyId }) => {
       // Đặt sẵn vào cache để khỏi tải lại
       queryClient.setQueryData(simulationKeys.detail(preSurveyId, detail.simulationId), detail)
+      // Đợi danh sách có lần chạy mới rồi mới báo xong, để nút chọn không tưởng lần chạy này đã hết hạn
+      return queryClient.invalidateQueries({ queryKey: simulationKeys.list(preSurveyId) })
     },
-    // Tải lại danh sách, mặt lắp và các bản chi tiết khác vì cờ isSelected / isStale có thể đã đổi
-    onSettled: (data, _error, { preSurveyId }) => {
-      void queryClient.invalidateQueries({ queryKey: simulationKeys.list(preSurveyId) })
-      void queryClient.invalidateQueries({ queryKey: preSurveyKeys.surface(preSurveyId) })
-      void queryClient.invalidateQueries({
-        queryKey: [...simulationKeys.all(preSurveyId), 'detail'],
-        predicate: (q) => q.queryKey.at(-1) !== data?.simulationId,
-      })
-    },
+  })
+}
+
+/** Chọn hay bỏ chọn đều đổi cờ isSelected ở danh sách, chi tiết và id mô phỏng chính của mặt lắp */
+function useRefreshSelection() {
+  const queryClient = useQueryClient()
+  return (preSurveyId: string) =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: simulationKeys.all(preSurveyId) }),
+      queryClient.invalidateQueries({ queryKey: preSurveyKeys.surface(preSurveyId) }),
+    ])
+}
+
+export function useSelectSimulationMutation() {
+  const refresh = useRefreshSelection()
+  return useMutation<
+    SelectedSimulation,
+    ApiError,
+    { preSurveyId: string; simulationId: string; expectedGeometryVersion: number }
+  >({
+    mutationFn: ({ preSurveyId, simulationId, expectedGeometryVersion }) =>
+      simulationService.selectSimulation(preSurveyId, simulationId, { expectedGeometryVersion }),
+    onSettled: (_data, _error, { preSurveyId }) => refresh(preSurveyId),
+  })
+}
+
+export function useClearSelectionMutation() {
+  const refresh = useRefreshSelection()
+  return useMutation<void, ApiError, string>({
+    mutationFn: (preSurveyId) => simulationService.clearSimulationSelection(preSurveyId),
+    onSettled: (_data, _error, preSurveyId) => refresh(preSurveyId),
   })
 }

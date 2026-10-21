@@ -8,9 +8,10 @@ import { cx } from '@/utils/cx'
 // primary: hành động chính của trang, mỗi màn một nút
 // soft: hành động chính của từng dòng (Nhận yêu cầu, Mở bán lại)
 // secondary: hành động phụ. ghost: thao tác kín đáo (Huỷ, Lưu nháp, Xoá bộ lọc)
+// warn: tạm dừng, hoàn tác được (Đổi bề mặt, Tạm khoá)
 // danger: phá huỷ hoàn tác được (Ngừng bán). danger-quiet: nút xoá lặp lại trên từng dòng, chỉ đỏ khi rê chuột
 // danger-solid: nút xác nhận trong hộp thoại xoá
-type Variant = 'primary' | 'soft' | 'secondary' | 'ghost' | 'danger' | 'danger-quiet' | 'danger-solid'
+type Variant = 'primary' | 'soft' | 'secondary' | 'ghost' | 'warn' | 'danger' | 'danger-quiet' | 'danger-solid'
 type Size = 'sm' | 'md'
 
 /* Disabled is a colour, not an opacity, so borders and fills stay crisp. */
@@ -23,6 +24,7 @@ const variants: Record<Variant, string> = {
   secondary:
     'border border-line-2 bg-canvas text-fg not-disabled:hover:border-fg-3 not-disabled:hover:bg-surface-2 disabled:border-line',
   ghost: 'text-fg-2 not-disabled:hover:bg-hover not-disabled:hover:text-fg not-disabled:active:bg-pressed',
+  warn: 'border border-warn/75 bg-canvas text-warn not-disabled:hover:border-warn not-disabled:hover:bg-warn-soft disabled:border-line',
   danger:
     'border border-danger/45 bg-canvas text-danger not-disabled:hover:border-danger not-disabled:hover:bg-danger-soft disabled:border-line',
   'danger-quiet':

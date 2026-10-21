@@ -43,9 +43,10 @@ export const COMPASS_GRID = [
 /** 8 hướng theo chiều kim đồng hồ từ Bắc, cách nhau 45 độ */
 export const DIRECTIONS = ['Bắc', 'Đông Bắc', 'Đông', 'Đông Nam', 'Nam', 'Tây Nam', 'Tây', 'Tây Bắc']
 
-// "Chờ nhận" tô đỏ vì cần người nhận
+// Chưa có kỹ thuật viên là đang chờ kỹ thuật viên trong khu vực nhận, chưa phải việc của sales nên không tô đỏ
 export const SURVEY_REQUEST_STATUSES: Record<SurveyRequestStatus, { label: string; tone: Tone }> = {
-  1: { label: 'Chờ nhận', tone: 'danger' },
+  1: { label: 'Chưa có kỹ thuật viên', tone: 'info' },
+  // 2, 3 không còn dùng ở backend mới, giữ nhãn để đọc được dữ liệu cũ
   2: { label: 'Đã nhận', tone: 'info' },
   3: { label: 'Đang xem xét', tone: 'info' },
   4: { label: 'Đã hẹn khảo sát', tone: 'ok' },

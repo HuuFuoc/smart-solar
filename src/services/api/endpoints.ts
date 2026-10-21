@@ -33,6 +33,9 @@ export const ENDPOINTS = {
     base: '/customers/me',
     sites: '/customers/me/sites',
   },
+  administrativeUnits: {
+    communes: '/administrative-units/communes',
+  },
   preSurveys: {
     base: '/pre-surveys',
     byId: (preSurveyId: string) => `/pre-surveys/${encode(preSurveyId)}`,
@@ -45,6 +48,9 @@ export const ENDPOINTS = {
     base: (preSurveyId: string) => `/pre-surveys/${encode(preSurveyId)}/simulations`,
     byId: (preSurveyId: string, simulationId: string) =>
       `/pre-surveys/${encode(preSurveyId)}/simulations/${encode(simulationId)}`,
+    select: (preSurveyId: string, simulationId: string) =>
+      `/pre-surveys/${encode(preSurveyId)}/simulations/${encode(simulationId)}/select`,
+    selection: (preSurveyId: string) => `/pre-surveys/${encode(preSurveyId)}/simulations/selection`,
   },
   surveySlots: {
     base: '/survey-slots',
@@ -61,6 +67,7 @@ export const ENDPOINTS = {
   surveyRequests: {
     pending: '/survey-requests/pending',
     my: '/survey-requests/my',
+    escalated: '/survey-requests/escalated',
     byId: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}`,
     claim: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/claim`,
     assignTechnician: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/assign-technician`,
@@ -75,7 +82,9 @@ export const ENDPOINTS = {
   technicianAppointments: {
     base: '/technicians/me/appointments',
     byId: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}`,
-    acknowledge: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/acknowledge`,
+    open: '/technicians/me/open-appointments',
+    accept: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/accept`,
+    release: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/release`,
     schedule: '/technicians/me/schedule',
   },
   technicianSchedule: {
@@ -93,10 +102,14 @@ export const ENDPOINTS = {
   adminTechnicians: {
     base: '/admin/technicians',
     profile: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/profile`,
+    zones: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/zones`,
     workingSchedule: (technicianUserId: string) => `/admin/technicians/${encode(technicianUserId)}/working-schedule`,
     unavailablePeriods: (technicianUserId: string) =>
       `/admin/technicians/${encode(technicianUserId)}/unavailable-periods`,
     unavailablePeriod: (technicianUserId: string, periodId: string) =>
       `/admin/technicians/${encode(technicianUserId)}/unavailable-periods/${encode(periodId)}`,
+  },
+  operationalZones: {
+    base: '/admin/operational-zones',
   },
 } as const

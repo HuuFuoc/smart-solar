@@ -1791,6 +1791,70 @@
         }
       }
     },
+    "/api/pre-surveys/{preSurveyId}/simulations/{simulationId}/select": {
+      "post": {
+        "tags": [
+          "Simulations"
+        ],
+        "parameters": [
+          {
+            "name": "preSurveyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "simulationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectSimulationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/pre-surveys/{preSurveyId}/simulations/selection": {
+      "delete": {
+        "tags": [
+          "Simulations"
+        ],
+        "parameters": [
+          {
+            "name": "preSurveyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/survey-requests/pending": {
       "get": {
         "tags": [
@@ -2052,29 +2116,6 @@
         }
       }
     },
-    "/api/technicians/me/appointments/{appointmentId}/acknowledge": {
-      "post": {
-        "tags": [
-          "TechnicianAppointments"
-        ],
-        "parameters": [
-          {
-            "name": "appointmentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/technicians/me/schedule": {
       "get": {
         "tags": [
@@ -2163,10 +2204,117 @@
           }
         }
       }
+    },
+    "/api/technicians/me/appointments/{appointmentId}/accept": {
+      "post": {
+        "tags": [
+          "TechnicianAppointments"
+        ],
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptAppointmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/technicians/me/appointments/{appointmentId}/release": {
+      "post": {
+        "tags": [
+          "TechnicianAppointments"
+        ],
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseAppointmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/technicians/{technicianUserId}/zones": {
+      "put": {
+        "tags": [
+          "AdminTechnicians"
+        ],
+        "parameters": [
+          {
+            "name": "technicianUserId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetTechnicianZonesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AcceptAppointmentRequest": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AddUnavailablePeriodRequest": {
         "type": "object",
         "properties": {
@@ -2211,6 +2359,11 @@
           },
           "reason": {
             "type": "string",
+            "nullable": true
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -2522,6 +2675,14 @@
             "nullable": true
           },
           "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "provinceCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "communeCode": {
             "type": "string",
             "nullable": true
           }
@@ -2985,6 +3146,16 @@
         },
         "additionalProperties": false
       },
+      "ReleaseAppointmentRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ReplaceUserRolesRequest": {
         "type": "object",
         "properties": {
@@ -3064,6 +3235,31 @@
           "technicianUserId": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SelectSimulationRequest": {
+        "type": "object",
+        "properties": {
+          "expectedGeometryVersion": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetTechnicianZonesRequest": {
+        "type": "object",
+        "properties": {
+          "zoneIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
             "nullable": true
           }
         },
@@ -3279,30 +3475,12 @@
       "UpsertTechnicianProfileRequest": {
         "type": "object",
         "properties": {
-          "baseLatitude": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "baseLongitude": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "baseLabel": {
-            "type": "string",
-            "nullable": true
-          },
           "isSchedulingActive": {
             "type": "boolean"
           },
           "maxAppointmentsPerDay": {
             "type": "integer",
             "format": "int32",
-            "nullable": true
-          },
-          "earliestBaseDeparture": {
-            "type": "string",
             "nullable": true
           }
         },

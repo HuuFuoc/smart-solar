@@ -37,6 +37,26 @@ export function clearDraft(account: string) {
   writeDraft(account, {})
 }
 
+// Cờ "tài khoản đã có hồ sơ khách hàng". Hồ sơ chỉ tạo một lần nên lần sau bỏ qua bước hồ sơ
+const profileDoneKey = (account: string) => `smartsolar.customer-profile.${account}`
+
+export function readProfileDone(account: string) {
+  try {
+    return localStorage.getItem(profileDoneKey(account)) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function writeProfileDone(account: string, done: boolean) {
+  try {
+    if (done) localStorage.setItem(profileDoneKey(account), '1')
+    else localStorage.removeItem(profileDoneKey(account))
+  } catch {
+    // Trình duyệt chặn localStorage: bỏ qua
+  }
+}
+
 // Form đang nhập dở, để tải lại trang không bị mất
 export type AssessmentWork = {
   step: number
@@ -73,7 +93,10 @@ export function readWork(account: string): AssessmentWork | null {
           ? surface.obstacles.map((o) => ({ ...o, key: newObstacleKey() }))
           : [],
       },
-      simForm: { ...EMPTY_SIMULATION_FORM, ...(isObject(w.simForm) ? w.simForm : {}) },
+      simForm: {
+        ...EMPTY_SIMULATION_FORM,
+        ...(isObject(w.simForm) ? w.simForm : {}),
+      },
       preSurveyId: typeof w.preSurveyId === 'string' ? w.preSurveyId : undefined,
       baseRevision: typeof w.baseRevision === 'number' ? w.baseRevision : null,
     } as AssessmentWork

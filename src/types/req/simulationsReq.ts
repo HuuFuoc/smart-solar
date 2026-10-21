@@ -27,3 +27,8 @@ export type InstallationSpacingRequest = {
   /** Format: double */
   rackLowEdgeClearanceMm?: number | null
 }
+
+export type SelectSimulationRequest = {
+  /** Format: int32 */
+  expectedGeometryVersion?: number | null
+}

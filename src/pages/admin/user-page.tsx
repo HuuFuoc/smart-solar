@@ -31,18 +31,14 @@ function TechnicianSummary({ user }: { user: AdminUserDetail }) {
       />
       <PanelBody>
         {!t?.hasProfile ? (
-          <p className="text-body text-fg-2">Chưa cấu hình nơi xuất phát nên chưa nhận lịch khảo sát.</p>
+          <p className="text-body text-fg-2">Chưa có hồ sơ nhận lịch nên chưa nhận lịch khảo sát.</p>
         ) : (
           <KeyValueList
             items={[
               { k: 'Nhận lịch', v: t.isSchedulingActive ? 'Đang nhận' : 'Đang tắt' },
-              { k: 'Nơi xuất phát', v: t.hasBaseLocation ? (t.baseLabel ?? 'Đã có toạ độ') : 'Chưa có' },
+              { k: 'Khu vực phục vụ', v: t.zoneCodes.length > 0 ? t.zoneCodes.join(', ') : 'Chưa có' },
               { k: 'Lịch / ngày', v: t.maxAppointmentsPerDay ?? 'Mặc định' },
               { k: 'Giờ làm', v: t.hasCustomWorkingSchedule ? 'Giờ riêng' : 'Giờ chung' },
-              {
-                k: 'Rời nơi xuất phát từ',
-                v: t.earliestBaseDeparture ? t.earliestBaseDeparture.slice(0, 5) : 'Mặc định',
-              },
             ]}
           />
         )}
@@ -80,7 +76,7 @@ export function AdminUserPage() {
               description={user.email}
               actions={
                 deleted ? undefined : (
-                  <Button icon="edit" onClick={() => setEditing(true)}>
+                  <Button variant="soft" icon="edit" onClick={() => setEditing(true)}>
                     Sửa thông tin
                   </Button>
                 )

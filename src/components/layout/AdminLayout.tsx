@@ -9,7 +9,7 @@ import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
 import { useAdminUsersQuery } from '@/hooks/useAdminUsers'
 import { ROUTES } from '@/routes/paths'
 
-// Layout cho /admin/*. Số cạnh menu: tổng tài khoản, tổng sản phẩm, và số kỹ thuật viên chưa có nơi xuất phát (đỏ)
+// Layout cho /admin/*. Số cạnh menu: tổng tài khoản, tổng sản phẩm, và số kỹ thuật viên chưa thuộc khu vực nào (đỏ)
 export function AdminLayout({ children }: { children?: ReactNode }) {
   // Layout còn là khung chờ trước RequireRole: chỉ gọi khi phiên admin đã khôi phục xong.
   const isAdmin = useAuth().user?.role === 'admin'

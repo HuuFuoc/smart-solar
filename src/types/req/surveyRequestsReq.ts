@@ -4,6 +4,8 @@ export type AssignTechnicianRequest = {
   /** Format: uuid */
   technicianUserId?: string
   reason?: string | null
+  /** Format: int32 */
+  expectedRevision?: number | null
 }
 
 export type SalesRescheduleRequest = {

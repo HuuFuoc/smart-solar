@@ -6,10 +6,11 @@ import { FilterChips } from '@/components/common/ui/chips'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
-import { isOverdue, needsScheduling } from '@/features/pre-surveys/preSurveyDisplay'
+import { isOverdue } from '@/features/pre-surveys/preSurveyDisplay'
 import { MyRequestList, PendingRequestList } from '@/features/pre-surveys/SurveyRequestLists'
 import {
   useClaimSurveyRequestMutation,
+  useEscalatedAppointmentsQuery,
   useMySurveyRequestsQuery,
   usePendingSurveyRequestsQuery,
 } from '@/hooks/useSurveyRequests'
@@ -28,10 +29,13 @@ export function OpsSurveysPage() {
   const setTab = (next: Tab) => navigate(next === 'my' ? ROUTES.ops.surveysMine : ROUTES.ops.surveys)
   const pending = usePendingSurveyRequestsQuery()
   const my = useMySurveyRequestsQuery()
+  const escalated = useEscalatedAppointmentsQuery()
   const claim = useClaimSurveyRequestMutation()
   // Việc đang chờ, hiện ngay dưới tiêu đề để không phải mở từng tab mới biết.
   const overdue = pending.data?.filter((r) => isOverdue(r.submittedAt)).length ?? 0
-  const unscheduled = my.data?.filter((r) => needsScheduling(r.status)).length ?? 0
+  // Lịch quá hạn không kỹ thuật viên nào nhận, thuộc yêu cầu của bạn
+  const needAssign = new Set(escalated.data?.filter((item) => item.ownedByMe).map((item) => item.surveyRequestId) ?? [])
+  const unscheduled = needAssign.size
 
   async function onClaim(row: PendingSurveyRequestItem) {
     try {
@@ -58,7 +62,7 @@ export function OpsSurveysPage() {
               )}
               {unscheduled > 0 && (
                 <Badge tone="danger" icon="event_busy">
-                  {unscheduled} yêu cầu của bạn chưa phân công kỹ thuật viên
+                  {unscheduled} yêu cầu của bạn cần phân công kỹ thuật viên
                 </Badge>
               )}
             </span>
@@ -108,7 +112,7 @@ export function OpsSurveysPage() {
                 }
               />
             ) : (
-              <MyRequestList rows={rows} />
+              <MyRequestList rows={rows} needAssign={needAssign} />
             )
           }
         </QueryBoundary>

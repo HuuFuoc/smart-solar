@@ -8,13 +8,12 @@ import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
-import { formatCoordinates } from '@/features/pre-surveys/preSurveyDisplay'
 import { technicianReadiness } from '@/features/scheduling/schedulingDisplay'
 import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
 import { ROUTES, withId } from '@/routes/paths'
 import type { TechnicianProfileView } from '@/types/res/adminTechniciansRes'
 
-// Danh sách kỹ thuật viên. Người thiếu nơi xuất phát lên đầu và tô đỏ
+// Danh sách kỹ thuật viên. Người chưa thuộc khu vực nào lên đầu và tô đỏ
 
 const rank = (t: TechnicianProfileView) => (t.readyForScheduling ? 2 : technicianReadiness(t).tone === 'danger' ? 0 : 1)
 
@@ -31,10 +30,10 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
         description={
           missing > 0 ? (
             <Badge tone="danger" icon="wrong_location">
-              {missing} kỹ thuật viên chưa có nơi xuất phát nên chưa nhận lịch được
+              {missing} kỹ thuật viên chưa thuộc khu vực nào nên chưa nhận lịch được
             </Badge>
           ) : (
-            'Nơi xuất phát, giờ làm và lịch nghỉ quyết định giờ khảo sát khách đặt được.'
+            'Khu vực phục vụ, giờ làm và lịch nghỉ quyết định giờ khảo sát khách đặt được.'
           )
         }
         actions={
@@ -64,7 +63,7 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
             return (
               <EmptyState
                 title="Chưa có tài khoản kỹ thuật viên"
-                description="Tạo tài khoản với vai trò Kỹ thuật viên rồi cấu hình nơi xuất phát ở đây."
+                description="Tạo tài khoản với vai trò Kỹ thuật viên rồi chọn khu vực phục vụ ở đây."
                 action={usersLink ? <ButtonLink to={usersLink}>Mở trang tài khoản</ButtonLink> : undefined}
               />
             )
@@ -76,7 +75,7 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
                 <tr>
                   <Th>Kỹ thuật viên</Th>
                   <Th>Nhận lịch</Th>
-                  <Th>Nơi xuất phát</Th>
+                  <Th>Khu vực phục vụ</Th>
                   <Th className="text-right">Lịch / ngày</Th>
                   <Th>Giờ làm</Th>
                 </tr>
@@ -98,14 +97,9 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
                       <Td label="Nhận lịch">
                         <Badge tone={ready.tone}>{ready.label}</Badge>
                       </Td>
-                      <Td label="Nơi xuất phát">
-                        {t.baseLatitude != null && t.baseLongitude != null ? (
-                          <>
-                            <p>{t.baseLabel || 'Chưa đặt tên'}</p>
-                            <p className="tnum text-meta text-fg-2">
-                              {formatCoordinates(t.baseLatitude, t.baseLongitude)}
-                            </p>
-                          </>
+                      <Td label="Khu vực phục vụ">
+                        {t.zones.length > 0 ? (
+                          t.zones.map((zone) => zone.name).join(', ')
                         ) : (
                           <span className="text-fg-3">Chưa có</span>
                         )}

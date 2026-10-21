@@ -20,6 +20,8 @@ export type CreatePropertySiteRequest = {
   installationSurfaceType?: InstallationSurfaceType
   surfaceMaterial?: string | null
   note?: string | null
+  provinceCode?: string | null
+  communeCode?: string | null
 }
 
 export type CustomerType = 1 | 2

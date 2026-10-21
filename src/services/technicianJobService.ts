@@ -1,5 +1,8 @@
+import type { AcceptAppointmentRequest, ReleaseAppointmentRequest } from '@/types/req/technicianAppointmentsReq'
+import type { AssignmentView } from '@/types/res/surveyRequestsRes'
 import type {
-  AcknowledgementView,
+  OpenAppointmentView,
+  ReleaseView,
   TechnicianAppointmentListItem,
   TechnicianJobView,
   TechnicianScheduleView,
@@ -7,24 +10,34 @@ import type {
 import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
-// Việc của kỹ thuật viên: chỉ các lịch đã được phân công chính thức
+// Việc của kỹ thuật viên. Lịch khách đặt hiện cho mọi kỹ thuật viên trong khu vực, ai nhận trước thì được
 
-/** GET /api/technicians/me/appointments */
+/** Việc đã xác nhận (tự nhận hoặc được phân công) */
 export function listMyAppointments() {
   return get<TechnicianAppointmentListItem[]>(ENDPOINTS.technicianAppointments.base)
 }
 
-/** Khách, địa điểm, số liệu khai, mô phỏng đã chọn và chặng đường tới */
+/** Khách, địa điểm, số liệu khai và mô phỏng đã chọn */
 export function getMyAppointment(id: string) {
   return get<TechnicianJobView>(ENDPOINTS.technicianAppointments.byId(id))
 }
 
-/** POST .../acknowledge, gửi lại khi đã nhận thì trả alreadyAcknowledged=true */
-export function acknowledgeAppointment(id: string) {
-  return post<AcknowledgementView>(ENDPOINTS.technicianAppointments.acknowledge(id))
+/** Lịch đang chờ người nhận trong các khu vực của mình */
+export function listOpenAppointments() {
+  return get<OpenAppointmentView[]>(ENDPOINTS.technicianAppointments.open)
 }
 
-/** Lịch một ngày kèm đường đi đã lưu */
+/** Người khác nhận trước thì trả 409 APPOINTMENT_ALREADY_TAKEN */
+export function acceptAppointment(id: string, body: AcceptAppointmentRequest) {
+  return post<AssignmentView>(ENDPOINTS.technicianAppointments.accept(id), body)
+}
+
+/** Trả lại việc đã nhận, lịch quay về chờ người khác nhận */
+export function releaseAppointment(id: string, body: ReleaseAppointmentRequest) {
+  return post<ReleaseView>(ENDPOINTS.technicianAppointments.release(id), body)
+}
+
+/** GET /api/technicians/me/schedule?date=YYYY-MM-DD */
 export function getMySchedule(date: string) {
   return get<TechnicianScheduleView>(ENDPOINTS.technicianAppointments.schedule, { params: { date } })
 }

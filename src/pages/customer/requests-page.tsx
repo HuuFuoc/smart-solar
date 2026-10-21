@@ -41,7 +41,7 @@ export function CustomerRequestsPage() {
           ) : undefined
         }
         actions={
-          <ButtonLink to={ROUTES.customer.assessment} icon="add">
+          <ButtonLink to={ROUTES.customer.assessment} variant="soft" icon="add">
             Đánh giá địa điểm khác
           </ButtonLink>
         }

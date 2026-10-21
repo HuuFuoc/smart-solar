@@ -6,6 +6,7 @@ import type {
   SetWorkingScheduleRequest,
   UpsertTechnicianProfileRequest,
 } from '@/types/req/adminTechniciansReq'
+import type { OperationalZoneListItem } from '@/types/res/operationalZonesRes'
 import type { TechnicianProfileView, UnavailablePeriodView, WorkingScheduleView } from '@/types/res/adminTechniciansRes'
 import type { TechnicianScheduleView } from '@/types/res/technicianAppointmentsRes'
 
@@ -15,9 +16,17 @@ export const technicianAdminKeys = {
   workingSchedule: (id: string) => [...technicianAdminKeys.all, 'working-schedule', id] as const,
   unavailable: (id: string) => [...technicianAdminKeys.all, 'unavailable', id] as const,
   schedule: (id: string, date: string) => [...technicianAdminKeys.all, 'schedule', id, date] as const,
+  zones: () => [...technicianAdminKeys.all, 'zones'] as const,
 }
 
-/** `enabled`: layout chỉ gọi khi phiên quản trị / quản lý đã khôi phục */
+export function useOperationalZonesQuery() {
+  return useQuery<OperationalZoneListItem[], ApiError>({
+    queryKey: technicianAdminKeys.zones(),
+    queryFn: technicianAdminService.listOperationalZones,
+  })
+}
+
+/** `enabled`: layout chỉ gọi khi phiên quản trị / quản lý đã khôi phục. */
 export function useTechniciansQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<TechnicianProfileView[], ApiError>({
     queryKey: technicianAdminKeys.list(),
@@ -42,17 +51,15 @@ export function useUnavailablePeriodsQuery(id: string | undefined) {
   })
 }
 
-/** Đang chờ tính lại đường đi thì tải lại mỗi 30 giây */
 export function useTechnicianScheduleQuery(id: string | undefined, date: string) {
   return useQuery<TechnicianScheduleView, ApiError>({
     queryKey: technicianAdminKeys.schedule(id ?? '', date),
     queryFn: () => technicianAdminService.getTechnicianSchedule(id!, date),
     enabled: Boolean(id),
-    refetchInterval: (query) => (query.state.data?.recalculation ? 30_000 : false),
   })
 }
 
-// Thay đổi cấu hình có thể đổi giờ trống và đường đi, nên làm mới tất cả kể cả khi lỗi
+// Thay đổi cấu hình có thể đổi giờ trống, nên làm mới tất cả kể cả khi lỗi
 function useInvalidateTechnicians() {
   const queryClient = useQueryClient()
   return () => queryClient.invalidateQueries({ queryKey: technicianAdminKeys.all })
@@ -86,6 +93,14 @@ export function useRemoveUnavailablePeriodMutation() {
   const invalidate = useInvalidateTechnicians()
   return useMutation<void, ApiError, { id: string; periodId: string }>({
     mutationFn: ({ id, periodId }) => technicianAdminService.removeUnavailablePeriod(id, periodId),
+    onSettled: invalidate,
+  })
+}
+
+export function useSetTechnicianZonesMutation() {
+  const invalidate = useInvalidateTechnicians()
+  return useMutation<unknown, ApiError, { id: string; zoneIds: string[] }>({
+    mutationFn: ({ id, zoneIds }) => technicianAdminService.setTechnicianZones(id, { zoneIds }),
     onSettled: invalidate,
   })
 }

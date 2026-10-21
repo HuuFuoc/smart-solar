@@ -12,9 +12,9 @@ import type { SurveySlotsView } from '@/types/res/surveySlotsRes'
 import { get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
-// Khách tự đặt giờ khảo sát, hệ thống giữ chỗ một kỹ thuật viên. Đổi / huỷ được khi lịch còn BOOKED
+// Khách tự đặt giờ khảo sát, kỹ thuật viên trong khu vực tự nhận lịch. Đổi / huỷ được khi còn đủ xa giờ hẹn
 
-/** Chỉ trả các giờ đã kiểm tra được kỹ thuật viên và đường đi */
+/** Luôn 200: không có giờ thì coverageStatus cho biết vì sao */
 export function getSurveySlots(propertySiteId: string, date: string) {
   return get<SurveySlotsView>(ENDPOINTS.surveySlots.base, { params: { propertySiteId, date } })
 }
@@ -34,7 +34,7 @@ export function bookAppointment(id: string, body: BookSurveyAppointmentRequest) 
   return post<BookingConfirmation>(ENDPOINTS.customerSurveyRequests.booking(id), body)
 }
 
-/** PUT .../booking, đổi sang giờ khác khi còn BOOKED (lịch cũ giữ làm lịch sử) */
+/** PUT .../booking, đổi sang giờ khác (lịch cũ giữ làm lịch sử), lịch quay về chờ kỹ thuật viên nhận */
 export function rescheduleAppointment(id: string, body: BookSurveyAppointmentRequest) {
   return put<BookingConfirmation>(ENDPOINTS.customerSurveyRequests.booking(id), body)
 }

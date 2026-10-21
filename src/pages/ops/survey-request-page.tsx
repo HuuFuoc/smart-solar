@@ -1,9 +1,10 @@
 import { Fragment, useState } from 'react'
 import { useParams } from 'react-router'
-import { Badge, Count, type Tone } from '@/components/common/ui/badge'
+import { Badge, Count } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
-import { ActivityList, Notice, type ActivityItem } from '@/components/common/ui/lists'
+import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
+import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
@@ -15,7 +16,7 @@ import {
   formatAddress,
   formatDateTime,
   hasCoordinates,
-  needsScheduling,
+  isOverdue,
   shortCode,
   surfaceTypeLabel,
   surveyStatusMeta,
@@ -27,51 +28,66 @@ import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
 import { useSimulationsQuery } from '@/hooks/useSimulations'
 import { useSurveyRequestQuery } from '@/hooks/useSurveyRequests'
 import { SalesSchedulePanel } from '@/features/scheduling/SalesSchedulePanel'
-import { formatAppointment } from '@/features/scheduling/schedulingDisplay'
+import { formatTimeRange, isConfirmed, relativeDay, vnDate } from '@/features/scheduling/schedulingDisplay'
 import type { SurveyRequestDetail } from '@/types/res/surveyRequestsRes'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
 
-// Nhãn đỏ khi khách đã đặt giờ mà chưa phân công kỹ thuật viên
-function scheduleBadge(r: SurveyRequestDetail): { label: string; tone: Tone } | null {
-  const a = r.appointment
-  if (!a) return needsScheduling(r.status) ? { label: 'Khách chưa đặt giờ khảo sát', tone: 'neutral' } : null
-  if (a.status === 'BOOKED') return { label: 'Chưa phân công kỹ thuật viên', tone: 'danger' }
-  return null
+/** "Ngày mai, 09:00-10:30" */
+function whenText(startsAt: string, endsAt: string) {
+  return `${relativeDay(vnDate(startsAt))}, ${formatTimeRange(startsAt, endsAt)}`
 }
 
-// Dòng thời gian: gửi, nhận, khách đặt giờ, phân công, kỹ thuật viên nhận việc, khảo sát (luồng 1 dừng ở nhận việc)
-function progressItems(r: SurveyRequestDetail): ActivityItem[] {
+// Các bước của yêu cầu theo góc nhìn của sales
+function trackerSteps(r: SurveyRequestDetail): TrackerStep[] {
   const a = r.appointment
-  const assigned = Boolean(a?.assignedAt) && a?.status !== 'BOOKED'
-  const acknowledged = a?.status === 'ACKNOWLEDGED'
+  const confirmed = isConfirmed(a?.status)
   return [
-    { time: formatDateTime(r.submittedAt), title: 'Khách gửi yêu cầu', state: 'done' },
-    ...(r.assignedAt
-      ? [{ time: formatDateTime(r.assignedAt), title: 'Bạn nhận yêu cầu', state: 'done' as const }]
-      : []),
+    { label: 'Khách gửi yêu cầu', detail: formatDateTime(r.submittedAt), state: 'done' },
+    { label: 'Khách đặt giờ', detail: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
     {
-      time: a ? formatDateTime(a.bookedAt) : 'Chưa đặt',
-      title: 'Khách đặt giờ khảo sát',
-      state: a ? 'done' : 'current',
+      label: a?.status === 'ESCALATED' ? 'Cần phân công' : 'Kỹ thuật viên nhận',
+      detail: confirmed ? (a?.assignedTechnicianName ?? undefined) : a ? 'Đang chờ' : undefined,
+      state: confirmed ? 'done' : a ? 'current' : 'todo',
     },
     {
-      time: assigned ? `${a?.assignedTechnicianName ?? ''}, ${formatDateTime(a?.assignedAt)}` : '—',
-      title: 'Phân công kỹ thuật viên',
-      state: assigned ? 'done' : a ? 'current' : 'todo',
-    },
-    {
-      time: acknowledged ? formatDateTime(a?.acknowledgedAt) : '—',
-      title: 'Kỹ thuật viên nhận việc',
-      state: acknowledged ? 'done' : assigned ? 'current' : 'todo',
-    },
-    {
-      time: a ? formatAppointment(a.startsAt, a.endsAt) : '—',
-      title: 'Khảo sát tại công trình',
-      body: r.salesNote ?? undefined,
-      state: r.status === 5 ? 'done' : 'todo',
+      label: 'Khảo sát tại công trình',
+      detail: a ? whenText(a.startsAt, a.endsAt) : undefined,
+      state: r.status === 5 ? 'done' : confirmed ? 'current' : 'todo',
     },
   ]
+}
+
+// Việc tiếp theo và ai làm. Đỏ chỉ khi sales phải làm
+function nextStep(r: SurveyRequestDetail): TrackerNext {
+  const a = r.appointment
+  if (r.status === 5) return { tone: 'neutral', title: 'Đã khảo sát xong tại công trình' }
+  if (r.status === 6) return { tone: 'neutral', title: 'Yêu cầu đã huỷ' }
+  if (!a)
+    return isOverdue(r.submittedAt)
+      ? {
+          tone: 'danger',
+          title: 'Khách chưa đặt giờ khảo sát sau hơn 1 ngày',
+          body: 'Gọi khách nhắc chọn giờ trên cổng khách hàng.',
+        }
+      : { tone: 'info', title: 'Chờ khách đặt giờ khảo sát', body: 'Khách tự chọn giờ trên cổng khách hàng.' }
+  if (a.status === 'ESCALATED')
+    return {
+      tone: 'danger',
+      title: 'Cần bạn phân công kỹ thuật viên',
+      body: `Lịch ${whenText(a.startsAt, a.endsAt)} quá hạn mà chưa kỹ thuật viên nào nhận. Chọn người ở khối Lịch khảo sát.`,
+    }
+  if (a.status === 'PENDING_ACCEPTANCE')
+    return {
+      tone: 'info',
+      title: 'Chờ kỹ thuật viên trong khu vực nhận lịch',
+      body: `Hạn nhận ${formatDateTime(a.acceptanceDeadlineAt)}. Quá hạn mà không ai nhận thì bạn phân công.`,
+    }
+  return {
+    tone: 'ok',
+    title: `${a.assignedTechnicianName ?? 'Kỹ thuật viên'} sẽ khảo sát tại công trình`,
+    body: `${whenText(a.startsAt, a.endsAt)}. Gọi khách xác nhận trước ngày hẹn.`,
+  }
 }
 
 /** Có toạ độ thì ghim đúng điểm, không thì tìm theo địa chỉ. */
@@ -87,7 +103,7 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
   const list = useSimulationsQuery(request.preSurveyId)
   const [viewId, setViewId] = useState<string | null>(null)
   const viewing = viewId ?? selected?.simulationId ?? null
-  const others = list.data ?? []
+  const others = list.data?.items ?? []
   return (
     <>
       <Panel>
@@ -147,7 +163,7 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
 }
 
 // Chi tiết yêu cầu khảo sát, chỉ trả cho sales đã nhận yêu cầu
-// Việc chính là phân công kỹ thuật viên nên khối lịch khảo sát đứng đầu
+// Việc chính là theo dõi lịch khảo sát nên khối lịch đứng đầu, cạnh thông tin khách
 export function OpsSurveyRequestPage() {
   const { id } = useParams()
   const query = useSurveyRequestQuery(id)
@@ -158,14 +174,12 @@ export function OpsSurveyRequestPage() {
       {(r) => {
         const status = surveyStatusMeta(r.status)
         const map = mapUrl(r)
-        const schedule = scheduleBadge(r)
         return (
           <>
             <PageHeader
               meta={
                 <>
                   <Badge tone={status.tone}>{status.label}</Badge>
-                  {schedule && <Badge tone={schedule.tone}>{schedule.label}</Badge>}
                   <span className="tnum">Mã {shortCode(r.surveyRequestId)}</span>
                 </>
               }
@@ -196,7 +210,9 @@ export function OpsSurveyRequestPage() {
               }
             />
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <ProgressTracker steps={trackerSteps(r)} next={nextStep(r)} />
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
                 <SalesSchedulePanel request={r} />
                 <Panel>
@@ -206,7 +222,7 @@ export function OpsSurveyRequestPage() {
                   />
                   <PanelBody className="space-y-6">
                     {/* Dùng lg: vì cx không gộp class, chỉ breakpoint lớn hơn mới đè được md:grid-cols-4 */}
-                    <StatRow className="lg:grid-cols-3">
+                    <StatRow className="lg:grid-cols-5">
                       <Stat
                         label="Diện tích dùng được"
                         value={r.usableAreaM2 == null ? '—' : num.format(r.usableAreaM2)}
@@ -222,17 +238,18 @@ export function OpsSurveyRequestPage() {
                         value={r.tiltDegree == null ? '—' : num.format(r.tiltDegree)}
                         unit="độ"
                       />
+                      <Stat
+                        label="Hướng mái"
+                        value={r.azimuthDegree == null ? '—' : num.format(r.azimuthDegree)}
+                        unit={r.azimuthDegree == null ? undefined : `độ, ${directionLabel(r.azimuthDegree)}`}
+                      />
+                      <Stat
+                        label="Vật cản"
+                        value={r.hasObstruction == null ? '—' : r.hasObstruction ? 'Có' : 'Không'}
+                      />
                     </StatRow>
                     <Facts
                       items={[
-                        {
-                          k: 'Hướng mái',
-                          v:
-                            r.azimuthDegree == null
-                              ? '—'
-                              : `${directionLabel(r.azimuthDegree)} (${num.format(r.azimuthDegree)}°)`,
-                        },
-                        { k: 'Vật cản', v: r.hasObstruction == null ? '—' : r.hasObstruction ? 'Có' : 'Không' },
                         { k: 'Bề mặt', v: surfaceTypeLabel(r.installationSurfaceType) },
                         { k: 'Vật liệu', v: r.surfaceMaterial || '—' },
                         ...(hasCoordinates(r.latitude, r.longitude)
@@ -256,14 +273,9 @@ export function OpsSurveyRequestPage() {
                     />
                   </PanelBody>
                 </Panel>
-                <SimulationPanel request={r} />
               </div>
 
-              {/* Cột phụ dính khi cuộn vì cột trái dài hơn nhiều */}
-              <PanelAside
-                aria-label="Khách hàng và tiến độ"
-                className="lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:scrollbar-thin"
-              >
+              <PanelAside aria-label="Khách hàng">
                 <Panel>
                   <PanelHeader title="Khách hàng" />
                   <PanelBody>
@@ -305,15 +317,12 @@ export function OpsSurveyRequestPage() {
                     />
                   </PanelBody>
                 </Panel>
-
-                <Panel>
-                  <PanelHeader title="Tiến độ" />
-                  <PanelBody>
-                    {/* Việc còn chờ đã là nhãn ở đầu trang: dòng thời gian chỉ ghi chữ, không báo đỏ lần hai. */}
-                    <ActivityList items={progressItems(r)} />
-                  </PanelBody>
-                </Panel>
               </PanelAside>
+            </div>
+
+            {/* Mô phỏng trải hết chiều ngang để hình bố trí to và không chừa cột trống bên phải */}
+            <div className="mt-6 space-y-4 border-t border-line pt-4">
+              <SimulationPanel request={r} />
             </div>
           </>
         )
