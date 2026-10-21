@@ -76,6 +76,13 @@ export function useStartInstallationMutation() {
   return useInstallationMutation(({ id }: { id: string }) => technicianInstallationService.startInstallation(id))
 }
 
+/** Ảnh vào lượt hiện tại. Mỗi ảnh một lần gọi, view trả về đã đếm ảnh mới cho báo cáo hoàn thành */
+export function useAddEvidenceMutation() {
+  return useInstallationMutation(({ id, fileId, caption }: { id: string; fileId: string; caption: string }) =>
+    technicianInstallationService.addInstallationEvidence(id, { fileId, caption: caption || null }),
+  )
+}
+
 export function useRegisterAssetsMutation() {
   return useInstallationMutation(({ id, assets }: { id: string; assets: AssetRequest[] }) =>
     technicianInstallationService.registerInstallationAssets(id, { assets }),

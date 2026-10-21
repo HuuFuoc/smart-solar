@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
@@ -6,6 +6,7 @@ import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/d
 import { Skeleton } from '@/components/common/ui/states'
 import { formatFileSize, groupByRound } from '@/features/installations/installationDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { useLatest } from '@/hooks/useLatest'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type {
   EvidenceDisposition,
@@ -25,17 +26,9 @@ export type EvidenceUrlFetcher = (
 type UrlState =
   { kind: 'idle' | 'loading' | 'gone' } | { kind: 'ready'; url: string } | { kind: 'error'; message: string }
 
-// Giữ bản getUrl mới nhất mà không đưa vào deps: nơi gọi thường truyền hàm mới mỗi lần render
-function useLatest<T>(value: T) {
-  const ref = useRef(value)
-  useLayoutEffect(() => {
-    ref.current = value
-  })
-  return ref
-}
-
 // Kết quả gắn với khoá của lần xin (ảnh + lượt thử): khoá đổi mà chưa có kết quả mới thì là đang tải
 function useSignedUrl(evidenceId: string, getUrl: EvidenceUrlFetcher, enabled: boolean) {
+  // Nơi gọi thường truyền hàm mới mỗi lần render nên không đưa vào deps
   const fetcher = useLatest(getUrl)
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState<{ key: string; state: UrlState } | null>(null)

@@ -106,6 +106,7 @@ export const ROUTES = {
     products: '/admin/products',
     installations: '/admin/installations',
     installation: '/admin/installations/:id',
+    packages: '/admin/packages',
     // Màn mock đã ẩn
     roles: '/admin/roles',
     services: '/admin/services',

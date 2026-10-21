@@ -1,5 +1,8 @@
 import {
   DISASTER_TYPES,
+  PACKAGE_SALE_STATUSES,
+  SERVICE_PACKAGE_KIND_LABELS,
+  SERVICE_PACKAGE_KINDS,
   PAYABLE_ATTEMPT_STATUSES,
   PAYMENT_ATTEMPT_STATUSES,
   PURCHASABLE_CONTRACT_STATUSES,
@@ -28,6 +31,21 @@ export function isPayableAttempt(status: string | null | undefined) {
 /** "Bão, Lũ lụt, Sét"; mã lạ in nguyên mã */
 export function disasterTypesLabel(types: string[]) {
   return types.length > 0 ? types.map((t) => DISASTER_TYPES[t] ?? t).join(', ') : '—'
+}
+
+export const isMaintenance = (kind: string) => kind === SERVICE_PACKAGE_KINDS.maintenance
+
+export function packageKindLabel(kind: string) {
+  return SERVICE_PACKAGE_KIND_LABELS[kind] ?? kind
+}
+
+export function packageSaleMeta(isActive: boolean): { label: string; tone: Tone } {
+  return isActive ? PACKAGE_SALE_STATUSES.active : PACKAGE_SALE_STATUSES.inactive
+}
+
+/** "tháng 6, 12" */
+export function visitMonthsLabel(months: number[]) {
+  return months.length > 0 ? `tháng ${[...months].sort((a, b) => a - b).join(', ')}` : '—'
 }
 
 /** "12 tháng", "2 năm" */

@@ -43,8 +43,8 @@ export function startInstallation(projectId: string) {
   return post<InstallationTechnicianView>(api.start(projectId))
 }
 
-// Gắn ảnh đã tải lên S3 và đã VERIFIED (POST /api/files, mục đích INSTALLATION_EVIDENCE). Backend chưa có API cấp
-// link tải lên nên giao diện chưa gọi được
+// Gắn ảnh đã VERIFIED do chính kỹ thuật viên tải lên (uploadFile, mục đích INSTALLATION_EVIDENCE). Chỉ khi đang thi công
+// hoặc sửa lại; mỗi tệp gắn một lần (409 FILE_ALREADY_LINKED). Backend cắt chú thích quá 300 ký tự
 export function addInstallationEvidence(projectId: string, body: EvidenceRequest) {
   return post<InstallationTechnicianView>(api.evidence(projectId), body)
 }

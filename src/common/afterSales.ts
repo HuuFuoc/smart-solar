@@ -8,6 +8,18 @@ export const SERVICE_PACKAGE_KINDS = {
   disasterProtection: 'DISASTER_PROTECTION',
 } as const
 
+/** Tên loại gói trên màn quản trị */
+export const SERVICE_PACKAGE_KIND_LABELS: Record<string, string> = {
+  DISASTER_PROTECTION: 'Bảo vệ thiên tai',
+  MAINTENANCE: 'Bảo trì định kỳ',
+}
+
+/** Gói đang bán (isActive) hay đã ngừng bán: ngừng bán thì khách không mua mới được, gói đã mua không đổi */
+export const PACKAGE_SALE_STATUSES = {
+  active: { label: 'Đang bán', tone: 'ok' },
+  inactive: { label: 'Ngừng bán', tone: 'neutral' },
+} as const satisfies Record<string, { label: string; tone: Tone }>
+
 /** DisasterTypes: loại thiên tai một gói bảo vệ */
 export const DISASTER_TYPES: Record<string, string> = {
   STORM: 'Bão',

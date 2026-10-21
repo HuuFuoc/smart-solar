@@ -5,23 +5,42 @@ import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Checkbox, Field, Radio, Textarea } from '@/components/common/ui/field'
+import { FileButton } from '@/components/common/ui/file-button'
+import { Progress } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
+import { acceptFor, fileProblem, fileTypesText, maxSizeText } from '@/features/files/fileDisplay'
 import { ErrorLine } from '@/features/installation-projects/formParts'
 import {
   checklistItemLabel,
   checklistStatusLabel,
+  formatFileSize,
   installationErrorMessage,
   isFinal,
 } from '@/features/installation-projects/projectDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { useFileQuery, useFileUpload } from '@/hooks/useFiles'
 import { useChecklistItemMutation } from '@/hooks/useManagerInstallations'
 import type { ChecklistItemView, ChecklistStatus, InstallationStaffView } from '@/types/res/managerInstallationsRes'
 
 // Checklist trước khi thi công (chỉ quản lý / quản trị). Mỗi lần lưu gửi đủ isRequired, status, note vì backend ghi đè cả mục;
-// `revision` là revision của dự án. "Đã đạt" cần tài liệu PROJECT_DOCUMENT đã xác minh, mà API chưa có cách tải tài liệu lên,
-// nên chỉ giữ được "Đã đạt" cho mục đã có tài liệu
+// `revision` là revision của dự án. "Đã đạt" cần một tài liệu PROJECT_DOCUMENT đã xác minh: chọn tệp mới thì tải lên lúc Lưu,
+// không chọn thì giữ tài liệu đang gắn
 
 const NOTE_MAX = 1000
+const DOCUMENT = 'PROJECT_DOCUMENT'
+
+// Tên tài liệu đang gắn (GET /api/files/{id}); không đọc được thì chỉ ghi là có tài liệu
+function CurrentDocument({ fileId }: { fileId: string }) {
+  const file = useFileQuery(fileId)
+  if (!file.data) return <>Đang gắn một tài liệu đã xác minh.</>
+  const size = formatFileSize(file.data.sizeBytes)
+  return (
+    <>
+      Đang gắn <span className="font-medium text-fg">{file.data.originalFileName}</span>
+      {size ? <span className="tnum">, {size}</span> : null}.
+    </>
+  )
+}
 
 function ChecklistDialog({
   project,
@@ -35,21 +54,50 @@ function ChecklistDialog({
   const [isRequired, setIsRequired] = useState(item.isRequired)
   const [status, setStatus] = useState<ChecklistStatus>(item.status)
   const [note, setNote] = useState(item.note ?? '')
+  const [chosen, setChosen] = useState<File | null>(null)
+  const [documentError, setDocumentError] = useState<string | null>(null)
+  // Tài liệu mới đã tải và xác minh: lưu lỗi (vd. 409) thì lần lưu sau không tải lại
+  const [uploadedId, setUploadedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const save = useChecklistItemMutation(project.projectId)
+  const upload = useFileUpload(DOCUMENT)
+  const busy = upload.uploading || save.isPending
   const hasDocument = item.evidenceFileId !== null
-  const unchanged = isRequired === item.isRequired && status === item.status && note.trim() === (item.note ?? '')
+  const satisfied = status === CHECKLIST_STATUSES.satisfied
+  const unchanged =
+    isRequired === item.isRequired &&
+    status === item.status &&
+    note.trim() === (item.note ?? '') &&
+    (!satisfied || chosen === null)
+
+  function pick(files: File[]) {
+    const file = files[0]!
+    setChosen(file)
+    setUploadedId(null)
+    setDocumentError(fileProblem(file, DOCUMENT))
+    setError(null)
+  }
 
   async function submit() {
     setError(null)
+    if (satisfied && !chosen && !hasDocument) {
+      setDocumentError('Chọn giấy phép hoặc văn bản chấp thuận của hạng mục này.')
+      return
+    }
+    if (satisfied && documentError) return
     try {
+      let evidenceFileId = satisfied ? item.evidenceFileId : null
+      if (satisfied && chosen) {
+        evidenceFileId = uploadedId ?? (await upload.upload(chosen)).fileId
+        setUploadedId(evidenceFileId)
+      }
       await save.mutateAsync({
         itemId: item.itemId,
         body: {
           revision: project.revision,
           isRequired,
           status,
-          evidenceFileId: status === CHECKLIST_STATUSES.satisfied ? item.evidenceFileId : null,
+          evidenceFileId,
           note: note.trim() || null,
         },
       })
@@ -60,7 +108,7 @@ function ChecklistDialog({
     }
   }
 
-  const options: { value: ChecklistStatus; label: string; description: string; disabled?: boolean }[] = [
+  const options: { value: ChecklistStatus; label: string; description: string }[] = [
     { value: 'PENDING', label: checklistStatusLabel('PENDING'), description: 'Chưa có kết luận.' },
     {
       value: 'NOT_APPLICABLE',
@@ -70,18 +118,16 @@ function ChecklistDialog({
     {
       value: 'SATISFIED',
       label: checklistStatusLabel('SATISFIED'),
-      description: hasDocument
-        ? 'Giữ tài liệu đã xác minh đang gắn với hạng mục.'
-        : 'Cần tài liệu đã xác minh. Hệ thống chưa có chức năng tải tài liệu lên nên chưa chọn được.',
-      disabled: !hasDocument,
+      description: 'Kèm giấy phép hoặc văn bản chấp thuận.',
     },
   ]
+  const uploadPercent = upload.progress === null ? null : Math.round(upload.progress * 100)
 
   return (
     <ModalDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      dismissible={!save.isPending}
+      dismissible={!busy}
       className="max-w-lg"
       aria-label={`Sửa hạng mục ${checklistItemLabel(item)}`}
     >
@@ -101,13 +147,50 @@ function ChecklistDialog({
               name="checklist-status"
               value={option.value}
               checked={status === option.value}
-              disabled={option.disabled}
+              disabled={busy}
               onChange={() => setStatus(option.value)}
               label={option.label}
               description={option.description}
             />
           ))}
         </fieldset>
+        {satisfied && (
+          <section aria-labelledby="checklist-document" className="space-y-2">
+            <h3 id="checklist-document" className="text-body font-medium text-fg">
+              Tài liệu
+              {!hasDocument && (
+                <span aria-hidden className="text-danger">
+                  {' *'}
+                </span>
+              )}
+            </h3>
+            <p className="text-body text-fg-2">
+              {chosen ? (
+                <>
+                  Tải lên khi lưu: <span className="font-medium text-fg">{chosen.name}</span>
+                  <span className="tnum">, {formatFileSize(chosen.size)}</span>.
+                </>
+              ) : item.evidenceFileId ? (
+                <CurrentDocument fileId={item.evidenceFileId} />
+              ) : (
+                'Chưa có tài liệu.'
+              )}
+            </p>
+            <FileButton size="sm" icon="upload_file" accept={acceptFor(DOCUMENT)} disabled={busy} onFiles={pick}>
+              {chosen || hasDocument ? 'Chọn tệp khác' : 'Chọn tệp'}
+            </FileButton>
+            {uploadPercent !== null && <Progress value={uploadPercent} label="Đang tải tài liệu lên" />}
+            {documentError ? (
+              <p className="text-meta text-danger" role="alert">
+                {documentError}
+              </p>
+            ) : (
+              <p className="text-meta text-fg-3">
+                {fileTypesText(DOCUMENT)}, tối đa {maxSizeText(DOCUMENT)}.
+              </p>
+            )}
+          </section>
+        )}
         <Field label="Ghi chú" htmlFor="checklist-note" hint="Không bắt buộc, tối đa 1.000 ký tự.">
           <Textarea
             id="checklist-note"
@@ -120,11 +203,11 @@ function ChecklistDialog({
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
-        <Button variant="ghost" disabled={save.isPending} onClick={onClose}>
+        <Button variant="ghost" disabled={busy} onClick={onClose}>
           Huỷ
         </Button>
-        <Button variant="primary" disabled={unchanged || save.isPending} onClick={() => void submit()}>
-          {save.isPending ? 'Đang lưu…' : 'Lưu'}
+        <Button variant="primary" disabled={unchanged || busy} onClick={() => void submit()}>
+          {uploadPercent !== null ? `Đang tải tài liệu ${uploadPercent}%` : save.isPending ? 'Đang lưu…' : 'Lưu'}
         </Button>
       </DialogFooter>
     </ModalDialog>

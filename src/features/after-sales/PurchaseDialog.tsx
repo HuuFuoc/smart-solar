@@ -2,15 +2,10 @@ import { useState } from 'react'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Select } from '@/components/common/ui/field'
-import { KeyValueList, Notice } from '@/components/common/ui/lists'
+import { Notice } from '@/components/common/ui/lists'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
-import {
-  disasterTypesLabel,
-  formatDurationMonths,
-  formatPercent,
-  purchasableContracts,
-  type PurchasableContract,
-} from '@/features/after-sales/afterSalesDisplay'
+import { purchasableContracts, type PurchasableContract, isMaintenance } from '@/features/after-sales/afterSalesDisplay'
+import { PackageFacts } from '@/features/after-sales/PackageList'
 import { usePurchaseMutation } from '@/hooks/useCustomerAfterSales'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
@@ -26,7 +21,7 @@ function contractLabel({ contract, includeContract }: PurchasableContract) {
 }
 
 /**
- * Mua một gói thiên tai cho một hợp đồng. Chỉ gửi khi khách bấm xác nhận; thành công thì trả id link thanh toán cho trang
+ * Mua một gói (thiên tai hoặc bảo trì) cho một hợp đồng. Chỉ gửi khi khách bấm xác nhận; thành công thì trả id link thanh toán cho trang
  * mở hộp thoại thanh toán. Không tự đánh dấu đã mua: gói chỉ được ghi nhận khi PayOS xác nhận đã nhận tiền
  */
 export function PurchaseDialog({
@@ -61,10 +56,12 @@ export function PurchaseDialog({
     if (!pkg || !selected || purchase.isPending) return
     setError(null)
     try {
+      // Mỗi loại gói một ô id; backend từ chối nếu id không đúng loại
+      const maintenance = isMaintenance(pkg.kind)
       const view = await purchase.mutateAsync({
         contractId: selected.contract.contractId,
-        disasterPackageId: pkg.packageId,
-        maintenancePackageId: null,
+        disasterPackageId: maintenance ? null : pkg.packageId,
+        maintenancePackageId: maintenance ? pkg.packageId : null,
         includeContract: selected.includeContract,
       })
       setContractId('')
@@ -90,15 +87,7 @@ export function PurchaseDialog({
       {pkg && (
         <>
           <DialogTitle>Mua {pkg.name}</DialogTitle>
-          <KeyValueList
-            className="mt-4"
-            items={[
-              { k: 'Giá', v: <span className="tnum">{formatMoney(pkg.price, 'VND')}</span> },
-              { k: 'Thời hạn', v: formatDurationMonths(pkg.durationMonths) },
-              { k: 'Thiên tai được bảo vệ', v: disasterTypesLabel(pkg.coveredDisasterTypes) },
-              { k: 'Tỷ lệ hỗ trợ', v: `${formatPercent(pkg.coveragePercent)} chi phí sửa chữa được duyệt` },
-            ]}
-          />
+          <PackageFacts pkg={pkg} className="mt-4" />
 
           <div className="mt-4">
             {contracts.isPending ? (
@@ -143,7 +132,7 @@ export function PurchaseDialog({
           )}
 
           <p className="mt-4 text-body text-fg-2">
-            Giá và quyền lợi của gói được giữ như lúc mua. Kỳ bảo vệ bắt đầu khi PayOS xác nhận đã nhận tiền và công
+            Giá và quyền lợi của gói được giữ như lúc mua. Kỳ của gói bắt đầu khi PayOS xác nhận đã nhận tiền và công
             trình đã được bàn giao, tính từ mốc muộn hơn.
           </p>
 

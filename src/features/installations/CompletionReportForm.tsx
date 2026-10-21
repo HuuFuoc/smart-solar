@@ -51,7 +51,7 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
         <li>
           {photos > 0
             ? `Đã có ${photos} ảnh của lượt ${view.currentRound}.`
-            : `Chưa có ảnh nào của lượt ${view.currentRound}. Cần ít nhất một ảnh mới gửi được báo cáo.`}
+            : `Chưa có ảnh nào của lượt ${view.currentRound} trên hệ thống. Ở khối "Ảnh lắp đặt", chọn ảnh rồi bấm "Tải lên" mới gửi được báo cáo.`}
         </li>
         <li>{equipped ? 'Đã ghi tấm pin và inverter.' : 'Chưa ghi đủ tấm pin và inverter đã lắp.'}</li>
       </ul>

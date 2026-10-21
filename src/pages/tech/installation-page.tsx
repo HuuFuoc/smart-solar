@@ -3,7 +3,6 @@ import { useParams } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
-import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { ProgressTracker } from '@/components/common/ui/progress-tracker'
@@ -15,6 +14,7 @@ import { AssetEntry } from '@/features/installations/AssetEntry'
 import { AssignmentResponse } from '@/features/installations/AssignmentResponse'
 import { CompletionReportForm } from '@/features/installations/CompletionReportForm'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
+import { EvidenceUpload } from '@/features/installations/EvidenceUpload'
 import {
   acceptanceDecisionMeta,
   assetTypeLabel,
@@ -227,12 +227,8 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
                 title="Ảnh lắp đặt"
                 description={work ? `Báo cáo cần ít nhất một ảnh của lượt ${view.currentRound}.` : undefined}
               />
-              <PanelBody className="space-y-4">
-                {work && (
-                  <Notice tone="warn">
-                    Chưa thêm ảnh được từ trang này: hệ thống chưa có chức năng cấp link tải ảnh lên kho lưu trữ.
-                  </Notice>
-                )}
+              <PanelBody className="space-y-6">
+                {work && <EvidenceUpload projectId={view.projectId} round={view.currentRound} />}
                 {evidence.isPending ? (
                   <Skeleton className="h-40" />
                 ) : evidence.data === undefined ? (

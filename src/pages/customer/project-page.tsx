@@ -130,7 +130,11 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
       }
     }
     case 'COMPLETED':
-      return { tone: 'ok', title: 'Công trình đã bàn giao', body: 'Thiết bị và hạn bảo hành ở mục Bàn giao.' }
+      return {
+        tone: 'ok',
+        title: 'Công trình đã bàn giao',
+        body: 'Thiết bị đã lắp và hạn bảo hành của từng thiết bị nằm ở bảng Bàn giao ngay bên dưới.',
+      }
     case 'CANCELLED':
       return {
         tone: 'neutral',

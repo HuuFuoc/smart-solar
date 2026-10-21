@@ -163,4 +163,16 @@ export const ENDPOINTS = {
   operationalZones: {
     base: '/admin/operational-zones',
   },
+  adminAfterSales: {
+    packages: '/admin/after-sales/packages',
+    package: (packageId: string) => `/admin/after-sales/packages/${encode(packageId)}`,
+  },
+
+  // Tệp tải lên kho S3, mọi vai trò
+  files: {
+    presignedUpload: '/files/presigned-upload',
+    base: '/files',
+    byId: (fileId: string) => `/files/${encode(fileId)}`,
+    verify: (fileId: string) => `/files/${encode(fileId)}/verify`,
+  },
 } as const

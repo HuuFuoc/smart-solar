@@ -3,21 +3,53 @@ import { SERVICE_PACKAGE_KINDS } from '@/common/afterSales'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
+import { packageKindLabel } from '@/features/after-sales/afterSalesDisplay'
 import { CancelSubscriptionDialog } from '@/features/after-sales/CancelSubscriptionDialog'
-import { DisasterPackageList } from '@/features/after-sales/DisasterPackageList'
+import { PackageList } from '@/features/after-sales/PackageList'
 import { PaymentDialog } from '@/features/after-sales/PaymentDialog'
 import { PurchaseDialog } from '@/features/after-sales/PurchaseDialog'
 import { SubscriptionList } from '@/features/after-sales/SubscriptionList'
 import { usePackagesQuery, useSubscriptionsQuery } from '@/hooks/useCustomerAfterSales'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
-import type { PackageView, SubscriptionView } from '@/types/res/customerAfterSalesRes'
+import type { PackageView, ServicePackageKind, SubscriptionView } from '@/types/res/customerAfterSalesRes'
 
-// Gói bảo vệ thiên tai của khách: gói đã mua (thanh toán, huỷ trước khi hiệu lực) và gói đang bán (mua cho một hợp đồng)
-// Gói bảo trì cùng API nhưng chưa bán trên màn này
-const KIND = SERVICE_PACKAGE_KINDS.disasterProtection
+// Gói dịch vụ của khách: gói đã mua (thanh toán, huỷ trước khi hiệu lực) và gói đang bán của hai loại, bảo vệ thiên tai
+// và bảo trì định kỳ (mua cho một hợp đồng). Đặt lịch các lượt bảo trì đã mua chưa có trên màn này
+
+const KIND_DESCRIPTIONS: Record<string, string> = {
+  [SERVICE_PACKAGE_KINDS.disasterProtection]: 'Hỗ trợ chi phí sửa chữa khi thiên tai làm hư hỏng hệ thống.',
+  [SERVICE_PACKAGE_KINDS.maintenance]: 'Kỹ thuật viên tới kiểm tra hệ thống theo lịch của gói.',
+}
+
+function OnSale({ kind, onBuy }: { kind: ServicePackageKind; onBuy: (pkg: PackageView) => void }) {
+  const packages = usePackagesQuery(kind)
+  const label = packageKindLabel(kind)
+  return (
+    <Panel>
+      <PanelHeader title={label} description={KIND_DESCRIPTIONS[kind]} />
+      <PanelBody>
+        {packages.isPending ? (
+          <Skeleton className="h-40" />
+        ) : packages.data === undefined ? (
+          <ErrorState
+            title={`Không tải được gói ${label.toLowerCase()}.`}
+            message={packages.error?.message}
+            onRetry={() => void packages.refetch()}
+          />
+        ) : packages.data.length === 0 ? (
+          <EmptyState
+            title={`Chưa có gói ${label.toLowerCase()} đang bán`}
+            description="Gói hiện ở đây khi Smart Solar mở bán."
+          />
+        ) : (
+          <PackageList items={packages.data} onBuy={onBuy} />
+        )}
+      </PanelBody>
+    </Panel>
+  )
+}
 
 export function CustomerPackagesPage() {
-  const packages = usePackagesQuery(KIND)
   const subscriptions = useSubscriptionsQuery()
   // Chỉ để in số hợp đồng cạnh gói đã mua
   const contracts = useMyContractsQuery()
@@ -26,14 +58,14 @@ export function CustomerPackagesPage() {
   // Giữ bản lúc bấm: danh sách tải lại ngay khi huỷ xong, trước khi hộp thoại kịp đóng
   const [cancelling, setCancelling] = useState<SubscriptionView | null>(null)
 
-  const mine = subscriptions.data?.filter((s) => s.kind === KIND) ?? []
+  const mine = subscriptions.data ?? []
   const contractNumbers = new Map((contracts.data ?? []).map((c) => [c.contractId, c.contractNumber]))
 
   return (
     <>
       <PageHeader
-        title="Bảo vệ thiên tai"
-        description="Gói hỗ trợ chi phí sửa chữa hệ thống khi thiên tai gây hư hỏng, theo tỷ lệ và hạn mức của từng gói."
+        title="Gói dịch vụ"
+        description="Gói bảo vệ thiên tai và bảo trì định kỳ cho hệ thống đã lắp. Mỗi gói mua cho một hợp đồng lắp đặt."
       />
 
       <div className="space-y-4">
@@ -61,27 +93,8 @@ export function CustomerPackagesPage() {
           )
         )}
 
-        <Panel>
-          <PanelHeader title="Gói đang bán" />
-          <PanelBody>
-            {packages.isPending ? (
-              <Skeleton className="h-40" />
-            ) : packages.data === undefined ? (
-              <ErrorState
-                title="Không tải được danh sách gói."
-                message={packages.error?.message}
-                onRetry={() => void packages.refetch()}
-              />
-            ) : packages.data.length === 0 ? (
-              <EmptyState
-                title="Chưa có gói bảo vệ thiên tai đang bán"
-                description="Gói hiện ở đây khi Smart Solar mở bán."
-              />
-            ) : (
-              <DisasterPackageList items={packages.data} onBuy={setBuying} />
-            )}
-          </PanelBody>
-        </Panel>
+        <OnSale kind={SERVICE_PACKAGE_KINDS.disasterProtection} onBuy={setBuying} />
+        <OnSale kind={SERVICE_PACKAGE_KINDS.maintenance} onBuy={setBuying} />
       </div>
 
       <PurchaseDialog
