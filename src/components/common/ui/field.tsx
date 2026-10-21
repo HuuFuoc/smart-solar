@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cx } from '@/utils/cx'
 
-/* `required`: dấu * màu đỏ sau nhãn (chỉ để nhìn; ô nhập tự đặt aria-required). */
+/* `required`: dấu * màu đỏ sau nhãn (chỉ để nhìn; ô nhập tự đặt aria-required).
+   Có `htmlFor` thì dòng gợi ý / lỗi có id `<htmlFor>-msg` để ô nhập trỏ tới bằng aria-describedby. */
 export function Field({
   label,
   hint,
@@ -33,14 +34,21 @@ export function Field({
       </label>
       {children}
       {error ? (
-        <p className="text-meta text-danger" role="alert">
+        <p id={fieldMessageId(htmlFor)} className="text-meta text-danger" role="alert">
           {error}
         </p>
       ) : hint ? (
-        <p className="text-meta text-fg-3">{hint}</p>
+        <p id={fieldMessageId(htmlFor)} className="text-meta text-fg-3">
+          {hint}
+        </p>
       ) : null}
     </div>
   )
+}
+
+/** Id của dòng gợi ý / lỗi dưới ô `htmlFor`, để gắn aria-describedby */
+export function fieldMessageId(htmlFor: string | undefined) {
+  return htmlFor ? `${htmlFor}-msg` : undefined
 }
 
 type ControlSize = 'sm' | 'md'

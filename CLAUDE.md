@@ -13,13 +13,16 @@ hai ăn chung một hệ token trong `src/styles/globals.css`:
 - `src/components/common/ui` (file kebab-case, token `canvas/fg/accent…`): MỌI portal đăng nhập. Các portal nhân viên
   (kinh doanh `/ops`, quản trị `/admin`, kỹ thuật viên `/tech` – `/field` chuyển về `/tech` –, quản lý `/manage`) dùng chung
   shell `components/layout/app-shell.tsx` (từ 08/10/2026, theo yêu cầu "admin phải đồng bộ"); khách hàng `/customer` có khung
-  riêng `components/layout/customer-shell.tsx` (cùng ngày, theo yêu cầu "khách hàng phải là giao diện khác"), xem "Layout chung".
+  riêng `components/layout/customer-shell.tsx` (cùng ngày, theo yêu cầu "khách hàng phải là giao diện khác"; sidebar riêng từ
+  22/10/2026), xem "Layout chung".
   Từ lượt màu 08/10/2026 portal kit cũng dùng icon Material Symbols (qua `Icon` của bộ Stitch) và có thêm `IconButton`,
   `SearchInput`, `Segmented` (`segmented.tsx`), `PanelAside`, `WithTooltip` (`tooltip.tsx`). Từ 10/10/2026 có `Combobox`
   (`combobox.tsx`): ô nhập kèm danh sách cho danh sách dài, lọc không phân biệt dấu ("ben thanh" ra "Phường Bến Thành"), giá
   trị vẫn là chuỗi; dùng cho phường/xã và gợi ý tên vật cản. `WizardSteps` (`wizard-steps.tsx`): thanh bước của form nhiều
   bước (vòng số + đường nối, bước xong có ✓ + tóm tắt và bấm được để quay lại; điện thoại là khối gọn "Bước 3/5: …" + thanh
-  tiến độ + "Tiếp theo: …"), khác `Stepper` (dải tiến độ hành trình, chỉ để xem). Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
+  tiến độ + "Tiếp theo: …"; `WizardProgress` là riêng thanh tiến độ + "Tiếp theo" khi tên bước đã nằm ở tiêu đề ngay trên),
+  khác `Stepper` (dải tiến độ hành trình, chỉ để xem). `Field` có `htmlFor` thì dòng gợi ý / lỗi có id `fieldMessageId(htmlFor)`
+  để ô nhập gắn `aria-describedby`. Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
   không có trên git.
 - `src/components/common/stitch-ui` (file PascalCase, token `surface/on-surface/primary…`,
   Material Symbols): trang công khai/xác thực, hộp thoại hết phiên, `/styleguide` (chỉ chạy ở dev) và các màn
@@ -246,8 +249,16 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
 
 - `/customer` → `/customer/assessment`: đánh giá sơ bộ 5 bước (hồ sơ → địa điểm → mặt lắp → mô phỏng → xem lại và gửi),
   `features/pre-surveys`. Các bước (người dùng 10/10/2026 chọn): `WizardSteps` có tóm tắt từng bước đã xong và bấm để quay
-  lại (trừ hồ sơ – không sửa được); tiêu đề trang kèm một câu hướng dẫn của bước (`STEP_HINTS`); nút chính ghi tên bước sau
-  ("Tiếp tục: Mặt lắp"); đổi bước do khách bấm thì cuộn về đầu trang và focus tiêu đề ẩn "Bước N/5: …" của bước.
+  lại (trừ hồ sơ – không sửa được); nút chính ghi tên bước sau ("Tiếp tục: Mặt lắp"); đổi bước do khách bấm thì cuộn về đầu
+  trang và focus tiêu đề "Bước N/5 <tên bước>" của khung bước.
+  Bố cục (người dùng 22/10/2026): h1 "Đánh giá sơ bộ" không kèm mô tả; `WizardSteps` gọn (vòng 28px, tối đa `max-w-3xl`, chỉ từ
+  md); mỗi bước là một khung `AssessmentStepCard.tsx` (tiêu đề bước + câu `STEP_HINTS` + nội dung + hàng nút dính đáy có
+  `data-sticky-bottom` để `globals.css` chừa `scroll-padding-bottom`); điện thoại khung tràn mép và đầu khung có `WizardProgress`
+  thay thanh các bước. Hồ sơ, địa điểm, xem lại: một cột `max-w-3xl`, cột phụ (`AssessmentAside`) xuống dưới khung; mặt lắp, mô
+  phỏng rộng hết. "Sau khi gửi" là `Notice` neutral (xám), không còn xanh nổi bật. Hàng nút trên điện thoại: "Quay lại" và nút
+  chính chung một hàng (dùng `order`). Địa điểm: ô bắt buộc có `*` + dòng "Ô có dấu * là bắt buộc."; nhóm "Địa chỉ công trình"
+  theo thứ tự tỉnh (chỉ đọc) → phường, xã → số nhà; bề mặt lắp là thẻ chọn (radio ẩn, cả thẻ bấm được, phím mũi tên chuyển,
+  đang chọn có viền + nền xanh nhạt + dấu tích; icon ở `icon` của `SURFACE_TYPES`).
 - `/ops` → `/ops/surveys` + `/ops/surveys/:id`: yêu cầu khảo sát chờ nhận / của tôi / chi tiết (kèm mô phỏng khách đã chọn).
 - `/customer/products(/:id)`, `/ops/products(/:id)`: catalog sản phẩm (GET /api/products) bản portal kit, `pages/catalog-page.tsx`.
 - `/customer/projects(/:id)` (menu "Lắp đặt", 21/10/2026): công trình lắp đặt của khách, tag CustomerInstallations (tài liệu
@@ -503,11 +514,16 @@ thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
 
 - **Nhân viên** – kinh doanh `/ops`, quản trị `/admin`, kỹ thuật viên `/tech`, quản lý `/manage` – dùng `app-shell.tsx`: công cụ
   làm việc cả ngày, rail trái + bố cục gọn (mục Mật độ bên dưới).
-- **Khách hàng** `/customer` dùng `customer-shell.tsx`: đi theo website công khai – thanh trên dính với logo đầy đủ (bấm về trang chủ công khai `/`, 20/10/2026), menu chữ
-  (mục đang mở đậm + gạch chân xanh), nút tài khoản ghi tên người đang đăng nhập (chữ cái đầu + tên) và mở bảng chức năng
-  (Đổi mật khẩu, Giao diện, Đăng xuất; Esc / bấm ra ngoài thì đóng); nội dung căn giữa tối đa 1200px (`max-w-landing`), lề 16/24px như `<main>` của portal để
-  ActionBar và Table lấn mép đúng; font Be Vietnam Pro 400/500/600 (như trang công khai); trang con có dòng định vị
-  "Sản phẩm / <tên>"; điện thoại có nút Menu mở bảng gồm menu + tài khoản. Control bên trong vẫn là portal kit.
+- **Khách hàng** `/customer` dùng `customer-shell.tsx` – sidebar trái riêng (người dùng 22/10/2026 bỏ navbar ngang vì điều
+  hướng và tài khoản chung một hàng, email bị cắt), KHÔNG dùng `app-shell.tsx` (khác: rộng `w-60`, logo chữ đầy đủ bấm về `/`,
+  hàng menu 44px ở mọi cỡ, font Be Vietnam Pro 400/500/600 như trang công khai). Mục đang mở: nền `accent-muted` + vạch 3px +
+  icon tô đặc + chữ đậm. Chân sidebar: "Thu gọn menu" (từ lg, cột icon 64px có tooltip, dùng chung `useSidebarCollapsed`) và nút
+  tài khoản mở bảng phía trên (Đổi mật khẩu, Giao diện, Đăng xuất; Esc / bấm ra ngoài thì đóng). Chưa có họ tên thì nút ghi
+  đủ email, cỡ 13px, xuống dòng ở bất kỳ ký tự nào – không cắt, không tự đặt tên. Dưới lg: thanh trên (nút Menu + biểu tượng
+  - "Smart Solar", cuộn qua h1 thì đổi thành tên mục) mở sidebar thành drawer 288px: nền tối, focus vào nút đóng, phần còn lại
+    `inert`, Esc / bấm nền / chọn trang thì đóng và trả focus về nút Menu. Đóng / mở drawer suy ra từ đường dẫn lúc mở, không
+    đặt state trong effect. `<main>` tối đa `max-w-7xl` (1280px) căn giữa, lề 16/24px như portal để ActionBar và Table lấn mép
+    đúng; trang con có dòng định vị "Sản phẩm / <tên>". Control bên trong vẫn là portal kit.
 
 Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 24px. Đầu rail là biểu tượng
 thương hiệu (`public/images/mark-96.png`, nền trong suốt) + "Smart Solar" + tên portal (ngắt dòng cân bằng `text-balance`); mỗi mục
@@ -538,7 +554,7 @@ vai trò (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm tầng T�
   KHÔNG copy rail vào từng page; layout còn được vẽ làm khung chờ (`hydrateFallbackElement`) TRƯỚC `RequireRole` nên
   query trong layout phải chờ `useAuth().user` đúng vai trò mới gọi API.
 
-Mật độ (bố cục gọn 05/10/2026, cho khung nhân viên và cả hai bộ component; cổng khách hàng thì nội dung căn giữa tối đa 1200px): lề nội dung 24px (`px-6`, bộ Stitch `px-space-lg`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; khoảng cách tiêu đề trang → nội dung 24px; giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; `ListRow` `py-4`. Thêm màn mới thì theo đúng các bậc này, đừng quay lại 48px.
+Mật độ (bố cục gọn 05/10/2026, cho khung nhân viên và cả hai bộ component; cổng khách hàng thì nội dung căn giữa tối đa 1280px): lề nội dung 24px (`px-6`, bộ Stitch `px-space-lg`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; khoảng cách tiêu đề trang → nội dung 24px; giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; `ListRow` `py-4`. Thêm màn mới thì theo đúng các bậc này, đừng quay lại 48px.
 
 Menu Admin (subtitle "Quản trị hệ thống"): Tổng quan, Người dùng, Vai trò & quyền, Sản phẩm,
 Danh mục dịch vụ, Nhóm hàng, Kho tri thức AI, Cấu hình kỹ thuật, Báo cáo, Cài đặt hệ thống.

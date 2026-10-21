@@ -181,8 +181,8 @@ export function SimulationWorkspace({
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
+      {/* Không đóng khung riêng: khung của bước (AssessmentStepCard) đã bao quanh */}
       <Panel
-        raised
         className="min-w-0 lg:col-span-2"
         // Ô cấu hình nằm trong <form> của wizard: Enter mặc định sẽ sang bước sau. Ở đây Enter là chạy mô phỏng
         onKeyDown={(event) => {

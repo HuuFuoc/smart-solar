@@ -10,13 +10,14 @@ export const CUSTOMER_TYPES = [
   { value: 2, label: 'Doanh nghiệp' },
 ] as const satisfies readonly { value: CustomerType; label: string }[]
 
+// `icon`: Material Symbols trên thẻ chọn bề mặt
 export const SURFACE_TYPES = [
-  { value: 1, label: 'Mái nhà', hint: 'Mái tôn, mái ngói, sân thượng' },
-  { value: 2, label: 'Mặt đất', hint: 'Khoảng đất trống trong khuôn viên' },
-  { value: 3, label: 'Mái che bãi xe', hint: 'Khung che chỗ đậu ô tô, xe máy' },
-  { value: 4, label: 'Mặt dựng', hint: 'Tường đứng hoặc mặt ngoài toà nhà' },
-  { value: 5, label: 'Khác', hint: 'Ghi rõ ở phần ghi chú' },
-] as const satisfies readonly { value: InstallationSurfaceType; label: string; hint: string }[]
+  { value: 1, label: 'Mái nhà', hint: 'Mái tôn, mái ngói, sân thượng', icon: 'roofing' },
+  { value: 2, label: 'Mặt đất', hint: 'Khoảng đất trống trong khuôn viên', icon: 'grass' },
+  { value: 3, label: 'Mái che bãi xe', hint: 'Khung che chỗ đậu ô tô, xe máy', icon: 'local_parking' },
+  { value: 4, label: 'Mặt dựng', hint: 'Tường đứng hoặc mặt ngoài toà nhà', icon: 'domain' },
+  { value: 5, label: 'Khác', hint: 'Ghi rõ ở phần ghi chú', icon: 'more_horiz' },
+] as const satisfies readonly { value: InstallationSurfaceType; label: string; hint: string; icon: string }[]
 
 // Màn kỹ thuật viên nhận tên enum (Rooftop...), không phải số
 export const SURFACE_NAMES: Record<string, string> = {

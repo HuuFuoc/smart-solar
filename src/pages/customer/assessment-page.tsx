@@ -3,16 +3,15 @@ import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from 'rea
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
-import { ActionBar } from '@/components/common/ui/action-bar'
 import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
-import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/common/ui/states'
 import { WizardSteps, type WizardStep } from '@/components/common/ui/wizard-steps'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { useAuth } from '@/context/AuthProvider'
 import { AssessmentAside } from '@/features/pre-surveys/AssessmentAside'
+import { AssessmentStepCard } from '@/features/pre-surveys/AssessmentStepCard'
 import { ReviewStep } from '@/features/pre-surveys/ReviewStep'
 import { SubmittedDialog } from '@/features/pre-surveys/SubmittedDialog'
 import { SurfaceConflictNotice } from '@/features/pre-surveys/SurfaceConflictNotice'
@@ -717,144 +716,143 @@ export function AssessmentPage() {
     )
   }
 
-  return (
-    <>
-      <PageHeader title="Đánh giá sơ bộ" description={STEP_HINTS[step]} />
-
-      <WizardSteps steps={wizardSteps} label="Các bước đánh giá sơ bộ" className="mb-8" />
-      {/* Tiêu đề ẩn, nhận focus khi chuyển bước (cho người dùng bàn phím và trình đọc màn hình) */}
-      <h2 ref={headingRef} tabIndex={-1} className="sr-only">
-        Bước {step + 1}/{STEP_LABELS.length}: {STEP_LABELS[step]}
-      </h2>
-
-      <div className={cx('grid gap-6', !wide && 'lg:grid-cols-3')}>
-        <form
-          id="assessment-step"
-          noValidate
-          onSubmit={handleNext}
-          className={cx('min-w-0 space-y-4', !wide && 'lg:col-span-2')}
-        >
-          {showUnsavedNotice && (
-            <Notice tone="warn" title="Mặt lắp có thay đổi chưa lưu">
-              Mô phỏng và phần xem lại đang dùng mặt lắp đã lưu trước đó. Thay đổi vẫn được giữ trên máy này.{' '}
-              <button type="button" className="tap ui-link font-medium" onClick={() => goToStep(STEP.SURFACE)}>
-                Về bước mặt lắp để lưu
-              </button>
-            </Notice>
-          )}
-
-          {step === STEP.PROFILE && (
-            <Panel>
-              <PanelHeader title="Thông tin khách hàng" description="Khai một lần cho tài khoản này." />
-              <PanelBody>
-                <ProfileFields value={profile} errors={fieldErrors} onChange={changeProfile} />
-              </PanelBody>
-            </Panel>
-          )}
-
-          {step === STEP.SITE && (
-            <>
-              {draft.preSurveyId && (
-                <Notice tone="warn">
-                  Bản đánh giá đang làm gắn với địa điểm này. Đổi thông tin địa điểm sẽ tạo địa điểm và bản đánh giá
-                  mới: mặt lắp giữ nguyên, các lần mô phỏng phải chạy lại.
-                </Notice>
-              )}
-              <Panel>
-                <PanelHeader title="Địa điểm lắp đặt" />
-                <PanelBody>
-                  <SiteFields value={site} errors={fieldErrors} onChange={changeSite} />
-                </PanelBody>
-              </Panel>
-            </>
-          )}
-
-          {step === STEP.SURFACE && (
-            <>
-              {surfaceConflict && (
-                <SurfaceConflictNotice
-                  disabled={busy}
-                  onReload={reloadSurface}
-                  onOverwrite={() => void saveSurface({ overwrite: true })}
-                />
-              )}
-              <SurfaceEditor value={surface} errors={fieldErrors} onChange={changeSurface} aside={aside} />
-            </>
-          )}
-
-          {step === STEP.SIMULATION && !surfaceSaved && (
-            <EmptyState
-              title="Chưa lưu mặt lắp"
-              description="Mô phỏng xếp tấm trên mặt lắp đã lưu. Nhập kích thước mặt lắp trước."
-              action={<Button onClick={() => goToStep(STEP.SURFACE)}>Về bước mặt lắp</Button>}
-            />
-          )}
-          {step === STEP.SIMULATION && draft.preSurveyId && serverSurface?.surfaceDefined && (
-            <SimulationWorkspace
-              preSurveyId={draft.preSurveyId}
-              surface={serverSurface}
-              form={simForm}
-              onFormChange={setSimForm}
-              viewId={viewingRunId ?? serverSurface.selectedSimulationId}
-              onView={setViewingRunId}
-              onEditSurface={() => goToStep(STEP.SURFACE)}
-              onEditSite={() => goToStep(STEP.SITE)}
-              onDraftClosed={restartDraft}
-              aside={aside}
-            />
-          )}
-
-          {step === STEP.REVIEW && (
-            <ReviewStep
-              draft={draft}
-              surface={serverSurface}
-              selectedRun={selectedRun}
-              hasRuns={hasRuns}
-              disabled={submitted}
-              onEditSite={() => goToStep(STEP.SITE)}
-              onEditSurface={() => goToStep(STEP.SURFACE)}
-              onOpenSimulation={() => goToStep(STEP.SIMULATION)}
-            />
-          )}
-        </form>
-
-        {!wide && <div className="min-w-0 space-y-4 self-start">{aside}</div>}
-      </div>
-
-      <ActionBar>
-        <Button
-          onClick={() => goToStep(Math.max(firstStep, step - 1))}
-          disabled={step <= firstStep || busy || submitted}
-        >
-          Quay lại
-        </Button>
-        {step === STEP.SURFACE && (
+  // Hàng nút ở chân khung của bước. Từ sm: [Quay lại] [Lưu nháp] ... [lỗi] [nút chính]
+  // Điện thoại (order): Lưu nháp và lỗi ở trên, "Quay lại" và nút chính chung một hàng cuối
+  const stepActions = (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button
+        className="order-3 sm:order-none"
+        onClick={() => goToStep(Math.max(firstStep, step - 1))}
+        disabled={step <= firstStep || busy || submitted}
+      >
+        Quay lại
+      </Button>
+      {step === STEP.SURFACE && (
+        <div className="order-1 flex w-full flex-wrap items-center gap-x-3 gap-y-1 sm:order-none sm:w-auto">
           <Button variant="ghost" bleed={false} icon="save" onClick={saveSurfaceAsDraft} disabled={busy}>
             Lưu nháp
           </Button>
-        )}
-        {/* Cho khách biết thay đổi mới nằm trên máy, chưa lên server */}
-        {step === STEP.SURFACE && surfaceUnsaved && !busy && (
-          <span className="text-meta text-fg-2">Chưa lưu lên hệ thống, vẫn giữ trên máy này</span>
-        )}
-        <div className="flex w-full flex-wrap items-center gap-3 sm:ml-auto sm:w-auto">
-          {actionError && (
-            <span className="flex items-center gap-1.5 text-body font-medium text-danger" role="alert">
-              <Icon name="error" className="shrink-0 text-[20px]" />
-              {actionError}
-            </span>
+          {/* Cho khách biết thay đổi mới nằm trên máy, chưa lên server */}
+          {surfaceUnsaved && !busy && (
+            <span className="text-meta text-fg-2">Chưa lưu lên hệ thống, vẫn giữ trên máy này</span>
           )}
-          <Button
-            type="submit"
-            form="assessment-step"
-            variant="primary"
-            className="w-full sm:w-auto"
-            disabled={busy || submitted || (step === STEP.SIMULATION && !surfaceSaved)}
-          >
-            {nextButtonLabel(step, runningSimulation, busy)}
-          </Button>
         </div>
-      </ActionBar>
+      )}
+      <div className="contents sm:ml-auto sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+        {actionError && (
+          <span
+            className="order-2 flex w-full items-center gap-1.5 text-body font-medium text-danger sm:order-none sm:w-auto"
+            role="alert"
+          >
+            <Icon name="error" className="shrink-0 text-[20px]" />
+            {actionError}
+          </span>
+        )}
+        <Button
+          type="submit"
+          form="assessment-step"
+          variant="primary"
+          className="order-4 flex-1 sm:order-none sm:flex-none"
+          disabled={busy || submitted || (step === STEP.SIMULATION && !surfaceSaved)}
+        >
+          {nextButtonLabel(step, runningSimulation, busy)}
+        </Button>
+      </div>
+    </div>
+  )
+
+  return (
+    <>
+      <PageHeader title="Đánh giá sơ bộ" />
+
+      {/* Điện thoại: tiến độ nằm ở đầu khung của bước */}
+      <WizardSteps steps={wizardSteps} label="Các bước đánh giá sơ bộ" className="mb-6 hidden max-w-3xl md:block" />
+
+      {/* Bước có form hẹp giữ một cột vừa đọc, cột phụ xuống dưới khung. Mặt lắp và mô phỏng dùng hết chiều ngang */}
+      <div className={cx('space-y-4', !wide && 'max-w-3xl')}>
+        <AssessmentStepCard
+          steps={wizardSteps}
+          index={step}
+          hint={STEP_HINTS[step]}
+          headingRef={headingRef}
+          footer={stepActions}
+        >
+          <form id="assessment-step" noValidate onSubmit={handleNext} className="min-w-0 space-y-4">
+            {showUnsavedNotice && (
+              <Notice tone="warn" title="Mặt lắp có thay đổi chưa lưu">
+                Mô phỏng và phần xem lại đang dùng mặt lắp đã lưu trước đó. Thay đổi vẫn được giữ trên máy này.{' '}
+                <button type="button" className="tap ui-link font-medium" onClick={() => goToStep(STEP.SURFACE)}>
+                  Về bước mặt lắp để lưu
+                </button>
+              </Notice>
+            )}
+
+            {step === STEP.PROFILE && <ProfileFields value={profile} errors={fieldErrors} onChange={changeProfile} />}
+
+            {step === STEP.SITE && (
+              <>
+                {draft.preSurveyId && (
+                  <Notice tone="warn">
+                    Bản đánh giá đang làm gắn với địa điểm này. Đổi thông tin địa điểm sẽ tạo địa điểm và bản đánh giá
+                    mới: mặt lắp giữ nguyên, các lần mô phỏng phải chạy lại.
+                  </Notice>
+                )}
+                <SiteFields value={site} errors={fieldErrors} onChange={changeSite} />
+              </>
+            )}
+
+            {step === STEP.SURFACE && (
+              <>
+                {surfaceConflict && (
+                  <SurfaceConflictNotice
+                    disabled={busy}
+                    onReload={reloadSurface}
+                    onOverwrite={() => void saveSurface({ overwrite: true })}
+                  />
+                )}
+                <SurfaceEditor value={surface} errors={fieldErrors} onChange={changeSurface} aside={aside} />
+              </>
+            )}
+
+            {step === STEP.SIMULATION && !surfaceSaved && (
+              <EmptyState
+                title="Chưa lưu mặt lắp"
+                description="Mô phỏng xếp tấm trên mặt lắp đã lưu. Nhập kích thước mặt lắp trước."
+                action={<Button onClick={() => goToStep(STEP.SURFACE)}>Về bước mặt lắp</Button>}
+              />
+            )}
+            {step === STEP.SIMULATION && draft.preSurveyId && serverSurface?.surfaceDefined && (
+              <SimulationWorkspace
+                preSurveyId={draft.preSurveyId}
+                surface={serverSurface}
+                form={simForm}
+                onFormChange={setSimForm}
+                viewId={viewingRunId ?? serverSurface.selectedSimulationId}
+                onView={setViewingRunId}
+                onEditSurface={() => goToStep(STEP.SURFACE)}
+                onEditSite={() => goToStep(STEP.SITE)}
+                onDraftClosed={restartDraft}
+                aside={aside}
+              />
+            )}
+
+            {step === STEP.REVIEW && (
+              <ReviewStep
+                draft={draft}
+                surface={serverSurface}
+                selectedRun={selectedRun}
+                hasRuns={hasRuns}
+                disabled={submitted}
+                onEditSite={() => goToStep(STEP.SITE)}
+                onEditSurface={() => goToStep(STEP.SURFACE)}
+                onOpenSimulation={() => goToStep(STEP.SIMULATION)}
+              />
+            )}
+          </form>
+        </AssessmentStepCard>
+
+        {!wide && aside}
+      </div>
 
       <SubmittedDialog
         ref={submittedDialogRef}

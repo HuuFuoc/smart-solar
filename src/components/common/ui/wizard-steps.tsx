@@ -15,7 +15,6 @@ export type WizardStep = {
 export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; label: string; className?: string }) {
   const activeIndex = steps.findIndex((s) => s.state === 'active')
   const current = steps[activeIndex]
-  const next = steps[activeIndex + 1]
 
   return (
     <nav aria-label={label} className={className}>
@@ -27,16 +26,16 @@ export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; 
               <span
                 aria-hidden
                 className={cx(
-                  'tnum relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full text-body font-semibold',
+                  'tnum relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full text-meta font-semibold',
                   step.state === 'upcoming' ? 'border border-line-2 bg-canvas text-fg-3' : 'bg-accent text-on-accent',
-                  step.state === 'active' && 'ring-4 ring-accent-soft',
+                  step.state === 'active' && 'ring-3 ring-accent-soft',
                 )}
               >
                 {step.state === 'done' ? <Icon name="check" className="text-[20px]" /> : i + 1}
               </span>
               <span
                 className={cx(
-                  'mt-2 block text-body text-balance',
+                  'mt-1.5 block text-body text-balance',
                   step.state === 'active' && 'font-semibold text-fg',
                   step.state === 'done' && 'text-fg',
                   step.state === 'upcoming' && 'text-fg-3',
@@ -66,11 +65,11 @@ export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; 
               className="relative min-w-0 flex-1 px-2 text-center"
             >
               {i < steps.length - 1 && (
-                // Đường nối từ mép vòng này sang mép vòng sau (tâm vòng ở giữa cột, vòng rộng 2rem).
+                // Đường nối từ mép vòng này sang mép vòng sau (tâm vòng ở giữa cột, vòng rộng 1,75rem).
                 <span
                   aria-hidden
                   className={cx(
-                    'absolute top-4 left-[calc(50%+1.5rem)] h-0.5 w-[calc(100%-3rem)] -translate-y-1/2',
+                    'absolute top-3.5 left-[calc(50%+1.375rem)] h-0.5 w-[calc(100%-2.75rem)] -translate-y-1/2',
                     steps[i + 1]!.state !== 'upcoming' ? 'bg-accent' : 'bg-line-2',
                   )}
                 />
@@ -97,21 +96,32 @@ export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; 
           <p className="text-body text-fg-2">
             Bước {activeIndex + 1}/{steps.length}: <span className="font-semibold text-fg">{current.label}</span>
           </p>
-          <div
-            aria-hidden
-            className="mt-2 grid gap-1"
-            style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
-          >
-            {steps.map((step) => (
-              <span
-                key={step.label}
-                className={cx('h-1.5 rounded-control', step.state === 'upcoming' ? 'bg-line' : 'bg-accent')}
-              />
-            ))}
-          </div>
-          {next && <p className="mt-2 text-meta text-fg-3">Tiếp theo: {next.label}</p>}
+          <WizardProgress steps={steps} className="mt-2" />
         </div>
       )}
     </nav>
+  )
+}
+
+// Thanh tiến độ gọn (mỗi bước một đoạn) + "Tiếp theo: …", cho màn hẹp
+// Dùng riêng khi tên bước đã hiện ở tiêu đề ngay phía trên
+export function WizardProgress({ steps, className }: { steps: WizardStep[]; className?: string }) {
+  const next = steps[steps.findIndex((s) => s.state === 'active') + 1]
+  return (
+    <div className={className}>
+      <div
+        aria-hidden
+        className="grid gap-1"
+        style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
+      >
+        {steps.map((step) => (
+          <span
+            key={step.label}
+            className={cx('h-1.5 rounded-control', step.state === 'upcoming' ? 'bg-line' : 'bg-accent')}
+          />
+        ))}
+      </div>
+      {next && <p className="mt-2 text-meta text-fg-3">Tiếp theo: {next.label}</p>}
+    </div>
   )
 }

@@ -425,6 +425,11 @@
   scroll-padding-top: 6rem;
 }
 
+/* Có hàng nút dính đáy (khung bước của wizard) thì chừa cả phía dưới để ô được focus không nằm sau hàng nút */
+:root:has([data-sticky-bottom]) {
+  scroll-padding-bottom: 6rem;
+}
+
 /* Tắt hẳn transition (0s) thay vì 0.01ms, vì transition-property mặc định là `all` */
 @media (prefers-reduced-motion: reduce) {
   *,
