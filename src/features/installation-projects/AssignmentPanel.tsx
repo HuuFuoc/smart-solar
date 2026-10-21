@@ -225,8 +225,7 @@ function AssignDialog({ project, onClose }: { project: InstallationStaffView; on
             </Field>
           </div>
           <p className="text-meta text-fg-2">
-            Giờ bắt đầu và kết thúc phải nằm trong giờ làm của kỹ thuật viên. Backend kiểm tra số ngày tối đa của một
-            lần phân công.
+            Giờ bắt đầu và kết thúc phải nằm trong giờ làm của kỹ thuật viên. Mỗi lần phân công có số ngày tối đa.
           </p>
           {intervalError ? (
             <p className="text-meta text-danger" role="alert">

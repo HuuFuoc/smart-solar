@@ -64,14 +64,12 @@ export const FILE_STATUSES = {
 
 /** Lý do backend từ chối tệp sau khi đọc kho (câu tiếng Anh, so theo đầu câu) */
 export const FILE_REJECTION_REASONS: Record<string, string> = {
-  'The object does not exist in storage': 'Tệp chưa lên tới kho lưu trữ. Thử tải lại.',
+  'The object does not exist in storage': 'Tệp chưa tải lên xong. Thử tải lại.',
   'The object is larger than': 'Tệp lớn hơn cỡ cho phép.',
-  'The stored object size does not match':
-    'Tệp trên kho không đủ cỡ đã khai, có thể tải lên bị ngắt giữa chừng. Thử tải lại.',
+  'The stored object size does not match': 'Tệp tải lên chưa đủ, có thể bị ngắt giữa chừng. Thử tải lại.',
   'The stored content does not match an allowed file type':
     'Nội dung tệp không đúng loại cho phép (có thể chỉ đổi đuôi tên tệp). Chọn tệp khác.',
-  'A checksum could not be computed': 'Kho lưu trữ chưa đọc được tệp. Thử tải lại.',
-  'The bucket must have versioning enabled':
-    'Kho lưu trữ chưa bật lưu phiên bản nên hệ thống không nhận tệp. Báo quản trị hệ thống.',
-  'The stored object checksum does not match': 'Tệp trên kho khác tệp đã chọn, có thể hỏng khi tải lên. Thử tải lại.',
+  'A checksum could not be computed': 'Hệ thống chưa đọc được tệp. Thử tải lại.',
+  'The bucket must have versioning enabled': 'Hệ thống tạm thời chưa nhận tệp. Báo quản trị hệ thống.',
+  'The stored object checksum does not match': 'Tệp tải lên khác tệp đã chọn, có thể hỏng giữa chừng. Thử tải lại.',
 }

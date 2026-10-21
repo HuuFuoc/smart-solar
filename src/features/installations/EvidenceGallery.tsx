@@ -78,7 +78,7 @@ function SignedImage({
   const [broken, setBroken] = useState(false)
 
   if (!item.downloadable) return <Placeholder className={className} text="Ảnh không còn hợp lệ nên không xem được." />
-  if (state.kind === 'gone') return <Placeholder className={className} text="Ảnh không còn trên kho lưu trữ." />
+  if (state.kind === 'gone') return <Placeholder className={className} text="Ảnh này không còn nữa." />
   if (state.kind === 'error' || broken)
     return (
       <Placeholder

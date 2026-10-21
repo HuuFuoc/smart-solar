@@ -314,7 +314,8 @@ export function AdminProductsPage() {
             Đã ngừng bán
           </h2>
           <p className="mt-1 max-w-prose text-body text-fg-2">
-            Backend không trả sản phẩm ngừng bán trong danh sách. Đây là các sản phẩm đã ngừng bán từ trình duyệt này.
+            Danh sách sản phẩm không hiện sản phẩm đã ngừng bán. Đây là các sản phẩm bạn đã ngừng bán trên trình duyệt
+            này.
           </p>
           <ul className="mt-3 divide-y divide-line">
             {hidden.map((h) => (
@@ -358,8 +359,8 @@ export function AdminProductsPage() {
       >
         <DialogTitle>Ngừng bán {hiding?.name}?</DialogTitle>
         <p className="mt-2 text-body text-fg-2">
-          Sản phẩm ngừng bán bị ẩn khỏi mọi danh mục, kể cả bảng này (backend không trả về). Sau khi ngừng bán, sản phẩm
-          nằm trong mục &quot;Đã ngừng bán&quot; ở cuối trang trên trình duyệt này để mở bán lại khi cần.
+          Sản phẩm ngừng bán bị ẩn khỏi mọi danh mục, kể cả bảng này. Sau khi ngừng bán, sản phẩm nằm trong mục &quot;Đã
+          ngừng bán&quot; ở cuối trang trên trình duyệt này để mở bán lại khi cần.
         </p>
         <DialogFooter>
           <Button variant="ghost" disabled={hidingBusy} onClick={() => setHiding(null)}>

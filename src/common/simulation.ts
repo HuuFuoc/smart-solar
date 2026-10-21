@@ -25,10 +25,10 @@ export const NO_PANEL_REASONS: Record<string, string> = {
 
 /** Lỗi của máy chủ dữ liệu ngoài (PVGIS, NASA POWER) */
 export const PROVIDER_FAILURES: Record<string, string> = {
-  PROVIDER_TIMEOUT: 'máy chủ dữ liệu phản hồi quá chậm',
-  PROVIDER_UNAVAILABLE: 'không kết nối được máy chủ dữ liệu',
-  PROVIDER_RATE_LIMITED: 'máy chủ dữ liệu đang giới hạn số lần gọi',
-  PROVIDER_REJECTED_REQUEST: 'máy chủ dữ liệu từ chối yêu cầu',
+  PROVIDER_TIMEOUT: 'nguồn dữ liệu nắng phản hồi quá chậm',
+  PROVIDER_UNAVAILABLE: 'không kết nối được nguồn dữ liệu nắng',
+  PROVIDER_RATE_LIMITED: 'nguồn dữ liệu nắng đang quá tải',
+  PROVIDER_REJECTED_REQUEST: 'nguồn dữ liệu nắng không nhận yêu cầu',
   PROVIDER_RESPONSE_INVALID: 'dữ liệu trả về không đọc được',
   LOCATION_NOT_COVERED: 'toạ độ nằm ngoài vùng có dữ liệu',
 }

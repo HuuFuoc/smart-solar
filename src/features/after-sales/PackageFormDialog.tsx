@@ -51,7 +51,7 @@ function submitError(error: unknown) {
     return 'Gói vừa được sửa ở nơi khác. Đóng hộp thoại rồi mở lại để xem bản mới nhất.'
   // Câu kiểm tra của backend nói rõ ô nào sai hơn câu chung theo mã lỗi
   if (isApiError(error) && error.code === 'AFTER_SALES_VALIDATION_FAILED' && error.serverMessage)
-    return `Máy chủ chưa nhận gói: ${error.serverMessage}`
+    return 'Thông tin gói chưa hợp lệ. Kiểm tra lại các ô rồi lưu.'
   return errorMessage(error)
 }
 
