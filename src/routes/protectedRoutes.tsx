@@ -15,6 +15,9 @@ import { RequireRole } from '@/routes/RequireRole'
 const AssessmentPage = page(() => import('@/pages/customer/assessment-page'), 'AssessmentPage')
 const CustomerRequestsPage = page(() => import('@/pages/customer/requests-page'), 'CustomerRequestsPage')
 const CustomerRequestPage = page(() => import('@/pages/customer/request-page'), 'CustomerRequestPage')
+const CustomerProjectsPage = page(() => import('@/pages/customer/projects-page'), 'CustomerProjectsPage')
+const CustomerProjectPage = page(() => import('@/pages/customer/project-page'), 'CustomerProjectPage')
+const CustomerPackagesPage = page(() => import('@/pages/customer/packages-page'), 'CustomerPackagesPage')
 const CustomerCatalogPage = page(() => import('@/pages/catalog-page'), 'CustomerCatalogPage')
 const CustomerCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'CustomerCatalogProductPage')
 
@@ -27,6 +30,8 @@ const OpsCatalogProductPage = page(() => import('@/pages/catalog-product-page'),
 // Kỹ thuật viên
 const TechJobsPage = page(() => import('@/pages/tech/jobs-page'), 'TechJobsPage')
 const TechJobPage = page(() => import('@/pages/tech/job-page'), 'TechJobPage')
+const TechInstallationsPage = page(() => import('@/pages/tech/installations-page'), 'TechInstallationsPage')
+const TechInstallationPage = page(() => import('@/pages/tech/installation-page'), 'TechInstallationPage')
 const TechSchedulePage = page(() => import('@/pages/tech/schedule-page'), 'TechSchedulePage')
 const TechCatalogPage = page(() => import('@/pages/catalog-page'), 'TechCatalogPage')
 const TechCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'TechCatalogProductPage')
@@ -36,6 +41,14 @@ const ManageTechniciansPage = page(() => import('@/pages/technicians-page'), 'Ma
 const ManageTechnicianPage = page(() => import('@/pages/technician-page'), 'ManageTechnicianPage')
 const ManageCatalogPage = page(() => import('@/pages/catalog-page'), 'ManageCatalogPage')
 const ManageCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'ManageCatalogProductPage')
+const ManageInstallationProjectsPage = page(
+  () => import('@/pages/installation-projects-page'),
+  'ManageInstallationProjectsPage',
+)
+const ManageInstallationProjectPage = page(
+  () => import('@/pages/installation-project-page'),
+  'ManageInstallationProjectPage',
+)
 
 // Quản trị
 const AdminUsersPage = page(() => import('@/pages/admin/users-page'), 'AdminUsersPage')
@@ -43,6 +56,14 @@ const AdminUserPage = page(() => import('@/pages/admin/user-page'), 'AdminUserPa
 const AdminTechniciansPage = page(() => import('@/pages/technicians-page'), 'AdminTechniciansPage')
 const AdminTechnicianPage = page(() => import('@/pages/technician-page'), 'AdminTechnicianPage')
 const AdminProductsPage = page(() => import('@/pages/admin/products-page'), 'AdminProductsPage')
+const AdminInstallationProjectsPage = page(
+  () => import('@/pages/installation-projects-page'),
+  'AdminInstallationProjectsPage',
+)
+const AdminInstallationProjectPage = page(
+  () => import('@/pages/installation-project-page'),
+  'AdminInstallationProjectPage',
+)
 
 type PortalConfig = {
   role: UserRole
@@ -88,6 +109,9 @@ export const protectedRoutes: RouteObject[] = [
       { path: customer.assessment, lazy: AssessmentPage },
       { path: customer.requests, lazy: CustomerRequestsPage },
       { path: customer.request, lazy: CustomerRequestPage },
+      { path: customer.projects, lazy: CustomerProjectsPage },
+      { path: customer.project, lazy: CustomerProjectPage },
+      { path: customer.packages, lazy: CustomerPackagesPage },
       { path: customer.products, lazy: CustomerCatalogPage },
       { path: customer.product, lazy: CustomerCatalogProductPage },
     ],
@@ -115,19 +139,23 @@ export const protectedRoutes: RouteObject[] = [
     pages: [
       { path: tech.jobs, lazy: TechJobsPage },
       { path: tech.job, lazy: TechJobPage },
+      { path: tech.installations, lazy: TechInstallationsPage },
+      { path: tech.installation, lazy: TechInstallationPage },
       { path: tech.schedule, lazy: TechSchedulePage },
       { path: tech.products, lazy: TechCatalogPage },
       { path: tech.product, lazy: TechCatalogProductPage },
     ],
   }),
 
-  // Quản lý dùng chung trang kỹ thuật viên với quản trị
+  // Quản lý dùng chung trang kỹ thuật viên và trang thi công với quản trị
   portal({
     role: 'manager',
     path: manage.home,
     Layout: ManageLayout,
     start: manage.technicians,
     pages: [
+      { path: manage.installations, lazy: ManageInstallationProjectsPage },
+      { path: manage.installation, lazy: ManageInstallationProjectPage },
       { path: manage.technicians, lazy: ManageTechniciansPage },
       { path: manage.technician, lazy: ManageTechnicianPage },
       { path: manage.products, lazy: ManageCatalogPage },
@@ -146,6 +174,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.technicians, lazy: AdminTechniciansPage },
       { path: admin.technician, lazy: AdminTechnicianPage },
       { path: admin.products, lazy: AdminProductsPage },
+      { path: admin.installations, lazy: AdminInstallationProjectsPage },
+      { path: admin.installation, lazy: AdminInstallationProjectPage },
     ],
   }),
 

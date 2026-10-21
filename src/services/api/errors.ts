@@ -126,6 +126,68 @@ const ERROR_MESSAGES: Record<string, string> = {
   TECHNICIAN_HAS_CONFLICTING_APPOINTMENTS:
     'Thay đổi này làm hỏng lịch hẹn đã có. Đổi giờ hoặc chuyển các lịch bên dưới cho người khác trước.',
   TECHNICIAN_PROFILE_REQUIRED: 'Lưu hồ sơ nhận lịch của kỹ thuật viên trước.',
+  // Lắp đặt (mọi vai trò)
+  FEATURE_PENDING_MIGRATION: 'Chức năng lắp đặt chưa được bật trên máy chủ. Liên hệ quản trị hệ thống.',
+  VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
+  INSTALLATION_PROJECT_NOT_FOUND: 'Không tìm thấy công trình, hoặc bạn không còn quyền xem công trình này.',
+  INSTALLATION_INVALID_STATE:
+    'Công trình đã đổi trạng thái nên không làm được thao tác này. Tải lại để xem trạng thái mới.',
+  INSTALLATION_STALE_REVISION: 'Công trình vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  INSTALLATION_REASON_REQUIRED: 'Ghi lý do.',
+  INSTALLATION_NOT_HANDED_OVER: 'Công trình chưa được bàn giao.',
+  INSTALLATION_EVIDENCE_NOT_FOUND: 'Không tìm thấy ảnh này trong công trình.',
+  INSTALLATION_EVIDENCE_OBJECT_MISSING: 'Ảnh không còn trên kho lưu trữ nên không xem được nữa.',
+  FILE_NOT_VERIFIED: 'Tệp chưa được xác minh nên chưa dùng được.',
+  FILE_NOT_SIGNABLE: 'Không mở được tệp này.',
+  STORAGE_NOT_CONFIGURED: 'Kho lưu trữ tệp chưa được cấu hình trên máy chủ.',
+  STORAGE_UNAVAILABLE: 'Tạm thời không kết nối được kho lưu trữ tệp. Thử lại sau ít phút.',
+  // Lắp đặt: kỹ thuật viên
+  INSTALLATION_ASSIGNMENT_NOT_PENDING:
+    'Bạn đã nhận việc này nên không từ chối được nữa. Báo quản lý nếu cần đổi người.',
+  INSTALLATION_ASSIGNMENT_NOT_ACCEPTED: 'Nhận việc trước rồi mới thi công được.',
+  INSTALLATION_TOO_EARLY_TO_START: 'Chưa tới ngày thi công nên chưa bắt đầu được.',
+  INSTALLATION_SCHEDULE_EXPIRED: 'Đã hết khung giờ thi công. Báo quản lý xếp lại lịch trước khi bắt đầu.',
+  INSTALLATION_CHECKLIST_INCOMPLETE: 'Quản lý chưa hoàn tất các hạng mục bắt buộc trước thi công.',
+  INSTALLATION_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh thi công của lượt này trước khi gửi báo cáo hoàn thành.',
+  INSTALLATION_ASSETS_REQUIRED: 'Ghi tấm pin và inverter đã lắp trước khi gửi báo cáo hoàn thành.',
+  INSTALLATION_DUPLICATE_SERIAL: 'Số serial này đã được ghi trên hệ thống (trùng hãng và serial). Kiểm tra lại.',
+  // Lắp đặt: quản lý
+  INSTALLATION_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
+  INSTALLATION_CONTRACT_NOT_PAID: 'Hợp đồng chưa được xác nhận thanh toán đủ nên chưa tạo được dự án thi công.',
+  INSTALLATION_PROJECT_EXISTS: 'Hợp đồng này đã có dự án thi công. Danh sách đã được tải lại.',
+  INSTALLATION_CHECKLIST_ITEM_NOT_FOUND: 'Không tìm thấy hạng mục này trong checklist. Tải lại trang.',
+  INSTALLATION_INVALID_SCHEDULE:
+    'Khoảng thời gian chưa hợp lệ: kết thúc phải sau bắt đầu, bắt đầu ở tương lai, trong vòng một năm tới và không dài quá số ngày hệ thống cho phép cho một lần phân công.',
+  CROSS_ZONE_AUTHORIZATION_REQUIRED:
+    'Kỹ thuật viên này không thuộc khu vực của công trình: đánh dấu cho phép phân công ngoài khu vực và ghi lý do.',
+  TECHNICIAN_SCHEDULE_CONFLICT:
+    'Kỹ thuật viên đã có lịch khác (hoặc chưa đủ thời gian nghỉ giữa hai việc) trong khoảng này. Chọn người khác hoặc đổi thời gian.',
+  TECHNICIAN_ON_LEAVE: 'Kỹ thuật viên nghỉ trong khoảng thời gian này.',
+  OUTSIDE_WORKING_HOURS: 'Khoảng thời gian nằm ngoài ngày làm hoặc giờ làm của kỹ thuật viên.',
+  TECHNICIAN_SCHEDULING_DISABLED: 'Kỹ thuật viên đang tắt nhận lịch.',
+  TECHNICIAN_INACTIVE: 'Tài khoản này không phải kỹ thuật viên đang hoạt động.',
+  // Gói dịch vụ sau lắp đặt (khách hàng). Mua gói dùng mã PROJECT_NOT_FOUND khi không tìm thấy hợp đồng
+  AFTER_SALES_PROJECT_NOT_FOUND: 'Không tìm thấy hợp đồng hoặc công trình này trong tài khoản của bạn.',
+  AFTER_SALES_VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
+  AFTER_SALES_INVALID_STATE: 'Trạng thái đã thay đổi nên không làm được thao tác này. Tải lại để xem trạng thái mới.',
+  AFTER_SALES_STALE_REVISION: 'Gói vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  AFTER_SALES_REASON_REQUIRED: 'Ghi lý do.',
+  SERVICE_PACKAGE_NOT_FOUND: 'Không tìm thấy gói này. Danh sách gói đã được tải lại.',
+  SERVICE_PACKAGE_INACTIVE: 'Gói này đã ngừng bán. Danh sách gói đã được tải lại.',
+  SERVICE_SUBSCRIPTION_NOT_FOUND: 'Không tìm thấy gói đã mua.',
+  SERVICE_SUBSCRIPTION_OVERLAP:
+    'Hợp đồng này đã có một kỳ gói cùng loại đã thanh toán và chưa bắt đầu. Mỗi loại chỉ mua trước được một kỳ.',
+  // Thanh toán PayOS
+  PAYMENT_CHECKOUT_IN_PROGRESS:
+    'Đang có một lần thanh toán chưa xong cho gói cùng loại hoặc cho hợp đồng này. Thanh toán hoặc huỷ đơn đó trước.',
+  PAYMENT_PROVIDER_NOT_CONFIGURED: 'Thanh toán trực tuyến chưa được bật trên máy chủ này.',
+  PAYMENT_PROVIDER_ERROR: 'PayOS chưa tạo được link thanh toán. Thử lại sau ít phút.',
+  PAYMENT_AMOUNT_NOT_SUPPORTED: 'Số tiền thanh toán không hợp lệ hoặc vượt giới hạn của một lần thanh toán.',
+  PAYMENT_TOO_MANY_ATTEMPTS: 'Bạn đã tạo nhiều link thanh toán trong ít phút. Chờ một lát rồi thử lại.',
+  PAYMENT_ATTEMPT_NOT_FOUND: 'Không tìm thấy lần thanh toán này.',
+  PAYMENT_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
+  PAYMENT_CONTRACT_NOT_SIGNED: 'Hợp đồng chưa được duyệt bản ký nên chưa thanh toán được.',
+  PAYMENT_ALREADY_PAID: 'Hợp đồng này đã được thanh toán. Danh sách đã được tải lại.',
   // Quản lý tài khoản
   ADMIN_USER_NOT_FOUND: 'Không tìm thấy tài khoản.',
   ADMIN_INVALID_ROLE: 'Vai trò không hợp lệ.',
