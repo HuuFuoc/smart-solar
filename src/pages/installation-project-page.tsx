@@ -105,18 +105,21 @@ function nextStep(p: InstallationStaffView): TrackerNext {
       tone: 'danger',
       title: 'Cần bạn phân công kỹ thuật viên',
       body: 'Chọn thời gian thi công rồi chọn kỹ thuật viên ở khối Kỹ thuật viên và lịch thi công.',
+      action: { label: 'Phân công', icon: 'assignment_ind', target: 'assignment' },
     }
   if (scheduleExpired(p.status, p.scheduledEndsAt))
     return {
       tone: 'danger',
       title: 'Đã hết khung thi công mà chưa bắt đầu',
       body: 'Kỹ thuật viên không bắt đầu được nữa. Đổi lịch ở khối Kỹ thuật viên và lịch thi công.',
+      action: { label: 'Đổi lịch', icon: 'edit_calendar', target: 'assignment' },
     }
   if (p.status === 'SCHEDULED' && blocking.length > 0)
     return {
       tone: 'danger',
       title: `${blocking.length} hạng mục checklist bắt buộc chưa xong`,
       body: 'Kỹ thuật viên chưa bắt đầu thi công được cho tới khi các mục bắt buộc là Đã đạt hoặc Không áp dụng.',
+      action: { label: 'Mở checklist', icon: 'checklist', target: 'checklist' },
     }
   if (p.responsibleTechnician?.assignmentStatus === 'PENDING')
     return {
@@ -257,8 +260,12 @@ function InstallationProjectPage() {
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
-                <AssignmentPanel project={p} />
-                <ChecklistPanel project={p} />
+                <div id="assignment" className="scroll-mt-6">
+                  <AssignmentPanel project={p} />
+                </div>
+                <div id="checklist" className="scroll-mt-6">
+                  <ChecklistPanel project={p} />
+                </div>
                 <CompletionPanel project={p} />
               </div>
               <SiteAside project={p} />

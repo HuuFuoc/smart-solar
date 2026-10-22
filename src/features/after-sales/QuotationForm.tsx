@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/common/ui/button'
+import { FormActions } from '@/components/common/ui/form-actions'
 import { Field, Input, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { formatVnd, quotableItems } from '@/features/after-sales/serviceDisplay'
@@ -163,9 +164,11 @@ export function QuotationForm({ request }: { request: ServiceRequestView }) {
           <Notice tone="danger">{error}</Notice>
         </div>
       )}
-      <Button icon="send" variant="primary" disabled={issue.isPending} onClick={() => void submit()}>
-        {issue.isPending ? 'Đang gửi…' : 'Gửi báo giá'}
-      </Button>
+      <FormActions>
+        <Button icon="send" variant="primary" disabled={issue.isPending} onClick={() => void submit()}>
+          {issue.isPending ? 'Đang gửi…' : 'Gửi báo giá'}
+        </Button>
+      </FormActions>
     </div>
   )
 }

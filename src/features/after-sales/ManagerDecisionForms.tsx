@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/common/ui/button'
+import { FormActions } from '@/components/common/ui/form-actions'
 import { Field, Input, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { formatVnd, pendingItems } from '@/features/after-sales/serviceDisplay'
@@ -97,9 +98,11 @@ export function CoverageForm({ request }: { request: ServiceRequestView }) {
         ))}
       </ul>
       <ErrorNotice message={error} />
-      <Button icon="save" variant="primary" disabled={decide.isPending} onClick={() => void submit()}>
-        {decide.isPending ? 'Đang lưu…' : 'Lưu quyết định'}
-      </Button>
+      <FormActions>
+        <Button icon="save" variant="primary" disabled={decide.isPending} onClick={() => void submit()}>
+          {decide.isPending ? 'Đang lưu…' : 'Lưu quyết định'}
+        </Button>
+      </FormActions>
     </div>
   )
 }

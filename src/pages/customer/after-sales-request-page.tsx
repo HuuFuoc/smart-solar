@@ -63,17 +63,33 @@ function nextStep(r: ServiceRequestView): TrackerNext {
   if (r.cancellationRequestedAt)
     return { tone: 'info', title: 'Quản lý đang xét yêu cầu huỷ của bạn', body: r.cancellationReason ?? undefined }
   if (visitAwaitingCustomer(r))
-    return { tone: 'danger', title: 'Bạn cần xác nhận lịch hẹn', body: 'Giờ hẹn khác giờ bạn chọn. Xem bên dưới.' }
+    return {
+      tone: 'danger',
+      title: 'Bạn cần xác nhận lịch hẹn',
+      body: 'Giờ hẹn khác giờ bạn chọn.',
+      action: { label: 'Xem lịch hẹn', icon: 'event', target: 'confirm-visit' },
+    }
   if (quotation?.status === 'ISSUED')
-    return { tone: 'danger', title: 'Bạn cần duyệt báo giá', body: 'Đồng ý thì thanh toán để kỹ thuật viên tới làm.' }
+    return {
+      tone: 'danger',
+      title: 'Bạn cần duyệt báo giá',
+      body: 'Đồng ý thì thanh toán để kỹ thuật viên tới làm.',
+      action: { label: 'Xem báo giá', icon: 'request_quote', target: 'quotation' },
+    }
   if (quotation?.status === 'ACCEPTED')
-    return { tone: 'danger', title: 'Bạn cần thanh toán báo giá', body: 'Thanh toán xong Smart Solar sẽ xếp lịch.' }
+    return {
+      tone: 'danger',
+      title: 'Bạn cần thanh toán báo giá',
+      body: 'Thanh toán xong Smart Solar sẽ xếp lịch.',
+      action: { label: 'Thanh toán', icon: 'payments', target: 'quotation' },
+    }
   switch (r.status) {
     case 'PENDING_CUSTOMER_ACCEPTANCE':
       return {
         tone: 'danger',
         title: 'Bạn cần nghiệm thu',
         body: 'Đọc báo cáo của kỹ thuật viên rồi chọn Đồng ý kết quả hoặc Chưa đạt.',
+        action: { label: 'Nghiệm thu', icon: 'fact_check', target: 'acceptance' },
       }
     case 'SUBMITTED':
       return { tone: 'info', title: 'Smart Solar đang xếp kỹ thuật viên', body: 'Lịch hẹn hiện ở đây khi đã xếp xong.' }
@@ -124,7 +140,7 @@ function ConfirmVisitPanel({ request }: { request: ServiceRequestView }) {
   }
 
   return (
-    <Panel>
+    <Panel id="confirm-visit" className="scroll-mt-6">
       <PanelHeader title="Xác nhận lịch hẹn" />
       <PanelBody className="space-y-4">
         <p className="text-body text-fg">
@@ -162,7 +178,7 @@ function AcceptancePanel({ request, onReject }: { request: ServiceRequestView; o
   }
 
   return (
-    <Panel>
+    <Panel id="acceptance" className="scroll-mt-6">
       <PanelHeader title="Nghiệm thu" description={request.outcome ? outcomeLabel(request.outcome) : undefined} />
       <PanelBody className="space-y-4">
         {report?.report && (
@@ -191,7 +207,7 @@ function AcceptancePanel({ request, onReject }: { request: ServiceRequestView; o
   )
 }
 
-function RequestFacts({ request: r }: { request: ServiceRequestView }) {
+function RequestFacts({ request: r, onCancel }: { request: ServiceRequestView; onCancel: () => void }) {
   const items = [
     { k: 'Loại', v: requestKindLabel(r.kind) },
     { k: 'Ngày gửi', v: formatMoment(r.createdAt) },
@@ -202,7 +218,16 @@ function RequestFacts({ request: r }: { request: ServiceRequestView }) {
   if (r.cancelledAt) items.push({ k: 'Huỷ lúc', v: formatMoment(r.cancelledAt) })
   return (
     <Panel>
-      <PanelHeader title="Nội dung yêu cầu" />
+      <PanelHeader
+        title="Nội dung yêu cầu"
+        action={
+          customerCanCancel(r) && (
+            <Button icon="cancel" size="sm" variant="danger" onClick={onCancel}>
+              Huỷ yêu cầu
+            </Button>
+          )
+        }
+      />
       <PanelBody className="space-y-4">
         <p className="max-w-[72ch] text-body whitespace-pre-line text-fg">{r.description}</p>
         <KeyValueList items={items} columns={2} />
@@ -246,13 +271,6 @@ export function CustomerAfterSalesRequestPage() {
                   {requestKindLabel(r.kind)} <span className="tnum">{r.requestNumber}</span>
                 </>
               }
-              actions={
-                customerCanCancel(r) && (
-                  <Button icon="cancel" variant="danger" onClick={() => setDialog('cancel')}>
-                    Huỷ yêu cầu
-                  </Button>
-                )
-              }
             />
 
             <div className="space-y-6">
@@ -262,7 +280,7 @@ export function CustomerAfterSalesRequestPage() {
               {r.status === 'PENDING_CUSTOMER_ACCEPTANCE' && (
                 <AcceptancePanel request={r} onReject={() => setDialog('reject-work')} />
               )}
-              <RequestFacts request={r} />
+              <RequestFacts request={r} onCancel={() => setDialog('cancel')} />
               {r.items.length > 0 && (
                 <Panel>
                   <PanelHeader title="Kết quả kiểm tra" description={`${r.items.length} hạng mục`} />

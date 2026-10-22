@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
@@ -37,7 +38,9 @@ function VisitRow({ visit, tab }: { visit: TechnicianVisitView; tab: VisitTab })
         </ListCell>
         <ListCell wide>
           <p className="font-semibold">
-            {visitPurposeLabel(visit.purpose)} <span className="tnum">{visit.requestNumber}</span>
+            <Link to={withId(ROUTES.tech.afterSalesVisit, visit.visitId)} className="hover:underline">
+              {visitPurposeLabel(visit.purpose)} <span className="tnum">{visit.requestNumber}</span>
+            </Link>
           </p>
           <p className="mt-0.5 line-clamp-2 text-meta text-fg-2">{visit.description}</p>
         </ListCell>

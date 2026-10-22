@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/common/ui/button'
+import { FormActions } from '@/components/common/ui/form-actions'
 import { DateField, Field, Input, Select, TimeSelect } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { openVisit, visitPurposeLabel } from '@/features/after-sales/serviceDisplay'
@@ -135,9 +136,16 @@ export function ScheduleVisitForm({
           <Notice tone="danger">{issue ?? error}</Notice>
         </div>
       )}
-      <Button icon="edit_calendar" type="submit" variant="primary" disabled={schedule.isPending}>
-        {schedule.isPending ? 'Đang lưu…' : moving ? 'Đổi lịch' : 'Xếp lịch'}
-      </Button>
+      <FormActions>
+        <Button
+          icon={moving ? 'edit_calendar' : 'event_available'}
+          type="submit"
+          variant="primary"
+          disabled={schedule.isPending}
+        >
+          {schedule.isPending ? 'Đang lưu…' : moving ? 'Đổi lịch' : 'Xếp lịch'}
+        </Button>
+      </FormActions>
     </form>
   )
 }

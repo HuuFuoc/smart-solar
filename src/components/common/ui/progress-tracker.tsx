@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { cx } from '@/utils/cx'
@@ -16,6 +17,15 @@ export type TrackerNext = {
   tone: 'danger' | 'info' | 'ok' | 'warn' | 'neutral'
   title: string
   body?: ReactNode
+  /** Nút làm việc tiếp theo: cuộn tới khối có id `target` và đặt con trỏ vào ô đầu tiên */
+  action?: { label: string; icon: string; target: string }
+}
+
+function goTo(target: string) {
+  const block = document.getElementById(target)
+  if (!block) return
+  block.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  block.querySelector<HTMLElement>('input, textarea, select, button')?.focus({ preventScroll: true })
 }
 
 // Khối "Tình hình" ở đầu trang chi tiết: các bước của yêu cầu và việc tiếp theo là của ai.
@@ -71,6 +81,13 @@ export function ProgressTracker({
         </ol>
         <Notice tone={next.tone} title={next.title}>
           {next.body}
+          {next.action && (
+            <div className="mt-3">
+              <Button size="sm" variant="primary" icon={next.action.icon} onClick={() => goTo(next.action!.target)}>
+                {next.action.label}
+              </Button>
+            </div>
+          )}
         </Notice>
       </PanelBody>
     </Panel>
