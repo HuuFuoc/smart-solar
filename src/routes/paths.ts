@@ -17,6 +17,7 @@ export const ROUTES = {
 
   customer: {
     home: '/customer',
+    dashboard: '/customer/dashboard',
     assessment: '/customer/assessment',
     /** Yêu cầu khảo sát đã gửi: đặt / đổi / huỷ giờ */
     requests: '/customer/requests',
