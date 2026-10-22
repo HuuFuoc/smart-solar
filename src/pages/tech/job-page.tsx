@@ -29,13 +29,20 @@ import {
   surfaceNameLabel,
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
+import { OnSiteSurveyPanel } from '@/features/onsite-survey/OnSiteSurveyPanel'
+import { surveyStartOpensAt } from '@/features/onsite-survey/onSiteSurveyDisplay'
+import { useMyOnSiteSurveyQuery } from '@/hooks/useOnSiteSurvey'
 import { useMyAppointmentQuery, useReleaseAppointmentMutation } from '@/hooks/useTechnicianJobs'
 import { ROUTES } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 import type { TechnicianJobView } from '@/types/res/technicianAppointmentsRes'
+import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
 const n = (v: number | null | undefined) => (v == null ? '—' : num.format(v))
+
+/** Lịch đã giao cho kỹ thuật viên này: được khảo sát và xem lại biên bản */
+const WORKING_STATUSES = new Set(['ACCEPTED', 'ASSIGNED', 'COMPLETED'])
 
 const ACCEPTED_BY: Record<string, string> = {
   SELF_ACCEPTED: 'Bạn tự nhận lịch này',
@@ -49,29 +56,56 @@ function whenText(job: TechnicianJobView) {
   return `${relativeDay(vnDate(job.startsAt))}, ${formatTimeRange(job.startsAt, job.endsAt)}`
 }
 
-// Các bước của lịch theo góc nhìn kỹ thuật viên và việc tiếp theo
-function jobTracker(job: TechnicianJobView, now: number): { steps: TrackerStep[]; next: TrackerNext } {
-  const completed = job.status === 'COMPLETED'
+// Các bước của lịch theo góc nhìn kỹ thuật viên và việc tiếp theo. Đỏ khi tới lượt kỹ thuật viên làm
+function jobTracker(
+  job: TechnicianJobView,
+  survey: OnSiteSurveyView | null | undefined,
+  now: number,
+): { steps: TrackerStep[]; next: TrackerNext } {
+  const completed = job.status === 'COMPLETED' || survey?.status === 'COMPLETED'
+  const started = completed || survey?.status === 'IN_PROGRESS'
   const steps: TrackerStep[] = [
     { label: 'Bạn nhận lịch', detail: formatDateTime(job.acceptedAt ?? job.assignedAt), state: 'done' },
-    { label: 'Khảo sát tại công trình', detail: whenText(job), state: completed ? 'done' : 'current' },
     {
-      label: 'Ghi kết quả khảo sát',
-      detail: completed ? undefined : 'Chưa có trên hệ thống',
-      state: completed ? 'done' : 'todo',
+      label: 'Khảo sát tại công trình',
+      detail: survey?.startedAt ? `Bắt đầu ${formatDateTime(survey.startedAt)}` : whenText(job),
+      state: started ? 'done' : 'current',
+    },
+    {
+      label: 'Hoàn thành biên bản',
+      detail: survey?.completedAt ? formatDateTime(survey.completedAt) : undefined,
+      state: completed ? 'done' : started ? 'current' : 'todo',
     },
   ]
-  if (completed) return { steps, next: { tone: 'neutral', title: 'Đã khảo sát xong' } }
+  if (completed)
+    return {
+      steps,
+      next: { tone: 'neutral', title: 'Đã khảo sát xong', body: 'Kết quả đã gửi cho bộ phận kinh doanh để báo giá.' },
+    }
+  if (started)
+    return {
+      steps,
+      next: {
+        tone: 'danger',
+        title: 'Nhập số đo, chụp ảnh mái rồi hoàn thành khảo sát',
+        body: 'Cần đủ các ô bắt buộc và ít nhất một ảnh Mái.',
+      },
+    }
   if (new Date(job.endsAt).getTime() < now)
     return {
       steps,
       next: {
         tone: 'warn',
-        title: 'Đã qua giờ hẹn',
-        body: 'Phần ghi kết quả khảo sát tại công trình chưa có trên hệ thống. Báo kết quả cho bộ phận kinh doanh.',
+        title: 'Đã qua giờ hẹn mà chưa bắt đầu khảo sát',
+        body: 'Tới công trình thì bấm Bắt đầu khảo sát, hoặc báo bộ phận kinh doanh đổi giờ.',
       },
     }
   const call = job.customer.phone ? `Gọi khách ${job.customer.phone} trước khi tới. ` : ''
+  if (now >= surveyStartOpensAt(job.startsAt).getTime())
+    return {
+      steps,
+      next: { tone: 'danger', title: 'Tới giờ hẹn: bấm Bắt đầu khảo sát khi đến công trình', body: call || undefined },
+    }
   return {
     steps,
     next: {
@@ -171,10 +205,14 @@ function JobActions({ job }: { job: TechnicianJobView }) {
   )
 }
 
-// Chi tiết một lịch khảo sát đã nhận. Khảo sát tại công trình thuộc luồng sau nên chưa có ở đây
+// Chi tiết một lịch khảo sát đã nhận: bắt đầu, ghi biên bản và hoàn thành khảo sát tại công trình
 export function TechJobPage() {
   const { id } = useParams()
   const query = useMyAppointmentQuery(id)
+  // Cùng cache với khối khảo sát nên không gọi thêm lần nào
+  const surveyQuery = useMyOnSiteSurveyQuery(query.data?.appointmentId, {
+    enabled: query.data ? WORKING_STATUSES.has(query.data.status) : false,
+  })
   const [now] = useState(() => Date.now())
   usePageCrumb(query.data?.property.name ?? null)
 
@@ -216,18 +254,21 @@ export function TechJobPage() {
               }
             />
 
-            <ProgressTracker {...jobTracker(job, now)} />
+            <ProgressTracker {...jobTracker(job, surveyQuery.data, now)} />
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
-                {(job.status === 'ACCEPTED' || job.status === 'ASSIGNED') && (
-                  <Panel>
-                    <PanelHeader title="Lịch của bạn" />
-                    <PanelBody>
-                      <JobActions job={job} />
-                    </PanelBody>
-                  </Panel>
-                )}
+                {WORKING_STATUSES.has(job.status) && <OnSiteSurveyPanel job={job} />}
+
+                {(job.status === 'ACCEPTED' || job.status === 'ASSIGNED') &&
+                  surveyQuery.data?.status !== 'IN_PROGRESS' && (
+                    <Panel>
+                      <PanelHeader title="Lịch của bạn" />
+                      <PanelBody>
+                        <JobActions job={job} />
+                      </PanelBody>
+                    </Panel>
+                  )}
 
                 <Panel>
                   <PanelHeader title="Công trình" />

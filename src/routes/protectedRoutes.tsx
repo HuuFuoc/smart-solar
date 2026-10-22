@@ -15,6 +15,8 @@ import { RequireRole } from '@/routes/RequireRole'
 const AssessmentPage = page(() => import('@/pages/customer/assessment-page'), 'AssessmentPage')
 const CustomerRequestsPage = page(() => import('@/pages/customer/requests-page'), 'CustomerRequestsPage')
 const CustomerRequestPage = page(() => import('@/pages/customer/request-page'), 'CustomerRequestPage')
+const CustomerQuotationsPage = page(() => import('@/pages/customer/quotations-page'), 'CustomerQuotationsPage')
+const CustomerQuotationPage = page(() => import('@/pages/customer/quotation-page'), 'CustomerQuotationPage')
 const CustomerProjectsPage = page(() => import('@/pages/customer/projects-page'), 'CustomerProjectsPage')
 const CustomerProjectPage = page(() => import('@/pages/customer/project-page'), 'CustomerProjectPage')
 const CustomerPackagesPage = page(() => import('@/pages/customer/packages-page'), 'CustomerPackagesPage')
@@ -127,6 +129,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: customer.assessment, lazy: AssessmentPage },
       { path: customer.requests, lazy: CustomerRequestsPage },
       { path: customer.request, lazy: CustomerRequestPage },
+      { path: customer.quotations, lazy: CustomerQuotationsPage },
+      { path: customer.quotation, lazy: CustomerQuotationPage },
       { path: customer.projects, lazy: CustomerProjectsPage },
       { path: customer.project, lazy: CustomerProjectPage },
       { path: customer.packages, lazy: CustomerPackagesPage },

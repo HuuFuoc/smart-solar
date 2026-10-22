@@ -206,8 +206,37 @@ const ERROR_MESSAGES: Record<string, string> = {
   AFTER_SALES_TECHNICIAN_UNAVAILABLE:
     'Kỹ thuật viên không nhận được buổi hẹn vào giờ này (trùng lịch, nghỉ hoặc ngoài giờ làm). Chọn người khác hoặc đổi giờ.',
   MAINTENANCE_BOOKING_TOO_SOON: 'Ngày hẹn quá gần so với thời gian phải đặt trước. Chọn ngày xa hơn.',
+  // Khảo sát tại công trình
+  ONSITE_APPOINTMENT_NOT_FOUND: 'Không tìm thấy lịch khảo sát, hoặc lịch không còn giao cho bạn.',
+  ONSITE_APPOINTMENT_NOT_CONFIRMED: 'Nhận lịch này trước rồi mới khảo sát được.',
+  ONSITE_SURVEY_TOO_EARLY: 'Chưa tới giờ bắt đầu khảo sát. Bắt đầu được khi gần tới giờ hẹn.',
+  ONSITE_SURVEY_NOT_FOUND: 'Bấm Bắt đầu khảo sát trước rồi mới thêm ảnh được.',
+  ONSITE_SURVEY_ALREADY_COMPLETED: 'Khảo sát này đã hoàn thành nên không sửa được nữa.',
+  ONSITE_SURVEY_NOT_STARTED: 'Bấm Bắt đầu khảo sát tại công trình trước khi hoàn thành.',
+  ONSITE_SURVEY_INCOMPLETE: 'Còn thiếu số đo bắt buộc. Điền các ô được đánh dấu rồi hoàn thành lại.',
+  ONSITE_SURVEY_STALE_REVISION: 'Biên bản vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  ONSITE_SURVEY_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh loại Mái trước khi hoàn thành khảo sát.',
+  ONSITE_SURVEY_ATTACHMENT_NOT_FOUND: 'Không tìm thấy ảnh này trong biên bản.',
+  INVALID_STATE_TRANSITION:
+    'Trạng thái đã thay đổi nên không làm được thao tác này. Tải lại trang để xem trạng thái mới.',
   SALES_TASK_NOT_FOUND: 'Không tìm thấy việc này.',
   SALES_TASK_ALREADY_CLAIMED: 'Việc này vừa có người nhận trước. Danh sách đã được tải lại.',
+  // Báo giá lắp đặt
+  QUOTATION_NOT_FOUND: 'Không tìm thấy báo giá.',
+  QUOTATION_SURVEY_NOT_COMPLETED: 'Kỹ thuật viên chưa hoàn thành khảo sát tại công trình nên chưa lập báo giá được.',
+  QUOTATION_DRAFT_EXISTS: 'Yêu cầu này đã có một bản nháp báo giá. Đã tải lại, sửa tiếp bản đó.',
+  QUOTATION_ACTIVE_EXISTS: 'Yêu cầu này đã có báo giá đang gửi khách. Lập bản sửa từ báo giá đó.',
+  QUOTATION_NOT_DRAFT: 'Báo giá đã gửi khách nên không sửa được nữa. Lập bản sửa để đổi nội dung.',
+  QUOTATION_NOT_ISSUED: 'Báo giá này không còn chờ trả lời (đã có bản mới hoặc vừa thay đổi). Đã tải lại.',
+  QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Liên hệ nhân viên kinh doanh để nhận bản mới.',
+  QUOTATION_INVALID_LINE:
+    'Số liệu báo giá chưa hợp lệ: số lượng phải lớn hơn 0, đơn giá không âm, giảm giá không quá số tiền trước giảm và tổng phải lớn hơn 0.',
+  QUOTATION_EMPTY: 'Thêm ít nhất một dòng trước khi gửi khách.',
+  QUOTATION_STALE_REVISION: 'Báo giá vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  QUOTATION_PRODUCT_UNAVAILABLE:
+    'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác hoặc ghi dòng tự ghi.',
+  QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này.',
+  QUOTATION_CANNOT_REVISE: 'Không lập bản sửa được vì khách vừa đồng ý hoặc báo giá vừa thay đổi. Đã tải lại.',
   // Thanh toán PayOS
   PAYMENT_CHECKOUT_IN_PROGRESS:
     'Đang có một lần thanh toán chưa xong cho gói cùng loại hoặc cho hợp đồng này. Thanh toán hoặc huỷ đơn đó trước.',

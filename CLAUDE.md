@@ -239,7 +239,12 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   `$ref` về tên ngắn. Đừng thay cả file bằng bản xuất mới khi chưa sửa script. Cùng cách đó với 6 path của khách (gói, mua
   gói, gói đã mua, huỷ gói, trạng thái thanh toán after-sales, GET hợp đồng của khách) và 4 path của tag Files
   (`presigned-upload`, đăng ký, verify, GET); `ReasonRequest` của after-sales đặt tên
-  `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt.
+  `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt. Cùng cách đó (22/10/2026) với 9
+  path khảo sát tại công trình (tag TechnicianOnSiteSurvey, StaffOnSiteSurvey); `ObstacleRequest` / `RevisionRequest` của
+  backend đặt tên `OnSiteSurveyObstacleRequest` / `OnSiteSurveyRevisionRequest` cho khỏi trùng. Cùng cách đó với 11 path báo
+  giá lắp đặt (tag SalesQuotations, CustomerQuotations; chưa chép path tạo hợp đồng); `QuotationLineRequest` của luồng lắp đặt
+  đặt tên `InstallationQuotationLineRequest` vì trùng tên dòng báo giá sửa chữa (tag SalesAfterSales), response viết tay ở
+  `types/res/quotationsRes.ts` theo record C# của backend `main` (7c79fa8, `Modules.Quotations`).
 - `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
   repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
   JWT; không đụng DB nào.
@@ -449,8 +454,8 @@ nhập làm nguồn chính + kéo thả vật cản.
 tài liệu `guides/scheduling-and-admin.md`, `guides/administrative-locations-and-zones.md`). Hiển thị trong `features/scheduling`
 (`schedulingDisplay.ts`: giờ Việt Nam, nhãn trạng thái lịch và trạng thái khách thấy, lý do không có giờ / không nhận được
 lịch; bảng mã ở `common/scheduling.ts`), tài khoản trong `features/users`. Không còn tính đường đi (Vietmap đã bỏ): giữa hai lịch của một kỹ thuật viên có khoảng
-nghỉ cố định. Luồng dừng ở "kỹ thuật viên đã nhận lịch": khảo sát tại công trình (bắt đầu, số đo, ảnh, hoàn thành) chưa làm;
-tải ảnh đã có (`uploadFile`, mục đích `ONSITE_SURVEY_EVIDENCE`, xem "Tải tệp lên kho S3").
+nghỉ cố định. Kỹ thuật viên nhận lịch xong thì khảo sát tại công trình (mục dưới); hoàn thành khảo sát là yêu cầu chuyển sang
+5 (xong).
 
 - Khu vực phục vụ: mỗi phường, xã thuộc một khu (admin lập); kỹ thuật viên thuộc một hoặc nhiều khu. Địa điểm phải có mã phường
   (`communeCode`) thì mới biết khu nào phục vụ.
@@ -484,6 +489,46 @@ tải ảnh đã có (`uploadFile`, mục đích `ONSITE_SURVEY_EVIDENCE`, xem "
   và hiện nhãn trong ô. Người dùng không chấp nhận dòng dồn chữ bên trái, khoảng giữa bỏ trống. "Của tôi" của sales xếp
   cần phân công lên đầu, rồi lịch sắp tới, rồi chưa có kỹ thuật viên, cuối cùng là đã qua giờ hẹn (danh sách của backend
   không cho biết khách đã đặt giờ chưa nên các yêu cầu chưa có kỹ thuật viên chỉ ghi vậy).
+
+**Khảo sát tại công trình** (22/10/2026; code chỉ có trong image `smartsolar-api` đang chạy, luật đọc từ `OnSiteSurveyHandlers`
+trong DLL; response viết tay ở `types/res/technicianOnSiteSurveyRes.ts`, enum ở `common/onsiteSurvey.ts`, component ở
+`features/onsite-survey/`, hook `hooks/useOnSiteSurvey.ts`). Mỗi yêu cầu khảo sát một biên bản, kỹ thuật viên ghi theo mã lịch hẹn.
+
+- Kỹ thuật viên, khối "Khảo sát tại công trình" đầu `/tech/jobs/:id` (`OnSiteSurveyPanel`): "Bắt đầu khảo sát" (POST .../start,
+  sớm nhất 2 giờ trước giờ hẹn theo mặc định của BE – quản trị đổi được nên BE vẫn kiểm lại, `ONSITE_SURVEY_TOO_EARLY`), rồi form
+  (`OnSiteSurveyFields`, luật ở `onSiteSurveyForm.ts` bám `Validate`) + ảnh / tài liệu theo loại (`OnSiteSurveyUpload`, mục đích
+  `ONSITE_SURVEY_EVIDENCE`, ảnh hoặc PDF). Lưu (PUT, gửi `revision`, null khi chưa có biên bản) chỉ kiểm khoảng giá trị; hoàn
+  thành (POST .../complete kèm `revision`) cần: đã bắt đầu, đủ 10 ô bắt buộc (loại mái, vật liệu, dài, rộng, diện tích lắp được
+  ≤ dài × rộng, độ dốc 0–90, hướng 0–<360, tình trạng mái, khả năng lắp đặt, tủ điện) và ít nhất một tệp loại ROOF. Hoàn thành
+  qua hộp thoại xác nhận, phần chưa lưu được lưu trước; xong thì lịch hẹn và yêu cầu chuyển sang xong, biên bản chỉ còn bổ sung
+  (POST .../amendments – chưa làm trên FE). Ô số nhận dấu phẩy; mỗi ô có gợi ý "Khách khai: …" để đối chiếu; toạ độ chỉ lấy
+  từ GPS của máy (nút "Lấy vị trí hiện tại"), không gõ tay. Thanh dưới dính đáy: hai điều kiện hoàn thành + trạng thái lưu.
+- Kinh doanh / quản lý / quản trị: khối "Kết quả khảo sát tại công trình" (`OnSiteSurveyResultPanel`, GET
+  /survey-requests/{id}/onsite-survey; chưa có biên bản là 404 `ONSITE_SURVEY_NOT_FOUND`, hook trả null) dưới khối lịch của
+  `/ops/surveys/:id`, chỉ đọc (`OnSiteSurveySummary` + `OnSiteSurveyFiles`, link ký sẵn từng tệp).
+
+**Báo giá lắp đặt** (luồng 2, sau khảo sát tại công trình; backend `main` 7c79fa8, `Modules.Quotations`: `QuotationHandlers`,
+`QuotationPricing`; tính năng bật bằng `InstallationWorkflow`). Enum + giới hạn ở `common/quotation.ts`, hiển thị chung ở
+`features/quotations/quotationDisplay.ts` + `QuotationContent.tsx` (dòng hàng, tổng tiền, điều khoản), service / hook tách theo
+vai trò (`salesQuotationService` + `useSalesQuotations`, `customerQuotationService` + `useCustomerQuotations`). Khác báo giá sửa
+chữa của luồng 3 (`features/after-sales/QuotationForm.tsx`). Hợp đồng chỉ lập được từ bản khách đã đồng ý (ACCEPTED); màn hợp
+đồng và tệp PDF báo giá (`PUT …/document`, FE tự tạo PDF) chưa làm.
+
+- Trạng thái: DRAFT → ISSUED → ACCEPTED, hoặc ISSUED → REVISION_REQUESTED → bản mới (DRAFT → ISSUED, bản cũ SUPERSEDED). Mỗi
+  yêu cầu khảo sát tối đa một bản nháp và một bản đang hiệu lực; bản đã gửi không sửa được. Tiền VND nguyên, backend tự tính mọi
+  tổng: cộng = thiết bị + nhân công + vận chuyển + dịch vụ khác; thuế (0–20 %, mặc định 8) tính trên (cộng − giảm giá).
+- Kinh doanh, khối "Báo giá" dưới kết quả khảo sát của `/ops/surveys/:id` (`SalesQuotationPanel`), chỉ hiện khi biên bản
+  `COMPLETED`: "Lập báo giá" tạo bản nháp ngay (chi phí 0, thuế mặc định, hạn 30 ngày) rồi sửa trực tiếp, mỗi thao tác lưu ngay
+  kèm `revision` (409 STALE thì tải lại): thêm / sửa dòng (`QuotationLineDialog`: từ danh mục = sản phẩm đang bán giá VND, bỏ
+  trống đơn giá là lấy giá danh mục; tự ghi = tên, đơn vị, đơn giá; đã thêm chỉ sửa số lượng, đơn giá, mô tả), xoá dòng có
+  "Hoàn tác" (thêm lại vào cuối), "Chi phí, điều khoản" (`QuotationHeaderDialog`, PUT ghi đè cả phần đầu; hạn hiệu lực là cuối
+  ngày theo giờ Việt Nam, tối đa 89 ngày tới vì BE tính 90 ngày từ lúc lưu), "Gửi cho khách" (hỏi xác nhận; khoá khi chưa có
+  dòng, tổng ≤ 0 hoặc hạn đã qua). Bản đã gửi / khách yêu cầu sửa: "Lập bản sửa" chép thành bản nháp mới. Khối Tình hình có
+  thêm bước "Báo giá" và việc tiếp theo theo trạng thái báo giá (đỏ khi kinh doanh phải lập, gửi, sửa).
+- Khách: menu "Báo giá" (`/customer/quotations`, mỗi công trình một dòng là bản mới nhất, tên công trình lấy từ yêu cầu khảo sát)
+  và `/customer/quotations/:id` (theo mã từng bản): "Đồng ý báo giá" (hỏi xác nhận, không đổi lại được) và "Yêu cầu sửa" (lý do
+  bắt buộc ≤ 2000) chỉ khi `canAccept` (ISSUED và chưa hết hạn); bản cũ dẫn sang bản mới. Trang yêu cầu khảo sát của khách có
+  khối dẫn sang báo giá (`RequestQuotationPanel`). Khách không thấy bản nháp và giá danh mục.
 
 **Lắp đặt, phía kỹ thuật viên** (`/tech/installations(/:id)`, backend nhánh `fix/business-rules-flow-1-2`, tài liệu
 `guides/installation-workflow-api-integration.md` + `installation-workflow-business-flow.md`; response viết tay ở
@@ -520,9 +565,9 @@ và trả `FileView`. `PENDING_VERIFICATION` (chưa đọc được kho) thì ch
   tệp có tiến độ, `useUploadQueue` nhiều tệp, `useFileQuery` = `GET /api/files/{id}`, không có link xem).
 - Mọi lệnh ghi tệp chung giới hạn 20 lần / phút / người, mỗi tệp tốn 2 (xin link + đăng ký): hàng đợi tải lần lượt, gặp 429 thì
   dừng, đếm ngược theo Retry-After rồi tự chạy tiếp. Link PUT không lưu, không ghi log, không đưa vào lỗi ném ra.
-- Đang dùng: ảnh lắp đặt của kỹ thuật viên, tài liệu "Đã đạt" của checklist thi công. Backend còn nhận `fileId` ở khảo sát tại
-  công trình, báo giá, hợp đồng (bản chính thức / bản khách ký), kho tri thức, yêu cầu sự cố / bảo hành sau bán: các màn đó chưa
-  có trên FE.
+- Đang dùng: ảnh lắp đặt của kỹ thuật viên, tài liệu "Đã đạt" của checklist thi công, ảnh / tài liệu khảo sát tại công trình.
+  Backend còn nhận `fileId` ở báo giá, hợp đồng (bản chính thức / bản khách ký), kho tri thức, yêu cầu sự cố / bảo hành sau bán:
+  các màn đó chưa có trên FE.
 - Cấu hình phía kho (không nằm ở FE): bucket `smart-solar-images` ở vùng `us-east-1`, `Storage__S3__Region` của backend phải
   đúng vùng này (sai vùng thì S3 trả 301 không kèm CORS, trình duyệt báo lỗi mạng). Bucket phải có CORS cho phép `PUT` với header
   `content-type` từ origin của FE, và bật Versioning. IAM user ký link (`smartsolar-image-api`) cần `s3:PutObject`,
@@ -639,24 +684,24 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 
 ## Bảng route
 
-| Route                        | Layout           | Trang                                                                                                                                   |
-| ---------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                        |
-| `/login`                     | `AuthLayout`     | `LoginPage`                                                                                                                             |
-| `/register`                  | `AuthLayout`     | `RegisterPage`                                                                                                                          |
-| `/forgot-password`           | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                    |
-| `/reset-password`            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                     |
-| `/verify-email`              | `AuthLayout`     | `VerifyEmailPage`                                                                                                                       |
-| `/403`                       | `AuthLayout`     | `ForbiddenPage`                                                                                                                         |
-| `/coming-soon`               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                           |
-| `/products`, `/products/:id` | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                  |
-| `/admin/*`                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ – bọc `<RequireRole role="admin">`                                            |
-| `/tech/*`                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                  |
-| `/customer/*`                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói), Sản phẩm – bọc `<RequireRole role="customer">` |
-| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên) – bọc `<RequireRole role="sales">`                                                     |
-| `/field/*`                   | —                | chuyển về `/tech`                                                                                                                       |
-| `/manage/*`                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                                    |
-| `/styleguide`                | –                | `StyleguidePage`                                                                                                                        |
+| Route                        | Layout           | Trang                                                                                                                                                                   |
+| ---------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                                                        |
+| `/login`                     | `AuthLayout`     | `LoginPage`                                                                                                                                                             |
+| `/register`                  | `AuthLayout`     | `RegisterPage`                                                                                                                                                          |
+| `/forgot-password`           | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                                                    |
+| `/reset-password`            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                                                     |
+| `/verify-email`              | `AuthLayout`     | `VerifyEmailPage`                                                                                                                                                       |
+| `/403`                       | `AuthLayout`     | `ForbiddenPage`                                                                                                                                                         |
+| `/coming-soon`               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                                           |
+| `/products`, `/products/:id` | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                                                  |
+| `/admin/*`                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ – bọc `<RequireRole role="admin">`                                                                            |
+| `/tech/*`                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                  |
+| `/customer/*`                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Báo giá (đồng ý / yêu cầu sửa), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói), Sản phẩm – bọc `<RequireRole role="customer">` |
+| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá) – bọc `<RequireRole role="sales">`                                                                        |
+| `/field/*`                   | —                | chuyển về `/tech`                                                                                                                                                       |
+| `/manage/*`                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                                                                    |
+| `/styleguide`                | –                | `StyleguidePage`                                                                                                                                                        |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.
 

@@ -5,8 +5,8 @@ import { Field, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { errorMessage } from '@/services/api/errors'
 
-// Hộp thoại hỏi một lý do / ghi chú bắt buộc rồi gửi. Dùng cho huỷ, từ chối, không đồng ý, khách vắng
-// Backend cắt lý do dài hơn 1000 ký tự nên chặn ở ô nhập
+// Hộp thoại hỏi một lý do / ghi chú bắt buộc rồi gửi. Dùng cho huỷ, từ chối, không đồng ý, khách vắng; báo giá lắp đặt
+// dùng cho khách yêu cầu sửa. Backend sau bán hàng cắt lý do dài hơn 1000 ký tự nên mặc định chặn ở ô nhập
 
 const MAX = 1000
 
@@ -15,6 +15,8 @@ type Props = {
   title: string
   description?: ReactNode
   label?: string
+  /** Số ký tự tối đa backend nhận */
+  maxLength?: number
   submitLabel: string
   variant?: ComponentProps<typeof Button>['variant']
   /** Icon của nút gửi, mặc định là gửi */
@@ -42,6 +44,7 @@ function ReasonForm({
   title,
   description,
   label = 'Lý do',
+  maxLength = MAX,
   submitLabel,
   variant = 'primary',
   icon = 'send',
@@ -75,7 +78,7 @@ function ReasonForm({
         <Textarea
           id="reason-dialog-text"
           rows={3}
-          maxLength={MAX}
+          maxLength={maxLength}
           aria-required
           value={text}
           onChange={(e) => setText(e.target.value)}

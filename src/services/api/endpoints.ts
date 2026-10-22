@@ -74,6 +74,13 @@ export const ENDPOINTS = {
   customerContracts: {
     base: '/customers/me/contracts',
   },
+  // Báo giá lắp đặt: khách không thấy bản nháp
+  customerQuotations: {
+    base: '/customers/me/quotations',
+    byId: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}`,
+    accept: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/accept`,
+    revisionRequest: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/revision-request`,
+  },
   customerAfterSales: {
     packages: '/customers/me/after-sales/packages',
     purchases: '/customers/me/after-sales/purchases',
@@ -120,6 +127,15 @@ export const ENDPOINTS = {
     request: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}`,
     quotations: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}/quotations`,
   },
+  // Báo giá lắp đặt của yêu cầu khảo sát kinh doanh đã nhận; quản lý / quản trị chỉ đọc
+  salesQuotations: {
+    bySurveyRequest: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/quotations`,
+    byId: (quotationId: string) => `/quotations/${encode(quotationId)}`,
+    lines: (quotationId: string) => `/quotations/${encode(quotationId)}/lines`,
+    line: (quotationId: string, lineId: string) => `/quotations/${encode(quotationId)}/lines/${encode(lineId)}`,
+    issue: (quotationId: string) => `/quotations/${encode(quotationId)}/issue`,
+    revisions: (quotationId: string) => `/quotations/${encode(quotationId)}/revisions`,
+  },
 
   // Kỹ thuật viên
   technicianAppointments: {
@@ -129,6 +145,23 @@ export const ENDPOINTS = {
     accept: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/accept`,
     release: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/release`,
     schedule: '/technicians/me/schedule',
+  },
+  // Khảo sát tại công trình: kỹ thuật viên ghi theo lịch đã nhận, kinh doanh / quản lý đọc theo yêu cầu khảo sát
+  technicianOnSiteSurvey: {
+    base: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey`,
+    start: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/start`,
+    attachments: (appointmentId: string) =>
+      `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/attachments`,
+    attachment: (appointmentId: string, attachmentId: string) =>
+      `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/attachments/${encode(attachmentId)}`,
+    attachmentUrl: (appointmentId: string, attachmentId: string) =>
+      `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/attachments/${encode(attachmentId)}/url`,
+    complete: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/complete`,
+  },
+  staffOnSiteSurvey: {
+    base: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/onsite-survey`,
+    attachmentUrl: (surveyRequestId: string, attachmentId: string) =>
+      `/survey-requests/${encode(surveyRequestId)}/onsite-survey/attachments/${encode(attachmentId)}/url`,
   },
   technicianSchedule: {
     schedule: (technicianUserId: string) => `/technicians/${encode(technicianUserId)}/schedule`,

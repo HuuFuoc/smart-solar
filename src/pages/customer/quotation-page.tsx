@@ -1,262 +1,203 @@
-import { useRef, useState } from 'react'
-import { Avatar } from '@/components/common/ui/avatar'
+import { useState } from 'react'
+import { Link, useParams } from 'react-router'
+import { toast } from 'sonner'
+import { QUOTATION_LIMITS } from '@/common/quotation'
 import { Badge } from '@/components/common/ui/badge'
-import { Button } from '@/components/common/ui/button'
-import { Dialog, DialogFooter, DialogTitle } from '@/components/common/ui/dialog'
-import { Checkbox, Field, Textarea } from '@/components/common/ui/field'
-import { Notice, Photo } from '@/components/common/ui/lists'
+import { Button, ButtonLink } from '@/components/common/ui/button'
+import { KeyValueList, Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
-import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
-import { Stat, StatRow } from '@/components/common/ui/stat'
-import { Table, Td, Th, Tr } from '@/components/common/ui/table'
-import { ROUTES } from '@/routes/paths'
-import { advisor, quotation } from '@/data/customer'
-import { fmt } from '@/utils/format'
+import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
-import { useMockQuery } from '@/hooks/useMockQuery'
+import { usePageCrumb } from '@/components/layout/page-crumb'
+import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
+import { AcceptQuotationDialog } from '@/features/quotations/AcceptQuotationDialog'
+import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
+import {
+  byVersionDesc,
+  formatDateVn,
+  quotationStatusMeta,
+  quotationTitle,
+} from '@/features/quotations/quotationDisplay'
+import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { useMyRequestsQuery } from '@/hooks/useBooking'
+import {
+  useMyQuotationQuery,
+  useMyQuotationsQuery,
+  useRequestQuotationRevisionMutation,
+} from '@/hooks/useCustomerQuotations'
+import { ROUTES, withId } from '@/routes/paths'
+import type { QuotationView } from '@/types/res/quotationsRes'
 
-export function QuotationPage() {
-  const query = useMockQuery(['customer', 'quotation', quotation.id], quotation)
-  const [agreed, setAgreed] = useState(false)
-  const [signing, setSigning] = useState<'idle' | 'busy' | 'done'>('idle')
-  const [question, setQuestion] = useState('')
-  const [sent, setSent] = useState(false)
-  const dialogRef = useRef<HTMLDialogElement>(null)
+/* Một câu nói báo giá đang ở đâu và việc tiếp theo là của ai */
+function describe(q: QuotationView) {
+  if (q.canAccept)
+    return `Xem các hạng mục bên dưới rồi đồng ý hoặc yêu cầu sửa trước hết ngày ${formatDateVn(q.validUntil)}.`
+  if (q.status === 'ISSUED')
+    return `Báo giá đã hết hạn ngày ${formatDateVn(q.validUntil)}. Liên hệ nhân viên kinh doanh để nhận bản mới.`
+  if (q.status === 'ACCEPTED')
+    return `Bạn đã đồng ý lúc ${formatMoment(q.acceptedAt)}. Smart Solar sẽ lập hợp đồng theo đúng báo giá này.`
+  if (q.status === 'REVISION_REQUESTED')
+    return 'Nhân viên kinh doanh đang sửa báo giá theo yêu cầu của bạn và sẽ gửi bản mới.'
+  if (q.status === 'SUPERSEDED') return 'Bản này đã được thay bằng bản mới.'
+  return undefined
+}
 
-  function sign() {
-    setSigning('busy')
-    setTimeout(() => setSigning('done'), 1200)
-  }
+// Chi tiết một bản báo giá lắp đặt của khách: đồng ý hoặc yêu cầu sửa khi còn hiệu lực
+export function CustomerQuotationPage() {
+  const { id } = useParams()
+  const query = useMyQuotationQuery(id)
+  // Các bản khác của cùng công trình và tên công trình: không có thì trang vẫn đủ dùng
+  const all = useMyQuotationsQuery()
+  const requests = useMyRequestsQuery()
+  const askRevision = useRequestQuotationRevisionMutation()
+  const [accepting, setAccepting] = useState(false)
+  const [revising, setRevising] = useState(false)
+  usePageCrumb(query.data ? quotationTitle(query.data) : null)
 
   return (
     <QueryBoundary query={query}>
-      {(data) => (
-        <>
-          <PageHeader
-            back={{ to: ROUTES.customer.home, label: 'Tổng quan' }}
-            meta={
-              <>
-                <span className="text-fg-2">{data.id}</span>
-                <Badge tone={signing === 'done' ? 'ok' : 'warn'}>
-                  {signing === 'done' ? 'Đã chấp nhận' : data.status}
-                </Badge>
-                <span>
-                  Còn hiệu lực {data.validDays} ngày, hết hạn {data.expires}
-                </span>
-              </>
-            }
-            title={data.title}
-            description={`Phát hành ${data.issued}. Người lập: ${data.preparedBy}, tư vấn viên dự án cấp cao.`}
-            actions={<Button>Tải PDF</Button>}
-          />
+      {(q) => {
+        const status = quotationStatusMeta(q, 'customer')
+        const propertyName = requests.data?.find((r) => r.surveyRequestId === q.surveyRequestId)?.propertyName
+        const versions = (all.data ?? []).filter((v) => v.surveyRequestId === q.surveyRequestId).sort(byVersionDesc)
+        const newest = versions[0]
+        const newer = newest && newest.version > q.version ? newest : null
+        return (
+          <>
+            <PageHeader
+              meta={
+                <>
+                  <Badge tone={status.tone}>{status.label}</Badge>
+                  <span className="tnum">Số {quotationTitle(q)}</span>
+                </>
+              }
+              title={propertyName || 'Báo giá lắp đặt'}
+              description={describe(q)}
+              actions={
+                q.canAccept ? (
+                  <>
+                    <Button icon="check_circle" variant="primary" onClick={() => setAccepting(true)}>
+                      Đồng ý báo giá
+                    </Button>
+                    <Button icon="edit_note" variant="soft" onClick={() => setRevising(true)}>
+                      Yêu cầu sửa
+                    </Button>
+                  </>
+                ) : undefined
+              }
+            />
 
-          <Panel className="mb-12">
-            <PanelBody className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
-              <Photo
-                src={data.site.photo}
-                alt={`Mái nhà tại ${data.site.address}`}
-                ratio="aspect-[3/2]"
-                caption={data.site.address}
-                meta={data.site.detail}
-              />
-              <StatRow className="md:grid-cols-3">
-                <Stat
-                  label="Công suất dàn pin"
-                  value={data.capacityKw}
-                  unit="kW DC"
-                  note="Tấm đơn tinh thể Tier-1 đen toàn phần"
-                />
-                <Stat
-                  label="Sản lượng năm đầu"
-                  value={fmt.num(data.year1Kwh)}
-                  unit="kWh"
-                  note="Mô phỏng bằng PVWatts"
-                />
-                <Stat label="Tỷ lệ bù điện năng" value={`${data.offsetPct}%`} note="Bù trừ điện năng" />
-              </StatRow>
-            </PanelBody>
-          </Panel>
-
-          <div className="grid gap-x-12 gap-y-12 lg:grid-cols-5">
-            <div className="space-y-8 lg:col-span-3">
-              <Panel>
-                <PanelHeader title="Chi tiết thiết bị và nhân công" />
-                <Table className="text-body">
-                  <thead>
-                    <tr>
-                      <Th>Hạng mục</Th>
-                      <Th>Số lượng</Th>
-                      <Th className="text-right">Thành tiền</Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.lines.map((line) => (
-                      <Tr key={line.name}>
-                        <Td>
-                          <p className="font-medium">{line.name}</p>
-                          <p className="text-body text-fg-2">{line.detail}</p>
-                        </Td>
-                        <Td className="whitespace-nowrap text-fg-2">{line.qty}</Td>
-                        <Td className="tnum text-right font-medium whitespace-nowrap">{fmt.usdCents(line.amount)}</Td>
-                      </Tr>
-                    ))}
-                  </tbody>
-                </Table>
-                <PanelFooter className="justify-between">
-                  <span className="text-body text-fg-2">Tổng giá hệ thống</span>
-                  <span className="tnum font-semibold">{fmt.usdCents(data.gross)}</span>
-                </PanelFooter>
-              </Panel>
-
-              <Panel>
-                <PanelHeader title="Bảo hành đi kèm" />
-                <PanelBody>
-                  <dl className="grid gap-4 sm:grid-cols-3">
-                    {data.warranties.map((w) => (
-                      <div key={w.name}>
-                        <dt className="font-medium">{w.name}</dt>
-                        <dd className="text-body text-fg-2">{w.detail}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <p className="mt-6 border-t border-line pt-4 text-meta text-fg-3">{data.license}</p>
-                </PanelBody>
-              </Panel>
-            </div>
-
-            <div className="space-y-8 lg:col-span-2">
-              <Panel id="accept" raised>
-                <PanelHeader title="Tóm tắt chi phí" />
-                <PanelBody>
-                  <dl className="space-y-3 text-body">
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-fg-2">Tổng giá hệ thống</dt>
-                      <dd className="tnum font-medium">{fmt.usdCents(data.gross)}</dd>
-                    </div>
-                    {data.incentives.map((inc) => (
-                      <div key={inc.name} className="flex justify-between gap-4">
-                        <dt>
-                          <span className="text-fg-2">{inc.name}</span>
-                          <span className="block text-meta text-fg-3">{inc.detail}</span>
-                        </dt>
-                        <dd className="tnum font-medium whitespace-nowrap text-ok">{fmt.usdCents(inc.amount)}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <div className="mt-4 flex items-end justify-between gap-4 border-t border-line pt-4">
-                    <div>
-                      <p className="text-body font-medium">Chi phí thực chủ nhà trả</p>
-                      <p className="text-meta text-fg-3">Đã trừ mọi ưu đãi</p>
-                    </div>
-                    <p className="tnum text-figure font-semibold">{fmt.usdCents(data.net)}</p>
-                  </div>
-
-                  <div className="mt-6 rounded-container bg-surface-2 p-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-body font-medium">Dòng tiền hằng tháng ước tính</p>
-                      <Badge tone="ok">Tiết kiệm {fmt.usd(data.cashflow.savings)}/tháng</Badge>
-                    </div>
-                    <div className="mt-3 grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-meta text-fg-3">Hoá đơn điện hiện tại</p>
-                        <p className="tnum text-title font-semibold text-fg-3 line-through">
-                          {fmt.usd(data.cashflow.currentBill)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-meta text-fg-3">Tiền trả góp điện mặt trời</p>
-                        <p className="tnum text-title font-semibold">
-                          {fmt.usd(data.cashflow.loanPayment)}{' '}
-                          <span className="text-meta font-normal text-fg-3">/ tháng</span>
-                        </p>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-meta text-fg-3">{data.cashflow.terms}</p>
-                  </div>
-
-                  {signing === 'done' ? (
-                    <Notice tone="ok" title="Đã chấp nhận báo giá" className="mt-6">
-                      {data.id} đã được ký điện tử. {advisor.name} đã nhận thông báo để làm hồ sơ xin giấy phép với
-                      thành phố.
-                    </Notice>
-                  ) : (
-                    <div className="mt-6 space-y-3">
-                      <Checkbox
-                        checked={agreed}
-                        onChange={(e) => setAgreed(e.target.checked)}
-                        label="Tôi đã xem phạm vi công việc và thông số kỹ thuật, đồng ý giữ mức giá này trong 30 ngày."
-                      />
-                      <Button
-                        variant="primary"
-                        className="w-full"
-                        disabled={!agreed || signing === 'busy'}
-                        onClick={sign}
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="min-w-0 space-y-4 lg:col-span-2">
+                {newer && (
+                  <Notice tone="info" title={`Đã có bản ${newer.version} mới hơn`}>
+                    Bản bạn đang xem không còn hiệu lực.
+                    <span className="mt-3 flex">
+                      <ButtonLink
+                        icon="visibility"
+                        variant="info"
+                        size="sm"
+                        to={withId(ROUTES.customer.quotation, newer.quotationId)}
                       >
-                        {signing === 'busy' ? 'Đang xử lý chữ ký' : 'Chấp nhận và ký báo giá'}
-                      </Button>
-                    </div>
-                  )}
-                </PanelBody>
-                <PanelFooter className="justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar name={advisor.name} size="sm" />
-                    <div className="">
-                      <p className="text-body font-medium">{advisor.name}</p>
-                      <p className="text-meta text-fg-3">Tư vấn viên phụ trách</p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="ghost" onClick={() => dialogRef.current?.showModal()}>
-                    Hỏi {advisor.name.split(' ')[0]}
-                  </Button>
-                </PanelFooter>
-              </Panel>
-            </div>
-          </div>
-
-          <Dialog
-            ref={dialogRef}
-            onClose={() => {
-              setSent(false)
-              setQuestion('')
-            }}
-          >
-            <form
-              method="dialog"
-              onSubmit={(e) => {
-                if (!sent) {
-                  e.preventDefault()
-                  setSent(true)
-                }
-              }}
-            >
-              <DialogTitle>Trao đổi với {advisor.name}</DialogTitle>
-              <p className="mt-1 text-body text-fg-2">
-                Có câu hỏi về thiết bị, thêm pin lưu trữ hay cách lắp trên mái? {advisor.name.split(' ')[0]} sẽ trả lời
-                qua cổng khách hàng hoặc điện thoại.
-              </p>
-              {sent ? (
-                <Notice tone="ok" className="mt-4">
-                  Đã chuyển ghi chú tới {advisor.name}. Dự kiến phản hồi trong 2 giờ.
-                </Notice>
-              ) : (
-                <Field label="Câu hỏi hoặc ghi chú của bạn" htmlFor="question" className="mt-4">
-                  <Textarea id="question" value={question} onChange={(e) => setQuestion(e.target.value)} />
-                </Field>
-              )}
-              <DialogFooter>
-                <Button type="button" variant="ghost" onClick={() => dialogRef.current?.close()}>
-                  {sent ? 'Đóng' : 'Hủy'}
-                </Button>
-                {!sent && (
-                  <Button type="submit" variant="primary" disabled={!question.trim()}>
-                    Gửi câu hỏi
-                  </Button>
+                        Xem bản {newer.version}
+                      </ButtonLink>
+                    </span>
+                  </Notice>
                 )}
-              </DialogFooter>
-            </form>
-          </Dialog>
-        </>
-      )}
+                {q.status === 'REVISION_REQUESTED' && q.revisionReason && (
+                  <Notice title="Điều bạn yêu cầu sửa">
+                    <span className="whitespace-pre-line">{q.revisionReason}</span>
+                  </Notice>
+                )}
+                <Panel>
+                  <PanelHeader title="Hạng mục" />
+                  <PanelBody className="space-y-6">
+                    <QuotationLines quotation={q} />
+                    <div className="flex justify-end">
+                      <QuotationTotals quotation={q} />
+                    </div>
+                  </PanelBody>
+                </Panel>
+                {(q.terms || q.notes) && (
+                  <Panel>
+                    <QuotationTerms quotation={q} />
+                  </Panel>
+                )}
+              </div>
+
+              <PanelAside aria-label="Thông tin báo giá">
+                <Panel>
+                  <PanelHeader title="Thông tin" />
+                  <PanelBody>
+                    <KeyValueList
+                      items={[
+                        { k: 'Số báo giá', v: <span className="tnum">{q.quoteNumber}</span> },
+                        { k: 'Bản', v: <span className="tnum">{q.version}</span> },
+                        { k: 'Gửi lúc', v: <span className="tnum">{formatMoment(q.issuedAt)}</span> },
+                        { k: 'Hiệu lực đến hết', v: <span className="tnum">{formatDateVn(q.validUntil)}</span> },
+                        ...(q.acceptedAt
+                          ? [{ k: 'Đồng ý lúc', v: <span className="tnum">{formatMoment(q.acceptedAt)}</span> }]
+                          : []),
+                        {
+                          k: 'Công trình',
+                          v: (
+                            <Link className="ui-link" to={withId(ROUTES.customer.request, q.surveyRequestId)}>
+                              {propertyName || 'Xem yêu cầu khảo sát'}
+                            </Link>
+                          ),
+                        },
+                      ]}
+                    />
+                  </PanelBody>
+                </Panel>
+                {versions.length > 1 && (
+                  <Panel>
+                    <PanelHeader title="Các bản" />
+                    <PanelBody>
+                      <ul className="space-y-2">
+                        {versions.map((v) => {
+                          const meta = quotationStatusMeta(v, 'customer')
+                          const here = v.quotationId === q.quotationId
+                          return (
+                            <li key={v.quotationId} className="flex flex-wrap items-center gap-2 text-body">
+                              {here ? (
+                                <span aria-current="page" className="font-semibold text-fg">
+                                  Bản {v.version} (đang xem)
+                                </span>
+                              ) : (
+                                <Link className="ui-link" to={withId(ROUTES.customer.quotation, v.quotationId)}>
+                                  Bản {v.version}
+                                </Link>
+                              )}
+                              <Badge tone={meta.tone}>{meta.label}</Badge>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </PanelBody>
+                  </Panel>
+                )}
+              </PanelAside>
+            </div>
+
+            <AcceptQuotationDialog open={accepting} quotation={q} onClose={() => setAccepting(false)} />
+            <ReasonDialog
+              open={revising}
+              title="Yêu cầu sửa báo giá?"
+              description="Ghi rõ điều bạn muốn đổi (hạng mục, số lượng, giá…). Bản này giữ nguyên, nhân viên kinh doanh sẽ gửi bản mới để bạn xem lại."
+              label="Điều muốn sửa"
+              maxLength={QUOTATION_LIMITS.reasonLength}
+              submitLabel="Gửi yêu cầu sửa"
+              icon="send"
+              onSubmit={async (reason) => {
+                await askRevision.mutateAsync({ quotationId: q.quotationId, reason })
+                toast.success('Đã gửi yêu cầu sửa. Nhân viên kinh doanh sẽ gửi bản mới.')
+              }}
+              onClose={() => setRevising(false)}
+            />
+          </>
+        )
+      }}
     </QueryBoundary>
   )
 }

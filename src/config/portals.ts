@@ -33,6 +33,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Đánh giá sơ bộ', to: ROUTES.customer.assessment, icon: 'fact_check' },
           { label: 'Yêu cầu khảo sát', to: ROUTES.customer.requests, icon: 'event_available' },
+          { label: 'Báo giá', to: ROUTES.customer.quotations, icon: 'request_quote' },
           { label: 'Lắp đặt', to: ROUTES.customer.projects, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.customer.afterSales, icon: 'build' },
           { label: 'Gói dịch vụ', to: ROUTES.customer.packages, icon: 'shield' },

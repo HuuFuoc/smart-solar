@@ -27,8 +27,20 @@ import { SimulationHistory } from '@/features/pre-surveys/SimulationHistory'
 import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
 import { useSimulationsQuery } from '@/hooks/useSimulations'
 import { useSurveyRequestQuery } from '@/hooks/useSurveyRequests'
+import { useStaffOnSiteSurveyQuery } from '@/hooks/useOnSiteSurvey'
+import { useQuotationsQuery } from '@/hooks/useSalesQuotations'
+import { OnSiteSurveyResultPanel } from '@/features/onsite-survey/OnSiteSurveyResultPanel'
+import { currentQuotation, formatDateVn, quotationStatusMeta } from '@/features/quotations/quotationDisplay'
+import { SalesQuotationPanel } from '@/features/quotations/SalesQuotationPanel'
 import { SalesSchedulePanel } from '@/features/scheduling/SalesSchedulePanel'
-import { formatTimeRange, isConfirmed, relativeDay, vnDate } from '@/features/scheduling/schedulingDisplay'
+import {
+  formatMoment,
+  formatTimeRange,
+  isConfirmed,
+  relativeDay,
+  vnDate,
+} from '@/features/scheduling/schedulingDisplay'
+import type { QuotationView } from '@/types/res/quotationsRes'
 import type { SurveyRequestDetail } from '@/types/res/surveyRequestsRes'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
@@ -38,10 +50,11 @@ function whenText(startsAt: string, endsAt: string) {
   return `${relativeDay(vnDate(startsAt))}, ${formatTimeRange(startsAt, endsAt)}`
 }
 
-// Các bước của yêu cầu theo góc nhìn của sales
-function trackerSteps(r: SurveyRequestDetail): TrackerStep[] {
+// Các bước của yêu cầu theo góc nhìn của sales. `quotations`: undefined khi chưa khảo sát xong hoặc đang tải
+function trackerSteps(r: SurveyRequestDetail, quotations: QuotationView[] | undefined): TrackerStep[] {
   const a = r.appointment
   const confirmed = isConfirmed(a?.status)
+  const quotation = quotations && currentQuotation(quotations)
   return [
     { label: 'Khách gửi yêu cầu', detail: formatDateTime(r.submittedAt), state: 'done' },
     { label: 'Khách đặt giờ', detail: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
@@ -55,13 +68,62 @@ function trackerSteps(r: SurveyRequestDetail): TrackerStep[] {
       detail: a ? whenText(a.startsAt, a.endsAt) : undefined,
       state: r.status === 5 ? 'done' : confirmed ? 'current' : 'todo',
     },
+    {
+      label: 'Báo giá',
+      detail: quotation ? quotationStatusMeta(quotation, 'sales').label : undefined,
+      state: quotation?.status === 'ACCEPTED' ? 'done' : r.status === 5 ? 'current' : 'todo',
+    },
   ]
 }
 
+// Việc của sales sau khi khảo sát xong: lập, gửi, sửa báo giá tới khi khách đồng ý
+function quotationNextStep(quotations: QuotationView[]): TrackerNext {
+  const q = currentQuotation(quotations)
+  if (!q)
+    return {
+      tone: 'danger',
+      title: 'Cần bạn lập báo giá',
+      body: 'Khảo sát tại công trình đã xong. Lập báo giá ở khối Báo giá bên dưới.',
+    }
+  if (q.status === 'DRAFT')
+    return {
+      tone: 'danger',
+      title: 'Bản nháp báo giá chưa gửi khách',
+      body: 'Thêm đủ dòng hàng, chi phí rồi gửi cho khách ở khối Báo giá.',
+    }
+  if (q.status === 'REVISION_REQUESTED')
+    return { tone: 'danger', title: 'Khách yêu cầu sửa báo giá', body: 'Xem lý do ở khối Báo giá rồi lập bản sửa.' }
+  if (q.status === 'ISSUED' && q.isExpired)
+    return {
+      tone: 'danger',
+      title: 'Báo giá đã hết hạn mà khách chưa trả lời',
+      body: 'Gọi khách rồi lập bản sửa với hạn mới.',
+    }
+  if (q.status === 'ISSUED')
+    return {
+      tone: 'info',
+      title: 'Chờ khách trả lời báo giá',
+      body: `Hiệu lực đến hết ngày ${formatDateVn(q.validUntil)}. Gọi khách nếu cần giải thích.`,
+    }
+  if (q.status === 'ACCEPTED')
+    return {
+      tone: 'ok',
+      title: 'Khách đã đồng ý báo giá',
+      body: `Đồng ý lúc ${formatMoment(q.acceptedAt)}. Bước tiếp theo là lập hợp đồng.`,
+    }
+  return { tone: 'neutral', title: 'Đã khảo sát xong tại công trình' }
+}
+
 // Việc tiếp theo và ai làm. Đỏ chỉ khi sales phải làm
-function nextStep(r: SurveyRequestDetail): TrackerNext {
+function nextStep(r: SurveyRequestDetail, quotations: QuotationView[] | undefined): TrackerNext {
   const a = r.appointment
-  if (r.status === 5) return { tone: 'neutral', title: 'Đã khảo sát xong tại công trình' }
+  if (r.status === 5 && quotations) return quotationNextStep(quotations)
+  if (r.status === 5)
+    return {
+      tone: 'neutral',
+      title: 'Đã khảo sát xong tại công trình',
+      body: 'Xem kết quả của kỹ thuật viên ở khối Kết quả khảo sát tại công trình.',
+    }
   if (r.status === 6) return { tone: 'neutral', title: 'Yêu cầu đã huỷ' }
   if (!a)
     return isOverdue(r.submittedAt)
@@ -161,6 +223,11 @@ export function OpsSurveyRequestPage() {
   const { id } = useParams()
   const query = useSurveyRequestQuery(id)
   usePageCrumb(query.data ? query.data.propertyName || 'Công trình chưa đặt tên' : null)
+  // Cùng khoá query với khối kết quả khảo sát nên không gọi API hai lần. Báo giá chỉ lập được khi khảo sát đã hoàn thành
+  const onsiteEnabled = query.data?.status === 5 || isConfirmed(query.data?.appointment?.status)
+  const onsite = useStaffOnSiteSurveyQuery(id, { enabled: onsiteEnabled })
+  const surveyCompleted = onsite.data?.status === 'COMPLETED'
+  const quotations = useQuotationsQuery(id, { enabled: surveyCompleted })
 
   return (
     <QueryBoundary query={query}>
@@ -203,11 +270,17 @@ export function OpsSurveyRequestPage() {
               }
             />
 
-            <ProgressTracker steps={trackerSteps(r)} next={nextStep(r)} />
+            <ProgressTracker steps={trackerSteps(r, quotations.data)} next={nextStep(r, quotations.data)} />
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
                 <SalesSchedulePanel request={r} />
+                <OnSiteSurveyResultPanel surveyRequestId={r.surveyRequestId} enabled={onsiteEnabled} />
+                <SalesQuotationPanel
+                  surveyRequestId={r.surveyRequestId}
+                  enabled={surveyCompleted}
+                  feasibility={onsite.data?.data.installationFeasibility}
+                />
                 <Panel>
                   <PanelHeader
                     title="Số liệu khách khai"

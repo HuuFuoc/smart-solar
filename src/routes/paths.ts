@@ -31,12 +31,13 @@ export const ROUTES = {
     afterSalesRequest: '/customer/after-sales/:id',
     products: '/customer/products',
     product: '/customer/products/:id',
+    /** Báo giá lắp đặt; chi tiết theo mã báo giá (mỗi bản một mã) */
+    quotations: '/customer/quotations',
+    quotation: '/customer/quotations/:id',
     // Màn mock đã ẩn
     estimate: '/customer/assessment/estimate',
     consultations: '/customer/consultations',
     consultation: '/customer/consultations/:id',
-    quotations: '/customer/quotations',
-    quotation: '/customer/quotations/:id',
     warranty: '/customer/warranty',
     warrantyRequest: '/customer/warranty/:id',
     assistant: '/customer/assistant',
