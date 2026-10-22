@@ -31,6 +31,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
     groups: [
       {
         items: [
+          { label: 'Tổng quan', to: ROUTES.customer.dashboard, icon: 'dashboard', end: true },
           { label: 'Đánh giá sơ bộ', to: ROUTES.customer.assessment, icon: 'fact_check' },
           { label: 'Yêu cầu khảo sát', to: ROUTES.customer.requests, icon: 'event_available' },
           { label: 'Báo giá', to: ROUTES.customer.quotations, icon: 'request_quote' },

@@ -12,6 +12,7 @@ import { ROUTES } from '@/routes/paths'
 import { RequireRole } from '@/routes/RequireRole'
 
 // Khách hàng
+const CustomerDashboardPage = page(() => import('@/pages/customer/customer-dashboard-page'), 'CustomerDashboardPage')
 const AssessmentPage = page(() => import('@/pages/customer/assessment-page'), 'AssessmentPage')
 const CustomerRequestsPage = page(() => import('@/pages/customer/requests-page'), 'CustomerRequestsPage')
 const CustomerRequestPage = page(() => import('@/pages/customer/request-page'), 'CustomerRequestPage')
@@ -124,8 +125,9 @@ export const protectedRoutes: RouteObject[] = [
     role: 'customer',
     path: customer.home,
     Layout: CustomerLayout,
-    start: customer.assessment,
+    start: customer.dashboard,
     pages: [
+      { path: customer.dashboard, lazy: CustomerDashboardPage },
       { path: customer.assessment, lazy: AssessmentPage },
       { path: customer.requests, lazy: CustomerRequestsPage },
       { path: customer.request, lazy: CustomerRequestPage },

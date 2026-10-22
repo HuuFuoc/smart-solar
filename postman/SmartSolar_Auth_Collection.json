@@ -1,0 +1,691 @@
+{
+  "info": {
+    "_postman_id": "8f3b2c1a-5e74-4b9d-a82f-1c4e9f7a0b3d",
+    "name": "Smart Solar - Auth API Test Suite",
+    "description": "Postman Collection v2.1 kiểm thử toàn diện các API Authentication (Happy Path & Unhappy Paths) kèm Test Scripts và trích xuất tự động JWT Token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Register",
+      "item": [
+        {
+          "name": "Register - Success (201 Created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 or 200\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test(\"Response schema validation\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    pm.expect(responseData).to.satisfy(function(res) {",
+                  "        return res.success === true || res.email === \"qa.test@example.com\" || (res.data && (res.data.email || res.data.id));",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"qatest_user\",\n  \"email\": \"qa.test@example.com\",\n  \"password\": \"SecureP@ssw0rd2026\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register - Missing Required Fields (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains error details\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    pm.expect(responseData).to.have.any.keys('error', 'message', 'errors');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"email\": \"invalid-email-format\",\n  \"password\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register - Duplicate Email / Username (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 or 409 (Duplicate)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"existing_user\",\n  \"email\": \"existing.user@example.com\",\n  \"password\": \"SecureP@ssw0rd2026\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Login",
+      "item": [
+        {
+          "name": "Login - Success (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response returns token and stores {{jwt_token}}\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    ",
+                  "    const token = responseData.jwt_token || ",
+                  "                  responseData.token || ",
+                  "                  responseData.accessToken || ",
+                  "                  (responseData.data && (responseData.data.jwt_token || responseData.data.token || responseData.data.accessToken));",
+                  "    ",
+                  "    pm.expect(token, \"JWT token should exist in response\").to.be.a('string').and.not.empty;",
+                  "    pm.environment.set(\"jwt_token\", token);",
+                  "    console.log(\"Saved jwt_token into environment:\", token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa.test@example.com\",\n  \"password\": \"SecureP@ssw0rd2026\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login - Invalid Credentials (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Error schema validation\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    pm.expect(responseData).to.have.any.keys('error', 'message', 'errors');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa.test@example.com\",\n  \"password\": \"WrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login - Missing Password (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa.test@example.com\",\n  \"password\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Google OAuth",
+      "item": [
+        {
+          "name": "Google OAuth - Success (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response schema validation and save token\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    ",
+                  "    const token = responseData.jwt_token || ",
+                  "                  responseData.token || ",
+                  "                  responseData.accessToken || ",
+                  "                  (responseData.data && (responseData.data.jwt_token || responseData.data.token || responseData.data.accessToken));",
+                  "    ",
+                  "    if (token) {",
+                  "        pm.environment.set(\"jwt_token\", token);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_token\": \"mock_google_id_token_sample\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/google-oauth",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "google-oauth"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Google OAuth - Invalid/Expired Token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has error message\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    pm.expect(responseData).to.have.any.keys('error', 'message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_token\": \"sample_invalid_mock_token\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/google-oauth",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "google-oauth"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Google OAuth - Missing id_token (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_token\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/google-oauth",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "google-oauth"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Reset Password",
+      "item": [
+        {
+          "name": "Reset Password - Success (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response schema validation\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    pm.expect(responseData).to.satisfy(function(res) {",
+                  "        return res.success === true || res.message !== undefined || (res.data && res.data.success);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa.test@example.com\",\n  \"reset_token\": \"sample_valid_reset_code\",\n  \"new_password\": \"NewSecureP@ss2026\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reset Password - Invalid / Expired Token (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates invalid token error\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    pm.expect(responseData).to.have.any.keys('error', 'message', 'errors');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa.test@example.com\",\n  \"reset_token\": \"sample_invalid_code\",\n  \"new_password\": \"NewSecureP@ss2026\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reset Password - Weak Password (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa.test@example.com\",\n  \"reset_token\": \"sample_valid_reset_code\",\n  \"new_password\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Session",
+      "item": [
+        {
+          "name": "Get Session - Success (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains user session information\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    pm.expect(responseData).to.satisfy(function(res) {",
+                  "        return res.userId !== undefined || res.email !== undefined || (res.data && (res.data.userId || res.data.email));",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/session",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "session"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Session - Missing / Invalid Token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Response schema validation\", function () {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.expect(responseData).to.be.an('object');",
+                  "    pm.expect(responseData).to.have.any.keys('error', 'message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "dummy_unauthorized_token_test",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/session",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "session"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
