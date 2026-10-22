@@ -10,6 +10,13 @@ export type MilestoneProgress = {
   color: string
 }
 
+// Lịch còn hiệu lực và chưa tới giờ hẹn.
+export function isUpcomingAppointment(r: CustomerSurveyRequestView, now = Date.now()) {
+  const appt = r.appointment
+  if (!appt || appt.status === 'CANCELLED' || appt.status === 'COMPLETED') return false
+  return new Date(appt.startsAt).getTime() > now
+}
+
 export function aggregateWorkflowProgress(
   surveyRequests: CustomerSurveyRequestView[],
   serviceRequests: ServiceRequestSummary[],
@@ -22,8 +29,9 @@ export function aggregateWorkflowProgress(
     surveyRequests.filter((r) => r.status === 'SCHEDULED').length +
     serviceRequests.filter((s) => s.status === 'SCHEDULED').length
 
-  const inProgressCount =
-    serviceRequests.filter((s) => s.status === 'IN_PROGRESS' || s.status === 'READY_FOR_WORK').length
+  const inProgressCount = serviceRequests.filter(
+    (s) => s.status === 'IN_PROGRESS' || s.status === 'READY_FOR_WORK',
+  ).length
 
   const completedCount =
     surveyRequests.filter((r) => r.status === 'COMPLETED').length +

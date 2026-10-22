@@ -1,4 +1,4 @@
-﻿import { Badge, type Tone } from '@/components/common/ui/badge'
+import { Badge, type Tone } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
 import { SERVICE_REQUEST_KINDS, SERVICE_REQUEST_STATUSES } from '@/common/afterSales'
@@ -24,23 +24,15 @@ function formatDate(isoString: string) {
   }
 }
 
-export function RecentServiceRequestsCard({
-  requests,
-}: {
-  requests: ServiceRequestSummary[]
-}) {
-  const hasScroll = requests.length > 2
+export function RecentServiceRequestsCard({ requests }: { requests: ServiceRequestSummary[] }) {
+  const hasScroll = requests.length > 4
 
   return (
-    <Panel className="flex flex-col justify-between">
+    <Panel className="flex h-full flex-col justify-between">
       <div>
         <PanelHeader
           title="Yêu cầu bảo hành & bảo trì"
-          description={
-            requests.length > 0
-              ? `${requests.length} yêu cầu đã gửi`
-              : 'Chưa có yêu cầu hỗ trợ nào'
-          }
+          description={requests.length > 0 ? `${requests.length} yêu cầu đã gửi` : 'Chưa có yêu cầu hỗ trợ nào'}
         />
         <PanelBody>
           {requests.length === 0 ? (
@@ -51,7 +43,7 @@ export function RecentServiceRequestsCard({
               </p>
             </div>
           ) : (
-            <div className={hasScroll ? 'max-h-[260px] overflow-y-auto pr-1.5' : undefined}>
+            <div className={hasScroll ? 'max-h-[520px] overflow-y-auto pr-1.5' : undefined}>
               <ul className="divide-y divide-line">
                 {requests.map((item) => {
                   const kindLabel = SERVICE_REQUEST_KINDS[item.kind] || item.kind
@@ -64,16 +56,23 @@ export function RecentServiceRequestsCard({
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-fg-1">#{item.requestNumber}</span>
-                            <span className="text-meta text-fg-3">({kindLabel})</span>
+                            <span className="text-meta text-fg-3">{kindLabel}</span>
                           </div>
                           <p className="mt-0.5 line-clamp-1 text-body text-fg-2">{item.description}</p>
                         </div>
-                        <Badge tone={tone}>{statusLabel}</Badge>
+                        <Badge tone={tone} className="shrink-0 whitespace-nowrap">
+                          {statusLabel}
+                        </Badge>
                       </div>
                       <div className="flex items-center justify-between text-meta text-fg-3">
                         <span>Tạo ngày: {formatDate(item.createdAt)}</span>
-                        <ButtonLink to={withId(ROUTES.customer.afterSalesRequest, item.requestId)} size="sm">
-                          Xem xử lý
+                        <ButtonLink
+                          to={withId(ROUTES.customer.afterSalesRequest, item.requestId)}
+                          size="sm"
+                          variant="info"
+                          icon="visibility"
+                        >
+                          Xem
                         </ButtonLink>
                       </div>
                     </li>
@@ -86,7 +85,7 @@ export function RecentServiceRequestsCard({
       </div>
 
       <PanelFooter className="flex justify-end">
-        <ButtonLink to={ROUTES.customer.afterSales} size="sm">
+        <ButtonLink to={ROUTES.customer.afterSales} size="sm" variant="info" icon="list">
           Tất cả yêu cầu bảo hành
         </ButtonLink>
       </PanelFooter>

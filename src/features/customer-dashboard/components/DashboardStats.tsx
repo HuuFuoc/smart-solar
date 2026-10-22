@@ -27,11 +27,7 @@ export function DashboardStats({
         tone={upcomingAppointments > 0 ? 'ok' : undefined}
         note="Đã xếp lịch với kỹ thuật viên"
       />
-      <Stat
-        label="Hệ thống đã bàn giao"
-        value={completedProjects}
-        note="Đang vận hành phát điện"
-      />
+      <Stat label="Hệ thống đã bàn giao" value={completedProjects} note="Đang vận hành phát điện" />
       <Stat
         label="Yêu cầu dịch vụ"
         value={pendingServices}

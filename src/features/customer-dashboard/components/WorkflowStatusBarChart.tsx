@@ -95,9 +95,7 @@ export function WorkflowStatusBarChart({
                       </div>
                     </div>
 
-                    <p className="mt-2 text-meta text-fg-3 line-clamp-2">
-                      {m.description}
-                    </p>
+                    <p className="mt-2 text-meta text-fg-3 line-clamp-2">{m.description}</p>
                   </div>
                 )
               })}

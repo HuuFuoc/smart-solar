@@ -1,7 +1,8 @@
-﻿import { Badge } from '@/components/common/ui/badge'
+import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
 import { APPOINTMENT_LABELS, APPOINTMENT_TONES } from '@/common/scheduling'
+import { isUpcomingAppointment } from '@/features/customer-dashboard/services/dashboardChartService'
 import { ROUTES, withId } from '@/routes/paths'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 
@@ -19,17 +20,10 @@ function formatDateTime(isoString: string) {
   }
 }
 
-export function UpcomingAppointmentsCard({
-  requests,
-}: {
-  requests: CustomerSurveyRequestView[]
-}) {
-  const activeAppointments = requests.filter(
-    (r) =>
-      r.appointment &&
-      r.appointment.status !== 'CANCELLED' &&
-      r.appointment.status !== 'COMPLETED',
-  )
+export function UpcomingAppointmentsCard({ requests }: { requests: CustomerSurveyRequestView[] }) {
+  const activeAppointments = requests
+    .filter((r) => isUpcomingAppointment(r))
+    .sort((a, b) => a.appointment!.startsAt.localeCompare(b.appointment!.startsAt))
 
   const hasScroll = activeAppointments.length > 2
 
@@ -48,9 +42,7 @@ export function UpcomingAppointmentsCard({
           {activeAppointments.length === 0 ? (
             <div className="py-6 text-center text-body text-fg-3">
               <p>Bạn chưa có lịch hẹn khảo sát thực địa nào.</p>
-              <p className="mt-1 text-meta">
-                Sau khi gửi khảo sát sơ bộ, bạn có thể tự chọn giờ hẹn với chuyên viên.
-              </p>
+              <p className="mt-1 text-meta">Sau khi gửi khảo sát sơ bộ, bạn có thể tự chọn giờ hẹn với chuyên viên.</p>
             </div>
           ) : (
             <div className={hasScroll ? 'max-h-[260px] overflow-y-auto pr-1.5' : undefined}>
@@ -75,8 +67,13 @@ export function UpcomingAppointmentsCard({
                         </p>
                       )}
                       <div className="pt-1">
-                        <ButtonLink to={withId(ROUTES.customer.request, item.surveyRequestId)} size="sm">
-                          Chi tiết lịch hẹn
+                        <ButtonLink
+                          to={withId(ROUTES.customer.request, item.surveyRequestId)}
+                          size="sm"
+                          variant="info"
+                          icon="visibility"
+                        >
+                          Xem lịch hẹn
                         </ButtonLink>
                       </div>
                     </li>
@@ -89,7 +86,7 @@ export function UpcomingAppointmentsCard({
       </div>
 
       <PanelFooter className="flex justify-end">
-        <ButtonLink to={ROUTES.customer.requests} size="sm">
+        <ButtonLink to={ROUTES.customer.requests} size="sm" variant="info" icon="list">
           Tất cả yêu cầu khảo sát
         </ButtonLink>
       </PanelFooter>

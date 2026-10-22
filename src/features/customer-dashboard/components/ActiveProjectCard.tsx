@@ -1,4 +1,4 @@
-﻿import { Badge } from '@/components/common/ui/badge'
+import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
 import { Icon } from '@/components/common/stitch-ui/Icon'
@@ -30,10 +30,7 @@ export function ActiveProjectCard({ project }: { project?: InstallationCustomerV
     return (
       <Panel className="flex flex-col justify-between">
         <div>
-          <PanelHeader
-            title="Công trình điện mặt trời"
-            description="Chưa có dự án thi công đang thực hiện"
-          />
+          <PanelHeader title="Công trình điện mặt trời" description="Chưa có dự án thi công đang thực hiện" />
           <PanelBody className="flex h-48 flex-col items-center justify-center text-center text-body text-fg-3">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-fg-3">
               <Icon name="solar_power" className="text-[26px]" />
@@ -45,7 +42,7 @@ export function ActiveProjectCard({ project }: { project?: InstallationCustomerV
           </PanelBody>
         </div>
         <PanelFooter className="flex justify-end">
-          <ButtonLink to={ROUTES.customer.requests} size="sm">
+          <ButtonLink to={ROUTES.customer.requests} size="sm" variant="info" icon="list">
             Xem yêu cầu khảo sát
           </ButtonLink>
         </PanelFooter>
@@ -54,9 +51,7 @@ export function ActiveProjectCard({ project }: { project?: InstallationCustomerV
   }
 
   const statusLabel =
-    CUSTOMER_INSTALLATION_LABELS[project.status] ||
-    INSTALLATION_STATUS_LABELS[project.status] ||
-    project.status
+    CUSTOMER_INSTALLATION_LABELS[project.status] || INSTALLATION_STATUS_LABELS[project.status] || project.status
   const statusTone = INSTALLATION_STATUS_TONES.customer[project.status] || 'neutral'
   const isAwaitingAcceptance = project.status === 'PENDING_CUSTOMER_ACCEPTANCE'
 
@@ -103,7 +98,8 @@ export function ActiveProjectCard({ project }: { project?: InstallationCustomerV
         <span className="text-meta text-fg-3">Mã dự án: {project.projectId.slice(0, 8)}...</span>
         <ButtonLink
           to={withId(ROUTES.customer.project, project.projectId)}
-          variant={isAwaitingAcceptance ? 'primary' : 'secondary'}
+          variant={isAwaitingAcceptance ? 'primary' : 'info'}
+          icon={isAwaitingAcceptance ? 'task_alt' : 'visibility'}
           size="sm"
         >
           {isAwaitingAcceptance ? 'Nghiệm thu công trình' : 'Xem tiến độ chi tiết'}
