@@ -93,6 +93,7 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
       tone: 'danger',
       title: 'Bạn cần nghiệm thu công trình',
       body: 'Đọc báo cáo hoàn thành, xem ảnh thi công và thiết bị đã lắp, rồi chọn Nghiệm thu hoặc Yêu cầu sửa lại.',
+      action: { label: 'Nghiệm thu', icon: 'fact_check', target: 'acceptance' },
     }
   switch (p.status) {
     case 'PENDING_ASSIGNMENT':
@@ -361,10 +362,12 @@ export function CustomerProjectPage() {
               <div className="grid gap-6 lg:grid-cols-3">
                 <div className="min-w-0 space-y-4 lg:col-span-2">
                   {pending && (
-                    <AcceptancePanel
-                      pending={pending}
-                      onDecide={(choice) => setDialog({ choice, round: pending.round })}
-                    />
+                    <div id="acceptance" className="scroll-mt-6">
+                      <AcceptancePanel
+                        pending={pending}
+                        onDecide={(choice) => setDialog({ choice, round: pending.round })}
+                      />
+                    </div>
                   )}
                   {completed && <ProjectAfterSalesPanel projectId={p.projectId} />}
                   {completed && <HandoverPanel projectId={p.projectId} />}

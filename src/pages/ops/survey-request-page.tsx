@@ -76,6 +76,7 @@ function nextStep(r: SurveyRequestDetail): TrackerNext {
       tone: 'danger',
       title: 'Cần bạn phân công kỹ thuật viên',
       body: `Lịch ${whenText(a.startsAt, a.endsAt)} quá hạn mà chưa kỹ thuật viên nào nhận. Chọn người ở khối Lịch khảo sát.`,
+      action: { label: 'Phân công', icon: 'assignment_ind', target: 'survey-schedule' },
     }
   if (a.status === 'PENDING_ACCEPTANCE')
     return {
@@ -207,7 +208,9 @@ export function OpsSurveyRequestPage() {
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
-                <SalesSchedulePanel request={r} />
+                <div id="survey-schedule" className="scroll-mt-6">
+                  <SalesSchedulePanel request={r} />
+                </div>
                 <Panel>
                   <PanelHeader
                     title="Số liệu khách khai"

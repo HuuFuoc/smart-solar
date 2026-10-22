@@ -153,7 +153,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-4 lg:col-span-2">
           {canAnswer(view) && (
-            <Panel>
+            <Panel id="installation-answer" className="scroll-mt-6">
               <PanelHeader title="Trả lời quản lý" />
               <PanelBody>
                 <AssignmentResponse view={view} />
@@ -161,7 +161,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
             </Panel>
           )}
           {awaitsStart(view) && (
-            <Panel>
+            <Panel id="installation-start" className="scroll-mt-6">
               <PanelHeader title="Bắt đầu lắp đặt" />
               <PanelBody>
                 <StartInstallation view={view} />
@@ -222,7 +222,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
       {(withWork || view.acceptances.length > 0) && (
         <div className="mt-6 space-y-4">
           {withWork && (
-            <Panel>
+            <Panel id="installation-photos" className="scroll-mt-6">
               <PanelHeader
                 title="Ảnh lắp đặt"
                 description={work ? `Báo cáo cần ít nhất một ảnh của lượt ${view.currentRound}.` : undefined}

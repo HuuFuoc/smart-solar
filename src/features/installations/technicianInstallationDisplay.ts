@@ -114,6 +114,7 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
         tone: 'danger',
         title: 'Nhận hoặc từ chối việc',
         body: `Quản lý giao cho bạn lắp đặt ${windowText(v)}. Xem địa chỉ và khách hàng rồi trả lời.`,
+        action: { label: 'Trả lời', icon: 'assignment_turned_in', target: 'installation-answer' },
       },
     }
   }
@@ -121,7 +122,12 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
     if (v.canStart)
       return {
         steps,
-        next: { tone: 'danger', title: 'Bắt đầu lắp đặt', body: 'Tới công trình thì bấm "Bắt đầu lắp đặt".' },
+        next: {
+          tone: 'danger',
+          title: 'Bắt đầu lắp đặt',
+          body: 'Tới công trình thì bấm "Bắt đầu lắp đặt".',
+          action: { label: 'Bắt đầu', icon: 'play_arrow', target: 'installation-start' },
+        },
       }
     const reason = startBlockedText(v.startBlockedReason)
     if (v.startBlockedReason === 'INSTALLATION_SCHEDULE_EXPIRED')
@@ -144,6 +150,7 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
         tone: 'danger',
         title: 'Thêm ảnh, ghi thiết bị rồi gửi báo cáo hoàn thành',
         body: 'Báo cáo cần ít nhất một ảnh lắp đặt, tấm pin và inverter đã lắp.',
+        action: { label: 'Thêm ảnh', icon: 'add_a_photo', target: 'installation-photos' },
       },
     }
   if (v.status === 'REWORK_REQUIRED') {
@@ -154,6 +161,7 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
         tone: 'danger',
         title: rework?.decidedBy === 'STAFF' ? 'Quản lý trả báo cáo về để sửa' : 'Khách yêu cầu sửa lại',
         body: `${rework?.reason ? `Lý do: ${rework.reason} ` : ''}Sửa xong thì thêm ảnh mới của lượt ${v.currentRound} và gửi lại báo cáo.`,
+        action: { label: 'Thêm ảnh', icon: 'add_a_photo', target: 'installation-photos' },
       },
     }
   }
