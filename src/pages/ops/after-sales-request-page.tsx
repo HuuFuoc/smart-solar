@@ -32,7 +32,12 @@ function nextStep(
 ): TrackerNext {
   if (r.status === 'AWAITING_QUOTATION') {
     if (mine)
-      return { tone: 'danger', title: 'Lập báo giá cho khách', body: 'Gửi xong, khách duyệt và thanh toán trên web.' }
+      return {
+        tone: 'danger',
+        title: 'Lập báo giá cho khách',
+        body: 'Gửi xong, khách duyệt và thanh toán trên web.',
+        action: { label: 'Lập báo giá', icon: 'request_quote', target: 'quotation-form' },
+      }
     if (open) return { tone: 'danger', title: 'Việc báo giá chưa ai nhận', body: 'Nhận việc để lập báo giá.' }
     return { tone: 'info', title: 'Một nhân viên kinh doanh khác đang lập báo giá' }
   }
@@ -117,7 +122,7 @@ export function OpsAfterSalesRequestPage() {
                 next={next}
               />
               {r.status === 'AWAITING_QUOTATION' && mine && (
-                <Panel>
+                <Panel id="quotation-form" className="scroll-mt-6">
                   <PanelHeader
                     title="Lập báo giá"
                     description={

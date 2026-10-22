@@ -43,13 +43,19 @@ function nextStep(r: ServiceRequestView): TrackerNext {
       body: r.outcome ? outcomeLabel(r.outcome) : (r.cancellationReason ?? undefined),
     }
   if (r.cancellationRequestedAt)
-    return { tone: 'danger', title: 'Khách xin huỷ việc đã thanh toán', body: r.cancellationReason ?? undefined }
+    return {
+      tone: 'danger',
+      title: 'Khách xin huỷ việc đã thanh toán',
+      body: r.cancellationReason ?? undefined,
+      action: { label: 'Xét yêu cầu huỷ', icon: 'gavel', target: 'cancellation' },
+    }
   if (purpose && !visit) {
     const declined = r.visits.at(-1)?.status === 'DECLINED'
     return {
       tone: 'danger',
       title: `Xếp kỹ thuật viên ${visitPurposeLabel(purpose).toLowerCase()}`,
       body: declined ? 'Kỹ thuật viên của buổi trước đã từ chối.' : undefined,
+      action: { label: 'Xếp lịch', icon: 'event_available', target: 'schedule' },
     }
   }
   if (visit?.status === 'SCHEDULED') {
@@ -68,6 +74,7 @@ function nextStep(r: ServiceRequestView): TrackerNext {
         tone: 'danger',
         title: 'Xét bảo hành từng hạng mục',
         body: 'Hạng mục khách trả tiền sẽ sang kinh doanh báo giá.',
+        action: { label: 'Xét bảo hành', icon: 'gavel', target: 'coverage' },
       }
     case 'AWAITING_QUOTATION':
       return { tone: 'info', title: 'Kinh doanh đang lập báo giá' }
@@ -76,7 +83,12 @@ function nextStep(r: ServiceRequestView): TrackerNext {
     case 'PENDING_CUSTOMER_ACCEPTANCE':
       return { tone: 'info', title: 'Chờ khách nghiệm thu' }
     case 'DISPUTED':
-      return { tone: 'danger', title: 'Khách chưa đồng ý kết quả', body: r.customerDecisionReason ?? undefined }
+      return {
+        tone: 'danger',
+        title: 'Khách chưa đồng ý kết quả',
+        body: r.customerDecisionReason ?? undefined,
+        action: { label: 'Xét ý kiến của khách', icon: 'gavel', target: 'dispute' },
+      }
     default:
       return { tone: 'neutral', title: requestStatusMeta(r.status, 'manager').label }
   }
@@ -116,13 +128,18 @@ function SchedulePanel({ request, zoneId }: { request: ServiceRequestView; zoneI
   if (!purpose) return null
   const visit = openVisit(request)
   return (
-    <Panel>
+    <Panel id="schedule" className="scroll-mt-6">
       <PanelHeader
         title={visit ? 'Lịch hẹn' : `Xếp lịch ${visitPurposeLabel(purpose).toLowerCase()}`}
         description={visit ? formatAppointment(visit.startsAt, visit.endsAt) : undefined}
         action={
           visit && (
-            <Button icon="close" size="sm" variant="secondary" onClick={() => setMoving((m) => !m)}>
+            <Button
+              icon={moving ? 'close' : 'edit_calendar'}
+              size="sm"
+              variant={moving ? 'secondary' : 'soft'}
+              onClick={() => setMoving((m) => !m)}
+            >
               {moving ? 'Thôi đổi' : 'Đổi lịch'}
             </Button>
           )
@@ -172,7 +189,7 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
             <div className="space-y-6">
               <ProgressTracker steps={requestTrackerSteps(r)} next={next} />
               {open && r.cancellationRequestedAt && (
-                <Panel>
+                <Panel id="cancellation" className="scroll-mt-6">
                   <PanelHeader title="Yêu cầu huỷ của khách" description={formatMoment(r.cancellationRequestedAt)} />
                   <PanelBody>
                     <CancellationDecisionForm request={r} />
@@ -181,7 +198,7 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
               )}
               {open && <SchedulePanel request={r} zoneId={project.data?.zone?.zoneId ?? null} />}
               {open && pendingItems(r).length > 0 && (
-                <Panel>
+                <Panel id="coverage" className="scroll-mt-6">
                   <PanelHeader title="Xét bảo hành" description={`${pendingItems(r).length} hạng mục chờ quyết định`} />
                   <PanelBody>
                     <CoverageForm request={r} />
@@ -189,8 +206,8 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
                 </Panel>
               )}
               {r.status === 'DISPUTED' && (
-                <Panel>
-                  <PanelHeader title="Khách chưa đồng ý kết quả" />
+                <Panel id="dispute" className="scroll-mt-6">
+                  <PanelHeader title="Xét ý kiến của khách" />
                   <PanelBody>
                     <DisputeReviewForm request={r} />
                   </PanelBody>

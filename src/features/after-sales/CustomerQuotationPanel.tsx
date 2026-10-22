@@ -42,7 +42,7 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
   }
 
   return (
-    <Panel>
+    <Panel id="quotation" className="scroll-mt-6">
       <PanelHeader
         title={quotation.status === 'ISSUED' ? 'Báo giá chờ bạn duyệt' : 'Thanh toán báo giá'}
         description={`Số tiền ${formatVnd(quotation.customerAmount)}`}

@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
@@ -30,7 +31,9 @@ export function ServiceRequestList({
             <ListRow key={r.requestId}>
               <ListCells columns={COLUMNS}>
                 <ListCell wide>
-                  <p className="tnum font-semibold">{r.requestNumber}</p>
+                  <Link to={withId(detailPattern, r.requestId)} className="tnum font-semibold hover:underline">
+                    {r.requestNumber}
+                  </Link>
                   <p className="mt-0.5 line-clamp-2 text-meta text-fg-2">{r.description}</p>
                 </ListCell>
                 <ListCell label="Loại">{requestKindLabel(r.kind)}</ListCell>

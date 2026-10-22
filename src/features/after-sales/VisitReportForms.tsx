@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/common/ui/button'
+import { FormActions } from '@/components/common/ui/form-actions'
 import { Checkbox, Field, Input, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { assetName } from '@/features/after-sales/serviceDisplay'
@@ -148,9 +149,11 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
         </div>
       )}
       <ErrorNotice message={error} />
-      <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
-        {send.isPending ? 'Đang gửi…' : 'Gửi kết quả kiểm tra'}
-      </Button>
+      <FormActions>
+        <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
+          {send.isPending ? 'Đang gửi…' : 'Gửi kết quả kiểm tra'}
+        </Button>
+      </FormActions>
     </div>
   )
 }
@@ -244,9 +247,11 @@ export function WorkReportForm({ visit }: { visit: TechnicianVisitView }) {
         />
       </Field>
       <ErrorNotice message={error} />
-      <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
-        {send.isPending ? 'Đang gửi…' : 'Gửi báo cáo'}
-      </Button>
+      <FormActions>
+        <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
+          {send.isPending ? 'Đang gửi…' : 'Gửi báo cáo'}
+        </Button>
+      </FormActions>
     </div>
   )
 }

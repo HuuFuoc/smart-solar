@@ -46,18 +46,28 @@ function trackerSteps(v: TechnicianVisitView): TrackerStep[] {
 
 // Đỏ khi kỹ thuật viên phải làm ngay, xanh lá khi đã ổn
 function nextStep(v: TechnicianVisitView): TrackerNext {
-  if (awaitsAnswer(v)) return { tone: 'danger', title: 'Bạn cần nhận hoặc từ chối buổi hẹn này' }
+  if (awaitsAnswer(v))
+    return {
+      tone: 'danger',
+      title: 'Bạn cần nhận hoặc từ chối buổi hẹn này',
+      action: { label: 'Trả lời', icon: 'assignment_turned_in', target: 'visit-action' },
+    }
   if (v.status === 'SCHEDULED') {
     const blocker = startBlocker(v)
     return blocker
       ? { tone: 'ok', title: 'Đã nhận việc', body: blocker }
-      : { tone: 'danger', title: 'Tới giờ hẹn: bấm Bắt đầu khi đến công trình' }
+      : {
+          tone: 'danger',
+          title: 'Tới giờ hẹn: bấm Bắt đầu khi đến công trình',
+          action: { label: 'Bắt đầu', icon: 'play_arrow', target: 'visit-action' },
+        }
   }
   if (v.status === 'IN_PROGRESS')
     return {
       tone: 'danger',
       title: v.purpose === 'INSPECTION' ? 'Chụp ảnh rồi gửi kết quả kiểm tra' : 'Chụp ảnh rồi gửi báo cáo',
       body: 'Cần ít nhất một ảnh của buổi này.',
+      action: { label: 'Chụp ảnh', icon: 'add_a_photo', target: 'visit-photos' },
     }
   if (v.status === 'REPORTED') return { tone: 'ok', title: 'Đã gửi báo cáo' }
   if (v.status === 'CUSTOMER_ABSENT')
@@ -92,7 +102,7 @@ function ActionPanel({
 
   if (awaitsAnswer(visit))
     return (
-      <Panel>
+      <Panel id="visit-action" className="scroll-mt-6">
         <PanelHeader title="Nhận việc" description={formatAppointment(visit.startsAt, visit.endsAt)} />
         <PanelBody className="space-y-4">
           <div className="flex flex-wrap gap-3">
@@ -121,7 +131,7 @@ function ActionPanel({
   if (visit.status === 'SCHEDULED' && isAccepted(visit)) {
     const blocker = startBlocker(visit)
     return (
-      <Panel>
+      <Panel id="visit-action" className="scroll-mt-6">
         <PanelHeader title="Bắt đầu" description={formatAppointment(visit.startsAt, visit.endsAt)} />
         <PanelBody className="space-y-4">
           {blocker && <p className="text-body text-fg-2">{blocker}</p>}
@@ -184,7 +194,7 @@ export function TechAfterSalesVisitPage() {
               <ActionPanel visit={v} onDecline={() => setDialog('decline')} onAbsent={() => setDialog('absent')} />
 
               {isOpen(v) && isAccepted(v) && (
-                <Panel>
+                <Panel id="visit-photos" className="scroll-mt-6">
                   <PanelHeader
                     title="Ảnh hiện trường"
                     description={
