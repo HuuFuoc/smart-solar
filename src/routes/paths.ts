@@ -1,4 +1,4 @@
-// Mọi đường dẫn của app, mỗi portal một nhóm. Trong nhóm, màn mock đã ẩn nằm dưới dòng "Màn mock đã ẩn"
+﻿// Mọi đường dẫn của app, mỗi portal một nhóm. Trong nhóm, màn mock đã ẩn nằm dưới dòng "Màn mock đã ẩn"
 export const ROUTES = {
   // Công khai và xác thực
   home: '/',
@@ -123,6 +123,7 @@ export const ROUTES = {
     packages: '/admin/packages',
     afterSales: '/admin/after-sales',
     afterSalesRequest: '/admin/after-sales/:id',
+    settings: '/admin/settings',
     // Màn mock đã ẩn
     roles: '/admin/roles',
     services: '/admin/services',
@@ -130,7 +131,6 @@ export const ROUTES = {
     knowledgeBase: '/admin/knowledge-base',
     techConfig: '/admin/config',
     reports: '/admin/reports',
-    settings: '/admin/settings',
     profile: '/admin/profile',
   },
 

@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react'
+﻿import type { ComponentType, ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { TechLayout } from '@/components/layout/TechLayout'
@@ -85,6 +85,7 @@ const AdminInstallationProjectPage = page(
 )
 const AdminAfterSalesPage = page(() => import('@/pages/after-sales-requests-page'), 'AdminAfterSalesPage')
 const AdminAfterSalesRequestPage = page(() => import('@/pages/after-sales-request-page'), 'AdminAfterSalesRequestPage')
+const AdminSettingsPage = page(() => import('@/pages/admin/settings-page'), 'AdminSettingsPage')
 
 type PortalConfig = {
   role: UserRole
@@ -211,6 +212,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.packages, lazy: AdminPackagesPage },
       { path: admin.afterSales, lazy: AdminAfterSalesPage },
       { path: admin.afterSalesRequest, lazy: AdminAfterSalesRequestPage },
+      { path: admin.settings, lazy: AdminSettingsPage },
     ],
   }),
 

@@ -1,4 +1,4 @@
-// Endpoint của backend, tính từ /api: '/products' là GET /api/products. Khác ROUTES là đường dẫn trang trên trình duyệt
+﻿// Endpoint của backend, tính từ /api: '/products' là GET /api/products. Khác ROUTES là đường dẫn trang trên trình duyệt
 // Mỗi tag swagger một nhóm, method nằm ở service. Tham số đã được encodeURIComponent ở đây
 
 const encode = (value: string) => encodeURIComponent(value)
@@ -246,6 +246,19 @@ export const ENDPOINTS = {
   adminAfterSales: {
     packages: '/admin/after-sales/packages',
     package: (packageId: string) => `/admin/after-sales/packages/${encode(packageId)}`,
+  },
+  adminSystemSettings: {
+    scheduling: '/admin/system-settings/scheduling',
+    history: '/admin/system-settings/scheduling/history',
+  },
+  adminRagConfig: {
+    base: '/admin/rag-configuration',
+    models: '/admin/rag-configuration/models',
+    versions: '/admin/rag-configuration/versions',
+    draft: '/admin/rag-configuration/draft',
+    validate: '/admin/rag-configuration/draft/validate',
+    activate: '/admin/rag-configuration/draft/activate',
+    rollback: '/admin/rag-configuration/rollback',
   },
 
   // Tệp tải lên kho S3, mọi vai trò
