@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQueries } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { ErrorState, PageSkeleton } from '@/components/common/ui/states'
 import {
@@ -8,6 +9,7 @@ import {
   usePendingSurveyRequestsQuery,
 } from '@/hooks/useSurveyRequests'
 import { useMyTasksQuery, useOpenTasksQuery } from '@/hooks/useSalesAfterSales'
+import { getSurveyRequest } from '@/services/surveyRequestService'
 import { errorMessage } from '@/services/api/errors'
 import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
 
@@ -55,6 +57,29 @@ export function OpsDashboardPage() {
 
   const claimMutation = useClaimSurveyRequestMutation()
 
+  // Tận dụng API chi tiết GET /api/survey-requests/{id} vốn có sẵn của BE để lấy trường ward
+  // Không cần chỉnh sửa bất kỳ dòng code nào ở Backend!
+  const detailQueries = useQueries({
+    queries: mySurveys.map((survey) => ({
+      queryKey: ['survey-request', survey.surveyRequestId],
+      queryFn: () => getSurveyRequest(survey.surveyRequestId),
+      staleTime: 5 * 60 * 1000,
+      enabled: Boolean(survey.surveyRequestId),
+    })),
+  })
+
+  // Ghép trường ward và district lấy được từ API chi tiết vào danh sách hồ sơ
+  const enrichedMySurveys = useMemo(() => {
+    return mySurveys.map((survey, index) => {
+      const detail = detailQueries[index]?.data
+      return {
+        ...survey,
+        ward: detail?.ward || survey.ward || null,
+        district: detail?.district || survey.district || null,
+      }
+    })
+  }, [mySurveys, detailQueries])
+
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {
@@ -98,10 +123,10 @@ export function OpsDashboardPage() {
   }
 
   // Statistical calculations from real dataset
-  const totalCount = mySurveys.length
-  const pendingAssignmentCount = mySurveys.filter((s) => s.status === 1).length
-  const scheduledCount = mySurveys.filter((s) => s.status === 4).length
-  const completedCount = mySurveys.filter((s) => s.status === 5).length
+  const totalCount = enrichedMySurveys.length
+  const pendingAssignmentCount = enrichedMySurveys.filter((s) => s.status === 1).length
+  const scheduledCount = enrichedMySurveys.filter((s) => s.status === 4).length
+  const completedCount = enrichedMySurveys.filter((s) => s.status === 5).length
 
   return (
     <div className="space-y-6 pb-12">
@@ -134,7 +159,7 @@ export function OpsDashboardPage() {
           />
 
           {/* Recent Claimed Surveys Table with search & tabs */}
-          <SalesRecentSurveysCard surveys={mySurveys} />
+          <SalesRecentSurveysCard surveys={enrichedMySurveys} />
         </div>
 
         {/* Right column (4 cols): Urgent Actions, Regions & After-Sales */}
@@ -148,7 +173,7 @@ export function OpsDashboardPage() {
           />
 
           {/* Regional Geographic Distribution */}
-          <SalesRegionalDistributionCard surveys={mySurveys} />
+          <SalesRegionalDistributionCard surveys={enrichedMySurveys} />
 
           {/* After Sales Follow-up Tasks */}
           <SalesAfterSalesTasksCard tasks={openTasks} myTasks={myTasks} />
