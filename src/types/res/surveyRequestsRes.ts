@@ -26,6 +26,7 @@ export type MySurveyRequestItem = {
   propertyName: string | null
   province: string | null
   district: string | null
+  ward?: string | null
   status: SurveyRequestStatus
   /** Format: date-time */
   submittedAt: string

@@ -30,6 +30,7 @@ const CustomerCatalogPage = page(() => import('@/pages/catalog-page'), 'Customer
 const CustomerCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'CustomerCatalogProductPage')
 
 // Kinh doanh
+const OpsDashboardPage = page(() => import('@/pages/ops/dashboard-page'), 'OpsDashboardPage')
 const OpsSurveysPage = page(() => import('@/pages/ops/surveys-page'), 'OpsSurveysPage')
 const OpsSurveyRequestPage = page(() => import('@/pages/ops/survey-request-page'), 'OpsSurveyRequestPage')
 const OpsAfterSalesPage = page(() => import('@/pages/ops/after-sales-page'), 'OpsAfterSalesPage')
@@ -148,8 +149,9 @@ export const protectedRoutes: RouteObject[] = [
     role: 'sales',
     path: ops.home,
     Layout: OpsLayout,
-    start: ops.surveys,
+    start: ops.dashboard,
     pages: [
+      { path: ops.dashboard, lazy: OpsDashboardPage },
       { path: ops.surveys, lazy: OpsSurveysPage },
       { path: ops.surveysMine, lazy: OpsSurveysPage },
       { path: ops.survey, lazy: OpsSurveyRequestPage },

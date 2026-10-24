@@ -46,6 +46,7 @@ export const ROUTES = {
 
   ops: {
     home: '/ops',
+    dashboard: '/ops/dashboard',
     surveys: '/ops/surveys',
     /** Tab "Của tôi" có đường dẫn riêng để menu đánh dấu đúng */
     surveysMine: '/ops/surveys/mine',
