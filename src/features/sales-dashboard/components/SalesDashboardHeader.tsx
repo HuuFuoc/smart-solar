@@ -36,8 +36,7 @@ export function SalesDashboardHeader({
         </div>
         <h1 className="text-headline-md font-bold text-on-surface sm:text-headline-lg">Tổng quan kinh doanh</h1>
         <p className="text-body-md text-on-surface-variant">
-          Bạn đang quản lý{' '}
-          <strong className="font-semibold text-primary">{totalSurveys} hồ sơ khảo sát</strong>
+          Bạn đang quản lý <strong className="font-semibold text-primary">{totalSurveys} hồ sơ khảo sát</strong>
           {pendingCount > 0 ? (
             <>
               {' '}
@@ -55,21 +54,13 @@ export function SalesDashboardHeader({
 
       <div className="flex flex-wrap items-center gap-2.5">
         {onRefresh && (
-          <Button
-            variant="tonal"
-            size="sm"
-            onClick={onRefresh}
-            disabled={isRefreshing}
-          >
+          <Button variant="tonal" size="sm" onClick={onRefresh} disabled={isRefreshing}>
             <Icon name="refresh" className={isRefreshing ? 'animate-spin' : ''} />
             Làm mới
           </Button>
         )}
         <Link to={ROUTES.ops.surveys}>
-          <Button
-            variant="primary"
-            size="sm"
-          >
+          <Button variant="primary" size="sm">
             <Icon name="add_task" />
             Tiếp nhận khảo sát
           </Button>

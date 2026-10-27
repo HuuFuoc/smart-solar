@@ -6,10 +6,7 @@ import { SchedulingPolicyTab } from '@/features/admin-settings/components/Schedu
 import { AfterSalesPolicyTab } from '@/features/admin-settings/components/AfterSalesPolicyTab'
 import { RagConfigurationTab } from '@/features/admin-settings/components/RagConfigurationTab'
 import { SettingsAuditLogTab } from '@/features/admin-settings/components/SettingsAuditLogTab'
-import {
-  useSchedulingSettingsQuery,
-  useUpdateSchedulingSettingsMutation,
-} from '@/hooks/useAdminSystemSettings'
+import { useSchedulingSettingsQuery, useUpdateSchedulingSettingsMutation } from '@/hooks/useAdminSystemSettings'
 import type { SystemSettingValueRequest } from '@/types/req/adminSystemSettingsReq'
 
 type TabKey = 'scheduling' | 'afterSales' | 'rag' | 'audit'
@@ -52,7 +49,9 @@ export function AdminSettingsPage() {
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-h2 font-semibold text-fg-1">Cài đặt hệ thống</h1>
-            <Badge tone="accent">v{schedulingData.version} {schedulingData.bootstrap ? '(Mặc định)' : ''}</Badge>
+            <Badge tone="accent">
+              v{schedulingData.version} {schedulingData.bootstrap ? '(Mặc định)' : ''}
+            </Badge>
           </div>
           <p className="mt-1 text-body text-fg-3">
             Quản trị các tham số vận hành, thời hạn lịch hẹn, khảo sát, lắp đặt, điều phối và cấu hình AI.

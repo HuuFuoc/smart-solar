@@ -26,9 +26,7 @@ export function SalesAfterSalesTasksCard({ tasks, myTasks }: SalesAfterSalesTask
           </div>
         </div>
         <Link to={ROUTES.ops.afterSales}>
-          <span className="text-label-sm font-semibold text-primary hover:underline">
-            Xem tất cả →
-          </span>
+          <span className="text-label-sm font-semibold text-primary hover:underline">Xem tất cả →</span>
         </Link>
       </div>
 

@@ -36,7 +36,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
     if (searchTerm.trim()) {
       const q = removeVietnameseTones(searchTerm)
       const textToSearch = removeVietnameseTones(
-        `${item.customerName || ''} ${item.propertyName || ''} ${item.ward || ''} ${item.district || ''} ${item.province || ''}`
+        `${item.customerName || ''} ${item.propertyName || ''} ${item.ward || ''} ${item.district || ''} ${item.province || ''}`,
       )
       return textToSearch.includes(q)
     }
@@ -65,9 +65,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
             type="button"
             onClick={() => setTab('all')}
             className={`rounded-lg px-3 py-1 text-label-sm font-semibold transition-colors ${
-              tab === 'all'
-                ? 'bg-surface text-primary shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
+              tab === 'all' ? 'bg-surface text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
             Tất cả ({surveys.length})
@@ -76,9 +74,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
             type="button"
             onClick={() => setTab('pending')}
             className={`rounded-lg px-3 py-1 text-label-sm font-semibold transition-colors ${
-              tab === 'pending'
-                ? 'bg-surface text-primary shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
+              tab === 'pending' ? 'bg-surface text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
             Chờ KTV ({surveys.filter((s) => s.status === 1).length})
@@ -161,8 +157,8 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                         item.status === 5
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                           : item.status === 4
-                          ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                       }`}
                     >
                       {statusInfo.label}
@@ -170,7 +166,8 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                   </div>
 
                   <p className="text-body-sm text-on-surface-variant">
-                    {[item.ward, item.district, item.province].filter(Boolean).join(', ') || 'Chưa cập nhật vị trí'} • Tiếp nhận lúc {formatRelative(item.assignedAt)}
+                    {[item.ward, item.district, item.province].filter(Boolean).join(', ') || 'Chưa cập nhật vị trí'} •
+                    Tiếp nhận lúc {formatRelative(item.assignedAt)}
                   </p>
                   {item.scheduledAt && (
                     <p className="text-body-xs font-medium text-primary">
@@ -181,10 +178,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
 
                 <div className="flex items-center gap-2">
                   <Link to={withId(ROUTES.ops.survey, item.surveyRequestId)}>
-                    <Button
-                      size="sm"
-                      variant={item.status === 5 ? 'primary' : 'tonal'}
-                    >
+                    <Button size="sm" variant={item.status === 5 ? 'primary' : 'tonal'}>
                       {item.status === 5 ? 'Lập báo giá' : 'Chi tiết'}
                     </Button>
                   </Link>
@@ -202,9 +196,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
             Đang hiển thị <strong>{filteredSurveys.length}</strong> / {surveys.length} hồ sơ
           </span>
           {filteredSurveys.length > 5 && (
-            <span className="italic text-on-surface-variant/80">
-              (Cuộn chuột trong khung để xem tất cả)
-            </span>
+            <span className="italic text-on-surface-variant/80">(Cuộn chuột trong khung để xem tất cả)</span>
           )}
         </div>
       )}

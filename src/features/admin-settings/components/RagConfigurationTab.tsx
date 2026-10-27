@@ -53,7 +53,11 @@ function RagConfigForm({ initialValues, configState, modelCatalog }: FormProps) 
 
   const handleSaveDraft = async () => {
     try {
-      await saveMutation.mutateAsync({ ...form, notes: notes.trim() || undefined, expectedRevision: configState?.draft?.revision })
+      await saveMutation.mutateAsync({
+        ...form,
+        notes: notes.trim() || undefined,
+        expectedRevision: configState?.draft?.revision,
+      })
       toast.success('Đã lưu bản nháp cấu hình AI thành công.')
     } catch {
       toast.error('Không thể lưu bản nháp cấu hình AI.')
@@ -120,10 +124,13 @@ export function RagConfigurationTab() {
   const { data: configState, isLoading } = useRagConfigurationQuery()
   const { data: modelCatalog } = useRagModelsQuery()
 
-  if (isLoading) return <LoadingWaveDots text="Đang tải cấu hình AI" subtitle="Đang đồng bộ tham số mô hình từ hệ thống..." />
+  if (isLoading)
+    return <LoadingWaveDots text="Đang tải cấu hình AI" subtitle="Đang đồng bộ tham số mô hình từ hệ thống..." />
 
   const initialValues = extractRagValues(configState?.draft || configState?.active)
-  const versionKey = configState?.draft?.revision ? `draft-${configState.draft.revision}` : `active-${configState?.active?.version ?? 0}`
+  const versionKey = configState?.draft?.revision
+    ? `draft-${configState.draft.revision}`
+    : `active-${configState?.active?.version ?? 0}`
 
   return (
     <RagConfigForm

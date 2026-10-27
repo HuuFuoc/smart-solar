@@ -44,9 +44,7 @@ const SETTING_GROUPS = [
   },
 ]
 
-const KEY_LABEL_MAP = new Map(
-  SETTING_GROUPS.flatMap((g) => g.items).map((i) => [i.key, i.label]),
-)
+const KEY_LABEL_MAP = new Map(SETTING_GROUPS.flatMap((g) => g.items).map((i) => [i.key, i.label]))
 
 export function SchedulingAuditTable() {
   const [page, setPage] = useState(1)
@@ -86,7 +84,9 @@ export function SchedulingAuditTable() {
             }}
             className="w-80 rounded-control border border-line bg-surface-1 px-3 py-1.5 text-body text-fg-1 outline-none focus:border-accent"
           >
-            <option value="">-- Tất cả cài đặt ({SETTING_GROUPS.reduce((acc, g) => acc + g.items.length, 0)}) --</option>
+            <option value="">
+              -- Tất cả cài đặt ({SETTING_GROUPS.reduce((acc, g) => acc + g.items.length, 0)}) --
+            </option>
             {SETTING_GROUPS.map((g) => (
               <optgroup key={g.group} label={g.group}>
                 {g.items.map((i) => (
@@ -142,7 +142,9 @@ export function SchedulingAuditTable() {
           <tbody className="divide-y divide-line text-meta">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-fg-3">Đang tải dữ liệu nhật ký…</td>
+                <td colSpan={5} className="py-8 text-center text-fg-3">
+                  Đang tải dữ liệu nhật ký…
+                </td>
               </tr>
             ) : !sortedItems.length ? (
               <tr>
@@ -183,7 +185,9 @@ export function SchedulingAuditTable() {
       </div>
 
       <div className="flex items-center justify-between text-meta text-fg-3">
-        <span>Trang {page} / {totalPages}</span>
+        <span>
+          Trang {page} / {totalPages}
+        </span>
         <div className="flex gap-2">
           <Button variant="secondary" disabled={page <= 1 || isLoading} onClick={() => setPage((p) => p - 1)}>
             Trang trước

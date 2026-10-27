@@ -8,12 +8,7 @@ type SalesPipelineFunnelProps = {
   completed: number
 }
 
-export function SalesPipelineFunnel({
-  total,
-  pending,
-  scheduled,
-  completed,
-}: SalesPipelineFunnelProps) {
+export function SalesPipelineFunnel({ total, pending, scheduled, completed }: SalesPipelineFunnelProps) {
   const safeTotal = total > 0 ? total : 1
   const pendingPct = Math.round((pending / safeTotal) * 100)
   const scheduledPct = Math.round((scheduled / safeTotal) * 100)

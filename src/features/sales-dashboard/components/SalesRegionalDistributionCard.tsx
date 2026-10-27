@@ -13,174 +13,174 @@ type FilterMode = 'all' | 'has_data' | 'zero_data'
 
 /** Danh mục 168 phường/xã/đặc khu TP.HCM theo QĐ 19/2025/QĐ-TTg (áp dụng từ 01/07/2025) */
 const HCM_COMMUNES_FALLBACK: string[] = [
-  "Đặc khu Côn Đảo",
-  "Phường An Đông",
-  "Phường An Hội Đông",
-  "Phường An Hội Tây",
-  "Phường An Khánh",
-  "Phường An Lạc",
-  "Phường An Nhơn",
-  "Phường An Phú",
-  "Phường An Phú Đông",
-  "Phường Bà Rịa",
-  "Phường Bàn Cờ",
-  "Phường Bảy Hiền",
-  "Phường Bến Cát",
-  "Phường Bến Thành",
-  "Phường Bình Cơ",
-  "Phường Bình Đông",
-  "Phường Bình Dương",
-  "Phường Bình Hòa",
-  "Phường Bình Hưng Hòa",
-  "Phường Bình Lợi Trung",
-  "Phường Bình Phú",
-  "Phường Bình Quới",
-  "Phường Bình Tân",
-  "Phường Bình Tây",
-  "Phường Bình Thạnh",
-  "Phường Bình Thới",
-  "Phường Bình Tiên",
-  "Phường Bình Trị Đông",
-  "Phường Bình Trưng",
-  "Phường Cát Lái",
-  "Phường Cầu Kiệu",
-  "Phường Cầu Ông Lãnh",
-  "Phường Chánh Hiệp",
-  "Phường Chánh Hưng",
-  "Phường Chánh Phú Hòa",
-  "Phường Chợ Lớn",
-  "Phường Chợ Quán",
-  "Phường Dĩ An",
-  "Phường Diên Hồng",
-  "Phường Đông Hòa",
-  "Phường Đông Hưng Thuận",
-  "Phường Đức Nhuận",
-  "Phường Gia Định",
-  "Phường Gò Vấp",
-  "Phường Hạnh Thông",
-  "Phường Hiệp Bình",
-  "Phường Hòa Bình",
-  "Phường Hòa Hưng",
-  "Phường Hòa Lợi",
-  "Phường Khánh Hội",
-  "Phường Lái Thiêu",
-  "Phường Linh Xuân",
-  "Phường Long Bình",
-  "Phường Long Hương",
-  "Phường Long Nguyên",
-  "Phường Long Phước",
-  "Phường Long Trường",
-  "Phường Minh Phụng",
-  "Phường Nhiêu Lộc",
-  "Phường Phú An",
-  "Phường Phú Định",
-  "Phường Phú Lâm",
-  "Phường Phú Lợi",
-  "Phường Phú Mỹ",
-  "Phường Phú Nhuận",
-  "Phường Phú Thạnh",
-  "Phường Phú Thọ",
-  "Phường Phú Thọ Hòa",
-  "Phường Phú Thuận",
-  "Phường Phước Long",
-  "Phường Phước Thắng",
-  "Phường Rạch Dừa",
-  "Phường Sài Gòn",
-  "Phường Tam Bình",
-  "Phường Tam Long",
-  "Phường Tam Thắng",
-  "Phường Tân Bình",
-  "Phường Tân Định",
-  "Phường Tân Đông Hiệp",
-  "Phường Tân Hải",
-  "Phường Tân Hiệp",
-  "Phường Tân Hòa",
-  "Phường Tân Hưng",
-  "Phường Tân Khánh",
-  "Phường Tân Mỹ",
-  "Phường Tân Phú",
-  "Phường Tân Phước",
-  "Phường Tân Sơn",
-  "Phường Tân Sơn Hòa",
-  "Phường Tân Sơn Nhất",
-  "Phường Tân Sơn Nhì",
-  "Phường Tân Tạo",
-  "Phường Tân Thành",
-  "Phường Tân Thới Hiệp",
-  "Phường Tân Thuận",
-  "Phường Tân Uyên",
-  "Phường Tăng Nhơn Phú",
-  "Phường Tây Nam",
-  "Phường Tây Thạnh",
-  "Phường Thạnh Mỹ Tây",
-  "Phường Thới An",
-  "Phường Thới Hòa",
-  "Phường Thông Tây Hội",
-  "Phường Thủ Dầu Một",
-  "Phường Thủ Đức",
-  "Phường Thuận An",
-  "Phường Thuận Giao",
-  "Phường Trung Mỹ Tây",
-  "Phường Vĩnh Hội",
-  "Phường Vĩnh Tân",
-  "Phường Vũng Tàu",
-  "Phường Vườn Lài",
-  "Phường Xóm Chiếu",
-  "Phường Xuân Hòa",
-  "Xã An Long",
-  "Xã An Nhơn Tây",
-  "Xã An Thới Đông",
-  "Xã Bà Điểm",
-  "Xã Bắc Tân Uyên",
-  "Xã Bàu Bàng",
-  "Xã Bàu Lâm",
-  "Xã Bình Chánh",
-  "Xã Bình Châu",
-  "Xã Bình Giã",
-  "Xã Bình Hưng",
-  "Xã Bình Khánh",
-  "Xã Bình Lợi",
-  "Xã Bình Mỹ",
-  "Xã Cần Giờ",
-  "Xã Châu Đức",
-  "Xã Châu Pha",
-  "Xã Củ Chi",
-  "Xã Đất Đỏ",
-  "Xã Dầu Tiếng",
-  "Xã Đông Thạnh",
-  "Xã Hiệp Phước",
-  "Xã Hồ Tràm",
-  "Xã Hòa Hiệp",
-  "Xã Hòa Hội",
-  "Xã Hóc Môn",
-  "Xã Hưng Long",
-  "Xã Kim Long",
-  "Xã Long Điền",
-  "Xã Long Hải",
-  "Xã Long Hòa",
-  "Xã Long Sơn",
-  "Xã Minh Thạnh",
-  "Xã Ngãi Giao",
-  "Xã Nghĩa Thành",
-  "Xã Nhà Bè",
-  "Xã Nhuận Đức",
-  "Xã Phú Giáo",
-  "Xã Phú Hòa Đông",
-  "Xã Phước Hải",
-  "Xã Phước Hòa",
-  "Xã Phước Thành",
-  "Xã Tân An Hội",
-  "Xã Tân Nhựt",
-  "Xã Tân Vĩnh Lộc",
-  "Xã Thái Mỹ",
-  "Xã Thanh An",
-  "Xã Thạnh An",
-  "Xã Thường Tân",
-  "Xã Trừ Văn Thố",
-  "Xã Vĩnh Lộc",
-  "Xã Xuân Sơn",
-  "Xã Xuân Thới Sơn",
-  "Xã Xuyên Mộc"
+  'Đặc khu Côn Đảo',
+  'Phường An Đông',
+  'Phường An Hội Đông',
+  'Phường An Hội Tây',
+  'Phường An Khánh',
+  'Phường An Lạc',
+  'Phường An Nhơn',
+  'Phường An Phú',
+  'Phường An Phú Đông',
+  'Phường Bà Rịa',
+  'Phường Bàn Cờ',
+  'Phường Bảy Hiền',
+  'Phường Bến Cát',
+  'Phường Bến Thành',
+  'Phường Bình Cơ',
+  'Phường Bình Đông',
+  'Phường Bình Dương',
+  'Phường Bình Hòa',
+  'Phường Bình Hưng Hòa',
+  'Phường Bình Lợi Trung',
+  'Phường Bình Phú',
+  'Phường Bình Quới',
+  'Phường Bình Tân',
+  'Phường Bình Tây',
+  'Phường Bình Thạnh',
+  'Phường Bình Thới',
+  'Phường Bình Tiên',
+  'Phường Bình Trị Đông',
+  'Phường Bình Trưng',
+  'Phường Cát Lái',
+  'Phường Cầu Kiệu',
+  'Phường Cầu Ông Lãnh',
+  'Phường Chánh Hiệp',
+  'Phường Chánh Hưng',
+  'Phường Chánh Phú Hòa',
+  'Phường Chợ Lớn',
+  'Phường Chợ Quán',
+  'Phường Dĩ An',
+  'Phường Diên Hồng',
+  'Phường Đông Hòa',
+  'Phường Đông Hưng Thuận',
+  'Phường Đức Nhuận',
+  'Phường Gia Định',
+  'Phường Gò Vấp',
+  'Phường Hạnh Thông',
+  'Phường Hiệp Bình',
+  'Phường Hòa Bình',
+  'Phường Hòa Hưng',
+  'Phường Hòa Lợi',
+  'Phường Khánh Hội',
+  'Phường Lái Thiêu',
+  'Phường Linh Xuân',
+  'Phường Long Bình',
+  'Phường Long Hương',
+  'Phường Long Nguyên',
+  'Phường Long Phước',
+  'Phường Long Trường',
+  'Phường Minh Phụng',
+  'Phường Nhiêu Lộc',
+  'Phường Phú An',
+  'Phường Phú Định',
+  'Phường Phú Lâm',
+  'Phường Phú Lợi',
+  'Phường Phú Mỹ',
+  'Phường Phú Nhuận',
+  'Phường Phú Thạnh',
+  'Phường Phú Thọ',
+  'Phường Phú Thọ Hòa',
+  'Phường Phú Thuận',
+  'Phường Phước Long',
+  'Phường Phước Thắng',
+  'Phường Rạch Dừa',
+  'Phường Sài Gòn',
+  'Phường Tam Bình',
+  'Phường Tam Long',
+  'Phường Tam Thắng',
+  'Phường Tân Bình',
+  'Phường Tân Định',
+  'Phường Tân Đông Hiệp',
+  'Phường Tân Hải',
+  'Phường Tân Hiệp',
+  'Phường Tân Hòa',
+  'Phường Tân Hưng',
+  'Phường Tân Khánh',
+  'Phường Tân Mỹ',
+  'Phường Tân Phú',
+  'Phường Tân Phước',
+  'Phường Tân Sơn',
+  'Phường Tân Sơn Hòa',
+  'Phường Tân Sơn Nhất',
+  'Phường Tân Sơn Nhì',
+  'Phường Tân Tạo',
+  'Phường Tân Thành',
+  'Phường Tân Thới Hiệp',
+  'Phường Tân Thuận',
+  'Phường Tân Uyên',
+  'Phường Tăng Nhơn Phú',
+  'Phường Tây Nam',
+  'Phường Tây Thạnh',
+  'Phường Thạnh Mỹ Tây',
+  'Phường Thới An',
+  'Phường Thới Hòa',
+  'Phường Thông Tây Hội',
+  'Phường Thủ Dầu Một',
+  'Phường Thủ Đức',
+  'Phường Thuận An',
+  'Phường Thuận Giao',
+  'Phường Trung Mỹ Tây',
+  'Phường Vĩnh Hội',
+  'Phường Vĩnh Tân',
+  'Phường Vũng Tàu',
+  'Phường Vườn Lài',
+  'Phường Xóm Chiếu',
+  'Phường Xuân Hòa',
+  'Xã An Long',
+  'Xã An Nhơn Tây',
+  'Xã An Thới Đông',
+  'Xã Bà Điểm',
+  'Xã Bắc Tân Uyên',
+  'Xã Bàu Bàng',
+  'Xã Bàu Lâm',
+  'Xã Bình Chánh',
+  'Xã Bình Châu',
+  'Xã Bình Giã',
+  'Xã Bình Hưng',
+  'Xã Bình Khánh',
+  'Xã Bình Lợi',
+  'Xã Bình Mỹ',
+  'Xã Cần Giờ',
+  'Xã Châu Đức',
+  'Xã Châu Pha',
+  'Xã Củ Chi',
+  'Xã Đất Đỏ',
+  'Xã Dầu Tiếng',
+  'Xã Đông Thạnh',
+  'Xã Hiệp Phước',
+  'Xã Hồ Tràm',
+  'Xã Hòa Hiệp',
+  'Xã Hòa Hội',
+  'Xã Hóc Môn',
+  'Xã Hưng Long',
+  'Xã Kim Long',
+  'Xã Long Điền',
+  'Xã Long Hải',
+  'Xã Long Hòa',
+  'Xã Long Sơn',
+  'Xã Minh Thạnh',
+  'Xã Ngãi Giao',
+  'Xã Nghĩa Thành',
+  'Xã Nhà Bè',
+  'Xã Nhuận Đức',
+  'Xã Phú Giáo',
+  'Xã Phú Hòa Đông',
+  'Xã Phước Hải',
+  'Xã Phước Hòa',
+  'Xã Phước Thành',
+  'Xã Tân An Hội',
+  'Xã Tân Nhựt',
+  'Xã Tân Vĩnh Lộc',
+  'Xã Thái Mỹ',
+  'Xã Thanh An',
+  'Xã Thạnh An',
+  'Xã Thường Tân',
+  'Xã Trừ Văn Thố',
+  'Xã Vĩnh Lộc',
+  'Xã Xuân Sơn',
+  'Xã Xuân Thới Sơn',
+  'Xã Xuyên Mộc',
 ]
 
 /** Hàm chuẩn hóa bỏ dấu tiếng Việt để tìm kiếm không dấu tiện lợi */
@@ -229,9 +229,7 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
   const { allWards, totalSurveysWithWard, hasDataCount, zeroDataCount } = useMemo(() => {
     // 1. Khởi tạo danh sách phường/xã chuẩn
     const baseNames: string[] =
-      remoteCommunes && remoteCommunes.length > 0
-        ? remoteCommunes.map((c) => c.name)
-        : HCM_COMMUNES_FALLBACK
+      remoteCommunes && remoteCommunes.length > 0 ? remoteCommunes.map((c) => c.name) : HCM_COMMUNES_FALLBACK
 
     // Map lưu { originalName, count }
     const wardMap = new Map<string, { originalName: string; count: number }>()
@@ -307,9 +305,7 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
     // Lọc theo từ khóa tìm kiếm (không dấu)
     if (searchTerm.trim()) {
       const normalizedQuery = removeVietnameseTones(searchTerm)
-      result = result.filter((item) =>
-        removeVietnameseTones(item.location).includes(normalizedQuery),
-      )
+      result = result.filter((item) => removeVietnameseTones(item.location).includes(normalizedQuery))
     }
 
     // Sắp xếp
@@ -336,12 +332,8 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
               <Icon name="location_city" className="text-[22px]" />
             </div>
             <div>
-              <h3 className="text-label-lg font-bold text-on-surface">
-                Phân bổ khách hàng theo Phường / Xã
-              </h3>
-              <p className="text-body-xs text-on-surface-variant">
-                Toàn bộ phường/xã TP.HCM • Tra cứu không cần dấu
-              </p>
+              <h3 className="text-label-lg font-bold text-on-surface">Phân bổ khách hàng theo Phường / Xã</h3>
+              <p className="text-body-xs text-on-surface-variant">Toàn bộ phường/xã TP.HCM • Tra cứu không cần dấu</p>
             </div>
           </div>
           <span className="shrink-0 rounded-full bg-secondary/10 px-3 py-1 text-label-xs font-semibold text-secondary">
@@ -416,20 +408,11 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
         {/* Nút đổi sắp xếp */}
         <button
           type="button"
-          onClick={() =>
-            setSortMode((prev) => (prev === 'count_desc' ? 'name_asc' : 'count_desc'))
-          }
+          onClick={() => setSortMode((prev) => (prev === 'count_desc' ? 'name_asc' : 'count_desc'))}
           className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-xl border border-surface-container-highest bg-surface-container-low px-3 text-label-sm font-medium text-on-surface transition-colors hover:bg-surface-container"
-          title={
-            sortMode === 'count_desc'
-              ? 'Đang xếp: Số lượng nhiều nhất'
-              : 'Đang xếp: Tên A-Z'
-          }
+          title={sortMode === 'count_desc' ? 'Đang xếp: Số lượng nhiều nhất' : 'Đang xếp: Tên A-Z'}
         >
-          <Icon
-            name={sortMode === 'count_desc' ? 'sort' : 'sort_by_alpha'}
-            className="text-[18px] text-primary"
-          />
+          <Icon name={sortMode === 'count_desc' ? 'sort' : 'sort_by_alpha'} className="text-[18px] text-primary" />
           <span>{sortMode === 'count_desc' ? 'Nhiều nhất' : 'Tên A-Z'}</span>
         </button>
       </div>
@@ -463,24 +446,18 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
                 <div className="flex items-center justify-between text-body-sm">
                   <span
                     className={`flex items-center gap-1.5 ${
-                      hasContracts
-                        ? 'font-medium text-on-surface'
-                        : 'text-on-surface-variant font-normal'
+                      hasContracts ? 'font-medium text-on-surface' : 'text-on-surface-variant font-normal'
                     }`}
                   >
                     <Icon
                       name="location_on"
-                      className={`text-[16px] ${
-                        hasContracts ? 'text-secondary' : 'text-on-surface-variant/40'
-                      }`}
+                      className={`text-[16px] ${hasContracts ? 'text-secondary' : 'text-on-surface-variant/40'}`}
                     />
                     {item.location}
                   </span>
                   <span
                     className={`text-label-sm ${
-                      hasContracts
-                        ? 'font-bold text-on-surface'
-                        : 'text-body-xs text-on-surface-variant/60 font-normal'
+                      hasContracts ? 'font-bold text-on-surface' : 'text-body-xs text-on-surface-variant/60 font-normal'
                     }`}
                   >
                     {item.count} hồ sơ {hasContracts ? `(${item.pct}%)` : ''}
@@ -503,7 +480,8 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
       {/* Footer nhỏ báo số lượng */}
       <div className="flex items-center justify-between border-t border-surface-container-highest pt-2.5 text-body-xs text-on-surface-variant">
         <span>
-          Đang hiển thị <strong className="text-on-surface">{filteredAndSortedWards.length}</strong> / {allWards.length} địa bàn
+          Đang hiển thị <strong className="text-on-surface">{filteredAndSortedWards.length}</strong> / {allWards.length}{' '}
+          địa bàn
         </span>
         {totalSurveysWithWard > 0 && (
           <span>

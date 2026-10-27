@@ -46,14 +46,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/register",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
             }
           }
         },
@@ -92,14 +86,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/register",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
             }
           }
         },
@@ -132,14 +120,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/register",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
             }
           }
         }
@@ -191,14 +173,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "login"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
             }
           }
         },
@@ -237,14 +213,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "login"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
             }
           }
         },
@@ -277,14 +247,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "login"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
             }
           }
         }
@@ -336,14 +300,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/google-oauth",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "google-oauth"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "google-oauth"]
             }
           }
         },
@@ -382,14 +340,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/google-oauth",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "google-oauth"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "google-oauth"]
             }
           }
         },
@@ -422,14 +374,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/google-oauth",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "google-oauth"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "google-oauth"]
             }
           }
         }
@@ -475,14 +421,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/reset-password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "reset-password"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
             }
           }
         },
@@ -521,14 +461,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/reset-password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "reset-password"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
             }
           }
         },
@@ -561,14 +495,8 @@
             },
             "url": {
               "raw": "{{base_url}}/api/auth/reset-password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "reset-password"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
             }
           }
         }
@@ -615,14 +543,8 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/api/auth/session",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "session"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "session"]
             }
           }
         },
@@ -662,14 +584,8 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/api/auth/session",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "session"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "session"]
             }
           }
         }

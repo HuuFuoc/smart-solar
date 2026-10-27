@@ -49,9 +49,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
     home: ROUTES.ops.home,
     groups: [
       {
-        items: [
-          { label: 'Tổng quan', to: ROUTES.ops.dashboard, icon: 'dashboard', end: true },
-        ],
+        items: [{ label: 'Tổng quan', to: ROUTES.ops.dashboard, icon: 'dashboard', end: true }],
       },
       {
         label: 'Yêu cầu khảo sát',

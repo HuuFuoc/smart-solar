@@ -45,15 +45,9 @@ export function OpsDashboardPage() {
     refetch: refetchEscalated,
   } = useEscalatedAppointmentsQuery()
 
-  const {
-    data: openTasks = [],
-    refetch: refetchOpenTasks,
-  } = useOpenTasksQuery()
+  const { data: openTasks = [], refetch: refetchOpenTasks } = useOpenTasksQuery()
 
-  const {
-    data: myTasks = [],
-    refetch: refetchMyTasks,
-  } = useMyTasksQuery()
+  const { data: myTasks = [], refetch: refetchMyTasks } = useMyTasksQuery()
 
   const claimMutation = useClaimSurveyRequestMutation()
 

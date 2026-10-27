@@ -20,8 +20,7 @@ export function useSchedulingSettingsQuery() {
 export function useUpdateSchedulingSettingsMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: UpdateSchedulingSettingsRequest) =>
-      adminSystemSettingsService.updateScheduling(payload),
+    mutationFn: (payload: UpdateSchedulingSettingsRequest) => adminSystemSettingsService.updateScheduling(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: systemSettingsKeys.all })
     },

@@ -34,7 +34,9 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
             className="mt-3 w-full rounded-control border border-line bg-canvas px-3 py-1.5 text-body text-fg-1 outline-none focus:border-accent"
           >
             {models.map((m) => (
-              <option key={m.id} value={m.id}>{m.displayName || m.id}</option>
+              <option key={m.id} value={m.id}>
+                {m.displayName || m.id}
+              </option>
             ))}
           </select>
         </div>
@@ -52,7 +54,9 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
             className="mt-3 w-full rounded-control border border-line bg-canvas px-3 py-1.5 text-body text-fg-1 outline-none focus:border-accent"
           >
             {promptVersions.map((v) => (
-              <option key={v} value={v}>{v}</option>
+              <option key={v} value={v}>
+                {v}
+              </option>
             ))}
           </select>
         </div>

@@ -15,10 +15,9 @@ export const adminSystemSettingsService = {
   },
 
   async getHistory(page = 1, pageSize = 20, key?: string): Promise<PagedResult<SystemSettingRevisionView>> {
-    const res = await apiClient.get<PagedResult<SystemSettingRevisionView>>(
-      ENDPOINTS.adminSystemSettings.history,
-      { params: { page, pageSize, key: key || undefined } }
-    )
+    const res = await apiClient.get<PagedResult<SystemSettingRevisionView>>(ENDPOINTS.adminSystemSettings.history, {
+      params: { page, pageSize, key: key || undefined },
+    })
     return res.data
   },
 }

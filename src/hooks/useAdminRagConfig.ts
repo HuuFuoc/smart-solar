@@ -36,8 +36,7 @@ export function useRagVersionsQuery(page = 1, pageSize = 20) {
 export function useSaveRagDraftMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: SaveRagConfigurationDraftRequest) =>
-      adminRagConfigService.saveDraft(payload),
+    mutationFn: (payload: SaveRagConfigurationDraftRequest) => adminRagConfigService.saveDraft(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ragConfigKeys.all })
     },
@@ -47,8 +46,7 @@ export function useSaveRagDraftMutation() {
 export function useActivateRagDraftMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (expectedRevision: number) =>
-      adminRagConfigService.activateDraft(expectedRevision),
+    mutationFn: (expectedRevision: number) => adminRagConfigService.activateDraft(expectedRevision),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ragConfigKeys.all })
     },

@@ -21,11 +21,7 @@ export function SalesDashboardStats({
         icon="assignment"
         tone="primary"
         description="Tổng yêu cầu khảo sát của bạn"
-        delta={
-          totalSurveys > 0
-            ? { text: 'Đang theo dõi tích cực', tone: 'positive', live: true }
-            : undefined
-        }
+        delta={totalSurveys > 0 ? { text: 'Đang theo dõi tích cực', tone: 'positive', live: true } : undefined}
       />
 
       <MetricCard
@@ -48,9 +44,7 @@ export function SalesDashboardStats({
         tone="tertiary"
         description="KTV đã xác nhận lịch hẹn"
         delta={
-          scheduledSurveys > 0
-            ? { text: `${scheduledSurveys} ca sắp tới`, tone: 'positive', icon: 'event' }
-            : undefined
+          scheduledSurveys > 0 ? { text: `${scheduledSurveys} ca sắp tới`, tone: 'positive', icon: 'event' } : undefined
         }
       />
 
@@ -63,9 +57,7 @@ export function SalesDashboardStats({
         valueTone="primary"
         description="Đã có kết quả khảo sát thực địa"
         delta={
-          completedSurveys > 0
-            ? { text: 'Cơ hội chốt hợp đồng cao', tone: 'positive', icon: 'trending_up' }
-            : undefined
+          completedSurveys > 0 ? { text: 'Cơ hội chốt hợp đồng cao', tone: 'positive', icon: 'trending_up' } : undefined
         }
       />
     </div>

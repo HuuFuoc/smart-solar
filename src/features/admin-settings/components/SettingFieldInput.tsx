@@ -54,9 +54,7 @@ export function SettingFieldInput({
             disabled={disabled}
             onChange={(e) => onChange(Number(e.target.value))}
             className={`w-full rounded-control border px-3 py-1.5 text-body text-fg-1 outline-none transition-colors ${
-              hasError
-                ? 'border-err bg-err/10 focus:border-err'
-                : 'border-line bg-canvas focus:border-accent'
+              hasError ? 'border-err bg-err/10 focus:border-err' : 'border-line bg-canvas focus:border-accent'
             }`}
           />
           {defaultValue !== undefined && value !== defaultValue && (
@@ -72,7 +70,9 @@ export function SettingFieldInput({
           )}
         </div>
         <div className="mt-1 flex items-center justify-between text-meta text-fg-3">
-          <span>Khoảng: {min} – {max} {unit}</span>
+          <span>
+            Khoảng: {min} – {max} {unit}
+          </span>
           {defaultValue !== undefined && <span>Mặc định: {defaultValue}</span>}
         </div>
         {hasError && (

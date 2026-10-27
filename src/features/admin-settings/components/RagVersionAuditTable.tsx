@@ -67,11 +67,15 @@ export function RagVersionAuditTable() {
           <tbody className="divide-y divide-line text-meta">
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-fg-3">Đang tải lịch sử phiên bản…</td>
+                <td colSpan={7} className="py-8 text-center text-fg-3">
+                  Đang tải lịch sử phiên bản…
+                </td>
               </tr>
             ) : !sortedItems.length ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-fg-3">Chưa có phiên bản nào.</td>
+                <td colSpan={7} className="py-8 text-center text-fg-3">
+                  Chưa có phiên bản nào.
+                </td>
               </tr>
             ) : (
               sortedItems.map((v) => (
@@ -90,7 +94,11 @@ export function RagVersionAuditTable() {
                     K={v.topK} | Score ≥ {v.minScore}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-fg-2">
-                    {v.activatedAt ? new Date(v.activatedAt).toLocaleString('vi-VN') : (v.createdAt ? new Date(v.createdAt).toLocaleString('vi-VN') : '—')}
+                    {v.activatedAt
+                      ? new Date(v.activatedAt).toLocaleString('vi-VN')
+                      : v.createdAt
+                        ? new Date(v.createdAt).toLocaleString('vi-VN')
+                        : '—'}
                   </td>
                   <td className="max-w-xs px-4 py-3 text-fg-3">{v.notes || '—'}</td>
                 </tr>
@@ -101,7 +109,9 @@ export function RagVersionAuditTable() {
       </div>
 
       <div className="flex items-center justify-between text-meta text-fg-3">
-        <span>Trang {page} / {totalPages}</span>
+        <span>
+          Trang {page} / {totalPages}
+        </span>
         <div className="flex gap-2">
           <Button variant="secondary" disabled={page <= 1 || isLoading} onClick={() => setPage((p) => p - 1)}>
             Trang trước

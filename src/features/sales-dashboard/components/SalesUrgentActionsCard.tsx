@@ -49,7 +49,9 @@ export function SalesUrgentActionsCard({
             <Icon name="check_circle" className="text-[28px]" />
           </div>
           <p className="mt-2 text-label-lg font-semibold text-on-surface">Mọi việc đều đang đúng tiến độ!</p>
-          <p className="text-body-sm text-on-surface-variant">Không có hồ sơ nào bị quá hạn hoặc cần gán KTV khẩn cấp.</p>
+          <p className="text-body-sm text-on-surface-variant">
+            Không có hồ sơ nào bị quá hạn hoặc cần gán KTV khẩn cấp.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -63,7 +65,9 @@ export function SalesUrgentActionsCard({
                   <span className="text-label-md font-bold text-on-surface">{item.customerName}</span>
                   <StatusBadge variant="error">Cần gán KTV</StatusBadge>
                 </div>
-                <p className="text-body-sm text-on-surface-variant">{item.propertyName} • {item.province}</p>
+                <p className="text-body-sm text-on-surface-variant">
+                  {item.propertyName} • {item.province}
+                </p>
                 <p className="text-body-xs font-medium text-error">Lịch hẹn chưa có KTV nhận trước thời hạn</p>
               </div>
               <Link to={withId(ROUTES.ops.survey, item.surveyRequestId)}>
@@ -88,16 +92,13 @@ export function SalesUrgentActionsCard({
                     <StatusBadge variant="active">Mới gửi</StatusBadge>
                   )}
                 </div>
-                <p className="text-body-sm text-on-surface-variant">{item.propertyName} • {item.province}</p>
+                <p className="text-body-sm text-on-surface-variant">
+                  {item.propertyName} • {item.province}
+                </p>
                 <p className="text-body-xs text-on-surface-variant">Gửi lúc {formatRelative(item.submittedAt)}</p>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  disabled={isClaiming}
-                  onClick={() => onClaim && onClaim(item)}
-                >
+                <Button size="sm" variant="secondary" disabled={isClaiming} onClick={() => onClaim && onClaim(item)}>
                   Tiếp nhận hồ sơ
                 </Button>
               </div>
@@ -106,10 +107,7 @@ export function SalesUrgentActionsCard({
 
           {pendingRequests.length > 3 && (
             <div className="pt-1 text-center">
-              <Link
-                to={ROUTES.ops.surveys}
-                className="text-label-sm font-semibold text-primary hover:underline"
-              >
+              <Link to={ROUTES.ops.surveys} className="text-label-sm font-semibold text-primary hover:underline">
                 Xem thêm {pendingRequests.length - 3} yêu cầu chờ tiếp nhận khác →
               </Link>
             </div>
