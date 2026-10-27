@@ -64,11 +64,7 @@ export function BookingPanel({
     <Panel raised>
       <PanelHeader
         title={rescheduling ? 'Chọn giờ mới' : 'Chọn giờ khảo sát'}
-        description={
-          rescheduling
-            ? 'Lịch hiện tại giữ nguyên cho tới khi bạn xác nhận giờ mới.'
-            : 'Kỹ thuật viên tới công trình đo đạc và kiểm tra mái. Danh sách chỉ có giờ còn kỹ thuật viên trong khu vực rảnh.'
-        }
+        description={rescheduling ? 'Lịch hiện tại giữ nguyên cho tới khi bạn xác nhận giờ mới.' : undefined}
       />
       <PanelBody className="space-y-6">
         <SlotPicker

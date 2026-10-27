@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "lint": "oxlint",
+    "test": "node --experimental-strip-types --no-warnings --test \"tests/*.test.mjs\"",
     "gen:api": "node scripts/gen-api-types.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

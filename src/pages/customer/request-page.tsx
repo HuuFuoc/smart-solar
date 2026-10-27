@@ -27,7 +27,6 @@ import type { CustomerSurveyRequestDetailView, CustomerSurveyRequestView } from 
 /* Một câu nói khách đang ở đâu và việc tiếp theo là của ai */
 function describe(r: CustomerSurveyRequestView) {
   const a = r.appointment
-  if (canBook(r)) return 'Chọn ngày giờ để kỹ thuật viên tới khảo sát công trình.'
   if (!a) return undefined
   if (a.acceptanceStatus === 'WAITING_FOR_TECHNICIAN')
     return 'Kỹ thuật viên phụ trách khu vực của công trình sẽ nhận lịch, bạn sẽ thấy tên người tới khảo sát ở đây.'

@@ -1,11 +1,12 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
+import { IconButton } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
+import { addMonths, monthCells, monthLabel, monthOf } from '@/features/scheduling/calendarMonth'
 import {
   BOOKING_HORIZON_DAYS,
   addDays,
   coverageText,
-  dayChip,
   formatDay,
   formatTime,
   formatTimeRange,
@@ -16,7 +17,7 @@ import { errorMessage } from '@/services/api/errors'
 import type { SurveySlot } from '@/types/res/surveySlotsRes'
 import { cx } from '@/utils/cx'
 
-// Chọn giờ khảo sát: lưới 30 ngày rồi các giờ trống backend trả cho ngày đó
+// Chọn giờ khảo sát: lịch tháng (đặt được trong 30 ngày tới) rồi các giờ trống backend trả cho ngày đó
 // Không tự đoán giờ trống. Khách chỉ chọn giờ, rồi kỹ thuật viên trong khu vực của công trình tự nhận lịch
 
 const WEEK_HEADER = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
@@ -37,52 +38,68 @@ function noteText(note: string | null | undefined) {
   return note
 }
 
-function DayGrid({ value, onChange, today }: { value: string; onChange: (date: string) => void; today: string }) {
+// Ô ngày không viền cho lịch nhẹ mắt; hôm nay có viền mảnh, ngày đang chọn tô màu như các lựa chọn khác
+const dayCell = cx(
+  'press flex h-11 cursor-pointer items-center justify-center rounded-control border text-body text-fg lg:h-10',
+  '[&:not(:has(:checked)):not(:has(:disabled)):hover]:bg-hover',
+  'has-checked:border-accent-line has-checked:bg-accent-soft has-checked:font-semibold has-checked:text-accent-fg',
+  'has-focus-visible:outline-2 has-focus-visible:outline-offset-1 has-focus-visible:outline-ring',
+  'has-disabled:cursor-not-allowed has-disabled:text-fg-3',
+)
+
+function MonthCalendar({ value, onChange, today }: { value: string; onChange: (date: string) => void; today: string }) {
   const name = useId()
-  const days = Array.from({ length: BOOKING_HORIZON_DAYS }, (_, i) => addDays(today, i))
-  // Cột theo thứ (T2 đầu tuần): ô trống trước hôm nay để hôm nay đứng đúng cột của nó.
-  const lead = (new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7
+  const last = addDays(today, BOOKING_HORIZON_DAYS - 1)
+  const [month, setMonth] = useState(() => monthOf(value))
   return (
-    <fieldset>
-      <legend className="mb-3 text-body font-medium text-fg">Ngày khảo sát</legend>
+    <fieldset className="max-w-sm">
+      <legend className="mb-3 text-body font-medium text-fg">Chọn ngày</legend>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <IconButton
+          icon="chevron_left"
+          label="Tháng trước"
+          variant="secondary"
+          disabled={month <= monthOf(today)}
+          onClick={() => setMonth(addMonths(month, -1))}
+        />
+        <p className="text-body font-semibold text-fg" aria-live="polite">
+          {monthLabel(month)}
+        </p>
+        <IconButton
+          icon="chevron_right"
+          label="Tháng sau"
+          variant="secondary"
+          disabled={month >= monthOf(last)}
+          onClick={() => setMonth(addMonths(month, 1))}
+        />
+      </div>
       <div aria-hidden className="mb-1 grid grid-cols-7 gap-1 text-center text-meta text-fg-3">
         {WEEK_HEADER.map((d) => (
           <span key={d}>{d}</span>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
-        {Array.from({ length: lead }, (_, i) => (
-          <span key={`lead-${i}`} aria-hidden />
-        ))}
-        {days.map((date, i) => {
-          const chip = dayChip(date)
-          // Số tháng chỉ ghi ở ô đầu và ngày mùng 1, đủ để biết đang ở tháng nào mà không lặp ở mọi ô.
-          const showMonth = i === 0 || date.endsWith('-01')
-          return (
-            <label key={date} className={cx(choice, 'h-12 flex-col gap-1 px-0.5 leading-none')}>
+        {monthCells(month).map((date, i) =>
+          date === null ? (
+            <span key={`blank-${i}`} aria-hidden />
+          ) : (
+            // Ngày đã qua hoặc quá 30 ngày tới thì không chọn được
+            <label key={date} className={cx(dayCell, date === today ? 'border-line-2' : 'border-transparent')}>
               <input
                 type="radio"
                 name={name}
                 value={date}
                 checked={value === date}
+                disabled={date < today || date > last}
                 onChange={() => onChange(date)}
                 className="sr-only"
                 aria-label={`${date === today ? 'Hôm nay, ' : ''}${formatDay(date, { year: true })}`}
               />
-              <span className="tnum">{showMonth ? chip.date : chip.date.slice(0, 2)}</span>
-              {/* Ô hẹp nên "Hôm nay" chỉ là chấm dưới số, chữ đầy đủ nằm ở aria-label */}
-              <span
-                aria-hidden
-                className={cx('size-1.5 rounded-full', date === today ? 'bg-accent' : 'bg-transparent')}
-              />
+              <span className="tnum">{Number(date.slice(8))}</span>
             </label>
-          )
-        })}
+          ),
+        )}
       </div>
-      <p className="mt-2 flex items-center gap-1.5 text-meta text-fg-2">
-        <span aria-hidden className="size-1.5 rounded-full bg-accent" />
-        Hôm nay
-      </p>
     </fieldset>
   )
 }
@@ -162,7 +179,7 @@ export function SlotPicker({
   return (
     <div className="@container">
       <div className="grid gap-6 @2xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-        <DayGrid
+        <MonthCalendar
           value={date}
           today={today}
           onChange={(next) => {
@@ -172,15 +189,7 @@ export function SlotPicker({
         />
 
         <fieldset className="min-w-0" aria-busy={slots.isFetching}>
-          <legend className="mb-3 text-body font-medium text-fg">
-            Giờ bắt đầu, {formatDay(date)}
-            {slots.data && (
-              <span className="font-normal text-fg-2">
-                {' '}
-                (mỗi lần khảo sát {slots.data.appointmentDurationMinutes} phút)
-              </span>
-            )}
-          </legend>
+          <legend className="mb-3 text-body font-medium text-fg">Giờ trống ngày {formatDay(date)}</legend>
           {slots.isPending ? (
             <div
               aria-label="Đang tải giờ trống"
