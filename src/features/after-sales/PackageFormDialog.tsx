@@ -259,7 +259,7 @@ function PackageForm({
           </Field>
         </Section>
       ) : (
-        <Section title="Quyền lợi" description="Hỗ trợ chi phí sửa chữa khi công trình hư hỏng do thiên tai.">
+        <Section title="Quyền lợi">
           <fieldset className="flex flex-col gap-2 sm:col-span-3">
             <legend className="mb-2 text-body font-medium text-fg">
               Thiên tai được bảo vệ

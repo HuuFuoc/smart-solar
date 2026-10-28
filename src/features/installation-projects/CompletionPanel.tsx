@@ -89,12 +89,7 @@ export function CompletionPanel({ project }: { project: InstallationStaffView })
 
   return (
     <Panel>
-      <PanelHeader
-        title="Báo cáo hoàn thành và nghiệm thu"
-        description={
-          pending ? 'Khách không phản hồi thì gọi khách; hệ thống không tự nghiệm thu thay khách.' : undefined
-        }
-      />
+      <PanelHeader title="Báo cáo hoàn thành và nghiệm thu" />
       <PanelBody>
         {rounds.length === 0 ? (
           <p className="text-body text-fg-2">Kỹ thuật viên chưa gửi báo cáo hoàn thành.</p>

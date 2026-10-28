@@ -220,10 +220,7 @@ export function ChecklistPanel({ project }: { project: InstallationStaffView }) 
   const locked = isFinal(project.status)
   return (
     <Panel>
-      <PanelHeader
-        title="Checklist trước khi thi công"
-        description="Mục bắt buộc còn Chưa xong thì kỹ thuật viên chưa bắt đầu thi công được. Kỹ thuật viên và khách không thấy checklist."
-      />
+      <PanelHeader title="Checklist trước khi thi công" />
       <PanelBody>
         {project.checklist.length === 0 ? (
           <p className="text-body text-fg-2">Dự án không có hạng mục nào.</p>

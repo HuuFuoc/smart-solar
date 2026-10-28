@@ -284,7 +284,7 @@ export function TechJobPage() {
                 </Panel>
 
                 <Panel>
-                  <PanelHeader title="Số liệu khách khai" description="Đo lại tại công trình để đối chiếu." />
+                  <PanelHeader title="Số liệu khách khai" />
                   <PanelBody>
                     <StatRow className="lg:grid-cols-5">
                       <Stat

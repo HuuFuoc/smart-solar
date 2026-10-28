@@ -23,9 +23,7 @@ export function CustomerAfterSalesPage() {
             <Badge tone="danger" icon="assignment_late">
               {todo} yêu cầu chờ bạn duyệt báo giá hoặc nghiệm thu
             </Badge>
-          ) : (
-            'Báo lỗi hoặc đặt bảo trì lẻ ở trang công trình đã bàn giao.'
-          )
+          ) : undefined
         }
         actions={
           <ButtonLink icon="construction" to={ROUTES.customer.projects} variant="info">

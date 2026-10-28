@@ -31,17 +31,12 @@ export function RecentServiceRequestsCard({ requests }: { requests: ServiceReque
     <Panel className="flex h-full flex-col justify-between">
       <div>
         <PanelHeader
-          title="Yêu cầu bảo hành & bảo trì"
-          description={requests.length > 0 ? `${requests.length} yêu cầu đã gửi` : 'Chưa có yêu cầu hỗ trợ nào'}
+          title="Bảo hành, sửa chữa"
+          description={requests.length > 0 ? `${requests.length} yêu cầu đã gửi` : undefined}
         />
         <PanelBody>
           {requests.length === 0 ? (
-            <div className="py-6 text-center text-body text-fg-3">
-              <p>Hệ thống của bạn hoạt động ổn định, chưa có sự cố nào.</p>
-              <p className="mt-1 text-meta">
-                Nếu cần kiểm tra thiết bị hoặc sửa chữa, bạn có thể tạo yêu cầu mới bất cứ lúc nào.
-              </p>
-            </div>
+            <p className="py-6 text-center text-body text-fg-3">Chưa có yêu cầu nào.</p>
           ) : (
             <div className={hasScroll ? 'max-h-[520px] overflow-y-auto pr-1.5' : undefined}>
               <ul className="divide-y divide-line">

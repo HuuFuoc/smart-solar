@@ -110,7 +110,7 @@ export function OpsDashboardPage() {
     return (
       <ErrorState
         title="Không thể tải dữ liệu bảng điều khiển kinh doanh"
-        message="Đã xảy ra lỗi khi kết nối với máy chủ API. Vui lòng kiểm tra kết nối mạng và thử lại."
+        message="Hệ thống đang gặp sự cố. Vui lòng thử lại sau ít phút."
         onRetry={handleRefresh}
       />
     )
@@ -124,9 +124,7 @@ export function OpsDashboardPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* 1. Header with greeting, online badge and actions */}
       <SalesDashboardHeader
-        totalSurveys={totalCount}
         pendingCount={pendingSurveys.length}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}

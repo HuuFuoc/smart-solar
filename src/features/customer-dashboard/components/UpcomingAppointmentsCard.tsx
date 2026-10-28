@@ -31,19 +31,12 @@ export function UpcomingAppointmentsCard({ requests }: { requests: CustomerSurve
     <Panel className="flex flex-col justify-between">
       <div>
         <PanelHeader
-          title="Lịch khảo sát thực địa"
-          description={
-            activeAppointments.length > 0
-              ? `${activeAppointments.length} lịch hẹn đang chờ thực hiện`
-              : 'Chưa có lịch hẹn khảo sát'
-          }
+          title="Lịch khảo sát"
+          description={activeAppointments.length > 0 ? `${activeAppointments.length} lịch sắp tới` : undefined}
         />
         <PanelBody>
           {activeAppointments.length === 0 ? (
-            <div className="py-6 text-center text-body text-fg-3">
-              <p>Bạn chưa có lịch hẹn khảo sát thực địa nào.</p>
-              <p className="mt-1 text-meta">Sau khi gửi khảo sát sơ bộ, bạn có thể tự chọn giờ hẹn với chuyên viên.</p>
-            </div>
+            <p className="py-6 text-center text-body text-fg-3">Chưa có lịch khảo sát sắp tới.</p>
           ) : (
             <div className={hasScroll ? 'max-h-[260px] overflow-y-auto pr-1.5' : undefined}>
               <ul className="divide-y divide-line">

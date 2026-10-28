@@ -192,10 +192,7 @@ export function SimulationWorkspace({
           }
         }}
       >
-        <PanelHeader
-          title="Cấu hình mô phỏng"
-          description="Hệ thống xếp tấm trên mặt lắp đã lưu và ước tính sản lượng điện theo số liệu bức xạ của PVGIS tại địa điểm."
-        />
+        <PanelHeader title="Cấu hình mô phỏng" />
         <PanelBody className="space-y-5">
           <SurfaceSummary surface={surface} onEditSurface={onEditSurface} />
           <LocationNotices surface={surface} onEditSite={onEditSite} />

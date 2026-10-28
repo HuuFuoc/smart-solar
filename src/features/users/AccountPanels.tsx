@@ -93,10 +93,7 @@ export function RolesPanel({ user, readOnly }: { user: AdminUserDetail; readOnly
   const work = activeWorkOf(failure)
   return (
     <Panel>
-      <PanelHeader
-        title="Vai trò"
-        description="Đổi vai trò làm mọi phiên đang mở của tài khoản này hết hiệu lực ngay; người dùng đăng nhập lại."
-      />
+      <PanelHeader title="Vai trò" description="Đổi vai trò thì người dùng phải đăng nhập lại." />
       <PanelBody className="space-y-4">
         <div className="grid gap-2 sm:grid-cols-2">
           {ROLE_CODES.map((r) => (
@@ -307,14 +304,7 @@ export function RecoveryPanel({ user }: { user: AdminUserDetail }) {
 
   return (
     <Panel>
-      <PanelHeader
-        title="Mật khẩu"
-        description={
-          user.hasPassword
-            ? 'Quản trị không xem hay đặt mật khẩu thay người dùng: gửi link để họ tự đặt lại.'
-            : 'Tài khoản chưa có mật khẩu: người dùng đặt mật khẩu lần đầu qua link gửi tới email.'
-        }
-      />
+      <PanelHeader title="Mật khẩu" description={user.hasPassword ? undefined : 'Tài khoản chưa có mật khẩu'} />
       <PanelBody className="space-y-3">
         <Button size="sm" icon="mail" disabled={blocked || send.isPending} onClick={() => void submit()}>
           {send.isPending ? 'Đang gửi…' : user.hasPassword ? 'Gửi link đặt lại mật khẩu' : 'Gửi link đặt mật khẩu'}

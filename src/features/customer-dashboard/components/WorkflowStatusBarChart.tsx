@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import {
@@ -21,22 +21,14 @@ export function WorkflowStatusBarChart({
 
   return (
     <Panel className="w-full">
-      <PanelHeader
-        title="Tiến độ dịch vụ & Lịch hẹn"
-        description={
-          total > 0
-            ? `Tổng cộng ${total} quy trình đang phân bổ theo các giai đoạn thực hiện`
-            : 'Chưa có yêu cầu đang xử lý'
-        }
-      />
+      <PanelHeader title="Tiến độ yêu cầu" />
       <PanelBody className="space-y-6">
         {total === 0 ? (
           <div className="flex h-32 flex-col items-center justify-center text-center text-body text-fg-3">
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-fg-3">
               <Icon name="pending_actions" className="text-[22px]" />
             </div>
-            <p className="font-medium text-fg-2">Chưa có quy trình nào</p>
-            <p className="text-meta">Các yêu cầu khảo sát hoặc bảo trì sẽ được theo dõi tiến độ tại đây.</p>
+            <p className="font-medium text-fg-2">Chưa có yêu cầu nào</p>
           </div>
         ) : (
           <>
@@ -55,7 +47,7 @@ export function WorkflowStatusBarChart({
                 )}
               </div>
               <div className="mt-2 flex items-center justify-between text-meta text-fg-3">
-                <span>Toàn bộ quy trình</span>
+                <span>Tất cả</span>
                 <span className="font-semibold text-fg-1">{total} yêu cầu</span>
               </div>
             </div>
@@ -94,8 +86,6 @@ export function WorkflowStatusBarChart({
                         />
                       </div>
                     </div>
-
-                    <p className="mt-2 text-meta text-fg-3 line-clamp-2">{m.description}</p>
                   </div>
                 )
               })}

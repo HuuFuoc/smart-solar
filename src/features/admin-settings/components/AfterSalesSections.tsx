@@ -11,10 +11,7 @@ type SectionProps = {
 export function MaintenanceWarrantySection({ getValue, getDef, isSaving, onChange }: SectionProps) {
   return (
     <div className="space-y-3">
-      <div className="border-b border-line pb-2">
-        <h4 className="text-body font-semibold text-fg-1">2. Bảo hành, Bảo trì & Xử lý sự cố</h4>
-        <p className="text-meta text-fg-3">Thời hạn đặt lịch bảo dưỡng, thông báo định kỳ và xử lý thiên tai.</p>
-      </div>
+      <h4 className="border-b border-line pb-2 text-body font-semibold text-fg-1">Bảo hành, Bảo trì & Xử lý sự cố</h4>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <SettingFieldInput
           id="inspectionDurationMinutes"
@@ -120,10 +117,7 @@ export function MaintenanceWarrantySection({ getValue, getDef, isSaving, onChang
 export function PaymentQuotationSection({ getValue, getDef, isSaving, onChange }: SectionProps) {
   return (
     <div className="space-y-3">
-      <div className="border-b border-line pb-2">
-        <h4 className="text-body font-semibold text-fg-1">3. Báo giá & Thanh toán Sau bán</h4>
-        <p className="text-meta text-fg-3">Thời hạn thanh toán PayOS và hiệu lực báo giá sửa chữa.</p>
-      </div>
+      <h4 className="border-b border-line pb-2 text-body font-semibold text-fg-1">Báo giá & Thanh toán Sau bán</h4>
       <div className="grid gap-4 md:grid-cols-2">
         <SettingFieldInput
           id="quotationValidityDays"

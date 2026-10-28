@@ -42,7 +42,7 @@ export function CustomerDashboardPage() {
     return (
       <ErrorState
         title="Không thể tải dữ liệu bảng điều khiển"
-        message="Đã xảy ra lỗi khi kết nối với máy chủ. Vui lòng thử tải lại trang."
+        message="Hệ thống đang gặp sự cố. Vui lòng thử lại sau ít phút."
         onRetry={() => {
           refetchInstallations()
           refetchRequests()

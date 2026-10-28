@@ -820,7 +820,7 @@ export function AssessmentPage() {
             {step === STEP.SIMULATION && !surfaceSaved && (
               <EmptyState
                 title="Chưa lưu mặt lắp"
-                description="Mô phỏng xếp tấm trên mặt lắp đã lưu. Nhập kích thước mặt lắp trước."
+                description="Nhập kích thước mặt lắp trước."
                 action={
                   <Button icon="arrow_back" variant="secondary" onClick={() => goToStep(STEP.SURFACE)}>
                     Về bước mặt lắp

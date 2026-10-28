@@ -23,7 +23,7 @@ export function AdminSettingsPage() {
     return (
       <ErrorState
         title="Không thể tải cài đặt hệ thống"
-        message="Đã xảy ra lỗi khi kết nối với máy chủ cài đặt. Vui lòng thử tải lại trang."
+        message="Hệ thống đang gặp sự cố. Vui lòng thử lại sau ít phút."
         onRetry={() => void refetch()}
       />
     )
@@ -53,9 +53,6 @@ export function AdminSettingsPage() {
               v{schedulingData.version} {schedulingData.bootstrap ? '(Mặc định)' : ''}
             </Badge>
           </div>
-          <p className="mt-1 text-body text-fg-3">
-            Quản trị các tham số vận hành, thời hạn lịch hẹn, khảo sát, lắp đặt, điều phối và cấu hình AI.
-          </p>
         </div>
       </div>
 

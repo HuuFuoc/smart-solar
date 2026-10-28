@@ -104,7 +104,7 @@ function FirstQuotation({ surveyRequestId, feasibility }: Omit<Props, 'enabled'>
         )}
         <EmptyState
           title="Chưa có báo giá"
-          description="Lập báo giá theo số đo của kỹ thuật viên. Bản nháp chỉ bạn thấy; gửi rồi khách mới xem được."
+          description="Lập báo giá theo số đo của kỹ thuật viên."
           action={
             <Button icon="add" variant="soft" disabled={create.isPending} onClick={() => void start()}>
               {create.isPending ? 'Đang lập…' : 'Lập báo giá'}

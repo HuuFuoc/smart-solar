@@ -32,9 +32,7 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
             <Badge tone="danger" icon="wrong_location">
               {missing} kỹ thuật viên chưa thuộc khu vực nào nên chưa nhận lịch được
             </Badge>
-          ) : (
-            'Khu vực phục vụ, giờ làm và lịch nghỉ quyết định giờ khảo sát khách đặt được.'
-          )
+          ) : undefined
         }
         actions={
           usersLink ? (

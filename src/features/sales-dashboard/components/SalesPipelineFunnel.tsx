@@ -21,13 +21,10 @@ export function SalesPipelineFunnel({ total, pending, scheduled, completed }: Sa
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Icon name="filter_alt" className="text-[20px]" />
           </div>
-          <div>
-            <h3 className="text-label-lg font-bold text-on-surface">Phễu chuyển đổi bán hàng</h3>
-            <p className="text-body-sm text-on-surface-variant">Tiến độ từ lúc tiếp nhận đến khi hoàn tất khảo sát</p>
-          </div>
+          <h3 className="text-label-lg font-bold text-on-surface">Tiến độ hồ sơ</h3>
         </div>
         <span className="rounded-full bg-surface-container px-3 py-1 text-label-sm font-semibold text-on-surface-variant">
-          Tổng cộng: {total} hồ sơ
+          {total} hồ sơ
         </span>
       </div>
 

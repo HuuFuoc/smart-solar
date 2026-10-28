@@ -197,10 +197,7 @@ export function TechJobsPage() {
         <QueryBoundary query={open}>
           {() =>
             openRows.length === 0 ? (
-              <EmptyState
-                title="Không có lịch nào đang chờ"
-                description="Khi khách trong khu vực của bạn đặt giờ khảo sát, lịch sẽ hiện ở đây để bạn nhận."
-              />
+              <EmptyState title="Không có lịch nào đang chờ" />
             ) : (
               <div className="space-y-6">
                 <ListHead columns={COLUMNS} labels={OPEN_LABELS} />

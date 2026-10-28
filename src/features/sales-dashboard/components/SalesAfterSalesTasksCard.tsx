@@ -20,10 +20,7 @@ export function SalesAfterSalesTasksCard({ tasks, myTasks }: SalesAfterSalesTask
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-tertiary-container/20 text-tertiary-container">
             <Icon name="handyman" className="text-[20px]" />
           </div>
-          <div>
-            <h3 className="text-label-lg font-bold text-on-surface">Nhiệm vụ sau bán hàng</h3>
-            <p className="text-body-sm text-on-surface-variant">Báo giá sửa chữa & bảo trì định kỳ cho khách hàng</p>
-          </div>
+          <h3 className="text-label-lg font-bold text-on-surface">Báo giá bảo hành, bảo trì</h3>
         </div>
         <Link to={ROUTES.ops.afterSales}>
           <span className="text-label-sm font-semibold text-primary hover:underline">Xem tất cả →</span>
@@ -35,8 +32,7 @@ export function SalesAfterSalesTasksCard({ tasks, myTasks }: SalesAfterSalesTask
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-on-surface-variant">
             <Icon name="task_alt" className="text-[24px]" />
           </div>
-          <p className="mt-2 text-label-md font-semibold text-on-surface">Không có nhiệm vụ tồn đọng</p>
-          <p className="text-body-sm text-on-surface-variant">Tất cả yêu cầu bảo hành & sửa chữa đã được báo giá.</p>
+          <p className="mt-2 text-label-md font-semibold text-on-surface">Không có việc báo giá nào chờ</p>
         </div>
       ) : (
         <div className="space-y-2.5">

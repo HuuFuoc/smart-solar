@@ -47,9 +47,7 @@ function AfterSalesRequestsPage({ detailPattern }: { detailPattern: string }) {
             <Badge tone="danger" icon="assignment_late">
               {groups.todo.length} yêu cầu chờ bạn xử lý
             </Badge>
-          ) : (
-            'Báo lỗi và bảo trì của khách trên công trình đã bàn giao.'
-          )
+          ) : undefined
         }
       />
       <FilterChips

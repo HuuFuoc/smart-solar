@@ -124,7 +124,7 @@ export function AdminPackagesPage() {
         ) : items.length === 0 ? (
           <EmptyState
             title={`Chưa có gói ${packageKindLabel(kind).toLowerCase()} nào`}
-            description={'Bấm "Thêm gói" để tạo gói đầu tiên. Khách chỉ thấy gói đang bán.'}
+            description={'Bấm "Thêm gói" để tạo gói đầu tiên.'}
           />
         ) : (
           <>

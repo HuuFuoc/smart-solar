@@ -241,10 +241,7 @@ function ObstacleSection({ value, errors, onChange }: Omit<Props, 'aside'>) {
               caption={planCaption}
             />
           ) : (
-            <EmptyState
-              title="Nhập chiều rộng và chiều dài để vẽ mặt lắp"
-              description="Hình vẽ giúp đặt vật cản đúng chỗ trên mái."
-            />
+            <EmptyState title="Nhập chiều rộng và chiều dài để vẽ mặt lắp" />
           )}
         </div>
         <ObstaclePanel
@@ -291,10 +288,7 @@ function DeclaredAreaPanel({ value, errors, onFieldsChange }: FieldsPanelProps) 
 
   return (
     <Panel className="min-w-0 lg:col-span-3">
-      <PanelHeader
-        title="Số liệu khai báo"
-        description="Tính từ mặt lắp ở trên; dùng để chuyên viên đối chiếu khi khảo sát."
-      />
+      <PanelHeader title="Số liệu khai báo" />
       <PanelBody className="space-y-4">
         <Facts items={facts} />
         <Checkbox

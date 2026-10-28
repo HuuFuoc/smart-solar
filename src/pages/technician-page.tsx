@@ -75,13 +75,7 @@ function TechnicianPage({ accountPattern }: { accountPattern?: string }) {
   return (
     <QueryBoundary query={query}>
       {() => {
-        if (!technician || !id)
-          return (
-            <EmptyState
-              title="Không tìm thấy kỹ thuật viên"
-              description="Tài khoản có thể đã bị xoá hoặc không còn vai trò kỹ thuật viên."
-            />
-          )
+        if (!technician || !id) return <EmptyState title="Không tìm thấy kỹ thuật viên" />
         const ready = technicianReadiness(technician)
         const section: Section = isSection(rawSection) ? rawSection : (defaultSection ?? 'lich')
         return (

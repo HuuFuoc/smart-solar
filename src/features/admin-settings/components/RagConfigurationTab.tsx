@@ -88,9 +88,6 @@ function RagConfigForm({ initialValues, configState, modelCatalog }: FormProps) 
               <Badge tone="ok">Đang hoạt động (v{configState?.active?.version || 1})</Badge>
             )}
           </div>
-          <p className="mt-1 text-meta text-fg-3">
-            Điều chỉnh mô hình LLM, độ phân đoạn tài liệu và tham số truy xuất ngữ cảnh RAG.
-          </p>
         </div>
         <Button variant="secondary" icon="restart_alt" disabled={isSaving} onClick={handleRestoreDefaults}>
           Khôi phục mặc định

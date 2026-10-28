@@ -278,10 +278,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
           )}
 
           <Panel>
-            <PanelHeader
-              title="Báo cáo hoàn thành"
-              description={work ? 'Khách đọc báo cáo này khi nghiệm thu.' : undefined}
-            />
+            <PanelHeader title="Báo cáo hoàn thành" />
             <PanelBody className="space-y-6">
               {work && <CompletionReportForm view={view} />}
               {view.acceptances.length > 0 ? (

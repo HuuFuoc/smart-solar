@@ -106,10 +106,7 @@ export function EvidencePanel({ projectId, currentRound }: { projectId: string; 
 
   return (
     <Panel>
-      <PanelHeader
-        title="Ảnh nghiệm thu"
-        description={`Kỹ thuật viên tải ảnh theo từng lượt báo cáo hoàn thành. Lượt đang làm: ${currentRound}.`}
-      />
+      <PanelHeader title="Ảnh nghiệm thu" description={`Lượt đang làm: ${currentRound}`} />
       <PanelBody>
         <PanelQuery query={query}>
           {(items) => {

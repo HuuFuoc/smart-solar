@@ -49,12 +49,7 @@ export function SchedulingPolicyTab({ settings, isSaving, onSave }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-surface-1 p-4">
-        <div>
-          <h3 className="text-body font-semibold text-fg-1">Chính sách thời gian Lịch hẹn & Khảo sát</h3>
-          <p className="mt-0.5 text-meta text-fg-3">
-            Điều chỉnh thời hạn nhận lịch, hủy/đổi lịch hẹn, khoảng đệm giữa các lịch và giới hạn dự án.
-          </p>
-        </div>
+        <h3 className="text-body font-semibold text-fg-1">Chính sách thời gian Lịch hẹn & Khảo sát</h3>
         {hasChanges && (
           <div className="flex items-center gap-2">
             <Button variant="secondary" disabled={isSaving} onClick={() => setDraft({})}>

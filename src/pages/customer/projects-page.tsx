@@ -58,10 +58,7 @@ export function CustomerProjectsPage() {
       <QueryBoundary query={query}>
         {(rows) =>
           rows.length === 0 ? (
-            <EmptyState
-              title="Chưa có công trình lắp đặt"
-              description="Công trình hiện ở đây khi hợp đồng đã thanh toán và Smart Solar lập kế hoạch lắp đặt."
-            />
+            <EmptyState title="Chưa có công trình lắp đặt" />
           ) : (
             <ul className="divide-y divide-line">
               {[...rows].sort(byNextAction).map((p) => {

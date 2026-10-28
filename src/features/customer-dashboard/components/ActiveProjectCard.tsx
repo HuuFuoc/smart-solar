@@ -30,15 +30,12 @@ export function ActiveProjectCard({ project }: { project?: InstallationCustomerV
     return (
       <Panel className="flex flex-col justify-between">
         <div>
-          <PanelHeader title="Công trình điện mặt trời" description="Chưa có dự án thi công đang thực hiện" />
+          <PanelHeader title="Công trình" />
           <PanelBody className="flex h-48 flex-col items-center justify-center text-center text-body text-fg-3">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-fg-3">
               <Icon name="solar_power" className="text-[26px]" />
             </div>
-            <p className="font-medium text-fg-2">Chưa có hợp đồng lắp đặt</p>
-            <p className="mt-1 text-meta">
-              Sau khi hoàn tất khảo sát và ký hợp đồng, tiến độ thi công sẽ hiển thị tại đây.
-            </p>
+            <p className="font-medium text-fg-2">Chưa có công trình lắp đặt</p>
           </PanelBody>
         </div>
         <PanelFooter className="flex justify-end">
@@ -59,17 +56,14 @@ export function ActiveProjectCard({ project }: { project?: InstallationCustomerV
     <Panel className="flex flex-col justify-between">
       <div>
         <PanelHeader
-          title="Công trình điện mặt trời"
+          title="Công trình"
           description={`Hợp đồng #${project.contractId.slice(0, 8)}`}
           action={<Badge tone={statusTone}>{statusLabel}</Badge>}
         />
         <PanelBody className="space-y-4">
           {isAwaitingAcceptance && (
             <div className="rounded-control border border-danger/20 bg-danger-soft p-3 text-body text-danger">
-              <p className="font-semibold">Công trình đang chờ bạn nghiệm thu!</p>
-              <p className="mt-1 text-meta text-fg-2">
-                Kỹ thuật viên đã gửi báo cáo hoàn thành. Vui lòng kiểm tra hình ảnh thi công và xác nhận nghiệm thu.
-              </p>
+              <p className="font-semibold">Công trình đang chờ bạn nghiệm thu</p>
             </div>
           )}
 

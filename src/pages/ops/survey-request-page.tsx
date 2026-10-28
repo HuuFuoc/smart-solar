@@ -192,10 +192,7 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
               staleNote="Khách đã sửa mặt lắp sau lần chạy này; số liệu có thể không khớp mặt lắp cuối cùng."
             />
           ) : (
-            <EmptyState
-              title="Khách chưa chạy mô phỏng"
-              description="Bản đánh giá được gửi khi chưa có mô phỏng; dùng số liệu khách khai ở trên khi gọi khách."
-            />
+            <EmptyState title="Khách chưa chạy mô phỏng" description="Dùng số liệu khách khai khi gọi khách." />
           )}
         </PanelBody>
       </Panel>
@@ -207,7 +204,6 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
                 Các lần chạy của khách <Count value={others.length} />
               </span>
             }
-            description="Bấm một lần chạy để xem; lần khách chọn gắn nhãn Mô phỏng chính."
           />
           <PanelBody>
             <SimulationHistory items={others} viewingId={viewing} onView={setViewId} />
@@ -285,10 +281,7 @@ export function OpsSurveyRequestPage() {
                   feasibility={onsite.data?.data.installationFeasibility}
                 />
                 <Panel>
-                  <PanelHeader
-                    title="Số liệu khách khai"
-                    description="Đối chiếu khi gọi khách và đo lại khi khảo sát."
-                  />
+                  <PanelHeader title="Số liệu khách khai" />
                   <PanelBody className="space-y-6">
                     {/* Dùng lg: vì cx không gộp class, chỉ breakpoint lớn hơn mới đè được md:grid-cols-4 */}
                     <StatRow className="lg:grid-cols-5">

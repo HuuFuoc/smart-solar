@@ -47,10 +47,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
     <Card className="flex flex-col gap-4 p-5 shadow-sm">
       {/* Header */}
       <div className="flex flex-col gap-3 border-b border-surface-container-highest pb-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-label-lg font-bold text-on-surface">Danh sách hồ sơ theo dõi gần đây</h3>
-          <p className="text-body-sm text-on-surface-variant">Chi tiết các yêu cầu khảo sát do bạn quản lý</p>
-        </div>
+        <h3 className="text-label-lg font-bold text-on-surface">Hồ sơ của tôi</h3>
         <Link to={ROUTES.ops.surveysMine}>
           <span className="text-label-sm font-semibold text-primary hover:underline">
             Xem toàn bộ ({surveys.length}) →
@@ -195,9 +192,6 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
           <span>
             Đang hiển thị <strong>{filteredSurveys.length}</strong> / {surveys.length} hồ sơ
           </span>
-          {filteredSurveys.length > 5 && (
-            <span className="italic text-on-surface-variant/80">(Cuộn chuột trong khung để xem tất cả)</span>
-          )}
         </div>
       )}
     </Card>

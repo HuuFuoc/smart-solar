@@ -331,10 +331,7 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
               <Icon name="location_city" className="text-[22px]" />
             </div>
-            <div>
-              <h3 className="text-label-lg font-bold text-on-surface">Phân bổ khách hàng theo Phường / Xã</h3>
-              <p className="text-body-xs text-on-surface-variant">Toàn bộ phường/xã TP.HCM • Tra cứu không cần dấu</p>
-            </div>
+            <h3 className="text-label-lg font-bold text-on-surface">Hồ sơ theo phường, xã</h3>
           </div>
           <span className="shrink-0 rounded-full bg-secondary/10 px-3 py-1 text-label-xs font-semibold text-secondary">
             {allWards.length} phường/xã ({hasDataCount} có hồ sơ)

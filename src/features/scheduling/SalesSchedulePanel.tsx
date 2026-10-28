@@ -504,8 +504,7 @@ export function SalesSchedulePanel({ request }: { request: SurveyRequestDetail }
         <PanelHeader title="Lịch khảo sát" />
         <PanelBody>
           <p className="max-w-prose text-body text-fg-2">
-            Khách chưa đặt giờ khảo sát. Khách tự chọn giờ trên cổng khách hàng, rồi kỹ thuật viên trong khu vực tự nhận
-            lịch. Gọi khách để nhắc nếu yêu cầu chờ lâu.
+            Khách chưa đặt giờ khảo sát. Gọi khách để nhắc nếu yêu cầu chờ lâu.
           </p>
         </PanelBody>
       </Panel>

@@ -25,7 +25,6 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           <label htmlFor="rag-model-select" className="text-body font-medium text-fg-1">
             Mô hình sinh nội dung (LLM)
           </label>
-          <p className="mt-1 text-meta text-fg-3">Chọn mô hình phù hợp với hiệu năng và chi phí phản hồi.</p>
           <select
             id="rag-model-select"
             value={form.generationModel}
@@ -45,7 +44,6 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           <label htmlFor="rag-prompt-select" className="text-body font-medium text-fg-1">
             Phiên bản Prompt hệ thống
           </label>
-          <p className="mt-1 text-meta text-fg-3">Phiên bản chỉ dẫn ngữ cảnh chatbot được nạp từ RAG service.</p>
           <select
             id="rag-prompt-select"
             value={form.promptVersion}
@@ -167,7 +165,6 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
         <label htmlFor="rag-notes-input" className="text-body font-medium text-fg-1">
           Ghi chú bản nháp (Notes)
         </label>
-        <p className="mt-0.5 text-meta text-fg-3">Ghi chú mục đích điều chỉnh cấu hình AI cho bản nháp này.</p>
         <textarea
           id="rag-notes-input"
           rows={2}

@@ -23,6 +23,7 @@ export function SalesUrgentActionsCard({
   const myEscalated = escalatedAppointments.filter((item) => item.ownedByMe)
   const overdueRequests = pendingRequests.filter((r) => isOverdue(r.submittedAt))
   const hasUrgent = myEscalated.length > 0 || overdueRequests.length > 0 || pendingRequests.length > 0
+  const warnings = myEscalated.length + overdueRequests.length
 
   return (
     <Card className="flex flex-col gap-4 p-5">
@@ -31,14 +32,11 @@ export function SalesUrgentActionsCard({
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-error/10 text-error">
             <Icon name="notification_important" className="text-[20px]" />
           </div>
-          <div>
-            <h3 className="text-label-lg font-bold text-on-surface">Việc cần xử lý ngay</h3>
-            <p className="text-body-sm text-on-surface-variant">Hồ sơ quá hạn hoặc cần gán kỹ thuật viên khẩn cấp</p>
-          </div>
+          <h3 className="text-label-lg font-bold text-on-surface">Việc cần xử lý ngay</h3>
         </div>
-        {hasUrgent && (
+        {warnings > 0 && (
           <span className="rounded-full bg-error-container/60 px-2.5 py-0.5 text-label-sm font-semibold text-on-error-container">
-            {myEscalated.length + overdueRequests.length} cảnh báo
+            {warnings} cảnh báo
           </span>
         )}
       </div>
@@ -48,10 +46,7 @@ export function SalesUrgentActionsCard({
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
             <Icon name="check_circle" className="text-[28px]" />
           </div>
-          <p className="mt-2 text-label-lg font-semibold text-on-surface">Mọi việc đều đang đúng tiến độ!</p>
-          <p className="text-body-sm text-on-surface-variant">
-            Không có hồ sơ nào bị quá hạn hoặc cần gán KTV khẩn cấp.
-          </p>
+          <p className="mt-2 text-label-lg font-semibold text-on-surface">Không có việc cần xử lý ngay</p>
         </div>
       ) : (
         <div className="space-y-3">

@@ -319,10 +319,7 @@ export function AdminProductsPage() {
           <h2 ref={hiddenHeadingRef} id="hidden-products" tabIndex={-1} className="text-title font-semibold">
             Đã ngừng bán
           </h2>
-          <p className="mt-1 max-w-prose text-body text-fg-2">
-            Danh sách sản phẩm không hiện sản phẩm đã ngừng bán. Đây là các sản phẩm bạn đã ngừng bán trên trình duyệt
-            này.
-          </p>
+          <p className="mt-1 max-w-prose text-body text-fg-2">Chỉ hiện sản phẩm bạn ngừng bán trên trình duyệt này.</p>
           <ul className="mt-3 divide-y divide-line">
             {hidden.map((h) => (
               <li key={h.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">

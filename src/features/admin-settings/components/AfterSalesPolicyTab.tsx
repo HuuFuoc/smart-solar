@@ -55,12 +55,7 @@ export function AfterSalesPolicyTab({ settings, isSaving, onSave }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-surface-1 p-4">
-        <div>
-          <h3 className="text-body font-semibold text-fg-1">Chính sách Điều phối & Dịch vụ Sau bán</h3>
-          <p className="mt-0.5 text-meta text-fg-3">
-            Gồm 14 tham số nghiệp vụ được phân thành 3 nhóm: SLA Điều phối, Bảo hành/Bảo trì và Báo giá thanh toán.
-          </p>
-        </div>
+        <h3 className="text-body font-semibold text-fg-1">Chính sách Điều phối & Dịch vụ Sau bán</h3>
         {hasChanges && (
           <div className="flex items-center gap-2">
             <Button variant="secondary" disabled={isSaving} onClick={() => setDraft({})}>

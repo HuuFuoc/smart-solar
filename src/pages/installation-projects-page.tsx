@@ -72,9 +72,7 @@ function InstallationProjectsPage({ detailPattern }: { detailPattern: string }) 
                 </Badge>
               )}
             </span>
-          ) : (
-            'Dự án lắp đặt từ hợp đồng đã thanh toán đủ: phân công kỹ thuật viên, checklist, nghiệm thu và bàn giao.'
-          )
+          ) : undefined
         }
       />
 
@@ -94,10 +92,7 @@ function InstallationProjectsPage({ detailPattern }: { detailPattern: string }) 
         <QueryBoundary query={ready}>
           {(rows) =>
             rows.length === 0 ? (
-              <EmptyState
-                title="Không có hợp đồng nào chờ tạo dự án"
-                description="Hợp đồng hiện ở đây khi khách đã thanh toán đủ và hợp đồng chưa có dự án thi công."
-              />
+              <EmptyState title="Không có hợp đồng nào chờ tạo dự án" />
             ) : (
               <ReadyContractList rows={rows} detailPattern={detailPattern} />
             )
@@ -135,7 +130,7 @@ function InstallationProjectsPage({ detailPattern }: { detailPattern: string }) 
               ) : (
                 <EmptyState
                   title="Chưa có dự án thi công nào"
-                  description="Dự án được tạo từ hợp đồng đã thanh toán đủ."
+
                   action={
                     readyCount > 0 ? (
                       <Button icon="visibility" size="sm" variant="info" onClick={() => setTab('hop-dong')}>

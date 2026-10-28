@@ -47,7 +47,7 @@ export function CustomerQuotationsPage() {
           return rows.length === 0 ? (
             <EmptyState
               title="Chưa có báo giá"
-              description="Sau khi kỹ thuật viên khảo sát tại công trình, nhân viên kinh doanh lập báo giá và gửi cho bạn ở đây."
+
               action={
                 <ButtonLink to={ROUTES.customer.requests} variant="info" icon="visibility">
                   Xem yêu cầu khảo sát

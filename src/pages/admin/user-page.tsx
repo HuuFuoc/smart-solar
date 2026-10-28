@@ -98,7 +98,7 @@ export function AdminUserPage() {
                   <Panel>
                     <PanelHeader
                       title="Xoá tài khoản"
-                      description="Xoá mềm: lịch sử vẫn giữ, người dùng không đăng nhập được nữa."
+                      description="Người dùng không đăng nhập được nữa, lịch sử vẫn giữ."
                     />
                     <PanelBody>
                       <Button size="sm" variant="danger" icon="delete" onClick={() => setDeleting(true)}>

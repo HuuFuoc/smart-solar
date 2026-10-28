@@ -4,7 +4,6 @@ import type { ServiceRequestSummary } from '@/types/res/customerAfterSalesRes'
 export type MilestoneProgress = {
   id: string
   label: string
-  description: string
   count: number
   percentage: number
   color: string
@@ -43,7 +42,6 @@ export function aggregateWorkflowProgress(
     {
       id: 'pending',
       label: 'Chờ tiếp nhận / Xếp lịch',
-      description: 'Yêu cầu đang chờ chuyên viên điều phối xử lý',
       count: pendingCount,
       percentage: Math.round((pendingCount / total) * 100),
       color: '#f59e0b',
@@ -51,7 +49,6 @@ export function aggregateWorkflowProgress(
     {
       id: 'scheduled',
       label: 'Đã lên lịch hẹn',
-      description: 'Đã xác nhận thời gian kỹ thuật viên đến công trình',
       count: scheduledCount,
       percentage: Math.round((scheduledCount / total) * 100),
       color: '#3b82f6',
@@ -59,7 +56,6 @@ export function aggregateWorkflowProgress(
     {
       id: 'in-progress',
       label: 'Đang triển khai',
-      description: 'Kỹ thuật viên đang thực hiện công việc tại thực địa',
       count: inProgressCount,
       percentage: Math.round((inProgressCount / total) * 100),
       color: '#06b6d4',
@@ -67,7 +63,6 @@ export function aggregateWorkflowProgress(
     {
       id: 'completed',
       label: 'Đã hoàn thành',
-      description: 'Công việc đã nghiệm thu và lưu hồ sơ hệ thống',
       count: completedCount,
       percentage: Math.round((completedCount / total) * 100),
       color: '#10b981',
