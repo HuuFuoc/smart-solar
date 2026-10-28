@@ -28,10 +28,13 @@ export function useWarrantyQuery(projectId: string | undefined) {
   })
 }
 
-export function useMyServiceRequestsQuery() {
+export function useMyServiceRequestsQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<ServiceRequestSummary[], ApiError>({
     queryKey: customerServiceKeys.requests(),
     queryFn: afterSalesService.listRequests,
+    // Tự tải lại để số đỏ trên menu cập nhật
+    refetchInterval: 60_000,
+    enabled,
   })
 }
 

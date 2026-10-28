@@ -35,10 +35,13 @@ export function usePackagesQuery(kind: ServicePackageKind) {
   })
 }
 
-export function useSubscriptionsQuery() {
+export function useSubscriptionsQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<SubscriptionView[], ApiError>({
     queryKey: customerAfterSalesKeys.subscriptions(),
     queryFn: afterSalesService.listSubscriptions,
+    // Tự tải lại để số đỏ trên menu cập nhật
+    refetchInterval: 60_000,
+    enabled,
   })
 }
 

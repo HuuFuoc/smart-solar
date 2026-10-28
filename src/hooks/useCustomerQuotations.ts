@@ -16,6 +16,8 @@ export function useMyQuotationsQuery({ enabled = true }: { enabled?: boolean } =
   return useQuery<QuotationView[], ApiError>({
     queryKey: customerQuotationKeys.list(),
     queryFn: quotationService.listMyQuotations,
+    // Tự tải lại để số đỏ trên menu cập nhật
+    refetchInterval: 60_000,
     enabled,
   })
 }

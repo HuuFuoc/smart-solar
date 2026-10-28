@@ -24,6 +24,9 @@ export function paymentStatusMeta(status: string): { label: string; tone: Tone }
   return PAYMENT_ATTEMPT_STATUSES[status] ?? { label: status, tone: 'neutral' }
 }
 
+/** Gói khách đã đặt mua nhưng chưa trả tiền */
+export const awaitsPayment = (s: { status: string }) => s.status === 'AWAITING_PAYMENT'
+
 export function isPayableAttempt(status: string | null | undefined) {
   return status != null && PAYABLE_ATTEMPT_STATUSES.includes(status)
 }

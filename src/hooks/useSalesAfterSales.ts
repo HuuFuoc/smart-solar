@@ -27,11 +27,12 @@ export function useOpenTasksQuery({ enabled = true }: { enabled?: boolean } = {}
   })
 }
 
-export function useMyTasksQuery() {
+export function useMyTasksQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<SalesTaskView[], ApiError>({
     queryKey: salesAfterSalesKeys.myTasks(),
     queryFn: salesService.listMyTasks,
     refetchInterval: QUEUE_REFRESH_MS,
+    enabled,
   })
 }
 

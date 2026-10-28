@@ -3,26 +3,20 @@ import { Outlet } from 'react-router'
 import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
-import { technicianReadiness } from '@/features/scheduling/schedulingDisplay'
-import { useInstallationProjectsQuery, useReadyContractsQuery } from '@/hooks/useManagerInstallations'
-import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
+import { useManagerNavAlerts } from '@/hooks/useManagerNavAlerts'
 import { ROUTES } from '@/routes/paths'
 
-// Số đỏ cạnh "Thi công" là việc chờ quản lý: hợp đồng chưa tạo dự án + dự án chờ phân công.
-// Số đỏ cạnh "Kỹ thuật viên" là số người chưa thuộc khu vực nào
+// Số đỏ trên menu xem useManagerNavAlerts
 export function ManageLayout({ children }: { children?: ReactNode }) {
   const isManager = useAuth().user?.role === 'manager'
-  const missingBase = useTechniciansQuery({ enabled: isManager }).data?.filter(
-    (t) => technicianReadiness(t).tone === 'danger',
-  ).length
-  const ready = useReadyContractsQuery({ enabled: isManager }).data?.length ?? 0
-  const waiting = useInstallationProjectsQuery('PENDING_ASSIGNMENT', { enabled: isManager }).data?.length ?? 0
+  const alerts = useManagerNavAlerts(isManager, ROUTES.manage)
   return (
     <AppShell
       portal={PORTALS.manage}
       badges={{
-        [ROUTES.manage.installations]: { value: ready + waiting || undefined, attention: true },
-        [ROUTES.manage.technicians]: { value: missingBase || undefined, attention: true },
+        [ROUTES.manage.installations]: { value: alerts.installations, attention: true },
+        [ROUTES.manage.afterSales]: { value: alerts.afterSales, attention: true },
+        [ROUTES.manage.technicians]: { value: alerts.technicians, attention: true },
       }}
     >
       {children ?? <Outlet />}

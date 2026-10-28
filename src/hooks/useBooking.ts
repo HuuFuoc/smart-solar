@@ -21,10 +21,13 @@ export const bookingKeys = {
   slots: (propertySiteId: string, date: string) => ['survey-slots', propertySiteId, date] as const,
 }
 
-export function useMyRequestsQuery() {
+export function useMyRequestsQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<CustomerSurveyRequestView[], ApiError>({
     queryKey: bookingKeys.list(),
     queryFn: bookingService.listMyRequests,
+    // Tự tải lại để số đỏ trên menu cập nhật
+    refetchInterval: 60_000,
+    enabled,
   })
 }
 

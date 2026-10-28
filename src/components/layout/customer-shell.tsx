@@ -5,8 +5,10 @@ import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } fr
 import { Link, useLocation, useNavigate } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Avatar } from '@/components/common/ui/avatar'
+import { Count } from '@/components/common/ui/badge'
 import { Segmented } from '@/components/common/ui/segmented'
 import { WithTooltip } from '@/components/common/ui/tooltip'
+import type { RailCount } from '@/components/layout/app-shell'
 import { PageCrumbContext, isNavItemActive, isNavItemPage, type PageCrumb } from '@/components/layout/page-crumb'
 import { PORTALS, type NavItem } from '@/config/portals'
 import { ROLE_LABELS } from '@/common/role'
@@ -21,13 +23,23 @@ import { ROUTES } from '@/routes/paths'
 import { cx } from '@/utils/cx'
 
 // Khung của cổng khách hàng: sidebar trái (logo, menu, tài khoản ở đáy), nội dung bên phải
-// Từ lg sidebar rộng 240px, thu gọn được còn cột icon 64px. Dưới lg sidebar là drawer mở bằng nút Menu
+// Từ lg sidebar rộng 264px (đủ cho "Bảo hành, sửa chữa" kèm số đỏ), thu gọn được còn cột icon 64px.
+// Dưới lg sidebar là drawer mở bằng nút Menu
 // Mở drawer thì focus vào nút đóng và phần còn lại của trang bị khoá (inert), đóng thì trả focus về nút Menu
 const DESKTOP = '(min-width: 64rem)'
 
-export function CustomerShell({ children }: { children: ReactNode }) {
+export function CustomerShell({
+  badges,
+  children,
+}: {
+  /** Số đếm cạnh mục menu, theo `to` của mục; 0 hoặc chưa có thì không hiện */
+  badges?: Record<string, RailCount | undefined>
+  children: ReactNode
+}) {
   const portal = PORTALS.customer
   const items = portal.groups.flatMap((group) => group.items)
+  // Điện thoại không thấy menu nên nút Menu mang tổng số việc đang chờ
+  const waiting = Object.values(badges ?? {}).reduce((sum, c) => sum + (c?.attention ? (c.value ?? 0) : 0), 0)
   const { pathname } = useLocation()
   const [crumb, setCrumb] = useState<PageCrumb | null>(null)
   // Đường dẫn lúc mở drawer (null: đóng). Chuyển trang hoặc rộng tới lg thì drawer tự đóng, không cần effect
@@ -111,7 +123,7 @@ export function CustomerShell({ children }: { children: ReactNode }) {
         aria-label="Điều hướng cổng khách hàng"
         className={cx(
           'fixed inset-y-0 left-0 z-40 flex flex-col border-r border-line bg-rail duration-200 motion-reduce:transition-none',
-          compact ? 'w-16' : 'w-72 lg:w-60',
+          compact ? 'w-16' : 'w-72 lg:w-66',
           // Khi đóng thì ẩn hẳn (invisible) để link bên trong không nhận Tab
           drawerOpen
             ? 'visible translate-x-0 transition-[translate]'
@@ -139,9 +151,14 @@ export function CustomerShell({ children }: { children: ReactNode }) {
               <li key={item.label}>
                 {/* Chọn trang trong drawer thì đóng drawer và trả focus về nút Menu */}
                 {compact ? (
-                  <SidebarIconLink item={item} pathname={pathname} />
+                  <SidebarIconLink item={item} pathname={pathname} count={badges?.[item.to]} />
                 ) : (
-                  <SidebarLink item={item} pathname={pathname} onNavigate={drawerOpen ? closeDrawer : undefined} />
+                  <SidebarLink
+                    item={item}
+                    pathname={pathname}
+                    count={badges?.[item.to]}
+                    onNavigate={drawerOpen ? closeDrawer : undefined}
+                  />
                 )}
               </li>
             ))}
@@ -173,7 +190,7 @@ export function CustomerShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Drawer đang mở thì phần còn lại không nhận focus hay thao tác */}
-      <div inert={drawerOpen || undefined} className={compact ? 'lg:pl-16' : 'lg:pl-60'}>
+      <div inert={drawerOpen || undefined} className={compact ? 'lg:pl-16' : 'lg:pl-66'}>
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-line bg-canvas px-4 md:px-6 lg:hidden">
           <button
             ref={menuButtonRef}
@@ -185,6 +202,12 @@ export function CustomerShell({ children }: { children: ReactNode }) {
           >
             <Icon name="menu" className="text-[24px]" />
             Menu
+            {waiting > 0 && (
+              <>
+                <Count value={waiting} attention />
+                <span className="sr-only">việc chờ bạn</span>
+              </>
+            )}
           </button>
           <span aria-hidden className="h-6 border-l border-line" />
           {/* Tiêu đề trang (h1) còn thấy thì thanh trên chỉ ghi thương hiệu, cuộn qua rồi mới ghi tên mục */}
@@ -304,13 +327,24 @@ function SidebarBrand({
   )
 }
 
-function SidebarLink({ item, pathname, onNavigate }: { item: NavItem; pathname: string; onNavigate?: () => void }) {
+function SidebarLink({
+  item,
+  pathname,
+  count,
+  onNavigate,
+}: {
+  item: NavItem
+  pathname: string
+  count?: RailCount
+  onNavigate?: () => void
+}) {
   const active = isNavItemActive(item, pathname)
   return (
     // Dùng Link thay NavLink vì NavLink bỏ aria-current khi đang ở trang con
     <Link
       to={item.to}
       onClick={onNavigate}
+      aria-label={count?.value ? `${item.label} (${count.value})` : undefined}
       aria-current={active ? (isNavItemPage(item, pathname) ? 'page' : 'location') : undefined}
       className={cx(
         sidebarRow,
@@ -323,19 +357,21 @@ function SidebarLink({ item, pathname, onNavigate }: { item: NavItem; pathname: 
         className={cx('shrink-0 text-[20px]', active ? 'icon-fill text-accent-fg' : 'text-fg-3 group-hover:text-fg-2')}
       />
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      {count?.value ? <Count value={count.value} attention={count.attention} className="-ml-1" /> : null}
     </Link>
   )
 }
 
 // Sidebar thu gọn: chỉ còn icon, tên trong tooltip và aria-label
-function SidebarIconLink({ item, pathname }: { item: NavItem; pathname: string }) {
+function SidebarIconLink({ item, pathname, count }: { item: NavItem; pathname: string; count?: RailCount }) {
   const active = isNavItemActive(item, pathname)
+  const label = count?.value ? `${item.label} (${count.value})` : item.label
   return (
-    <WithTooltip side="right" label={item.label}>
+    <WithTooltip side="right" label={label}>
       {(tip) => (
         <Link
           to={item.to}
-          aria-label={item.label}
+          aria-label={label}
           aria-current={active ? (isNavItemPage(item, pathname) ? 'page' : 'location') : undefined}
           className={cx(
             sidebarIcon,
@@ -345,6 +381,9 @@ function SidebarIconLink({ item, pathname }: { item: NavItem; pathname: string }
           {...tip}
         >
           <Icon name={item.icon} className={cx('text-[20px]', active && 'icon-fill')} />
+          {count?.value ? (
+            <Count value={count.value} attention={count.attention} className="absolute -top-1.5 -right-1.5" />
+          ) : null}
         </Link>
       )}
     </WithTooltip>

@@ -31,6 +31,9 @@ export const coverageLabel = (coverage: string) => ITEM_COVERAGES[coverage] ?? c
 export const outcomeLabel = (outcome: string) => SERVICE_OUTCOMES[outcome] ?? outcome
 export const salesTaskTypeLabel = (type: string) => SALES_TASK_TYPES[type] ?? type
 export const salesTaskStatusLabel = (status: string) => SALES_TASK_STATUSES[status] ?? status
+/** Việc của kinh doanh trên màn Bảo hành, sửa chữa: báo giá sửa chữa và báo giá bảo trì lẻ */
+export const isQuotationTask = (task: { taskType: string }) =>
+  task.taskType === 'REPAIR_QUOTATION' || task.taskType === 'MAINTENANCE_QUOTATION'
 
 const neutral = (label: string): { label: string; tone: Tone } => ({ label, tone: 'neutral' })
 

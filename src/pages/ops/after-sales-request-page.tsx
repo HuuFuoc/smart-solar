@@ -10,7 +10,7 @@ import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { QuotationForm } from '@/features/after-sales/QuotationForm'
 import { QuotationDetail, ServiceItemList, ServiceVisitList } from '@/features/after-sales/ServiceRequestParts'
-import { requestKindLabel, requestStatusMeta } from '@/features/after-sales/serviceDisplay'
+import { isQuotationTask, requestKindLabel, requestStatusMeta } from '@/features/after-sales/serviceDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
   useClaimTaskMutation,
@@ -22,7 +22,6 @@ import { errorMessage } from '@/services/api/errors'
 import type { ServiceRequestView } from '@/types/res/customerAfterSalesRes'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
-const QUOTATION_TASKS = ['REPAIR_QUOTATION', 'MAINTENANCE_QUOTATION']
 const isWorking = (t: SalesTaskView) => t.status === 'CLAIMED' || t.status === 'IN_PROGRESS'
 
 function nextStep(
@@ -54,7 +53,7 @@ export function OpsAfterSalesRequestPage() {
   const claim = useClaimTaskMutation()
   usePageCrumb(query.data ? query.data.requestNumber : null)
 
-  const forRequest = (t: SalesTaskView) => t.requestId === id && QUOTATION_TASKS.includes(t.taskType)
+  const forRequest = (t: SalesTaskView) => t.requestId === id && isQuotationTask(t)
   const mine = myTasks.data?.find((t) => forRequest(t) && isWorking(t))
   const open = openTasks.data?.find(forRequest)
 
@@ -125,9 +124,7 @@ export function OpsAfterSalesRequestPage() {
                 <Panel id="quotation-form" className="scroll-mt-6">
                   <PanelHeader
                     title="Lập báo giá"
-                    description={
-                      r.kind === 'FAULT' ? 'Mỗi hạng mục khách trả tiền một dòng.' : 'Bảo trì lẻ theo giờ khách chọn.'
-                    }
+                    description={r.kind === 'FAULT' ? 'Mỗi hạng mục khách trả tiền một dòng.' : undefined}
                   />
                   <PanelBody>
                     <QuotationForm request={r} />

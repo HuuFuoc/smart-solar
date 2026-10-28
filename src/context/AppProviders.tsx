@@ -1,20 +1,23 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { Toaster } from 'sonner'
 import { AuthProvider } from '@/context/AuthProvider'
+import { markOwnAction } from '@/hooks/useNavAlert'
 import { isApiError } from '@/services/api/errors'
 import { cx } from '@/utils/cx'
 
-// Lỗi 4xx thử lại cũng không khỏi nên không retry
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      // Lỗi 4xx thử lại cũng không khỏi nên không retry
       retry: (failureCount, error) => {
         if (isApiError(error) && error.status >= 400 && error.status < 500) return false
         return failureCount < 2
       },
     },
   },
+  // Thay đổi kéo theo thao tác của chính người dùng không báo đỏ trên menu
+  mutationCache: new MutationCache({ onSettled: () => markOwnAction() }),
 })
 
 // Toast theo màu của token: thành công xanh, thông tin xanh dương, lỗi / cảnh báo nền đỏ / vàng nhạt

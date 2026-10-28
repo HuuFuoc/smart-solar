@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { SERVICE_PACKAGE_KINDS } from '@/common/afterSales'
+import { Badge } from '@/components/common/ui/badge'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
-import { packageKindLabel } from '@/features/after-sales/afterSalesDisplay'
+import { awaitsPayment, packageKindLabel } from '@/features/after-sales/afterSalesDisplay'
 import { CancelSubscriptionDialog } from '@/features/after-sales/CancelSubscriptionDialog'
 import { PackageList } from '@/features/after-sales/PackageList'
 import { PaymentDialog } from '@/features/after-sales/PaymentDialog'
@@ -16,17 +17,12 @@ import type { PackageView, ServicePackageKind, SubscriptionView } from '@/types/
 // Gói dịch vụ của khách: gói đã mua (thanh toán, huỷ trước khi hiệu lực) và gói đang bán của hai loại, bảo vệ thiên tai
 // và bảo trì định kỳ (mua cho một hợp đồng). Đặt lịch các lượt bảo trì đã mua chưa có trên màn này
 
-const KIND_DESCRIPTIONS: Record<string, string> = {
-  [SERVICE_PACKAGE_KINDS.disasterProtection]: 'Hỗ trợ chi phí sửa chữa khi thiên tai làm hư hỏng hệ thống.',
-  [SERVICE_PACKAGE_KINDS.maintenance]: 'Kỹ thuật viên tới kiểm tra hệ thống theo lịch của gói.',
-}
-
 function OnSale({ kind, onBuy }: { kind: ServicePackageKind; onBuy: (pkg: PackageView) => void }) {
   const packages = usePackagesQuery(kind)
   const label = packageKindLabel(kind)
   return (
     <Panel>
-      <PanelHeader title={label} description={KIND_DESCRIPTIONS[kind]} />
+      <PanelHeader title={label} />
       <PanelBody>
         {packages.isPending ? (
           <Skeleton className="h-40" />
@@ -37,10 +33,7 @@ function OnSale({ kind, onBuy }: { kind: ServicePackageKind; onBuy: (pkg: Packag
             onRetry={() => void packages.refetch()}
           />
         ) : packages.data.length === 0 ? (
-          <EmptyState
-            title={`Chưa có gói ${label.toLowerCase()} đang bán`}
-            description="Gói hiện ở đây khi Smart Solar mở bán."
-          />
+          <EmptyState title={`Chưa có gói ${label.toLowerCase()} đang bán`} />
         ) : (
           <PackageList items={packages.data} onBuy={onBuy} />
         )}
@@ -59,13 +52,20 @@ export function CustomerPackagesPage() {
   const [cancelling, setCancelling] = useState<SubscriptionView | null>(null)
 
   const mine = subscriptions.data ?? []
+  const toPay = mine.filter(awaitsPayment).length
   const contractNumbers = new Map((contracts.data ?? []).map((c) => [c.contractId, c.contractNumber]))
 
   return (
     <>
       <PageHeader
         title="Gói dịch vụ"
-        description="Gói bảo vệ thiên tai và bảo trì định kỳ cho hệ thống đã lắp. Mỗi gói mua cho một hợp đồng lắp đặt."
+        description={
+          toPay > 0 ? (
+            <Badge tone="danger" icon="payments">
+              {toPay} gói chờ bạn thanh toán
+            </Badge>
+          ) : undefined
+        }
       />
 
       <div className="space-y-4">

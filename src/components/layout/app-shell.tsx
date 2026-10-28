@@ -52,6 +52,8 @@ export function AppShell({
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   // Nút cần nhận focus sau khi mở / đóng drawer (null: không đổi focus)
   const focusNext = useRef<RefObject<HTMLButtonElement | null> | null>(null)
+  // Điện thoại không thấy menu: không có dòng nhắc riêng thì nút Menu mang tổng số đỏ
+  const waiting = Object.values(badges ?? {}).reduce((sum, c) => sum + (c?.attention ? (c.value ?? 0) : 0), 0)
 
   function openDrawer() {
     focusNext.current = closeButtonRef
@@ -132,6 +134,12 @@ export function AppShell({
           >
             <Icon name="menu" className="text-[24px]" />
             Menu
+            {!collapsedHint && waiting > 0 && (
+              <>
+                <Count value={waiting} attention />
+                <span className="sr-only">việc chờ bạn</span>
+              </>
+            )}
           </button>
         </div>
       </header>

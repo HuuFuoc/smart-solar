@@ -8,7 +8,7 @@ import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/l
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
-import { salesTaskStatusLabel, salesTaskTypeLabel } from '@/features/after-sales/serviceDisplay'
+import { isQuotationTask, salesTaskStatusLabel, salesTaskTypeLabel } from '@/features/after-sales/serviceDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useClaimTaskMutation, useMyTasksQuery, useOpenTasksQuery } from '@/hooks/useSalesAfterSales'
@@ -21,7 +21,6 @@ import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
 type Tab = 'open' | 'mine' | 'done'
 
-const QUOTATION_TASKS = ['REPAIR_QUOTATION', 'MAINTENANCE_QUOTATION']
 const COLUMNS = 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)_9rem]'
 const LABELS = ['Việc', 'Yêu cầu', 'Tạo lúc', 'Tình hình', '']
 
@@ -92,12 +91,11 @@ export function OpsAfterSalesPage() {
   const open = useOpenTasksQuery()
   const mine = useMyTasksQuery()
   const [picked, setPicked] = useState<Tab | null>(null)
-  const quotation = (t: SalesTaskView) => QUOTATION_TASKS.includes(t.taskType)
   const finished = (t: SalesTaskView) => t.status === 'DONE' || t.status === 'CANCELLED'
   const groups: Record<Tab, SalesTaskView[]> = {
-    open: (open.data ?? []).filter(quotation),
-    mine: (mine.data ?? []).filter((t) => quotation(t) && !finished(t)),
-    done: (mine.data ?? []).filter((t) => quotation(t) && finished(t)),
+    open: (open.data ?? []).filter(isQuotationTask),
+    mine: (mine.data ?? []).filter((t) => isQuotationTask(t) && !finished(t)),
+    done: (mine.data ?? []).filter((t) => isQuotationTask(t) && finished(t)),
   }
   const tab: Tab = picked ?? (groups.mine.length > 0 ? 'mine' : 'open')
   const query = tab === 'open' ? open : mine
@@ -111,9 +109,7 @@ export function OpsAfterSalesPage() {
             <Badge tone="danger" icon="assignment_late">
               {groups.open.length} việc báo giá chờ nhận
             </Badge>
-          ) : (
-            'Báo giá phần sửa chữa khách phải trả tiền và bảo trì lẻ.'
-          )
+          ) : undefined
         }
       />
       <FilterChips
