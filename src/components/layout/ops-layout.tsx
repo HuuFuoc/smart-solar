@@ -38,7 +38,9 @@ export function OpsLayout({ children }: { children?: ReactNode }) {
   const myTasks = useMemo(() => myTasksData?.filter(isQuotationTask), [myTasksData])
   const mineAlert = useNavAlert(ROUTES.ops.surveysMine, mine, {
     ...surveyAlert,
-    todo: (r) => escalated?.some((item) => item.ownedByMe && item.surveyRequestId === r.surveyRequestId) ?? false,
+    todo: (r) =>
+      Boolean(r.appointment?.isOverdue) ||
+      (escalated?.some((item) => item.ownedByMe && item.surveyRequestId === r.surveyRequestId) ?? false),
   })
   const tasksAlert = useNavAlert(ROUTES.ops.afterSales, myTasks, taskAlert)
   return (

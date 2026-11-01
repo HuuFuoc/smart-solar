@@ -7,7 +7,8 @@ import type {
   DisputeReviewRequest,
   ScheduleVisitRequest,
 } from '@/types/req/managerAfterSalesReq'
-import type { ServiceRequestSummary, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
+import type { WarrantyActivationBody } from '@/services/managerAfterSalesService'
+import type { InstalledAssetView, ServiceRequestSummary, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
 
 // Yêu cầu bảo hành, sửa chữa, bảo trì phía quản lý / quản trị. Không tự gửi lại khi bị 409: tải lại rồi để người dùng làm lại
 
@@ -58,4 +59,10 @@ export function useReviewDisputeMutation() {
 
 export function useDecideCancellationMutation() {
   return useRequestMutation<CancellationDecisionRequest>(managerService.decideCancellation)
+}
+
+export function useRecordWarrantyActivationMutation() {
+  return useMutation<InstalledAssetView, ApiError, { assetId: string; body: WarrantyActivationBody }>({
+    mutationFn: ({ assetId, body }) => managerService.recordWarrantyActivation(assetId, body),
+  })
 }

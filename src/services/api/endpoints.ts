@@ -61,6 +61,7 @@ export const ENDPOINTS = {
     booking: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/booking`,
     bookingCancel: (surveyRequestId: string) =>
       `/customers/me/survey-requests/${encode(surveyRequestId)}/booking/cancel`,
+    withdraw: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/withdraw`,
   },
   customerInstallations: {
     base: '/customers/me/installation-projects',
@@ -115,6 +116,7 @@ export const ENDPOINTS = {
     assignTechnician: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/assign-technician`,
     reassignTechnician: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/reassign-technician`,
     reschedule: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/reschedule`,
+    close: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/close`,
   },
   technicianAvailability: {
     base: '/technicians/availability',
@@ -220,6 +222,7 @@ export const ENDPOINTS = {
       `/manager/after-sales/requests/${encode(requestId)}/cancellation-decision`,
     evidenceUrl: (requestId: string, evidenceId: string) =>
       `/manager/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
+    warrantyActivation: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}/warranty-activation`,
   },
 
   // Quản trị

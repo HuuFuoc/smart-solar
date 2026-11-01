@@ -11,6 +11,7 @@ import type {
   InstallationValue,
   ProviderFailure,
   SelectedSimulation,
+  ShadingInfo,
   SimulationView,
   SimulationWarning,
 } from '@/types/res/simulationsRes'
@@ -201,3 +202,29 @@ export function formatMm(value: MaybeNumber) {
 
 export const MONTHS = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12']
 export const MONTH_NAMES = MONTHS.map((_, index) => `Tháng ${index + 1}`)
+
+/** Sản lượng đã trừ bóng che của vật cản và các hàng tấm (backend tính theo từng giờ) */
+export function shadingApplied(shading: ShadingInfo | null | undefined) {
+  return shading?.status === 'SUCCEEDED'
+}
+
+/** Câu tóm tắt bóng che dưới biểu đồ sản lượng; null khi không có gì để nói */
+export function shadingSummary(shading: ShadingInfo | null | undefined) {
+  if (!shading || shading.status !== 'SUCCEEDED') return null
+  if (shading.reason === 'NO_OCCLUDERS') return 'Không có vật cản nào che tấm pin nên sản lượng không bị trừ bóng che.'
+  const panels = shading.shadedPanelCount ? `, ${shading.shadedPanelCount} tấm bị che một phần` : ''
+  return `Đã trừ bóng che của vật cản và các hàng tấm: giảm ${formatTwo(shading.annualLossPercent)}% (${formatKwh(shading.annualEnergyLossKwh)} kWh/năm)${panels}. Khi không bị che: ${formatKwh(shading.annualEnergyBeforeShadingKwh)} kWh/năm.`
+}
+
+/** Vì sao lần chạy này chưa trừ bóng che; null khi đã trừ hoặc lý do đã có thông báo khác (thiếu toạ độ, không có tấm) */
+export function shadingMissingText(shading: ShadingInfo | null | undefined) {
+  if (!shading) return null
+  if (shading.status === 'FAILED')
+    return 'Chưa lấy được số liệu bức xạ theo giờ để tính bóng che, sản lượng là khi tấm không bị che. Chạy lại sau ít phút.'
+  if (shading.status !== 'UNAVAILABLE') return null
+  if (shading.reason === 'OBSTACLE_HEIGHT_MISSING')
+    return 'Chưa trừ bóng che vì có vật cản chưa nhập chiều cao. Nhập chiều cao vật cản rồi chạy lại để có sản lượng sát thực tế.'
+  if (shading.reason === 'COMPUTATION_LIMIT')
+    return 'Mặt lắp có quá nhiều tấm nên chưa tính được bóng che, sản lượng là khi tấm không bị che.'
+  return null
+}

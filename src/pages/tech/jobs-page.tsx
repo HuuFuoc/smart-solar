@@ -8,7 +8,7 @@ import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/l
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
-import { formatArea } from '@/features/pre-surveys/preSurveyDisplay'
+import { formatArea, surfaceTypeLabel } from '@/features/pre-surveys/preSurveyDisplay'
 import {
   appointmentStatusMeta,
   assignmentSourceLabel,
@@ -17,7 +17,6 @@ import {
   formatTimeRange,
   ineligibleLabel,
   relativeDay,
-  surfaceNameLabel,
   todayVn,
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
@@ -32,8 +31,8 @@ import type { OpenAppointmentView, TechnicianAppointmentListItem } from '@/types
 
 type Tab = 'open' | 'upcoming' | 'past'
 
-/** Lịch chưa kết thúc là "sắp tới" (kể cả đang diễn ra) */
-const isUpcoming = (a: { endsAt: string }, now: number) => new Date(a.endsAt).getTime() >= now
+/** Lịch chưa kết thúc (kể cả đang diễn ra) hoặc đã quá giờ mà chưa khảo sát xong vẫn là việc phải làm */
+const isActive = (a: TechnicianAppointmentListItem, now: number) => a.isOverdue || new Date(a.endsAt).getTime() >= now
 
 /* Nhóm theo ngày (giờ Việt Nam), giữ thứ tự đã sắp */
 function byDay<T extends { startsAt: string }>(rows: T[]) {
@@ -100,7 +99,7 @@ function OpenJobRow({ job }: { job: OpenAppointmentView }) {
         <JobPlace name={job.propertyName} area={[job.ward, job.province]} />
         <ListCell label="Khu vực">{job.zone?.name ?? '—'}</ListCell>
         <ListCell label="Mặt lắp">
-          {surfaceNameLabel(job.installationSurfaceType)}, dùng được {formatArea(job.usableAreaM2)}
+          {surfaceTypeLabel(job.installationSurfaceType)}, dùng được {formatArea(job.usableAreaM2)}
         </ListCell>
         <ListCell label="Hạn nhận">
           <span className="tnum">{formatMoment(job.acceptanceDeadlineAt)}</span>
@@ -131,13 +130,17 @@ function MyJobRow({ job, past }: { job: TechnicianAppointmentListItem; past: boo
     <ListRow>
       <ListCells columns={COLUMNS}>
         <JobTime job={job} />
-        <JobPlace name={job.propertyName} area={[job.district, job.province]} />
+        <JobPlace name={job.propertyName} area={[job.communeName ?? job.ward ?? job.district, job.province]} />
         <ListCell label="Cách nhận">{assignmentSourceLabel(job.assignmentSource, 'technician')}</ListCell>
         <ListCell label="Nhận lúc">
           <span className="tnum">{formatMoment(job.assignedAt)}</span>
         </ListCell>
         <ListCell label="Tình hình">
-          <Badge tone={past ? 'neutral' : status.tone}>{status.label}</Badge>
+          {job.isOverdue ? (
+            <Badge tone="danger">Quá giờ, chưa khảo sát</Badge>
+          ) : (
+            <Badge tone={past ? 'neutral' : status.tone}>{status.label}</Badge>
+          )}
         </ListCell>
         <ListCell wide className="lg:justify-self-end">
           <ButtonLink icon="visibility" to={withId(ROUTES.tech.job, job.appointmentId)} size="sm" variant="info">
@@ -159,8 +162,8 @@ export function TechJobsPage() {
   const today = todayVn()
   const openRows = [...(open.data ?? [])].sort((a, b) => a.startsAt.localeCompare(b.startsAt))
   const rows = mine.data ?? []
-  const upcoming = rows.filter((r) => isUpcoming(r, now)).sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-  const past = rows.filter((r) => !isUpcoming(r, now)).sort((a, b) => b.startsAt.localeCompare(a.startsAt))
+  const upcoming = rows.filter((r) => isActive(r, now)).sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+  const past = rows.filter((r) => !isActive(r, now)).sort((a, b) => b.startsAt.localeCompare(a.startsAt))
   const canTake = openRows.filter((r) => r.canAccept).length
   // Mở sẵn tab "Chờ nhận" khi có lịch nhận được
   const tab: Tab = picked ?? (canTake > 0 ? 'open' : 'upcoming')
@@ -189,7 +192,7 @@ export function TechJobsPage() {
         onChange={setPicked}
         chips={[
           { value: 'open', label: 'Chờ nhận', count: openRows.length },
-          { value: 'upcoming', label: 'Đã nhận, sắp tới', count: upcoming.length },
+          { value: 'upcoming', label: 'Đã nhận', count: upcoming.length },
           { value: 'past', label: 'Đã qua', count: past.length },
         ]}
       />
@@ -222,7 +225,7 @@ export function TechJobsPage() {
             if (shown.length === 0)
               return (
                 <EmptyState
-                  title={tab === 'upcoming' ? 'Chưa có lịch nào sắp tới' : 'Chưa có lịch nào đã qua'}
+                  title={tab === 'upcoming' ? 'Chưa có lịch nào cần làm' : 'Chưa có lịch nào đã qua'}
                   description={tab === 'upcoming' ? 'Nhận lịch ở tab "Chờ nhận" thì lịch hiện ở đây.' : undefined}
                 />
               )

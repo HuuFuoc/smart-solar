@@ -15,6 +15,11 @@ export type TechnicianAppointmentListItem = {
   province: string
   district: string | null
   assignedAt: string | null
+  surveyRequestId: string | null
+  ward: string | null
+  communeName: string | null
+  /** Đã qua giờ kết thúc mà chưa khảo sát xong */
+  isOverdue: boolean
 }
 
 export type TechnicianJobCustomer = {
@@ -32,7 +37,7 @@ export type TechnicianJobProperty = {
   streetLine: string | null
   latitude: number | null
   longitude: number | null
-  /** Tên enum (Rooftop, Ground, Carport, Facade, Other), không phải số như ở màn sales */
+  /** Tên enum in hoa: ROOFTOP, GROUND, CARPORT, FACADE, OTHER */
   installationSurfaceType: string | null
   surfaceMaterial: string | null
 }
@@ -67,6 +72,8 @@ export type TechnicianJobView = {
   selectedSimulation: SelectedSimulationSummary | null
   /** "/api/pre-surveys/{id}/simulations/{simulationId}", kỹ thuật viên đã xác nhận đọc được */
   simulationDetailPath: string | null
+  /** Đã qua giờ kết thúc mà chưa khảo sát xong */
+  isOverdue: boolean
 }
 
 /**

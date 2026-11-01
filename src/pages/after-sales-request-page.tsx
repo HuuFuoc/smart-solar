@@ -9,6 +9,7 @@ import { ProgressTracker, type TrackerNext } from '@/components/common/ui/progre
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { CancellationDecisionForm, CoverageForm, DisputeReviewForm } from '@/features/after-sales/ManagerDecisionForms'
+import { WarrantyActivationPanel } from '@/features/after-sales/WarrantyActivationPanel'
 import { ScheduleVisitForm } from '@/features/after-sales/ScheduleVisitForm'
 import { QuotationDetail, ServiceItemList, ServiceVisitList } from '@/features/after-sales/ServiceRequestParts'
 import { ServicePhotos } from '@/features/after-sales/ServicePhotos'
@@ -222,6 +223,7 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
                   </PanelBody>
                 </Panel>
               )}
+              {project.data && <WarrantyActivationPanel request={r} assets={project.data.assets} />}
               {r.visits.length > 0 && (
                 <Panel>
                   <PanelHeader title="Buổi hẹn" />

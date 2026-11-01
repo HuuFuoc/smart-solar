@@ -189,8 +189,11 @@ export type EnergyInfo = {
   /** NO_PANELS | LOCATION_MISSING ... */
   reason: string | null
   estimateType: string
-  /** null khi chưa ước tính được, hiển thị "chưa có dữ liệu", không phải 0. */
+  /** null khi chưa ước tính được, hiển thị "chưa có dữ liệu", không phải 0. Đã trừ bóng che khi shading SUCCEEDED */
   annualEnergyKwh: number | null
+  /** Sản lượng khi không bị che; chỉ có từ bản tính bóng che (algorithmVersion ...+shading-v1) */
+  annualEnergyBeforeShadingKwh?: number | null
+  annualEnergyAfterShadingKwh?: number | null
   specificYieldKwhPerKwpYear: number | null
   monthly: MonthlyPvEnergy[]
   primaryMountingPlace: string | null
@@ -237,6 +240,24 @@ export type ClimateInfo = {
   disclaimer: string
 }
 
+/**
+ * Bóng che theo vị trí mặt trời từng giờ, do backend tính (chiếu tia 3D lên từng tấm).
+ * `status`: SUCCEEDED | UNAVAILABLE | FAILED | NOT_APPLICABLE; `reason`: NO_OCCLUDERS, OBSTACLE_HEIGHT_MISSING, ...
+ */
+export type ShadingInfo = {
+  status: string
+  reason: string | null
+  failure: ProviderFailure | null
+  annualLossPercent: number | null
+  annualEnergyLossKwh: number | null
+  annualEnergyBeforeShadingKwh: number | null
+  annualEnergyAfterShadingKwh: number | null
+  shadedPanelCount: number | null
+  /** `index` trùng layout.details.placements[].index; tỉ lệ 0..1 theo bức xạ cả năm */
+  panels: { index: number; annualDirectShadedFraction: number }[]
+  limitations: string[]
+}
+
 export type SimulationWarning = { code: string; message: string }
 
 /**
@@ -261,6 +282,8 @@ export type SimulationDetail = {
   installation: InstallationInfo
   layout: LayoutInfo
   energy: EnergyInfo
+  /** Không có ở kết quả tạo trước bản tính bóng che */
+  shading?: ShadingInfo | null
   climate: ClimateInfo
   warnings: SimulationWarning[]
   limitations: string[]

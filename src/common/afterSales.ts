@@ -122,6 +122,7 @@ export const ITEM_COVERAGES: Record<string, string> = {
   INSTALLATION_WARRANTY: 'Bảo hành lắp đặt',
   REPAIR_WARRANTY: 'Bảo hành sửa chữa',
   DISASTER_PROTECTION: 'Gói bảo vệ thiên tai',
+  MANUFACTURER_WARRANTY: 'Bảo hành của hãng',
   CHARGEABLE: 'Khách trả tiền',
 }
 

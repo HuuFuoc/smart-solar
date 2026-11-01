@@ -22,6 +22,9 @@ import {
   formatOne,
   mountingLabel,
   noPanelsText,
+  shadingApplied,
+  shadingMissingText,
+  shadingSummary,
   simulationStatusMeta,
   warningText,
 } from '@/features/pre-surveys/simulationDisplay'
@@ -102,6 +105,10 @@ function resultSummary(detail: SimulationDetail) {
 export function SimulationResult({ detail, staleNote }: { detail: SimulationDetail; staleNote?: ReactNode }) {
   const location = surfaceLocation(detail)
   const summary = resultSummary(detail)
+  // Lý do chưa trừ bóng che đã nói riêng ở ResultNotices
+  const warnings = shadingMissingText(detail.shading)
+    ? detail.warnings.filter((warning) => warning.code !== 'SHADING_NOT_APPLIED')
+    : detail.warnings
   return (
     <div className="space-y-6">
       <ResultHeader detail={detail} staleNote={staleNote} />
@@ -110,14 +117,15 @@ export function SimulationResult({ detail, staleNote }: { detail: SimulationDeta
         capacityKwp={detail.layout.installedCapacityKwp}
         annualEnergyKwh={detail.energy.annualEnergyKwh}
         specificYield={detail.energy.specificYieldKwhPerKwpYear}
+        afterShading={shadingApplied(detail.shading)}
       />
       <ResultNotices detail={detail} location={location} />
       <LayoutSection detail={detail} summary={summary} />
       <EnergySection detail={detail} />
-      {detail.warnings.length > 0 && (
+      {warnings.length > 0 && (
         <Notice tone="warn" title="Cần kỹ sư kiểm tra trước khi lắp">
           <ul className="mt-1 list-disc space-y-1 pl-5">
-            {detail.warnings.map((warning) => (
+            {warnings.map((warning) => (
               <li key={warning.code}>{warningText(warning)}</li>
             ))}
           </ul>
@@ -149,11 +157,14 @@ export function SimulationStats({
   capacityKwp,
   annualEnergyKwh,
   specificYield,
+  afterShading = false,
 }: {
   panelCount: number
   capacityKwp: number
   annualEnergyKwh: number | null
   specificYield: number | null
+  /** Sản lượng đã trừ bóng che */
+  afterShading?: boolean
 }) {
   const hasEnergy = annualEnergyKwh != null
   const hasYield = specificYield != null
@@ -165,7 +176,9 @@ export function SimulationStats({
         label="Sản lượng năm"
         value={hasEnergy ? formatKwh(annualEnergyKwh) : '—'}
         unit={hasEnergy ? 'kWh' : undefined}
-        note={hasEnergy ? 'Ước tính năm điển hình' : 'Chưa có dữ liệu'}
+        note={
+          hasEnergy ? (afterShading ? 'Năm điển hình, đã trừ bóng che' : 'Ước tính năm điển hình') : 'Chưa có dữ liệu'
+        }
       />
       <Stat
         label="Sản lượng riêng"
@@ -187,6 +200,8 @@ function ResultNotices({
   const { layout, energy } = detail
   // Toạ độ ngoài TP.HCM thì khí hậu, sản lượng đang tính ở nơi khác (khách hàng lẫn sales đều cần biết)
   const outsideHcm = location !== null && !isInHcm(location.latitude, location.longitude)
+  const shadingMissing =
+    layout.panelCount > 0 && energy.annualEnergyKwh != null ? shadingMissingText(detail.shading) : null
   return (
     <>
       {layout.panelCount === 0 && (
@@ -205,6 +220,7 @@ function ResultNotices({
       {layout.panelCount > 0 && energy.annualEnergyKwh == null && (
         <Notice tone="warn">{energyMissingText(energy)}</Notice>
       )}
+      {shadingMissing && <Notice tone="warn">{shadingMissing}</Notice>}
     </>
   )
 }
@@ -317,6 +333,7 @@ function LayoutScene({ detail, summary, angle }: { detail: SimulationDetail; sum
 function EnergySection({ detail }: { detail: SimulationDetail }) {
   const { energy } = detail
   if (energy.monthly.length === 0) return null
+  const shading = shadingSummary(detail.shading)
 
   // Kịch bản chính (ước tính thận trọng) và kịch bản còn lại để so sánh
   const scenarios = energy.scenarios.filter((scenario) => scenario.annualEnergyKwh != null)
@@ -327,6 +344,7 @@ function EnergySection({ detail }: { detail: SimulationDetail }) {
   return (
     <Section title="Sản lượng theo tháng (kWh)">
       <EnergyChart monthly={energy.monthly} />
+      {shading && <p className="text-body text-fg-2">{shading}</p>}
       {comparison && primary && (
         <p className="text-body text-fg-2">
           Số trên là kịch bản "{placeName(primary.mountingPlace)}" (ước tính thận trọng). Nếu tấm{' '}

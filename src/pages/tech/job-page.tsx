@@ -18,6 +18,7 @@ import {
   formatAddress,
   formatDateTime,
   shortCode,
+  surfaceTypeLabel,
 } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/simulationDisplay'
 import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
@@ -26,7 +27,6 @@ import {
   formatAppointment,
   formatTimeRange,
   relativeDay,
-  surfaceNameLabel,
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
 import { OnSiteSurveyPanel } from '@/features/onsite-survey/OnSiteSurveyPanel'
@@ -276,7 +276,7 @@ export function TechJobPage() {
                     <Facts
                       items={[
                         { k: 'Địa chỉ', v: formatAddress(p) },
-                        { k: 'Bề mặt', v: surfaceNameLabel(p.installationSurfaceType) },
+                        { k: 'Bề mặt', v: surfaceTypeLabel(p.installationSurfaceType) },
                         { k: 'Vật liệu', v: p.surfaceMaterial || '—' },
                       ]}
                     />

@@ -118,9 +118,9 @@ export function OpsDashboardPage() {
 
   // Statistical calculations from real dataset
   const totalCount = enrichedMySurveys.length
-  const pendingAssignmentCount = enrichedMySurveys.filter((s) => s.status === 1).length
-  const scheduledCount = enrichedMySurveys.filter((s) => s.status === 4).length
-  const completedCount = enrichedMySurveys.filter((s) => s.status === 5).length
+  const pendingAssignmentCount = enrichedMySurveys.filter((s) => s.status === 'PENDING').length
+  const scheduledCount = enrichedMySurveys.filter((s) => s.status === 'SCHEDULED').length
+  const completedCount = enrichedMySurveys.filter((s) => s.status === 'COMPLETED').length
 
   return (
     <div className="space-y-6 pb-12">

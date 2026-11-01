@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react'
 import { useParams } from 'react-router'
 import { Badge, Count } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
+import { CloseRequestDialog } from '@/features/pre-surveys/CloseRequestDialog'
 import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
@@ -16,6 +17,7 @@ import {
   directionLabel,
   formatAddress,
   formatDateTime,
+  isClosedRequest,
   isOverdue,
   shortCode,
   surfaceTypeLabel,
@@ -36,6 +38,7 @@ import { SalesSchedulePanel } from '@/features/scheduling/SalesSchedulePanel'
 import {
   formatMoment,
   formatTimeRange,
+  isAppointmentOverdue,
   isConfirmed,
   relativeDay,
   vnDate,
@@ -55,7 +58,7 @@ function trackerSteps(r: SurveyRequestDetail, quotations: QuotationView[] | unde
   const a = r.appointment
   const confirmed = isConfirmed(a?.status)
   const quotation = quotations && currentQuotation(quotations)
-  return [
+  const steps: TrackerStep[] = [
     { label: 'Khách gửi yêu cầu', detail: formatDateTime(r.submittedAt), state: 'done' },
     { label: 'Khách đặt giờ', detail: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
     {
@@ -66,14 +69,18 @@ function trackerSteps(r: SurveyRequestDetail, quotations: QuotationView[] | unde
     {
       label: 'Khảo sát tại công trình',
       detail: a ? whenText(a.startsAt, a.endsAt) : undefined,
-      state: r.status === 5 ? 'done' : confirmed ? 'current' : 'todo',
+      state: r.status === 'COMPLETED' ? 'done' : confirmed ? 'current' : 'todo',
     },
     {
       label: 'Báo giá',
       detail: quotation ? quotationStatusMeta(quotation, 'sales').label : undefined,
-      state: quotation?.status === 'ACCEPTED' ? 'done' : r.status === 5 ? 'current' : 'todo',
+      state: quotation?.status === 'ACCEPTED' ? 'done' : r.status === 'COMPLETED' ? 'current' : 'todo',
     },
   ]
+  // Yêu cầu đã đóng thì không còn bước nào đang làm
+  return isClosedRequest(r.status)
+    ? steps.map((step) => (step.state === 'current' ? { ...step, state: 'todo' } : step))
+    : steps
 }
 
 // Việc của sales sau khi khảo sát xong: lập, gửi, sửa báo giá tới khi khách đồng ý
@@ -117,14 +124,15 @@ function quotationNextStep(quotations: QuotationView[]): TrackerNext {
 // Việc tiếp theo và ai làm. Đỏ chỉ khi sales phải làm
 function nextStep(r: SurveyRequestDetail, quotations: QuotationView[] | undefined): TrackerNext {
   const a = r.appointment
-  if (r.status === 5 && quotations) return quotationNextStep(quotations)
-  if (r.status === 5)
+  if (r.status === 'CLOSED') return { tone: 'neutral', title: 'Yêu cầu đã đóng' }
+  if (r.status === 'CANCELLED') return { tone: 'neutral', title: 'Khách đã rút yêu cầu' }
+  if (r.status === 'COMPLETED' && quotations) return quotationNextStep(quotations)
+  if (r.status === 'COMPLETED')
     return {
       tone: 'neutral',
       title: 'Đã khảo sát xong tại công trình',
       body: 'Xem kết quả của kỹ thuật viên ở khối Kết quả khảo sát tại công trình.',
     }
-  if (r.status === 6) return { tone: 'neutral', title: 'Yêu cầu đã huỷ' }
   if (!a)
     return isOverdue(r.submittedAt)
       ? {
@@ -133,6 +141,13 @@ function nextStep(r: SurveyRequestDetail, quotations: QuotationView[] | undefine
           body: 'Gọi khách nhắc chọn giờ trên cổng khách hàng.',
         }
       : { tone: 'info', title: 'Chờ khách đặt giờ khảo sát', body: 'Khách tự chọn giờ trên cổng khách hàng.' }
+  if (isAppointmentOverdue(a))
+    return {
+      tone: 'danger',
+      title: 'Lịch khảo sát đã qua giờ mà chưa có kết quả',
+      body: `Lịch ${whenText(a.startsAt, a.endsAt)}. Gọi khách hẹn giờ khác rồi đổi giờ ở khối Lịch khảo sát.`,
+      action: { label: 'Đổi giờ', icon: 'edit_calendar', target: 'survey-schedule' },
+    }
   if (a.status === 'ESCALATED')
     return {
       tone: 'danger',
@@ -219,9 +234,10 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
 export function OpsSurveyRequestPage() {
   const { id } = useParams()
   const query = useSurveyRequestQuery(id)
+  const [closing, setClosing] = useState(false)
   usePageCrumb(query.data ? query.data.propertyName || 'Công trình chưa đặt tên' : null)
   // Cùng khoá query với khối kết quả khảo sát nên không gọi API hai lần. Báo giá chỉ lập được khi khảo sát đã hoàn thành
-  const onsiteEnabled = query.data?.status === 5 || isConfirmed(query.data?.appointment?.status)
+  const onsiteEnabled = query.data?.status === 'COMPLETED' || isConfirmed(query.data?.appointment?.status)
   const onsite = useStaffOnSiteSurveyQuery(id, { enabled: onsiteEnabled })
   const surveyCompleted = onsite.data?.status === 'COMPLETED'
   const quotations = useQuotationsQuery(id, { enabled: surveyCompleted })
@@ -231,6 +247,9 @@ export function OpsSurveyRequestPage() {
       {(r) => {
         const status = surveyStatusMeta(r.status)
         const map = addressMapUrl(formatAddress(r))
+        // Lịch còn hẹn thì chỉ khách huỷ được, nên chỉ đóng khi chưa đặt giờ hoặc đã khảo sát xong
+        const canClose = !isClosedRequest(r.status) && (!r.appointment || r.appointment.status === 'COMPLETED')
+        const notFeasible = onsite.data?.data.installationFeasibility === 'NOT_FEASIBLE'
         return (
           <>
             <PageHeader
@@ -262,6 +281,11 @@ export function OpsSurveyRequestPage() {
                       Xem bản đồ
                       <span className="sr-only"> (mở tab mới)</span>
                     </a>
+                  )}
+                  {canClose && (
+                    <Button variant="danger" icon="block" onClick={() => setClosing(true)}>
+                      Đóng yêu cầu
+                    </Button>
                   )}
                 </>
               }
@@ -369,6 +393,16 @@ export function OpsSurveyRequestPage() {
             <div className="mt-6 space-y-4 border-t border-line pt-4">
               <SimulationPanel request={r} />
             </div>
+
+            {canClose && (
+              <CloseRequestDialog
+                key={String(notFeasible)}
+                surveyRequestId={r.surveyRequestId}
+                notFeasible={notFeasible}
+                open={closing}
+                onOpenChange={setClosing}
+              />
+            )}
           </>
         )
       }}

@@ -5,6 +5,7 @@ import {
   formatArea,
   formatDateTime,
   formatRelative,
+  isClosedRequest,
   isOverdue,
   needsScheduling,
   surfaceTypeLabel,
@@ -22,10 +23,12 @@ const COLUMNS = 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(
 // Tên và khu vực công trình. h2 để đúng thứ tự tiêu đề sau h1 của trang
 function Property({
   name,
-  district,
-  province,
-}: Pick<MySurveyRequestItem, 'district' | 'province'> & { name: string | null }) {
-  const area = [district, province].filter(Boolean).join(', ')
+  row,
+}: {
+  name: string | null
+  row: Pick<MySurveyRequestItem, 'communeName' | 'ward' | 'district' | 'province'>
+}) {
+  const area = [row.communeName ?? row.ward ?? row.district, row.province].filter(Boolean).join(', ')
   return (
     <ListCell wide>
       <h2 className="font-semibold">{name || 'Công trình chưa đặt tên'}</h2>
@@ -66,7 +69,7 @@ export function PendingRequestList({
         {[...rows].sort(oldestFirst).map((r) => (
           <ListRow key={r.surveyRequestId}>
             <ListCells columns={COLUMNS}>
-              <Property name={r.propertyName} district={r.district} province={r.province} />
+              <Property name={r.propertyName} row={r} />
               <ListCell label="Khách hàng">{r.customerName || '—'}</ListCell>
               <ListCell label="Bề mặt">{surfaceTypeLabel(r.installationSurfaceType)}</ListCell>
               <ListCell label="Dùng được / tổng">
@@ -107,26 +110,30 @@ type RowState = {
   hint: string | null
 }
 
-// Tình hình một yêu cầu. Danh sách chỉ có trạng thái và giờ hẹn đã có kỹ thuật viên nhận,
-// chưa biết khách đã đặt giờ hay chưa, nên các yêu cầu đó chỉ ghi "chưa có kỹ thuật viên"
-function rowState(r: MySurveyRequestItem, mustAssign: boolean, today: string): RowState {
+// Tình hình một yêu cầu. Việc của sales (lịch quá giờ, cần phân công) lên đầu và tô đỏ
+function rowState(r: MySurveyRequestItem, mustAssign: boolean): RowState {
+  if (isClosedRequest(r.status)) return { rank: 5, ...surveyStatusMeta(r.status), hint: null }
+  if (r.appointment?.isOverdue)
+    return { rank: 0, label: 'Quá giờ, chưa khảo sát', tone: 'danger', hint: 'Hẹn lại giờ khác với khách.' }
   if (mustAssign)
     return { rank: 0, label: 'Cần phân công', tone: 'danger', hint: 'Lịch quá hạn mà không kỹ thuật viên nào nhận.' }
-  if (r.status === 4 && r.scheduledAt) {
-    if (vnDate(r.scheduledAt) < today)
-      return { rank: 3, label: 'Đã qua giờ hẹn', tone: 'warn', hint: 'Chưa có kết quả khảo sát trên hệ thống.' }
-    return { rank: 1, label: 'Đã hẹn khảo sát', tone: 'ok', hint: null }
-  }
-  if (needsScheduling(r.status)) return { rank: 2, label: 'Chưa có kỹ thuật viên', tone: 'info', hint: null }
+  if (r.status === 'SCHEDULED') return { rank: 1, label: 'Đã hẹn khảo sát', tone: 'ok', hint: null }
+  if (needsScheduling(r.status))
+    return r.appointment
+      ? { rank: 2, label: 'Chờ kỹ thuật viên nhận', tone: 'info', hint: null }
+      : { rank: 3, label: 'Khách chưa đặt giờ', tone: 'info', hint: null }
   return { rank: 4, ...surveyStatusMeta(r.status), hint: null }
 }
+
+/** Giờ hẹn đang hiệu lực: lịch chờ người nhận cũng có giờ khách đã chọn */
+const appointmentStart = (r: MySurveyRequestItem) => r.appointment?.startsAt ?? r.scheduledAt
 
 type MyRow = { row: MySurveyRequestItem; state: RowState }
 
 // Cần làm lên đầu, rồi lịch sắp tới (gần nhất trước), rồi đang chờ, cuối cùng là lịch đã qua
 function byNextAction(a: MyRow, b: MyRow) {
   if (a.state.rank !== b.state.rank) return a.state.rank - b.state.rank
-  if (a.state.rank === 1) return (a.row.scheduledAt ?? '').localeCompare(b.row.scheduledAt ?? '')
+  if (a.state.rank === 1) return (appointmentStart(a.row) ?? '').localeCompare(appointmentStart(b.row) ?? '')
   return new Date(b.row.assignedAt ?? 0).getTime() - new Date(a.row.assignedAt ?? 0).getTime()
 }
 
@@ -134,41 +141,42 @@ function byNextAction(a: MyRow, b: MyRow) {
 export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[]; needAssign: Set<string> }) {
   const today = todayVn()
   const items = rows
-    .map((row) => ({ row, state: rowState(row, needAssign.has(row.surveyRequestId), today) }))
+    .map((row) => ({ row, state: rowState(row, needAssign.has(row.surveyRequestId)) }))
     .sort(byNextAction)
   return (
     <>
       <ListHead columns={COLUMNS} labels={['Công trình', 'Khách hàng', 'Bạn nhận', 'Hẹn khảo sát', 'Tình hình', '']} />
       <ul className="divide-y divide-line">
-        {items.map(({ row: r, state }) => (
-          <ListRow key={r.surveyRequestId}>
-            <ListCells columns={COLUMNS}>
-              <Property name={r.propertyName} district={r.district} province={r.province} />
-              <ListCell label="Khách hàng">{r.customerName || '—'}</ListCell>
-              <ListCell label="Bạn nhận">{r.assignedAt ? <When iso={r.assignedAt} /> : '—'}</ListCell>
-              <ListCell label="Hẹn khảo sát">
-                {/* "Ngày mai, 09:00" */}
-                {r.scheduledAt
-                  ? `${relativeDay(vnDate(r.scheduledAt), today)}, ${formatTime(r.scheduledAt)}`
-                  : 'Chưa có'}
-              </ListCell>
-              <ListCell label="Tình hình">
-                <Badge tone={state.tone}>{state.label}</Badge>
-                {state.hint && <p className="mt-1 text-meta text-fg-2">{state.hint}</p>}
-              </ListCell>
-              <ListCell wide className="lg:justify-self-end">
-                <ButtonLink
-                  icon="visibility"
-                  to={withId(ROUTES.ops.survey, r.surveyRequestId)}
-                  size="sm"
-                  variant="info"
-                >
-                  Mở yêu cầu
-                </ButtonLink>
-              </ListCell>
-            </ListCells>
-          </ListRow>
-        ))}
+        {items.map(({ row: r, state }) => {
+          const startsAt = appointmentStart(r)
+          return (
+            <ListRow key={r.surveyRequestId}>
+              <ListCells columns={COLUMNS}>
+                <Property name={r.propertyName} row={r} />
+                <ListCell label="Khách hàng">{r.customerName || '—'}</ListCell>
+                <ListCell label="Bạn nhận">{r.assignedAt ? <When iso={r.assignedAt} /> : '—'}</ListCell>
+                <ListCell label="Hẹn khảo sát">
+                  {/* "Ngày mai, 09:00" */}
+                  {startsAt ? `${relativeDay(vnDate(startsAt), today)}, ${formatTime(startsAt)}` : 'Chưa có'}
+                </ListCell>
+                <ListCell label="Tình hình">
+                  <Badge tone={state.tone}>{state.label}</Badge>
+                  {state.hint && <p className="mt-1 text-meta text-fg-2">{state.hint}</p>}
+                </ListCell>
+                <ListCell wide className="lg:justify-self-end">
+                  <ButtonLink
+                    icon="visibility"
+                    to={withId(ROUTES.ops.survey, r.surveyRequestId)}
+                    size="sm"
+                    variant="info"
+                  >
+                    Mở yêu cầu
+                  </ButtonLink>
+                </ListCell>
+              </ListCells>
+            </ListRow>
+          )
+        })}
       </ul>
     </>
   )

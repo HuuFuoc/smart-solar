@@ -1,9 +1,27 @@
 // Viết tay vì swagger không có schema response (tag SurveyRequests)
-// Enum của PreSurvey là số, trạng thái của Scheduling là chuỗi in hoa
-import type { InstallationSurfaceType } from '@/types/req/customersReq'
+// Backend trả mọi enum bằng chữ in hoa (PENDING, ROOFTOP); request vẫn gửi số được
 
-/** 1 Pending (chưa có kỹ thuật viên xác nhận), 4 Scheduled, 5 Completed, 6 Cancelled. 2 và 3 không còn dùng */
-export type SurveyRequestStatus = 1 | 2 | 3 | 4 | 5 | 6
+/**
+ * PENDING (chưa có kỹ thuật viên xác nhận), SCHEDULED, COMPLETED, CANCELLED (khách rút), CLOSED (sales đóng).
+ * CANCELLED và CLOSED là trạng thái cuối, không mở lại được
+ */
+export type SurveyRequestStatus = 'PENDING' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'CLOSED' | (string & {})
+
+/** Tên enum InstallationSurfaceType: ROOFTOP, GROUND, CARPORT, FACADE, OTHER */
+export type SurfaceTypeName = string
+
+/** Lịch đang hiệu lực của một dòng trong hàng chờ. Hàng chờ chưa ai nhận không có tên kỹ thuật viên */
+export type SurveyRequestAppointmentItem = {
+  appointmentId: string
+  status: AppointmentStatus
+  startsAt: string
+  endsAt: string
+  acceptanceDeadlineAt: string | null
+  technicianUserId: string | null
+  technicianName: string | null
+  /** Đã qua giờ kết thúc mà chưa khảo sát xong */
+  isOverdue: boolean
+}
 
 export type PendingSurveyRequestItem = {
   surveyRequestId: string
@@ -12,11 +30,15 @@ export type PendingSurveyRequestItem = {
   propertyName: string | null
   province: string | null
   district: string | null
-  installationSurfaceType: InstallationSurfaceType
+  ward: string | null
+  /** Tên chính thức theo mã phường, xã */
+  communeName: string | null
+  installationSurfaceType: SurfaceTypeName
   totalAreaM2: number | null
   usableAreaM2: number | null
   /** Format: date-time */
   submittedAt: string
+  appointment: SurveyRequestAppointmentItem | null
 }
 
 export type MySurveyRequestItem = {
@@ -26,12 +48,14 @@ export type MySurveyRequestItem = {
   propertyName: string | null
   province: string | null
   district: string | null
-  ward?: string | null
+  ward: string | null
+  communeName: string | null
   status: SurveyRequestStatus
   /** Format: date-time */
   submittedAt: string
   assignedAt: string | null
   scheduledAt: string | null
+  appointment: SurveyRequestAppointmentItem | null
 }
 
 export type SurveyRequestDetail = {
@@ -48,7 +72,7 @@ export type SurveyRequestDetail = {
   streetLine: string | null
   latitude: number | null
   longitude: number | null
-  installationSurfaceType: InstallationSurfaceType
+  installationSurfaceType: SurfaceTypeName
   surfaceMaterial: string | null
   totalAreaM2: number | null
   usableAreaM2: number | null
@@ -180,4 +204,19 @@ export type SelectedSimulationSummary = {
 
 export type ClaimSurveyRequestResponse = {
   surveyRequestId: string
+}
+
+/** Lý do sales đóng yêu cầu. NOT_FEASIBLE chỉ dùng được khi khảo sát kết luận không lắp được; OTHER phải ghi chú */
+export type CloseReasonCode = 'NOT_FEASIBLE' | 'CUSTOMER_DECLINED' | 'NO_RESPONSE' | 'OTHER'
+
+/** POST .../close (sales) và .../withdraw (khách). Báo giá chưa gửi của yêu cầu bị huỷ theo */
+export type SalesOutcomeView = {
+  surveyRequestId: string
+  /** "Cancelled" khi khách rút, "Closed" khi sales đóng */
+  status: string
+  /** CUSTOMER_WITHDREW hoặc một CloseReasonCode */
+  reasonCode: string
+  note: string | null
+  closedAt: string
+  cancelledQuotationIds: string[]
 }

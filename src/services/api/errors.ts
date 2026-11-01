@@ -53,6 +53,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   AUTH_REFRESH_TOKEN_INVALID: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
   AUTH_UNAUTHORIZED: 'Bạn cần đăng nhập để thực hiện thao tác này.',
   AUTH_TOO_MANY_REQUESTS: 'Bạn thao tác quá nhanh. Vui lòng chờ ít phút rồi thử lại.',
+  SCHEMA_NOT_READY: 'Hệ thống đang cập nhật. Vui lòng thử lại sau ít phút.',
   // Đổi mật khẩu
   AUTH_CURRENT_PASSWORD_INVALID: 'Mật khẩu hiện tại không đúng.',
   // Sản phẩm
@@ -76,6 +77,13 @@ const ERROR_MESSAGES: Record<string, string> = {
   SURVEY_REQUEST_UNAVAILABLE: 'Yêu cầu này đã có người nhận hoặc không còn chờ xử lý.',
   SURVEY_REQUEST_NOT_FOUND: 'Không tìm thấy yêu cầu khảo sát.',
   SURVEY_REQUEST_NOT_ASSIGNED: 'Yêu cầu này không do bạn phụ trách nên không xem được chi tiết.',
+  // Rút / đóng yêu cầu (khách rút, kinh doanh đóng). Đã đóng thì không mở lại
+  SURVEY_REQUEST_CLOSED: 'Yêu cầu này đã đóng nên không thay đổi được nữa.',
+  SURVEY_REQUEST_CONTRACT_EXISTS: 'Yêu cầu đã có hợp đồng nên không rút hoặc đóng được.',
+  SURVEY_REQUEST_APPOINTMENT_OPEN: 'Yêu cầu còn lịch khảo sát đang hẹn. Huỷ lịch trước rồi thử lại.',
+  SURVEY_REQUEST_NOT_FEASIBLE_UNCONFIRMED:
+    'Chỉ chọn "Khảo sát kết luận không lắp được" khi biên bản khảo sát kết luận như vậy.',
+  SURVEY_REQUEST_CLOSURE_CONFLICT: 'Báo giá của yêu cầu vừa thay đổi (có thể khách vừa đồng ý). Tải lại rồi xem lại.',
   // Mặt lắp và mô phỏng
   PRE_SURVEY_CONCURRENTLY_MODIFIED:
     'Bản đánh giá vừa được sửa ở nơi khác (tab hoặc máy khác). Tải lại bản mới nhất rồi lưu lại.',
@@ -120,6 +128,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   APPOINTMENT_ALREADY_TAKEN: 'Lịch này vừa có người nhận trước. Danh sách đã được tải lại.',
   SURVEY_REQUEST_NOT_OWNED: 'Bạn chưa nhận yêu cầu này nên chưa phân công được. Nhận yêu cầu trước.',
   ASSIGNMENT_REASON_REQUIRED: 'Ghi lý do phân công.',
+  APPOINTMENT_RECOVERY_REASON_REQUIRED: 'Lịch đã qua giờ mà chưa khảo sát: ghi lý do đổi giờ.',
+  ONSITE_SURVEY_IN_PROGRESS: 'Kỹ thuật viên đã bắt đầu khảo sát nên không đổi giờ được nữa.',
   TECHNICIAN_OUTSIDE_ZONE: 'Kỹ thuật viên này không thuộc khu vực của công trình.',
   SITE_HAS_ACTIVE_BOOKING: 'Địa điểm đang có lịch khảo sát nên chưa đổi được vị trí.',
   APPOINTMENT_NOT_FOUND: 'Không tìm thấy lịch hẹn, hoặc lịch không còn giao cho bạn.',
@@ -200,6 +210,11 @@ const ERROR_MESSAGES: Record<string, string> = {
   SERVICE_QUOTATION_NOT_FOUND: 'Không tìm thấy báo giá.',
   SERVICE_QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Liên hệ Smart Solar để nhận báo giá mới.',
   AFTER_SALES_ASSET_NOT_FOUND: 'Thiết bị đã chọn không thuộc công trình này.',
+  AFTER_SALES_MANUFACTURER_WARRANTY_POLICY_PENDING:
+    'Chưa xét theo bảo hành của hãng được vì quy định xử lý chưa ban hành. Chọn hình thức khác.',
+  AFTER_SALES_WARRANTY_SOURCE_UNVERIFIED:
+    'Thiết bị này không có thời hạn bảo hành từ danh mục sản phẩm nên không ghi được ngày kích hoạt.',
+  AFTER_SALES_WARRANTY_ACTIVATION_RECORDED: 'Thiết bị này đã có ngày kích hoạt bảo hành. Ngày đã ghi không sửa được.',
   AFTER_SALES_PAYMENT_REQUIRED: 'Khách chưa thanh toán phần phải trả tiền nên chưa làm được.',
   AFTER_SALES_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh hiện trường của buổi này trước khi gửi báo cáo.',
   AFTER_SALES_CHANGE_TOO_LATE: 'Đã quá hạn đổi hoặc huỷ trên mạng. Liên hệ Smart Solar.',

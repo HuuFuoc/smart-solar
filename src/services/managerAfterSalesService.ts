@@ -5,6 +5,7 @@ import type {
   ScheduleVisitRequest,
 } from '@/types/req/managerAfterSalesReq'
 import type {
+  InstalledAssetView,
   ServiceEvidenceUrlView,
   ServiceRequestSummary,
   ServiceRequestView,
@@ -48,4 +49,12 @@ export function reviewDispute(requestId: string, body: DisputeReviewRequest) {
 /** Khách xin huỷ việc đã trả tiền: đồng ý (giữ lại chi phí không hoàn được) hoặc từ chối */
 export function decideCancellation(requestId: string, body: CancellationDecisionRequest) {
   return post<ServiceRequestView>(api.cancellationDecision(requestId), body)
+}
+
+/** Ngày kích hoạt bảo hành hãng của thiết bị (ISO kèm múi giờ, không ở tương lai) + tài liệu PROJECT_DOCUMENT đã xác minh */
+export type WarrantyActivationBody = { activatedAt: string; evidenceFileId: string; reason: string }
+
+/** Ghi một lần, không sửa được. Hạn bảo hành = ngày kích hoạt + số tháng của danh mục */
+export function recordWarrantyActivation(assetId: string, body: WarrantyActivationBody) {
+  return post<InstalledAssetView>(api.warrantyActivation(assetId), body)
 }

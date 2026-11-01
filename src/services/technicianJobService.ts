@@ -12,9 +12,9 @@ import { ENDPOINTS } from '@/services/api/endpoints'
 
 // Việc của kỹ thuật viên. Lịch khách đặt hiện cho mọi kỹ thuật viên trong khu vực, ai nhận trước thì được
 
-/** Việc đã xác nhận (tự nhận hoặc được phân công) */
+/** Việc đã xác nhận (tự nhận hoặc được phân công), gồm cả lịch quá giờ và lịch đã khảo sát xong */
 export function listMyAppointments() {
-  return get<TechnicianAppointmentListItem[]>(ENDPOINTS.technicianAppointments.base)
+  return get<TechnicianAppointmentListItem[]>(ENDPOINTS.technicianAppointments.base, { params: { includePast: true } })
 }
 
 /** Khách, địa điểm, số liệu khai và mô phỏng đã chọn */

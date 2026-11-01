@@ -29,9 +29,9 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredSurveys = surveys.filter((item) => {
-    if (tab === 'pending' && item.status !== 1) return false
-    if (tab === 'scheduled' && item.status !== 4) return false
-    if (tab === 'completed' && item.status !== 5) return false
+    if (tab === 'pending' && item.status !== 'PENDING') return false
+    if (tab === 'scheduled' && item.status !== 'SCHEDULED') return false
+    if (tab === 'completed' && item.status !== 'COMPLETED') return false
 
     if (searchTerm.trim()) {
       const q = removeVietnameseTones(searchTerm)
@@ -74,7 +74,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
               tab === 'pending' ? 'bg-surface text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            Chờ KTV ({surveys.filter((s) => s.status === 1).length})
+            Chờ KTV ({surveys.filter((s) => s.status === 'PENDING').length})
           </button>
           <button
             type="button"
@@ -85,7 +85,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                 : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            Đã có lịch ({surveys.filter((s) => s.status === 4).length})
+            Đã có lịch ({surveys.filter((s) => s.status === 'SCHEDULED').length})
           </button>
           <button
             type="button"
@@ -96,7 +96,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                 : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            Khảo sát xong ({surveys.filter((s) => s.status === 5).length})
+            Khảo sát xong ({surveys.filter((s) => s.status === 'COMPLETED').length})
           </button>
         </div>
 
@@ -151,9 +151,9 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                     </span>
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-label-xs font-semibold ${
-                        item.status === 5
+                        item.status === 'COMPLETED'
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                          : item.status === 4
+                          : item.status === 'SCHEDULED'
                             ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                       }`}
@@ -175,8 +175,8 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
 
                 <div className="flex items-center gap-2">
                   <Link to={withId(ROUTES.ops.survey, item.surveyRequestId)}>
-                    <Button size="sm" variant={item.status === 5 ? 'primary' : 'tonal'}>
-                      {item.status === 5 ? 'Lập báo giá' : 'Chi tiết'}
+                    <Button size="sm" variant={item.status === 'COMPLETED' ? 'primary' : 'tonal'}>
+                      {item.status === 'COMPLETED' ? 'Lập báo giá' : 'Chi tiết'}
                     </Button>
                   </Link>
                 </div>

@@ -164,6 +164,13 @@ export type InstalledAssetView = {
   replacesAssetId: string | null
   serviceRequestId: string | null
   specifications: string | null
+  /** Bảo hành của hãng, lấy từ danh mục sản phẩm; thiết bị không gắn sản phẩm thì null */
+  warrantyMonths: number | null
+  /** CATALOG_PRODUCT | LEGACY_UNVERIFIED (ghi trước khi có quy tắc, chưa kiểm chứng) */
+  warrantySource: string | null
+  /** Chỉ có sau khi quản lý ghi ngày kích hoạt kèm tài liệu */
+  warrantyStartsAt: string | null
+  warrantyEndsAt: string | null
 }
 
 /** GET .../installations/{projectId}/warranty: bảo hành lắp đặt của một công trình */
@@ -179,7 +186,10 @@ export type WarrantyView = {
   warrantyStatus: string
 }
 
-/** Hạng mục kỹ thuật viên chẩn đoán. `coverage`: PENDING | INSTALLATION_WARRANTY | REPAIR_WARRANTY | DISASTER_PROTECTION | CHARGEABLE */
+/**
+ * Hạng mục kỹ thuật viên chẩn đoán. `coverage`: PENDING | INSTALLATION_WARRANTY | REPAIR_WARRANTY | DISASTER_PROTECTION | CHARGEABLE.
+ * MANUFACTURER_WARRANTY có trong backend nhưng chưa xét được (quy định xử lý chưa ban hành)
+ */
 export type ServiceItemView = {
   itemId: string
   assetId: string | null

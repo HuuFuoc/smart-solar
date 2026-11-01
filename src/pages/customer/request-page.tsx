@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
-import { Button } from '@/components/common/ui/button'
-import { ActivityList, KeyValueList, Notice } from '@/components/common/ui/lists'
+import { Button, ButtonLink } from '@/components/common/ui/button'
+import { ActivityList, KeyValueList, Notice, type ActivityItem } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
@@ -12,20 +12,26 @@ import { formatDateTime, shortCode } from '@/features/pre-surveys/preSurveyDispl
 import { RequestQuotationPanel } from '@/features/quotations/RequestQuotationPanel'
 import { BookingPanel } from '@/features/scheduling/BookingPanel'
 import { CancelBookingDialog } from '@/features/scheduling/CancelBookingDialog'
+import { WithdrawRequestDialog } from '@/features/scheduling/WithdrawRequestDialog'
 import {
   canBook,
+  canWithdraw,
   customerProgress,
   formatAppointment,
   formatDay,
   formatTimeRange,
   historyStatusLabel,
+  isClosedCustomerRequest,
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestQuery } from '@/hooks/useBooking'
+import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
+import { ROUTES } from '@/routes/paths'
 import type { CustomerSurveyRequestDetailView, CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 
 /* Một câu nói khách đang ở đâu và việc tiếp theo là của ai */
 function describe(r: CustomerSurveyRequestView) {
+  if (r.status === 'CLOSED') return 'Bộ phận kinh doanh đã đóng yêu cầu này.'
   const a = r.appointment
   if (!a) return undefined
   if (a.acceptanceStatus === 'WAITING_FOR_TECHNICIAN')
@@ -40,22 +46,25 @@ function Progress({ r }: { r: CustomerSurveyRequestView }) {
   const a = r.appointment
   const confirmed = a?.acceptanceStatus === 'CONFIRMED' || a?.acceptanceStatus === 'COMPLETED'
   const completed = r.status === 'COMPLETED'
+  // Yêu cầu đã đóng thì không còn bước nào đang làm
+  const closed = isClosedCustomerRequest(r)
+  const items: ActivityItem[] = [
+    { title: 'Gửi yêu cầu', time: formatDateTime(r.submittedAt), state: 'done' },
+    { title: 'Đặt giờ khảo sát', time: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
+    {
+      title: 'Kỹ thuật viên nhận lịch',
+      time: confirmed ? (a?.assignedTechnicianName ?? 'Đã nhận') : a ? 'Đang chờ' : 'Sau khi bạn đặt giờ',
+      state: confirmed ? 'done' : a ? 'current' : 'todo',
+    },
+    {
+      title: 'Khảo sát tại công trình',
+      time: a ? formatAppointment(a.startsAt, a.endsAt) : '—',
+      state: completed ? 'done' : confirmed ? 'current' : 'todo',
+    },
+  ]
   return (
     <ActivityList
-      items={[
-        { title: 'Gửi yêu cầu', time: formatDateTime(r.submittedAt), state: 'done' },
-        { title: 'Đặt giờ khảo sát', time: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
-        {
-          title: 'Kỹ thuật viên nhận lịch',
-          time: confirmed ? (a?.assignedTechnicianName ?? 'Đã nhận') : a ? 'Đang chờ' : 'Sau khi bạn đặt giờ',
-          state: confirmed ? 'done' : a ? 'current' : 'todo',
-        },
-        {
-          title: 'Khảo sát tại công trình',
-          time: a ? formatAppointment(a.startsAt, a.endsAt) : '—',
-          state: completed ? 'done' : confirmed ? 'current' : 'todo',
-        },
-      ]}
+      items={closed ? items.map((item) => (item.state === 'current' ? { ...item, state: 'todo' } : item)) : items}
     />
   )
 }
@@ -129,8 +138,10 @@ function History({ items }: { items: CustomerSurveyRequestDetailView['history'] 
 export function CustomerRequestPage() {
   const { id } = useParams()
   const query = useMyRequestQuery(id)
+  const contracts = useMyContractsQuery()
   const [rescheduling, setRescheduling] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [withdrawing, setWithdrawing] = useState(false)
   usePageCrumb(query.data ? query.data.request.propertyName || 'Công trình chưa đặt tên' : null)
 
   return (
@@ -138,6 +149,11 @@ export function CustomerRequestPage() {
       {({ request: r, history }) => {
         const progress = customerProgress(r)
         const a = r.appointment
+        // Đã có hợp đồng thì không rút được nữa; chờ tải xong danh sách hợp đồng mới hiện nút
+        const withdrawable =
+          canWithdraw(r) &&
+          contracts.data !== undefined &&
+          !contracts.data.some((c) => c.surveyRequestId === r.surveyRequestId)
         // Đổi giờ chỉ khi lịch còn đổi được (refetch có thể vừa chuyển sang ASSIGNED).
         const showReschedule = rescheduling && Boolean(a?.canCustomerChange)
         return (
@@ -151,12 +167,29 @@ export function CustomerRequestPage() {
               }
               title={r.propertyName || 'Công trình chưa đặt tên'}
               description={describe(r)}
+              actions={
+                withdrawable ? (
+                  <Button variant="danger" icon="cancel" onClick={() => setWithdrawing(true)}>
+                    Rút yêu cầu
+                  </Button>
+                ) : undefined
+              }
             />
 
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
                 <RequestQuotationPanel surveyRequestId={r.surveyRequestId} />
-                {canBook(r) ? (
+                {isClosedCustomerRequest(r) ? (
+                  <EmptyState
+                    title="Yêu cầu này đã đóng"
+                    description="Yêu cầu đã đóng không mở lại được. Muốn khảo sát lại, gửi đánh giá mới cho công trình."
+                    action={
+                      <ButtonLink icon="add" variant="primary" to={ROUTES.customer.assessment}>
+                        Gửi đánh giá mới
+                      </ButtonLink>
+                    }
+                  />
+                ) : canBook(r) ? (
                   <BookingPanel surveyRequestId={r.surveyRequestId} propertySiteId={r.propertySiteId} />
                 ) : a ? (
                   showReschedule ? (
@@ -201,6 +234,14 @@ export function CustomerRequestPage() {
               </PanelAside>
             </div>
 
+            {withdrawable && (
+              <WithdrawRequestDialog
+                surveyRequestId={r.surveyRequestId}
+                propertyName={r.propertyName || 'này'}
+                open={withdrawing}
+                onOpenChange={setWithdrawing}
+              />
+            )}
             {a?.canCustomerChange && (
               <CancelBookingDialog
                 surveyRequestId={r.surveyRequestId}

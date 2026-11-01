@@ -2,12 +2,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as surveyRequestService from '@/services/surveyRequestService'
 import type { SalesRescheduleRequest } from '@/types/req/surveyRequestsReq'
 import type { TechnicianAvailabilityView } from '@/types/res/technicianAvailabilityRes'
+import { salesQuotationKeys } from '@/hooks/useSalesQuotations'
 import type {
   AssignmentView,
   ClaimSurveyRequestResponse,
+  CloseReasonCode,
   EscalatedAppointmentView,
   MySurveyRequestItem,
   PendingSurveyRequestItem,
+  SalesOutcomeView,
   SalesRescheduleView,
   SurveyRequestDetail,
 } from '@/types/res/surveyRequestsRes'
@@ -108,5 +111,14 @@ export function useSalesRescheduleMutation() {
   return useMutation<SalesRescheduleView, ApiError, { id: string; body: SalesRescheduleRequest }>({
     mutationFn: ({ id, body }) => surveyRequestService.rescheduleSurveyRequest(id, body),
     onSettled: invalidate,
+  })
+}
+
+export function useCloseSurveyRequestMutation() {
+  const invalidate = useInvalidateSchedule()
+  const queryClient = useQueryClient()
+  return useMutation<SalesOutcomeView, ApiError, { id: string; reasonCode: CloseReasonCode; note: string | null }>({
+    mutationFn: ({ id, ...body }) => surveyRequestService.closeSurveyRequest(id, body),
+    onSettled: () => Promise.all([invalidate(), queryClient.invalidateQueries({ queryKey: salesQuotationKeys.all })]),
   })
 }
