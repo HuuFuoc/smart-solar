@@ -32,6 +32,7 @@ export const ENDPOINTS = {
   customers: {
     base: '/customers/me',
     sites: '/customers/me/sites',
+    preSurveys: '/customers/me/pre-surveys',
   },
   administrativeUnits: {
     communes: '/administrative-units/communes',
@@ -62,6 +63,15 @@ export const ENDPOINTS = {
     bookingCancel: (surveyRequestId: string) =>
       `/customers/me/survey-requests/${encode(surveyRequestId)}/booking/cancel`,
     withdraw: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/withdraw`,
+  },
+  customerDispatch: {
+    base: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/dispatch-request`,
+    accept: (surveyRequestId: string, proposalId: string) =>
+      `/customers/me/survey-requests/${encode(surveyRequestId)}/dispatch-request/proposals/${encode(proposalId)}/accept`,
+    decline: (surveyRequestId: string, proposalId: string) =>
+      `/customers/me/survey-requests/${encode(surveyRequestId)}/dispatch-request/proposals/${encode(proposalId)}/decline`,
+    cancel: (surveyRequestId: string) =>
+      `/customers/me/survey-requests/${encode(surveyRequestId)}/dispatch-request/cancel`,
   },
   customerInstallations: {
     base: '/customers/me/installation-projects',
@@ -223,6 +233,19 @@ export const ENDPOINTS = {
     evidenceUrl: (requestId: string, evidenceId: string) =>
       `/manager/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
     warrantyActivation: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}/warranty-activation`,
+  },
+
+  // Điều phối kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý và quản trị)
+  adminDispatch: {
+    base: '/admin/dispatch-requests',
+    byId: (id: string) => `/admin/dispatch-requests/${encode(id)}`,
+    candidates: (id: string) => `/admin/dispatch-requests/${encode(id)}/candidates`,
+    assign: (id: string) => `/admin/dispatch-requests/${encode(id)}/assign`,
+    proposals: (id: string) => `/admin/dispatch-requests/${encode(id)}/proposals`,
+    withdraw: (id: string, proposalId: string) =>
+      `/admin/dispatch-requests/${encode(id)}/proposals/${encode(proposalId)}/withdraw`,
+    unserviceable: (id: string) => `/admin/dispatch-requests/${encode(id)}/unserviceable`,
+    close: (id: string) => `/admin/dispatch-requests/${encode(id)}/close`,
   },
 
   // Quản trị

@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthProvider'
 import { AssessmentAside } from '@/features/pre-surveys/AssessmentAside'
 import { AssessmentStepCard } from '@/features/pre-surveys/AssessmentStepCard'
 import { ReviewStep } from '@/features/pre-surveys/ReviewStep'
+import { SavedDrafts, SavedSitePicker } from '@/features/pre-surveys/SavedAssessments'
 import { SubmittedDialog } from '@/features/pre-surveys/SubmittedDialog'
 import { SurfaceConflictNotice } from '@/features/pre-surveys/SurfaceConflictNotice'
 import { ProfileFields } from '@/features/pre-surveys/ProfileFields'
@@ -50,6 +51,7 @@ import {
   check,
   profileSchema,
   serverFieldErrors,
+  siteRequestFromList,
   siteSchema,
   siteToForm,
   type ProfileForm,
@@ -76,13 +78,14 @@ import {
 } from '@/features/pre-surveys/surfaceForm'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage, isApiError, type ApiError } from '@/services/api/errors'
+import type { CustomerPreSurveyListItem, CustomerSiteListItem } from '@/types/res/customersRes'
 import type { PreSurveySurfaceView } from '@/types/res/preSurveySurfaceRes'
 import type { SelectedSimulation } from '@/types/res/simulationsRes'
 import { cx } from '@/utils/cx'
 
 // Wizard "Đánh giá sơ bộ" của khách hàng, 5 bước: hồ sơ, địa điểm, mặt lắp, mô phỏng, xem lại và gửi.
 // - Hồ sơ và địa điểm không có API sửa: đổi địa điểm thì tạo địa điểm mới, kèm bản nháp mới.
-// - Backend không có API lấy lại bản nháp, nên id bản nháp được lưu trên máy (assessmentDraft.ts).
+// - Bản nháp đang làm được nhớ trên máy (assessmentDraft.ts); bản nháp và địa điểm ở máy khác đọc từ danh sách của khách.
 // - Lưu mặt lắp trước rồi mới ghi số liệu khai, vì cả hai API đều ghi độ dốc và hướng.
 
 // Câu nhắc chung ở thanh dưới khi có ô bị đánh dấu lỗi
@@ -159,7 +162,13 @@ function nextButtonLabel(step: number, runningSimulation: boolean, busy: boolean
   return `Tiếp tục: ${STEP_LABELS[step + 1]}`
 }
 
+// Mở một bản nháp khác thì dựng lại wizard từ đầu, vì mọi form khởi tạo từ dữ liệu lưu trên máy
 export function AssessmentPage() {
+  const [session, setSession] = useState(0)
+  return <AssessmentWizard key={session} onReopen={() => setSession((n) => n + 1)} />
+}
+
+function AssessmentWizard({ onReopen }: { onReopen: () => void }) {
   const { user } = useAuth()
   const account = user?.userId ?? user?.email ?? 'anonymous'
   const queryClient = useQueryClient()
@@ -301,6 +310,39 @@ export function AssessmentPage() {
   function changeSite(patch: Partial<SiteForm>) {
     setSite((current) => ({ ...current, ...patch }))
     clearFieldErrors(Object.keys(patch))
+  }
+
+  /** Chọn lại địa điểm đã lưu: bấm Tiếp tục thì đi tiếp mà không tạo địa điểm mới. `null` thì nhập địa điểm mới */
+  function pickSavedSite(item: CustomerSiteListItem | null) {
+    if (item?.siteId === draft.siteId) return
+    if (item) {
+      const saved = siteRequestFromList(item)
+      setSite(siteToForm(saved))
+      updateDraft({ profile: draft.profile, site: saved, siteId: item.siteId })
+    } else {
+      setSite(EMPTY_SITE)
+      updateDraft({ profile: draft.profile })
+    }
+    setFieldErrors({})
+    setActionError(null)
+    resetServerDraftState()
+  }
+
+  /** Mở bản nháp lưu trên tài khoản (có thể làm ở máy khác): bỏ phần nhập dở trên máy này rồi dựng lại wizard */
+  function openSavedDraft(item: CustomerPreSurveyListItem, siteItem: CustomerSiteListItem | undefined) {
+    writeDraft(account, {
+      profile: draft.profile,
+      site: siteItem ? siteRequestFromList(siteItem) : undefined,
+      siteId: item.propertySiteId,
+      preSurveyId: item.preSurveyId,
+    })
+    // Có bản nháp là đã có hồ sơ khách hàng
+    writeProfileDone(account, true)
+    clearWork(account)
+    // Dựng lại wizard trước rồi mới chuyển URL tới bước mặt lắp. Lần dựng đầu router còn trả ?buoc cũ;
+    // ?buoc mới luôn thắng nên wizard về đúng bước, còn bỏ trống ?buoc thì wizard giữ bước cũ
+    onReopen()
+    navigate(`${ROUTES.customer.assessment}?buoc=${STEP_SLUGS[STEP.SURFACE]}`, { replace: true })
   }
 
   function changeSurface(next: SurfaceForm, touchedFields: string[]) {
@@ -773,6 +815,7 @@ export function AssessmentPage() {
 
       {/* Bước có form hẹp giữ một cột vừa đọc, cột phụ xuống dưới khung. Mặt lắp và mô phỏng dùng hết chiều ngang */}
       <div className={cx('space-y-4', !wide && 'max-w-3xl')}>
+        {step <= STEP.SITE && !submitted && <SavedDrafts currentId={draft.preSurveyId} onOpen={openSavedDraft} />}
         <AssessmentStepCard
           steps={wizardSteps}
           index={step}
@@ -800,6 +843,7 @@ export function AssessmentPage() {
                     mới: mặt lắp giữ nguyên, các lần mô phỏng phải chạy lại.
                   </Notice>
                 )}
+                <SavedSitePicker currentSiteId={draft.siteId} onPick={pickSavedSite} />
                 <SiteFields value={site} errors={fieldErrors} onChange={changeSite} />
               </>
             )}

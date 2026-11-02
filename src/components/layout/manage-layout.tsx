@@ -14,6 +14,7 @@ export function ManageLayout({ children }: { children?: ReactNode }) {
     <AppShell
       portal={PORTALS.manage}
       badges={{
+        [ROUTES.manage.dispatch]: { value: alerts.dispatch, attention: true },
         [ROUTES.manage.installations]: { value: alerts.installations, attention: true },
         [ROUTES.manage.afterSales]: { value: alerts.afterSales, attention: true },
         [ROUTES.manage.technicians]: { value: alerts.technicians, attention: true },

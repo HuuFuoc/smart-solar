@@ -128,6 +128,18 @@ const ERROR_MESSAGES: Record<string, string> = {
   APPOINTMENT_ALREADY_TAKEN: 'Lịch này vừa có người nhận trước. Danh sách đã được tải lại.',
   SURVEY_REQUEST_NOT_OWNED: 'Bạn chưa nhận yêu cầu này nên chưa phân công được. Nhận yêu cầu trước.',
   ASSIGNMENT_REASON_REQUIRED: 'Ghi lý do phân công.',
+  // Điều phối khi khu vực chưa có kỹ thuật viên nhận lịch
+  DISPATCH_REQUEST_OPEN:
+    'Yêu cầu đang chờ Smart Solar xếp kỹ thuật viên. Trả lời đề xuất hoặc huỷ yêu cầu xếp lịch trước.',
+  DISPATCH_NOT_NEEDED: 'Khu vực của công trình đã có giờ trống vào các khung bạn chọn. Hãy đặt giờ trực tiếp.',
+  DISPATCH_REQUEST_NOT_FOUND: 'Không tìm thấy yêu cầu xếp kỹ thuật viên.',
+  DISPATCH_PROPOSAL_NOT_FOUND: 'Không tìm thấy đề xuất này.',
+  DISPATCH_INVALID_STATE: 'Yêu cầu xếp kỹ thuật viên đã xử lý xong hoặc vừa đổi trạng thái. Tải lại để xem.',
+  DISPATCH_STALE_REVISION: 'Yêu cầu vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  DISPATCH_REASON_REQUIRED: 'Ghi lý do.',
+  PROPOSAL_ALREADY_PENDING: 'Đang có một đề xuất chờ khách trả lời. Rút đề xuất đó trước.',
+  PROPOSAL_NOT_PENDING: 'Đề xuất này đã được trả lời hoặc không còn hiệu lực.',
+  PROPOSAL_EXPIRED: 'Đề xuất đã hết hạn trả lời. Smart Solar sẽ gửi đề xuất khác.',
   APPOINTMENT_RECOVERY_REASON_REQUIRED: 'Lịch đã qua giờ mà chưa khảo sát: ghi lý do đổi giờ.',
   ONSITE_SURVEY_IN_PROGRESS: 'Kỹ thuật viên đã bắt đầu khảo sát nên không đổi giờ được nữa.',
   TECHNICIAN_OUTSIDE_ZONE: 'Kỹ thuật viên này không thuộc khu vực của công trình.',

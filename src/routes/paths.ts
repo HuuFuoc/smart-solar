@@ -100,6 +100,9 @@ export const ROUTES = {
     /** Yêu cầu bảo hành, sửa chữa, bảo trì (quản lý dùng chung trang với quản trị) */
     afterSales: '/manage/after-sales',
     afterSalesRequest: '/manage/after-sales/:id',
+    /** Xếp kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý dùng chung trang với quản trị) */
+    dispatch: '/manage/dispatch',
+    dispatchRequest: '/manage/dispatch/:id',
     // Màn mock đã ẩn
     projects: '/manage/projects',
     project: '/manage/projects/:id',
@@ -124,6 +127,8 @@ export const ROUTES = {
     packages: '/admin/packages',
     afterSales: '/admin/after-sales',
     afterSalesRequest: '/admin/after-sales/:id',
+    dispatch: '/admin/dispatch',
+    dispatchRequest: '/admin/dispatch/:id',
     settings: '/admin/settings',
     // Màn mock đã ẩn
     roles: '/admin/roles',

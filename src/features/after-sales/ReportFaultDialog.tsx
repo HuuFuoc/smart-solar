@@ -5,7 +5,7 @@ import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
-import { assetName } from '@/features/after-sales/serviceDisplay'
+import { assetName, equipmentWarrantyText } from '@/features/after-sales/serviceDisplay'
 import { useCreateFaultMutation } from '@/hooks/useCustomerServiceRequests'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
@@ -105,7 +105,14 @@ function FaultForm({
           />
         </Field>
         {assets.length > 0 && (
-          <Field label="Thiết bị nghi bị lỗi" htmlFor="fault-asset" hint="Không bắt buộc.">
+          <Field
+            label="Thiết bị nghi bị lỗi"
+            htmlFor="fault-asset"
+            hint={(() => {
+              const picked = assets.find((asset) => asset.assetId === assetId)
+              return picked ? `${equipmentWarrantyText(picked)}.` : 'Không bắt buộc.'
+            })()}
+          >
             <Select id="fault-asset" value={assetId} onChange={(e) => setAssetId(e.target.value)}>
               <option value="">Không rõ</option>
               {assets.map((asset) => (

@@ -10,7 +10,7 @@ import { useProductsQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
 
 // Layout cho /admin/*. Số xám cạnh menu: tổng tài khoản, tổng sản phẩm, số gói dịch vụ đang bán.
-// Số đỏ (thi công, bảo hành, kỹ thuật viên) giống quản lý, xem useManagerNavAlerts
+// Số đỏ (điều phối, thi công, bảo hành, kỹ thuật viên) giống quản lý, xem useManagerNavAlerts
 export function AdminLayout({ children }: { children?: ReactNode }) {
   // Layout còn là khung chờ trước RequireRole: chỉ gọi khi phiên admin đã khôi phục xong.
   const isAdmin = useAuth().user?.role === 'admin'
@@ -24,6 +24,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
       badges={{
         [ROUTES.admin.users]: { value: userTotal },
         [ROUTES.admin.technicians]: { value: alerts.technicians, attention: true },
+        [ROUTES.admin.dispatch]: { value: alerts.dispatch, attention: true },
         [ROUTES.admin.installations]: { value: alerts.installations, attention: true },
         [ROUTES.admin.afterSales]: { value: alerts.afterSales, attention: true },
         [ROUTES.admin.products]: { value: productTotal },

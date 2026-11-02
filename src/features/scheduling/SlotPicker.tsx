@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { IconButton } from '@/components/common/ui/button'
+import { Button, IconButton } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { addMonths, monthCells, monthLabel, monthOf } from '@/features/scheduling/calendarMonth'
@@ -156,6 +156,7 @@ export function SlotPicker({
   value,
   onChange,
   currentStartsAt,
+  onRequestDispatch,
 }: {
   propertySiteId: string
   date: string
@@ -165,6 +166,8 @@ export function SlotPicker({
   onChange: (slot: SurveySlot | null) => void
   /** Giờ của lịch hiện tại khi khách đổi giờ: hiện nhưng không chọn được. */
   currentStartsAt?: string | null
+  /** Không có giờ mà khu vực chưa có người nhận: khách nhờ Smart Solar xếp kỹ thuật viên */
+  onRequestDispatch?: (coverageStatus: string) => void
 }) {
   const today = todayVn()
   const slots = useSurveySlotsQuery(propertySiteId, date)
@@ -210,9 +213,26 @@ export function SlotPicker({
               }
             />
           ) : slots.data && coverageText(slots.data.coverageStatus) ? (
-            // Khu vực của công trình chưa có kỹ thuật viên nhận lịch: báo lý do, khách liên hệ kinh doanh
+            // Khu vực của công trình chưa có kỹ thuật viên nhận lịch: báo lý do, khách nhờ Smart Solar xếp người
             <Notice tone="warn" title="Chưa đặt được giờ khảo sát">
-              {coverageText(slots.data.coverageStatus)} Bộ phận kinh doanh sẽ liên hệ để xếp lịch cho bạn.
+              {coverageText(slots.data.coverageStatus)}{' '}
+              {slots.data.dispatchAvailable && onRequestDispatch ? (
+                <>
+                  Smart Solar xếp kỹ thuật viên giúp bạn được.
+                  <span className="mt-3 flex">
+                    <Button
+                      icon="support_agent"
+                      size="sm"
+                      variant="info"
+                      onClick={() => onRequestDispatch(slots.data.coverageStatus)}
+                    >
+                      Nhờ xếp kỹ thuật viên
+                    </Button>
+                  </span>
+                </>
+              ) : (
+                'Bộ phận kinh doanh sẽ liên hệ để xếp lịch cho bạn.'
+              )}
             </Notice>
           ) : list.length === 0 ? (
             <EmptyState title="Ngày này không còn giờ trống" description={note ?? 'Chọn một ngày khác trong lịch.'} />

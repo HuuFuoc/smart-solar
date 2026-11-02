@@ -7,6 +7,7 @@ import { MaintenanceDialog } from '@/features/after-sales/MaintenanceDialog'
 import { ReportFaultDialog } from '@/features/after-sales/ReportFaultDialog'
 import {
   byRequestRank,
+  groupEquipmentWarranty,
   isFinalRequest,
   requestKindLabel,
   requestStatusMeta,
@@ -98,6 +99,24 @@ export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
               )
             })}
           </ul>
+        )}
+        {warranty.data && warranty.data.assets.length > 0 && (
+          <section aria-labelledby="equipment-warranty" className="border-t border-line pt-3">
+            <h3 id="equipment-warranty" className="text-body font-medium text-fg">
+              Bảo hành của hãng theo thiết bị
+            </h3>
+            <ul className="mt-2 space-y-1.5">
+              {groupEquipmentWarranty(warranty.data.assets).map((g) => (
+                <li key={`${g.name}|${g.text}`} className="text-body">
+                  <span className="text-fg">
+                    {g.name}
+                    {g.count > 1 && <span className="tnum"> × {g.count}</span>}
+                  </span>
+                  <span className="block text-meta text-fg-2">{g.text}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
         {mine.length > open.length && (
           <ButtonLink icon="visibility" size="sm" variant="info" to={ROUTES.customer.afterSales}>

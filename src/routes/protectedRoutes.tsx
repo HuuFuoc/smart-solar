@@ -63,6 +63,12 @@ const ManageInstallationProjectPage = page(
   'ManageInstallationProjectPage',
 )
 
+// Điều phối khảo sát (quản lý và quản trị dùng chung trang)
+const ManageDispatchRequestsPage = page(() => import('@/pages/dispatch-requests-page'), 'ManageDispatchRequestsPage')
+const ManageDispatchRequestPage = page(() => import('@/pages/dispatch-request-page'), 'ManageDispatchRequestPage')
+const AdminDispatchRequestsPage = page(() => import('@/pages/dispatch-requests-page'), 'AdminDispatchRequestsPage')
+const AdminDispatchRequestPage = page(() => import('@/pages/dispatch-request-page'), 'AdminDispatchRequestPage')
+
 // Quản trị
 const ManageAfterSalesPage = page(() => import('@/pages/after-sales-requests-page'), 'ManageAfterSalesPage')
 const ManageAfterSalesRequestPage = page(
@@ -191,6 +197,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.installation, lazy: ManageInstallationProjectPage },
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
       { path: manage.afterSalesRequest, lazy: ManageAfterSalesRequestPage },
+      { path: manage.dispatch, lazy: ManageDispatchRequestsPage },
+      { path: manage.dispatchRequest, lazy: ManageDispatchRequestPage },
       { path: manage.technicians, lazy: ManageTechniciansPage },
       { path: manage.technician, lazy: ManageTechnicianPage },
       { path: manage.products, lazy: ManageCatalogPage },
@@ -213,6 +221,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.installation, lazy: AdminInstallationProjectPage },
       { path: admin.packages, lazy: AdminPackagesPage },
       { path: admin.afterSales, lazy: AdminAfterSalesPage },
+      { path: admin.dispatch, lazy: AdminDispatchRequestsPage },
+      { path: admin.dispatchRequest, lazy: AdminDispatchRequestPage },
       { path: admin.afterSalesRequest, lazy: AdminAfterSalesRequestPage },
       { path: admin.settings, lazy: AdminSettingsPage },
     ],

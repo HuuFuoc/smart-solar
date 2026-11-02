@@ -230,6 +230,7 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   `customerAfterSalesRes.ts` và `customerContractsRes.ts` viết tay theo record C# của backend `main` (6025bc1:
   `Modules.AfterSales`, `Modules.Payments.PaymentAttemptView`, `Modules.CustomerContracts.ContractView`). `filesRes.ts`
   (`UploadUrlView`, `FileView`) viết tay theo DLL của image đang chạy (dịch ngược bằng ilspycmd) vì code Files chưa lên git.
+  `dispatchRes.ts` viết tay theo record C# của `Modules.Scheduling.Dispatch` nhánh `fix/business-logic-v2` (deddde8).
 - Image backend hiện tại (nhánh `fix/business-rules-flow-1-2`) lỗi khi xuất swagger (trùng schemaId
   `AssignTechnicianRequest`), nên `docs/api/swagger.json` được bổ sung tay các hợp đồng mới theo record C#: `provinceCode`,
   `communeCode` của `CreatePropertySiteRequest`, `SelectSimulationRequest` (kèm 2 đường dẫn chọn / bỏ chọn mô phỏng), nhận /
@@ -367,8 +368,11 @@ nhập làm nguồn chính + kéo thả vật cản.
   với form cũ** (PUT /pre-surveys/{id} ghi đè, đổi giá trị là mọi mô phỏng thành "cũ"), nên PUT surface trước rồi mới PUT số
   liệu khai với đúng độ dốc / hướng đó. `expectedRevision` là revision của bản form đang sửa; 409 PRE_SURVEY_CONCURRENTLY_MODIFIED
   → khách chọn "Tải bản mới nhất" hoặc "Lưu đè", không tự ghi đè.
-- Backend không có API liệt kê bản nháp của khách: id bản nháp + địa điểm nhớ ở `assessmentDraft.ts` (localStorage theo tài
-  khoản); mở lại trang thì GET .../surface rồi làm tiếp ở bước mặt lắp / mô phỏng; 403/404/đã gửi thì bỏ nháp.
+- Bản nháp và địa điểm đã lưu lấy từ BE (GET /customers/me/pre-surveys?status=DRAFT, GET /customers/me/sites;
+  `SavedAssessments.tsx`): ở bước hồ sơ / địa điểm khách mở lại bản nháp (dựng lại wizard rồi chuyển tới bước mặt lắp) hoặc
+  chọn lại địa điểm cũ (chỉ địa điểm có mã phường, xã). Bản đang làm vẫn nhớ id bản nháp + địa điểm ở `assessmentDraft.ts`
+  (localStorage theo tài khoản); mở lại trang thì GET .../surface rồi làm tiếp ở bước mặt lắp / mô phỏng; 403/404/đã gửi thì
+  bỏ nháp.
 - Giữ dữ liệu khi rời trang (người dùng 10/10/2026: "không giữ lại giá trị của form nếu back qua back lại", chọn giữ trên trình
   duyệt thay vì tự lưu lên server): bước nằm trên địa chỉ (`?buoc=ho-so|dia-diem|mat-lap|mo-phong|xem-lai`, mỗi lần chuyển bước
   là một mục lịch sử nên Back / Forward của trình duyệt đi giữa các bước; không cho vượt bước chưa mở được). Mọi ô chưa gửi +
@@ -465,7 +469,10 @@ nghỉ cố định. Kỹ thuật viên nhận lịch xong thì khảo sát tạ
   - các giờ BE trả (GET /survey-slots, luôn 200); không có giờ thì `coverageStatus` cho biết vì sao (khu vực chưa có kỹ thuật
     viên, kín lịch...) và báo khách. Đặt xong lịch ở `PENDING_ACCEPTANCE`, khách thấy `acceptanceStatus` (chờ kỹ thuật viên nhận,
     nhân viên đang xếp người, đã xác nhận) và chỉ thấy tên kỹ thuật viên khi đã xác nhận. Đổi giờ / huỷ khi `canCustomerChange`.
-    Yêu cầu điều phối cho khu chưa có kỹ thuật viên (`dispatchAvailable`) chưa làm.
+    Khu chưa có kỹ thuật viên (`dispatchAvailable`): khách bấm "Nhờ xếp kỹ thuật viên", gửi tối đa 5 khung giờ tiện
+    (`DispatchRequestForm`), rồi đồng ý hoặc xin giờ khác cho đề xuất của nhân viên (`CustomerDispatchPanel`). Quản lý / quản
+    trị xử lý ở menu "Điều phối" (`/manage|admin/dispatch`): phân công thẳng hoặc gửi đề xuất, chọn người ngoài khu vực phải
+    ghi lý do. Hàng chờ tải theo từng trạng thái vì BE xếp hạn phản hồi sớm nhất trước và giữ cả yêu cầu đã xong.
 - Kỹ thuật viên `/tech/jobs`: tab "Chờ nhận" (GET /technicians/me/open-appointments, lịch trong khu vực của mình, chưa có địa
   chỉ cụ thể / số khách) với nút "Nhận việc" (POST .../accept kèm `expectedRevision`; người khác nhận trước thì 409
   APPOINTMENT_ALREADY_TAKEN), tab "Đã nhận" và "Đã qua". Chi tiết `/tech/jobs/:id`: công trình, khách, số liệu khai, mô phỏng

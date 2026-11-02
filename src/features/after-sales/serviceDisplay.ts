@@ -16,7 +16,7 @@ import {
 } from '@/common/afterSales'
 import type { Tone } from '@/components/common/ui/badge'
 import type { TrackerStep } from '@/components/common/ui/progress-tracker'
-import { assetTypeLabel, formatDateOnly } from '@/features/installations/installationDisplay'
+import { assetTypeLabel, formatDateOnly, formatWarrantyMonths } from '@/features/installations/installationDisplay'
 import { vnDate } from '@/features/scheduling/schedulingDisplay'
 import type { InstalledAssetView, ServiceRequestView, ServiceVisitView } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
@@ -47,6 +47,38 @@ export const formatVnd = (amount: number) => formatMoney(amount, 'VND')
 /** "Inverter Huawei SUN2000 (serial ABC)" */
 export function assetName(asset: InstalledAssetView) {
   return `${assetTypeLabel(asset.assetType)} ${asset.manufacturer} ${asset.model} (serial ${asset.serialNumber})`
+}
+
+/**
+ * Bảo hành của hãng cho một thiết bị. Thời hạn lấy từ danh mục sản phẩm; ngày hết hạn chỉ có khi Smart Solar đã xác nhận
+ * ngày kích hoạt với hãng, không tự tính từ ngày bàn giao
+ */
+export function equipmentWarrantyText(asset: InstalledAssetView, now = Date.now()) {
+  if (asset.warrantyMonths == null) return 'Chưa có thông tin bảo hành của hãng'
+  if (asset.warrantyMonths === 0) return 'Hãng không bảo hành'
+  const months = formatWarrantyMonths(asset.warrantyMonths)
+  if (!asset.warrantyEndsAt) return `Bảo hành của hãng ${months}, chưa xác nhận ngày bắt đầu`
+  const until = formatDateOnly(vnDate(asset.warrantyEndsAt))
+  const ended = new Date(asset.warrantyEndsAt).getTime() < now
+  return `Bảo hành của hãng ${months}, ${ended ? 'đã hết hạn' : 'đến'} ${until}`
+}
+
+/**
+ * Gộp thiết bị đang lắp cùng loại, cùng model và cùng hạn bảo hành của hãng (một công trình có thể có hàng chục tấm pin).
+ * Bỏ thiết bị đã thay ra và thiết bị thay thế chưa nghiệm thu
+ */
+export function groupEquipmentWarranty(assets: InstalledAssetView[]) {
+  const groups = new Map<string, { name: string; count: number; text: string }>()
+  for (const asset of assets) {
+    if (asset.status !== 'ACTIVE') continue
+    const name = `${assetTypeLabel(asset.assetType)} ${asset.manufacturer} ${asset.model}`
+    const text = equipmentWarrantyText(asset)
+    const key = `${name}|${text}`
+    const group = groups.get(key)
+    if (group) group.count += 1
+    else groups.set(key, { name, count: 1, text })
+  }
+  return [...groups.values()]
 }
 
 /** "Còn hạn (đến 10/10/2036)". Backend chỉ ghi hạn bảo hành lắp đặt cho yêu cầu báo lỗi */

@@ -74,6 +74,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
     groups: [
       {
         items: [
+          { label: 'Điều phối', to: ROUTES.manage.dispatch, icon: 'support_agent' },
           { label: 'Thi công', to: ROUTES.manage.installations, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.manage.afterSales, icon: 'build' },
           { label: 'Kỹ thuật viên', to: ROUTES.manage.technicians, icon: 'engineering' },
@@ -91,6 +92,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Tài khoản', to: ROUTES.admin.users, icon: 'manage_accounts' },
           { label: 'Kỹ thuật viên', to: ROUTES.admin.technicians, icon: 'engineering' },
+          { label: 'Điều phối', to: ROUTES.admin.dispatch, icon: 'support_agent' },
           { label: 'Thi công', to: ROUTES.admin.installations, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.admin.afterSales, icon: 'build' },
           { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },

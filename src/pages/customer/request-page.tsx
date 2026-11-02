@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
@@ -6,8 +6,11 @@ import { ActivityList, KeyValueList, Notice, type ActivityItem } from '@/compone
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
-import { EmptyState } from '@/components/common/ui/states'
+import { EmptyState, Skeleton } from '@/components/common/ui/states'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { CustomerDispatchPanel, DispatchOutcomeNotice } from '@/features/dispatch/CustomerDispatchPanel'
+import { DispatchRequestForm } from '@/features/dispatch/DispatchRequestForm'
+import { customerDispatchMeta, isActiveDispatch } from '@/features/dispatch/dispatchDisplay'
 import { formatDateTime, shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { RequestQuotationPanel } from '@/features/quotations/RequestQuotationPanel'
 import { BookingPanel } from '@/features/scheduling/BookingPanel'
@@ -26,6 +29,7 @@ import {
 } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestQuery } from '@/hooks/useBooking'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
+import { useMyDispatchQuery } from '@/hooks/useDispatch'
 import { ROUTES } from '@/routes/paths'
 import type { CustomerSurveyRequestDetailView, CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 
@@ -42,7 +46,9 @@ function describe(r: CustomerSurveyRequestView) {
   return undefined
 }
 
-function Progress({ r }: { r: CustomerSurveyRequestView }) {
+/** `dispatchStatus`: khách đã nhờ Smart Solar xếp kỹ thuật viên (OPEN, PROPOSAL_PENDING), chưa có lịch */
+function Progress({ r, dispatchStatus }: { r: CustomerSurveyRequestView; dispatchStatus?: string | null }) {
+  const dispatching = dispatchStatus === 'OPEN' || dispatchStatus === 'PROPOSAL_PENDING'
   const a = r.appointment
   const confirmed = a?.acceptanceStatus === 'CONFIRMED' || a?.acceptanceStatus === 'COMPLETED'
   const completed = r.status === 'COMPLETED'
@@ -50,10 +56,26 @@ function Progress({ r }: { r: CustomerSurveyRequestView }) {
   const closed = isClosedCustomerRequest(r)
   const items: ActivityItem[] = [
     { title: 'Gửi yêu cầu', time: formatDateTime(r.submittedAt), state: 'done' },
-    { title: 'Đặt giờ khảo sát', time: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
+    {
+      title: 'Đặt giờ khảo sát',
+      time: a
+        ? formatDateTime(a.bookedAt)
+        : dispatchStatus === 'PROPOSAL_PENDING'
+          ? 'Chờ bạn xác nhận giờ đề xuất'
+          : dispatching
+            ? 'Smart Solar đang xếp kỹ thuật viên'
+            : 'Chưa đặt',
+      state: a ? 'done' : 'current',
+    },
     {
       title: 'Kỹ thuật viên nhận lịch',
-      time: confirmed ? (a?.assignedTechnicianName ?? 'Đã nhận') : a ? 'Đang chờ' : 'Sau khi bạn đặt giờ',
+      time: confirmed
+        ? (a?.assignedTechnicianName ?? 'Đã nhận')
+        : a
+          ? 'Đang chờ'
+          : dispatching
+            ? 'Sau khi có giờ khảo sát'
+            : 'Sau khi bạn đặt giờ',
       state: confirmed ? 'done' : a ? 'current' : 'todo',
     },
     {
@@ -142,12 +164,23 @@ export function CustomerRequestPage() {
   const [rescheduling, setRescheduling] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
+  // Chưa có lịch thì xem khách có đang nhờ Smart Solar xếp kỹ thuật viên không
+  const dispatch = useMyDispatchQuery(id, { enabled: Boolean(query.data && canBook(query.data.request)) })
+  const [dispatchForm, setDispatchForm] = useState<{ coverage: string | null; date: string } | null>(null)
+  // Nhân viên phân công thẳng: yêu cầu điều phối sang ASSIGNED trước khi chi tiết yêu cầu kịp tải lại lịch mới
+  const assignedNow = Boolean(query.data && canBook(query.data.request) && dispatch.data?.status === 'ASSIGNED')
+  const { refetch } = query
+  useEffect(() => {
+    if (assignedNow) void refetch()
+  }, [assignedNow, refetch])
   usePageCrumb(query.data ? query.data.request.propertyName || 'Công trình chưa đặt tên' : null)
 
   return (
     <QueryBoundary query={query}>
       {({ request: r, history }) => {
-        const progress = customerProgress(r)
+        const d = canBook(r) ? dispatch.data : undefined
+        const dispatchActive = Boolean(d && isActiveDispatch(d.status))
+        const progress = d && dispatchActive ? customerDispatchMeta(d) : customerProgress(r)
         const a = r.appointment
         // Đã có hợp đồng thì không rút được nữa; chờ tải xong danh sách hợp đồng mới hiện nút
         const withdrawable =
@@ -190,7 +223,28 @@ export function CustomerRequestPage() {
                     }
                   />
                 ) : canBook(r) ? (
-                  <BookingPanel surveyRequestId={r.surveyRequestId} propertySiteId={r.propertySiteId} />
+                  dispatch.isPending || (assignedNow && query.isFetching) ? (
+                    <Skeleton className="h-64" />
+                  ) : d && dispatchActive ? (
+                    <CustomerDispatchPanel dispatch={d} />
+                  ) : dispatchForm ? (
+                    <DispatchRequestForm
+                      surveyRequestId={r.surveyRequestId}
+                      coverageStatus={dispatchForm.coverage}
+                      startDate={dispatchForm.date}
+                      onCancel={() => setDispatchForm(null)}
+                      onDone={() => setDispatchForm(null)}
+                    />
+                  ) : (
+                    <div className="space-y-4">
+                      {d && <DispatchOutcomeNotice dispatch={d} />}
+                      <BookingPanel
+                        surveyRequestId={r.surveyRequestId}
+                        propertySiteId={r.propertySiteId}
+                        onRequestDispatch={(coverage, date) => setDispatchForm({ coverage, date })}
+                      />
+                    </div>
+                  )
                 ) : a ? (
                   showReschedule ? (
                     <BookingPanel
@@ -219,7 +273,7 @@ export function CustomerRequestPage() {
                 <Panel>
                   <PanelHeader title="Tiến độ" />
                   <PanelBody>
-                    <Progress r={r} />
+                    <Progress r={r} dispatchStatus={dispatchActive ? d?.status : null} />
                   </PanelBody>
                 </Panel>
                 {/* Chỉ hiện khi có lần đặt khác lịch đang hiệu lực (đã huỷ / đã đổi giờ). */}
