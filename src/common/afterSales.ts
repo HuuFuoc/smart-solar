@@ -181,6 +181,17 @@ export const SALES_TASK_STATUSES: Record<string, string> = {
   CANCELLED: 'Đã huỷ',
 }
 
+/**
+ * FollowUpOutcomes: kết quả của việc nhắc khách. Bỏ trống là chưa có kết quả cuối (việc còn mở); WILL_BOOK_LATER cũng giữ việc
+ * mở; các kết quả khác đóng việc. UNREACHABLE của việc nhắc bảo trì làm lượt bảo trì thành chưa thực hiện (không bị trừ)
+ */
+export const FOLLOW_UP_OUTCOMES: Record<string, { label: string; hint: string }> = {
+  BOOKED: { label: 'Khách đã đặt lịch / đã trả lời', hint: 'Đóng việc.' },
+  WILL_BOOK_LATER: { label: 'Khách hẹn làm sau', hint: 'Việc vẫn mở để gọi lại.' },
+  DECLINED: { label: 'Khách từ chối', hint: 'Đóng việc.' },
+  UNREACHABLE: { label: 'Không liên lạc được', hint: 'Đóng việc.' },
+}
+
 /** InstallationWarrantyStatuses: bảo hành lắp đặt của công trình */
 export const INSTALLATION_WARRANTY_STATUSES: Record<string, { label: string; tone: Tone }> = {
   NOT_HANDED_OVER: { label: 'Chưa bàn giao', tone: 'neutral' },
@@ -188,3 +199,57 @@ export const INSTALLATION_WARRANTY_STATUSES: Record<string, { label: string; ton
   ACTIVE: { label: 'Còn bảo hành', tone: 'ok' },
   EXPIRED: { label: 'Hết bảo hành', tone: 'neutral' },
 }
+
+// Quản trị sau bán: thời hạn bảo hành, hoàn tiền làm tay, báo cáo
+
+/** WarrantyOptionKinds. Thời hạn được chép vào hợp đồng / báo giá lúc lập nên đổi ở đây không áp cho bản đã lập */
+export const WARRANTY_OPTION_KINDS = {
+  installation: 'INSTALLATION',
+  repair: 'REPAIR',
+} as const
+
+export const WARRANTY_OPTION_KIND_LABELS: Record<string, string> = {
+  INSTALLATION: 'Bảo hành lắp đặt',
+  REPAIR: 'Bảo hành sửa chữa',
+}
+
+/** RefundStatuses. Duyệt chưa phải đã hoàn: chỉ REFUNDED là tiền đã được trả */
+export const REFUND_STATUSES: Record<string, { label: string; tone: Tone }> = {
+  PENDING_APPROVAL: { label: 'Chờ quản lý duyệt', tone: 'info' },
+  APPROVED: { label: 'Đã duyệt, chờ ghi nhận', tone: 'info' },
+  REJECTED: { label: 'Không hoàn', tone: 'neutral' },
+  REFUNDED: { label: 'Đã hoàn', tone: 'neutral' },
+}
+
+/** Chỉ số của báo cáo sau bán theo `key` của backend. `money`: số tiền VND */
+export const DASHBOARD_METRICS: Record<string, { label: string; money?: boolean }> = {
+  collected_contracts: { label: 'Tiền hợp đồng lắp đặt', money: true },
+  collected_packages: { label: 'Tiền gói dịch vụ', money: true },
+  collected_services: { label: 'Tiền sửa chữa, bảo trì lẻ', money: true },
+  collected_total: { label: 'Tổng thu', money: true },
+  refunded: { label: 'Đã hoàn', money: true },
+  net_collected: { label: 'Thực thu', money: true },
+  total_customers: { label: 'Khách hàng (cuối kỳ)' },
+  new_customers: { label: 'Khách hàng mới' },
+  installation_projects: { label: 'Dự án thi công mới' },
+  completed_installations: { label: 'Công trình đã bàn giao' },
+  active_installation_warranties: { label: 'Công trình còn bảo hành (cuối kỳ)' },
+  fault_requests: { label: 'Yêu cầu báo lỗi' },
+  completed_repairs: { label: 'Sửa chữa khách đã nghiệm thu' },
+  completed_maintenance_visits: { label: 'Lượt bảo trì khách đã nghiệm thu' },
+  active_maintenance_subscriptions: { label: 'Gói bảo trì còn hiệu lực (cuối kỳ)' },
+  active_disaster_subscriptions: { label: 'Gói thiên tai còn hiệu lực (cuối kỳ)' },
+  package_purchases: { label: 'Gói đã thanh toán' },
+  active_technicians: { label: 'Kỹ thuật viên có lịch làm' },
+  technician_service_visits: { label: 'Buổi sau bán đã báo cáo' },
+}
+
+/** Thứ tự các chỉ số tiền trên báo cáo: các nguồn thu, tổng, hoàn, thực thu */
+export const DASHBOARD_MONEY_KEYS: readonly string[] = [
+  'collected_contracts',
+  'collected_packages',
+  'collected_services',
+  'collected_total',
+  'refunded',
+  'net_collected',
+]

@@ -70,3 +70,30 @@ export const DEFAULT_RAG_VALUES: RagConfigurationValues = {
   maxHistoryMessages: 6,
   promptVersion: 'v1',
 }
+
+/** POST .../draft/validate: kiểm lại bản nháp đã lưu và cho biết số phiên bản tài liệu phải nạp lại nếu áp dụng */
+export type RagConfigurationValidationView = {
+  version: number
+  valid: boolean
+  /** Theo tên tham số, mỗi tham số một hay nhiều câu tiếng Anh của backend */
+  errors: Record<string, string[]>
+  chunkSettingsChanged: boolean
+  versionsNeedingReindex: number
+}
+
+/** POST .../draft/activate và .../rollback. Đổi cách cắt đoạn không tự nạp lại tài liệu */
+export type RagActivationView = {
+  active: RagConfigurationView
+  supersededVersion: number | null
+  chunkSettingsChanged: boolean
+  versionsNeedingReindex: number
+}
+
+/** POST .../reindex-stale (202): đã xếp lượt nạp cho các phiên bản cắt theo cấu hình cũ */
+export type RagReindexStaleView = {
+  configVersion: number
+  stale: number
+  queued: number
+  /** Phiên bản đang có lượt nạp chờ nên bỏ qua */
+  skippedOpenJob: number
+}

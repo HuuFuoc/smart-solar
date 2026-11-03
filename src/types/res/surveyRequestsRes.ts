@@ -220,3 +220,11 @@ export type SalesOutcomeView = {
   closedAt: string
   cancelledQuotationIds: string[]
 }
+
+/** PUT /api/admin/survey-requests/{id}/sales-owner (quản lý, quản trị). `changed` false khi người được chọn đã phụ trách sẵn */
+export type SalesOwnerView = {
+  surveyRequestId: string
+  saleUserId: string
+  previousSaleUserId: string | null
+  changed: boolean
+}

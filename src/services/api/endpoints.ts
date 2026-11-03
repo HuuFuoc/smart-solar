@@ -26,6 +26,10 @@ export const ENDPOINTS = {
     base: '/admin/products',
     byId: (id: string) => `/admin/products/${encode(id)}`,
     status: (id: string) => `/admin/products/${encode(id)}/status`,
+    images: (id: string) => `/admin/products/${encode(id)}/images`,
+    image: (id: string, imageId: string) => `/admin/products/${encode(id)}/images/${encode(imageId)}`,
+    imageOrder: (id: string) => `/admin/products/${encode(id)}/images/order`,
+    imagePrimary: (id: string, imageId: string) => `/admin/products/${encode(id)}/images/${encode(imageId)}/primary`,
   },
 
   // Khách hàng: hồ sơ, địa điểm, đánh giá sơ bộ, mặt lắp, mô phỏng, đặt giờ khảo sát, theo dõi lắp đặt, hợp đồng, gói dịch vụ
@@ -136,6 +140,8 @@ export const ENDPOINTS = {
     openTasks: '/sales/after-sales/tasks/open',
     myTasks: '/sales/after-sales/tasks/mine',
     claimTask: (taskId: string) => `/sales/after-sales/tasks/${encode(taskId)}/claim`,
+    startTask: (taskId: string) => `/sales/after-sales/tasks/${encode(taskId)}/start`,
+    followUp: (taskId: string) => `/sales/after-sales/tasks/${encode(taskId)}/follow-up`,
     request: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}`,
     quotations: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}/quotations`,
   },
@@ -147,6 +153,19 @@ export const ENDPOINTS = {
     line: (quotationId: string, lineId: string) => `/quotations/${encode(quotationId)}/lines/${encode(lineId)}`,
     issue: (quotationId: string) => `/quotations/${encode(quotationId)}/issue`,
     revisions: (quotationId: string) => `/quotations/${encode(quotationId)}/revisions`,
+    document: (quotationId: string) => `/quotations/${encode(quotationId)}/document`,
+  },
+  // Hợp đồng lắp đặt phía nhân viên (tag SalesContracts) và trạng thái thanh toán của hợp đồng (tag StaffPayments)
+  contracts: {
+    fromQuotation: (quotationId: string) => `/quotations/${encode(quotationId)}/contracts`,
+    bySurveyRequest: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/contracts`,
+    byId: (contractId: string) => `/contracts/${encode(contractId)}`,
+    issue: (contractId: string) => `/contracts/${encode(contractId)}/issue`,
+    officialDocument: (contractId: string) => `/contracts/${encode(contractId)}/official-document`,
+    publish: (contractId: string) => `/contracts/${encode(contractId)}/publish`,
+    review: (contractId: string) => `/contracts/${encode(contractId)}/review`,
+    amendments: (contractId: string) => `/contracts/${encode(contractId)}/amendments`,
+    payments: (contractId: string) => `/contracts/${encode(contractId)}/payments`,
   },
 
   // Kỹ thuật viên
@@ -233,6 +252,7 @@ export const ENDPOINTS = {
     evidenceUrl: (requestId: string, evidenceId: string) =>
       `/manager/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
     warrantyActivation: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}/warranty-activation`,
+    refunds: '/manager/after-sales/refunds',
   },
 
   // Điều phối kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý và quản trị)
@@ -266,12 +286,39 @@ export const ENDPOINTS = {
     unavailablePeriod: (technicianUserId: string, periodId: string) =>
       `/admin/technicians/${encode(technicianUserId)}/unavailable-periods/${encode(periodId)}`,
   },
+  // Khu vực phục vụ: quản trị ghi, quản lý đọc
   operationalZones: {
     base: '/admin/operational-zones',
+    coverage: '/admin/operational-zones/coverage',
+    byId: (zoneId: string) => `/admin/operational-zones/${encode(zoneId)}`,
+    communes: (zoneId: string) => `/admin/operational-zones/${encode(zoneId)}/communes`,
+    technicians: (zoneId: string) => `/admin/operational-zones/${encode(zoneId)}/technicians`,
+  },
+  // Phân công thẳng kỹ thuật viên và đổi kinh doanh phụ trách (quản lý và quản trị)
+  adminSurvey: {
+    assignTechnician: (appointmentId: string) =>
+      `/admin/survey-appointments/${encode(appointmentId)}/assign-technician`,
+    salesOwner: (surveyRequestId: string) => `/admin/survey-requests/${encode(surveyRequestId)}/sales-owner`,
   },
   adminAfterSales: {
     packages: '/admin/after-sales/packages',
     package: (packageId: string) => `/admin/after-sales/packages/${encode(packageId)}`,
+    warrantyOptions: '/admin/after-sales/warranty-options',
+    recordRefund: (refundId: string) => `/admin/after-sales/refunds/${encode(refundId)}/record`,
+    dashboard: '/admin/after-sales/dashboard',
+    dashboardExport: '/admin/after-sales/dashboard/export',
+  },
+  // Kho tri thức của chatbot (chỉ quản trị)
+  knowledgeDocuments: {
+    base: '/admin/knowledge-documents',
+    byId: (documentId: string) => `/admin/knowledge-documents/${encode(documentId)}`,
+    versions: (documentId: string) => `/admin/knowledge-documents/${encode(documentId)}/versions`,
+    publish: (documentId: string) => `/admin/knowledge-documents/${encode(documentId)}/publish`,
+    unpublish: (documentId: string) => `/admin/knowledge-documents/${encode(documentId)}/unpublish`,
+    reindex: (documentId: string) => `/admin/knowledge-documents/${encode(documentId)}/reindex`,
+    retryJob: (documentId: string, jobId: string) =>
+      `/admin/knowledge-documents/${encode(documentId)}/jobs/${encode(jobId)}/retry`,
+    archive: (documentId: string) => `/admin/knowledge-documents/${encode(documentId)}/archive`,
   },
   adminSystemSettings: {
     scheduling: '/admin/system-settings/scheduling',
@@ -285,6 +332,7 @@ export const ENDPOINTS = {
     validate: '/admin/rag-configuration/draft/validate',
     activate: '/admin/rag-configuration/draft/activate',
     rollback: '/admin/rag-configuration/rollback',
+    reindexStale: '/admin/rag-configuration/reindex-stale',
   },
 
   // Tệp tải lên kho S3, mọi vai trò

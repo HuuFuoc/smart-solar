@@ -12,6 +12,7 @@ import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/component
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { useAuth } from '@/context/AuthProvider'
 import {
   dispatchEventLabel,
   dispatchReasonLabel,
@@ -22,6 +23,7 @@ import {
   proposalStatusMeta,
 } from '@/features/dispatch/dispatchDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
+import { SurveyStaffPanel } from '@/features/scheduling/SurveyStaffPanel'
 import {
   BOOKING_HORIZON_DAYS,
   addDays,
@@ -470,6 +472,7 @@ function DispatchRequestPage() {
   const { id } = useParams()
   const query = useDispatchRequestQuery(id)
   const resolve = useResolveDispatchMutation()
+  const isAdmin = useAuth().user?.role === 'admin'
   const [resolving, setResolving] = useState<'unserviceable' | 'close' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const openResolve = (which: 'unserviceable' | 'close') => {
@@ -574,6 +577,8 @@ function DispatchRequestPage() {
               {r.status === 'PROPOSAL_PENDING' && r.liveProposal && (
                 <LiveProposalPanel dispatch={d} proposal={r.liveProposal} />
               )}
+
+              <SurveyStaffPanel surveyRequestId={r.surveyRequestId} canChangeSales={isAdmin} />
 
               {d.proposals.length > 0 && (
                 <Panel>

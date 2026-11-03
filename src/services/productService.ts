@@ -1,4 +1,5 @@
 import type {
+  AddProductImageRequest,
   ChangeProductStatusRequest,
   CreateProductRequest,
   UpdateProductRequest,
@@ -64,4 +65,32 @@ export function deleteProduct(id: string) {
 /** PATCH /api/admin/products/{id}/status */
 export function changeProductStatus(id: string, body: ChangeProductStatusRequest) {
   return patch<ProductResponse>(ENDPOINTS.adminProducts.status(id), body)
+}
+
+// Ảnh sản phẩm (ADMIN, MANAGER). Mọi lệnh trả lại cả sản phẩm kèm mảng images; chung giới hạn 30 lần / phút với mọi thao tác
+// quản trị danh mục, kể cả GET chi tiết quản trị
+
+/** GET /api/admin/products/{id}: chi tiết ở mọi trạng thái (kể cả INACTIVE), sản phẩm đã xoá thì 404 */
+export function getAdminProduct(id: string) {
+  return get<ProductResponse>(ENDPOINTS.adminProducts.byId(id))
+}
+
+/** POST .../images (201). Link https tuyệt đối; ảnh đầu tiên luôn là ảnh chính */
+export function addProductImage(id: string, body: AddProductImageRequest) {
+  return post<ProductResponse>(ENDPOINTS.adminProducts.images(id), body)
+}
+
+/** DELETE .../images/{imageId}. Xoá ảnh chính thì ảnh đứng đầu còn lại thành ảnh chính */
+export function removeProductImage(id: string, imageId: string) {
+  return del<ProductResponse>(ENDPOINTS.adminProducts.image(id, imageId))
+}
+
+/** PUT .../images/order. `imageIds` phải đúng bộ ảnh hiện có, mỗi ảnh một lần */
+export function reorderProductImages(id: string, imageIds: string[]) {
+  return put<ProductResponse>(ENDPOINTS.adminProducts.imageOrder(id), { imageIds })
+}
+
+/** PUT .../images/{imageId}/primary */
+export function setPrimaryProductImage(id: string, imageId: string) {
+  return put<ProductResponse>(ENDPOINTS.adminProducts.imagePrimary(id, imageId))
 }

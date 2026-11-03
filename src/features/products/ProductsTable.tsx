@@ -20,13 +20,15 @@ export type ProductsTableProps = {
   onEdit: (product: ProductResponse) => void
   onToggleStatus: (product: ProductResponse) => void
   onDelete: (product: ProductResponse) => void
+  /** Mở hộp thoại ảnh của sản phẩm */
+  onImages: (product: ProductResponse) => void
   /** Sản phẩm đang chờ đổi trạng thái (theo id), để khoá thao tác của đúng những dòng đó */
   busyIds?: ReadonlySet<string>
 }
 
-// Thao tác cuối dòng: Sửa, Ngừng bán, rồi Xoá sau vạch ngăn (chỉ đỏ khi rê chuột để cột không thành dải đỏ)
+// Thao tác cuối dòng: Sửa, Ảnh, Ngừng bán, rồi Xoá sau vạch ngăn (chỉ đỏ khi rê chuột để cột không thành dải đỏ)
 // Bảng xếp khối đến xl vì ở 1024px tên sản phẩm bị bóp quá hẹp
-export function ProductsTable({ products, onEdit, onToggleStatus, onDelete, busyIds }: ProductsTableProps) {
+export function ProductsTable({ products, onEdit, onToggleStatus, onDelete, onImages, busyIds }: ProductsTableProps) {
   return (
     <Table stack="xl">
       <thead>
@@ -127,6 +129,13 @@ export function ProductsTable({ products, onEdit, onToggleStatus, onDelete, busy
                   >
                     Sửa
                   </Button>
+                  <IconButton
+                    size="sm"
+                    icon="photo_library"
+                    label={`Ảnh của ${p.name ?? ''}`}
+                    tooltip="Ảnh sản phẩm"
+                    onClick={() => onImages(p)}
+                  />
                   <WithTooltip label={busy ? 'Đang đổi…' : active ? 'Ngừng bán (ẩn khỏi danh mục)' : 'Mở bán lại'}>
                     {(tip) => (
                       <Button

@@ -35,6 +35,7 @@ const OpsSurveysPage = page(() => import('@/pages/ops/surveys-page'), 'OpsSurvey
 const OpsSurveyRequestPage = page(() => import('@/pages/ops/survey-request-page'), 'OpsSurveyRequestPage')
 const OpsAfterSalesPage = page(() => import('@/pages/ops/after-sales-page'), 'OpsAfterSalesPage')
 const OpsAfterSalesRequestPage = page(() => import('@/pages/ops/after-sales-request-page'), 'OpsAfterSalesRequestPage')
+const OpsContractPage = page(() => import('@/pages/contract-page'), 'OpsContractPage')
 const OpsCatalogPage = page(() => import('@/pages/catalog-page'), 'OpsCatalogPage')
 const OpsCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'OpsCatalogProductPage')
 
@@ -62,6 +63,7 @@ const ManageInstallationProjectPage = page(
   () => import('@/pages/installation-project-page'),
   'ManageInstallationProjectPage',
 )
+const ManageContractPage = page(() => import('@/pages/contract-page'), 'ManageContractPage')
 
 // Điều phối khảo sát (quản lý và quản trị dùng chung trang)
 const ManageDispatchRequestsPage = page(() => import('@/pages/dispatch-requests-page'), 'ManageDispatchRequestsPage')
@@ -90,9 +92,23 @@ const AdminInstallationProjectPage = page(
   () => import('@/pages/installation-project-page'),
   'AdminInstallationProjectPage',
 )
+const AdminContractPage = page(() => import('@/pages/contract-page'), 'AdminContractPage')
 const AdminAfterSalesPage = page(() => import('@/pages/after-sales-requests-page'), 'AdminAfterSalesPage')
 const AdminAfterSalesRequestPage = page(() => import('@/pages/after-sales-request-page'), 'AdminAfterSalesRequestPage')
 const AdminSettingsPage = page(() => import('@/pages/admin/settings-page'), 'AdminSettingsPage')
+const AdminZonesPage = page(() => import('@/pages/admin/zones-page'), 'AdminZonesPage')
+const AdminZonePage = page(() => import('@/pages/admin/zone-page'), 'AdminZonePage')
+const AdminWarrantyOptionsPage = page(() => import('@/pages/admin/warranty-options-page'), 'AdminWarrantyOptionsPage')
+const AdminRefundsPage = page(() => import('@/pages/admin/refunds-page'), 'AdminRefundsPage')
+const AdminReportsPage = page(() => import('@/pages/admin/reports-page'), 'AdminReportsPage')
+const AdminKnowledgeDocumentsPage = page(
+  () => import('@/pages/admin/knowledge-documents-page'),
+  'AdminKnowledgeDocumentsPage',
+)
+const AdminKnowledgeDocumentPage = page(
+  () => import('@/pages/admin/knowledge-document-page'),
+  'AdminKnowledgeDocumentPage',
+)
 
 type PortalConfig = {
   role: UserRole
@@ -161,6 +177,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: ops.surveys, lazy: OpsSurveysPage },
       { path: ops.surveysMine, lazy: OpsSurveysPage },
       { path: ops.survey, lazy: OpsSurveyRequestPage },
+      { path: ops.contract, lazy: OpsContractPage },
       { path: ops.afterSales, lazy: OpsAfterSalesPage },
       { path: ops.afterSalesRequest, lazy: OpsAfterSalesRequestPage },
       { path: ops.products, lazy: OpsCatalogPage },
@@ -195,6 +212,7 @@ export const protectedRoutes: RouteObject[] = [
     pages: [
       { path: manage.installations, lazy: ManageInstallationProjectsPage },
       { path: manage.installation, lazy: ManageInstallationProjectPage },
+      { path: manage.contract, lazy: ManageContractPage },
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
       { path: manage.afterSalesRequest, lazy: ManageAfterSalesRequestPage },
       { path: manage.dispatch, lazy: ManageDispatchRequestsPage },
@@ -219,12 +237,20 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.products, lazy: AdminProductsPage },
       { path: admin.installations, lazy: AdminInstallationProjectsPage },
       { path: admin.installation, lazy: AdminInstallationProjectPage },
+      { path: admin.contract, lazy: AdminContractPage },
       { path: admin.packages, lazy: AdminPackagesPage },
       { path: admin.afterSales, lazy: AdminAfterSalesPage },
       { path: admin.dispatch, lazy: AdminDispatchRequestsPage },
       { path: admin.dispatchRequest, lazy: AdminDispatchRequestPage },
       { path: admin.afterSalesRequest, lazy: AdminAfterSalesRequestPage },
       { path: admin.settings, lazy: AdminSettingsPage },
+      { path: admin.zones, lazy: AdminZonesPage },
+      { path: admin.zone, lazy: AdminZonePage },
+      { path: admin.warrantyOptions, lazy: AdminWarrantyOptionsPage },
+      { path: admin.refunds, lazy: AdminRefundsPage },
+      { path: admin.reports, lazy: AdminReportsPage },
+      { path: admin.knowledgeBase, lazy: AdminKnowledgeDocumentsPage },
+      { path: admin.knowledgeDocument, lazy: AdminKnowledgeDocumentPage },
     ],
   }),
 

@@ -20,3 +20,17 @@ export type PackageRequest = {
   /** Format: int32 */
   revision?: number
 }
+
+export type RecordRefundRequest = {
+  /** Format: date-time */
+  refundedAt?: string
+  reference?: string | null
+}
+
+export type WarrantyOptionRequest = {
+  kind?: string | null
+  /** Format: int32 */
+  months?: number
+  isActive?: boolean
+  isDefault?: boolean
+}

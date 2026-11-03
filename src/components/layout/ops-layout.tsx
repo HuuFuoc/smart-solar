@@ -1,10 +1,9 @@
-import { useMemo, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link, Outlet } from 'react-router'
 import { Count } from '@/components/common/ui/badge'
 import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
-import { isQuotationTask } from '@/features/after-sales/serviceDisplay'
 import { useNavAlert } from '@/hooks/useNavAlert'
 import { useMyTasksQuery, useOpenTasksQuery } from '@/hooks/useSalesAfterSales'
 import {
@@ -16,7 +15,7 @@ import { ROUTES } from '@/routes/paths'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 import type { MySurveyRequestItem } from '@/types/res/surveyRequestsRes'
 
-// Số đỏ trên menu: yêu cầu chưa ai nhận, lịch của mình cần phân công, việc báo giá chờ nhận,
+// Số đỏ trên menu: yêu cầu chưa ai nhận, lịch của mình cần phân công, việc sau bán chờ nhận (báo giá, nhắc khách),
 // và yêu cầu / việc của mình vừa đổi trạng thái mà chưa xem. Không có gì đỏ thì "Của tôi" hiện tổng số (xám)
 const surveyAlert = {
   key: (r: MySurveyRequestItem) => r.surveyRequestId,
@@ -33,9 +32,8 @@ export function OpsLayout({ children }: { children?: ReactNode }) {
   const pending = usePendingSurveyRequestsQuery({ enabled }).data?.length
   const mine = useMySurveyRequestsQuery({ enabled }).data
   const escalated = useEscalatedAppointmentsQuery({ enabled }).data
-  const openTasks = useOpenTasksQuery({ enabled }).data?.filter(isQuotationTask).length ?? 0
-  const myTasksData = useMyTasksQuery({ enabled }).data
-  const myTasks = useMemo(() => myTasksData?.filter(isQuotationTask), [myTasksData])
+  const openTasks = useOpenTasksQuery({ enabled }).data?.length ?? 0
+  const myTasks = useMyTasksQuery({ enabled }).data
   const mineAlert = useNavAlert(ROUTES.ops.surveysMine, mine, {
     ...surveyAlert,
     todo: (r) =>

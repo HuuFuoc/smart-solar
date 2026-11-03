@@ -19,10 +19,12 @@ export const technicianAdminKeys = {
   zones: () => [...technicianAdminKeys.all, 'zones'] as const,
 }
 
-export function useOperationalZonesQuery() {
+/** `enabled`: layout chỉ gọi khi phiên quản trị / quản lý đã khôi phục. */
+export function useOperationalZonesQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<OperationalZoneListItem[], ApiError>({
     queryKey: technicianAdminKeys.zones(),
     queryFn: technicianAdminService.listOperationalZones,
+    enabled,
   })
 }
 

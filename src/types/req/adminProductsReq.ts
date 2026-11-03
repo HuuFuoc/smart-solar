@@ -1,5 +1,11 @@
 /* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
 
+export type AddProductImageRequest = {
+  url?: string | null
+  altText?: string | null
+  makePrimary?: boolean | null
+}
+
 export type ChangeProductStatusRequest = {
   status?: string | null
 }
@@ -26,6 +32,10 @@ export type CreateProductRequest = {
   spec?: unknown
   imageUrl?: string | null
   status?: string | null
+}
+
+export type ReorderProductImagesRequest = {
+  imageIds?: string[] | null
 }
 
 export type UpdateProductRequest = {

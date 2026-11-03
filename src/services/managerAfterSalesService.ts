@@ -10,6 +10,7 @@ import type {
   ServiceRequestSummary,
   ServiceRequestView,
 } from '@/types/res/customerAfterSalesRes'
+import type { RefundView } from '@/types/res/managerAfterSalesRes'
 import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
@@ -49,6 +50,14 @@ export function reviewDispute(requestId: string, body: DisputeReviewRequest) {
 /** Khách xin huỷ việc đã trả tiền: đồng ý (giữ lại chi phí không hoàn được) hoặc từ chối */
 export function decideCancellation(requestId: string, body: CancellationDecisionRequest) {
   return post<ServiceRequestView>(api.cancellationDecision(requestId), body)
+}
+
+/**
+ * Khoản hoàn tiền làm tay, mới nhất trước (MANAGER và ADMIN). Không truyền `status` là mọi trạng thái. Dùng chung: quản lý
+ * duyệt, quản trị ghi nhận đã trả
+ */
+export function listRefunds(status?: string) {
+  return get<RefundView[]>(api.refunds, { params: status ? { status } : undefined })
 }
 
 /** Ngày kích hoạt bảo hành hãng của thiết bị (ISO kèm múi giờ, không ở tương lai) + tài liệu PROJECT_DOCUMENT đã xác minh */

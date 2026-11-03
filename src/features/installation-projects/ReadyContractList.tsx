@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
@@ -76,7 +76,16 @@ function CreateProjectDialog({
   )
 }
 
-export function ReadyContractList({ rows, detailPattern }: { rows: PaidContractSource[]; detailPattern: string }) {
+export function ReadyContractList({
+  rows,
+  detailPattern,
+  contractPattern,
+}: {
+  rows: PaidContractSource[]
+  detailPattern: string
+  /** Trang chi tiết hợp đồng (thanh toán, bản ký) của portal đang xem */
+  contractPattern: string
+}) {
   const [picked, setPicked] = useState<PaidContractSource | null>(null)
   return (
     <>
@@ -96,7 +105,9 @@ export function ReadyContractList({ rows, detailPattern }: { rows: PaidContractS
           {rows.map((c) => (
             <Tr key={c.contractId}>
               <Td label="Hợp đồng">
-                <p className="font-medium text-fg">{c.contractNumber}</p>
+                <Link className="font-medium ui-link" to={withId(contractPattern, c.contractId)}>
+                  {c.contractNumber}
+                </Link>
                 <p className="tnum text-meta text-fg-2">Yêu cầu khảo sát {shortCode(c.surveyRequestId)}</p>
               </Td>
               <Td label="Giá trị" className="tnum lg:text-right">
