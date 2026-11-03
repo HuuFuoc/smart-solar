@@ -1,12 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as adminAfterSalesService from '@/services/adminAfterSalesService'
+import type { DashboardParams } from '@/services/adminAfterSalesService'
 import type { ApiError } from '@/services/api/errors'
-import type { PackageRequest } from '@/types/req/adminAfterSalesReq'
+import { managerAfterSalesKeys } from '@/hooks/useManagerAfterSales'
+import type { PackageRequest, RecordRefundRequest, WarrantyOptionRequest } from '@/types/req/adminAfterSalesReq'
+import type { DashboardView, WarrantyOptionView } from '@/types/res/adminAfterSalesRes'
 import type { PackageView } from '@/types/res/customerAfterSalesRes'
+import type { RefundView } from '@/types/res/managerAfterSalesRes'
 
 export const adminAfterSalesKeys = {
   all: ['admin-after-sales'] as const,
   packages: () => [...adminAfterSalesKeys.all, 'packages'] as const,
+  warrantyOptions: () => [...adminAfterSalesKeys.all, 'warranty-options'] as const,
+  dashboard: (params: DashboardParams) => [...adminAfterSalesKeys.all, 'dashboard', params] as const,
 }
 
 type Options = { enabled?: boolean }
@@ -44,4 +50,50 @@ export function useUpdatePackageMutation() {
   return usePackageMutation(({ id, body }: { id: string; body: PackageRequest }) =>
     adminAfterSalesService.updatePackage(id, body),
   )
+}
+
+/** Thời hạn bảo hành của cả hai loại, lọc theo loại ở máy */
+export function useWarrantyOptionsQuery({ enabled = true }: Options = {}) {
+  return useQuery<WarrantyOptionView[], ApiError>({
+    queryKey: adminAfterSalesKeys.warrantyOptions(),
+    queryFn: () => adminAfterSalesService.listWarrantyOptions(),
+    enabled,
+  })
+}
+
+// Đặt mặc định đổi cả tuỳ chọn khác nên luôn tải lại cả danh sách, kể cả khi lỗi
+export function useSaveWarrantyOptionMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<WarrantyOptionView, ApiError, WarrantyOptionRequest>({
+    mutationFn: (body) => adminAfterSalesService.saveWarrantyOption(body),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: adminAfterSalesKeys.warrantyOptions() }),
+  })
+}
+
+// Danh sách hoàn tiền dùng chung với quản lý, báo cáo có số tiền đã hoàn nên cũng tải lại
+export function useRecordRefundMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<RefundView, ApiError, { refundId: string; body: RecordRefundRequest }>({
+    mutationFn: ({ refundId, body }) => adminAfterSalesService.recordRefund(refundId, body),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.refunds() })
+      void queryClient.invalidateQueries({ queryKey: [...adminAfterSalesKeys.all, 'dashboard'] })
+    },
+  })
+}
+
+/** `enabled` false khi bộ lọc đang sai, để không gọi API với khoảng ngày hỏng. Giữ số liệu cũ trong lúc tải bộ lọc mới */
+export function useAfterSalesDashboardQuery(params: DashboardParams, { enabled = true }: Options = {}) {
+  return useQuery<DashboardView, ApiError>({
+    queryKey: adminAfterSalesKeys.dashboard(params),
+    queryFn: () => adminAfterSalesService.getDashboard(params),
+    placeholderData: keepPreviousData,
+    enabled,
+  })
+}
+
+export function useExportDashboardMutation() {
+  return useMutation<string, ApiError, DashboardParams>({
+    mutationFn: (params) => adminAfterSalesService.exportDashboard(params),
+  })
 }

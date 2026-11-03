@@ -6,6 +6,16 @@ export type ProductDeletedResponse = {
   deleted?: boolean
 }
 
+export type ProductImageResponse = {
+  /** Format: uuid */
+  id?: string
+  url?: string | null
+  altText?: string | null
+  /** Format: int32 */
+  sortOrder?: number
+  isPrimary?: boolean
+}
+
 export type ProductResponse = {
   /** Format: uuid */
   id?: string
@@ -30,6 +40,7 @@ export type ProductResponse = {
   spec?: unknown
   status?: string | null
   imageUrl?: string | null
+  images?: ProductImageResponse[] | null
   /** Format: date-time */
   createdAt?: string
   /** Format: date-time */

@@ -8,6 +8,7 @@ import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState } from '@/components/common/ui/states'
 import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
+import { QuotationDocument } from '@/features/quotations/QuotationDocument'
 import { QuotationHeaderDialog } from '@/features/quotations/QuotationHeaderDialog'
 import { QuotationLineDialog } from '@/features/quotations/QuotationLineDialog'
 import {
@@ -183,6 +184,7 @@ function QuotationWork({ list }: { list: QuotationView[] }) {
             <QuotationTerms quotation={current} />
           </>
         )}
+        <QuotationDocument key={current.quotationId} quotation={current} />
         {older.length > 0 && <OlderVersions items={older} />}
       </PanelBody>
     </Panel>

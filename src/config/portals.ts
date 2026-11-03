@@ -56,7 +56,13 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Chờ nhận', to: ROUTES.ops.surveys, icon: 'move_to_inbox', end: true },
           // Backend chỉ trả chi tiết cho sales đã nhận yêu cầu, nên trang chi tiết thuộc "Của tôi"
-          { label: 'Của tôi', to: ROUTES.ops.surveysMine, icon: 'assignment_ind', alsoActiveOn: [ROUTES.ops.survey] },
+          // Hợp đồng mở từ trang yêu cầu nên cũng thuộc "Của tôi"
+          {
+            label: 'Của tôi',
+            to: ROUTES.ops.surveysMine,
+            icon: 'assignment_ind',
+            alsoActiveOn: [ROUTES.ops.survey, ROUTES.ops.contract],
+          },
         ],
       },
       {
@@ -75,7 +81,12 @@ export const PORTALS: Record<PortalKey, Portal> = {
       {
         items: [
           { label: 'Điều phối', to: ROUTES.manage.dispatch, icon: 'support_agent' },
-          { label: 'Thi công', to: ROUTES.manage.installations, icon: 'construction' },
+          {
+            label: 'Thi công',
+            to: ROUTES.manage.installations,
+            icon: 'construction',
+            alsoActiveOn: [ROUTES.manage.contract],
+          },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.manage.afterSales, icon: 'build' },
           { label: 'Kỹ thuật viên', to: ROUTES.manage.technicians, icon: 'engineering' },
           { label: 'Sản phẩm', to: ROUTES.manage.products, icon: 'solar_power' },
@@ -92,11 +103,31 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Tài khoản', to: ROUTES.admin.users, icon: 'manage_accounts' },
           { label: 'Kỹ thuật viên', to: ROUTES.admin.technicians, icon: 'engineering' },
+          { label: 'Khu vực phục vụ', to: ROUTES.admin.zones, icon: 'map' },
           { label: 'Điều phối', to: ROUTES.admin.dispatch, icon: 'support_agent' },
-          { label: 'Thi công', to: ROUTES.admin.installations, icon: 'construction' },
+          {
+            label: 'Thi công',
+            to: ROUTES.admin.installations,
+            icon: 'construction',
+            alsoActiveOn: [ROUTES.admin.contract],
+          },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.admin.afterSales, icon: 'build' },
-          { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },
+        ],
+      },
+      {
+        label: 'Sau bán',
+        items: [
           { label: 'Gói dịch vụ', to: ROUTES.admin.packages, icon: 'shield' },
+          { label: 'Thời hạn bảo hành', to: ROUTES.admin.warrantyOptions, icon: 'verified_user' },
+          { label: 'Hoàn tiền', to: ROUTES.admin.refunds, icon: 'currency_exchange' },
+          { label: 'Báo cáo', to: ROUTES.admin.reports, icon: 'monitoring' },
+        ],
+      },
+      {
+        label: 'Danh mục, hệ thống',
+        items: [
+          { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },
+          { label: 'Kho tri thức AI', to: ROUTES.admin.knowledgeBase, icon: 'menu_book' },
           { label: 'Cài đặt hệ thống', to: ROUTES.admin.settings, icon: 'settings' },
         ],
       },

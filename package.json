@@ -10,6 +10,7 @@
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "test": "node --experimental-strip-types --no-warnings --test \"tests/*.test.mjs\"",
+    "test:e2e": "node --test --test-concurrency=1 \"tests/e2e/*.e2e.mjs\"",
     "gen:api": "node scripts/gen-api-types.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

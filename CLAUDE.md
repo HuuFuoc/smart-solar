@@ -243,9 +243,11 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt. Cùng cách đó (22/10/2026) với 9
   path khảo sát tại công trình (tag TechnicianOnSiteSurvey, StaffOnSiteSurvey); `ObstacleRequest` / `RevisionRequest` của
   backend đặt tên `OnSiteSurveyObstacleRequest` / `OnSiteSurveyRevisionRequest` cho khỏi trùng. Cùng cách đó với 11 path báo
-  giá lắp đặt (tag SalesQuotations, CustomerQuotations; chưa chép path tạo hợp đồng); `QuotationLineRequest` của luồng lắp đặt
+  giá lắp đặt (tag SalesQuotations, CustomerQuotations); `QuotationLineRequest` của luồng lắp đặt
   đặt tên `InstallationQuotationLineRequest` vì trùng tên dòng báo giá sửa chữa (tag SalesAfterSales), response viết tay ở
-  `types/res/quotationsRes.ts` theo record C# của backend `main` (7c79fa8, `Modules.Quotations`).
+  `types/res/quotationsRes.ts` theo record C# của backend `main` (7c79fa8, `Modules.Quotations`). Cùng cách đó (03/11/2026) với
+  9 path hợp đồng (tag SalesContracts), `GET /contracts/{id}/payments` (StaffPayments) và start / follow-up của việc kinh doanh
+  (SalesAfterSales); response viết tay: `ContractView` ở `customerContractsRes.ts` dùng chung, `staffPaymentsRes.ts`.
 - `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
   repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
   JWT; không đụng DB nào.
@@ -322,10 +324,15 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
 - Kỹ thuật viên `/tech/after-sales` + `/:id` (theo mã buổi hẹn): nhận / từ chối, bắt đầu (sớm nhất 2 giờ trước giờ hẹn, khoá
   nút và ghi rõ giờ), ảnh hiện trường (`uploadFile` mục đích `SERVICE_EVIDENCE`, gắn vào buổi hẹn; BE bắt ít nhất 1 ảnh trước
   báo cáo), báo cáo kiểm tra (không lỗi hoặc danh sách hạng mục), báo cáo sửa / bảo trì, khách vắng.
-- Kinh doanh `/ops/after-sales` (chỉ việc báo giá; việc nhắc khách chưa làm) + `/:id` theo mã yêu cầu: nhận việc rồi lập báo
-  giá. Báo lỗi: mỗi hạng mục khách trả tiền đúng một dòng; bảo trì lẻ: dòng tự ghi. Tiền là số nguyên VND.
+- Kinh doanh `/ops/after-sales` + `/:id` theo mã yêu cầu: nhận việc rồi lập báo giá. Báo lỗi: mỗi hạng mục khách trả tiền đúng
+  một dòng; bảo trì lẻ: dòng tự ghi. Tiền là số nguyên VND. Việc nhắc khách (nhắc đặt lịch bảo trì của gói, nhắc nghiệm thu;
+  luật ở `features/after-sales/salesTaskRules.ts`): nhận việc → "Bắt đầu" (chỉ khi CLAIMED) → "Ghi liên hệ" (`FollowUpDialog`:
+  giờ liên hệ, kết quả bắt buộc ≤ 300, ghi chú ≤ 1000, kết quả cuối; không có kết quả cuối hoặc WILL_BOOK_LATER thì việc còn mở,
+  UNREACHABLE của việc nhắc bảo trì làm lượt bảo trì thành chưa thực hiện, không bị trừ). Backend chỉ trả việc còn mở của
+  mình nên không có tab "Đã xong"; việc nhắc bảo trì quá hạn do backend tự đóng (số giờ / ngày là cài đặt, FE không đếm).
+  `SalesTaskView` chưa có số điện thoại khách.
 - Chưa làm: gói thiên tai hỗ trợ sửa chữa (claim), đặt lịch lượt bảo trì của gói, đổi giờ bảo trì phía khách, sửa ngay tại chỗ
-  (`stayOnSite`), thay thiết bị trong báo cáo, việc nhắc khách của kinh doanh, hoàn tiền.
+  (`stayOnSite`), thay thiết bị trong báo cáo, hoàn tiền.
 - Chữ trên giao diện không nhắc tới backend, máy chủ, token, kho lưu trữ hay mã lỗi; lỗi BE luôn qua bảng `errors.ts`.
 
 **Mặt lắp + mô phỏng do backend tính** (BE nhánh `feature/presurvey-flow`, commit 833ff3c, nối 09/10/2026; tài liệu tích hợp
@@ -518,8 +525,9 @@ trong DLL; response viết tay ở `types/res/technicianOnSiteSurveyRes.ts`, enu
 `QuotationPricing`; tính năng bật bằng `InstallationWorkflow`). Enum + giới hạn ở `common/quotation.ts`, hiển thị chung ở
 `features/quotations/quotationDisplay.ts` + `QuotationContent.tsx` (dòng hàng, tổng tiền, điều khoản), service / hook tách theo
 vai trò (`salesQuotationService` + `useSalesQuotations`, `customerQuotationService` + `useCustomerQuotations`). Khác báo giá sửa
-chữa của luồng 3 (`features/after-sales/QuotationForm.tsx`). Hợp đồng chỉ lập được từ bản khách đã đồng ý (ACCEPTED); màn hợp
-đồng và tệp PDF báo giá (`PUT …/document`, FE tự tạo PDF) chưa làm.
+chữa của luồng 3 (`features/after-sales/QuotationForm.tsx`). Hợp đồng chỉ lập được từ bản khách đã đồng ý (ACCEPTED), mục dưới.
+Tệp PDF báo giá (`QuotationDocument.tsx`, tạo ngoài hệ thống): tải lên mục đích `QUOTATION_DOCUMENT` xong mới `PUT …/document`;
+bản nháp thay tệp được, bản đã gửi chỉ gắn khi chưa có tệp (`quotationRules.ts`).
 
 - Trạng thái: DRAFT → ISSUED → ACCEPTED, hoặc ISSUED → REVISION_REQUESTED → bản mới (DRAFT → ISSUED, bản cũ SUPERSEDED). Mỗi
   yêu cầu khảo sát tối đa một bản nháp và một bản đang hiệu lực; bản đã gửi không sửa được. Tiền VND nguyên, backend tự tính mọi
@@ -536,6 +544,30 @@ chữa của luồng 3 (`features/after-sales/QuotationForm.tsx`). Hợp đồng
   và `/customer/quotations/:id` (theo mã từng bản): "Đồng ý báo giá" (hỏi xác nhận, không đổi lại được) và "Yêu cầu sửa" (lý do
   bắt buộc ≤ 2000) chỉ khi `canAccept` (ISSUED và chưa hết hạn); bản cũ dẫn sang bản mới. Trang yêu cầu khảo sát của khách có
   khối dẫn sang báo giá (`RequestQuotationPanel`). Khách không thấy bản nháp và giá danh mục.
+
+**Hợp đồng lắp đặt, phía nhân viên** (03/11/2026; backend `main` 7c79fa8: `ContractHandlers`, `PaymentService`; tính năng
+`InstallationWorkflow`). Enum ở `common/contract.ts`, luật ở `features/contracts/contractRules.ts` (bám handler, test ở
+`tests/ops-contract-rules.test.mjs`), hiển thị ở `contractDisplay.ts`, service `contractService.ts`, hook `useContracts.ts`.
+Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-contracts-verification.md`.
+
+- Trạng thái: DRAFT → ISSUED (đóng nội dung, có `canonicalHash`) → AWAITING_SIGNATURE (đã gắn PDF chính thức) → UNDER_REVIEW
+  (khách gửi bản ký) → SIGNED | SIGNATURE_REJECTED (khách gửi lại) → PAID (chỉ PayOS qua backend). Đổi sau khi phát hành là phụ
+  lục: phiên bản mới cùng giá, bản cũ thành SUPERSEDED khi phụ lục được phát hành; PAID không sửa được.
+- Kinh doanh: khối "Hợp đồng" (`SalesContractPanel`) dưới báo giá của `/ops/surveys/:id` khi có báo giá ACCEPTED (nút "Lập hợp
+  đồng" và danh sách phiên bản), khối Tình hình thêm bước "Hợp đồng"; trang `/ops/contracts/:id` (menu "Của tôi"; backend không
+  có danh sách mọi hợp đồng nên không có mục menu riêng). Thời hạn bảo hành chọn từ
+  `GET /sales/after-sales/warranty-options?kind=INSTALLATION` (API của kinh doanh, chỉ tuỳ chọn đang bật; "mặc định" gửi null
+  để backend tự lấy); thiếu thời hạn thì khoá "Phát hành". PDF chính thức tạo ngoài hệ thống, ghi mã nội dung lên PDF; `OfficialDocumentDialog` tải lên
+  `CONTRACT_DOCUMENT` rồi gửi `revision` + `canonicalHash` của phiên bản lúc mở hộp thoại (người dùng tick xác nhận), không
+  tự tính hash.
+- Duyệt bản ký (`SignaturePanel`): kinh doanh phụ trách và quản lý (`/manage/contracts/:id`); quản trị
+  (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. Chưa xem được nội dung tệp (không có API link tải).
+- Thanh toán (`ContractPaymentPanel`, `GET /contracts/{id}/payments`, cả 3 cổng): chỉ đọc, hỏi lại 30 giây / lần khi SIGNED;
+  REVIEW_REQUIRED / REFUND_REQUIRED tô đỏ. PAID: quản lý / quản trị có nút sang "Hợp đồng chờ tạo dự án"; số hợp đồng ở danh
+  sách đó dẫn về trang hợp đồng.
+- Mọi lệnh ghi gửi `revision` đang hiện; 409 thì báo lỗi, tải lại, không tự gửi lại. 429 báo số giây theo Retry-After (10 lệnh
+  ghi / phút). Yêu cầu khảo sát đã có hợp đồng còn hiệu lực thì ẩn "Đóng yêu cầu" (backend 31/10 từ chối).
+- Chưa làm: huỷ bản nháp hợp đồng (`POST /contracts/{id}/discard`, chỉ có ở backend 31/10), xem / tải PDF và bản ký.
 
 **Lắp đặt, phía kỹ thuật viên** (`/tech/installations(/:id)`, backend nhánh `fix/business-rules-flow-1-2`, tài liệu
 `guides/installation-workflow-api-integration.md` + `installation-workflow-business-flow.md`; response viết tay ở
@@ -572,9 +604,9 @@ và trả `FileView`. `PENDING_VERIFICATION` (chưa đọc được kho) thì ch
   tệp có tiến độ, `useUploadQueue` nhiều tệp, `useFileQuery` = `GET /api/files/{id}`, không có link xem).
 - Mọi lệnh ghi tệp chung giới hạn 20 lần / phút / người, mỗi tệp tốn 2 (xin link + đăng ký): hàng đợi tải lần lượt, gặp 429 thì
   dừng, đếm ngược theo Retry-After rồi tự chạy tiếp. Link PUT không lưu, không ghi log, không đưa vào lỗi ném ra.
-- Đang dùng: ảnh lắp đặt của kỹ thuật viên, tài liệu "Đã đạt" của checklist thi công, ảnh / tài liệu khảo sát tại công trình.
-  Backend còn nhận `fileId` ở báo giá, hợp đồng (bản chính thức / bản khách ký), kho tri thức, yêu cầu sự cố / bảo hành sau bán:
-  các màn đó chưa có trên FE.
+- Đang dùng: ảnh lắp đặt của kỹ thuật viên, tài liệu "Đã đạt" của checklist thi công, ảnh / tài liệu khảo sát tại công trình,
+  PDF báo giá và PDF hợp đồng chính thức của kinh doanh. Backend còn nhận `fileId` ở bản khách ký, kho tri thức, yêu cầu sự cố
+  / bảo hành sau bán: các màn đó chưa có trên FE.
 - Cấu hình phía kho (không nằm ở FE): bucket `smart-solar-images` ở vùng `us-east-1`, `Storage__S3__Region` của backend phải
   đúng vùng này (sai vùng thì S3 trả 301 không kèm CORS, trình duyệt báo lỗi mạng). Bucket phải có CORS cho phép `PUT` với header
   `content-type` từ origin của FE, và bật Versioning. IAM user ký link (`smartsolar-image-api`) cần `s3:PutObject`,
@@ -705,7 +737,7 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 | `/admin/*`                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ – bọc `<RequireRole role="admin">`                                                                            |
 | `/tech/*`                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                  |
 | `/customer/*`                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Báo giá (đồng ý / yêu cầu sửa), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói), Sản phẩm – bọc `<RequireRole role="customer">` |
-| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá) – bọc `<RequireRole role="sales">`                                                                        |
+| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá, hợp đồng), Bảo hành / việc nhắc khách – bọc `<RequireRole role="sales">`                                  |
 | `/field/*`                   | —                | chuyển về `/tech`                                                                                                                                                       |
 | `/manage/*`                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                                                                    |
 | `/styleguide`                | –                | `StyleguidePage`                                                                                                                                                        |

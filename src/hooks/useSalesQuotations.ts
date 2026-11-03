@@ -84,3 +84,10 @@ export function useSendQuotationMutation() {
 export function useReviseQuotationMutation() {
   return useQuotationWrite((quotationId: string) => quotationService.createRevision(quotationId))
 }
+
+/** Gắn tệp PDF đã tải lên (đã xác minh) vào báo giá */
+export function useAttachQuotationDocumentMutation() {
+  return useQuotationWrite(({ quotationId, fileId }: { quotationId: string; fileId: string }) =>
+    quotationService.attachDocument(quotationId, { fileId }),
+  )
+}

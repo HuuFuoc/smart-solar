@@ -34,6 +34,10 @@ import { useQuotationsQuery } from '@/hooks/useSalesQuotations'
 import { OnSiteSurveyResultPanel } from '@/features/onsite-survey/OnSiteSurveyResultPanel'
 import { currentQuotation, formatDateVn, quotationStatusMeta } from '@/features/quotations/quotationDisplay'
 import { SalesQuotationPanel } from '@/features/quotations/SalesQuotationPanel'
+import { SalesContractPanel } from '@/features/contracts/SalesContractPanel'
+import { contractNextStep, contractStatusLabel } from '@/features/contracts/contractDisplay'
+import { acceptedQuotation, currentContract } from '@/features/contracts/contractRules'
+import { useSurveyRequestContractsQuery } from '@/hooks/useContracts'
 import { SalesSchedulePanel } from '@/features/scheduling/SalesSchedulePanel'
 import {
   formatMoment,
@@ -44,6 +48,7 @@ import {
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
 import type { QuotationView } from '@/types/res/quotationsRes'
+import type { ContractView } from '@/types/res/customerContractsRes'
 import type { SurveyRequestDetail } from '@/types/res/surveyRequestsRes'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
@@ -53,11 +58,17 @@ function whenText(startsAt: string, endsAt: string) {
   return `${relativeDay(vnDate(startsAt))}, ${formatTimeRange(startsAt, endsAt)}`
 }
 
-// Các bước của yêu cầu theo góc nhìn của sales. `quotations`: undefined khi chưa khảo sát xong hoặc đang tải
-function trackerSteps(r: SurveyRequestDetail, quotations: QuotationView[] | undefined): TrackerStep[] {
+// Các bước của yêu cầu theo góc nhìn của sales. `quotations`: undefined khi chưa khảo sát xong hoặc đang tải;
+// `contracts`: undefined khi chưa có báo giá khách đồng ý hoặc đang tải
+function trackerSteps(
+  r: SurveyRequestDetail,
+  quotations: QuotationView[] | undefined,
+  contracts: ContractView[] | undefined,
+): TrackerStep[] {
   const a = r.appointment
   const confirmed = isConfirmed(a?.status)
   const quotation = quotations && currentQuotation(quotations)
+  const contract = contracts && currentContract(contracts)
   const steps: TrackerStep[] = [
     { label: 'Khách gửi yêu cầu', detail: formatDateTime(r.submittedAt), state: 'done' },
     { label: 'Khách đặt giờ', detail: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
@@ -75,6 +86,11 @@ function trackerSteps(r: SurveyRequestDetail, quotations: QuotationView[] | unde
       label: 'Báo giá',
       detail: quotation ? quotationStatusMeta(quotation, 'sales').label : undefined,
       state: quotation?.status === 'ACCEPTED' ? 'done' : r.status === 'COMPLETED' ? 'current' : 'todo',
+    },
+    {
+      label: 'Hợp đồng',
+      detail: contract ? contractStatusLabel(contract.status) : undefined,
+      state: contract?.status === 'PAID' ? 'done' : quotation?.status === 'ACCEPTED' ? 'current' : 'todo',
     },
   ]
   // Yêu cầu đã đóng thì không còn bước nào đang làm
@@ -121,11 +137,32 @@ function quotationNextStep(quotations: QuotationView[]): TrackerNext {
   return { tone: 'neutral', title: 'Đã khảo sát xong tại công trình' }
 }
 
+// Sau khi khách đồng ý báo giá: việc của hợp đồng. Thao tác nằm ở trang hợp đồng nên nút chỉ đưa tới khối Hợp đồng
+function contractStep(contracts: ContractView[]): TrackerNext {
+  const c = currentContract(contracts)
+  if (!c)
+    return {
+      tone: 'danger',
+      title: 'Cần bạn lập hợp đồng',
+      body: 'Khách đã đồng ý báo giá. Lập hợp đồng ở khối Hợp đồng bên dưới.',
+      action: { label: 'Lập hợp đồng', icon: 'add', target: 'contracts' },
+    }
+  const next = contractNextStep(c, 'sales')
+  return next.action
+    ? { ...next, action: { label: 'Mở khối Hợp đồng', icon: 'description', target: 'contracts' } }
+    : next
+}
+
 // Việc tiếp theo và ai làm. Đỏ chỉ khi sales phải làm
-function nextStep(r: SurveyRequestDetail, quotations: QuotationView[] | undefined): TrackerNext {
+function nextStep(
+  r: SurveyRequestDetail,
+  quotations: QuotationView[] | undefined,
+  contracts: ContractView[] | undefined,
+): TrackerNext {
   const a = r.appointment
   if (r.status === 'CLOSED') return { tone: 'neutral', title: 'Yêu cầu đã đóng' }
   if (r.status === 'CANCELLED') return { tone: 'neutral', title: 'Khách đã rút yêu cầu' }
+  if (quotations && acceptedQuotation(quotations) && contracts) return contractStep(contracts)
   if (r.status === 'COMPLETED' && quotations) return quotationNextStep(quotations)
   if (r.status === 'COMPLETED')
     return {
@@ -241,14 +278,21 @@ export function OpsSurveyRequestPage() {
   const onsite = useStaffOnSiteSurveyQuery(id, { enabled: onsiteEnabled })
   const surveyCompleted = onsite.data?.status === 'COMPLETED'
   const quotations = useQuotationsQuery(id, { enabled: surveyCompleted })
+  // Cùng khoá query với khối Hợp đồng; chỉ có hợp đồng khi khách đã đồng ý báo giá
+  const contracts = useSurveyRequestContractsQuery(id, {
+    enabled: Boolean(quotations.data && acceptedQuotation(quotations.data)),
+  })
 
   return (
     <QueryBoundary query={query}>
       {(r) => {
         const status = surveyStatusMeta(r.status)
         const map = addressMapUrl(formatAddress(r))
-        // Lịch còn hẹn thì chỉ khách huỷ được, nên chỉ đóng khi chưa đặt giờ hoặc đã khảo sát xong
-        const canClose = !isClosedRequest(r.status) && (!r.appointment || r.appointment.status === 'COMPLETED')
+        // Lịch còn hẹn thì chỉ khách huỷ được, nên chỉ đóng khi chưa đặt giờ hoặc đã khảo sát xong.
+        // Đã có hợp đồng còn hiệu lực thì backend không cho đóng (SURVEY_REQUEST_CONTRACT_EXISTS)
+        const hasLiveContract = Boolean(contracts.data && currentContract(contracts.data))
+        const canClose =
+          !isClosedRequest(r.status) && !hasLiveContract && (!r.appointment || r.appointment.status === 'COMPLETED')
         const notFeasible = onsite.data?.data.installationFeasibility === 'NOT_FEASIBLE'
         return (
           <>
@@ -291,7 +335,10 @@ export function OpsSurveyRequestPage() {
               }
             />
 
-            <ProgressTracker steps={trackerSteps(r, quotations.data)} next={nextStep(r, quotations.data)} />
+            <ProgressTracker
+              steps={trackerSteps(r, quotations.data, contracts.data)}
+              next={nextStep(r, quotations.data, contracts.data)}
+            />
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
@@ -304,6 +351,7 @@ export function OpsSurveyRequestPage() {
                   enabled={surveyCompleted}
                   feasibility={onsite.data?.data.installationFeasibility}
                 />
+                <SalesContractPanel surveyRequestId={r.surveyRequestId} quotations={quotations.data} />
                 <Panel>
                   <PanelHeader title="Số liệu khách khai" />
                   <PanelBody className="space-y-6">

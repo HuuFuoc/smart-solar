@@ -51,6 +51,38 @@ export function EmptyState({
   )
 }
 
+// Chức năng chưa bật trên hệ thống: khác lỗi tải (thử lại vẫn vậy) và khác danh sách rỗng
+export function UnavailableState({
+  title = 'Chức năng này chưa sẵn sàng.',
+  message,
+  pendingMigrations = [],
+}: {
+  title?: string
+  message?: string
+  /** Migration còn chờ chạy khi backend trả SCHEMA_NOT_READY */
+  pendingMigrations?: string[]
+}) {
+  return (
+    <div role="status" className="flex gap-3 rounded-container bg-warn-soft px-4 py-3">
+      <Icon name="warning" className="mt-px shrink-0 text-[20px] text-warn" />
+      <div className="min-w-0">
+        <p className="text-body font-semibold text-fg">{title}</p>
+        {message && <p className="mt-1 text-body text-fg-2">{message}</p>}
+        {pendingMigrations.length > 0 && (
+          <div className="mt-2 text-meta text-fg-2">
+            Cơ sở dữ liệu còn chờ chạy:
+            <ul className="mt-1 list-disc pl-5 font-mono">
+              {pendingMigrations.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function ErrorState({
   title = 'Không tải được trang này.',
   message,

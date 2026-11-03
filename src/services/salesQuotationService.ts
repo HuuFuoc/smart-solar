@@ -1,4 +1,5 @@
 import type {
+  FileReferenceRequest,
   InstallationQuotationLineRequest,
   QuotationHeaderRequest,
   QuotationLineUpdateRequest,
@@ -53,4 +54,12 @@ export function issueQuotation(quotationId: string, revision: number) {
 /** Bản nháp mới chép từ bản đã gửi hoặc bản khách yêu cầu sửa; bản cũ chỉ bị thay khi gửi bản mới */
 export function createRevision(quotationId: string) {
   return post<QuotationView>(api.revisions(quotationId))
+}
+
+/**
+ * Gắn PDF báo giá (tệp QUOTATION_DOCUMENT đã xác minh do chính người này tải). Bản nháp thay tệp được; bản đã gửi khách chỉ
+ * gắn được khi chưa có tệp. Không có `revision`
+ */
+export function attachDocument(quotationId: string, body: FileReferenceRequest) {
+  return put<QuotationView>(api.document(quotationId), body)
 }

@@ -148,8 +148,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   TECHNICIAN_HAS_CONFLICTING_APPOINTMENTS:
     'Thay đổi này làm hỏng lịch hẹn đã có. Đổi giờ hoặc chuyển các lịch bên dưới cho người khác trước.',
   TECHNICIAN_PROFILE_REQUIRED: 'Lưu hồ sơ nhận lịch của kỹ thuật viên trước.',
+  // Chức năng chưa bật trên hệ thống (lắp đặt, sau bán, kho tri thức)
+  FEATURE_PENDING_MIGRATION: 'Chức năng này chưa được bật trên hệ thống. Liên hệ quản trị hệ thống.',
   // Lắp đặt (mọi vai trò)
-  FEATURE_PENDING_MIGRATION: 'Chức năng lắp đặt đang tạm tắt. Liên hệ quản trị hệ thống.',
   VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
   INSTALLATION_PROJECT_NOT_FOUND: 'Không tìm thấy công trình, hoặc bạn không còn quyền xem công trình này.',
   INSTALLATION_INVALID_STATE:
@@ -264,6 +265,27 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác hoặc ghi dòng tự ghi.',
   QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này.',
   QUOTATION_CANNOT_REVISE: 'Không lập bản sửa được vì khách vừa đồng ý hoặc báo giá vừa thay đổi. Đã tải lại.',
+  // Hợp đồng lắp đặt (phía nhân viên)
+  CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng, hoặc bạn không phụ trách yêu cầu khảo sát này.',
+  CONTRACT_QUOTATION_NOT_ACCEPTED: 'Chỉ lập được hợp đồng từ báo giá khách đã đồng ý.',
+  CONTRACT_ALREADY_EXISTS: 'Báo giá này đã có hợp đồng hoặc đang có phụ lục nháp. Đã tải lại, làm tiếp trên bản đó.',
+  CONTRACT_INVALID_STATE:
+    'Hợp đồng vừa đổi trạng thái nên không làm được thao tác này. Đã tải lại để xem trạng thái mới.',
+  CONTRACT_STALE_REVISION: 'Hợp đồng vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  CONTRACT_CANONICAL_HASH_MISMATCH:
+    'PDF không được tạo từ phiên bản hợp đồng đang xem (mã nội dung không khớp). Tạo lại PDF từ đúng phiên bản.',
+  CONTRACT_DOCUMENT_MISSING: 'Gắn PDF hợp đồng chính thức trước khi gửi khách ký.',
+  CONTRACT_WRONG_DOCUMENT_VERSION: 'Bản ký không phải bản in của PDF hợp đồng chính thức hiện tại.',
+  CONTRACT_REJECTION_REASON_REQUIRED: 'Ghi lý do từ chối bản ký.',
+  CONTRACT_WARRANTY_VALIDATION_FAILED: 'Thời hạn bảo hành này không còn được dùng. Chọn lại thời hạn trong danh sách.',
+  CONTRACT_WARRANTY_REQUIRED:
+    'Chưa chọn thời hạn bảo hành lắp đặt. Nếu không có thời hạn nào để chọn, nhờ quản trị thêm thời hạn bảo hành lắp đặt.',
+  CONTRACT_SURVEY_CHANGED:
+    'Biên bản khảo sát được bổ sung sau khi lập báo giá. Lập báo giá sửa trước rồi mới lập hợp đồng.',
+  CONTRACT_REQUEST_CLOSED: 'Yêu cầu khảo sát đã đóng hoặc khách đã rút nên không lập được hợp đồng.',
+  CONTRACT_DRAFT_DISCARDED:
+    'Bản nháp hợp đồng của báo giá này đã bị huỷ nên không lập hợp đồng mới từ báo giá đó được.',
+  CONTRACT_TERMS_REQUIRED: 'Ghi điều khoản hợp đồng trước khi phát hành.',
   // Thanh toán PayOS
   PAYMENT_CHECKOUT_IN_PROGRESS:
     'Đang có một lần thanh toán chưa xong cho gói cùng loại hoặc cho hợp đồng này. Thanh toán hoặc huỷ đơn đó trước.',
@@ -275,6 +297,39 @@ const ERROR_MESSAGES: Record<string, string> = {
   PAYMENT_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
   PAYMENT_CONTRACT_NOT_SIGNED: 'Hợp đồng chưa được duyệt bản ký nên chưa thanh toán được.',
   PAYMENT_ALREADY_PAID: 'Hợp đồng này đã được thanh toán. Danh sách đã được tải lại.',
+  // Thời hạn bảo hành, hoàn tiền (quản trị)
+  REFUND_NOT_FOUND: 'Không tìm thấy khoản hoàn tiền này.',
+  // Khu vực phục vụ
+  ZONE_NOT_FOUND: 'Không tìm thấy khu vực này.',
+  ZONE_MANAGEMENT_FORBIDDEN: 'Chỉ quản trị viên đang hoạt động mới tạo hoặc sửa khu vực.',
+  ZONE_SCOPE_FORBIDDEN: 'Bạn không phụ trách khu vực này.',
+  ZONE_CODE_EXISTS: 'Đã có khu vực dùng mã này. Chọn mã khác.',
+  ZONE_STALE_REVISION: 'Khu vực vừa được sửa ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
+  ZONE_IN_USE:
+    'Khu vực còn lịch khảo sát hoặc công trình chưa xong nên chưa tắt được. Hoàn tất, huỷ hoặc chuyển các việc đó trước.',
+  COMMUNE_ALREADY_MAPPED: 'Có phường, xã đang thuộc một khu khác đang hoạt động. Gỡ khỏi khu đó trước.',
+  COMMUNE_IN_USE:
+    'Có phường, xã đang có lịch khảo sát hoặc công trình chưa xong nên chưa gỡ được. Hoàn tất, huỷ hoặc chuyển các việc đó trước.',
+  RESPONSIBLE_MANAGER_INVALID: 'Người phụ trách phải là tài khoản quản lý hoặc quản trị đang hoạt động.',
+  SALES_USER_INVALID: 'Người được chọn không phải nhân viên kinh doanh đang hoạt động.',
+  // Kho tri thức AI và cấu hình chatbot
+  RAG_DOCUMENT_NOT_FOUND: 'Không tìm thấy tài liệu này.',
+  RAG_VERSION_NOT_FOUND: 'Không tìm thấy phiên bản này của tài liệu.',
+  RAG_JOB_NOT_FOUND: 'Không tìm thấy lượt nạp này.',
+  RAG_INVALID_STATE: 'Tài liệu vừa đổi trạng thái nên không làm được thao tác này. Đã tải lại để xem trạng thái mới.',
+  RAG_STALE_REVISION: 'Tài liệu vừa được sửa ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
+  RAG_SERVICE_UNAVAILABLE: 'Dịch vụ chatbot tạm thời không phản hồi. Thử lại sau ít phút.',
+  RAG_CONFIG_VALIDATION_FAILED: 'Cấu hình chưa hợp lệ. Kiểm tra lại các tham số được báo lỗi.',
+  RAG_CONFIG_STALE_REVISION: 'Cấu hình vừa được sửa ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
+  RAG_CONFIG_DRAFT_NOT_FOUND: 'Không còn bản nháp nào. Đã tải lại cấu hình.',
+  RAG_CONFIG_VERSION_NOT_FOUND: 'Không tìm thấy phiên bản cấu hình này.',
+  RAG_CONFIG_INVALID_STATE: 'Chỉ khôi phục được phiên bản đã từng dùng, không phải phiên bản đang dùng.',
+  // Ảnh sản phẩm
+  PRODUCT_IMAGE_NOT_FOUND: 'Không tìm thấy ảnh này. Đã tải lại danh sách ảnh.',
+  PRODUCT_IMAGE_DUPLICATE: 'Sản phẩm đã có ảnh dùng đúng link này.',
+  PRODUCT_IMAGE_CONFLICT: 'Ảnh của sản phẩm vừa được đổi ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
+  PRODUCT_IMAGE_LIMIT_REACHED: 'Sản phẩm đã đủ số ảnh tối đa. Xoá bớt ảnh rồi thêm lại.',
+  PRODUCT_IMAGE_ORDER_MISMATCH: 'Danh sách ảnh vừa thay đổi. Đã tải lại, sắp xếp lại rồi lưu.',
   // Quản lý tài khoản
   ADMIN_USER_NOT_FOUND: 'Không tìm thấy tài khoản.',
   ADMIN_INVALID_ROLE: 'Vai trò không hợp lệ.',
@@ -418,4 +473,23 @@ export function errorMessage(error: unknown, fallback = 'Đã xảy ra lỗi. Vu
   if (isApiError(error)) return error.message
   if (error instanceof Error && error.message) return error.message
   return fallback
+}
+
+/** Chức năng chưa bật (503 FEATURE_PENDING_MIGRATION) hoặc DB chưa chạy đủ migration (SCHEMA_NOT_READY) */
+export function isFeatureUnavailable(error: unknown) {
+  return isApiError(error) && (error.code === 'FEATURE_PENDING_MIGRATION' || error.code === 'SCHEMA_NOT_READY')
+}
+
+/** Tên các migration còn chờ chạy, khi backend trả kèm trong `details.pendingMigrations` */
+export function pendingMigrationsOf(error: unknown): string[] {
+  if (!isApiError(error) || !isRecord(error.details)) return []
+  const list = error.details.pendingMigrations
+  return Array.isArray(list) ? list.filter((m): m is string => typeof m === 'string') : []
+}
+
+/** Câu lỗi kèm số giây phải chờ khi bị giới hạn số lần (429 + Retry-After) */
+export function rateLimitedMessage(error: unknown) {
+  if (isApiError(error) && error.status === 429 && error.retryAfter)
+    return `Bạn thao tác quá nhanh. Thử lại sau ${error.retryAfter} giây.`
+  return errorMessage(error)
 }

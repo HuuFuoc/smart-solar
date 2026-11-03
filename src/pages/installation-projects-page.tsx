@@ -22,7 +22,13 @@ import { ROUTES } from '@/routes/paths'
 
 type Tab = 'du-an' | 'hop-dong'
 
-function InstallationProjectsPage({ detailPattern }: { detailPattern: string }) {
+function InstallationProjectsPage({
+  detailPattern,
+  contractPattern,
+}: {
+  detailPattern: string
+  contractPattern: string
+}) {
   const [params, setParams] = useSearchParams()
   const tab: Tab = params.get('muc') === 'hop-dong' ? 'hop-dong' : 'du-an'
   const rawStatus = params.get('trang-thai')
@@ -94,7 +100,7 @@ function InstallationProjectsPage({ detailPattern }: { detailPattern: string }) 
             rows.length === 0 ? (
               <EmptyState title="Không có hợp đồng nào chờ tạo dự án" />
             ) : (
-              <ReadyContractList rows={rows} detailPattern={detailPattern} />
+              <ReadyContractList rows={rows} detailPattern={detailPattern} contractPattern={contractPattern} />
             )
           }
         </QueryBoundary>
@@ -149,9 +155,11 @@ function InstallationProjectsPage({ detailPattern }: { detailPattern: string }) 
 }
 
 export function ManageInstallationProjectsPage() {
-  return <InstallationProjectsPage detailPattern={ROUTES.manage.installation} />
+  return (
+    <InstallationProjectsPage detailPattern={ROUTES.manage.installation} contractPattern={ROUTES.manage.contract} />
+  )
 }
 
 export function AdminInstallationProjectsPage() {
-  return <InstallationProjectsPage detailPattern={ROUTES.admin.installation} />
+  return <InstallationProjectsPage detailPattern={ROUTES.admin.installation} contractPattern={ROUTES.admin.contract} />
 }

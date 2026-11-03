@@ -51,7 +51,9 @@ export const ROUTES = {
     /** Tab "Của tôi" có đường dẫn riêng để menu đánh dấu đúng */
     surveysMine: '/ops/surveys/mine',
     survey: '/ops/surveys/:id',
-    /** Việc báo giá sửa chữa, bảo trì; chi tiết theo mã yêu cầu */
+    /** Một phiên bản hợp đồng lắp đặt; mở từ khối Hợp đồng của yêu cầu khảo sát (backend không có danh sách mọi hợp đồng) */
+    contract: '/ops/contracts/:id',
+    /** Việc báo giá sửa chữa, bảo trì, việc nhắc khách; chi tiết theo mã yêu cầu */
     afterSales: '/ops/after-sales',
     afterSalesRequest: '/ops/after-sales/:id',
     products: '/ops/products',
@@ -97,6 +99,8 @@ export const ROUTES = {
     /** Dự án thi công + hợp đồng chờ tạo dự án (quản lý dùng chung trang với quản trị) */
     installations: '/manage/installations',
     installation: '/manage/installations/:id',
+    /** Một phiên bản hợp đồng: thanh toán, duyệt bản ký (quản lý dùng chung trang với kinh doanh, quản trị) */
+    contract: '/manage/contracts/:id',
     /** Yêu cầu bảo hành, sửa chữa, bảo trì (quản lý dùng chung trang với quản trị) */
     afterSales: '/manage/after-sales',
     afterSalesRequest: '/manage/after-sales/:id',
@@ -124,19 +128,31 @@ export const ROUTES = {
     products: '/admin/products',
     installations: '/admin/installations',
     installation: '/admin/installations/:id',
+    /** Một phiên bản hợp đồng, chỉ xem (thanh toán, bản ký) */
+    contract: '/admin/contracts/:id',
     packages: '/admin/packages',
     afterSales: '/admin/after-sales',
     afterSalesRequest: '/admin/after-sales/:id',
     dispatch: '/admin/dispatch',
     dispatchRequest: '/admin/dispatch/:id',
     settings: '/admin/settings',
+    /** Khu vực phục vụ: phường, xã của khu, kỹ thuật viên thuộc khu */
+    zones: '/admin/zones',
+    zone: '/admin/zones/:id',
+    /** Thời hạn bảo hành lắp đặt / sửa chữa cho kinh doanh chọn */
+    warrantyOptions: '/admin/warranty-options',
+    /** Ghi nhận hoàn tiền đã chuyển cho khách */
+    refunds: '/admin/refunds',
+    /** Báo cáo thu tiền và hoạt động sau bán, xuất CSV */
+    reports: '/admin/reports',
+    /** Kho tri thức của chatbot; chi tiết theo mã tài liệu */
+    knowledgeBase: '/admin/knowledge-base',
+    knowledgeDocument: '/admin/knowledge-base/:id',
     // Màn mock đã ẩn
     roles: '/admin/roles',
     services: '/admin/services',
     categories: '/admin/categories',
-    knowledgeBase: '/admin/knowledge-base',
     techConfig: '/admin/config',
-    reports: '/admin/reports',
     profile: '/admin/profile',
   },
 

@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
-import { Button } from '@/components/common/ui/button'
+import { Button, IconButton } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { SearchInput, Select } from '@/components/common/ui/field'
 import { FilterBar } from '@/components/common/ui/filter-bar'
@@ -11,6 +11,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { formatDateTime } from '@/features/pre-surveys/preSurveyDisplay'
 import { DeleteProductDialog } from '@/features/products/DeleteProductDialog'
 import { ProductFormDialog } from '@/features/products/ProductFormDialog'
+import { ProductImagesDialog } from '@/features/products/ProductImagesDialog'
 import { ProductsTable } from '@/features/products/ProductsTable'
 import { PRODUCT_SORT_OPTIONS, SOLAR_PANEL_TYPE } from '@/common/product'
 import {
@@ -21,14 +22,15 @@ import {
   productTypeLabel,
 } from '@/features/products/productDisplay'
 import { readHiddenProducts, writeHiddenProducts, type HiddenProduct } from '@/features/products/hiddenProducts'
-import { useChangeProductStatusMutation, useProductsQuery } from '@/hooks/useProducts'
+import { useAdminProductQuery, useChangeProductStatusMutation, useProductsQuery } from '@/hooks/useProducts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { cx } from '@/utils/cx'
 
-// Quản lý sản phẩm: danh sách đọc GET /api/products, bấm dòng mở trang chi tiết
-// API này không trả sản phẩm ngừng bán nên cuối trang có mục "Đã ngừng bán" (hiddenProducts.ts)
+// Quản lý sản phẩm: danh sách đọc GET /api/products, ảnh quản lý trong hộp thoại riêng (chi tiết quản trị)
+// API danh sách không trả sản phẩm ngừng bán và không có API liệt kê chúng, nên trình duyệt nhớ id các sản phẩm đã ngừng bán
+// (hiddenProducts.ts); trạng thái thật của từng sản phẩm đó đọc lại bằng GET /api/admin/products/{id}
 // Bộ lọc và trang lưu trên URL để Back quay lại đúng chỗ
 
 const PAGE_SIZE = 20
@@ -37,6 +39,61 @@ const ALL_PRODUCTS = { PageSize: 100, SortBy: 'name', SortDirection: 'asc' } as 
 
 type Filter = { search: string; productType: string; brand: string; sort: string }
 const defaultFilter: Filter = { search: '', productType: '', brand: '', sort: PRODUCT_SORT_OPTIONS[0]!.value }
+
+// Một sản phẩm đã ngừng bán: trạng thái lấy từ chi tiết quản trị, trình duyệt chỉ nhớ id
+function HiddenProductRow({
+  entry,
+  busy,
+  onReopen,
+  onForget,
+  onImages,
+}: {
+  entry: HiddenProduct
+  busy: boolean
+  onReopen: () => void
+  onForget: () => void
+  onImages: () => void
+}) {
+  const detail = useAdminProductQuery(entry.id)
+  const gone = isApiError(detail.error) && detail.error.status === 404
+  const active = detail.data ? isProductActive(detail.data.status) : false
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
+      <div className="min-w-0">
+        <p className="font-medium text-fg">{detail.data?.name || entry.name || 'Sản phẩm chưa đặt tên'}</p>
+        <p className="tnum text-meta text-fg-3">
+          {detail.data?.sku ?? entry.sku}
+          {entry.hiddenAt && `, ngừng bán lúc ${formatDateTime(entry.hiddenAt)}`}
+        </p>
+        {gone && <p className="text-meta text-fg-2">Sản phẩm đã bị xoá.</p>}
+        {active && <p className="text-meta text-fg-2">Sản phẩm đã được mở bán lại ở nơi khác.</p>}
+        {detail.isError && !gone && (
+          <p className="text-meta text-fg-2">Chưa đọc được trạng thái: {errorMessage(detail.error)}</p>
+        )}
+      </div>
+      <div className="flex items-center gap-1">
+        {gone || active ? (
+          <Button icon="playlist_remove" size="sm" variant="secondary" onClick={onForget}>
+            Bỏ khỏi danh sách
+          </Button>
+        ) : (
+          <>
+            <IconButton
+              size="sm"
+              icon="photo_library"
+              label={`Ảnh của ${entry.name}`}
+              tooltip="Ảnh sản phẩm"
+              onClick={onImages}
+            />
+            <Button icon="play_circle" size="sm" variant="soft" disabled={busy} onClick={onReopen}>
+              {busy ? 'Đang mở bán…' : 'Mở bán lại'}
+            </Button>
+          </>
+        )}
+      </div>
+    </li>
+  )
+}
 
 const unique = (values: (string | null | undefined)[]) =>
   [...new Set(values.map((v) => v?.trim()).filter((v): v is string => Boolean(v)))].sort((a, b) =>
@@ -49,6 +106,7 @@ export function AdminProductsPage() {
   const [form, setForm] = useState<{ open: boolean; product: ProductResponse | null }>({ open: false, product: null })
   const [deleting, setDeleting] = useState<ProductResponse | null>(null)
   const [hiding, setHiding] = useState<ProductResponse | null>(null)
+  const [imagesFor, setImagesFor] = useState<{ id: string; name: string } | null>(null)
   // Sản phẩm đã ngừng bán từ trình duyệt này, vì backend không trả về nữa (hiddenProducts.ts)
   const [hidden, setHidden] = useState<HiddenProduct[]>(readHiddenProducts)
   // Ngừng bán / mở bán / hoàn tác dùng chung một mutation nên tự giữ các id đang chờ
@@ -300,6 +358,7 @@ export function AdminProductsPage() {
               onEdit={(product) => setForm({ open: true, product })}
               onToggleStatus={toggleStatus}
               onDelete={setDeleting}
+              onImages={(product) => product.id && setImagesFor({ id: product.id, name: product.name ?? '' })}
             />
           </div>
         )}
@@ -322,24 +381,14 @@ export function AdminProductsPage() {
           <p className="mt-1 max-w-prose text-body text-fg-2">Chỉ hiện sản phẩm bạn ngừng bán trên trình duyệt này.</p>
           <ul className="mt-3 divide-y divide-line">
             {hidden.map((h) => (
-              <li key={h.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
-                <div className="min-w-0">
-                  <p className="font-medium text-fg">{h.name || 'Sản phẩm chưa đặt tên'}</p>
-                  <p className="tnum text-meta text-fg-3">
-                    {h.sku}
-                    {h.hiddenAt && `, ngừng bán lúc ${formatDateTime(h.hiddenAt)}`}
-                  </p>
-                </div>
-                <Button
-                  icon="play_circle"
-                  size="sm"
-                  variant="soft"
-                  disabled={pendingIds.has(h.id)}
-                  onClick={() => void reopen(h)}
-                >
-                  {pendingIds.has(h.id) ? 'Đang mở bán…' : 'Mở bán lại'}
-                </Button>
-              </li>
+              <HiddenProductRow
+                key={h.id}
+                entry={h}
+                busy={pendingIds.has(h.id)}
+                onReopen={() => void reopen(h)}
+                onForget={() => updateHidden((list) => list.filter((x) => x.id !== h.id))}
+                onImages={() => setImagesFor({ id: h.id, name: h.name })}
+              />
             ))}
           </ul>
         </section>
@@ -350,6 +399,11 @@ export function AdminProductsPage() {
         product={form.product}
         suggestions={{ productTypes: options.productTypes, categories: options.categories }}
         onOpenChange={(open) => setForm((prev) => ({ ...prev, open }))}
+      />
+      <ProductImagesDialog
+        productId={imagesFor?.id ?? null}
+        productName={imagesFor?.name ?? ''}
+        onOpenChange={(open) => !open && setImagesFor(null)}
       />
       <DeleteProductDialog
         product={deleting}

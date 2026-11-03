@@ -1,7 +1,14 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
-import { useRagVersionsQuery } from '@/hooks/useAdminRagConfig'
+import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
+import { useRagVersionsQuery, useRollbackRagMutation } from '@/hooks/useAdminRagConfig'
+import { errorMessage } from '@/services/api/errors'
+import type { RagActivationView, RagConfigurationView } from '@/types/res/adminRagConfigTypes'
+import { RagActivationResult } from './RagConfigurationTab'
+
+const STATUS_LABELS: Record<string, string> = { ACTIVE: 'Đang dùng', DRAFT: 'Bản nháp', SUPERSEDED: 'Đã thay' }
 
 export function RagVersionAuditTable() {
   const [page, setPage] = useState(1)
@@ -9,6 +16,23 @@ export function RagVersionAuditTable() {
   const pageSize = 15
 
   const { data, isLoading } = useRagVersionsQuery(page, pageSize)
+  const rollback = useRollbackRagMutation()
+  // Khôi phục là chép phiên bản cũ thành phiên bản mới rồi áp dụng; chỉ phiên bản đã từng dùng (SUPERSEDED)
+  const [restoring, setRestoring] = useState<RagConfigurationView | null>(null)
+  const [restored, setRestored] = useState<RagActivationView | null>(null)
+
+  const confirmRestore = async () => {
+    if (!restoring) return
+    try {
+      const result = await rollback.mutateAsync(restoring.version)
+      setRestored(result)
+      toast.success(`Đã khôi phục v${restoring.version} thành v${result.active.version}.`)
+    } catch (e) {
+      toast.error(errorMessage(e))
+    } finally {
+      setRestoring(null)
+    }
+  }
   const totalItems = data?.total ?? data?.items?.length ?? 0
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
 
@@ -28,6 +52,7 @@ export function RagVersionAuditTable() {
 
   return (
     <div className="space-y-4">
+      {restored && <RagActivationResult key={restored.active.version} activation={restored} />}
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -62,18 +87,21 @@ export function RagVersionAuditTable() {
                 </button>
               </th>
               <th className="px-4 py-3">Ghi chú</th>
+              <th className="px-4 py-3">
+                <span className="sr-only">Thao tác</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line text-meta">
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-fg-3">
+                <td colSpan={8} className="py-8 text-center text-fg-3">
                   Đang tải lịch sử phiên bản…
                 </td>
               </tr>
             ) : !sortedItems.length ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-fg-3">
+                <td colSpan={8} className="py-8 text-center text-fg-3">
                   Chưa có phiên bản nào.
                 </td>
               </tr>
@@ -83,7 +111,7 @@ export function RagVersionAuditTable() {
                   <td className="px-4 py-3 font-semibold text-fg-1">v{v.version}</td>
                   <td className="px-4 py-3">
                     <Badge tone={v.status === 'ACTIVE' ? 'ok' : v.status === 'DRAFT' ? 'warn' : 'neutral'}>
-                      {v.status}
+                      {STATUS_LABELS[v.status] ?? v.status}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 font-mono text-fg-1">{v.generationModel}</td>
@@ -101,6 +129,19 @@ export function RagVersionAuditTable() {
                         : '—'}
                   </td>
                   <td className="max-w-xs px-4 py-3 text-fg-3">{v.notes || '—'}</td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    {v.status === 'SUPERSEDED' && (
+                      <Button
+                        size="sm"
+                        variant="soft"
+                        icon="history"
+                        disabled={rollback.isPending}
+                        onClick={() => setRestoring(v)}
+                      >
+                        Khôi phục
+                      </Button>
+                    )}
+                  </td>
                 </tr>
               ))
             )}
@@ -121,6 +162,27 @@ export function RagVersionAuditTable() {
           </Button>
         </div>
       </div>
+
+      <ModalDialog
+        open={restoring !== null}
+        onOpenChange={(open) => !open && setRestoring(null)}
+        dismissible={!rollback.isPending}
+        aria-label="Khôi phục phiên bản cấu hình"
+      >
+        <DialogTitle>Khôi phục cấu hình v{restoring?.version}?</DialogTitle>
+        <p className="mt-2 text-body text-fg-2">
+          Các tham số của v{restoring?.version} được chép thành một phiên bản mới và áp dụng ngay, thay cho cấu hình
+          đang dùng. Lịch sử cũ giữ nguyên. Nếu cách cắt đoạn khác, tài liệu đã nạp không tự nạp lại.
+        </p>
+        <DialogFooter>
+          <Button icon="close" variant="secondary" disabled={rollback.isPending} onClick={() => setRestoring(null)}>
+            Huỷ
+          </Button>
+          <Button icon="history" variant="primary" disabled={rollback.isPending} onClick={() => void confirmRestore()}>
+            {rollback.isPending ? 'Đang khôi phục…' : 'Khôi phục'}
+          </Button>
+        </DialogFooter>
+      </ModalDialog>
     </div>
   )
 }
