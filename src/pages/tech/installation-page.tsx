@@ -3,7 +3,6 @@ import { useParams } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
-import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { ProgressTracker } from '@/components/common/ui/progress-tracker'
@@ -15,6 +14,7 @@ import { AssetEntry } from '@/features/installations/AssetEntry'
 import { AssignmentResponse } from '@/features/installations/AssignmentResponse'
 import { CompletionReportForm } from '@/features/installations/CompletionReportForm'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
+import { EvidenceUpload } from '@/features/installations/EvidenceUpload'
 import {
   acceptanceDecisionMeta,
   assetTypeLabel,
@@ -153,7 +153,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-4 lg:col-span-2">
           {canAnswer(view) && (
-            <Panel>
+            <Panel id="installation-answer" className="scroll-mt-6">
               <PanelHeader title="Trả lời quản lý" />
               <PanelBody>
                 <AssignmentResponse view={view} />
@@ -161,7 +161,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
             </Panel>
           )}
           {awaitsStart(view) && (
-            <Panel>
+            <Panel id="installation-start" className="scroll-mt-6">
               <PanelHeader title="Bắt đầu lắp đặt" />
               <PanelBody>
                 <StartInstallation view={view} />
@@ -222,17 +222,13 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
       {(withWork || view.acceptances.length > 0) && (
         <div className="mt-6 space-y-4">
           {withWork && (
-            <Panel>
+            <Panel id="installation-photos" className="scroll-mt-6">
               <PanelHeader
                 title="Ảnh lắp đặt"
                 description={work ? `Báo cáo cần ít nhất một ảnh của lượt ${view.currentRound}.` : undefined}
               />
-              <PanelBody className="space-y-4">
-                {work && (
-                  <Notice tone="warn">
-                    Chưa thêm ảnh được từ trang này: hệ thống chưa có chức năng cấp link tải ảnh lên kho lưu trữ.
-                  </Notice>
-                )}
+              <PanelBody className="space-y-6">
+                {work && <EvidenceUpload projectId={view.projectId} round={view.currentRound} />}
                 {evidence.isPending ? (
                   <Skeleton className="h-40" />
                 ) : evidence.data === undefined ? (
@@ -262,7 +258,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
                 action={
                   work &&
                   !addingAssets && (
-                    <Button size="sm" icon="add" onClick={() => setAddingAssets(true)}>
+                    <Button variant="soft" size="sm" icon="add" onClick={() => setAddingAssets(true)}>
                       Ghi thiết bị
                     </Button>
                   )
@@ -282,10 +278,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
           )}
 
           <Panel>
-            <PanelHeader
-              title="Báo cáo hoàn thành"
-              description={work ? 'Khách đọc báo cáo này khi nghiệm thu.' : undefined}
-            />
+            <PanelHeader title="Báo cáo hoàn thành" />
             <PanelBody className="space-y-6">
               {work && <CompletionReportForm view={view} />}
               {view.acceptances.length > 0 ? (

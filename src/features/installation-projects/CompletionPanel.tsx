@@ -69,10 +69,10 @@ function ReturnToReworkDialog({
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
-        <Button variant="ghost" disabled={rework.isPending} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={rework.isPending} onClick={onClose}>
           Huỷ
         </Button>
-        <Button variant="primary" disabled={rework.isPending} onClick={() => void submit()}>
+        <Button icon="replay" variant="primary" disabled={rework.isPending} onClick={() => void submit()}>
           {rework.isPending ? 'Đang gửi…' : 'Trả về làm lại'}
         </Button>
       </DialogFooter>
@@ -89,12 +89,7 @@ export function CompletionPanel({ project }: { project: InstallationStaffView })
 
   return (
     <Panel>
-      <PanelHeader
-        title="Báo cáo hoàn thành và nghiệm thu"
-        description={
-          pending ? 'Khách không phản hồi thì gọi khách; hệ thống không tự nghiệm thu thay khách.' : undefined
-        }
-      />
+      <PanelHeader title="Báo cáo hoàn thành và nghiệm thu" />
       <PanelBody>
         {rounds.length === 0 ? (
           <p className="text-body text-fg-2">Kỹ thuật viên chưa gửi báo cáo hoàn thành.</p>
@@ -118,7 +113,7 @@ export function CompletionPanel({ project }: { project: InstallationStaffView })
                   )}
                   {a.reason && <p className="mt-1 text-body text-fg-2">Lý do: {a.reason}</p>}
                   {a === pending && (
-                    <Button size="sm" variant="soft" className="mt-3" onClick={() => setReturning(a)}>
+                    <Button icon="replay" size="sm" variant="danger" className="mt-3" onClick={() => setReturning(a)}>
                       Trả về làm lại
                     </Button>
                   )}

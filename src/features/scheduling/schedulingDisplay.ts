@@ -1,4 +1,3 @@
-import { SURFACE_NAMES } from '@/common/preSurvey'
 import {
   ACCEPTANCE_STATUSES,
   APPOINTMENT_LABELS,
@@ -145,6 +144,15 @@ export function assignmentSourceLabel(source: string | null | undefined, viewer:
   return ASSIGNMENT_SOURCES[source] ?? source
 }
 
+/**
+ * Đã qua giờ kết thúc mà chưa khảo sát xong. Đổi sang giờ khác thì phải ghi lý do.
+ * Danh sách có sẵn `isOverdue` từ backend; trang chi tiết thì tự tính theo cùng quy tắc
+ */
+export function isAppointmentOverdue(a: { status: string; endsAt: string }, now = Date.now()) {
+  const open = ['PENDING_ACCEPTANCE', 'ESCALATED', 'ACCEPTED', 'ASSIGNED'].includes(a.status)
+  return open && new Date(a.endsAt).getTime() <= now
+}
+
 /** Kỹ thuật viên đã xác nhận lịch (tự nhận hoặc được phân công) */
 export function isConfirmed(status: string | null | undefined) {
   return status === 'ACCEPTED' || status === 'ASSIGNED' || status === 'COMPLETED'
@@ -165,7 +173,8 @@ export function customerProgress(r: Pick<CustomerSurveyRequestView, 'status' | '
   tone: Tone
 } {
   if (r.status === 'COMPLETED') return { label: 'Đã khảo sát xong', tone: 'neutral' }
-  if (r.status === 'CANCELLED') return { label: 'Đã huỷ', tone: 'neutral' }
+  if (r.status === 'CANCELLED') return { label: 'Đã rút yêu cầu', tone: 'neutral' }
+  if (r.status === 'CLOSED') return { label: 'Đã đóng', tone: 'neutral' }
   const a = r.appointment
   if (!a)
     return canBook(r)
@@ -177,6 +186,17 @@ export function customerProgress(r: Pick<CustomerSurveyRequestView, 'status' | '
 /** Khách đặt giờ được khi yêu cầu chưa có lịch hiệu lực */
 export function canBook(r: Pick<CustomerSurveyRequestView, 'status' | 'appointment'>) {
   return !r.appointment && r.status === 'PENDING'
+}
+
+/** Yêu cầu đã rút (CANCELLED) hoặc kinh doanh đã đóng (CLOSED): không mở lại được */
+export function isClosedCustomerRequest(r: Pick<CustomerSurveyRequestView, 'status'>) {
+  return r.status === 'CANCELLED' || r.status === 'CLOSED'
+}
+
+/** Rút được khi không còn lịch đang hẹn (chưa đặt hoặc đã khảo sát xong); còn lịch thì huỷ lịch trước */
+export function canWithdraw(r: Pick<CustomerSurveyRequestView, 'status' | 'appointment'>) {
+  if (isClosedCustomerRequest(r)) return false
+  return !r.appointment || r.appointment.acceptanceStatus === 'COMPLETED'
 }
 
 export function coverageText(status: string) {
@@ -220,8 +240,4 @@ export function technicianReadiness(t: {
   if (!t.isActiveUser) return { label: 'Tài khoản không hoạt động', tone: 'neutral' }
   if (t.zones.length === 0) return { label: 'Chưa thuộc khu vực nào', tone: 'danger' }
   return { label: 'Đang tắt nhận lịch', tone: 'neutral' }
-}
-
-export function surfaceNameLabel(value: string | null | undefined) {
-  return value ? (SURFACE_NAMES[value] ?? value) : '—'
 }

@@ -30,10 +30,12 @@ export function NotFoundPage() {
         </pre>
       )}
       <div className="mt-6 flex flex-wrap gap-3">
-        <ButtonLink to={home} variant="primary">
+        <ButtonLink icon="home" to={home} variant="primary">
           {user ? 'Về trang làm việc' : 'Về trang chủ'}
         </ButtonLink>
-        <Button onClick={() => window.location.reload()}>Tải lại</Button>
+        <Button icon="refresh" variant="secondary" onClick={() => window.location.reload()}>
+          Tải lại
+        </Button>
       </div>
     </main>
   )

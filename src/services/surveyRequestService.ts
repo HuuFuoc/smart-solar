@@ -3,9 +3,11 @@ import type { TechnicianAvailabilityView } from '@/types/res/technicianAvailabil
 import type {
   AssignmentView,
   ClaimSurveyRequestResponse,
+  CloseReasonCode,
   EscalatedAppointmentView,
   MySurveyRequestItem,
   PendingSurveyRequestItem,
+  SalesOutcomeView,
   SalesRescheduleView,
   SurveyRequestDetail,
 } from '@/types/res/surveyRequestsRes'
@@ -58,4 +60,9 @@ export function reassignTechnician(id: string, body: AssignTechnicianRequest) {
 /** Không truyền technicianUserId thì giữ người cũ nếu vẫn rảnh, không thì lịch quay về chờ nhận */
 export function rescheduleSurveyRequest(id: string, body: SalesRescheduleRequest) {
   return put<SalesRescheduleView>(ENDPOINTS.surveyRequests.reschedule(id), body)
+}
+
+/** Đóng yêu cầu khi khách không lắp. OTHER phải có ghi chú; còn lịch đang hẹn hoặc đã có hợp đồng thì bị từ chối (409) */
+export function closeSurveyRequest(id: string, body: { reasonCode: CloseReasonCode; note: string | null }) {
+  return post<SalesOutcomeView>(ENDPOINTS.surveyRequests.close(id), body)
 }

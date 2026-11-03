@@ -9,19 +9,25 @@ export function directionLabel(degree: number | null | undefined) {
   return DIRECTIONS[Math.round(normalized / 45) % 8]!
 }
 
-/** Giá trị chưa có trong bảng nhãn thì in nguyên số, không đoán nghĩa */
-function unknownTypeLabel(value: number | null | undefined) {
-  if (value == null) return '—'
-  return `Loại ${value}`
+/** Giá trị chưa có trong bảng nhãn thì in nguyên văn, không đoán nghĩa */
+function unknownTypeLabel(value: number | string | null | undefined) {
+  if (value == null || value === '') return '—'
+  return typeof value === 'number' ? `Loại ${value}` : value
 }
 
-export function customerTypeLabel(value: number | null | undefined) {
-  const known = CUSTOMER_TYPES.find((type) => type.value === value)
+// Nhận cả số của form lẫn tên enum backend trả (INDIVIDUAL, ROOFTOP; bản cũ viết Rooftop)
+function byValueOrName<T extends { value: number; name: string }>(list: readonly T[], value: number | string) {
+  if (typeof value === 'number') return list.find((item) => item.value === value)
+  return list.find((item) => item.name === value.toUpperCase())
+}
+
+export function customerTypeLabel(value: number | string | null | undefined) {
+  const known = value == null ? undefined : byValueOrName(CUSTOMER_TYPES, value)
   return known ? known.label : unknownTypeLabel(value)
 }
 
-export function surfaceTypeLabel(value: number | null | undefined) {
-  const known = SURFACE_TYPES.find((type) => type.value === value)
+export function surfaceTypeLabel(value: number | string | null | undefined) {
+  const known = value == null ? undefined : byValueOrName(SURFACE_TYPES, value)
   return known ? known.label : unknownTypeLabel(value)
 }
 
@@ -61,16 +67,20 @@ export function addressMapUrl(address: string) {
 }
 
 /** Chưa có kỹ thuật viên xác nhận lịch khảo sát */
-export function needsScheduling(status: number | null | undefined) {
-  return status === 1 || status === 2 || status === 3
+export function needsScheduling(status: SurveyRequestStatus | null | undefined) {
+  return status === 'PENDING'
 }
 
-export function surveyStatusMeta(status: number | null | undefined): { label: string; tone: Tone } {
-  const known = SURVEY_REQUEST_STATUSES[status as SurveyRequestStatus]
+/** Khách đã rút hoặc sales đã đóng: không mở lại, mọi thao tác đều ẩn */
+export function isClosedRequest(status: SurveyRequestStatus | null | undefined) {
+  return status === 'CANCELLED' || status === 'CLOSED'
+}
+
+export function surveyStatusMeta(status: SurveyRequestStatus | null | undefined): { label: string; tone: Tone } {
+  const known = status ? SURVEY_REQUEST_STATUSES[status] : undefined
   if (known) return known
-  // Trạng thái lạ thì in nguyên số
-  const label = status == null ? '—' : `Trạng thái ${status}`
-  return { label, tone: 'neutral' }
+  // Trạng thái lạ thì in nguyên văn
+  return { label: status || '—', tone: 'neutral' }
 }
 
 const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })

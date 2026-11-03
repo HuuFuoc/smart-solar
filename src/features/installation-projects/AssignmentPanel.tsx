@@ -225,8 +225,7 @@ function AssignDialog({ project, onClose }: { project: InstallationStaffView; on
             </Field>
           </div>
           <p className="text-meta text-fg-2">
-            Giờ bắt đầu và kết thúc phải nằm trong giờ làm của kỹ thuật viên. Backend kiểm tra số ngày tối đa của một
-            lần phân công.
+            Giờ bắt đầu và kết thúc phải nằm trong giờ làm của kỹ thuật viên. Mỗi lần phân công có số ngày tối đa.
           </p>
           {intervalError ? (
             <p className="text-meta text-danger" role="alert">
@@ -308,10 +307,11 @@ function AssignDialog({ project, onClose }: { project: InstallationStaffView; on
 
       <DialogFooter className="items-center">
         <ErrorLine message={error ?? blocker} />
-        <Button variant="ghost" disabled={busy} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={busy} onClick={onClose}>
           Huỷ
         </Button>
         <Button
+          icon="how_to_reg"
           variant="primary"
           disabled={!selected || !searchedCurrent || !!blocker || busy}
           onClick={() => void submit()}
@@ -338,7 +338,7 @@ export function AssignmentPanel({ project }: { project: InstallationStaffView })
         action={
           assignable ? (
             current ? (
-              <Button size="sm" icon="edit_calendar" onClick={() => setOpen(true)}>
+              <Button variant="soft" size="sm" icon="edit_calendar" onClick={() => setOpen(true)}>
                 Đổi người hoặc lịch
               </Button>
             ) : (

@@ -51,7 +51,7 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
         <li>
           {photos > 0
             ? `Đã có ${photos} ảnh của lượt ${view.currentRound}.`
-            : `Chưa có ảnh nào của lượt ${view.currentRound}. Cần ít nhất một ảnh mới gửi được báo cáo.`}
+            : `Chưa có ảnh nào của lượt ${view.currentRound} trên hệ thống. Ở khối "Ảnh lắp đặt", chọn ảnh rồi bấm "Tải lên" mới gửi được báo cáo.`}
         </li>
         <li>{equipped ? 'Đã ghi tấm pin và inverter.' : 'Chưa ghi đủ tấm pin và inverter đã lắp.'}</li>
       </ul>
@@ -74,7 +74,7 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
         />
       </Field>
       <span className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" disabled={photos === 0 || report.isPending} onClick={review}>
+        <Button icon="send" variant="primary" disabled={photos === 0 || report.isPending} onClick={review}>
           Gửi báo cáo hoàn thành
         </Button>
         {error && (
@@ -91,10 +91,10 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
           Sau khi gửi, bạn không thêm ảnh hay thiết bị được nữa, trừ khi khách hoặc quản lý yêu cầu sửa lại.
         </p>
         <DialogFooter>
-          <Button variant="ghost" bleed={false} disabled={report.isPending} onClick={() => setConfirming(false)}>
+          <Button icon="close" variant="secondary" disabled={report.isPending} onClick={() => setConfirming(false)}>
             Huỷ
           </Button>
-          <Button variant="primary" disabled={report.isPending} onClick={() => void send()}>
+          <Button icon="send" variant="primary" disabled={report.isPending} onClick={() => void send()}>
             {report.isPending ? 'Đang gửi…' : 'Gửi báo cáo'}
           </Button>
         </DialogFooter>

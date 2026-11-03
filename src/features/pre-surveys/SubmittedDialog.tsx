@@ -29,10 +29,10 @@ export function SubmittedDialog({ ref, siteName, requestId, onStartOver, onChoos
         />
       )}
       <DialogFooter>
-        <Button variant="ghost" onClick={onStartOver}>
+        <Button icon="add_location_alt" variant="ghost" onClick={onStartOver}>
           Đánh giá địa điểm khác
         </Button>
-        <Button variant="primary" onClick={onChooseTime}>
+        <Button icon="event" variant="primary" onClick={onChooseTime}>
           Chọn giờ khảo sát
         </Button>
       </DialogFooter>

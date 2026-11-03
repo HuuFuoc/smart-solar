@@ -11,6 +11,7 @@ import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { ProjectAfterSalesPanel } from '@/features/after-sales/ProjectAfterSalesPanel'
 import { AcceptanceDialog } from '@/features/installations/AcceptanceDialog'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
 import {
@@ -92,6 +93,7 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
       tone: 'danger',
       title: 'Bạn cần nghiệm thu công trình',
       body: 'Đọc báo cáo hoàn thành, xem ảnh thi công và thiết bị đã lắp, rồi chọn Nghiệm thu hoặc Yêu cầu sửa lại.',
+      action: { label: 'Nghiệm thu', icon: 'fact_check', target: 'acceptance' },
     }
   switch (p.status) {
     case 'PENDING_ASSIGNMENT':
@@ -130,7 +132,11 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
       }
     }
     case 'COMPLETED':
-      return { tone: 'ok', title: 'Công trình đã bàn giao', body: 'Thiết bị và hạn bảo hành ở mục Bàn giao.' }
+      return {
+        tone: 'ok',
+        title: 'Công trình đã bàn giao',
+        body: 'Thiết bị có vấn đề hoặc cần bảo trì thì gửi yêu cầu ở mục Bảo hành, sửa chữa.',
+      }
     case 'CANCELLED':
       return {
         tone: 'neutral',
@@ -153,10 +159,10 @@ function AcceptancePanel({ pending, onDecide }: { pending: AcceptanceView; onDec
         <p className="max-w-[72ch] text-body whitespace-pre-line text-fg">{pending.completionReport}</p>
         <p className="text-body text-fg-2">Xem ảnh thi công và thiết bị đã lắp bên dưới trước khi quyết định.</p>
         <div className="flex flex-wrap gap-3">
-          <Button variant="primary" onClick={() => onDecide(ACCEPTANCE_CHOICES.accept)}>
+          <Button icon="check_circle" variant="primary" onClick={() => onDecide(ACCEPTANCE_CHOICES.accept)}>
             Nghiệm thu
           </Button>
-          <Button variant="secondary" onClick={() => onDecide(ACCEPTANCE_CHOICES.requestRework)}>
+          <Button icon="replay" variant="secondary" onClick={() => onDecide(ACCEPTANCE_CHOICES.requestRework)}>
             Yêu cầu sửa lại
           </Button>
         </div>
@@ -356,11 +362,14 @@ export function CustomerProjectPage() {
               <div className="grid gap-6 lg:grid-cols-3">
                 <div className="min-w-0 space-y-4 lg:col-span-2">
                   {pending && (
-                    <AcceptancePanel
-                      pending={pending}
-                      onDecide={(choice) => setDialog({ choice, round: pending.round })}
-                    />
+                    <div id="acceptance" className="scroll-mt-6">
+                      <AcceptancePanel
+                        pending={pending}
+                        onDecide={(choice) => setDialog({ choice, round: pending.round })}
+                      />
+                    </div>
                   )}
+                  {completed && <ProjectAfterSalesPanel projectId={p.projectId} />}
                   {completed && <HandoverPanel projectId={p.projectId} />}
                   <EvidencePanel projectId={p.projectId} />
                   {!completed && p.assets.length > 0 && (

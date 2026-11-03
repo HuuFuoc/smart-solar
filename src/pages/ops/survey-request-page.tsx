@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react'
 import { useParams } from 'react-router'
 import { Badge, Count } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
+import { CloseRequestDialog } from '@/features/pre-surveys/CloseRequestDialog'
 import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
@@ -16,6 +17,7 @@ import {
   directionLabel,
   formatAddress,
   formatDateTime,
+  isClosedRequest,
   isOverdue,
   shortCode,
   surfaceTypeLabel,
@@ -27,8 +29,21 @@ import { SimulationHistory } from '@/features/pre-surveys/SimulationHistory'
 import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
 import { useSimulationsQuery } from '@/hooks/useSimulations'
 import { useSurveyRequestQuery } from '@/hooks/useSurveyRequests'
+import { useStaffOnSiteSurveyQuery } from '@/hooks/useOnSiteSurvey'
+import { useQuotationsQuery } from '@/hooks/useSalesQuotations'
+import { OnSiteSurveyResultPanel } from '@/features/onsite-survey/OnSiteSurveyResultPanel'
+import { currentQuotation, formatDateVn, quotationStatusMeta } from '@/features/quotations/quotationDisplay'
+import { SalesQuotationPanel } from '@/features/quotations/SalesQuotationPanel'
 import { SalesSchedulePanel } from '@/features/scheduling/SalesSchedulePanel'
-import { formatTimeRange, isConfirmed, relativeDay, vnDate } from '@/features/scheduling/schedulingDisplay'
+import {
+  formatMoment,
+  formatTimeRange,
+  isAppointmentOverdue,
+  isConfirmed,
+  relativeDay,
+  vnDate,
+} from '@/features/scheduling/schedulingDisplay'
+import type { QuotationView } from '@/types/res/quotationsRes'
 import type { SurveyRequestDetail } from '@/types/res/surveyRequestsRes'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
@@ -38,11 +53,12 @@ function whenText(startsAt: string, endsAt: string) {
   return `${relativeDay(vnDate(startsAt))}, ${formatTimeRange(startsAt, endsAt)}`
 }
 
-// Các bước của yêu cầu theo góc nhìn của sales
-function trackerSteps(r: SurveyRequestDetail): TrackerStep[] {
+// Các bước của yêu cầu theo góc nhìn của sales. `quotations`: undefined khi chưa khảo sát xong hoặc đang tải
+function trackerSteps(r: SurveyRequestDetail, quotations: QuotationView[] | undefined): TrackerStep[] {
   const a = r.appointment
   const confirmed = isConfirmed(a?.status)
-  return [
+  const quotation = quotations && currentQuotation(quotations)
+  const steps: TrackerStep[] = [
     { label: 'Khách gửi yêu cầu', detail: formatDateTime(r.submittedAt), state: 'done' },
     { label: 'Khách đặt giờ', detail: a ? formatDateTime(a.bookedAt) : 'Chưa đặt', state: a ? 'done' : 'current' },
     {
@@ -53,16 +69,70 @@ function trackerSteps(r: SurveyRequestDetail): TrackerStep[] {
     {
       label: 'Khảo sát tại công trình',
       detail: a ? whenText(a.startsAt, a.endsAt) : undefined,
-      state: r.status === 5 ? 'done' : confirmed ? 'current' : 'todo',
+      state: r.status === 'COMPLETED' ? 'done' : confirmed ? 'current' : 'todo',
+    },
+    {
+      label: 'Báo giá',
+      detail: quotation ? quotationStatusMeta(quotation, 'sales').label : undefined,
+      state: quotation?.status === 'ACCEPTED' ? 'done' : r.status === 'COMPLETED' ? 'current' : 'todo',
     },
   ]
+  // Yêu cầu đã đóng thì không còn bước nào đang làm
+  return isClosedRequest(r.status)
+    ? steps.map((step) => (step.state === 'current' ? { ...step, state: 'todo' } : step))
+    : steps
+}
+
+// Việc của sales sau khi khảo sát xong: lập, gửi, sửa báo giá tới khi khách đồng ý
+function quotationNextStep(quotations: QuotationView[]): TrackerNext {
+  const q = currentQuotation(quotations)
+  if (!q)
+    return {
+      tone: 'danger',
+      title: 'Cần bạn lập báo giá',
+      body: 'Khảo sát tại công trình đã xong. Lập báo giá ở khối Báo giá bên dưới.',
+    }
+  if (q.status === 'DRAFT')
+    return {
+      tone: 'danger',
+      title: 'Bản nháp báo giá chưa gửi khách',
+      body: 'Thêm đủ dòng hàng, chi phí rồi gửi cho khách ở khối Báo giá.',
+    }
+  if (q.status === 'REVISION_REQUESTED')
+    return { tone: 'danger', title: 'Khách yêu cầu sửa báo giá', body: 'Xem lý do ở khối Báo giá rồi lập bản sửa.' }
+  if (q.status === 'ISSUED' && q.isExpired)
+    return {
+      tone: 'danger',
+      title: 'Báo giá đã hết hạn mà khách chưa trả lời',
+      body: 'Gọi khách rồi lập bản sửa với hạn mới.',
+    }
+  if (q.status === 'ISSUED')
+    return {
+      tone: 'info',
+      title: 'Chờ khách trả lời báo giá',
+      body: `Hiệu lực đến hết ngày ${formatDateVn(q.validUntil)}. Gọi khách nếu cần giải thích.`,
+    }
+  if (q.status === 'ACCEPTED')
+    return {
+      tone: 'ok',
+      title: 'Khách đã đồng ý báo giá',
+      body: `Đồng ý lúc ${formatMoment(q.acceptedAt)}. Bước tiếp theo là lập hợp đồng.`,
+    }
+  return { tone: 'neutral', title: 'Đã khảo sát xong tại công trình' }
 }
 
 // Việc tiếp theo và ai làm. Đỏ chỉ khi sales phải làm
-function nextStep(r: SurveyRequestDetail): TrackerNext {
+function nextStep(r: SurveyRequestDetail, quotations: QuotationView[] | undefined): TrackerNext {
   const a = r.appointment
-  if (r.status === 5) return { tone: 'neutral', title: 'Đã khảo sát xong tại công trình' }
-  if (r.status === 6) return { tone: 'neutral', title: 'Yêu cầu đã huỷ' }
+  if (r.status === 'CLOSED') return { tone: 'neutral', title: 'Yêu cầu đã đóng' }
+  if (r.status === 'CANCELLED') return { tone: 'neutral', title: 'Khách đã rút yêu cầu' }
+  if (r.status === 'COMPLETED' && quotations) return quotationNextStep(quotations)
+  if (r.status === 'COMPLETED')
+    return {
+      tone: 'neutral',
+      title: 'Đã khảo sát xong tại công trình',
+      body: 'Xem kết quả của kỹ thuật viên ở khối Kết quả khảo sát tại công trình.',
+    }
   if (!a)
     return isOverdue(r.submittedAt)
       ? {
@@ -71,11 +141,19 @@ function nextStep(r: SurveyRequestDetail): TrackerNext {
           body: 'Gọi khách nhắc chọn giờ trên cổng khách hàng.',
         }
       : { tone: 'info', title: 'Chờ khách đặt giờ khảo sát', body: 'Khách tự chọn giờ trên cổng khách hàng.' }
+  if (isAppointmentOverdue(a))
+    return {
+      tone: 'danger',
+      title: 'Lịch khảo sát đã qua giờ mà chưa có kết quả',
+      body: `Lịch ${whenText(a.startsAt, a.endsAt)}. Gọi khách hẹn giờ khác rồi đổi giờ ở khối Lịch khảo sát.`,
+      action: { label: 'Đổi giờ', icon: 'edit_calendar', target: 'survey-schedule' },
+    }
   if (a.status === 'ESCALATED')
     return {
       tone: 'danger',
       title: 'Cần bạn phân công kỹ thuật viên',
       body: `Lịch ${whenText(a.startsAt, a.endsAt)} quá hạn mà chưa kỹ thuật viên nào nhận. Chọn người ở khối Lịch khảo sát.`,
+      action: { label: 'Phân công', icon: 'assignment_ind', target: 'survey-schedule' },
     }
   if (a.status === 'PENDING_ACCEPTANCE')
     return {
@@ -116,7 +194,7 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
             <Notice tone="info" title="Đang xem một lần chạy khác của khách">
               Đây không phải mô phỏng khách chọn khi gửi.
               <span className="mt-3 flex">
-                <Button size="sm" onClick={() => setViewId(null)}>
+                <Button icon="visibility" variant="info" size="sm" onClick={() => setViewId(null)}>
                   Xem mô phỏng khách chọn
                 </Button>
               </span>
@@ -129,10 +207,7 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
               staleNote="Khách đã sửa mặt lắp sau lần chạy này; số liệu có thể không khớp mặt lắp cuối cùng."
             />
           ) : (
-            <EmptyState
-              title="Khách chưa chạy mô phỏng"
-              description="Bản đánh giá được gửi khi chưa có mô phỏng; dùng số liệu khách khai ở trên khi gọi khách."
-            />
+            <EmptyState title="Khách chưa chạy mô phỏng" description="Dùng số liệu khách khai khi gọi khách." />
           )}
         </PanelBody>
       </Panel>
@@ -144,7 +219,6 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
                 Các lần chạy của khách <Count value={others.length} />
               </span>
             }
-            description="Bấm một lần chạy để xem; lần khách chọn gắn nhãn Mô phỏng chính."
           />
           <PanelBody>
             <SimulationHistory items={others} viewingId={viewing} onView={setViewId} />
@@ -160,13 +234,22 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
 export function OpsSurveyRequestPage() {
   const { id } = useParams()
   const query = useSurveyRequestQuery(id)
+  const [closing, setClosing] = useState(false)
   usePageCrumb(query.data ? query.data.propertyName || 'Công trình chưa đặt tên' : null)
+  // Cùng khoá query với khối kết quả khảo sát nên không gọi API hai lần. Báo giá chỉ lập được khi khảo sát đã hoàn thành
+  const onsiteEnabled = query.data?.status === 'COMPLETED' || isConfirmed(query.data?.appointment?.status)
+  const onsite = useStaffOnSiteSurveyQuery(id, { enabled: onsiteEnabled })
+  const surveyCompleted = onsite.data?.status === 'COMPLETED'
+  const quotations = useQuotationsQuery(id, { enabled: surveyCompleted })
 
   return (
     <QueryBoundary query={query}>
       {(r) => {
         const status = surveyStatusMeta(r.status)
         const map = addressMapUrl(formatAddress(r))
+        // Lịch còn hẹn thì chỉ khách huỷ được, nên chỉ đóng khi chưa đặt giờ hoặc đã khảo sát xong
+        const canClose = !isClosedRequest(r.status) && (!r.appointment || r.appointment.status === 'COMPLETED')
+        const notFeasible = onsite.data?.data.installationFeasibility === 'NOT_FEASIBLE'
         return (
           <>
             <PageHeader
@@ -199,20 +282,30 @@ export function OpsSurveyRequestPage() {
                       <span className="sr-only"> (mở tab mới)</span>
                     </a>
                   )}
+                  {canClose && (
+                    <Button variant="danger" icon="block" onClick={() => setClosing(true)}>
+                      Đóng yêu cầu
+                    </Button>
+                  )}
                 </>
               }
             />
 
-            <ProgressTracker steps={trackerSteps(r)} next={nextStep(r)} />
+            <ProgressTracker steps={trackerSteps(r, quotations.data)} next={nextStep(r, quotations.data)} />
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
-                <SalesSchedulePanel request={r} />
+                <div id="survey-schedule" className="scroll-mt-6">
+                  <SalesSchedulePanel request={r} />
+                </div>
+                <OnSiteSurveyResultPanel surveyRequestId={r.surveyRequestId} enabled={onsiteEnabled} />
+                <SalesQuotationPanel
+                  surveyRequestId={r.surveyRequestId}
+                  enabled={surveyCompleted}
+                  feasibility={onsite.data?.data.installationFeasibility}
+                />
                 <Panel>
-                  <PanelHeader
-                    title="Số liệu khách khai"
-                    description="Đối chiếu khi gọi khách và đo lại khi khảo sát."
-                  />
+                  <PanelHeader title="Số liệu khách khai" />
                   <PanelBody className="space-y-6">
                     {/* Dùng lg: vì cx không gộp class, chỉ breakpoint lớn hơn mới đè được md:grid-cols-4 */}
                     <StatRow className="lg:grid-cols-5">
@@ -300,6 +393,16 @@ export function OpsSurveyRequestPage() {
             <div className="mt-6 space-y-4 border-t border-line pt-4">
               <SimulationPanel request={r} />
             </div>
+
+            {canClose && (
+              <CloseRequestDialog
+                key={String(notFeasible)}
+                surveyRequestId={r.surveyRequestId}
+                notFeasible={notFeasible}
+                open={closing}
+                onOpenChange={setClosing}
+              />
+            )}
           </>
         )
       }}

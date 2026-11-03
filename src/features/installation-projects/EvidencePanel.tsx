@@ -87,10 +87,10 @@ function EvidenceViewer({
         )}
       </div>
       <DialogFooter>
-        <Button variant="ghost" onClick={onClose}>
+        <Button icon="close" variant="secondary" onClick={onClose}>
           Đóng
         </Button>
-        <Button icon="download" disabled={downloading || gone} onClick={onDownload}>
+        <Button variant="secondary" icon="download" disabled={downloading || gone} onClick={onDownload}>
           {downloading ? 'Đang chuẩn bị…' : 'Tải về'}
         </Button>
       </DialogFooter>
@@ -106,10 +106,7 @@ export function EvidencePanel({ projectId, currentRound }: { projectId: string; 
 
   return (
     <Panel>
-      <PanelHeader
-        title="Ảnh nghiệm thu"
-        description={`Kỹ thuật viên tải ảnh theo từng lượt báo cáo hoàn thành. Lượt đang làm: ${currentRound}.`}
-      />
+      <PanelHeader title="Ảnh nghiệm thu" description={`Lượt đang làm: ${currentRound}`} />
       <PanelBody>
         <PanelQuery query={query}>
           {(items) => {
@@ -145,13 +142,17 @@ export function EvidencePanel({ projectId, currentRound }: { projectId: string; 
                             </div>
                             {item.downloadable && (
                               <div className="flex flex-wrap gap-3">
-                                <Button size="sm" onClick={() => setViewingId(item.evidenceId)}>
+                                <Button
+                                  icon="image"
+                                  variant="info"
+                                  size="sm"
+                                  onClick={() => setViewingId(item.evidenceId)}
+                                >
                                   Xem ảnh
                                 </Button>
                                 <Button
                                   size="sm"
-                                  variant="ghost"
-                                  bleed={false}
+                                  variant="secondary"
                                   icon="download"
                                   disabled={download.pendingId !== null}
                                   onClick={() => void download.start(item.evidenceId)}

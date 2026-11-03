@@ -1,8 +1,8 @@
 // Viết tay vì swagger không có schema response. Khách không bao giờ thấy kỹ thuật viên đang giữ chỗ
 import type { AppointmentStatus } from '@/types/res/surveyRequestsRes'
 
-/** PENDING (chưa có kỹ thuật viên xác nhận), SCHEDULED, COMPLETED, CANCELLED */
-export type CustomerSurveyRequestStatus = 'PENDING' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | (string & {})
+/** PENDING (chưa có kỹ thuật viên xác nhận), SCHEDULED, COMPLETED, CANCELLED (khách rút), CLOSED (kinh doanh đóng) */
+export type CustomerSurveyRequestStatus = 'PENDING' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'CLOSED' | (string & {})
 
 /** Trạng thái khách thấy: chờ kỹ thuật viên nhận, đã xác nhận, cần nhân viên xếp người, đã huỷ, đã xong */
 export type AcceptanceStatus =

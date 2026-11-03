@@ -4,7 +4,13 @@ import { bookingKeys } from '@/hooks/useBooking'
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
 import type { UpdatePreSurveySurfaceRequest } from '@/types/req/preSurveySurfaceReq'
 import type { CreatePreSurveyRequest, UpdatePreSurveyRequest } from '@/types/req/preSurveysReq'
-import type { CreateCustomerProfileResponse, CreatePropertySiteResponse } from '@/types/res/customersRes'
+import type {
+  CreateCustomerProfileResponse,
+  CreatePropertySiteResponse,
+  CustomerListPage,
+  CustomerPreSurveyListItem,
+  CustomerSiteListItem,
+} from '@/types/res/customersRes'
 import type { PreSurveySurfaceView, UpdatePreSurveySurfaceResponse } from '@/types/res/preSurveySurfaceRes'
 import type { CreatePreSurveyResponse, SubmitPreSurveyResponse } from '@/types/res/preSurveysRes'
 import type { ApiError } from '@/services/api/errors'
@@ -13,6 +19,8 @@ import type { ApiError } from '@/services/api/errors'
 
 export const preSurveyKeys = {
   all: ['pre-surveys'] as const,
+  mySites: ['pre-surveys', 'my-sites'] as const,
+  myDrafts: ['pre-surveys', 'my-drafts'] as const,
   one: (id: string) => [...preSurveyKeys.all, id] as const,
   surface: (id: string) => [...preSurveyKeys.one(id), 'surface'] as const,
 }
@@ -24,14 +32,33 @@ export function useCreateCustomerProfileMutation() {
 }
 
 export function useCreatePropertySiteMutation() {
+  const queryClient = useQueryClient()
   return useMutation<CreatePropertySiteResponse, ApiError, CreatePropertySiteRequest>({
     mutationFn: (body) => preSurveyService.createPropertySite(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: preSurveyKeys.mySites }),
+  })
+}
+
+export function useMySitesQuery() {
+  return useQuery<CustomerListPage<CustomerSiteListItem>, ApiError>({
+    queryKey: preSurveyKeys.mySites,
+    queryFn: preSurveyService.listMySites,
+  })
+}
+
+/** Bản nháp trên mọi máy của khách, để mở tiếp bản nháp làm ở máy khác */
+export function useMyDraftsQuery() {
+  return useQuery<CustomerListPage<CustomerPreSurveyListItem>, ApiError>({
+    queryKey: preSurveyKeys.myDrafts,
+    queryFn: preSurveyService.listMyDrafts,
   })
 }
 
 export function useCreatePreSurveyMutation() {
+  const queryClient = useQueryClient()
   return useMutation<CreatePreSurveyResponse, ApiError, CreatePreSurveyRequest>({
     mutationFn: (body) => preSurveyService.createPreSurvey(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: preSurveyKeys.myDrafts }),
   })
 }
 
@@ -58,7 +85,11 @@ export function useSubmitPreSurveyMutation() {
     mutationFn: (id) => preSurveyService.submitPreSurvey(id),
     // Để danh sách yêu cầu của khách có ngay yêu cầu mới
     onSettled: (_data, _error, id) =>
-      Promise.all([invalidate(id), queryClient.invalidateQueries({ queryKey: bookingKeys.all })]),
+      Promise.all([
+        invalidate(id),
+        queryClient.invalidateQueries({ queryKey: bookingKeys.all }),
+        queryClient.invalidateQueries({ queryKey: preSurveyKeys.myDrafts }),
+      ]),
   })
 }
 

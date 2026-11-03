@@ -1,4 +1,4 @@
-// Endpoint của backend, tính từ /api: '/products' là GET /api/products. Khác ROUTES là đường dẫn trang trên trình duyệt
+﻿// Endpoint của backend, tính từ /api: '/products' là GET /api/products. Khác ROUTES là đường dẫn trang trên trình duyệt
 // Mỗi tag swagger một nhóm, method nằm ở service. Tham số đã được encodeURIComponent ở đây
 
 const encode = (value: string) => encodeURIComponent(value)
@@ -32,6 +32,7 @@ export const ENDPOINTS = {
   customers: {
     base: '/customers/me',
     sites: '/customers/me/sites',
+    preSurveys: '/customers/me/pre-surveys',
   },
   administrativeUnits: {
     communes: '/administrative-units/communes',
@@ -61,6 +62,16 @@ export const ENDPOINTS = {
     booking: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/booking`,
     bookingCancel: (surveyRequestId: string) =>
       `/customers/me/survey-requests/${encode(surveyRequestId)}/booking/cancel`,
+    withdraw: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/withdraw`,
+  },
+  customerDispatch: {
+    base: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/dispatch-request`,
+    accept: (surveyRequestId: string, proposalId: string) =>
+      `/customers/me/survey-requests/${encode(surveyRequestId)}/dispatch-request/proposals/${encode(proposalId)}/accept`,
+    decline: (surveyRequestId: string, proposalId: string) =>
+      `/customers/me/survey-requests/${encode(surveyRequestId)}/dispatch-request/proposals/${encode(proposalId)}/decline`,
+    cancel: (surveyRequestId: string) =>
+      `/customers/me/survey-requests/${encode(surveyRequestId)}/dispatch-request/cancel`,
   },
   customerInstallations: {
     base: '/customers/me/installation-projects',
@@ -74,6 +85,13 @@ export const ENDPOINTS = {
   customerContracts: {
     base: '/customers/me/contracts',
   },
+  // Báo giá lắp đặt: khách không thấy bản nháp
+  customerQuotations: {
+    base: '/customers/me/quotations',
+    byId: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}`,
+    accept: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/accept`,
+    revisionRequest: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/revision-request`,
+  },
   customerAfterSales: {
     packages: '/customers/me/after-sales/packages',
     purchases: '/customers/me/after-sales/purchases',
@@ -81,6 +99,21 @@ export const ENDPOINTS = {
     cancelSubscription: (subscriptionId: string) =>
       `/customers/me/after-sales/subscriptions/${encode(subscriptionId)}/cancel`,
     payment: (attemptId: string) => `/customers/me/after-sales/payments/${encode(attemptId)}`,
+    // Bảo hành, sửa chữa, bảo trì lẻ
+    warranty: (projectId: string) => `/customers/me/after-sales/installations/${encode(projectId)}/warranty`,
+    faultRequests: '/customers/me/after-sales/fault-requests',
+    oneTimeMaintenance: '/customers/me/after-sales/one-time-maintenance',
+    requests: '/customers/me/after-sales/requests',
+    request: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}`,
+    cancelRequest: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}/cancel`,
+    completion: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}/completion`,
+    confirmAppointment: (requestId: string) =>
+      `/customers/me/after-sales/requests/${encode(requestId)}/confirm-appointment`,
+    acceptQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/accept`,
+    rejectQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/reject`,
+    checkoutQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/checkout`,
+    evidenceUrl: (requestId: string, evidenceId: string) =>
+      `/customers/me/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
   },
 
   // Kinh doanh
@@ -93,9 +126,27 @@ export const ENDPOINTS = {
     assignTechnician: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/assign-technician`,
     reassignTechnician: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/reassign-technician`,
     reschedule: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/reschedule`,
+    close: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/close`,
   },
   technicianAvailability: {
     base: '/technicians/availability',
+  },
+  salesAfterSales: {
+    warrantyOptions: '/sales/after-sales/warranty-options',
+    openTasks: '/sales/after-sales/tasks/open',
+    myTasks: '/sales/after-sales/tasks/mine',
+    claimTask: (taskId: string) => `/sales/after-sales/tasks/${encode(taskId)}/claim`,
+    request: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}`,
+    quotations: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}/quotations`,
+  },
+  // Báo giá lắp đặt của yêu cầu khảo sát kinh doanh đã nhận; quản lý / quản trị chỉ đọc
+  salesQuotations: {
+    bySurveyRequest: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/quotations`,
+    byId: (quotationId: string) => `/quotations/${encode(quotationId)}`,
+    lines: (quotationId: string) => `/quotations/${encode(quotationId)}/lines`,
+    line: (quotationId: string, lineId: string) => `/quotations/${encode(quotationId)}/lines/${encode(lineId)}`,
+    issue: (quotationId: string) => `/quotations/${encode(quotationId)}/issue`,
+    revisions: (quotationId: string) => `/quotations/${encode(quotationId)}/revisions`,
   },
 
   // Kỹ thuật viên
@@ -106,6 +157,23 @@ export const ENDPOINTS = {
     accept: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/accept`,
     release: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/release`,
     schedule: '/technicians/me/schedule',
+  },
+  // Khảo sát tại công trình: kỹ thuật viên ghi theo lịch đã nhận, kinh doanh / quản lý đọc theo yêu cầu khảo sát
+  technicianOnSiteSurvey: {
+    base: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey`,
+    start: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/start`,
+    attachments: (appointmentId: string) =>
+      `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/attachments`,
+    attachment: (appointmentId: string, attachmentId: string) =>
+      `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/attachments/${encode(attachmentId)}`,
+    attachmentUrl: (appointmentId: string, attachmentId: string) =>
+      `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/attachments/${encode(attachmentId)}/url`,
+    complete: (appointmentId: string) => `/technicians/me/appointments/${encode(appointmentId)}/onsite-survey/complete`,
+  },
+  staffOnSiteSurvey: {
+    base: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/onsite-survey`,
+    attachmentUrl: (surveyRequestId: string, attachmentId: string) =>
+      `/survey-requests/${encode(surveyRequestId)}/onsite-survey/attachments/${encode(attachmentId)}/url`,
   },
   technicianSchedule: {
     schedule: (technicianUserId: string) => `/technicians/${encode(technicianUserId)}/schedule`,
@@ -122,6 +190,18 @@ export const ENDPOINTS = {
     assets: (projectId: string) => `/technicians/me/installation-projects/${encode(projectId)}/assets`,
     completionReport: (projectId: string) =>
       `/technicians/me/installation-projects/${encode(projectId)}/completion-report`,
+  },
+  technicianAfterSales: {
+    visits: '/technicians/me/after-sales/visits',
+    visit: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}`,
+    respond: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/respond`,
+    start: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/start`,
+    evidence: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/evidence`,
+    evidenceUrl: (visitId: string, evidenceId: string) =>
+      `/technicians/me/after-sales/visits/${encode(visitId)}/evidence/${encode(evidenceId)}/url`,
+    inspection: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/inspection`,
+    workReport: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/work-report`,
+    absence: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/absence`,
   },
 
   // Thi công, phía quản lý và quản trị
@@ -140,6 +220,32 @@ export const ENDPOINTS = {
     evidenceUrl: (projectId: string, evidenceId: string) =>
       `/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
     handover: (projectId: string) => `/installation-projects/${encode(projectId)}/handover`,
+  },
+  // Bảo hành, sửa chữa, bảo trì (quản lý và quản trị)
+  managerAfterSales: {
+    requests: '/manager/after-sales/requests',
+    request: (requestId: string) => `/manager/after-sales/requests/${encode(requestId)}`,
+    visits: (requestId: string) => `/manager/after-sales/requests/${encode(requestId)}/visits`,
+    coverage: (requestId: string) => `/manager/after-sales/requests/${encode(requestId)}/coverage`,
+    disputeReview: (requestId: string) => `/manager/after-sales/requests/${encode(requestId)}/dispute-review`,
+    cancellationDecision: (requestId: string) =>
+      `/manager/after-sales/requests/${encode(requestId)}/cancellation-decision`,
+    evidenceUrl: (requestId: string, evidenceId: string) =>
+      `/manager/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
+    warrantyActivation: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}/warranty-activation`,
+  },
+
+  // Điều phối kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý và quản trị)
+  adminDispatch: {
+    base: '/admin/dispatch-requests',
+    byId: (id: string) => `/admin/dispatch-requests/${encode(id)}`,
+    candidates: (id: string) => `/admin/dispatch-requests/${encode(id)}/candidates`,
+    assign: (id: string) => `/admin/dispatch-requests/${encode(id)}/assign`,
+    proposals: (id: string) => `/admin/dispatch-requests/${encode(id)}/proposals`,
+    withdraw: (id: string, proposalId: string) =>
+      `/admin/dispatch-requests/${encode(id)}/proposals/${encode(proposalId)}/withdraw`,
+    unserviceable: (id: string) => `/admin/dispatch-requests/${encode(id)}/unserviceable`,
+    close: (id: string) => `/admin/dispatch-requests/${encode(id)}/close`,
   },
 
   // Quản trị
@@ -162,5 +268,30 @@ export const ENDPOINTS = {
   },
   operationalZones: {
     base: '/admin/operational-zones',
+  },
+  adminAfterSales: {
+    packages: '/admin/after-sales/packages',
+    package: (packageId: string) => `/admin/after-sales/packages/${encode(packageId)}`,
+  },
+  adminSystemSettings: {
+    scheduling: '/admin/system-settings/scheduling',
+    history: '/admin/system-settings/scheduling/history',
+  },
+  adminRagConfig: {
+    base: '/admin/rag-configuration',
+    models: '/admin/rag-configuration/models',
+    versions: '/admin/rag-configuration/versions',
+    draft: '/admin/rag-configuration/draft',
+    validate: '/admin/rag-configuration/draft/validate',
+    activate: '/admin/rag-configuration/draft/activate',
+    rollback: '/admin/rag-configuration/rollback',
+  },
+
+  // Tệp tải lên kho S3, mọi vai trò
+  files: {
+    presignedUpload: '/files/presigned-upload',
+    base: '/files',
+    byId: (fileId: string) => `/files/${encode(fileId)}`,
+    verify: (fileId: string) => `/files/${encode(fileId)}/verify`,
   },
 } as const

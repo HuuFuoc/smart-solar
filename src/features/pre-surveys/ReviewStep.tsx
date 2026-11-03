@@ -163,7 +163,7 @@ function SimulationReview({
   onOpen: () => void
 }) {
   const action = (
-    <Button size="sm" disabled={disabled} onClick={onOpen}>
+    <Button icon="insights" size="sm" variant="info" disabled={disabled} onClick={onOpen}>
       {simulationActionLabel(run, hasRuns)}
     </Button>
   )

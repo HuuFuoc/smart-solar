@@ -37,10 +37,10 @@ export function SessionExpiredModal() {
             </DialogPrimitive.Title>
           </div>
           <div className="mt-6 flex flex-wrap justify-end gap-3">
-            <Button variant="ghost" onClick={goHome}>
+            <Button icon="home" variant="secondary" onClick={goHome}>
               {sessionExpiredContent.secondary}
             </Button>
-            <Button variant="primary" onClick={goToLogin}>
+            <Button icon="login" variant="primary" onClick={goToLogin}>
               {sessionExpiredContent.primary}
             </Button>
           </div>

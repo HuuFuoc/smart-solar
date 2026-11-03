@@ -82,7 +82,7 @@ export function TechnicianProfileForm({ technician }: { technician: TechnicianPr
 
       <ConflictList conflicts={conflicts} />
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" variant="primary" disabled={upsert.isPending}>
+        <Button icon="save" type="submit" variant="primary" disabled={upsert.isPending}>
           {upsert.isPending ? 'Đang lưu…' : 'Lưu hồ sơ nhận lịch'}
         </Button>
         {failure !== null && conflicts.length === 0 && (

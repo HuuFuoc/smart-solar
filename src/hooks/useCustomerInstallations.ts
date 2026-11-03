@@ -21,10 +21,13 @@ export const customerInstallationKeys = {
   handover: (projectId: string) => [...customerInstallationKeys.all, 'handover', projectId] as const,
 }
 
-export function useMyInstallationsQuery() {
+export function useMyInstallationsQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<InstallationCustomerView[], ApiError>({
     queryKey: customerInstallationKeys.list(),
     queryFn: installationService.listMyProjects,
+    // Tự tải lại để số đỏ trên menu cập nhật
+    refetchInterval: 60_000,
+    enabled,
   })
 }
 

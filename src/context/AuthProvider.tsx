@@ -47,7 +47,7 @@ async function buildUser(accessToken: string, fallbackEmail?: string): Promise<A
   if (!role) {
     throw new ApiError({
       status: 0,
-      message: 'Không đọc được vai trò trong token đăng nhập. Vui lòng liên hệ quản trị viên.',
+      message: 'Không xác định được vai trò của tài khoản. Vui lòng liên hệ quản trị viên.',
     })
   }
 
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const tokens = await authService.login({ email, password })
       queryClient.clear()
       if (!tokens.accessToken || !tokens.refreshToken) {
-        throw new ApiError({ status: 0, message: 'Máy chủ không trả về token đăng nhập.' })
+        throw new ApiError({ status: 0, message: 'Đăng nhập chưa thành công. Vui lòng thử lại.' })
       }
 
       saveTokens(

@@ -13,13 +13,16 @@ hai ăn chung một hệ token trong `src/styles/globals.css`:
 - `src/components/common/ui` (file kebab-case, token `canvas/fg/accent…`): MỌI portal đăng nhập. Các portal nhân viên
   (kinh doanh `/ops`, quản trị `/admin`, kỹ thuật viên `/tech` – `/field` chuyển về `/tech` –, quản lý `/manage`) dùng chung
   shell `components/layout/app-shell.tsx` (từ 08/10/2026, theo yêu cầu "admin phải đồng bộ"); khách hàng `/customer` có khung
-  riêng `components/layout/customer-shell.tsx` (cùng ngày, theo yêu cầu "khách hàng phải là giao diện khác"), xem "Layout chung".
+  riêng `components/layout/customer-shell.tsx` (cùng ngày, theo yêu cầu "khách hàng phải là giao diện khác"; sidebar riêng từ
+  22/10/2026), xem "Layout chung".
   Từ lượt màu 08/10/2026 portal kit cũng dùng icon Material Symbols (qua `Icon` của bộ Stitch) và có thêm `IconButton`,
   `SearchInput`, `Segmented` (`segmented.tsx`), `PanelAside`, `WithTooltip` (`tooltip.tsx`). Từ 10/10/2026 có `Combobox`
   (`combobox.tsx`): ô nhập kèm danh sách cho danh sách dài, lọc không phân biệt dấu ("ben thanh" ra "Phường Bến Thành"), giá
   trị vẫn là chuỗi; dùng cho phường/xã và gợi ý tên vật cản. `WizardSteps` (`wizard-steps.tsx`): thanh bước của form nhiều
   bước (vòng số + đường nối, bước xong có ✓ + tóm tắt và bấm được để quay lại; điện thoại là khối gọn "Bước 3/5: …" + thanh
-  tiến độ + "Tiếp theo: …"), khác `Stepper` (dải tiến độ hành trình, chỉ để xem). Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
+  tiến độ + "Tiếp theo: …"; `WizardProgress` là riêng thanh tiến độ + "Tiếp theo" khi tên bước đã nằm ở tiêu đề ngay trên),
+  khác `Stepper` (dải tiến độ hành trình, chỉ để xem). `Field` có `htmlFor` thì dòng gợi ý / lỗi có id `fieldMessageId(htmlFor)`
+  để ô nhập gắn `aria-describedby`. Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
   không có trên git.
 - `src/components/common/stitch-ui` (file PascalCase, token `surface/on-surface/primary…`,
   Material Symbols): trang công khai/xác thực, hộp thoại hết phiên, `/styleguide` (chỉ chạy ở dev) và các màn
@@ -89,16 +92,21 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
    tên icon.
 7. **Khoảng cách** theo thang 4/8/12/16/24/32/48/64 (`space-*` của bộ Stitch đã theo thang này).
 8. **Chạm**: control cao tối thiểu 44px dưới `lg`.
-9. **Thứ bậc thao tác** (`Button`): `primary` nút đặc, một nút mỗi màn; `soft` hành động chính của từng dòng / khối
-   (Nhận yêu cầu, Mở yêu cầu, Mở bán lại), nền xanh nhạt + viền; `secondary` nút trắng có viền; `ghost` thao tác kín
-   đáo (`bleed={false}` khi nằm trong cụm nút); `danger` viền đỏ cho phá huỷ hoàn tác được trong hộp thoại (Ngừng bán);
-   `danger-quiet` nút xoá lặp lại trên từng dòng (xám khi nghỉ, đỏ khi rê / focus, đứng sau vạch ngăn) để cột thao tác
-   không thành dải đỏ; `danger-solid` nút đặc đỏ chỉ để xác nhận việc không hoàn tác (Xoá). Cùng một thao tác dùng cùng
-   một kiểu ở mọi màn (vd. "Sửa" luôn là `secondary` sm có icon). Nút chỉ có icon dùng `IconButton` (`label` = aria-label,
-   `tooltip` = chữ ngắn khi label dài); tooltip thật dùng `WithTooltip` (`ui/tooltip.tsx`: hiện cả khi focus bàn phím,
-   vẽ ra body nên khung cuộn không cắt, tự né mép màn hình), không dùng `title`.
-   Link trong nội dung dùng utility `ui-link` (màu thương hiệu + gạch chân). Chọn một trong vài lựa chọn ngang hàng
-   dùng `Segmented`, không dùng dãy nút đặc. Bộ lọc đang áp dụng: `Select active`. Ô tìm: `SearchInput`.
+9. **Nút: màu theo loại việc, nút nào cũng có icon** (người dùng chọn 22/10/2026, thay quy tắc cũ hạn chế icon):
+   `primary` việc chính của màn (Gửi, Lưu, Đồng ý), một nút đặc mỗi màn; `soft` thêm / sửa / đổi / nhận việc; `info`
+   (xanh dương) xem, mở chi tiết, xử lý; `warn` tạm dừng, việc cần chú ý (Ngừng bán, Khách vắng, Trả lại việc);
+   `danger` từ chối, huỷ, xoá, báo lỗi; `secondary` đóng hộp thoại, thử lại, tải về; `danger-solid` xác nhận xoá.
+   Icon Material Symbols qua prop `icon` (vd. visibility, edit, add, send, save, close, block, report, refresh).
+10. **Thứ bậc thao tác** (`Button`): `primary` nút đặc, một nút mỗi màn; `soft` hành động chính của từng dòng / khối
+    (Nhận yêu cầu, Mở yêu cầu, Mở bán lại), nền xanh nhạt + viền; `secondary` nút trắng có viền; `ghost` thao tác kín
+    đáo (`bleed={false}` khi nằm trong cụm nút); `danger` viền đỏ cho phá huỷ hoàn tác được trong hộp thoại (Ngừng bán);
+    `danger-quiet` nút xoá lặp lại trên từng dòng (xám khi nghỉ, đỏ khi rê / focus, đứng sau vạch ngăn) để cột thao tác
+    không thành dải đỏ; `danger-solid` nút đặc đỏ chỉ để xác nhận việc không hoàn tác (Xoá). Cùng một thao tác dùng cùng
+    một kiểu ở mọi màn (vd. "Sửa" luôn là `secondary` sm có icon). Nút chỉ có icon dùng `IconButton` (`label` = aria-label,
+    `tooltip` = chữ ngắn khi label dài); tooltip thật dùng `WithTooltip` (`ui/tooltip.tsx`: hiện cả khi focus bàn phím,
+    vẽ ra body nên khung cuộn không cắt, tự né mép màn hình), không dùng `title`.
+    Link trong nội dung dùng utility `ui-link` (màu thương hiệu + gạch chân). Chọn một trong vài lựa chọn ngang hàng
+    dùng `Segmented`, không dùng dãy nút đặc. Bộ lọc đang áp dụng: `Select active`. Ô tìm: `SearchInput`.
 
 # Web portal (Stitch kit cho trang công khai, portal kit cho mọi portal đăng nhập)
 
@@ -220,7 +228,9 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   `fix/business-rules-flow-1-2` (fd06133), đã đối chiếu với metadata DLL của image `smartsolar-api:latest` đang chạy; các
   kiểu dùng chung (`EvidenceView`, `AssetView`, `AcceptanceView`, `InstallationEvidenceFileView`…) các vai trò khác import lại.
   `customerAfterSalesRes.ts` và `customerContractsRes.ts` viết tay theo record C# của backend `main` (6025bc1:
-  `Modules.AfterSales`, `Modules.Payments.PaymentAttemptView`, `Modules.CustomerContracts.ContractView`).
+  `Modules.AfterSales`, `Modules.Payments.PaymentAttemptView`, `Modules.CustomerContracts.ContractView`). `filesRes.ts`
+  (`UploadUrlView`, `FileView`) viết tay theo DLL của image đang chạy (dịch ngược bằng ilspycmd) vì code Files chưa lên git.
+  `dispatchRes.ts` viết tay theo record C# của `Modules.Scheduling.Dispatch` nhánh `fix/business-logic-v2` (deddde8).
 - Image backend hiện tại (nhánh `fix/business-rules-flow-1-2`) lỗi khi xuất swagger (trùng schemaId
   `AssignTechnicianRequest`), nên `docs/api/swagger.json` được bổ sung tay các hợp đồng mới theo record C#: `provinceCode`,
   `communeCode` của `CreatePropertySiteRequest`, `SelectSimulationRequest` (kèm 2 đường dẫn chọn / bỏ chọn mô phỏng), nhận /
@@ -228,8 +238,14 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   Image 21/10/2026 xuất được swagger nhưng schemaId là tên đầy đủ (`SmartSolar.Api.Contracts.…`), `gen:api` không đọc được;
   các path lắp đặt (Customer / Manager / TechnicianInstallations) được chép từ `/swagger/v1/swagger.json` đang chạy và đổi
   `$ref` về tên ngắn. Đừng thay cả file bằng bản xuất mới khi chưa sửa script. Cùng cách đó với 6 path của khách (gói, mua
-  gói, gói đã mua, huỷ gói, trạng thái thanh toán after-sales, GET hợp đồng của khách); `ReasonRequest` của after-sales đặt tên
-  `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt.
+  gói, gói đã mua, huỷ gói, trạng thái thanh toán after-sales, GET hợp đồng của khách) và 4 path của tag Files
+  (`presigned-upload`, đăng ký, verify, GET); `ReasonRequest` của after-sales đặt tên
+  `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt. Cùng cách đó (22/10/2026) với 9
+  path khảo sát tại công trình (tag TechnicianOnSiteSurvey, StaffOnSiteSurvey); `ObstacleRequest` / `RevisionRequest` của
+  backend đặt tên `OnSiteSurveyObstacleRequest` / `OnSiteSurveyRevisionRequest` cho khỏi trùng. Cùng cách đó với 11 path báo
+  giá lắp đặt (tag SalesQuotations, CustomerQuotations; chưa chép path tạo hợp đồng); `QuotationLineRequest` của luồng lắp đặt
+  đặt tên `InstallationQuotationLineRequest` vì trùng tên dòng báo giá sửa chữa (tag SalesAfterSales), response viết tay ở
+  `types/res/quotationsRes.ts` theo record C# của backend `main` (7c79fa8, `Modules.Quotations`).
 - `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
   repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
   JWT; không đụng DB nào.
@@ -244,8 +260,16 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
 
 - `/customer` → `/customer/assessment`: đánh giá sơ bộ 5 bước (hồ sơ → địa điểm → mặt lắp → mô phỏng → xem lại và gửi),
   `features/pre-surveys`. Các bước (người dùng 10/10/2026 chọn): `WizardSteps` có tóm tắt từng bước đã xong và bấm để quay
-  lại (trừ hồ sơ – không sửa được); tiêu đề trang kèm một câu hướng dẫn của bước (`STEP_HINTS`); nút chính ghi tên bước sau
-  ("Tiếp tục: Mặt lắp"); đổi bước do khách bấm thì cuộn về đầu trang và focus tiêu đề ẩn "Bước N/5: …" của bước.
+  lại (trừ hồ sơ – không sửa được); nút chính ghi tên bước sau ("Tiếp tục: Mặt lắp"); đổi bước do khách bấm thì cuộn về đầu
+  trang và focus tiêu đề "Bước N/5 <tên bước>" của khung bước.
+  Bố cục (người dùng 22/10/2026): h1 "Đánh giá sơ bộ" không kèm mô tả; `WizardSteps` gọn (vòng 28px, tối đa `max-w-3xl`, chỉ từ
+  md); mỗi bước là một khung `AssessmentStepCard.tsx` (tiêu đề bước + câu `STEP_HINTS` + nội dung + hàng nút dính đáy có
+  `data-sticky-bottom` để `globals.css` chừa `scroll-padding-bottom`); điện thoại khung tràn mép và đầu khung có `WizardProgress`
+  thay thanh các bước. Hồ sơ, địa điểm, xem lại: một cột `max-w-3xl`, cột phụ (`AssessmentAside`) xuống dưới khung; mặt lắp, mô
+  phỏng rộng hết. "Sau khi gửi" là `Notice` neutral (xám), không còn xanh nổi bật. Hàng nút trên điện thoại: "Quay lại" và nút
+  chính chung một hàng (dùng `order`). Địa điểm: ô bắt buộc có `*` + dòng "Ô có dấu * là bắt buộc."; nhóm "Địa chỉ công trình"
+  theo thứ tự tỉnh (chỉ đọc) → phường, xã → số nhà; bề mặt lắp là thẻ chọn (radio ẩn, cả thẻ bấm được, phím mũi tên chuyển,
+  đang chọn có viền + nền xanh nhạt + dấu tích; icon ở `icon` của `SURFACE_TYPES`).
 - `/ops` → `/ops/surveys` + `/ops/surveys/:id`: yêu cầu khảo sát chờ nhận / của tôi / chi tiết (kèm mô phỏng khách đã chọn).
 - `/customer/products(/:id)`, `/ops/products(/:id)`: catalog sản phẩm (GET /api/products) bản portal kit, `pages/catalog-page.tsx`.
 - `/customer/projects(/:id)` (menu "Lắp đặt", 21/10/2026): công trình lắp đặt của khách, tag CustomerInstallations (tài liệu
@@ -262,11 +286,13 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
     chỉ khai string, bảng ở `common/installation.ts`); REQUEST_REWORK bắt buộc lý do, BE cắt lý do quá 2000 ký tự; không có
     `expectedRevision`. Gửi qua hộp thoại xác nhận (`AcceptanceDialog.tsx`), gửi xong (kể cả lỗi) tải lại mọi query của dự
     án; câu báo thành công dựa vào trạng thái BE trả về, FE không tự đánh dấu xong hay tạo bàn giao.
-- `/customer/packages` (menu "Bảo vệ thiên tai", 21/10/2026): gói `DISASTER_PROTECTION` của khách, tag CustomerAfterSales
-  (tài liệu BE `guides/after-sales-services.md`, mã ở `ServicePackageHandlers.cs`), component ở `features/after-sales/`. Gói
-  bảo trì dùng cùng API nhưng chưa bán trên màn này.
-  - Gói đang bán: GET .../packages?kind=DISASTER_PROTECTION (BE chỉ trả gói `isActive`), hiện đúng giá, thời hạn, loại thiên
-    tai, tỷ lệ hỗ trợ, hạn mức mỗi sự cố / mỗi kỳ do BE trả. Chưa có gói nào thì admin phải tạo (POST /api/admin/after-sales/packages).
+- `/customer/packages` (menu "Gói dịch vụ"): gói `DISASTER_PROTECTION` và `MAINTENANCE` của khách, tag CustomerAfterSales
+  (tài liệu BE `guides/after-sales-services.md`, mã ở `ServicePackageHandlers.cs`), component ở `features/after-sales/`.
+  "Gói của bạn" gồm mọi loại; đặt lịch các lượt bảo trì đã mua (POST .../maintenance/{entitlementId}/book) chưa làm.
+  - Gói đang bán: mỗi loại một khối, GET .../packages?kind= (BE chỉ trả gói `isActive`), hiện đúng giá, thời hạn và quyền lợi
+    do BE trả (`PackageFacts` ở `PackageList.tsx`: thiên tai = loại thiên tai, tỷ lệ, hai hạn mức; bảo trì = số lượt và các
+    tháng có lượt). Chưa có gói nào thì quản trị tạo ở `/admin/packages`. Mua gửi `disasterPackageId` hoặc
+    `maintenancePackageId` theo loại gói, phần còn lại như nhau.
   - Mua (`PurchaseDialog.tsx`): chọn hợp đồng từ GET /customers/me/contracts. `PAID` → `includeContract: false`; `SIGNED` →
     BE bắt buộc `includeContract: true` và link PayOS gồm cả tiền hợp đồng; bỏ hợp đồng có công trình `CANCELLED`. POST
     .../purchases luôn trả một link PayOS (`checkout`), quyền lợi chỉ có khi PayOS xác nhận nhận tiền. BE ghi đơn
@@ -280,6 +306,27 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
     tiền thủ công; `ACTIVE` không huỷ trên mạng. Toast theo trạng thái BE trả về.
   - Kỳ bắt đầu khi đã thanh toán VÀ công trình đã bàn giao (mốc muộn hơn); ngày bắt đầu bảo vệ (`coverageStartsAt`) do BE ghi
     sau thời gian chờ (cài đặt `afterSales.disasterWaitingDays`, khách không đọc được) nên FE chỉ in ngày BE trả.
+
+**Luồng 3: bảo hành, sửa chữa, bảo trì lẻ** (tài liệu BE `guides/after-sales-services.md`). Menu "Bảo hành, sửa chữa" ở cả 5
+cổng; nhãn trạng thái ở `common/afterSales.ts`, điều kiện + nhãn ở `features/after-sales/serviceDisplay.ts` (bám handler BE,
+BE vẫn kiểm lại), response viết tay (`customerAfterSalesRes`, `technicianAfterSalesRes`, `salesAfterSalesRes`) vì swagger
+chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
+
+- Khách: khối "Bảo hành, sửa chữa" trên `/customer/projects/:id` khi đã bàn giao (hạn bảo hành, Báo lỗi, Đặt bảo trì lẻ – đặt
+  trước 7 ngày, BE tính đủ 7 × 24 giờ nên mở từ ngày thứ 8), `/customer/after-sales` + `/:id`: xác nhận giờ hẹn khác giờ đã
+  chọn, duyệt / từ chối báo giá, thanh toán PayOS (`useQuotationPaymentQuery` hỏi lại link 10 giây một lần), nghiệm thu
+  (không đạt thì bắt buộc lý do), huỷ khi chưa bắt đầu làm.
+- Quản lý + quản trị (trang dùng chung `pages/after-sales-request(s)-page.tsx`): xếp / đổi buổi hẹn (loại buổi theo
+  `visitToSchedule`, gửi `expectedRevision`; kỹ thuật viên ngoài khu vực của công trình thì bắt lý do, khu vực lấy từ dự án
+  thi công), quyết định ai chịu chi phí từng hạng mục, xét khi khách không đồng ý kết quả, xét yêu cầu huỷ việc đã trả tiền.
+- Kỹ thuật viên `/tech/after-sales` + `/:id` (theo mã buổi hẹn): nhận / từ chối, bắt đầu (sớm nhất 2 giờ trước giờ hẹn, khoá
+  nút và ghi rõ giờ), ảnh hiện trường (`uploadFile` mục đích `SERVICE_EVIDENCE`, gắn vào buổi hẹn; BE bắt ít nhất 1 ảnh trước
+  báo cáo), báo cáo kiểm tra (không lỗi hoặc danh sách hạng mục), báo cáo sửa / bảo trì, khách vắng.
+- Kinh doanh `/ops/after-sales` (chỉ việc báo giá; việc nhắc khách chưa làm) + `/:id` theo mã yêu cầu: nhận việc rồi lập báo
+  giá. Báo lỗi: mỗi hạng mục khách trả tiền đúng một dòng; bảo trì lẻ: dòng tự ghi. Tiền là số nguyên VND.
+- Chưa làm: gói thiên tai hỗ trợ sửa chữa (claim), đặt lịch lượt bảo trì của gói, đổi giờ bảo trì phía khách, sửa ngay tại chỗ
+  (`stayOnSite`), thay thiết bị trong báo cáo, việc nhắc khách của kinh doanh, hoàn tiền.
+- Chữ trên giao diện không nhắc tới backend, máy chủ, token, kho lưu trữ hay mã lỗi; lỗi BE luôn qua bảng `errors.ts`.
 
 **Mặt lắp + mô phỏng do backend tính** (BE nhánh `feature/presurvey-flow`, commit 833ff3c, nối 09/10/2026; tài liệu tích hợp
 của BE: `Solar-Client-dnl/fe.md`). Người dùng chốt 09/10/2026: số liệu khai tự tính từ mặt lắp, bỏ mô phỏng FE giả định 3:2
@@ -321,8 +368,11 @@ nhập làm nguồn chính + kéo thả vật cản.
   với form cũ** (PUT /pre-surveys/{id} ghi đè, đổi giá trị là mọi mô phỏng thành "cũ"), nên PUT surface trước rồi mới PUT số
   liệu khai với đúng độ dốc / hướng đó. `expectedRevision` là revision của bản form đang sửa; 409 PRE_SURVEY_CONCURRENTLY_MODIFIED
   → khách chọn "Tải bản mới nhất" hoặc "Lưu đè", không tự ghi đè.
-- Backend không có API liệt kê bản nháp của khách: id bản nháp + địa điểm nhớ ở `assessmentDraft.ts` (localStorage theo tài
-  khoản); mở lại trang thì GET .../surface rồi làm tiếp ở bước mặt lắp / mô phỏng; 403/404/đã gửi thì bỏ nháp.
+- Bản nháp và địa điểm đã lưu lấy từ BE (GET /customers/me/pre-surveys?status=DRAFT, GET /customers/me/sites;
+  `SavedAssessments.tsx`): ở bước hồ sơ / địa điểm khách mở lại bản nháp (dựng lại wizard rồi chuyển tới bước mặt lắp) hoặc
+  chọn lại địa điểm cũ (chỉ địa điểm có mã phường, xã). Bản đang làm vẫn nhớ id bản nháp + địa điểm ở `assessmentDraft.ts`
+  (localStorage theo tài khoản); mở lại trang thì GET .../surface rồi làm tiếp ở bước mặt lắp / mô phỏng; 403/404/đã gửi thì
+  bỏ nháp.
 - Giữ dữ liệu khi rời trang (người dùng 10/10/2026: "không giữ lại giá trị của form nếu back qua back lại", chọn giữ trên trình
   duyệt thay vì tự lưu lên server): bước nằm trên địa chỉ (`?buoc=ho-so|dia-diem|mat-lap|mo-phong|xem-lai`, mỗi lần chuyển bước
   là một mục lịch sử nên Back / Forward của trình duyệt đi giữa các bước; không cho vượt bước chưa mở được). Mọi ô chưa gửi +
@@ -375,6 +425,13 @@ nhập làm nguồn chính + kéo thả vật cản.
   và GET chi tiết với mọi vai trò (dò 08/10/2026), nên: tạo mới luôn ACTIVE; "Ngừng bán" hỏi xác nhận, có "Hoàn tác";
   sản phẩm đã ngừng bán được nhớ trong localStorage (`features/products/hiddenProducts.ts`) để "Mở bán lại" — chỉ trên
   trình duyệt đã bấm. Khi backend có cách liệt kê sản phẩm ngừng bán thì bỏ cơ chế này.
+- `/admin/packages` (menu "Gói dịch vụ"): gói sau lắp đặt, tag AdminAfterSales (chỉ ADMIN; code chưa lên git, luật đọc từ
+  `ServicePackageHandlers` trong DLL của image đang chạy). Hai tab "Bảo vệ thiên tai" / "Bảo trì định kỳ" (`?loai=bao-tri`),
+  GET .../packages trả cả gói ngừng bán, response là `PackageView` của `customerAfterSalesRes.ts`. Form (`PackageFormDialog.tsx`,
+  luật ở `packageForm.ts` bám `ValidatePackage`): tên ≤ 150, mô tả ≤ 2000, giá nguyên VND > 0, thời hạn 1–120 tháng; gói bảo
+  trì cần các tháng có lượt (khác nhau, trong thời hạn); gói thiên tai cần ≥ 1 loại thiên tai, tỷ lệ 0 < x ≤ 100, hạn mức mỗi
+  sự cố > 0 và mỗi kỳ ≥ mỗi sự cố (đều nguyên VND). Loại gói chọn lúc tạo, không đổi được. PUT ghi đè cả gói kèm `revision`
+  lúc mở form (lệch thì 409, không ghi đè). Không có API xoá: "Ngừng bán" (hỏi xác nhận, có "Hoàn tác") = PUT với `isActive` là false. Gói đã mua lưu bản chụp điều kiện lúc mua nên sửa / ngừng bán chỉ áp cho lần mua sau. Đầu trang báo đỏ khi không còn gói thiên tai nào đang bán; số cạnh menu = số gói đang bán.
 - `/tech/products(/:id)`, `/manage/products(/:id)`: danh mục sản phẩm thật (GET /api/products, bản portal kit) cho kỹ
   thuật viên và quản lý. Không còn trang giữ chỗ "chưa có chức năng" (08/10/2026); `/field/*` chuyển về `/tech`.
 - `/manage/installations(/:id)` và `/admin/installations(/:id)` (menu "Thi công", 21/10/2026): tag ManagerInstallations, backend
@@ -391,8 +448,9 @@ nhập làm nguồn chính + kéo thả vật cản.
     (`crossZone`) chỉ gửi được khi người dùng tự tick "Cho phép phân công ngoài khu vực" + ghi lý do. Lý do bắt buộc khi đã có
     kỹ thuật viên, đã thi công hoặc ngoài khu vực.
   - Checklist: PUT gửi đủ `isRequired` (bool không nullable, bỏ trống thành false), `status`, `note` và `revision` của DỰ ÁN.
-    "Đã đạt" cần tài liệu `PROJECT_DOCUMENT` đã xác minh nhưng chưa có API tải tài liệu lên, nên chỉ giữ được cho mục đã có tài
-    liệu. Huỷ (trước khi thi công) và trả về làm lại (chỉ khi chờ khách nghiệm thu) bắt buộc lý do ≤ 500 ký tự.
+    "Đã đạt" cần tài liệu `PROJECT_DOCUMENT` đã xác minh (PDF / JPEG / PNG ≤ 20 MB): chọn tệp trong hộp thoại thì tải lên lúc Lưu
+    (lưu lỗi thì lần sau dùng lại tệp đã tải), không chọn thì giữ tài liệu đang gắn; tên tài liệu đang gắn đọc qua GET
+    /api/files/{id}. Huỷ (trước khi thi công) và trả về làm lại (chỉ khi chờ khách nghiệm thu) bắt buộc lý do ≤ 500 ký tự.
   - Mọi mutation gửi revision đang hiện, không cập nhật lạc quan; 409 thì báo lỗi, dữ liệu tự tải lại, người dùng tự gửi lại.
     Link ảnh: xin khi mở khung xem (`gcTime: 0`), tải về qua mutation, ảnh lỗi xin lại một lần.
 
@@ -400,8 +458,8 @@ nhập làm nguồn chính + kéo thả vật cản.
 tài liệu `guides/scheduling-and-admin.md`, `guides/administrative-locations-and-zones.md`). Hiển thị trong `features/scheduling`
 (`schedulingDisplay.ts`: giờ Việt Nam, nhãn trạng thái lịch và trạng thái khách thấy, lý do không có giờ / không nhận được
 lịch; bảng mã ở `common/scheduling.ts`), tài khoản trong `features/users`. Không còn tính đường đi (Vietmap đã bỏ): giữa hai lịch của một kỹ thuật viên có khoảng
-nghỉ cố định. Luồng dừng ở "kỹ thuật viên đã nhận lịch": khảo sát tại công trình (bắt đầu, số đo, ảnh, hoàn thành) chưa làm vì
-BE chưa có API cấp link tải ảnh lên S3 mà hoàn thành lại bắt buộc ảnh mái.
+nghỉ cố định. Kỹ thuật viên nhận lịch xong thì khảo sát tại công trình (mục dưới); hoàn thành khảo sát là yêu cầu chuyển sang
+5 (xong).
 
 - Khu vực phục vụ: mỗi phường, xã thuộc một khu (admin lập); kỹ thuật viên thuộc một hoặc nhiều khu. Địa điểm phải có mã phường
   (`communeCode`) thì mới biết khu nào phục vụ.
@@ -411,7 +469,10 @@ BE chưa có API cấp link tải ảnh lên S3 mà hoàn thành lại bắt bu�
   - các giờ BE trả (GET /survey-slots, luôn 200); không có giờ thì `coverageStatus` cho biết vì sao (khu vực chưa có kỹ thuật
     viên, kín lịch...) và báo khách. Đặt xong lịch ở `PENDING_ACCEPTANCE`, khách thấy `acceptanceStatus` (chờ kỹ thuật viên nhận,
     nhân viên đang xếp người, đã xác nhận) và chỉ thấy tên kỹ thuật viên khi đã xác nhận. Đổi giờ / huỷ khi `canCustomerChange`.
-    Yêu cầu điều phối cho khu chưa có kỹ thuật viên (`dispatchAvailable`) chưa làm.
+    Khu chưa có kỹ thuật viên (`dispatchAvailable`): khách bấm "Nhờ xếp kỹ thuật viên", gửi tối đa 5 khung giờ tiện
+    (`DispatchRequestForm`), rồi đồng ý hoặc xin giờ khác cho đề xuất của nhân viên (`CustomerDispatchPanel`). Quản lý / quản
+    trị xử lý ở menu "Điều phối" (`/manage|admin/dispatch`): phân công thẳng hoặc gửi đề xuất, chọn người ngoài khu vực phải
+    ghi lý do. Hàng chờ tải theo từng trạng thái vì BE xếp hạn phản hồi sớm nhất trước và giữ cả yêu cầu đã xong.
 - Kỹ thuật viên `/tech/jobs`: tab "Chờ nhận" (GET /technicians/me/open-appointments, lịch trong khu vực của mình, chưa có địa
   chỉ cụ thể / số khách) với nút "Nhận việc" (POST .../accept kèm `expectedRevision`; người khác nhận trước thì 409
   APPOINTMENT_ALREADY_TAKEN), tab "Đã nhận" và "Đã qua". Chi tiết `/tech/jobs/:id`: công trình, khách, số liệu khai, mô phỏng
@@ -436,6 +497,46 @@ BE chưa có API cấp link tải ảnh lên S3 mà hoàn thành lại bắt bu�
   cần phân công lên đầu, rồi lịch sắp tới, rồi chưa có kỹ thuật viên, cuối cùng là đã qua giờ hẹn (danh sách của backend
   không cho biết khách đã đặt giờ chưa nên các yêu cầu chưa có kỹ thuật viên chỉ ghi vậy).
 
+**Khảo sát tại công trình** (22/10/2026; code chỉ có trong image `smartsolar-api` đang chạy, luật đọc từ `OnSiteSurveyHandlers`
+trong DLL; response viết tay ở `types/res/technicianOnSiteSurveyRes.ts`, enum ở `common/onsiteSurvey.ts`, component ở
+`features/onsite-survey/`, hook `hooks/useOnSiteSurvey.ts`). Mỗi yêu cầu khảo sát một biên bản, kỹ thuật viên ghi theo mã lịch hẹn.
+
+- Kỹ thuật viên, khối "Khảo sát tại công trình" đầu `/tech/jobs/:id` (`OnSiteSurveyPanel`): "Bắt đầu khảo sát" (POST .../start,
+  sớm nhất 2 giờ trước giờ hẹn theo mặc định của BE – quản trị đổi được nên BE vẫn kiểm lại, `ONSITE_SURVEY_TOO_EARLY`), rồi form
+  (`OnSiteSurveyFields`, luật ở `onSiteSurveyForm.ts` bám `Validate`) + ảnh / tài liệu theo loại (`OnSiteSurveyUpload`, mục đích
+  `ONSITE_SURVEY_EVIDENCE`, ảnh hoặc PDF). Lưu (PUT, gửi `revision`, null khi chưa có biên bản) chỉ kiểm khoảng giá trị; hoàn
+  thành (POST .../complete kèm `revision`) cần: đã bắt đầu, đủ 10 ô bắt buộc (loại mái, vật liệu, dài, rộng, diện tích lắp được
+  ≤ dài × rộng, độ dốc 0–90, hướng 0–<360, tình trạng mái, khả năng lắp đặt, tủ điện) và ít nhất một tệp loại ROOF. Hoàn thành
+  qua hộp thoại xác nhận, phần chưa lưu được lưu trước; xong thì lịch hẹn và yêu cầu chuyển sang xong, biên bản chỉ còn bổ sung
+  (POST .../amendments – chưa làm trên FE). Ô số nhận dấu phẩy; mỗi ô có gợi ý "Khách khai: …" để đối chiếu; toạ độ chỉ lấy
+  từ GPS của máy (nút "Lấy vị trí hiện tại"), không gõ tay. Thanh dưới dính đáy: hai điều kiện hoàn thành + trạng thái lưu.
+- Kinh doanh / quản lý / quản trị: khối "Kết quả khảo sát tại công trình" (`OnSiteSurveyResultPanel`, GET
+  /survey-requests/{id}/onsite-survey; chưa có biên bản là 404 `ONSITE_SURVEY_NOT_FOUND`, hook trả null) dưới khối lịch của
+  `/ops/surveys/:id`, chỉ đọc (`OnSiteSurveySummary` + `OnSiteSurveyFiles`, link ký sẵn từng tệp).
+
+**Báo giá lắp đặt** (luồng 2, sau khảo sát tại công trình; backend `main` 7c79fa8, `Modules.Quotations`: `QuotationHandlers`,
+`QuotationPricing`; tính năng bật bằng `InstallationWorkflow`). Enum + giới hạn ở `common/quotation.ts`, hiển thị chung ở
+`features/quotations/quotationDisplay.ts` + `QuotationContent.tsx` (dòng hàng, tổng tiền, điều khoản), service / hook tách theo
+vai trò (`salesQuotationService` + `useSalesQuotations`, `customerQuotationService` + `useCustomerQuotations`). Khác báo giá sửa
+chữa của luồng 3 (`features/after-sales/QuotationForm.tsx`). Hợp đồng chỉ lập được từ bản khách đã đồng ý (ACCEPTED); màn hợp
+đồng và tệp PDF báo giá (`PUT …/document`, FE tự tạo PDF) chưa làm.
+
+- Trạng thái: DRAFT → ISSUED → ACCEPTED, hoặc ISSUED → REVISION_REQUESTED → bản mới (DRAFT → ISSUED, bản cũ SUPERSEDED). Mỗi
+  yêu cầu khảo sát tối đa một bản nháp và một bản đang hiệu lực; bản đã gửi không sửa được. Tiền VND nguyên, backend tự tính mọi
+  tổng: cộng = thiết bị + nhân công + vận chuyển + dịch vụ khác; thuế (0–20 %, mặc định 8) tính trên (cộng − giảm giá).
+- Kinh doanh, khối "Báo giá" dưới kết quả khảo sát của `/ops/surveys/:id` (`SalesQuotationPanel`), chỉ hiện khi biên bản
+  `COMPLETED`: "Lập báo giá" tạo bản nháp ngay (chi phí 0, thuế mặc định, hạn 30 ngày) rồi sửa trực tiếp, mỗi thao tác lưu ngay
+  kèm `revision` (409 STALE thì tải lại): thêm / sửa dòng (`QuotationLineDialog`: từ danh mục = sản phẩm đang bán giá VND, bỏ
+  trống đơn giá là lấy giá danh mục; tự ghi = tên, đơn vị, đơn giá; đã thêm chỉ sửa số lượng, đơn giá, mô tả), xoá dòng có
+  "Hoàn tác" (thêm lại vào cuối), "Chi phí, điều khoản" (`QuotationHeaderDialog`, PUT ghi đè cả phần đầu; hạn hiệu lực là cuối
+  ngày theo giờ Việt Nam, tối đa 89 ngày tới vì BE tính 90 ngày từ lúc lưu), "Gửi cho khách" (hỏi xác nhận; khoá khi chưa có
+  dòng, tổng ≤ 0 hoặc hạn đã qua). Bản đã gửi / khách yêu cầu sửa: "Lập bản sửa" chép thành bản nháp mới. Khối Tình hình có
+  thêm bước "Báo giá" và việc tiếp theo theo trạng thái báo giá (đỏ khi kinh doanh phải lập, gửi, sửa).
+- Khách: menu "Báo giá" (`/customer/quotations`, mỗi công trình một dòng là bản mới nhất, tên công trình lấy từ yêu cầu khảo sát)
+  và `/customer/quotations/:id` (theo mã từng bản): "Đồng ý báo giá" (hỏi xác nhận, không đổi lại được) và "Yêu cầu sửa" (lý do
+  bắt buộc ≤ 2000) chỉ khi `canAccept` (ISSUED và chưa hết hạn); bản cũ dẫn sang bản mới. Trang yêu cầu khảo sát của khách có
+  khối dẫn sang báo giá (`RequestQuotationPanel`). Khách không thấy bản nháp và giá danh mục.
+
 **Lắp đặt, phía kỹ thuật viên** (`/tech/installations(/:id)`, backend nhánh `fix/business-rules-flow-1-2`, tài liệu
 `guides/installation-workflow-api-integration.md` + `installation-workflow-business-flow.md`; response viết tay ở
 `types/res/technicianInstallationsRes.ts`, kiểu dùng chung import từ `customerInstallationsRes.ts`). Enum chung ở
@@ -452,10 +553,34 @@ theo đội / ca / mốc (`InstallationTaskPage`, `InstallationChecklistPage`, `
   null vì loại sản phẩm là chữ tự do, chưa có quy ước nối với loại thiết bị.
 - Báo cáo hoàn thành (≤ 8000 ký tự, hỏi xác nhận) cần ít nhất một ảnh của lượt hiện tại (khoá nút) và mặc định tấm pin + inverter
   (cấu hình được ở backend nên chỉ nhắc). Gửi xong công trình chờ khách nghiệm thu; kỹ thuật viên không tự đánh dấu hoàn tất.
-- **Chưa thêm ảnh được**: `POST …/evidence` nhận `{ fileId, caption }` của tệp `INSTALLATION_EVIDENCE` đã VERIFIED, nhưng FE phải
-  tự tải lên S3 trước rồi `POST /api/files` với `objectKey` và backend không có API cấp link tải lên (không đưa khoá S3 vào FE).
-  Hàm `addInstallationEvidence` có trong service nhưng chưa có giao diện; vì thế báo cáo hoàn thành cũng chưa gửi được thật.
-  Xem ảnh đã có thì được: `GET …/evidence` rồi xin URL ký sẵn từng ảnh khi sắp hiện, không lưu URL.
+- Ảnh lắp đặt (`EvidenceUpload.tsx`, khi `canWork`): chọn nhiều ảnh, mỗi ảnh một ô chú thích (≤ 300 ký tự), "Tải lên N ảnh"
+  chạy hàng đợi `useUploadQueue` (mục "Tải tệp lên kho S3" dưới): tải `INSTALLATION_EVIDENCE` rồi gắn vào lượt hiện tại bằng
+  `POST …/evidence` (`fileId`, `caption`). Ảnh tải xong mà gắn lỗi thì "thử lại" chỉ gắn. Xem ảnh: `GET …/evidence` rồi xin URL
+  ký sẵn từng ảnh khi sắp hiện, không lưu URL.
+
+**Tải tệp lên kho S3** (tag Files; code chỉ có trong image `smartsolar-api` đang chạy, chưa có trên nhánh nào của repo backend,
+hợp đồng đọc từ DLL). Backend không nhận nội dung tệp: `uploadFile` ở `services/fileService.ts` xin link PUT
+(`POST /api/files/presigned-upload` `{ purpose, fileName, contentType, sizeBytes }`, link mặc định sống 5 phút) → PUT thẳng lên S3 bằng axios
+trần (không qua `apiClient` để không gửi token; gửi đúng `headers` backend trả vì Content-Type đã ký vào link) → `POST /api/files`
+với `bucket` + `objectKey` vừa cấp và SHA-256 → backend đọc lại object (loại theo byte đầu, cỡ, SHA-256, bucket phải bật versioning)
+và trả `FileView`. `PENDING_VERIFICATION` (chưa đọc được kho) thì chờ 3 giây gọi `…/verify` một lần; `REJECTED` dịch lý do
+(`FILE_REJECTION_REASONS`). Chỉ tệp `VERIFIED` gắn được vào nghiệp vụ.
+
+- Mục đích, loại, cỡ, vai trò được tải ở `common/file.ts` (`FILE_PURPOSES`, bám `FilePolicies` của backend). FE đọc loại thật từ
+  byte đầu và sửa đuôi tên cho khớp (backend đòi đuôi khớp loại). Ô chọn tệp: `FileButton` (`ui/file-button.tsx`); hiển thị
+  (`acceptFor`, `fileProblem`, `fileTypesText`) ở `features/files/fileDisplay.ts`; hook ở `hooks/useFiles.ts` (`useFileUpload` một
+  tệp có tiến độ, `useUploadQueue` nhiều tệp, `useFileQuery` = `GET /api/files/{id}`, không có link xem).
+- Mọi lệnh ghi tệp chung giới hạn 20 lần / phút / người, mỗi tệp tốn 2 (xin link + đăng ký): hàng đợi tải lần lượt, gặp 429 thì
+  dừng, đếm ngược theo Retry-After rồi tự chạy tiếp. Link PUT không lưu, không ghi log, không đưa vào lỗi ném ra.
+- Đang dùng: ảnh lắp đặt của kỹ thuật viên, tài liệu "Đã đạt" của checklist thi công, ảnh / tài liệu khảo sát tại công trình.
+  Backend còn nhận `fileId` ở báo giá, hợp đồng (bản chính thức / bản khách ký), kho tri thức, yêu cầu sự cố / bảo hành sau bán:
+  các màn đó chưa có trên FE.
+- Cấu hình phía kho (không nằm ở FE): bucket `smart-solar-images` ở vùng `us-east-1`, `Storage__S3__Region` của backend phải
+  đúng vùng này (sai vùng thì S3 trả 301 không kèm CORS, trình duyệt báo lỗi mạng). Bucket phải có CORS cho phép `PUT` với header
+  `content-type` từ origin của FE, và bật Versioning. IAM user ký link (`smartsolar-image-api`) cần `s3:PutObject`,
+  `s3:GetObject`, `s3:GetObjectVersion` trên tiền tố của từng mục đích (`installations/*`, `project-documents/*`… theo
+  `FilePolicies`); thiếu thì S3 trả 403 AccessDenied cho lệnh PUT. Kiểm tra CORS bằng preflight tới đúng endpoint vùng
+  (`https://smart-solar-images.s3.us-east-1.amazonaws.com/...`): endpoint vùng sai vẫn trả 200 cho preflight, dễ hiểu nhầm.
 
 Mở lại một màn: khai báo trang ở đầu `routes/protectedRoutes.tsx`, thêm một dòng vào `pages` của portal, chuyển đường dẫn của nó lên
 phần "có route" trong `routes/paths.ts`, rồi thêm mục menu trong `config/portals.ts` (mọi portal). Sidebar/header không đặt số liệu giả (tên người dùng,
@@ -467,11 +592,16 @@ thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
 
 - **Nhân viên** – kinh doanh `/ops`, quản trị `/admin`, kỹ thuật viên `/tech`, quản lý `/manage` – dùng `app-shell.tsx`: công cụ
   làm việc cả ngày, rail trái + bố cục gọn (mục Mật độ bên dưới).
-- **Khách hàng** `/customer` dùng `customer-shell.tsx`: đi theo website công khai – thanh trên dính với logo đầy đủ (bấm về trang chủ công khai `/`, 20/10/2026), menu chữ
-  (mục đang mở đậm + gạch chân xanh), nút tài khoản ghi tên người đang đăng nhập (chữ cái đầu + tên) và mở bảng chức năng
-  (Đổi mật khẩu, Giao diện, Đăng xuất; Esc / bấm ra ngoài thì đóng); nội dung căn giữa tối đa 1200px (`max-w-landing`), lề 16/24px như `<main>` của portal để
-  ActionBar và Table lấn mép đúng; font Be Vietnam Pro 400/500/600 (như trang công khai); trang con có dòng định vị
-  "Sản phẩm / <tên>"; điện thoại có nút Menu mở bảng gồm menu + tài khoản. Control bên trong vẫn là portal kit.
+- **Khách hàng** `/customer` dùng `customer-shell.tsx` – sidebar trái riêng (người dùng 22/10/2026 bỏ navbar ngang vì điều
+  hướng và tài khoản chung một hàng, email bị cắt), KHÔNG dùng `app-shell.tsx` (khác: rộng `w-60`, logo chữ đầy đủ bấm về `/`,
+  hàng menu 44px ở mọi cỡ, font Be Vietnam Pro 400/500/600 như trang công khai). Mục đang mở: nền `accent-muted` + vạch 3px +
+  icon tô đặc + chữ đậm. Chân sidebar: "Thu gọn menu" (từ lg, cột icon 64px có tooltip, dùng chung `useSidebarCollapsed`) và nút
+  tài khoản mở bảng phía trên (Đổi mật khẩu, Giao diện, Đăng xuất; Esc / bấm ra ngoài thì đóng). Chưa có họ tên thì nút ghi
+  đủ email, cỡ 13px, xuống dòng ở bất kỳ ký tự nào – không cắt, không tự đặt tên. Dưới lg: thanh trên (nút Menu + biểu tượng
+  - "Smart Solar", cuộn qua h1 thì đổi thành tên mục) mở sidebar thành drawer 288px: nền tối, focus vào nút đóng, phần còn lại
+    `inert`, Esc / bấm nền / chọn trang thì đóng và trả focus về nút Menu. Đóng / mở drawer suy ra từ đường dẫn lúc mở, không
+    đặt state trong effect. `<main>` tối đa `max-w-7xl` (1280px) căn giữa, lề 16/24px như portal để ActionBar và Table lấn mép
+    đúng; trang con có dòng định vị "Sản phẩm / <tên>". Control bên trong vẫn là portal kit.
 
 Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 24px. Đầu rail là biểu tượng
 thương hiệu (`public/images/mark-96.png`, nền trong suốt) + "Smart Solar" + tên portal (ngắt dòng cân bằng `text-balance`); mỗi mục
@@ -502,7 +632,7 @@ vai trò (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm tầng T�
   KHÔNG copy rail vào từng page; layout còn được vẽ làm khung chờ (`hydrateFallbackElement`) TRƯỚC `RequireRole` nên
   query trong layout phải chờ `useAuth().user` đúng vai trò mới gọi API.
 
-Mật độ (bố cục gọn 05/10/2026, cho khung nhân viên và cả hai bộ component; cổng khách hàng thì nội dung căn giữa tối đa 1200px): lề nội dung 24px (`px-6`, bộ Stitch `px-space-lg`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; khoảng cách tiêu đề trang → nội dung 24px; giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; `ListRow` `py-4`. Thêm màn mới thì theo đúng các bậc này, đừng quay lại 48px.
+Mật độ (bố cục gọn 05/10/2026, cho khung nhân viên và cả hai bộ component; cổng khách hàng thì nội dung căn giữa tối đa 1280px): lề nội dung 24px (`px-6`, bộ Stitch `px-space-lg`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; khoảng cách tiêu đề trang → nội dung 24px; giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; `ListRow` `py-4`. Thêm màn mới thì theo đúng các bậc này, đừng quay lại 48px.
 
 Menu Admin (subtitle "Quản trị hệ thống"): Tổng quan, Người dùng, Vai trò & quyền, Sản phẩm,
 Danh mục dịch vụ, Nhóm hàng, Kho tri thức AI, Cấu hình kỹ thuật, Báo cáo, Cài đặt hệ thống.
@@ -561,24 +691,24 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 
 ## Bảng route
 
-| Route                        | Layout           | Trang                                                                                                                                        |
-| ---------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                             |
-| `/login`                     | `AuthLayout`     | `LoginPage`                                                                                                                                  |
-| `/register`                  | `AuthLayout`     | `RegisterPage`                                                                                                                               |
-| `/forgot-password`           | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                         |
-| `/reset-password`            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                          |
-| `/verify-email`              | `AuthLayout`     | `VerifyEmailPage`                                                                                                                            |
-| `/403`                       | `AuthLayout`     | `ForbiddenPage`                                                                                                                              |
-| `/coming-soon`               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                |
-| `/products`, `/products/:id` | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                       |
-| `/admin/*`                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm – bọc `<RequireRole role="admin">`                                                              |
-| `/tech/*`                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                       |
-| `/customer/*`                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Lắp đặt (nghiệm thu), Bảo vệ thiên tai (mua gói), Sản phẩm – bọc `<RequireRole role="customer">` |
-| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên) – bọc `<RequireRole role="sales">`                                                          |
-| `/field/*`                   | —                | chuyển về `/tech`                                                                                                                            |
-| `/manage/*`                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                                         |
-| `/styleguide`                | –                | `StyleguidePage`                                                                                                                             |
+| Route                        | Layout           | Trang                                                                                                                                                                   |
+| ---------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                                                        |
+| `/login`                     | `AuthLayout`     | `LoginPage`                                                                                                                                                             |
+| `/register`                  | `AuthLayout`     | `RegisterPage`                                                                                                                                                          |
+| `/forgot-password`           | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                                                    |
+| `/reset-password`            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                                                     |
+| `/verify-email`              | `AuthLayout`     | `VerifyEmailPage`                                                                                                                                                       |
+| `/403`                       | `AuthLayout`     | `ForbiddenPage`                                                                                                                                                         |
+| `/coming-soon`               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                                           |
+| `/products`, `/products/:id` | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                                                  |
+| `/admin/*`                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ – bọc `<RequireRole role="admin">`                                                                            |
+| `/tech/*`                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                  |
+| `/customer/*`                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Báo giá (đồng ý / yêu cầu sửa), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói), Sản phẩm – bọc `<RequireRole role="customer">` |
+| `/ops/*`                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá) – bọc `<RequireRole role="sales">`                                                                        |
+| `/field/*`                   | —                | chuyển về `/tech`                                                                                                                                                       |
+| `/manage/*`                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                                                                    |
+| `/styleguide`                | –                | `StyleguidePage`                                                                                                                                                        |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.
 

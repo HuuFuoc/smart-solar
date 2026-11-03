@@ -8,6 +8,7 @@ import type {
   CustomerSurveyRequestDetailView,
   CustomerSurveyRequestView,
 } from '@/types/res/customerSurveyRequestsRes'
+import type { SalesOutcomeView } from '@/types/res/surveyRequestsRes'
 import type { SurveySlotsView } from '@/types/res/surveySlotsRes'
 import { get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
@@ -42,4 +43,9 @@ export function rescheduleAppointment(id: string, body: BookSurveyAppointmentReq
 /** POST .../booking/cancel, nhả chỗ của kỹ thuật viên. Lý do tối đa 200 ký tự */
 export function cancelAppointment(id: string, body: CancelSurveyAppointmentRequest) {
   return post<CustomerAppointmentView>(ENDPOINTS.customerSurveyRequests.bookingCancel(id), body)
+}
+
+/** Khách rút yêu cầu khi không làm nữa. Còn lịch đang hẹn hoặc đã có hợp đồng thì bị từ chối (409) */
+export function withdrawRequest(id: string, reason: string | null) {
+  return post<SalesOutcomeView>(ENDPOINTS.customerSurveyRequests.withdraw(id), { reason })
 }

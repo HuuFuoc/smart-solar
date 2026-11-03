@@ -86,10 +86,7 @@ export function OpsSurveysPage() {
         <QueryBoundary query={pending}>
           {(rows) =>
             rows.length === 0 ? (
-              <EmptyState
-                title="Chưa có yêu cầu nào chờ nhận"
-                description="Yêu cầu mới xuất hiện ở đây khi khách hàng gửi bản đánh giá sơ bộ."
-              />
+              <EmptyState title="Chưa có yêu cầu nào chờ nhận" />
             ) : (
               <PendingRequestList
                 rows={rows}
@@ -106,7 +103,7 @@ export function OpsSurveysPage() {
               <EmptyState
                 title="Bạn chưa nhận yêu cầu nào"
                 action={
-                  <Button size="sm" variant="soft" onClick={() => setTab('pending')}>
+                  <Button icon="visibility" size="sm" variant="info" onClick={() => setTab('pending')}>
                     Xem yêu cầu chờ nhận
                   </Button>
                 }

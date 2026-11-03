@@ -245,7 +245,7 @@ function ProductForm({
             {isEdit ? <span className="tnum">{product?.sku}</span> : 'Ô có dấu * là bắt buộc.'}
           </p>
         </div>
-        <Button variant="ghost" icon="close" className="-mt-2" disabled={isSubmitting} onClick={onDone}>
+        <Button variant="secondary" icon="close" className="-mt-2" disabled={isSubmitting} onClick={onDone}>
           Đóng
         </Button>
       </div>
@@ -398,20 +398,14 @@ function ProductForm({
                 </label>
                 <Input id={f(`spec-${i}-value`)} placeholder="Ví dụ: 21,8%" {...register(`spec.${i}.value`)} />
               </div>
-              <Button
-                variant="ghost"
-                bleed={false}
-                icon="close"
-                aria-label={`Bỏ thông số ${i + 1}`}
-                onClick={() => spec.remove(i)}
-              >
+              <Button variant="danger" icon="close" aria-label={`Bỏ thông số ${i + 1}`} onClick={() => spec.remove(i)}>
                 Bỏ
               </Button>
             </div>
           ))}
         </div>
         <Button
-          variant="ghost"
+          variant="soft"
           size="sm"
           icon="add"
           className="mt-2"
@@ -439,10 +433,10 @@ function ProductForm({
       )}
 
       <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t border-line bg-canvas px-6 py-4">
-        <Button variant="ghost" disabled={isSubmitting} onClick={onDone}>
+        <Button icon="close" variant="secondary" disabled={isSubmitting} onClick={onDone}>
           Huỷ
         </Button>
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
+        <Button icon="save" type="submit" variant="primary" disabled={isSubmitting}>
           {isSubmitting ? 'Đang lưu…' : isEdit ? 'Lưu thay đổi' : 'Thêm sản phẩm'}
         </Button>
       </DialogFooter>

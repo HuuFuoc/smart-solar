@@ -27,6 +27,8 @@ export function Combobox({
   emptyText = 'Không có mục nào khớp.',
   placeholder,
   invalid,
+  required,
+  describedBy,
   disabled,
 }: {
   id: string
@@ -38,6 +40,9 @@ export function Combobox({
   emptyText?: string
   placeholder?: string
   invalid?: boolean
+  required?: boolean
+  /** Id của dòng gợi ý / lỗi dưới ô */
+  describedBy?: string
   disabled?: boolean
 }) {
   const listId = useId()
@@ -104,6 +109,8 @@ export function Combobox({
         aria-controls={listId}
         aria-activedescendant={open && active >= 0 && shown[active] ? optionId(active) : undefined}
         aria-invalid={invalid || undefined}
+        aria-required={required || undefined}
+        aria-describedby={describedBy}
         autoComplete="off"
         spellCheck={false}
         placeholder={placeholder}

@@ -111,10 +111,10 @@ export function CancelSubscriptionDialog({
               </div>
             )}
             <DialogFooter>
-              <Button variant="ghost" disabled={cancel.isPending} onClick={close}>
+              <Button icon="close" variant="secondary" disabled={cancel.isPending} onClick={close}>
                 Giữ gói
               </Button>
-              <Button variant={copy.variant} disabled={cancel.isPending} onClick={() => void confirm()}>
+              <Button icon="cancel" variant={copy.variant} disabled={cancel.isPending} onClick={() => void confirm()}>
                 {cancel.isPending ? 'Đang gửi…' : copy.submit}
               </Button>
             </DialogFooter>
@@ -124,7 +124,7 @@ export function CancelSubscriptionDialog({
             <DialogTitle>Không huỷ được gói này</DialogTitle>
             <p className="mt-2 text-body text-fg-2">Gói đã hiệu lực hoặc đã kết thúc nên không huỷ trên mạng được.</p>
             <DialogFooter>
-              <Button variant="ghost" onClick={close}>
+              <Button icon="close" variant="secondary" onClick={close}>
                 Đóng
               </Button>
             </DialogFooter>

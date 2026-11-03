@@ -1,4 +1,4 @@
-import { ROUTES } from '@/routes/paths'
+﻿import { ROUTES } from '@/routes/paths'
 
 export type PortalKey = 'customer' | 'ops' | 'manage' | 'admin' | 'tech'
 
@@ -31,10 +31,13 @@ export const PORTALS: Record<PortalKey, Portal> = {
     groups: [
       {
         items: [
+          { label: 'Tổng quan', to: ROUTES.customer.dashboard, icon: 'dashboard', end: true },
           { label: 'Đánh giá sơ bộ', to: ROUTES.customer.assessment, icon: 'fact_check' },
           { label: 'Yêu cầu khảo sát', to: ROUTES.customer.requests, icon: 'event_available' },
+          { label: 'Báo giá', to: ROUTES.customer.quotations, icon: 'request_quote' },
           { label: 'Lắp đặt', to: ROUTES.customer.projects, icon: 'construction' },
-          { label: 'Bảo vệ thiên tai', to: ROUTES.customer.packages, icon: 'shield' },
+          { label: 'Bảo hành, sửa chữa', to: ROUTES.customer.afterSales, icon: 'build' },
+          { label: 'Gói dịch vụ', to: ROUTES.customer.packages, icon: 'shield' },
           { label: 'Sản phẩm', to: ROUTES.customer.products, icon: 'solar_power' },
         ],
       },
@@ -46,6 +49,9 @@ export const PORTALS: Record<PortalKey, Portal> = {
     home: ROUTES.ops.home,
     groups: [
       {
+        items: [{ label: 'Tổng quan', to: ROUTES.ops.dashboard, icon: 'dashboard', end: true }],
+      },
+      {
         label: 'Yêu cầu khảo sát',
         items: [
           { label: 'Chờ nhận', to: ROUTES.ops.surveys, icon: 'move_to_inbox', end: true },
@@ -53,7 +59,12 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Của tôi', to: ROUTES.ops.surveysMine, icon: 'assignment_ind', alsoActiveOn: [ROUTES.ops.survey] },
         ],
       },
-      { items: [{ label: 'Sản phẩm', to: ROUTES.ops.products, icon: 'solar_power' }] },
+      {
+        items: [
+          { label: 'Bảo hành, sửa chữa', to: ROUTES.ops.afterSales, icon: 'build' },
+          { label: 'Sản phẩm', to: ROUTES.ops.products, icon: 'solar_power' },
+        ],
+      },
     ],
   },
   manage: {
@@ -63,7 +74,9 @@ export const PORTALS: Record<PortalKey, Portal> = {
     groups: [
       {
         items: [
+          { label: 'Điều phối', to: ROUTES.manage.dispatch, icon: 'support_agent' },
           { label: 'Thi công', to: ROUTES.manage.installations, icon: 'construction' },
+          { label: 'Bảo hành, sửa chữa', to: ROUTES.manage.afterSales, icon: 'build' },
           { label: 'Kỹ thuật viên', to: ROUTES.manage.technicians, icon: 'engineering' },
           { label: 'Sản phẩm', to: ROUTES.manage.products, icon: 'solar_power' },
         ],
@@ -79,8 +92,12 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Tài khoản', to: ROUTES.admin.users, icon: 'manage_accounts' },
           { label: 'Kỹ thuật viên', to: ROUTES.admin.technicians, icon: 'engineering' },
+          { label: 'Điều phối', to: ROUTES.admin.dispatch, icon: 'support_agent' },
           { label: 'Thi công', to: ROUTES.admin.installations, icon: 'construction' },
+          { label: 'Bảo hành, sửa chữa', to: ROUTES.admin.afterSales, icon: 'build' },
           { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },
+          { label: 'Gói dịch vụ', to: ROUTES.admin.packages, icon: 'shield' },
+          { label: 'Cài đặt hệ thống', to: ROUTES.admin.settings, icon: 'settings' },
         ],
       },
     ],
@@ -94,6 +111,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Việc của tôi', to: ROUTES.tech.jobs, icon: 'assignment' },
           { label: 'Lắp đặt', to: ROUTES.tech.installations, icon: 'construction' },
+          { label: 'Bảo hành, sửa chữa', to: ROUTES.tech.afterSales, icon: 'build' },
           { label: 'Lịch làm việc', to: ROUTES.tech.schedule, icon: 'calendar_month' },
           { label: 'Sản phẩm', to: ROUTES.tech.products, icon: 'solar_power' },
         ],

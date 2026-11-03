@@ -22,6 +22,7 @@ export function BookingPanel({
   current,
   onDone,
   onCancel,
+  onRequestDispatch,
 }: {
   surveyRequestId: string
   propertySiteId: string
@@ -29,12 +30,16 @@ export function BookingPanel({
   current?: CustomerAppointmentView | null
   onDone?: () => void
   onCancel?: () => void
+  /** Chỉ khi đặt mới: khu vực không có người nhận thì chuyển sang nhờ Smart Solar xếp kỹ thuật viên */
+  onRequestDispatch?: (coverageStatus: string | null, date: string) => void
 }) {
   const rescheduling = Boolean(current)
   const [date, setDate] = useState(() => (current ? vnDate(current.startsAt) : initialBookingDate()))
   const [slot, setSlot] = useState<SurveySlot | null>(null)
   const [note, setNote] = useState(current?.customerNote ?? '')
   const [error, setError] = useState<string | null>(null)
+  // Đặt giờ bị từ chối vì khu vực không có người nhận (details.dispatchAvailable): mời khách nhờ xếp kỹ thuật viên
+  const [dispatchCoverage, setDispatchCoverage] = useState<string | null | undefined>(undefined)
   const book = useBookAppointmentMutation()
   const reschedule = useRescheduleAppointmentMutation()
   const busy = book.isPending || reschedule.isPending
@@ -42,6 +47,7 @@ export function BookingPanel({
   async function confirm() {
     if (!slot || busy) return
     setError(null)
+    setDispatchCoverage(undefined)
     const body = { startsAt: slot.startsAt, note: note.trim() || null }
     try {
       const result = rescheduling
@@ -54,6 +60,13 @@ export function BookingPanel({
       onDone?.()
     } catch (e) {
       if (isApiError(e) && e.code === 'SURVEY_SLOT_UNAVAILABLE') setSlot(null)
+      const details = isApiError(e)
+        ? (e.details as { dispatchAvailable?: unknown; coverageStatus?: unknown } | null)
+        : null
+      if (details?.dispatchAvailable === true && !rescheduling) {
+        setSlot(null)
+        setDispatchCoverage(typeof details.coverageStatus === 'string' ? details.coverageStatus : null)
+      }
       if (isApiError(e) && e.status === 429 && e.retryAfter)
         setError(`Bạn thao tác quá nhanh. Thử lại sau ${e.retryAfter} giây.`)
       else setError(errorMessage(e))
@@ -64,11 +77,7 @@ export function BookingPanel({
     <Panel raised>
       <PanelHeader
         title={rescheduling ? 'Chọn giờ mới' : 'Chọn giờ khảo sát'}
-        description={
-          rescheduling
-            ? 'Lịch hiện tại giữ nguyên cho tới khi bạn xác nhận giờ mới.'
-            : 'Kỹ thuật viên tới công trình đo đạc và kiểm tra mái. Danh sách chỉ có giờ còn kỹ thuật viên trong khu vực rảnh.'
-        }
+        description={rescheduling ? 'Lịch hiện tại giữ nguyên cho tới khi bạn xác nhận giờ mới.' : undefined}
       />
       <PanelBody className="space-y-6">
         <SlotPicker
@@ -81,6 +90,9 @@ export function BookingPanel({
             setError(null)
           }}
           currentStartsAt={current?.startsAt}
+          onRequestDispatch={
+            !rescheduling && onRequestDispatch ? (coverage) => onRequestDispatch(coverage, date) : undefined
+          }
         />
         <Field
           label="Ghi chú cho kỹ thuật viên"
@@ -116,12 +128,28 @@ export function BookingPanel({
             {error}
           </span>
         )}
+        {dispatchCoverage !== undefined && onRequestDispatch && (
+          <Button
+            icon="support_agent"
+            variant="info"
+            className="sm:order-last"
+            onClick={() => onRequestDispatch(dispatchCoverage, date)}
+          >
+            Nhờ xếp kỹ thuật viên
+          </Button>
+        )}
         {onCancel && (
-          <Button variant="ghost" bleed={false} disabled={busy} onClick={onCancel}>
+          <Button icon="close" variant="secondary" disabled={busy} onClick={onCancel}>
             Thôi
           </Button>
         )}
-        <Button variant="primary" disabled={!slot || busy} onClick={() => void confirm()} className="w-full sm:w-auto">
+        <Button
+          icon="edit_calendar"
+          variant="primary"
+          disabled={!slot || busy}
+          onClick={() => void confirm()}
+          className="w-full sm:w-auto"
+        >
           {busy ? 'Đang giữ chỗ…' : rescheduling ? 'Đổi sang giờ này' : 'Đặt lịch khảo sát'}
         </Button>
       </PanelFooter>

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
@@ -6,6 +6,7 @@ import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/d
 import { Skeleton } from '@/components/common/ui/states'
 import { formatFileSize, groupByRound } from '@/features/installations/installationDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { useLatest } from '@/hooks/useLatest'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type {
   EvidenceDisposition,
@@ -25,17 +26,9 @@ export type EvidenceUrlFetcher = (
 type UrlState =
   { kind: 'idle' | 'loading' | 'gone' } | { kind: 'ready'; url: string } | { kind: 'error'; message: string }
 
-// Giữ bản getUrl mới nhất mà không đưa vào deps: nơi gọi thường truyền hàm mới mỗi lần render
-function useLatest<T>(value: T) {
-  const ref = useRef(value)
-  useLayoutEffect(() => {
-    ref.current = value
-  })
-  return ref
-}
-
 // Kết quả gắn với khoá của lần xin (ảnh + lượt thử): khoá đổi mà chưa có kết quả mới thì là đang tải
 function useSignedUrl(evidenceId: string, getUrl: EvidenceUrlFetcher, enabled: boolean) {
+  // Nơi gọi thường truyền hàm mới mỗi lần render nên không đưa vào deps
   const fetcher = useLatest(getUrl)
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState<{ key: string; state: UrlState } | null>(null)
@@ -85,7 +78,7 @@ function SignedImage({
   const [broken, setBroken] = useState(false)
 
   if (!item.downloadable) return <Placeholder className={className} text="Ảnh không còn hợp lệ nên không xem được." />
-  if (state.kind === 'gone') return <Placeholder className={className} text="Ảnh không còn trên kho lưu trữ." />
+  if (state.kind === 'gone') return <Placeholder className={className} text="Ảnh này không còn nữa." />
   if (state.kind === 'error' || broken)
     return (
       <Placeholder
@@ -136,7 +129,7 @@ function Placeholder({ text, onRetry, className }: { text: string; onRetry?: () 
       <Icon name="hide_image" className="text-[20px] text-fg-3" />
       <span>{text}</span>
       {onRetry && (
-        <Button size="sm" variant="ghost" bleed={false} icon="refresh" onClick={onRetry}>
+        <Button size="sm" variant="secondary" icon="refresh" onClick={onRetry}>
           Thử lại
         </Button>
       )}
@@ -244,10 +237,10 @@ function Viewer({
             className="mt-4 max-h-[70vh] min-h-48 w-full rounded-container object-contain"
           />
           <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>
+            <Button icon="close" variant="secondary" onClick={onClose}>
               Đóng
             </Button>
-            <Button icon="download" disabled={downloading} onClick={() => void download(item)}>
+            <Button variant="secondary" icon="download" disabled={downloading} onClick={() => void download(item)}>
               {downloading ? 'Đang tải…' : 'Tải ảnh'}
             </Button>
           </DialogFooter>

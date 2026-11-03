@@ -221,10 +221,10 @@ function AccountForm({
             {failure}
           </p>
         )}
-        <Button variant="ghost" disabled={busy} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={busy} onClick={onClose}>
           Huỷ
         </Button>
-        <Button type="submit" variant="primary" disabled={busy}>
+        <Button icon="person_add" type="submit" variant="primary" disabled={busy}>
           {busy ? 'Đang lưu…' : creating ? 'Tạo tài khoản' : 'Lưu thay đổi'}
         </Button>
       </DialogFooter>

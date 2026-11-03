@@ -16,7 +16,7 @@ type Props = {
   submitted: boolean
 }
 
-// Cột phụ của trang đánh giá sơ bộ
+// Cột phụ của trang đánh giá sơ bộ. Bước có form hẹp thì nằm dưới khung của bước
 export function AssessmentAside({ runs, viewingRunId, onViewRun, preSurveyId, submitted }: Props) {
   const hasRuns = runs !== undefined && runs.length > 0
   return (
@@ -35,7 +35,8 @@ export function AssessmentAside({ runs, viewingRunId, onViewRun, preSurveyId, su
           </PanelBody>
         </Panel>
       )}
-      <Notice tone="info" title="Sau khi gửi">
+      {/* Thông tin cần đọc nhưng không phải việc phải làm ngay: khối xám, để form vẫn là trọng tâm */}
+      <Notice tone="neutral" title="Sau khi gửi">
         Bạn chọn ngày giờ khảo sát trong 30 ngày tới. Kỹ thuật viên phụ trách khu vực của công trình nhận lịch rồi tới
         kiểm tra lại các số đo bạn khai.
       </Notice>

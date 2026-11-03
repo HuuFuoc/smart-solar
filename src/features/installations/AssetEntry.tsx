@@ -247,14 +247,14 @@ export function AssetEntry({
         ))}
       </ol>
       <div className="flex flex-wrap items-center gap-3">
-        <Button size="sm" icon="add" disabled={rows.length >= ASSET_LIMITS.perRequest} onClick={addRow}>
+        <Button variant="soft" size="sm" icon="add" disabled={rows.length >= ASSET_LIMITS.perRequest} onClick={addRow}>
           Thêm dòng
         </Button>
         <span className="ml-auto flex flex-wrap items-center gap-3">
-          <Button size="sm" variant="ghost" bleed={false} disabled={register.isPending} onClick={onClose}>
+          <Button icon="close" size="sm" variant="secondary" disabled={register.isPending} onClick={onClose}>
             Huỷ
           </Button>
-          <Button type="submit" size="sm" variant="soft" disabled={register.isPending}>
+          <Button icon="save" type="submit" size="sm" variant="soft" disabled={register.isPending}>
             {register.isPending ? 'Đang lưu…' : `Lưu ${rows.length} thiết bị`}
           </Button>
         </span>

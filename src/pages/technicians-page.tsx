@@ -32,13 +32,11 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
             <Badge tone="danger" icon="wrong_location">
               {missing} kỹ thuật viên chưa thuộc khu vực nào nên chưa nhận lịch được
             </Badge>
-          ) : (
-            'Khu vực phục vụ, giờ làm và lịch nghỉ quyết định giờ khảo sát khách đặt được.'
-          )
+          ) : undefined
         }
         actions={
           usersLink ? (
-            <ButtonLink to={usersLink} icon="manage_accounts">
+            <ButtonLink variant="info" to={usersLink} icon="manage_accounts">
               Tài khoản
             </ButtonLink>
           ) : undefined
@@ -64,7 +62,13 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
               <EmptyState
                 title="Chưa có tài khoản kỹ thuật viên"
                 description="Tạo tài khoản với vai trò Kỹ thuật viên rồi chọn khu vực phục vụ ở đây."
-                action={usersLink ? <ButtonLink to={usersLink}>Mở trang tài khoản</ButtonLink> : undefined}
+                action={
+                  usersLink ? (
+                    <ButtonLink icon="manage_accounts" variant="info" to={usersLink}>
+                      Mở trang tài khoản
+                    </ButtonLink>
+                  ) : undefined
+                }
               />
             )
           if (shown.length === 0)

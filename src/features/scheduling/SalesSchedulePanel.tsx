@@ -10,7 +10,7 @@ import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Facts } from '@/features/pre-surveys/Facts'
-import { formatDateTime } from '@/features/pre-surveys/preSurveyDisplay'
+import { formatDateTime, isClosedRequest } from '@/features/pre-surveys/preSurveyDisplay'
 import { TechnicianChoiceList } from '@/features/scheduling/TechnicianChoiceList'
 import {
   BOOKING_HORIZON_DAYS,
@@ -23,6 +23,7 @@ import {
   formatTime,
   formatTimeRange,
   ineligibleLabel,
+  isAppointmentOverdue,
   schedulingErrorMessage,
   todayVn,
   vnDate,
@@ -40,6 +41,7 @@ import type { SurveyAppointmentSummary, SurveyRequestDetail } from '@/types/res/
 // Lịch khảo sát ở trang chi tiết yêu cầu của sales.
 // Khách đặt giờ thì kỹ thuật viên trong khu vực tự nhận; sales chỉ theo dõi.
 // Quá hạn không ai nhận (ESCALATED) thì sales phân công, lý do bắt buộc. Không cập nhật lạc quan, luôn chờ server
+// Lịch đã qua giờ mà chưa khảo sát thì sales hẹn lại giờ khác, lý do bắt buộc
 
 /** Chọn sẵn người đang giữ chỗ nếu còn trong danh sách, không thì người đầu tiên */
 function defaultChoice(list: AvailableTechnicianView[], preferredId?: string | null) {
@@ -182,6 +184,7 @@ function AssignPanel({
       <PanelFooter className="justify-end">
         <ErrorLine message={error} />
         <Button
+          icon="assignment_ind"
           variant="primary"
           disabled={!selected || assign.isPending}
           onClick={() => void submit()}
@@ -319,10 +322,15 @@ function ReassignDialog({
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
-        <Button variant="ghost" disabled={assign.isPending} onClick={() => onOpenChange(false)}>
+        <Button icon="close" variant="secondary" disabled={assign.isPending} onClick={() => onOpenChange(false)}>
           Huỷ
         </Button>
-        <Button variant="primary" disabled={!selected || assign.isPending} onClick={() => void submit()}>
+        <Button
+          icon="swap_horiz"
+          variant="primary"
+          disabled={!selected || assign.isPending}
+          onClick={() => void submit()}
+        >
           {assign.isPending ? 'Đang chuyển…' : selected ? `Chuyển cho ${selected.fullName}` : 'Chuyển'}
         </Button>
       </DialogFooter>
@@ -343,7 +351,9 @@ function RescheduleDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const today = todayVn()
-  const [date, setDate] = useState(() => vnDate(appointment.startsAt))
+  const [overdue] = useState(() => isAppointmentOverdue(appointment))
+  // Lịch quá giờ thì giờ cũ đã qua, mở sẵn hôm nay
+  const [date, setDate] = useState(() => (overdue ? today : vnDate(appointment.startsAt)))
   const [time, setTime] = useState(() => formatTime(appointment.startsAt))
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -352,6 +362,10 @@ function RescheduleDialog({
   const unchanged = new Date(startsAt).getTime() === new Date(appointment.startsAt).getTime()
 
   async function submit() {
+    if (overdue && !reason.trim()) {
+      setError('Lịch đã qua giờ: ghi lý do đổi giờ.')
+      return
+    }
     setError(null)
     try {
       const result = await reschedule.mutateAsync({
@@ -376,8 +390,9 @@ function RescheduleDialog({
     >
       <DialogTitle>Đổi giờ khảo sát</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Giờ hiện tại: {formatAppointment(appointment.startsAt, appointment.endsAt)}. Kỹ thuật viên đang phụ trách giữ
-        lịch nếu vẫn rảnh giờ mới, không thì lịch quay về chờ người trong khu vực nhận.
+        {overdue ? 'Lịch đã qua giờ mà chưa khảo sát' : 'Giờ hiện tại'}:{' '}
+        {formatAppointment(appointment.startsAt, appointment.endsAt)}. Kỹ thuật viên đang phụ trách giữ lịch nếu vẫn
+        rảnh giờ mới, không thì lịch quay về chờ người trong khu vực nhận.
       </p>
       <div className="mt-4 space-y-4">
         <div className="flex flex-wrap items-end gap-3">
@@ -395,22 +410,35 @@ function RescheduleDialog({
           </Field>
         </div>
         <p className="text-meta text-fg-2">{formatDay(date)}, mỗi lần khảo sát 90 phút.</p>
-        <Field label="Lý do đổi giờ" htmlFor="reschedule-reason" hint="Không bắt buộc, tối đa 500 ký tự.">
+        <Field
+          label="Lý do đổi giờ"
+          htmlFor="reschedule-reason"
+          required={overdue}
+          hint={overdue ? 'Bắt buộc vì lịch đã qua giờ, tối đa 500 ký tự.' : 'Không bắt buộc, tối đa 500 ký tự.'}
+        >
           <Textarea
             id="reschedule-reason"
             rows={2}
             maxLength={500}
             value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            onChange={(e) => {
+              setReason(e.target.value)
+              setError(null)
+            }}
           />
         </Field>
       </div>
       <DialogFooter className="items-center">
         <ErrorLine message={error ?? (unchanged ? 'Giờ mới giống giờ hiện tại.' : null)} />
-        <Button variant="ghost" disabled={reschedule.isPending} onClick={() => onOpenChange(false)}>
+        <Button icon="close" variant="secondary" disabled={reschedule.isPending} onClick={() => onOpenChange(false)}>
           Huỷ
         </Button>
-        <Button variant="primary" disabled={unchanged || reschedule.isPending} onClick={() => void submit()}>
+        <Button
+          icon="edit_calendar"
+          variant="primary"
+          disabled={unchanged || reschedule.isPending}
+          onClick={() => void submit()}
+        >
           {reschedule.isPending ? 'Đang đổi…' : 'Đổi lịch'}
         </Button>
       </DialogFooter>
@@ -426,6 +454,40 @@ function ScheduleTime({ appointment }: { appointment: SurveyAppointmentSummary }
         {formatTimeRange(appointment.startsAt, appointment.endsAt)}
       </p>
     </div>
+  )
+}
+
+/** Lịch đã qua giờ mà chưa có kết quả khảo sát: việc của sales là hẹn lại giờ khác với khách */
+function OverduePanel({
+  appointment,
+  onReschedule,
+}: {
+  appointment: SurveyAppointmentSummary
+  onReschedule: () => void
+}) {
+  const status = appointmentStatusMeta(appointment.status, 'sales')
+  return (
+    <Panel raised>
+      <PanelHeader
+        title="Lịch khảo sát đã qua giờ"
+        description="Chưa có kết quả khảo sát. Gọi khách hẹn giờ khác rồi đổi giờ, ghi lý do."
+        action={
+          <Button size="sm" variant="soft" icon="edit_calendar" onClick={onReschedule}>
+            Đổi giờ
+          </Button>
+        }
+      />
+      <PanelBody className="space-y-4">
+        <ScheduleTime appointment={appointment} />
+        <Facts
+          items={[
+            { k: 'Kỹ thuật viên', v: appointment.assignedTechnicianName ?? 'Chưa có người nhận' },
+            { k: 'Trạng thái', v: <Badge tone={status.tone}>{status.label}</Badge> },
+          ]}
+        />
+        {appointment.customerNote && <Notice title="Ghi chú của khách">{appointment.customerNote}</Notice>}
+      </PanelBody>
+    </Panel>
   )
 }
 
@@ -486,6 +548,7 @@ export function SalesSchedulePanel({ request }: { request: SurveyRequestDetail }
     setDialog(which)
   }
   const close = (next: boolean) => !next && setDialog(null)
+  const [now] = useState(() => Date.now())
 
   if (!a)
     return (
@@ -493,20 +556,23 @@ export function SalesSchedulePanel({ request }: { request: SurveyRequestDetail }
         <PanelHeader title="Lịch khảo sát" />
         <PanelBody>
           <p className="max-w-prose text-body text-fg-2">
-            Khách chưa đặt giờ khảo sát. Khách tự chọn giờ trên cổng khách hàng, rồi kỹ thuật viên trong khu vực tự nhận
-            lịch. Gọi khách để nhắc nếu yêu cầu chờ lâu.
+            {isClosedRequest(request.status)
+              ? 'Yêu cầu đã đóng nên không còn lịch khảo sát.'
+              : 'Khách chưa đặt giờ khảo sát. Gọi khách để nhắc nếu yêu cầu chờ lâu.'}
           </p>
         </PanelBody>
       </Panel>
     )
 
+  const overdue = isAppointmentOverdue(a, now)
   return (
     <>
-      {a.status === 'ESCALATED' && <AssignPanel key={a.appointmentId} request={request} appointment={a} />}
-      {a.status === 'PENDING_ACCEPTANCE' && (
+      {overdue && <OverduePanel appointment={a} onReschedule={() => open('reschedule')} />}
+      {!overdue && a.status === 'ESCALATED' && <AssignPanel key={a.appointmentId} request={request} appointment={a} />}
+      {!overdue && a.status === 'PENDING_ACCEPTANCE' && (
         <WaitingPanel key={a.appointmentId} request={request} appointment={a} onReschedule={() => open('reschedule')} />
       )}
-      {a.status !== 'ESCALATED' && a.status !== 'PENDING_ACCEPTANCE' && (
+      {!overdue && a.status !== 'ESCALATED' && a.status !== 'PENDING_ACCEPTANCE' && (
         <ScheduledPanel appointment={a} onReassign={() => open('reassign')} onReschedule={() => open('reschedule')} />
       )}
       <ReassignDialog

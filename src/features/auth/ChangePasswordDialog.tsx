@@ -140,10 +140,10 @@ function ChangePasswordForm({ onDone, onBusyChange }: { onDone: () => void; onBu
         </div>
       )}
       <DialogFooter>
-        <Button variant="ghost" disabled={submitting} onClick={onDone}>
+        <Button icon="close" variant="secondary" disabled={submitting} onClick={onDone}>
           {changePasswordContent.cancel}
         </Button>
-        <Button type="submit" variant="primary" disabled={submitting}>
+        <Button icon="lock_reset" type="submit" variant="primary" disabled={submitting}>
           {submitting ? changePasswordContent.submitting : changePasswordContent.submit}
         </Button>
       </DialogFooter>

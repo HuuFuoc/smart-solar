@@ -16,10 +16,10 @@ export function SurfaceConflictNotice({ disabled, onReload, onOverwrite }: Props
       Có thể bạn đang mở bản đánh giá này ở một tab khác. Tải bản mới nhất để xem trước khi lưu, hoặc lưu đè bằng bản
       đang sửa ở đây.
       <span className="mt-3 flex flex-wrap gap-3">
-        <Button size="sm" icon="refresh" onClick={onReload} disabled={disabled}>
+        <Button variant="secondary" size="sm" icon="refresh" onClick={onReload} disabled={disabled}>
           Tải bản mới nhất
         </Button>
-        <Button size="sm" variant="warn" onClick={onOverwrite} disabled={disabled}>
+        <Button icon="save" size="sm" variant="warn" onClick={onOverwrite} disabled={disabled}>
           Lưu đè bằng bản đang sửa
         </Button>
       </span>

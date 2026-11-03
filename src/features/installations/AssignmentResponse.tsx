@@ -74,6 +74,7 @@ export function AssignmentResponse({ view }: { view: InstallationTechnicianView 
             </Button>
           )}
           <Button
+            icon="block"
             variant="danger"
             disabled={busy}
             onClick={() => {
@@ -106,10 +107,10 @@ export function AssignmentResponse({ view }: { view: InstallationTechnicianView 
             />
           </Field>
           <span className="flex flex-wrap items-center gap-3">
-            <Button size="sm" variant="ghost" bleed={false} disabled={busy} onClick={() => setDeclining(false)}>
+            <Button icon="close" size="sm" variant="secondary" disabled={busy} onClick={() => setDeclining(false)}>
               Huỷ
             </Button>
-            <Button size="sm" variant="danger" disabled={busy} onClick={() => void onDecline()}>
+            <Button icon="block" size="sm" variant="danger" disabled={busy} onClick={() => void onDecline()}>
               {decline.isPending ? 'Đang gửi…' : 'Xác nhận từ chối'}
             </Button>
             {error && <ErrorLine message={error} />}

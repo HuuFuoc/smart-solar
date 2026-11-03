@@ -68,6 +68,12 @@ function ActiveWork({ work }: { work: AccountActiveWork }) {
   )
 }
 
+// Tạm khoá mở lại được nên vàng; vô hiệu hoá đỏ; mở lại, kích hoạt xanh
+const statusIcon = (status: string) =>
+  status === 'SUSPENDED' ? 'pause_circle' : status === 'DISABLED' ? 'block' : 'lock_open'
+const statusVariant = (status: string, danger?: boolean) =>
+  status === 'SUSPENDED' ? 'warn' : danger ? 'danger' : 'soft'
+
 export function RolesPanel({ user, readOnly }: { user: AdminUserDetail; readOnly: boolean }) {
   const [roles, setRoles] = useState<string[]>(() => [...user.roles])
   const [failure, setFailure] = useState<unknown>(null)
@@ -87,10 +93,7 @@ export function RolesPanel({ user, readOnly }: { user: AdminUserDetail; readOnly
   const work = activeWorkOf(failure)
   return (
     <Panel>
-      <PanelHeader
-        title="Vai trò"
-        description="Đổi vai trò làm mọi phiên đang mở của tài khoản này hết hiệu lực ngay; người dùng đăng nhập lại."
-      />
+      <PanelHeader title="Vai trò" description="Đổi vai trò thì người dùng phải đăng nhập lại." />
       <PanelBody className="space-y-4">
         <div className="grid gap-2 sm:grid-cols-2">
           {ROLE_CODES.map((r) => (
@@ -109,7 +112,11 @@ export function RolesPanel({ user, readOnly }: { user: AdminUserDetail; readOnly
         {work && <ActiveWork work={work} />}
         {!readOnly && (
           <div className="flex flex-wrap items-center gap-3">
-            <Button disabled={!changed || roles.length === 0 || save.isPending} onClick={() => void submit()}>
+            <Button
+              icon="save"
+              disabled={!changed || roles.length === 0 || save.isPending}
+              onClick={() => void submit()}
+            >
               {save.isPending ? 'Đang lưu…' : 'Lưu vai trò'}
             </Button>
             {roles.length === 0 && <span className="text-meta text-danger">Chọn ít nhất một vai trò.</span>}
@@ -217,10 +224,11 @@ function StatusForm({
       {work && <ActiveWork work={work} />}
       <DialogFooter className="items-center">
         {failure !== null && !work && <ErrorLine message={errorMessage(failure)} />}
-        <Button variant="ghost" disabled={change.isPending} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={change.isPending} onClick={onClose}>
           Huỷ
         </Button>
         <Button
+          icon={action.danger ? 'lock' : 'lock_open'}
           variant={action.danger ? 'danger' : 'primary'}
           disabled={change.isPending}
           onClick={() => void confirm()}
@@ -252,7 +260,13 @@ export function StatusPanel({ user, isSelf }: { user: AdminUserDetail; isSelf: b
         {actions.length > 0 && (
           <div className="flex flex-wrap gap-3">
             {actions.map((a) => (
-              <Button key={a.status} size="sm" variant={a.danger ? 'danger' : 'secondary'} onClick={() => setAction(a)}>
+              <Button
+                key={a.status}
+                size="sm"
+                icon={statusIcon(a.status)}
+                variant={statusVariant(a.status, a.danger)}
+                onClick={() => setAction(a)}
+              >
                 {a.label}
               </Button>
             ))}
@@ -290,14 +304,7 @@ export function RecoveryPanel({ user }: { user: AdminUserDetail }) {
 
   return (
     <Panel>
-      <PanelHeader
-        title="Mật khẩu"
-        description={
-          user.hasPassword
-            ? 'Quản trị không xem hay đặt mật khẩu thay người dùng: gửi link để họ tự đặt lại.'
-            : 'Tài khoản chưa có mật khẩu: người dùng đặt mật khẩu lần đầu qua link gửi tới email.'
-        }
-      />
+      <PanelHeader title="Mật khẩu" description={user.hasPassword ? undefined : 'Tài khoản chưa có mật khẩu'} />
       <PanelBody className="space-y-3">
         <Button size="sm" icon="mail" disabled={blocked || send.isPending} onClick={() => void submit()}>
           {send.isPending ? 'Đang gửi…' : user.hasPassword ? 'Gửi link đặt lại mật khẩu' : 'Gửi link đặt mật khẩu'}
@@ -372,10 +379,10 @@ export function DeleteAccountDialog({
       {work && <ActiveWork work={work} />}
       <DialogFooter className="items-center">
         {failure !== null && !work && <ErrorLine message={errorMessage(failure)} />}
-        <Button variant="ghost" disabled={remove.isPending} onClick={() => onOpenChange(false)}>
+        <Button icon="close" variant="secondary" disabled={remove.isPending} onClick={() => onOpenChange(false)}>
           Huỷ
         </Button>
-        <Button variant="danger-solid" disabled={remove.isPending} onClick={() => void confirm()}>
+        <Button icon="delete" variant="danger-solid" disabled={remove.isPending} onClick={() => void confirm()}>
           {remove.isPending ? 'Đang xoá…' : 'Xoá tài khoản'}
         </Button>
       </DialogFooter>

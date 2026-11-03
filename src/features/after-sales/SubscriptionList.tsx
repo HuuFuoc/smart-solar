@@ -8,6 +8,8 @@ import {
   formatDurationMonths,
   formatPercent,
   subscriptionStatusMeta,
+  visitMonthsLabel,
+  isMaintenance,
 } from '@/features/after-sales/afterSalesDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
@@ -28,9 +30,12 @@ function termText(s: SubscriptionView) {
     case 'PAID':
       return s.startsAt
         ? `Kỳ ${range(s)}, nối tiếp kỳ đang hiệu lực.`
-        : 'Kỳ bảo vệ bắt đầu khi công trình được bàn giao.'
+        : 'Kỳ của gói bắt đầu khi công trình được bàn giao.'
     case 'ACTIVE':
-      return `Kỳ ${range(s)}. Bảo vệ từ ${formatMoment(s.coverageStartsAt)}.`
+      // Thời gian chờ trước khi được bảo vệ chỉ có ở gói thiên tai
+      return isMaintenance(s.kind)
+        ? `Kỳ ${range(s)}.`
+        : `Kỳ ${range(s)}. Bảo vệ từ ${formatMoment(s.coverageStartsAt)}.`
     case 'CANCELLATION_REQUESTED':
       return `Đã gửi yêu cầu huỷ lúc ${formatMoment(s.cancellationRequestedAt)}, chờ quản lý duyệt.`
     case 'EXPIRED':
@@ -42,6 +47,12 @@ function termText(s: SubscriptionView) {
 
 /** Quyền lợi đã chụp lúc mua */
 function benefitText(s: SubscriptionView) {
+  if (isMaintenance(s.kind)) {
+    const visits = `${s.visitMonths.length} lượt bảo trì, vào ${visitMonthsLabel(s.visitMonths)} tính từ khi gói bắt đầu`
+    return s.status === 'ACTIVE' && s.remainingVisits != null
+      ? `${visits}. Còn ${s.remainingVisits} lượt.`
+      : `${visits}.`
+  }
   const parts = [`Hỗ trợ ${formatPercent(s.coveragePercent)} chi phí sửa chữa được duyệt`]
   if (s.perIncidentLimit != null) parts.push(`tối đa ${formatMoney(s.perIncidentLimit, 'VND')} mỗi sự cố`)
   if (s.termLimit != null) parts.push(`${formatMoney(s.termLimit, 'VND')} mỗi kỳ`)
@@ -92,12 +103,12 @@ export function SubscriptionList({
                 {(payAttempt || mode) && (
                   <div className="flex flex-wrap items-center gap-3">
                     {mode && (
-                      <Button size="sm" variant="danger-quiet" onClick={() => onCancel(s)}>
+                      <Button icon="cancel" size="sm" variant="danger" onClick={() => onCancel(s)}>
                         {mode === 'paid' ? 'Yêu cầu huỷ' : 'Huỷ đơn'}
                       </Button>
                     )}
                     {payAttempt && (
-                      <Button size="sm" variant="soft" onClick={() => onPay(payAttempt)}>
+                      <Button icon="payments" size="sm" variant="soft" onClick={() => onPay(payAttempt)}>
                         Thanh toán
                       </Button>
                     )}

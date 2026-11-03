@@ -65,10 +65,10 @@ function CreateProjectDialog({
       />
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
-        <Button variant="ghost" disabled={create.isPending} onClick={onClose}>
+        <Button icon="close" variant="secondary" disabled={create.isPending} onClick={onClose}>
           Huỷ
         </Button>
-        <Button variant="primary" disabled={create.isPending} onClick={() => void submit()}>
+        <Button icon="add" variant="primary" disabled={create.isPending} onClick={() => void submit()}>
           {create.isPending ? 'Đang tạo…' : 'Tạo dự án'}
         </Button>
       </DialogFooter>
@@ -121,7 +121,7 @@ export function ReadyContractList({ rows, detailPattern }: { rows: PaidContractS
                 )}
               </Td>
               <Td className="lg:text-right">
-                <Button size="sm" variant="soft" onClick={() => setPicked(c)}>
+                <Button icon="add" size="sm" variant="soft" onClick={() => setPicked(c)}>
                   Tạo dự án
                 </Button>
               </Td>

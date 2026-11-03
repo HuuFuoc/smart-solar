@@ -53,7 +53,7 @@ function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
 export function AssetsPanel({ assets }: { assets: AssetView[] }) {
   return (
     <Panel>
-      <PanelHeader title="Thiết bị đã lắp" description="Kỹ thuật viên ghi theo thiết bị thật tại công trình." />
+      <PanelHeader title="Thiết bị đã lắp" />
       <PanelBody>
         {assets.length === 0 ? (
           <p className="text-body text-fg-2">Kỹ thuật viên chưa ghi thiết bị nào.</p>

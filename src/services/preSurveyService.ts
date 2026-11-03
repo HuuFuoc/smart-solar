@@ -1,7 +1,13 @@
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
 import type { UpdatePreSurveySurfaceRequest } from '@/types/req/preSurveySurfaceReq'
 import type { CreatePreSurveyRequest, UpdatePreSurveyRequest } from '@/types/req/preSurveysReq'
-import type { CreateCustomerProfileResponse, CreatePropertySiteResponse } from '@/types/res/customersRes'
+import type {
+  CreateCustomerProfileResponse,
+  CreatePropertySiteResponse,
+  CustomerListPage,
+  CustomerPreSurveyListItem,
+  CustomerSiteListItem,
+} from '@/types/res/customersRes'
 import type { PreSurveySurfaceView, UpdatePreSurveySurfaceResponse } from '@/types/res/preSurveySurfaceRes'
 import type { CreatePreSurveyResponse, SubmitPreSurveyResponse } from '@/types/res/preSurveysRes'
 import { get, post, put } from '@/services/api/client'
@@ -12,6 +18,18 @@ import { ENDPOINTS } from '@/services/api/endpoints'
 /** Gọi lần hai trả CUSTOMER_ALREADY_EXISTS */
 export function createCustomerProfile(body: CreateCustomerProfileRequest) {
   return post<CreateCustomerProfileResponse>(ENDPOINTS.customers.base, body)
+}
+
+/** Địa điểm của khách (tối đa 100, theo tên), để chọn lại khi đánh giá công trình cũ */
+export function listMySites() {
+  return get<CustomerListPage<CustomerSiteListItem>>(ENDPOINTS.customers.sites, { params: { page: 1, pageSize: 100 } })
+}
+
+/** Bản nháp chưa gửi, sửa gần nhất trước */
+export function listMyDrafts() {
+  return get<CustomerListPage<CustomerPreSurveyListItem>>(ENDPOINTS.customers.preSurveys, {
+    params: { status: 'DRAFT', sortBy: 'updatedAt', sortDirection: 'desc', page: 1, pageSize: 20 },
+  })
 }
 
 /** Chưa có hồ sơ thì trả CUSTOMER_PROFILE_NOT_FOUND */

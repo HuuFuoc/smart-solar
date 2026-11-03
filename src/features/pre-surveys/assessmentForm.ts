@@ -2,7 +2,9 @@ import { z } from 'zod'
 import { HCM_PROVINCE } from '@/services/administrativeUnitService'
 import { wardCenter } from '@/features/pre-surveys/hcmWardCenters'
 import type { ApiError } from '@/services/api/errors'
+import { SURFACE_TYPES } from '@/common/preSurvey'
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
+import type { CustomerSiteListItem } from '@/types/res/customersRes'
 
 // Form của bước hồ sơ và bước địa điểm.
 // Ô nhập giữ dạng chuỗi, schema vừa kiểm tra vừa đổi form sang đúng kiểu request của backend.
@@ -64,6 +66,28 @@ export function siteToForm(site: CreatePropertySiteRequest): SiteForm {
     installationSurfaceType: String(site.installationSurfaceType ?? 1),
     surfaceMaterial: site.surfaceMaterial ?? '',
     note: site.note ?? '',
+  }
+}
+
+/**
+ * Địa điểm trong danh sách của khách thành đúng dạng đã lưu khi tạo, để chọn lại địa điểm cũ
+ * mà không tạo địa điểm mới (bước địa điểm so sánh với bản này)
+ */
+export function siteRequestFromList(item: CustomerSiteListItem): CreatePropertySiteRequest {
+  const surface = SURFACE_TYPES.find((type) => type.name === item.installationSurfaceType?.toUpperCase())
+  return {
+    name: item.name,
+    province: item.province,
+    provinceCode: item.provinceCode,
+    district: item.district,
+    ward: item.ward ?? item.communeName,
+    communeCode: item.communeCode,
+    streetLine: item.streetLine,
+    latitude: item.latitude,
+    longitude: item.longitude,
+    installationSurfaceType: surface?.value ?? 1,
+    surfaceMaterial: item.surfaceMaterial,
+    note: null,
   }
 }
 

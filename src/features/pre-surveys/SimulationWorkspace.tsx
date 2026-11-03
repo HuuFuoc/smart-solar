@@ -181,8 +181,8 @@ export function SimulationWorkspace({
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
+      {/* Không đóng khung riêng: khung của bước (AssessmentStepCard) đã bao quanh */}
       <Panel
-        raised
         className="min-w-0 lg:col-span-2"
         // Ô cấu hình nằm trong <form> của wizard: Enter mặc định sẽ sang bước sau. Ở đây Enter là chạy mô phỏng
         onKeyDown={(event) => {
@@ -192,10 +192,7 @@ export function SimulationWorkspace({
           }
         }}
       >
-        <PanelHeader
-          title="Cấu hình mô phỏng"
-          description="Hệ thống xếp tấm trên mặt lắp đã lưu và ước tính sản lượng điện theo số liệu bức xạ của PVGIS tại địa điểm."
-        />
+        <PanelHeader title="Cấu hình mô phỏng" />
         <PanelBody className="space-y-5">
           <SurfaceSummary surface={surface} onEditSurface={onEditSurface} />
           <LocationNotices surface={surface} onEditSite={onEditSite} />
@@ -242,6 +239,7 @@ export function SimulationWorkspace({
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-line pt-4">
             <Button
+              icon="play_arrow"
               variant="soft"
               onClick={runSimulation}
               disabled={running || countdown.secondsLeft > 0 || panels.length === 0}

@@ -284,7 +284,13 @@ export function AdminProductsPage() {
                   ? 'Sản phẩm đã ngừng bán nằm ở mục bên dưới.'
                   : 'Bấm "Thêm sản phẩm" để tạo sản phẩm đầu tiên.'
             }
-            action={isFiltering ? <Button onClick={clearFilters}>Xoá bộ lọc</Button> : undefined}
+            action={
+              isFiltering ? (
+                <Button icon="filter_alt_off" onClick={clearFilters}>
+                  Xoá bộ lọc
+                </Button>
+              ) : undefined
+            }
           />
         ) : (
           <div className={cx(query.isFetching && 'opacity-70')}>
@@ -313,9 +319,7 @@ export function AdminProductsPage() {
           <h2 ref={hiddenHeadingRef} id="hidden-products" tabIndex={-1} className="text-title font-semibold">
             Đã ngừng bán
           </h2>
-          <p className="mt-1 max-w-prose text-body text-fg-2">
-            Backend không trả sản phẩm ngừng bán trong danh sách. Đây là các sản phẩm đã ngừng bán từ trình duyệt này.
-          </p>
+          <p className="mt-1 max-w-prose text-body text-fg-2">Chỉ hiện sản phẩm bạn ngừng bán trên trình duyệt này.</p>
           <ul className="mt-3 divide-y divide-line">
             {hidden.map((h) => (
               <li key={h.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
@@ -326,7 +330,13 @@ export function AdminProductsPage() {
                     {h.hiddenAt && `, ngừng bán lúc ${formatDateTime(h.hiddenAt)}`}
                   </p>
                 </div>
-                <Button size="sm" variant="soft" disabled={pendingIds.has(h.id)} onClick={() => void reopen(h)}>
+                <Button
+                  icon="play_circle"
+                  size="sm"
+                  variant="soft"
+                  disabled={pendingIds.has(h.id)}
+                  onClick={() => void reopen(h)}
+                >
                   {pendingIds.has(h.id) ? 'Đang mở bán…' : 'Mở bán lại'}
                 </Button>
               </li>
@@ -358,14 +368,14 @@ export function AdminProductsPage() {
       >
         <DialogTitle>Ngừng bán {hiding?.name}?</DialogTitle>
         <p className="mt-2 text-body text-fg-2">
-          Sản phẩm ngừng bán bị ẩn khỏi mọi danh mục, kể cả bảng này (backend không trả về). Sau khi ngừng bán, sản phẩm
-          nằm trong mục &quot;Đã ngừng bán&quot; ở cuối trang trên trình duyệt này để mở bán lại khi cần.
+          Sản phẩm ngừng bán bị ẩn khỏi mọi danh mục, kể cả bảng này. Sau khi ngừng bán, sản phẩm nằm trong mục &quot;Đã
+          ngừng bán&quot; ở cuối trang trên trình duyệt này để mở bán lại khi cần.
         </p>
         <DialogFooter>
-          <Button variant="ghost" disabled={hidingBusy} onClick={() => setHiding(null)}>
+          <Button icon="close" variant="secondary" disabled={hidingBusy} onClick={() => setHiding(null)}>
             Huỷ
           </Button>
-          <Button variant="danger" disabled={hidingBusy} onClick={() => hiding && void hide(hiding)}>
+          <Button icon="pause_circle" variant="warn" disabled={hidingBusy} onClick={() => hiding && void hide(hiding)}>
             {hidingBusy ? 'Đang ngừng bán…' : 'Ngừng bán'}
           </Button>
         </DialogFooter>

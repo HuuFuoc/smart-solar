@@ -49,7 +49,7 @@ export function DeleteProductDialog({ product, onOpenChange, onDeleted, onAfterC
         Không hoàn tác được sau khi xoá.
       </Notice>
       <DialogFooter>
-        <Button variant="ghost" disabled={mutation.isPending} onClick={() => onOpenChange(false)}>
+        <Button icon="close" variant="secondary" disabled={mutation.isPending} onClick={() => onOpenChange(false)}>
           Huỷ
         </Button>
         {/* Xoá không hoàn tác được: nút đặc màu đỏ, khác hẳn "Ngừng bán" (viền đỏ, hoàn tác được). */}

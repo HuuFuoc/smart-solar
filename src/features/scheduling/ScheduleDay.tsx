@@ -44,7 +44,7 @@ export function DayNav({
         variant="secondary"
         onClick={() => onChange(addDays(date, 1))}
       />
-      <Button disabled={date === today} onClick={() => onChange(today)}>
+      <Button icon="today" disabled={date === today} onClick={() => onChange(today)}>
         Hôm nay
       </Button>
     </div>
@@ -77,7 +77,7 @@ function AppointmentItem({
         </div>
       </div>
       {linkTo && (
-        <ButtonLink to={linkTo} size="sm" variant="soft" className="justify-self-start">
+        <ButtonLink icon="visibility" to={linkTo} size="sm" variant="info" className="justify-self-start">
           Xem chi tiết
           <span className="sr-only"> {item.propertyName}</span>
         </ButtonLink>

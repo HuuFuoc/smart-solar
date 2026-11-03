@@ -1,4 +1,4 @@
-// Mọi đường dẫn của app, mỗi portal một nhóm. Trong nhóm, màn mock đã ẩn nằm dưới dòng "Màn mock đã ẩn"
+﻿// Mọi đường dẫn của app, mỗi portal một nhóm. Trong nhóm, màn mock đã ẩn nằm dưới dòng "Màn mock đã ẩn"
 export const ROUTES = {
   // Công khai và xác thực
   home: '/',
@@ -17,6 +17,7 @@ export const ROUTES = {
 
   customer: {
     home: '/customer',
+    dashboard: '/customer/dashboard',
     assessment: '/customer/assessment',
     /** Yêu cầu khảo sát đã gửi: đặt / đổi / huỷ giờ */
     requests: '/customer/requests',
@@ -26,14 +27,18 @@ export const ROUTES = {
     project: '/customer/projects/:id',
     /** Gói bảo vệ thiên tai: mua, thanh toán PayOS, huỷ trước khi hiệu lực */
     packages: '/customer/packages',
+    /** Bảo hành, sửa chữa, bảo trì lẻ: yêu cầu đã gửi */
+    afterSales: '/customer/after-sales',
+    afterSalesRequest: '/customer/after-sales/:id',
     products: '/customer/products',
     product: '/customer/products/:id',
+    /** Báo giá lắp đặt; chi tiết theo mã báo giá (mỗi bản một mã) */
+    quotations: '/customer/quotations',
+    quotation: '/customer/quotations/:id',
     // Màn mock đã ẩn
     estimate: '/customer/assessment/estimate',
     consultations: '/customer/consultations',
     consultation: '/customer/consultations/:id',
-    quotations: '/customer/quotations',
-    quotation: '/customer/quotations/:id',
     warranty: '/customer/warranty',
     warrantyRequest: '/customer/warranty/:id',
     assistant: '/customer/assistant',
@@ -41,10 +46,14 @@ export const ROUTES = {
 
   ops: {
     home: '/ops',
+    dashboard: '/ops/dashboard',
     surveys: '/ops/surveys',
     /** Tab "Của tôi" có đường dẫn riêng để menu đánh dấu đúng */
     surveysMine: '/ops/surveys/mine',
     survey: '/ops/surveys/:id',
+    /** Việc báo giá sửa chữa, bảo trì; chi tiết theo mã yêu cầu */
+    afterSales: '/ops/after-sales',
+    afterSalesRequest: '/ops/after-sales/:id',
     products: '/ops/products',
     product: '/ops/products/:id',
     // Màn mock đã ẩn
@@ -63,6 +72,9 @@ export const ROUTES = {
     /** Công trình lắp đặt quản lý giao */
     installations: '/tech/installations',
     installation: '/tech/installations/:id',
+    /** Buổi hẹn bảo hành, sửa chữa, bảo trì; chi tiết theo mã buổi hẹn */
+    afterSales: '/tech/after-sales',
+    afterSalesVisit: '/tech/after-sales/:id',
     schedule: '/tech/schedule',
     products: '/tech/products',
     product: '/tech/products/:id',
@@ -85,6 +97,12 @@ export const ROUTES = {
     /** Dự án thi công + hợp đồng chờ tạo dự án (quản lý dùng chung trang với quản trị) */
     installations: '/manage/installations',
     installation: '/manage/installations/:id',
+    /** Yêu cầu bảo hành, sửa chữa, bảo trì (quản lý dùng chung trang với quản trị) */
+    afterSales: '/manage/after-sales',
+    afterSalesRequest: '/manage/after-sales/:id',
+    /** Xếp kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý dùng chung trang với quản trị) */
+    dispatch: '/manage/dispatch',
+    dispatchRequest: '/manage/dispatch/:id',
     // Màn mock đã ẩn
     projects: '/manage/projects',
     project: '/manage/projects/:id',
@@ -106,6 +124,12 @@ export const ROUTES = {
     products: '/admin/products',
     installations: '/admin/installations',
     installation: '/admin/installations/:id',
+    packages: '/admin/packages',
+    afterSales: '/admin/after-sales',
+    afterSalesRequest: '/admin/after-sales/:id',
+    dispatch: '/admin/dispatch',
+    dispatchRequest: '/admin/dispatch/:id',
+    settings: '/admin/settings',
     // Màn mock đã ẩn
     roles: '/admin/roles',
     services: '/admin/services',
@@ -113,7 +137,6 @@ export const ROUTES = {
     knowledgeBase: '/admin/knowledge-base',
     techConfig: '/admin/config',
     reports: '/admin/reports',
-    settings: '/admin/settings',
     profile: '/admin/profile',
   },
 

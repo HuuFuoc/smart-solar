@@ -1,0 +1,71 @@
+﻿import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
+import type { ServiceRequestSummary } from '@/types/res/customerAfterSalesRes'
+
+export type MilestoneProgress = {
+  id: string
+  label: string
+  count: number
+  percentage: number
+  color: string
+}
+
+// Lịch còn hiệu lực và chưa tới giờ hẹn.
+export function isUpcomingAppointment(r: CustomerSurveyRequestView, now = Date.now()) {
+  const appt = r.appointment
+  if (!appt || appt.status === 'CANCELLED' || appt.status === 'COMPLETED') return false
+  return new Date(appt.startsAt).getTime() > now
+}
+
+export function aggregateWorkflowProgress(
+  surveyRequests: CustomerSurveyRequestView[],
+  serviceRequests: ServiceRequestSummary[],
+): MilestoneProgress[] {
+  const pendingCount =
+    surveyRequests.filter((r) => r.status === 'PENDING').length +
+    serviceRequests.filter((s) => s.status === 'SUBMITTED' || s.status === 'AWAITING_DECISION').length
+
+  const scheduledCount =
+    surveyRequests.filter((r) => r.status === 'SCHEDULED').length +
+    serviceRequests.filter((s) => s.status === 'SCHEDULED').length
+
+  const inProgressCount = serviceRequests.filter(
+    (s) => s.status === 'IN_PROGRESS' || s.status === 'READY_FOR_WORK',
+  ).length
+
+  const completedCount =
+    surveyRequests.filter((r) => r.status === 'COMPLETED').length +
+    serviceRequests.filter((s) => s.status === 'COMPLETED').length
+
+  const total = pendingCount + scheduledCount + inProgressCount + completedCount || 1
+
+  return [
+    {
+      id: 'pending',
+      label: 'Chờ tiếp nhận / Xếp lịch',
+      count: pendingCount,
+      percentage: Math.round((pendingCount / total) * 100),
+      color: '#f59e0b',
+    },
+    {
+      id: 'scheduled',
+      label: 'Đã lên lịch hẹn',
+      count: scheduledCount,
+      percentage: Math.round((scheduledCount / total) * 100),
+      color: '#3b82f6',
+    },
+    {
+      id: 'in-progress',
+      label: 'Đang triển khai',
+      count: inProgressCount,
+      percentage: Math.round((inProgressCount / total) * 100),
+      color: '#06b6d4',
+    },
+    {
+      id: 'completed',
+      label: 'Đã hoàn thành',
+      count: completedCount,
+      percentage: Math.round((completedCount / total) * 100),
+      color: '#10b981',
+    },
+  ]
+}

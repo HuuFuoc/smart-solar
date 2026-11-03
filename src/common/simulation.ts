@@ -25,10 +25,10 @@ export const NO_PANEL_REASONS: Record<string, string> = {
 
 /** Lỗi của máy chủ dữ liệu ngoài (PVGIS, NASA POWER) */
 export const PROVIDER_FAILURES: Record<string, string> = {
-  PROVIDER_TIMEOUT: 'máy chủ dữ liệu phản hồi quá chậm',
-  PROVIDER_UNAVAILABLE: 'không kết nối được máy chủ dữ liệu',
-  PROVIDER_RATE_LIMITED: 'máy chủ dữ liệu đang giới hạn số lần gọi',
-  PROVIDER_REJECTED_REQUEST: 'máy chủ dữ liệu từ chối yêu cầu',
+  PROVIDER_TIMEOUT: 'nguồn dữ liệu nắng phản hồi quá chậm',
+  PROVIDER_UNAVAILABLE: 'không kết nối được nguồn dữ liệu nắng',
+  PROVIDER_RATE_LIMITED: 'nguồn dữ liệu nắng đang quá tải',
+  PROVIDER_REJECTED_REQUEST: 'nguồn dữ liệu nắng không nhận yêu cầu',
   PROVIDER_RESPONSE_INVALID: 'dữ liệu trả về không đọc được',
   LOCATION_NOT_COVERED: 'toạ độ nằm ngoài vùng có dữ liệu',
 }
@@ -60,6 +60,10 @@ export const SIMULATION_WARNINGS: Record<string, string> = {
     'Hướng tấm khác hướng mái dốc: bố trí dùng khung bao an toàn cho hình chiếu từng tấm.',
   SHADE_SPACING_NOT_EVALUATED: 'Địa điểm chưa có toạ độ nên chưa ước tính bóng đổ giữa các hàng.',
   OBSTACLE_SHADING_NOT_MODELED: 'Chưa tính bóng đổ của vật cản; chiều cao vật cản chỉ dùng để vẽ 3D.',
+  SHADING_NOT_APPLIED: 'Chưa trừ bóng che vào sản lượng; số sản lượng là khi tấm pin không bị che.',
+  SHADING_BASELINE_DIFFERS:
+    'Số liệu bức xạ theo giờ dùng để tính bóng che lệch với năm điển hình; chỉ lấy tỉ lệ hao hụt theo tháng.',
+  SUN_POSITION_CHECK_DEVIATION: 'Vị trí mặt trời tính được lệch với số liệu đối chiếu; cần kiểm tra lại bóng che.',
   LOCATION_MISSING: 'Địa điểm chưa có toạ độ nên chưa ước tính được sản lượng và khí hậu.',
   FLUSH_MOUNT_THERMAL_ASSUMPTION:
     'Sản lượng áp mái lấy kịch bản "áp sát mái" của PVGIS làm tham chiếu thận trọng, kèm kịch bản "thông gió tự do" để so sánh.',
