@@ -16,16 +16,36 @@ import {
 import { todayVn, vnDate, vnTimestamp } from '@/features/scheduling/schedulingDisplay'
 import { useFileUpload } from '@/hooks/useFiles'
 import { useRecordWarrantyActivationMutation } from '@/hooks/useManagerAfterSales'
-import { errorMessage } from '@/services/api/errors'
-import type { InstalledAssetView, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
+import { errorMessage, isApiError } from '@/services/api/errors'
+import type { ServiceRequestView } from '@/types/res/customerAfterSalesRes'
 import type { AssetView } from '@/types/res/managerInstallationsRes'
 
 // Bảo hành của hãng cho thiết bị trong yêu cầu. Hạn chỉ tính được khi quản lý ghi ngày kích hoạt kèm tài liệu
 // (phiếu bảo hành, hoá đơn); ghi một lần, không sửa. Xem chi tiết công trình chưa trả ngày đã ghi,
-// nên ngày vừa ghi chỉ hiện trong phiên này
+// nên trình duyệt này nhớ thiết bị đã ghi (cả khi ghi lại mới biết là đã có) để tải lại trang không hiện nút nữa
 
 const DOCUMENT = 'PROJECT_DOCUMENT'
 const REASON_MAX = 500
+const RECORDED_KEY = 'smartsolar.warrantyActivation'
+
+/** Ngày đã ghi; null khi chỉ biết là đã ghi ở nơi khác */
+type Recorded = { warrantyStartsAt: string | null; warrantyEndsAt: string | null }
+
+function readRecorded(): Record<string, Recorded> {
+  try {
+    return JSON.parse(localStorage.getItem(RECORDED_KEY) ?? '{}') as Record<string, Recorded>
+  } catch {
+    return {}
+  }
+}
+
+function rememberRecorded(assetId: string, value: Recorded) {
+  try {
+    localStorage.setItem(RECORDED_KEY, JSON.stringify({ ...readRecorded(), [assetId]: value }))
+  } catch {
+    // Trình duyệt không cho lưu thì chỉ nhớ đến khi tải lại trang
+  }
+}
 
 const assetLabel = (a: AssetView) => `${assetTypeLabel(a.assetType)} ${a.manufacturer} ${a.model}`
 
@@ -44,7 +64,7 @@ function ActivationDialog({
   asset: AssetView
   open: boolean
   onOpenChange: (open: boolean) => void
-  onRecorded: (result: InstalledAssetView) => void
+  onRecorded: (assetId: string, value: Recorded) => void
 }) {
   const today = todayVn()
   const [date, setDate] = useState('')
@@ -82,9 +102,15 @@ function ActivationDialog({
       toast.success(
         `Đã ghi ngày kích hoạt. Bảo hành của hãng đến ${formatDateOnly(vnDate(result.warrantyEndsAt ?? ''))}.`,
       )
-      onRecorded(result)
+      onRecorded(asset.assetId, { warrantyStartsAt: result.warrantyStartsAt, warrantyEndsAt: result.warrantyEndsAt })
       onOpenChange(false)
     } catch (e) {
+      if (isApiError(e) && e.code === 'AFTER_SALES_WARRANTY_ACTIVATION_RECORDED') {
+        toast.info('Thiết bị này đã ghi ngày kích hoạt trước đó, không cần ghi lại.')
+        onRecorded(asset.assetId, { warrantyStartsAt: null, warrantyEndsAt: null })
+        onOpenChange(false)
+        return
+      }
       setError(errorMessage(e))
     }
   }
@@ -191,7 +217,7 @@ export function WarrantyActivationPanel({ request, assets }: { request: ServiceR
   const [editing, setEditing] = useState<AssetView | null>(null)
   // Đổi key mỗi lần mở để form bắt đầu trống
   const [session, setSession] = useState(0)
-  const [recorded, setRecorded] = useState<Record<string, InstalledAssetView>>({})
+  const [recorded, setRecorded] = useState<Record<string, Recorded>>(readRecorded)
   if (linked.length === 0) return null
 
   return (
@@ -212,7 +238,9 @@ export function WarrantyActivationPanel({ request, assets }: { request: ServiceR
                     {activatable ? `, bảo hành ${formatWarrantyMonths(a.warrantyMonths)}` : ''}
                     {done?.warrantyStartsAt
                       ? `, từ ${formatDateOnly(vnDate(done.warrantyStartsAt))} đến ${formatDateOnly(vnDate(done.warrantyEndsAt ?? ''))}`
-                      : ''}
+                      : done
+                        ? ', đã ghi ngày kích hoạt'
+                        : ''}
                   </p>
                 </div>
                 {!activatable ? (
@@ -242,7 +270,10 @@ export function WarrantyActivationPanel({ request, assets }: { request: ServiceR
             asset={editing}
             open
             onOpenChange={(open) => !open && setEditing(null)}
-            onRecorded={(result) => setRecorded((all) => ({ ...all, [result.assetId]: result }))}
+            onRecorded={(assetId, value) => {
+              rememberRecorded(assetId, value)
+              setRecorded((all) => ({ ...all, [assetId]: value }))
+            }}
           />
         )}
       </PanelBody>

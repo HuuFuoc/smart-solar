@@ -11,12 +11,15 @@ import type { Tone } from '@/components/common/ui/badge'
 import {
   BOOKING_HORIZON_DAYS,
   addDays,
+  canBook,
+  customerProgress,
   formatDay,
   formatTimeRange,
   todayVn,
   vnDate,
   vnTimestamp,
 } from '@/features/scheduling/schedulingDisplay'
+import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 import type { CustomerDispatchView, DispatchStatus, PreferredWindowView } from '@/types/res/dispatchRes'
 
 // Nhãn và quy tắc của điều phối kỹ thuật viên, dùng chung cho khách và nhân viên
@@ -35,6 +38,19 @@ export function customerDispatchMeta(d: Pick<CustomerDispatchView, 'status'>): {
   if (d.status === 'OPEN') return { label: 'Đang xếp kỹ thuật viên', tone: 'info' }
   if (d.status === 'PROPOSAL_PENDING') return { label: 'Chờ bạn xác nhận giờ', tone: 'danger' }
   return dispatchStatusMeta(d.status)
+}
+
+type RequestState = Pick<CustomerSurveyRequestView, 'status' | 'appointment'>
+
+/** Nhãn yêu cầu khảo sát của khách, tính cả khi đang nhờ Smart Solar xếp kỹ thuật viên */
+export function customerRequestProgress(r: RequestState, d: CustomerDispatchView | null | undefined) {
+  return canBook(r) && d && isActiveDispatch(d.status) ? customerDispatchMeta(d) : customerProgress(r)
+}
+
+/** Việc của khách: đặt giờ (chưa nhờ xếp kỹ thuật viên) hoặc trả lời giờ Smart Solar đề xuất */
+export function customerRequestTodo(r: RequestState, d: CustomerDispatchView | null | undefined) {
+  if (!canBook(r)) return false
+  return d?.status === 'PROPOSAL_PENDING' || !isActiveDispatch(d?.status)
 }
 
 export function dispatchReasonLabel(reason: string) {

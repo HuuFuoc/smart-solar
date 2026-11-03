@@ -3,38 +3,51 @@ import { ButtonLink } from '@/components/common/ui/button'
 import { ListRow } from '@/components/common/ui/list-row'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
-import { EmptyState } from '@/components/common/ui/states'
+import { EmptyState, Skeleton } from '@/components/common/ui/states'
+import { customerRequestProgress, customerRequestTodo, isActiveDispatch } from '@/features/dispatch/dispatchDisplay'
 import { formatRelative, shortCode } from '@/features/pre-surveys/preSurveyDisplay'
-import { canBook, customerProgress, formatAppointment } from '@/features/scheduling/schedulingDisplay'
+import { formatAppointment, formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
+import { useMyDispatchesQuery } from '@/hooks/useDispatch'
 import { ROUTES, withId } from '@/routes/paths'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
+import type { CustomerDispatchView } from '@/types/res/dispatchRes'
 
-// Yêu cầu khảo sát của khách. Chưa đặt giờ lên đầu, rồi lịch sắp tới, rồi còn lại
-function rank(r: CustomerSurveyRequestView) {
-  if (canBook(r)) return 0
-  if (r.appointment) return 1
+type Row = { r: CustomerSurveyRequestView; d: CustomerDispatchView | undefined }
+
+// Yêu cầu khảo sát của khách. Việc của khách (đặt giờ, trả lời giờ đề xuất) lên đầu, rồi lịch sắp tới
+// hoặc đang chờ Smart Solar xếp kỹ thuật viên, rồi còn lại
+function rank({ r, d }: Row) {
+  if (customerRequestTodo(r, d)) return 0
+  if (r.appointment || isActiveDispatch(d?.status)) return 1
   return 2
 }
 
-function byNextAction(a: CustomerSurveyRequestView, b: CustomerSurveyRequestView) {
+function byNextAction(a: Row, b: Row) {
   const diff = rank(a) - rank(b)
   if (diff !== 0) return diff
-  if (a.appointment && b.appointment)
-    return new Date(a.appointment.startsAt).getTime() - new Date(b.appointment.startsAt).getTime()
-  return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+  if (a.r.appointment && b.r.appointment)
+    return new Date(a.r.appointment.startsAt).getTime() - new Date(b.r.appointment.startsAt).getTime()
+  return new Date(b.r.submittedAt).getTime() - new Date(a.r.submittedAt).getTime()
 }
 
 export function CustomerRequestsPage() {
   const query = useMyRequestsQuery()
-  const toBook = query.data?.filter(canBook).length ?? 0
+  const { dispatches, pending } = useMyDispatchesQuery(query.data)
+  const rows: Row[] = pending ? [] : (query.data ?? []).map((r) => ({ r, d: dispatches.get(r.surveyRequestId) }))
+  const toConfirm = rows.filter(({ d }) => d?.status === 'PROPOSAL_PENDING').length
+  const toBook = rows.filter(({ r, d }) => customerRequestTodo(r, d)).length - toConfirm
 
   return (
     <>
       <PageHeader
         title="Yêu cầu khảo sát"
         description={
-          toBook > 0 ? (
+          toConfirm > 0 ? (
+            <Badge tone="danger" icon="event">
+              {toConfirm} đề xuất giờ khảo sát chờ bạn xác nhận
+            </Badge>
+          ) : toBook > 0 ? (
             <Badge tone="danger" icon="event">
               {toBook} yêu cầu chưa đặt giờ khảo sát
             </Badge>
@@ -47,8 +60,10 @@ export function CustomerRequestsPage() {
         }
       />
       <QueryBoundary query={query}>
-        {(rows) =>
-          rows.length === 0 ? (
+        {(requests) =>
+          pending ? (
+            <Skeleton className="h-40" />
+          ) : requests.length === 0 ? (
             <EmptyState
               title="Chưa có yêu cầu khảo sát"
               description="Làm đánh giá sơ bộ cho địa điểm của bạn rồi gửi để đặt lịch khảo sát."
@@ -60,9 +75,10 @@ export function CustomerRequestsPage() {
             />
           ) : (
             <ul className="divide-y divide-line">
-              {[...rows].sort(byNextAction).map((r) => {
-                const progress = customerProgress(r)
+              {[...rows].sort(byNextAction).map(({ r, d }) => {
+                const progress = customerRequestProgress(r, d)
                 const a = r.appointment
+                const live = d?.status === 'PROPOSAL_PENDING' ? d.liveProposal : null
                 return (
                   <ListRow key={r.surveyRequestId}>
                     <div className="grid gap-x-8 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
@@ -80,6 +96,12 @@ export function CustomerRequestsPage() {
                             )}
                           </p>
                         )}
+                        {live && (
+                          <p className="mt-2 text-body text-fg">
+                            Đề xuất khảo sát {formatAppointment(live.startsAt, live.endsAt)}, trả lời trước{' '}
+                            {formatMoment(live.expiresAt)}
+                          </p>
+                        )}
                       </div>
                       <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
                         <Badge tone={progress.tone}>{progress.label}</Badge>
@@ -89,7 +111,7 @@ export function CustomerRequestsPage() {
                           size="sm"
                           variant="soft"
                         >
-                          {canBook(r) ? 'Đặt giờ khảo sát' : 'Xem yêu cầu'}
+                          {live ? 'Xem giờ đề xuất' : customerRequestTodo(r, d) ? 'Đặt giờ khảo sát' : 'Xem yêu cầu'}
                         </ButtonLink>
                       </div>
                     </div>

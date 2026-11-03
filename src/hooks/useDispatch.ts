@@ -1,8 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueries, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
+import { isActiveDispatch } from '@/features/dispatch/dispatchDisplay'
+import { canBook } from '@/features/scheduling/schedulingDisplay'
 import { bookingKeys } from '@/hooks/useBooking'
 import * as dispatchService from '@/services/dispatchService'
 import type { DispatchQueue, DispatchTechnicianBody } from '@/services/dispatchService'
 import type { ApiError } from '@/services/api/errors'
+import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 import type {
   CustomerDispatchView,
   DispatchCandidatesView,
@@ -30,6 +33,33 @@ export function useMyDispatchQuery(surveyRequestId: string | undefined, { enable
     queryFn: () => dispatchService.getMyDispatchRequest(surveyRequestId!),
     enabled: Boolean(surveyRequestId) && enabled,
     refetchInterval: REFRESH_MS,
+  })
+}
+
+// Hàm cố định để useQueries chỉ dựng lại Map khi dữ liệu đổi
+function byRequest(results: UseQueryResult<CustomerDispatchView | null>[]) {
+  const dispatches = new Map<string, CustomerDispatchView>()
+  for (const r of results) if (r.data) dispatches.set(r.data.surveyRequestId, r.data)
+  return { dispatches, pending: results.some((r) => r.isPending) }
+}
+
+/**
+ * Yêu cầu điều phối của các yêu cầu khảo sát chưa có lịch, cho danh sách và số đỏ (danh sách của BE chưa có trạng thái
+ * này). Dùng chung cache với màn chi tiết; chỉ tự tải lại khi đang chờ nhân viên hoặc chờ khách trả lời
+ */
+export function useMyDispatchesQuery(
+  requests: CustomerSurveyRequestView[] | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
+  return useQueries({
+    queries: (requests ?? []).filter(canBook).map((r) => ({
+      queryKey: dispatchKeys.mine(r.surveyRequestId),
+      queryFn: () => dispatchService.getMyDispatchRequest(r.surveyRequestId),
+      refetchInterval: (query: { state: { data?: CustomerDispatchView | null } }) =>
+        isActiveDispatch(query.state.data?.status) ? REFRESH_MS : false,
+      enabled,
+    })),
+    combine: byRequest,
   })
 }
 
