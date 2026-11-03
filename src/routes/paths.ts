@@ -126,6 +126,7 @@ export const ROUTES = {
     technicians: '/admin/technicians',
     technician: '/admin/technicians/:id',
     products: '/admin/products',
+    product: '/admin/products/:id',
     installations: '/admin/installations',
     installation: '/admin/installations/:id',
     /** Một phiên bản hợp đồng, chỉ xem (thanh toán, bản ký) */

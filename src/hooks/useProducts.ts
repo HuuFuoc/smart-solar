@@ -1,14 +1,13 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as productService from '@/services/productService'
-import type { ProductListParams } from '@/services/productService'
+import type { AdminProductListParams, ProductListParams } from '@/services/productService'
 import type {
   AddProductImageRequest,
   ChangeProductStatusRequest,
   CreateProductRequest,
   UpdateProductRequest,
 } from '@/types/req/adminProductsReq'
-import type { ProductDeletedResponse, ProductResponse } from '@/types/res/adminProductsRes'
-import type { ProductResponsePagedResult } from '@/types/res/productsRes'
+import type { ProductDeletedResponse, ProductResponse, ProductResponsePagedResult } from '@/types/res/adminProductsRes'
 import type { ApiError } from '@/services/api/errors'
 
 // Mọi thao tác ghi (kể cả lỗi) đều làm mới danh sách và chi tiết
@@ -17,6 +16,7 @@ export const productKeys = {
   all: ['products'] as const,
   list: (params: ProductListParams) => [...productKeys.all, 'list', params] as const,
   detail: (id: string) => [...productKeys.all, 'detail', id] as const,
+  adminList: (params: AdminProductListParams) => [...productKeys.all, 'admin-list', params] as const,
   adminDetail: (id: string) => [...productKeys.all, 'admin-detail', id] as const,
 }
 
@@ -35,6 +35,18 @@ export function useProductQuery(id: string | undefined) {
     queryKey: productKeys.detail(id ?? ''),
     queryFn: () => productService.getProduct(id!),
     enabled: Boolean(id),
+  })
+}
+
+/** Danh sách quản lý (quản trị, quản lý), có cả sản phẩm ngừng bán. Như chi tiết quản trị: không tự làm mới khi quay lại tab */
+export function useAdminProductsQuery(params: AdminProductListParams, { enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery<ProductResponsePagedResult, ApiError>({
+    queryKey: productKeys.adminList(params),
+    queryFn: () => productService.listAdminProducts(params),
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    enabled,
   })
 }
 

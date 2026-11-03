@@ -7,13 +7,14 @@ import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { ProductGallery } from '@/features/products/ProductGallery'
 import {
   formatPower,
   formatSize,
   formatWarranty,
   isProductActive,
   productTypeLabel,
-  specEntries,
+  specDisplayEntries,
 } from '@/features/products/productDisplay'
 import { useProductQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
@@ -38,7 +39,7 @@ function CatalogProductPage({ action }: { action?: ReactNode }) {
           { k: 'Kích thước', v: formatSize(p) },
           { k: 'Bảo hành', v: formatWarranty(p.warrantyMonth) },
         ].filter((f) => f.v)
-        const specs = specEntries(p.spec)
+        const specs = specDisplayEntries(p.spec)
         return (
           <>
             <PageHeader
@@ -59,13 +60,7 @@ function CatalogProductPage({ action }: { action?: ReactNode }) {
             />
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <div className="aspect-[4/3] overflow-hidden rounded-container bg-surface-2">
-                {p.imageUrl ? (
-                  <img src={p.imageUrl} alt={p.name ?? ''} className="size-full object-cover" />
-                ) : (
-                  <div className="flex size-full items-center justify-center text-meta text-fg-3">Chưa có ảnh</div>
-                )}
-              </div>
+              <ProductGallery product={p} />
               <div className="space-y-4">
                 <Panel>
                   <PanelHeader title="Thông tin" />
@@ -77,7 +72,7 @@ function CatalogProductPage({ action }: { action?: ReactNode }) {
                   <Panel>
                     <PanelHeader title="Thông số kỹ thuật" />
                     <PanelBody>
-                      <KeyValueList items={specs.map((s, i) => ({ k: s.key || `Thông số ${i + 1}`, v: s.value }))} />
+                      <KeyValueList items={specs.map((s, i) => ({ k: s.label || `Thông số ${i + 1}`, v: s.value }))} />
                     </PanelBody>
                   </Panel>
                 )}

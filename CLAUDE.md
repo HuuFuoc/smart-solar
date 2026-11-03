@@ -242,7 +242,9 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   (`presigned-upload`, đăng ký, verify, GET); `ReasonRequest` của after-sales đặt tên
   `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt. Cùng cách đó (22/10/2026) với 9
   path khảo sát tại công trình (tag TechnicianOnSiteSurvey, StaffOnSiteSurvey); `ObstacleRequest` / `RevisionRequest` của
-  backend đặt tên `OnSiteSurveyObstacleRequest` / `OnSiteSurveyRevisionRequest` cho khỏi trùng. Cùng cách đó với 11 path báo
+  backend đặt tên `OnSiteSurveyObstacleRequest` / `OnSiteSurveyRevisionRequest` cho khỏi trùng. Cùng cách đó (03/11/2026)
+  với 9 path sản phẩm của image `v2-deddde8` (thêm GET danh sách của quản trị; bỏ `FieldError` vì không schema nào dùng);
+  `PagedResult` của sản phẩm vì vậy nằm trong `adminProductsRes.ts`, không còn `productsRes.ts`. Cùng cách đó với 11 path báo
   giá lắp đặt (tag SalesQuotations, CustomerQuotations); `QuotationLineRequest` của luồng lắp đặt
   đặt tên `InstallationQuotationLineRequest` vì trùng tên dòng báo giá sửa chữa (tag SalesAfterSales), response viết tay ở
   `types/res/quotationsRes.ts` theo record C# của backend `main` (7c79fa8, `Modules.Quotations`). Cùng cách đó (03/11/2026) với
@@ -427,11 +429,17 @@ nhập làm nguồn chính + kéo thả vật cản.
     chú thích (`caption`) nằm ngay dưới hình. Khung 3D 4:3, khung rộng từ 60rem (container query) thì cao vừa khung nhìn.
   - Trang chi tiết của sales và kỹ thuật viên: lịch + số liệu khách khai chiếm 2/3 cạnh cột thông tin khách, mô phỏng nằm
     dưới cùng và trải hết chiều ngang (người dùng thấy cột phải trống suốt chiều dài mô phỏng là phí chỗ).
-- `/admin` → `/admin/products`: quản lý sản phẩm (`pages/admin/products-page.tsx`, bộ portal kit; tấm pin thiếu
-  công suất/kích thước được tô cảnh báo vì mô phỏng không dùng được). Backend ẩn sản phẩm INACTIVE khỏi GET danh sách
-  và GET chi tiết với mọi vai trò (dò 08/10/2026), nên: tạo mới luôn ACTIVE; "Ngừng bán" hỏi xác nhận, có "Hoàn tác";
-  sản phẩm đã ngừng bán được nhớ trong localStorage (`features/products/hiddenProducts.ts`) để "Mở bán lại" — chỉ trên
-  trình duyệt đã bấm. Khi backend có cách liệt kê sản phẩm ngừng bán thì bỏ cơ chế này.
+- `/admin` → `/admin/products(/:id)`: quản lý sản phẩm (`pages/admin/products-page.tsx`, `product-page.tsx`, bộ portal
+  kit; tấm pin thiếu công suất/kích thước được tô cảnh báo vì mô phỏng không dùng được). Danh sách đọc
+  GET /api/admin/products (lọc `status` ACTIVE / INACTIVE / ALL, mặc định ALL) và chi tiết GET /api/admin/products/{id}
+  nên thấy cả sản phẩm ngừng bán (GET /api/products công khai chỉ trả sản phẩm đang bán). Mọi API `/api/admin/products…`,
+  kể cả GET, chung giới hạn 30 lần / phút (`CatalogWritePolicy`) nên hai query quản trị không tự làm mới khi quay lại tab.
+  "Ngừng bán" hỏi xác nhận, có "Hoàn tác". Ảnh sản phẩm là danh sách (`images`, tối đa 10, đúng một ảnh chính; `imageUrl`
+  cũ chỉ còn là link ảnh chính), sửa trong `ProductImagesDialog` (nút ảnh trên từng dòng, nút "Quản lý ảnh" ở trang chi
+  tiết): thêm bằng link https, đặt ảnh chính, đổi thứ tự, xoá (4 API `/images…`, mỗi thao tác lưu ngay; backend không nhận
+  tải tệp ảnh). Form thêm sản phẩm có một link ảnh chính, PUT không đụng tới ảnh. INVERTER có ô riêng cho thông số trong
+  `spec` (`ratedAcPowerW`, `maxDcInputPowerW`, `maxDcVoltageV`, `mpptCount`, `efficiencyPercent`, `phase`) vì backend
+  kiểm tra đúng kiểu số; các trang danh mục hiện các thông số này có tên tiếng Việt và đơn vị.
 - `/admin/packages` (menu "Gói dịch vụ"): gói sau lắp đặt, tag AdminAfterSales (chỉ ADMIN; code chưa lên git, luật đọc từ
   `ServicePackageHandlers` trong DLL của image đang chạy). Hai tab "Bảo vệ thiên tai" / "Bảo trì định kỳ" (`?loai=bao-tri`),
   GET .../packages trả cả gói ngừng bán, response là `PackageView` của `customerAfterSalesRes.ts`. Form (`PackageFormDialog.tsx`,

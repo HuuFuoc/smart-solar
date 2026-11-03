@@ -1,11 +1,12 @@
 import { Link } from 'react-router'
 import { ROUTES, withId } from '@/routes/paths'
 import { formatMoney } from '@/utils/format'
-import { formatPower, formatWarranty, productTypeLabel } from '@/features/products/productDisplay'
+import { formatPower, formatWarranty, primaryImageUrl, productTypeLabel } from '@/features/products/productDisplay'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 
 /* Một ô trong lưới /products. Cả thẻ là link tới trang chi tiết. */
 export function ProductCard({ product }: { product: ProductResponse }) {
+  const image = primaryImageUrl(product)
   const facts = [
     formatPower(product.ratedPowerW),
     formatWarranty(product.warrantyMonth) && `Bảo hành ${formatWarranty(product.warrantyMonth)}`,
@@ -16,9 +17,9 @@ export function ProductCard({ product }: { product: ProductResponse }) {
       className="group flex h-full flex-col overflow-hidden rounded-container border border-line bg-canvas transition-colors hover:border-line-2"
     >
       <div className="aspect-[4/3] overflow-hidden bg-surface-2">
-        {product.imageUrl ? (
+        {image ? (
           <img
-            src={product.imageUrl}
+            src={image}
             alt={product.name ?? ''}
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"

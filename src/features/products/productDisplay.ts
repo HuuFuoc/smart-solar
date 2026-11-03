@@ -1,7 +1,15 @@
-import { PRODUCT_STATUSES, SOLAR_PANEL_TYPE } from '@/common/product'
+import {
+  INVERTER_PHASES,
+  INVERTER_SPEC_FIELDS,
+  INVERTER_TYPE,
+  PRODUCT_STATUSES,
+  PRODUCT_TYPES,
+  SOLAR_PANEL_TYPE,
+} from '@/common/product'
 import type { Tone } from '@/components/common/ui/badge'
+import { sortImages } from '@/features/products/productImageRules'
 import type { ProductListParams, ProductSortBy, ProductSortDirection } from '@/services/productService'
-import type { ProductResponse } from '@/types/res/adminProductsRes'
+import type { ProductImageResponse, ProductResponse } from '@/types/res/adminProductsRes'
 
 /** Dùng chung một cache cho mô phỏng và admin */
 export const SOLAR_PANEL_QUERY = {
@@ -15,10 +23,27 @@ export function isSolarPanelType(productType: string | null | undefined) {
   return productType?.trim().toUpperCase() === SOLAR_PANEL_TYPE
 }
 
-/** SOLAR_PANEL hiện là "Tấm pin", loại khác giữ nguyên */
+export function isInverterType(productType: string | null | undefined) {
+  return productType?.trim().toUpperCase() === INVERTER_TYPE
+}
+
+/** Loại có luật riêng hiện tên tiếng Việt (SOLAR_PANEL là "Tấm pin"), loại khác giữ nguyên */
 export function productTypeLabel(productType: string | null | undefined) {
   if (!productType?.trim()) return null
-  return isSolarPanelType(productType) ? 'Tấm pin' : productType
+  return PRODUCT_TYPES.find((t) => t.value === productType.trim().toUpperCase())?.label ?? productType
+}
+
+/** Ảnh theo thứ tự hiển thị. Sản phẩm chỉ có `imageUrl` (dữ liệu cũ) thì coi đó là ảnh chính duy nhất */
+export function productImages(product: Pick<ProductResponse, 'images' | 'imageUrl'>): ProductImageResponse[] {
+  const images = sortImages(product.images).filter((image) => image.url)
+  if (images.length === 0 && product.imageUrl) return [{ url: product.imageUrl, isPrimary: true, sortOrder: 0 }]
+  return images
+}
+
+/** Link ảnh chính cho thẻ và bảng */
+export function primaryImageUrl(product: Pick<ProductResponse, 'images' | 'imageUrl'>) {
+  const images = productImages(product)
+  return (images.find((image) => image.isPrimary) ?? images[0])?.url ?? null
 }
 
 export function isProductActive(status: string | null | undefined) {
@@ -84,6 +109,24 @@ export function specEntries(spec: unknown): { key: string; value: string }[] {
       .map(([key, value]) => ({ key, value: typeof value === 'object' ? JSON.stringify(value) : String(value) }))
   }
   return [{ key: '', value: String(spec) }]
+}
+
+const specNumber = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 })
+
+/** Thông số để hiển thị: thông số inverter có tên tiếng Việt và đơn vị, khoá khác in nguyên */
+export function specDisplayEntries(spec: unknown): { label: string; value: string }[] {
+  return specEntries(spec).map(({ key, value }) => {
+    const phase = key === 'phase' ? INVERTER_PHASES.find((p) => p.value === value) : undefined
+    if (phase) return { label: 'Số pha', value: phase.label }
+    const field = INVERTER_SPEC_FIELDS.find((f) => f.key === key)
+    const number = Number(value)
+    if (!field || !Number.isFinite(number)) return { label: key, value }
+    const shown = specNumber.format(number)
+    return {
+      label: field.label,
+      value: !field.unit ? shown : field.unit === '%' ? `${shown}%` : `${shown} ${field.unit}`,
+    }
+  })
 }
 
 /** `spec` về dạng chuỗi để đặt vào ô nhập của form admin. */

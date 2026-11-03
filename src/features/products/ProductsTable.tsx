@@ -1,7 +1,9 @@
+import { Link } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, IconButton } from '@/components/common/ui/button'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { WithTooltip } from '@/components/common/ui/tooltip'
+import { ProductThumb } from '@/features/products/ProductGallery'
 import {
   formatPower,
   formatSize,
@@ -13,10 +15,11 @@ import {
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { formatMoney } from '@/utils/format'
 
-// Bảng sản phẩm của /admin/products. Tấm pin thiếu công suất / kích thước thì báo ngay trong ô
+// Bảng sản phẩm của /admin/products. Tấm pin thiếu công suất / kích thước thì báo ngay trong ô, bấm tên mở trang chi tiết
 
 export type ProductsTableProps = {
   products: ProductResponse[]
+  detailPath: (id: string) => string
   onEdit: (product: ProductResponse) => void
   onToggleStatus: (product: ProductResponse) => void
   onDelete: (product: ProductResponse) => void
@@ -28,7 +31,15 @@ export type ProductsTableProps = {
 
 // Thao tác cuối dòng: Sửa, Ảnh, Ngừng bán, rồi Xoá sau vạch ngăn (chỉ đỏ khi rê chuột để cột không thành dải đỏ)
 // Bảng xếp khối đến xl vì ở 1024px tên sản phẩm bị bóp quá hẹp
-export function ProductsTable({ products, onEdit, onToggleStatus, onDelete, onImages, busyIds }: ProductsTableProps) {
+export function ProductsTable({
+  products,
+  detailPath,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+  onImages,
+  busyIds,
+}: ProductsTableProps) {
   return (
     <Table stack="xl">
       <thead>
@@ -56,24 +67,18 @@ export function ProductsTable({ products, onEdit, onToggleStatus, onDelete, onIm
             <Tr key={p.id ?? p.sku}>
               <Td label="Sản phẩm">
                 <div className="flex items-center gap-3">
-                  <div className="size-10 shrink-0 overflow-hidden rounded-control bg-surface-2">
-                    {p.imageUrl && (
-                      <img
-                        // key theo link: sửa link ảnh thì ảnh mới được tải lại dù link cũ từng lỗi.
-                        key={p.imageUrl}
-                        src={p.imageUrl}
-                        alt=""
-                        loading="lazy"
-                        // Link ảnh hỏng: ẩn ảnh, giữ ô xám làm chỗ trống thay cho biểu tượng ảnh vỡ.
-                        onError={(e) => {
-                          e.currentTarget.hidden = true
-                        }}
-                        className="size-full object-cover"
-                      />
-                    )}
-                  </div>
+                  <ProductThumb product={p} className="size-10" />
                   <div className="min-w-0">
-                    <p className="font-medium text-fg">{p.name || '—'}</p>
+                    {p.id ? (
+                      <Link
+                        to={detailPath(p.id)}
+                        className="font-medium text-fg underline-offset-4 hover:text-accent-fg hover:underline"
+                      >
+                        {p.name || '—'}
+                      </Link>
+                    ) : (
+                      <p className="font-medium text-fg">{p.name || '—'}</p>
+                    )}
                     <p className="tnum text-meta text-fg-3">{p.sku}</p>
                     {(p.brand || p.model) && (
                       <p className="hidden text-meta text-fg-3 xl:block 2xl:hidden">

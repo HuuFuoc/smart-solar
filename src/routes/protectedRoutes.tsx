@@ -83,6 +83,7 @@ const AdminUserPage = page(() => import('@/pages/admin/user-page'), 'AdminUserPa
 const AdminTechniciansPage = page(() => import('@/pages/technicians-page'), 'AdminTechniciansPage')
 const AdminTechnicianPage = page(() => import('@/pages/technician-page'), 'AdminTechnicianPage')
 const AdminProductsPage = page(() => import('@/pages/admin/products-page'), 'AdminProductsPage')
+const AdminProductPage = page(() => import('@/pages/admin/product-page'), 'AdminProductPage')
 const AdminPackagesPage = page(() => import('@/pages/admin/packages-page'), 'AdminPackagesPage')
 const AdminInstallationProjectsPage = page(
   () => import('@/pages/installation-projects-page'),
@@ -235,6 +236,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.technicians, lazy: AdminTechniciansPage },
       { path: admin.technician, lazy: AdminTechnicianPage },
       { path: admin.products, lazy: AdminProductsPage },
+      { path: admin.product, lazy: AdminProductPage },
       { path: admin.installations, lazy: AdminInstallationProjectsPage },
       { path: admin.installation, lazy: AdminInstallationProjectPage },
       { path: admin.contract, lazy: AdminContractPage },

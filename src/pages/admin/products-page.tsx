@@ -1,19 +1,18 @@
 import { useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
-import { Button, IconButton } from '@/components/common/ui/button'
-import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
+import { Button } from '@/components/common/ui/button'
 import { SearchInput, Select } from '@/components/common/ui/field'
 import { FilterBar } from '@/components/common/ui/filter-bar'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Pagination } from '@/components/common/ui/pagination'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
-import { formatDateTime } from '@/features/pre-surveys/preSurveyDisplay'
 import { DeleteProductDialog } from '@/features/products/DeleteProductDialog'
 import { ProductFormDialog } from '@/features/products/ProductFormDialog'
 import { ProductImagesDialog } from '@/features/products/ProductImagesDialog'
 import { ProductsTable } from '@/features/products/ProductsTable'
-import { PRODUCT_SORT_OPTIONS, SOLAR_PANEL_TYPE } from '@/common/product'
+import { StopSellingDialog } from '@/features/products/StopSellingDialog'
+import { PRODUCT_SORT_OPTIONS, PRODUCT_STATUS_FILTERS, PRODUCT_TYPES, type ProductStatusFilter } from '@/common/product'
 import {
   SOLAR_PANEL_QUERY,
   isProductActive,
@@ -21,78 +20,27 @@ import {
   parseSort,
   productTypeLabel,
 } from '@/features/products/productDisplay'
-import { readHiddenProducts, writeHiddenProducts, type HiddenProduct } from '@/features/products/hiddenProducts'
-import { useAdminProductQuery, useChangeProductStatusMutation, useProductsQuery } from '@/hooks/useProducts'
+import { useAdminProductsQuery, useChangeProductStatusMutation, useProductsQuery } from '@/hooks/useProducts'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { errorMessage, isApiError } from '@/services/api/errors'
+import { ROUTES, withId } from '@/routes/paths'
+import { errorMessage } from '@/services/api/errors'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { cx } from '@/utils/cx'
 
-// Quản lý sản phẩm: danh sách đọc GET /api/products, ảnh quản lý trong hộp thoại riêng (chi tiết quản trị)
-// API danh sách không trả sản phẩm ngừng bán và không có API liệt kê chúng, nên trình duyệt nhớ id các sản phẩm đã ngừng bán
-// (hiddenProducts.ts); trạng thái thật của từng sản phẩm đó đọc lại bằng GET /api/admin/products/{id}
-// Bộ lọc và trang lưu trên URL để Back quay lại đúng chỗ
+// Quản lý sản phẩm: danh sách GET /api/admin/products (có cả sản phẩm ngừng bán), bấm tên mở trang chi tiết,
+// ảnh quản lý trong hộp thoại riêng
 
 const PAGE_SIZE = 20
 /** Lấy cả danh mục (PageSize tối đa 100) để có danh sách loại và hãng cho bộ lọc, form */
 const ALL_PRODUCTS = { PageSize: 100, SortBy: 'name', SortDirection: 'asc' } as const
 
-type Filter = { search: string; productType: string; brand: string; sort: string }
-const defaultFilter: Filter = { search: '', productType: '', brand: '', sort: PRODUCT_SORT_OPTIONS[0]!.value }
-
-// Một sản phẩm đã ngừng bán: trạng thái lấy từ chi tiết quản trị, trình duyệt chỉ nhớ id
-function HiddenProductRow({
-  entry,
-  busy,
-  onReopen,
-  onForget,
-  onImages,
-}: {
-  entry: HiddenProduct
-  busy: boolean
-  onReopen: () => void
-  onForget: () => void
-  onImages: () => void
-}) {
-  const detail = useAdminProductQuery(entry.id)
-  const gone = isApiError(detail.error) && detail.error.status === 404
-  const active = detail.data ? isProductActive(detail.data.status) : false
-  return (
-    <li className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
-      <div className="min-w-0">
-        <p className="font-medium text-fg">{detail.data?.name || entry.name || 'Sản phẩm chưa đặt tên'}</p>
-        <p className="tnum text-meta text-fg-3">
-          {detail.data?.sku ?? entry.sku}
-          {entry.hiddenAt && `, ngừng bán lúc ${formatDateTime(entry.hiddenAt)}`}
-        </p>
-        {gone && <p className="text-meta text-fg-2">Sản phẩm đã bị xoá.</p>}
-        {active && <p className="text-meta text-fg-2">Sản phẩm đã được mở bán lại ở nơi khác.</p>}
-        {detail.isError && !gone && (
-          <p className="text-meta text-fg-2">Chưa đọc được trạng thái: {errorMessage(detail.error)}</p>
-        )}
-      </div>
-      <div className="flex items-center gap-1">
-        {gone || active ? (
-          <Button icon="playlist_remove" size="sm" variant="secondary" onClick={onForget}>
-            Bỏ khỏi danh sách
-          </Button>
-        ) : (
-          <>
-            <IconButton
-              size="sm"
-              icon="photo_library"
-              label={`Ảnh của ${entry.name}`}
-              tooltip="Ảnh sản phẩm"
-              onClick={onImages}
-            />
-            <Button icon="play_circle" size="sm" variant="soft" disabled={busy} onClick={onReopen}>
-              {busy ? 'Đang mở bán…' : 'Mở bán lại'}
-            </Button>
-          </>
-        )}
-      </div>
-    </li>
-  )
+type Filter = { search: string; productType: string; brand: string; status: ProductStatusFilter; sort: string }
+const defaultFilter: Filter = {
+  search: '',
+  productType: '',
+  brand: '',
+  status: 'ALL',
+  sort: PRODUCT_SORT_OPTIONS[0]!.value,
 }
 
 const unique = (values: (string | null | undefined)[]) =>
@@ -107,13 +55,10 @@ export function AdminProductsPage() {
   const [deleting, setDeleting] = useState<ProductResponse | null>(null)
   const [hiding, setHiding] = useState<ProductResponse | null>(null)
   const [imagesFor, setImagesFor] = useState<{ id: string; name: string } | null>(null)
-  // Sản phẩm đã ngừng bán từ trình duyệt này, vì backend không trả về nữa (hiddenProducts.ts)
-  const [hidden, setHidden] = useState<HiddenProduct[]>(readHiddenProducts)
   // Ngừng bán / mở bán / hoàn tác dùng chung một mutation nên tự giữ các id đang chờ
   const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set())
   const listRef = useRef<HTMLElement>(null)
-  const hiddenHeadingRef = useRef<HTMLHeadingElement>(null)
-  // Nhận focus khi dialog đóng, vì dòng chứa nút vừa bấm đã mất
+  // Nhận focus khi dialog đóng, vì dòng chứa nút vừa bấm có thể đã mất
   const focusAfterDialog = useRef<HTMLElement | null>(null)
   const restoreFocus = () => {
     focusAfterDialog.current?.focus()
@@ -121,17 +66,18 @@ export function AdminProductsPage() {
   }
 
   const search = useDebouncedValue(filter.search.trim())
-  const query = useProductsQuery({
+  const query = useAdminProductsQuery({
     Search: search,
     ProductType: filter.productType,
     Brand: filter.brand,
+    status: filter.status,
     Page: page,
     PageSize: PAGE_SIZE,
     ...parseSort(filter.sort),
   })
   const statusMutation = useChangeProductStatusMutation()
-  const all = useProductsQuery(ALL_PRODUCTS)
-  // Cảnh báo tính trên toàn bộ tấm pin, không chỉ trang đang xem
+  const all = useAdminProductsQuery(ALL_PRODUCTS)
+  // Cảnh báo tính trên toàn bộ tấm pin đang bán (mô phỏng chỉ dùng tấm pin đang bán), không chỉ trang đang xem
   const panels = useProductsQuery(SOLAR_PANEL_QUERY)
   const incompletePanels = (panels.data?.items ?? []).filter((p) => {
     const gaps = panelSpecGaps(p)
@@ -141,7 +87,8 @@ export function AdminProductsPage() {
   const products = useMemo(() => query.data?.items ?? [], [query.data])
   const total = query.data?.totalItems ?? 0
   const pages = query.data?.totalPages ?? 0
-  const isFiltering = filter.search !== '' || filter.productType !== '' || filter.brand !== ''
+  const isFiltering =
+    filter.search !== '' || filter.productType !== '' || filter.brand !== '' || filter.status !== 'ALL'
   // Đang giữ trang cũ mà trang cũ trống thì coi như đang tải
   const loading = query.isPending || (query.isPlaceholderData && products.length === 0)
 
@@ -149,11 +96,11 @@ export function AdminProductsPage() {
   if (query.data && !query.isFetching && !query.isPlaceholderData && page > Math.max(1, pages))
     setPage(Math.max(1, pages))
 
-  // Luôn có SOLAR_PANEL trong bộ lọc vì backend kiểm tra riêng mã này
+  // Luôn có các loại backend kiểm tra riêng (tấm pin, inverter, dịch vụ) trong bộ lọc
   const options = useMemo(() => {
     const items = all.data?.items ?? []
     return {
-      productTypes: unique([SOLAR_PANEL_TYPE, ...items.map((p) => p.productType)]),
+      productTypes: unique([...PRODUCT_TYPES.map((t) => t.value), ...items.map((p) => p.productType)]),
       brands: unique(items.map((p) => p.brand)),
       categories: unique(items.map((p) => p.category)),
     }
@@ -163,7 +110,7 @@ export function AdminProductsPage() {
     setFilter((prev) => ({ ...prev, ...patch }))
     setPage(1)
   }
-  const clearFilters = () => updateFilter({ search: '', productType: '', brand: '' })
+  const clearFilters = () => updateFilter({ search: '', productType: '', brand: '', status: 'ALL' })
 
   const markPending = (id: string, on: boolean) =>
     setPendingIds((prev) => {
@@ -173,63 +120,31 @@ export function AdminProductsPage() {
       return next
     })
 
-  // Dựa trên giá trị mới nhất vì nút "Hoàn tác" trong toast giữ closure cũ
-  const updateHidden = (change: (list: HiddenProduct[]) => HiddenProduct[]) =>
-    setHidden((prev) => {
-      const next = change(prev)
-      writeHiddenProducts(next)
-      return next
-    })
-
-  // Dòng vừa thao tác biến khỏi bảng thì chuyển focus tới chỗ còn đó
-  const focusLater = (target: { current: HTMLElement | null }) => requestAnimationFrame(() => target.current?.focus())
-
-  const reopen = async (entry: HiddenProduct) => {
-    markPending(entry.id, true)
-    try {
-      await statusMutation.mutateAsync({ id: entry.id, body: { status: 'ACTIVE' } })
-      updateHidden((list) => list.filter((h) => h.id !== entry.id))
-      toast.success(`Đã mở bán lại ${entry.name}`)
-      focusLater(listRef)
-    } catch (error) {
-      // 404 là sản phẩm đã bị xoá hẳn
-      if (isApiError(error) && error.status === 404) updateHidden((list) => list.filter((h) => h.id !== entry.id))
-      toast.error(errorMessage(error))
-    } finally {
-      markPending(entry.id, false)
-    }
-  }
-
-  const hide = async (product: ProductResponse) => {
+  const changeStatus = async (product: ProductResponse, status: 'ACTIVE' | 'INACTIVE') => {
     if (!product.id) return
-    const entry: HiddenProduct = {
-      id: product.id,
-      name: product.name ?? '',
-      sku: product.sku ?? '',
-      hiddenAt: new Date().toISOString(),
-    }
-    // Ghi nhớ trước khi gọi API, để tải lại trang giữa chừng vẫn mở bán lại được
-    updateHidden((list) => [entry, ...list.filter((h) => h.id !== entry.id)])
-    markPending(entry.id, true)
+    markPending(product.id, true)
     try {
-      await statusMutation.mutateAsync({ id: entry.id, body: { status: 'INACTIVE' } })
-      focusAfterDialog.current = hiddenHeadingRef.current
-      setHiding(null)
-      toast.success(`Đã ngừng bán ${entry.name}`, { action: { label: 'Hoàn tác', onClick: () => void reopen(entry) } })
+      await statusMutation.mutateAsync({ id: product.id, body: { status } })
+      if (status === 'INACTIVE') {
+        // Đang lọc "Đang bán" thì dòng vừa ngừng bán biến mất, focus về danh sách
+        if (filter.status === 'ACTIVE') focusAfterDialog.current = listRef.current
+        setHiding(null)
+        toast.success(`Đã ngừng bán ${product.name}`, {
+          action: { label: 'Hoàn tác', onClick: () => void changeStatus(product, 'ACTIVE') },
+        })
+      } else {
+        toast.success(`Đã mở bán lại ${product.name}`)
+      }
     } catch (error) {
-      // 4xx là chắc chắn chưa đổi nên bỏ ghi nhớ, lỗi mạng / 5xx thì có thể đã đổi nên giữ lại
-      if (isApiError(error) && error.status >= 400 && error.status < 500)
-        updateHidden((list) => list.filter((h) => h.id !== entry.id))
       toast.error(errorMessage(error))
     } finally {
-      markPending(entry.id, false)
+      markPending(product.id, false)
     }
   }
 
-  // Bảng chỉ có sản phẩm đang bán nên thao tác trên dòng là ngừng bán
   const toggleStatus = (product: ProductResponse) => {
     if (isProductActive(product.status)) setHiding(product)
-    else if (product.id) void reopen({ id: product.id, name: product.name ?? '', sku: product.sku ?? '', hiddenAt: '' })
+    else void changeStatus(product, 'ACTIVE')
   }
 
   const hidingBusy = Boolean(hiding?.id && pendingIds.has(hiding.id))
@@ -297,6 +212,21 @@ export function AdminProductsPage() {
             ))}
           </Select>
         </label>
+        <label className="w-full sm:w-44">
+          <span className="sr-only">Trạng thái</span>
+          <Select
+            name="status"
+            active={filter.status !== 'ALL'}
+            value={filter.status}
+            onChange={(e) => updateFilter({ status: e.target.value as ProductStatusFilter })}
+          >
+            {PRODUCT_STATUS_FILTERS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
+        </label>
         <label className="w-full sm:w-56">
           <span className="sr-only">Sắp xếp</span>
           <Select name="sort" value={filter.sort} onChange={(e) => updateFilter({ sort: e.target.value })}>
@@ -334,13 +264,9 @@ export function AdminProductsPage() {
           </div>
         ) : products.length === 0 ? (
           <EmptyState
-            title={isFiltering ? 'Không có sản phẩm nào khớp bộ lọc' : 'Chưa có sản phẩm nào đang bán'}
+            title={isFiltering ? 'Không có sản phẩm nào khớp bộ lọc' : 'Chưa có sản phẩm nào'}
             description={
-              isFiltering
-                ? 'Thử từ khoá khác hoặc bỏ bớt bộ lọc.'
-                : hidden.length > 0
-                  ? 'Sản phẩm đã ngừng bán nằm ở mục bên dưới.'
-                  : 'Bấm "Thêm sản phẩm" để tạo sản phẩm đầu tiên.'
+              isFiltering ? 'Thử từ khoá khác hoặc bỏ bớt bộ lọc.' : 'Bấm "Thêm sản phẩm" để tạo sản phẩm đầu tiên.'
             }
             action={
               isFiltering ? (
@@ -354,6 +280,7 @@ export function AdminProductsPage() {
           <div className={cx(query.isFetching && 'opacity-70')}>
             <ProductsTable
               products={products}
+              detailPath={(id) => withId(ROUTES.admin.product, id)}
               busyIds={pendingIds}
               onEdit={(product) => setForm({ open: true, product })}
               onToggleStatus={toggleStatus}
@@ -371,27 +298,6 @@ export function AdminProductsPage() {
           </p>
           {pages > 1 && <Pagination page={page} pages={pages} onChange={setPage} />}
         </div>
-      )}
-
-      {hidden.length > 0 && (
-        <section className="mt-8 border-t border-line pt-4" aria-labelledby="hidden-products">
-          <h2 ref={hiddenHeadingRef} id="hidden-products" tabIndex={-1} className="text-title font-semibold">
-            Đã ngừng bán
-          </h2>
-          <p className="mt-1 max-w-prose text-body text-fg-2">Chỉ hiện sản phẩm bạn ngừng bán trên trình duyệt này.</p>
-          <ul className="mt-3 divide-y divide-line">
-            {hidden.map((h) => (
-              <HiddenProductRow
-                key={h.id}
-                entry={h}
-                busy={pendingIds.has(h.id)}
-                onReopen={() => void reopen(h)}
-                onForget={() => updateHidden((list) => list.filter((x) => x.id !== h.id))}
-                onImages={() => setImagesFor({ id: h.id, name: h.name })}
-              />
-            ))}
-          </ul>
-        </section>
       )}
 
       <ProductFormDialog
@@ -413,27 +319,13 @@ export function AdminProductsPage() {
         }}
         onAfterClose={restoreFocus}
       />
-      <ModalDialog
-        open={Boolean(hiding)}
+      <StopSellingDialog
+        product={hiding}
+        busy={hidingBusy}
+        onConfirm={(product) => void changeStatus(product, 'INACTIVE')}
         onOpenChange={(open) => !open && setHiding(null)}
-        dismissible={!hidingBusy}
         onAfterClose={restoreFocus}
-        aria-label="Ngừng bán sản phẩm"
-      >
-        <DialogTitle>Ngừng bán {hiding?.name}?</DialogTitle>
-        <p className="mt-2 text-body text-fg-2">
-          Sản phẩm ngừng bán bị ẩn khỏi mọi danh mục, kể cả bảng này. Sau khi ngừng bán, sản phẩm nằm trong mục &quot;Đã
-          ngừng bán&quot; ở cuối trang trên trình duyệt này để mở bán lại khi cần.
-        </p>
-        <DialogFooter>
-          <Button icon="close" variant="secondary" disabled={hidingBusy} onClick={() => setHiding(null)}>
-            Huỷ
-          </Button>
-          <Button icon="pause_circle" variant="warn" disabled={hidingBusy} onClick={() => hiding && void hide(hiding)}>
-            {hidingBusy ? 'Đang ngừng bán…' : 'Ngừng bán'}
-          </Button>
-        </DialogFooter>
-      </ModalDialog>
+      />
     </>
   )
 }

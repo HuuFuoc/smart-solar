@@ -1,13 +1,14 @@
 import { Link, useParams } from 'react-router'
 import { LANDING_CONTAINER, TEXT_LINK, ctaClass } from '@/features/landing/classes'
 import { CatalogError } from '@/features/products/CatalogError'
+import { ProductGallery } from '@/features/products/ProductGallery'
 import {
   formatPower,
   formatSize,
   formatWarranty,
   isProductActive,
   productTypeLabel,
-  specEntries,
+  specDisplayEntries,
 } from '@/features/products/productDisplay'
 import { useProductQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
@@ -53,17 +54,11 @@ function ProductDetail({ product }: { product: ProductResponse }) {
     { label: 'Kích thước', value: formatSize(product) },
     { label: 'Bảo hành', value: formatWarranty(product.warrantyMonth) },
   ].filter((fact) => fact.value)
-  const specs = specEntries(product.spec)
+  const specs = specDisplayEntries(product.spec)
 
   return (
     <article className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-      <div className="aspect-[4/3] overflow-hidden rounded-container bg-surface-2">
-        {product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.name ?? ''} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center ld-meta text-fg-3">Chưa có ảnh</div>
-        )}
-      </div>
+      <ProductGallery product={product} />
 
       <div>
         <p className="ld-meta text-fg-2">{[product.brand, productTypeLabel(product.productType)].filter(Boolean).join(', ')}</p>
@@ -92,8 +87,8 @@ function ProductDetail({ product }: { product: ProductResponse }) {
             <h2 className="ld-sub text-fg">Thông số kỹ thuật</h2>
             <dl className="mt-3 divide-y divide-line border-y border-line">
               {specs.map((spec, i) => (
-                <div key={spec.key || i} className="flex justify-between gap-6 py-3 ld-body">
-                  {spec.key && <dt className="text-fg-2">{spec.key}</dt>}
+                <div key={spec.label || i} className="flex justify-between gap-6 py-3 ld-body">
+                  {spec.label && <dt className="text-fg-2">{spec.label}</dt>}
                   <dd className="text-right text-fg">{spec.value}</dd>
                 </div>
               ))}
