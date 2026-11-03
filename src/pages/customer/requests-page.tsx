@@ -2,6 +2,7 @@ import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { ListRow } from '@/components/common/ui/list-row'
 import { PageHeader } from '@/components/common/ui/page-header'
+import { PagedList } from '@/components/common/ui/pagination'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState, Skeleton } from '@/components/common/ui/states'
 import { customerRequestProgress, customerRequestTodo, isActiveDispatch } from '@/features/dispatch/dispatchDisplay'
@@ -74,51 +75,59 @@ export function CustomerRequestsPage() {
               }
             />
           ) : (
-            <ul className="divide-y divide-line">
-              {[...rows].sort(byNextAction).map(({ r, d }) => {
-                const progress = customerRequestProgress(r, d)
-                const a = r.appointment
-                const live = d?.status === 'PROPOSAL_PENDING' ? d.liveProposal : null
-                return (
-                  <ListRow key={r.surveyRequestId}>
-                    <div className="grid gap-x-8 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-                      <div className="min-w-0">
-                        <h2 className="text-title font-semibold">{r.propertyName || 'Công trình chưa đặt tên'}</h2>
-                        <p className="mt-1 text-body text-fg-2">
-                          Gửi {formatRelative(r.submittedAt)}, mã{' '}
-                          <span className="tnum">{shortCode(r.surveyRequestId)}</span>
-                        </p>
-                        {a && (
-                          <p className="mt-2 text-body text-fg">
-                            Khảo sát {formatAppointment(a.startsAt, a.endsAt)}
-                            {a.assignedTechnicianName && (
-                              <span className="text-fg-2">, kỹ thuật viên {a.assignedTechnicianName}</span>
+            <PagedList items={[...rows].sort(byNextAction)} noun="yêu cầu">
+              {(page) => (
+                <ul className="divide-y divide-line">
+                  {page.map(({ r, d }) => {
+                    const progress = customerRequestProgress(r, d)
+                    const a = r.appointment
+                    const live = d?.status === 'PROPOSAL_PENDING' ? d.liveProposal : null
+                    return (
+                      <ListRow key={r.surveyRequestId}>
+                        <div className="grid gap-x-8 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                          <div className="min-w-0">
+                            <h2 className="text-title font-semibold">{r.propertyName || 'Công trình chưa đặt tên'}</h2>
+                            <p className="mt-1 text-body text-fg-2">
+                              Gửi {formatRelative(r.submittedAt)}, mã{' '}
+                              <span className="tnum">{shortCode(r.surveyRequestId)}</span>
+                            </p>
+                            {a && (
+                              <p className="mt-2 text-body text-fg">
+                                Khảo sát {formatAppointment(a.startsAt, a.endsAt)}
+                                {a.assignedTechnicianName && (
+                                  <span className="text-fg-2">, kỹ thuật viên {a.assignedTechnicianName}</span>
+                                )}
+                              </p>
                             )}
-                          </p>
-                        )}
-                        {live && (
-                          <p className="mt-2 text-body text-fg">
-                            Đề xuất khảo sát {formatAppointment(live.startsAt, live.endsAt)}, trả lời trước{' '}
-                            {formatMoment(live.expiresAt)}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
-                        <Badge tone={progress.tone}>{progress.label}</Badge>
-                        <ButtonLink
-                          icon="event"
-                          to={withId(ROUTES.customer.request, r.surveyRequestId)}
-                          size="sm"
-                          variant="soft"
-                        >
-                          {live ? 'Xem giờ đề xuất' : customerRequestTodo(r, d) ? 'Đặt giờ khảo sát' : 'Xem yêu cầu'}
-                        </ButtonLink>
-                      </div>
-                    </div>
-                  </ListRow>
-                )
-              })}
-            </ul>
+                            {live && (
+                              <p className="mt-2 text-body text-fg">
+                                Đề xuất khảo sát {formatAppointment(live.startsAt, live.endsAt)}, trả lời trước{' '}
+                                {formatMoment(live.expiresAt)}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
+                            <Badge tone={progress.tone}>{progress.label}</Badge>
+                            <ButtonLink
+                              icon="event"
+                              to={withId(ROUTES.customer.request, r.surveyRequestId)}
+                              size="sm"
+                              variant="soft"
+                            >
+                              {live
+                                ? 'Xem giờ đề xuất'
+                                : customerRequestTodo(r, d)
+                                  ? 'Đặt giờ khảo sát'
+                                  : 'Xem yêu cầu'}
+                            </ButtonLink>
+                          </div>
+                        </div>
+                      </ListRow>
+                    )
+                  })}
+                </ul>
+              )}
+            </PagedList>
           )
         }
       </QueryBoundary>

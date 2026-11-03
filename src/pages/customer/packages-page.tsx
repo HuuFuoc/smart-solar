@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { SERVICE_PACKAGE_KINDS } from '@/common/afterSales'
 import { Badge } from '@/components/common/ui/badge'
 import { PageHeader } from '@/components/common/ui/page-header'
+import { PagedList } from '@/components/common/ui/pagination'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { awaitsPayment, packageKindLabel } from '@/features/after-sales/afterSalesDisplay'
@@ -82,12 +83,16 @@ export function CustomerPackagesPage() {
             <Panel>
               <PanelHeader title="Gói của bạn" />
               <PanelBody>
-                <SubscriptionList
-                  items={mine}
-                  contractNumbers={contractNumbers}
-                  onPay={setPayingAttemptId}
-                  onCancel={setCancelling}
-                />
+                <PagedList items={mine} noun="gói">
+                  {(page) => (
+                    <SubscriptionList
+                      items={page}
+                      contractNumbers={contractNumbers}
+                      onPay={setPayingAttemptId}
+                      onCancel={setCancelling}
+                    />
+                  )}
+                </PagedList>
               </PanelBody>
             </Panel>
           )

@@ -1,3 +1,4 @@
+import { useState, type ReactNode } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cx } from '@/utils/cx'
 
@@ -58,5 +59,76 @@ export function Pagination({
         <Icon name="chevron_right" className="text-[20px]" />
       </button>
     </nav>
+  )
+}
+
+/** Dòng "Hiển thị 1–10 trên 12 …" và thanh trang dưới danh sách. Luôn hiện, kể cả khi chỉ có một trang */
+export function ListPager({
+  page,
+  pages,
+  from,
+  to,
+  total,
+  noun,
+  onChange,
+  className,
+}: {
+  page: number
+  pages: number
+  from: number
+  to: number
+  total: number
+  noun: string
+  onChange: (page: number) => void
+  className?: string
+}) {
+  return (
+    <div className={cx('mt-4 flex flex-wrap items-center justify-between gap-3', className)}>
+      <p className="tnum text-meta text-fg-2">
+        Hiển thị {from}–{to} trên {total} {noun}
+      </p>
+      <Pagination
+        page={page}
+        pages={Math.max(1, pages)}
+        onChange={(next) => {
+          onChange(next)
+          window.scrollTo({ top: 0 })
+        }}
+      />
+    </div>
+  )
+}
+
+/** Chia danh sách đã tải hết (API không phân trang) thành trang 10 dòng, kèm ListPager */
+export function PagedList<T>({
+  items,
+  noun,
+  pageSize = 10,
+  children,
+}: {
+  items: T[]
+  noun: string
+  pageSize?: number
+  children: (pageItems: T[]) => ReactNode
+}) {
+  const [page, setPage] = useState(1)
+  const pages = Math.max(1, Math.ceil(items.length / pageSize))
+  // Danh sách ngắn lại (vd. vừa huỷ một yêu cầu) thì về trang cuối còn dòng
+  const current = Math.min(page, pages)
+  const start = (current - 1) * pageSize
+  const pageItems = items.slice(start, start + pageSize)
+  return (
+    <>
+      {children(pageItems)}
+      <ListPager
+        page={current}
+        pages={pages}
+        from={pageItems.length > 0 ? start + 1 : 0}
+        to={start + pageItems.length}
+        total={items.length}
+        noun={noun}
+        onChange={setPage}
+      />
+    </>
   )
 }

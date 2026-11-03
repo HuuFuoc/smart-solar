@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Avatar } from '@/components/common/ui/avatar'
 import { Count } from '@/components/common/ui/badge'
+import { ButtonLink } from '@/components/common/ui/button'
 import { Segmented } from '@/components/common/ui/segmented'
 import { WithTooltip } from '@/components/common/ui/tooltip'
 import type { RailCount } from '@/components/layout/app-shell'
@@ -219,21 +220,13 @@ export function CustomerShell({
         </header>
 
         <PageCrumbContext value={setCrumb}>
-          <main id="main" className="w-full px-4 py-6 md:px-6">
+          <main id="main" className="w-full p-4">
+            {/* Trang chi tiết: nút quay về mục đang chọn trên menu, tên trang đã có ở tiêu đề ngay dưới */}
             {current && !onItemPage && (
-              <nav aria-label="Vị trí hiện tại" className="mb-4 flex min-w-0 items-center gap-2 text-meta">
-                <Link
-                  to={current.to}
-                  className="tap shrink-0 text-fg-2 underline-offset-4 hover:text-accent-fg hover:underline"
-                >
+              <nav aria-label="Quay lại" className="mb-4">
+                <ButtonLink to={current.to} icon="arrow_back" size="sm">
                   {current.label}
-                </Link>
-                <span aria-hidden className="text-fg-3">
-                  /
-                </span>
-                <span aria-current="page" className="truncate font-semibold text-fg">
-                  {crumbLabel ?? '…'}
-                </span>
+                </ButtonLink>
               </nav>
             )}
             {children}

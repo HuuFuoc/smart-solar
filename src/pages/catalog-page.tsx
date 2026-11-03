@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { SearchInput, Select } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
-import { Pagination } from '@/components/common/ui/pagination'
+import { ListPager } from '@/components/common/ui/pagination'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { CatalogTable } from '@/features/products/CatalogTable'
 import { PRODUCT_SORT_OPTIONS } from '@/common/product'
@@ -13,7 +13,7 @@ import { cx } from '@/utils/cx'
 
 // Danh mục sản phẩm trong portal. Chỉ hiện sản phẩm đang bán (lọc ở client)
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 
 function CatalogPage({ detailPattern }: { detailPattern: string }) {
   const [search, setSearch] = useState('')
@@ -24,12 +24,13 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
   const query = useProductsQuery({ Search: debouncedSearch, Page: page, PageSize: PAGE_SIZE, ...parseSort(sort) })
   const products = (query.data?.items ?? []).filter((p) => isProductActive(p.status))
   const pages = query.data?.totalPages ?? 0
+  const from = (page - 1) * PAGE_SIZE + 1
 
   return (
     <>
       <PageHeader title="Sản phẩm" />
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="flex-1">
           <span className="sr-only">Tìm sản phẩm</span>
           <SearchInput
@@ -82,7 +83,17 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
         )}
       </section>
 
-      {pages > 1 && !query.isError && <Pagination page={page} pages={pages} onChange={setPage} className="mt-6" />}
+      {!query.isError && !query.isPending && products.length > 0 && (
+        <ListPager
+          page={page}
+          pages={pages}
+          from={from}
+          to={from + products.length - 1}
+          total={query.data?.totalItems ?? products.length}
+          noun="sản phẩm"
+          onChange={setPage}
+        />
+      )}
     </>
   )
 }

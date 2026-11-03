@@ -19,7 +19,7 @@ export function PageHeader({
   className?: string
 }) {
   return (
-    <div className={cx('mb-6 flex flex-wrap items-start justify-between gap-x-8 gap-y-4', className)}>
+    <div className={cx('mb-4 flex flex-wrap items-start justify-between gap-x-8 gap-y-3', className)}>
       <div className="min-w-0 max-w-[64ch]">
         {back && (
           <div className="mb-3">

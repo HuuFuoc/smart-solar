@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Pagination } from '@/components/common/ui/pagination'
 import { SearchInput, Select } from '@/components/common/ui/field'
-import { LANDING_CONTAINER } from '@/features/landing/classes'
+import { PUBLIC_WIDE_CONTAINER } from '@/features/landing/classes'
 import { CatalogError } from '@/features/products/CatalogError'
 import { ProductCard } from '@/features/products/ProductCard'
 import { PRODUCT_SORT_OPTIONS } from '@/common/product'
@@ -25,13 +25,13 @@ export function ProductCatalogPage() {
   const pages = query.data?.totalPages ?? 0
 
   return (
-    <div className={cx('pt-12 lg:pt-16', LANDING_CONTAINER)}>
+    <div className={cx('pt-6', PUBLIC_WIDE_CONTAINER)}>
       <header className="max-w-[60ch]">
-        <h1 className="ld-h1 text-fg">Sản phẩm</h1>
-        <p className="mt-3 ld-lede text-fg-2">Tấm pin, inverter, pin lưu trữ và phụ kiện chúng tôi dùng cho công trình.</p>
+        <h1 className="ld-h2 text-fg">Sản phẩm</h1>
+        <p className="mt-1 ld-body text-fg-2">Tấm pin, inverter, pin lưu trữ và phụ kiện chúng tôi dùng cho công trình.</p>
       </header>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="flex-1">
           <span className="sr-only">Tìm sản phẩm</span>
           <SearchInput
@@ -61,11 +61,11 @@ export function ProductCatalogPage() {
         </label>
       </div>
 
-      <section aria-live="polite" aria-busy={query.isFetching} className="mt-8">
+      <section aria-live="polite" aria-busy={query.isFetching} className="mt-4">
         {query.isError ? (
           <CatalogError error={query.error} onRetry={() => query.refetch()} />
         ) : query.isPending ? (
-          <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="Đang tải">
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" aria-label="Đang tải">
             {Array.from({ length: 6 }, (_, i) => (
               <li key={i} className="aspect-[4/5] animate-pulse rounded-container bg-surface-2 motion-reduce:animate-none" />
             ))}
@@ -76,7 +76,7 @@ export function ProductCatalogPage() {
             {debouncedSearch && <p className="mt-2 ld-body text-fg-2">Thử từ khoá khác hoặc xoá ô tìm kiếm.</p>}
           </div>
         ) : (
-          <ul className={cx('grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3', query.isFetching && 'opacity-70')}>
+          <ul className={cx('grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5', query.isFetching && 'opacity-70')}>
             {products.map((product) => (
               <li key={product.id}>
                 <ProductCard product={product} />
@@ -94,7 +94,7 @@ export function ProductCatalogPage() {
             setPage(next)
             window.scrollTo({ top: 0 })
           }}
-          className="mt-8 justify-center"
+          className="mt-6 justify-center"
         />
       )}
     </div>

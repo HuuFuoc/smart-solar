@@ -640,10 +640,10 @@ thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
   đủ email, cỡ 13px, xuống dòng ở bất kỳ ký tự nào – không cắt, không tự đặt tên. Dưới lg: thanh trên (nút Menu + biểu tượng
   - "Smart Solar", cuộn qua h1 thì đổi thành tên mục) mở sidebar thành drawer 288px: nền tối, focus vào nút đóng, phần còn lại
     `inert`, Esc / bấm nền / chọn trang thì đóng và trả focus về nút Menu. Đóng / mở drawer suy ra từ đường dẫn lúc mở, không
-    đặt state trong effect. `<main>` tối đa `max-w-7xl` (1280px) căn giữa, lề 16/24px như portal để ActionBar và Table lấn mép
-    đúng; trang con có dòng định vị "Sản phẩm / <tên>". Control bên trong vẫn là portal kit.
+    đặt state trong effect. `<main>` rộng hết, lề 16px như khung nhân viên để ActionBar và Table lấn mép
+    đúng; trang con có nút viền "← <mục>" về mục đang chọn trên menu (tên trang đã ở tiêu đề). Control bên trong vẫn là portal kit.
 
-Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 24px. Đầu rail là biểu tượng
+Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 16px. Đầu rail là biểu tượng
 thương hiệu (`public/images/mark-96.png`, nền trong suốt) + "Smart Solar" + tên portal (ngắt dòng cân bằng `text-balance`); mỗi mục
 menu có icon (`icon` trong `config/portals.ts`, bắt buộc). Mục menu bo đủ 4 góc, thẳng mép với mọi hàng khác của rail; mục đang mở
 có nền `accent-muted` + vạch accent 3px nằm trong mép trái + icon tô đặc; nhóm chứa nó đậm lên. Rail chia ba phần: đầu, menu
@@ -672,7 +672,7 @@ vai trò (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm tầng T�
   KHÔNG copy rail vào từng page; layout còn được vẽ làm khung chờ (`hydrateFallbackElement`) TRƯỚC `RequireRole` nên
   query trong layout phải chờ `useAuth().user` đúng vai trò mới gọi API.
 
-Mật độ (bố cục gọn 05/10/2026, cho khung nhân viên và cả hai bộ component; cổng khách hàng thì nội dung căn giữa tối đa 1280px): lề nội dung 24px (`px-6`, bộ Stitch `px-space-lg`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; khoảng cách tiêu đề trang → nội dung 24px; giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; `ListRow` `py-4`. Thêm màn mới thì theo đúng các bậc này, đừng quay lại 48px.
+Mật độ (gọn thêm 03/11/2026, cho cả khung nhân viên và khung khách hàng): lề nội dung 16px (`p-4`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; tiêu đề trang → nội dung 16px (`PageHeader` `mb-4`); giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; ô bảng `py-2`, `ListRow` `py-3`, Panel có khung `p-4`. Danh sách của khách luôn có dòng "Hiển thị x–y trên N" + thanh trang, 10 dòng/trang (`PagedList` khi API trả cả danh sách, `ListPager` khi API phân trang; `components/common/ui/pagination.tsx`). Thêm màn mới thì theo đúng các bậc này, đừng quay lại 24px hay 48px.
 
 Menu Admin (subtitle "Quản trị hệ thống"): Tổng quan, Người dùng, Vai trò & quyền, Sản phẩm,
 Danh mục dịch vụ, Nhóm hàng, Kho tri thức AI, Cấu hình kỹ thuật, Báo cáo, Cài đặt hệ thống.
@@ -693,6 +693,8 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
   số liệu tiết kiệm, số khách, chứng nhận, đánh giá, thông tin liên hệ. Nút "Đăng ký khảo sát" đi theo `surveyPath`
   (`features/landing/survey-link.ts`): chưa đăng nhập → `/register`, khách hàng → `/customer/assessment`, nhân viên
   → portal của mình. Nội dung ở `src/data/landing.ts`; token riêng (`font-vn`, `max-w-landing`, `ld-*`) ở `src/styles/landing.css`.
+  Chỉ trang chủ nằm trong khung `max-w-landing` (1200px); các trang công khai khác (Sản phẩm, chi tiết sản phẩm) cùng header,
+  footer của chúng rộng hết màn, lề 16/24px (`PUBLIC_WIDE_CONTAINER` trong `features/landing/classes.ts`).
   - Header dính: Giải pháp, Quy trình, Sản phẩm, Đăng nhập, nút "Đăng ký khảo sát", nút sáng / tối (`theme-toggle.tsx`) ở mép
     phải. Dưới lg: logo + nút sáng / tối + nút "Menu" mở bảng liên kết dưới header (Esc đóng, trả focus về nút Menu). Nút sáng /
     tối: khung 40px bo 6px (theo quy tắc bán kính, không tròn) + vùng bấm 44px, icon 20px là giao diện sẽ chuyển sang, tên đọc

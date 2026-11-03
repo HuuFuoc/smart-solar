@@ -63,7 +63,7 @@ export function ActivityList({ items, className }: { items: ActivityItem[]; clas
       {items.map((item, i) => (
         <li
           key={i}
-          className="flex flex-col gap-1 py-4 first:pt-0 last:pb-0 @md:grid @md:grid-cols-[104px_1fr] @md:gap-4"
+          className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 @md:grid @md:grid-cols-[104px_1fr] @md:gap-4"
         >
           <time className="tnum text-meta text-fg-3">{item.time}</time>
           <div className="min-w-0">
