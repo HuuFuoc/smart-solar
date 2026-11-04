@@ -33,16 +33,16 @@ function KpiCard({ label, value, unit, hint, icon, iconBgClass, valueClass, to }
   return (
     <Link
       to={to}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-container border border-line bg-surface-2 p-3.5 sm:p-4 shadow-sm transition-all duration-200 hover:border-line-2 hover:shadow-md"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-container border border-line bg-surface-2 p-3.5 sm:p-4 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md"
     >
-      {/* Top: Nhãn & Icon nhỏ */}
-      <div className="flex items-start justify-between gap-2">
+      {/* Top: Nhãn & Icon nhỏ có đường ngăn cách */}
+      <div className="flex items-start justify-between gap-2 border-b border-line/60 pb-2.5">
         <span className="text-meta font-medium text-fg-2 leading-tight group-hover:text-fg transition-colors">
           {label}
         </span>
         <div
           className={cx(
-            'flex size-8 shrink-0 items-center justify-center rounded-control transition-transform group-hover:scale-105',
+            'flex size-8 shrink-0 items-center justify-center rounded-control transition-transform group-hover:scale-105 shadow-xs',
             iconBgClass,
           )}
         >
@@ -51,14 +51,14 @@ function KpiCard({ label, value, unit, hint, icon, iconBgClass, valueClass, to }
       </div>
 
       {/* Bottom: Số liệu lớn & Ghi chú phụ */}
-      <div className="mt-3 flex items-baseline justify-between gap-2">
+      <div className="mt-3 flex items-baseline justify-between gap-2 pt-0.5">
         <div className="flex items-baseline gap-1.5">
           <span className={cx('tnum text-display font-bold tracking-tight', valueClass || 'text-fg')}>
             {value}
           </span>
           <span className="text-meta font-medium text-fg-2">{unit}</span>
         </div>
-        <span className="text-meta text-fg-3 truncate max-w-[130px]" title={hint}>
+        <span className="text-[12px] text-fg-3 truncate max-w-[130px] font-medium" title={hint}>
           {hint}
         </span>
       </div>
@@ -69,11 +69,11 @@ function KpiCard({ label, value, unit, hint, icon, iconBgClass, valueClass, to }
 function KpiSkeleton() {
   return (
     <div className="flex flex-col justify-between rounded-container border border-line bg-surface-2 p-3.5 sm:p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-2 border-b border-line/60 pb-2.5">
         <Skeleton className="h-4 w-28" />
         <Skeleton className="size-8 rounded-control" />
       </div>
-      <div className="mt-4 flex items-baseline justify-between gap-2">
+      <div className="mt-3 flex items-baseline justify-between gap-2">
         <Skeleton className="h-7 w-20" />
         <Skeleton className="h-3 w-16" />
       </div>

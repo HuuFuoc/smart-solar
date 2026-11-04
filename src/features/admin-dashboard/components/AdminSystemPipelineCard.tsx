@@ -27,11 +27,10 @@ export function AdminSystemPipelineCard({
           <Skeleton className="h-5 w-48" />
           <Skeleton className="h-5 w-24" />
         </div>
-        <Skeleton className="h-6 w-full rounded-control" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 rounded-control" />
-          ))}
+        <Skeleton className="h-28 w-full rounded-control" />
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <Skeleton className="h-20 rounded-control" />
+          <Skeleton className="h-20 rounded-control" />
         </div>
       </div>
     )
@@ -57,10 +56,11 @@ export function AdminSystemPipelineCard({
   const totalServices = serviceRequests.length || 1
   const openServices = serviceRequests.filter((s) => s.status !== 'COMPLETED' && s.status !== 'CANCELLED').length
   const completedServices = serviceRequests.filter((s) => s.status === 'COMPLETED').length
+  const resolutionRate = Math.round((completedServices / totalServices) * 100)
 
   return (
     <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm space-y-4">
-      {/* Header */}
+      {/* Header với đường ngăn cách */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
         <div>
           <h3 className="text-body font-semibold text-fg flex items-center gap-2">
@@ -77,15 +77,20 @@ export function AdminSystemPipelineCard({
         </ButtonLink>
       </div>
 
-      {/* Progress Multi-segment Bar */}
-      <div className="space-y-2">
+      {/* Bảng con 1: Khối tiến trình vòng đời dự án lắp đặt có viền riêng biệt */}
+      <div className="rounded-control border border-line bg-surface-1 p-3.5 sm:p-4 space-y-3 shadow-xs">
         <div className="flex items-center justify-between text-meta">
-          <span className="font-medium text-fg">Tiến trình vòng đời dự án lắp đặt ({projects.length} dự án)</span>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-fg">Tiến trình vòng đời dự án</span>
+            <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[11px] font-semibold text-fg-2">
+              {projects.length} công trình
+            </span>
+          </div>
           <span className="text-fg-muted text-[12px]">Phân bổ theo giai đoạn</span>
         </div>
 
         {/* Thanh bar phân đoạn */}
-        <div className="flex h-3 w-full overflow-hidden rounded-full bg-surface-3">
+        <div className="flex h-3 w-full overflow-hidden rounded-full bg-surface-3 border border-line/40">
           {projects.length === 0 ? (
             <div className="w-full bg-surface-3 text-center text-[10px] text-fg-muted leading-3">Chưa có dự án</div>
           ) : (
@@ -122,35 +127,46 @@ export function AdminSystemPipelineCard({
           )}
         </div>
 
-        {/* Chú giải các phân đoạn */}
-        <div className="grid grid-cols-2 gap-2 pt-1 text-meta sm:grid-cols-4">
-          <div className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-warn shrink-0" />
-            <span className="text-fg-2">Chờ gán KTV:</span>
-            <span className="font-semibold text-fg ml-auto sm:ml-0">{pendingAssign}</span>
+        {/* Chú giải các phân đoạn với đường ngăn cách mờ */}
+        <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-line/60 text-meta sm:grid-cols-4">
+          <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="size-2 rounded-full bg-warn shrink-0" />
+              <span className="text-fg-2 text-[12px] truncate">Chờ gán KTV</span>
+            </div>
+            <span className="font-semibold text-fg text-xs pl-1">{pendingAssign}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-accent shrink-0" />
-            <span className="text-fg-2">Đang thi công:</span>
-            <span className="font-semibold text-fg ml-auto sm:ml-0">{inProgress}</span>
+
+          <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="size-2 rounded-full bg-accent shrink-0" />
+              <span className="text-fg-2 text-[12px] truncate">Đang thi công</span>
+            </div>
+            <span className="font-semibold text-fg text-xs pl-1">{inProgress}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-info shrink-0" />
-            <span className="text-fg-2">Nghiệm thu:</span>
-            <span className="font-semibold text-fg ml-auto sm:ml-0">{awaitingAcceptance}</span>
+
+          <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="size-2 rounded-full bg-info shrink-0" />
+              <span className="text-fg-2 text-[12px] truncate">Nghiệm thu</span>
+            </div>
+            <span className="font-semibold text-fg text-xs pl-1">{awaitingAcceptance}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-ok shrink-0" />
-            <span className="text-fg-2">Hoàn thành:</span>
-            <span className="font-semibold text-fg ml-auto sm:ml-0">{completed}</span>
+
+          <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="size-2 rounded-full bg-ok shrink-0" />
+              <span className="text-fg-2 text-[12px] truncate">Hoàn thành</span>
+            </div>
+            <span className="font-semibold text-fg text-xs pl-1">{completed}</span>
           </div>
         </div>
       </div>
 
-      {/* Grid phụ: Dịch vụ sau bán & Danh mục */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+      {/* Bảng con 2: Grid chỉ số nghiệp vụ sau bán & kho thiết bị */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Box Sau bán & Sự cố */}
-        <div className="p-3.5 rounded-control border border-line bg-surface-1 flex items-center justify-between">
+        <div className="p-3.5 rounded-control border border-line bg-surface-1 flex items-center justify-between shadow-xs">
           <div className="space-y-1">
             <span className="text-meta font-medium text-fg-2 flex items-center gap-1.5">
               <Icon name="handyman" className="text-primary text-[16px]" />
@@ -158,18 +174,18 @@ export function AdminSystemPipelineCard({
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-title font-bold text-fg">{openServices}</span>
-              <span className="text-meta text-fg-muted">đang xử lý / {serviceRequests.length} tổng</span>
+              <span className="text-meta text-fg-muted">đang mở / {serviceRequests.length} tổng</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-[12px] font-semibold text-ok bg-ok-soft px-2 py-0.5 rounded-full">
-              {Math.round((completedServices / totalServices) * 100)}% giải quyết
+            <span className="text-[12px] font-semibold text-ok bg-ok-soft px-2.5 py-1 rounded-full border border-ok/20">
+              {resolutionRate}% giải quyết
             </span>
           </div>
         </div>
 
         {/* Box Danh mục & Địa bàn */}
-        <div className="p-3.5 rounded-control border border-line bg-surface-1 flex items-center justify-between">
+        <div className="p-3.5 rounded-control border border-line bg-surface-1 flex items-center justify-between shadow-xs">
           <div className="space-y-1">
             <span className="text-meta font-medium text-fg-2 flex items-center gap-1.5">
               <Icon name="inventory_2" className="text-primary text-[16px]" />
@@ -177,11 +193,11 @@ export function AdminSystemPipelineCard({
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-title font-bold text-fg">{totalProducts}</span>
-              <span className="text-meta text-fg-muted">sản phẩm thiết bị điện mặt trời</span>
+              <span className="text-meta text-fg-muted">sản phẩm trong hệ thống</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-[12px] font-semibold text-fg-2 bg-surface-3 px-2 py-0.5 rounded-full">
+            <span className="text-[12px] font-semibold text-fg bg-surface-3 px-2.5 py-1 rounded-full border border-line">
               {totalZones} khu vực
             </span>
           </div>

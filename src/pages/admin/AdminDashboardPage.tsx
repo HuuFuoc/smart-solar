@@ -135,12 +135,14 @@ export function AdminDashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
-      {/* 1. Header & Live Actions */}
-      <AdminDashboardHeader
-        onRefresh={handleRefreshAll}
-        isRefreshing={isRefreshing}
-        criticalCount={criticalCount}
-      />
+      {/* 1. Header & Live Actions trong khung container ngăn cách */}
+      <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+        <AdminDashboardHeader
+          onRefresh={handleRefreshAll}
+          isRefreshing={isRefreshing}
+          criticalCount={criticalCount}
+        />
+      </div>
 
       {/* 2. Top KPI Cards: Trích xuất trực tiếp từ API thực */}
       <AdminDashboardStats
@@ -187,7 +189,7 @@ export function AdminDashboardPage() {
             warrantyGap={warrantyGap}
           />
 
-          {/* Quick Shortcuts & System Configuration Card */}
+          {/* Bảng quản trị & Cấu hình hệ thống */}
           <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm space-y-3.5">
             <div className="flex items-center justify-between border-b border-line pb-2.5">
               <h3 className="text-body font-semibold text-fg flex items-center gap-2">
@@ -196,71 +198,84 @@ export function AdminDashboardPage() {
               </h3>
             </div>
 
+            {/* Các ô bảng con ngăn cách thông tin */}
             <div className="grid grid-cols-2 gap-2 text-meta">
               <Link
                 to={ROUTES.admin.packages}
-                className="flex items-center gap-2 rounded-control border border-line p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors"
+                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
               >
-                <Icon name="inventory" className="text-primary text-[18px]" />
-                <div>
-                  <p className="font-semibold text-fg">Gói dịch vụ</p>
-                  <p className="text-[11px] text-fg-muted">Gói bảo dưỡng, thiên tai</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-control bg-primary/10 text-primary">
+                    <Icon name="inventory" className="text-[17px]" />
+                  </div>
+                  <p className="font-semibold text-fg text-xs">Gói dịch vụ</p>
                 </div>
+                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Gói bảo dưỡng, thiên tai</p>
               </Link>
 
               <Link
                 to={ROUTES.admin.warrantyOptions}
-                className="flex items-center gap-2 rounded-control border border-line p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors"
+                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
               >
-                <Icon name="verified_user" className="text-primary text-[18px]" />
-                <div>
-                  <p className="font-semibold text-fg">Hạn bảo hành</p>
-                  <p className="text-[11px] text-fg-muted">Lắp đặt & Sửa chữa</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-control bg-ok-soft text-ok">
+                    <Icon name="verified_user" className="text-[17px]" />
+                  </div>
+                  <p className="font-semibold text-fg text-xs">Hạn bảo hành</p>
                 </div>
+                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Lắp đặt & Sửa chữa</p>
               </Link>
 
               <Link
                 to={ROUTES.admin.zones}
-                className="flex items-center gap-2 rounded-control border border-line p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors"
+                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
               >
-                <Icon name="map" className="text-primary text-[18px]" />
-                <div>
-                  <p className="font-semibold text-fg">Khu vực ({zones.length})</p>
-                  <p className="text-[11px] text-fg-muted">Địa bàn & Phường xã</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-control bg-info-soft text-info">
+                    <Icon name="map" className="text-[17px]" />
+                  </div>
+                  <p className="font-semibold text-fg text-xs">Khu vực ({zones.length})</p>
                 </div>
+                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Địa bàn & Phường xã</p>
               </Link>
 
               <Link
                 to={ROUTES.admin.products}
-                className="flex items-center gap-2 rounded-control border border-line p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors"
+                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
               >
-                <Icon name="solar_power" className="text-primary text-[18px]" />
-                <div>
-                  <p className="font-semibold text-fg">Sản phẩm ({totalProducts})</p>
-                  <p className="text-[11px] text-fg-muted">Pin, biến tần, phụ kiện</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-control bg-accent-soft text-accent-fg">
+                    <Icon name="solar_power" className="text-[17px]" />
+                  </div>
+                  <p className="font-semibold text-fg text-xs">Sản phẩm ({totalProducts})</p>
                 </div>
+                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Pin, biến tần, vật tư</p>
               </Link>
 
               <Link
                 to={ROUTES.admin.refunds}
-                className="flex items-center gap-2 rounded-control border border-line p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors"
+                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
               >
-                <Icon name="currency_exchange" className="text-primary text-[18px]" />
-                <div>
-                  <p className="font-semibold text-fg">Hoàn tiền</p>
-                  <p className="text-[11px] text-fg-muted">Ghi nhận chi trả</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-control bg-warn-soft text-warn">
+                    <Icon name="currency_exchange" className="text-[17px]" />
+                  </div>
+                  <p className="font-semibold text-fg text-xs">Hoàn tiền</p>
                 </div>
+                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Ghi nhận thanh toán</p>
               </Link>
 
               <Link
                 to={ROUTES.admin.reports}
-                className="flex items-center gap-2 rounded-control border border-line p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors"
+                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
               >
-                <Icon name="bar_chart" className="text-primary text-[18px]" />
-                <div>
-                  <p className="font-semibold text-fg">Báo cáo</p>
-                  <p className="text-[11px] text-fg-muted">Doanh thu & Sản lượng</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-control bg-surface-3 text-fg-2">
+                    <Icon name="bar_chart" className="text-[17px]" />
+                  </div>
+                  <p className="font-semibold text-fg text-xs">Báo cáo</p>
                 </div>
+                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Doanh thu & Sản lượng</p>
               </Link>
             </div>
           </div>

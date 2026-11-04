@@ -37,7 +37,7 @@ export function AdminRecentOperationsTable({
 
   return (
     <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm space-y-4">
-      {/* Header & Tabs */}
+      {/* Header & Link tất cả */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-3">
         <div>
           <h3 className="text-body font-semibold text-fg flex items-center gap-2">
@@ -72,21 +72,21 @@ export function AdminRecentOperationsTable({
         </div>
       </div>
 
-      {/* Tab Switcher */}
-      <div className="flex items-center gap-1.5 border-b border-line pb-1 overflow-x-auto">
+      {/* Tab Switcher với viền ngăn cách */}
+      <div className="flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveTab('installations')}
           className={cx(
             'flex items-center gap-2 px-3 py-1.5 rounded-control text-meta font-medium transition-colors whitespace-nowrap',
             activeTab === 'installations'
-              ? 'bg-primary/10 text-primary border border-primary/20'
-              : 'text-fg-2 hover:text-fg hover:bg-surface-3',
+              ? 'bg-primary/15 text-primary border border-primary/30 font-semibold shadow-xs'
+              : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
           )}
         >
           <Icon name="engineering" className="text-[18px]" />
           <span>Dự án thi công</span>
-          <span className="ml-1 rounded-full bg-surface-3 px-1.5 py-0.2 text-[11px] font-semibold text-fg">
+          <span className="ml-1 rounded-full bg-surface-3 px-2 py-0.2 text-[11px] font-semibold text-fg">
             {projects.length}
           </span>
         </button>
@@ -97,13 +97,13 @@ export function AdminRecentOperationsTable({
           className={cx(
             'flex items-center gap-2 px-3 py-1.5 rounded-control text-meta font-medium transition-colors whitespace-nowrap',
             activeTab === 'afterSales'
-              ? 'bg-primary/10 text-primary border border-primary/20'
-              : 'text-fg-2 hover:text-fg hover:bg-surface-3',
+              ? 'bg-primary/15 text-primary border border-primary/30 font-semibold shadow-xs'
+              : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
           )}
         >
           <Icon name="handyman" className="text-[18px]" />
           <span>Sự cố & Bảo hành</span>
-          <span className="ml-1 rounded-full bg-surface-3 px-1.5 py-0.2 text-[11px] font-semibold text-fg">
+          <span className="ml-1 rounded-full bg-surface-3 px-2 py-0.2 text-[11px] font-semibold text-fg">
             {serviceRequests.length}
           </span>
         </button>
@@ -114,21 +114,21 @@ export function AdminRecentOperationsTable({
           className={cx(
             'flex items-center gap-2 px-3 py-1.5 rounded-control text-meta font-medium transition-colors whitespace-nowrap',
             activeTab === 'dispatch'
-              ? 'bg-primary/10 text-primary border border-primary/20'
-              : 'text-fg-2 hover:text-fg hover:bg-surface-3',
+              ? 'bg-primary/15 text-primary border border-primary/30 font-semibold shadow-xs'
+              : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
           )}
         >
           <Icon name="calendar_month" className="text-[18px]" />
           <span>Hàng chờ điều phối KTV</span>
-          <span className="ml-1 rounded-full bg-surface-3 px-1.5 py-0.2 text-[11px] font-semibold text-fg">
+          <span className="ml-1 rounded-full bg-surface-3 px-2 py-0.2 text-[11px] font-semibold text-fg">
             {dispatchItems.length}
           </span>
         </button>
       </div>
 
-      {/* Tab Content: Installations */}
+      {/* Tab Content 1: Installations Table */}
       {activeTab === 'installations' && (
-        <div className="overflow-x-auto">
+        <div className="overflow-hidden rounded-control border border-line bg-surface-1 shadow-xs">
           {projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
               <Icon name="assignment" className="text-[32px] text-fg-3 mb-2" />
@@ -136,77 +136,87 @@ export function AdminRecentOperationsTable({
               <p className="text-meta text-fg-2">Hệ thống sẽ cập nhật khi hợp đồng thanh toán được duyệt khởi tạo.</p>
             </div>
           ) : (
-            <table className="w-full text-left text-meta border-collapse">
-              <thead>
-                <tr className="border-b border-line text-fg-2 font-medium">
-                  <th className="py-2.5 px-3">Mã dự án</th>
-                  <th className="py-2.5 px-3">Kỹ thuật viên phụ trách</th>
-                  <th className="py-2.5 px-3">Khởi tạo / Lịch hẹn</th>
-                  <th className="py-2.5 px-3">Trạng thái</th>
-                  <th className="py-2.5 px-3 text-right">Hành động</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line/60">
-                {projects.slice(0, 6).map((project) => {
-                  const meta = projectStatusMeta(project.status)
-                  const detailUrl = ROUTES.admin.installation.replace(':id', project.projectId)
-                  return (
-                    <tr key={project.projectId} className="hover:bg-surface-3/50 transition-colors">
-                      <td className="py-3 px-3">
-                        <Link to={detailUrl} className="font-semibold text-primary hover:underline">
-                          #{project.projectId.slice(0, 8)}
-                        </Link>
-                        <p className="text-[12px] text-fg-muted">HĐ: #{project.contractId.slice(0, 8)}</p>
-                      </td>
-                      <td className="py-3 px-3">
-                        {project.responsibleTechnicianName ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="size-2 rounded-full bg-ok shrink-0" />
-                            <span className="font-medium text-fg">{project.responsibleTechnicianName}</span>
-                          </div>
-                        ) : (
-                          <span className="text-fg-muted italic">Chưa chỉ định KTV</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-fg-2">
-                        {project.scheduledStartsAt ? (
-                          <div>
-                            <span className="text-primary font-medium">{formatDateTimeText(project.scheduledStartsAt)}</span>
-                            <p className="text-[11px] text-fg-muted">Lịch hẹn thi công</p>
-                          </div>
-                        ) : (
-                          <div>
-                            <span>{formatDateTimeText(project.createdAt)}</span>
-                            <p className="text-[11px] text-fg-muted">Ngày tạo</p>
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-3">
-                        <Badge tone={meta.tone}>
-                          {meta.label}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <Link
-                          to={detailUrl}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-primary hover:bg-primary/10 transition-colors"
-                        >
-                          <span>Chi tiết</span>
-                          <Icon name="chevron_right" className="text-[16px]" />
-                        </Link>
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-meta border-collapse">
+                  <thead>
+                    <tr className="border-b border-line bg-surface-3/50 text-fg-2 font-medium">
+                      <th className="py-2.5 px-3.5">Mã dự án</th>
+                      <th className="py-2.5 px-3.5">Kỹ thuật viên phụ trách</th>
+                      <th className="py-2.5 px-3.5">Khởi tạo / Lịch hẹn</th>
+                      <th className="py-2.5 px-3.5">Trạng thái</th>
+                      <th className="py-2.5 px-3.5 text-right">Hành động</th>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-line/70">
+                    {projects.slice(0, 6).map((project) => {
+                      const meta = projectStatusMeta(project.status)
+                      const detailUrl = ROUTES.admin.installation.replace(':id', project.projectId)
+                      return (
+                        <tr key={project.projectId} className="hover:bg-surface-2/60 transition-colors">
+                          <td className="py-3 px-3.5">
+                            <Link to={detailUrl} className="font-semibold text-primary hover:underline">
+                              #{project.projectId.slice(0, 8)}
+                            </Link>
+                            <p className="text-[12px] text-fg-muted">HĐ: #{project.contractId.slice(0, 8)}</p>
+                          </td>
+                          <td className="py-3 px-3.5">
+                            {project.responsibleTechnicianName ? (
+                              <div className="flex items-center gap-1.5">
+                                <span className="size-2 rounded-full bg-ok shrink-0" />
+                                <span className="font-medium text-fg">{project.responsibleTechnicianName}</span>
+                              </div>
+                            ) : (
+                              <span className="text-fg-muted italic">Chưa chỉ định KTV</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3.5 text-fg-2">
+                            {project.scheduledStartsAt ? (
+                              <div>
+                                <span className="text-primary font-medium">{formatDateTimeText(project.scheduledStartsAt)}</span>
+                                <p className="text-[11px] text-fg-muted">Lịch hẹn thi công</p>
+                              </div>
+                            ) : (
+                              <div>
+                                <span>{formatDateTimeText(project.createdAt)}</span>
+                                <p className="text-[11px] text-fg-muted">Ngày tạo</p>
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-3.5">
+                            <Badge tone={meta.tone}>
+                              {meta.label}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-3.5 text-right">
+                            <Link
+                              to={detailUrl}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              <span>Chi tiết</span>
+                              <Icon name="chevron_right" className="text-[16px]" />
+                            </Link>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-[12px] text-fg-muted bg-surface-2/40">
+                <span>Hiển thị {Math.min(6, projects.length)} trên {projects.length} dự án</span>
+                <Link to={ROUTES.admin.installations} className="text-primary hover:underline font-medium">
+                  Xem tất cả danh sách &rarr;
+                </Link>
+              </div>
+            </>
           )}
         </div>
       )}
 
-      {/* Tab Content: After-sales */}
+      {/* Tab Content 2: After-sales Table */}
       {activeTab === 'afterSales' && (
-        <div className="overflow-x-auto">
+        <div className="overflow-hidden rounded-control border border-line bg-surface-1 shadow-xs">
           {serviceRequests.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
               <Icon name="handyman" className="text-[32px] text-fg-3 mb-2" />
@@ -214,61 +224,71 @@ export function AdminRecentOperationsTable({
               <p className="text-meta text-fg-2">Các ticket phản hồi từ khách hàng sẽ hiển thị tại đây.</p>
             </div>
           ) : (
-            <table className="w-full text-left text-meta border-collapse">
-              <thead>
-                <tr className="border-b border-line text-fg-2 font-medium">
-                  <th className="py-2.5 px-3">Mã ticket</th>
-                  <th className="py-2.5 px-3">Loại dịch vụ & Mô tả</th>
-                  <th className="py-2.5 px-3">Thời gian tạo</th>
-                  <th className="py-2.5 px-3">Trạng thái</th>
-                  <th className="py-2.5 px-3 text-right">Hành động</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line/60">
-                {serviceRequests.slice(0, 6).map((req) => {
-                  const meta = requestStatusMeta(req.status, 'manager')
-                  const detailUrl = ROUTES.admin.afterSalesRequest.replace(':id', req.requestId)
-                  return (
-                    <tr key={req.requestId} className="hover:bg-surface-3/50 transition-colors">
-                      <td className="py-3 px-3">
-                        <Link to={detailUrl} className="font-semibold text-primary hover:underline">
-                          {req.requestNumber || `#${req.requestId.slice(0, 8)}`}
-                        </Link>
-                        <p className="text-[12px] text-fg-muted">Dự án: #{req.projectId.slice(0, 8)}</p>
-                      </td>
-                      <td className="py-3 px-3 max-w-[280px]">
-                        <span className="font-medium text-fg">{requestKindLabel(req.kind)}</span>
-                        <p className="text-[12px] text-fg-2 line-clamp-1 truncate">{req.description || 'Không có mô tả chi tiết'}</p>
-                      </td>
-                      <td className="py-3 px-3 text-fg-2">
-                        {formatDateTimeText(req.createdAt)}
-                      </td>
-                      <td className="py-3 px-3">
-                        <Badge tone={meta.tone}>
-                          {meta.label}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <Link
-                          to={detailUrl}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-primary hover:bg-primary/10 transition-colors"
-                        >
-                          <span>Xử lý</span>
-                          <Icon name="chevron_right" className="text-[16px]" />
-                        </Link>
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-meta border-collapse">
+                  <thead>
+                    <tr className="border-b border-line bg-surface-3/50 text-fg-2 font-medium">
+                      <th className="py-2.5 px-3.5">Mã ticket</th>
+                      <th className="py-2.5 px-3.5">Loại dịch vụ & Mô tả</th>
+                      <th className="py-2.5 px-3.5">Thời gian tạo</th>
+                      <th className="py-2.5 px-3.5">Trạng thái</th>
+                      <th className="py-2.5 px-3.5 text-right">Hành động</th>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-line/70">
+                    {serviceRequests.slice(0, 6).map((req) => {
+                      const meta = requestStatusMeta(req.status, 'manager')
+                      const detailUrl = ROUTES.admin.afterSalesRequest.replace(':id', req.requestId)
+                      return (
+                        <tr key={req.requestId} className="hover:bg-surface-2/60 transition-colors">
+                          <td className="py-3 px-3.5">
+                            <Link to={detailUrl} className="font-semibold text-primary hover:underline">
+                              {req.requestNumber || `#${req.requestId.slice(0, 8)}`}
+                            </Link>
+                            <p className="text-[12px] text-fg-muted">Dự án: #{req.projectId.slice(0, 8)}</p>
+                          </td>
+                          <td className="py-3 px-3.5 max-w-[280px]">
+                            <span className="font-medium text-fg">{requestKindLabel(req.kind)}</span>
+                            <p className="text-[12px] text-fg-2 line-clamp-1 truncate">{req.description || 'Không có mô tả chi tiết'}</p>
+                          </td>
+                          <td className="py-3 px-3.5 text-fg-2">
+                            {formatDateTimeText(req.createdAt)}
+                          </td>
+                          <td className="py-3 px-3.5">
+                            <Badge tone={meta.tone}>
+                              {meta.label}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-3.5 text-right">
+                            <Link
+                              to={detailUrl}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              <span>Xử lý</span>
+                              <Icon name="chevron_right" className="text-[16px]" />
+                            </Link>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-[12px] text-fg-muted bg-surface-2/40">
+                <span>Hiển thị {Math.min(6, serviceRequests.length)} trên {serviceRequests.length} yêu cầu</span>
+                <Link to={ROUTES.admin.afterSales} className="text-primary hover:underline font-medium">
+                  Xem tất cả danh sách &rarr;
+                </Link>
+              </div>
+            </>
           )}
         </div>
       )}
 
-      {/* Tab Content: Dispatch Queue */}
+      {/* Tab Content 3: Dispatch Queue Table */}
       {activeTab === 'dispatch' && (
-        <div className="overflow-x-auto">
+        <div className="overflow-hidden rounded-control border border-line bg-surface-1 shadow-xs">
           {dispatchItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
               <Icon name="check_circle" className="text-[32px] text-ok mb-2" />
@@ -276,58 +296,67 @@ export function AdminRecentOperationsTable({
               <p className="text-meta text-fg-2">Mọi lịch hẹn khảo sát đã được gán KTV hoặc chưa có yêu cầu mới.</p>
             </div>
           ) : (
-            <table className="w-full text-left text-meta border-collapse">
-              <thead>
-                <tr className="border-b border-line text-fg-2 font-medium">
-                  <th className="py-2.5 px-3">Mã điều phối</th>
-                  <th className="py-2.5 px-3">Khách hàng & Công trình</th>
-                  <th className="py-2.5 px-3">Khu vực phục vụ</th>
-                  <th className="py-2.5 px-3">Trạng thái</th>
-                  <th className="py-2.5 px-3 text-right">Hành động</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line/60">
-                {dispatchItems.slice(0, 6).map((item) => {
-                  const meta = dispatchStatusMeta(item.status)
-                  const detailUrl = ROUTES.admin.dispatchRequest.replace(':id', item.dispatchRequestId)
-                  return (
-                    <tr key={item.dispatchRequestId} className="hover:bg-surface-3/50 transition-colors">
-                      <td className="py-3 px-3">
-                        <Link to={detailUrl} className="font-semibold text-primary hover:underline">
-                          #{item.dispatchRequestId.slice(0, 8)}
-                        </Link>
-                        <p className="text-[12px] text-fg-muted">{formatDateTimeText(item.createdAt)}</p>
-                      </td>
-                      <td className="py-3 px-3">
-                        <p className="font-medium text-fg">{item.customerName}</p>
-                        <p className="text-[12px] text-fg-2 truncate max-w-[220px]">{item.propertyName} ({item.province})</p>
-                      </td>
-                      <td className="py-3 px-3 text-fg-2">
-                        {item.zone?.name || item.province || '—'}
-                      </td>
-                      <td className="py-3 px-3">
-                        <Badge tone={meta.tone}>
-                          {meta.label}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <Link
-                          to={detailUrl}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-primary hover:bg-primary/10 transition-colors"
-                        >
-                          <span>Điều phối</span>
-                          <Icon name="chevron_right" className="text-[16px]" />
-                        </Link>
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-meta border-collapse">
+                  <thead>
+                    <tr className="border-b border-line bg-surface-3/50 text-fg-2 font-medium">
+                      <th className="py-2.5 px-3.5">Mã điều phối</th>
+                      <th className="py-2.5 px-3.5">Khách hàng & Công trình</th>
+                      <th className="py-2.5 px-3.5">Khu vực phục vụ</th>
+                      <th className="py-2.5 px-3.5">Trạng thái</th>
+                      <th className="py-2.5 px-3.5 text-right">Hành động</th>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-line/70">
+                    {dispatchItems.slice(0, 6).map((item) => {
+                      const meta = dispatchStatusMeta(item.status)
+                      const detailUrl = ROUTES.admin.dispatchRequest.replace(':id', item.dispatchRequestId)
+                      return (
+                        <tr key={item.dispatchRequestId} className="hover:bg-surface-2/60 transition-colors">
+                          <td className="py-3 px-3.5">
+                            <Link to={detailUrl} className="font-semibold text-primary hover:underline">
+                              #{item.dispatchRequestId.slice(0, 8)}
+                            </Link>
+                            <p className="text-[12px] text-fg-muted">{formatDateTimeText(item.createdAt)}</p>
+                          </td>
+                          <td className="py-3 px-3.5">
+                            <p className="font-medium text-fg">{item.customerName}</p>
+                            <p className="text-[12px] text-fg-2 truncate max-w-[220px]">{item.propertyName} ({item.province})</p>
+                          </td>
+                          <td className="py-3 px-3.5 text-fg-2">
+                            {item.zone?.name || item.province || '—'}
+                          </td>
+                          <td className="py-3 px-3.5">
+                            <Badge tone={meta.tone}>
+                              {meta.label}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-3.5 text-right">
+                            <Link
+                              to={detailUrl}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              <span>Điều phối</span>
+                              <Icon name="chevron_right" className="text-[16px]" />
+                            </Link>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-[12px] text-fg-muted bg-surface-2/40">
+                <span>Hiển thị {Math.min(6, dispatchItems.length)} trên {dispatchItems.length} yêu cầu</span>
+                <Link to={ROUTES.admin.dispatch} className="text-primary hover:underline font-medium">
+                  Xem tất cả danh sách &rarr;
+                </Link>
+              </div>
+            </>
           )}
         </div>
       )}
     </div>
   )
 }
-
