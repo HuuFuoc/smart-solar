@@ -20,7 +20,10 @@ const CustomerQuotationsPage = page(() => import('@/pages/customer/quotations-pa
 const CustomerQuotationPage = page(() => import('@/pages/customer/quotation-page'), 'CustomerQuotationPage')
 const CustomerProjectsPage = page(() => import('@/pages/customer/projects-page'), 'CustomerProjectsPage')
 const CustomerProjectPage = page(() => import('@/pages/customer/project-page'), 'CustomerProjectPage')
+const CustomerContractsPage = page(() => import('@/pages/customer/contracts-page'), 'CustomerContractsPage')
+const CustomerContractPage = page(() => import('@/pages/customer/contract-page'), 'CustomerContractPage')
 const CustomerPackagesPage = page(() => import('@/pages/customer/packages-page'), 'CustomerPackagesPage')
+const CustomerNotificationsPage = page(() => import('@/pages/customer/notifications-page'), 'CustomerNotificationsPage')
 const CustomerAfterSalesPage = page(() => import('@/pages/customer/after-sales-page'), 'CustomerAfterSalesPage')
 const CustomerAfterSalesRequestPage = page(
   () => import('@/pages/customer/after-sales-request-page'),
@@ -42,6 +45,7 @@ const OpsCatalogProductPage = page(() => import('@/pages/catalog-product-page'),
 // Kỹ thuật viên
 const TechJobsPage = page(() => import('@/pages/tech/jobs-page'), 'TechJobsPage')
 const TechJobPage = page(() => import('@/pages/tech/job-page'), 'TechJobPage')
+const TechOpenJobPage = page(() => import('@/pages/tech/open-job-page'), 'TechOpenJobPage')
 const TechInstallationsPage = page(() => import('@/pages/tech/installations-page'), 'TechInstallationsPage')
 const TechInstallationPage = page(() => import('@/pages/tech/installation-page'), 'TechInstallationPage')
 const TechAfterSalesPage = page(() => import('@/pages/tech/after-sales-page'), 'TechAfterSalesPage')
@@ -77,6 +81,16 @@ const ManageAfterSalesRequestPage = page(
   () => import('@/pages/after-sales-request-page'),
   'ManageAfterSalesRequestPage',
 )
+const ManageSalesTasksPage = page(() => import('@/pages/sales-tasks-page'), 'ManageSalesTasksPage')
+const ManageRefundsPage = page(() => import('@/pages/refunds-page'), 'ManageRefundsPage')
+const ManagePackageCancellationsPage = page(
+  () => import('@/pages/package-cancellations-page'),
+  'ManagePackageCancellationsPage',
+)
+const ManagePackageCancellationPage = page(
+  () => import('@/pages/package-cancellations-page'),
+  'ManagePackageCancellationPage',
+)
 
 const AdminUsersPage = page(() => import('@/pages/admin/users-page'), 'AdminUsersPage')
 const AdminUserPage = page(() => import('@/pages/admin/user-page'), 'AdminUserPage')
@@ -99,7 +113,8 @@ const AdminSettingsPage = page(() => import('@/pages/admin/settings-page'), 'Adm
 const AdminZonesPage = page(() => import('@/pages/admin/zones-page'), 'AdminZonesPage')
 const AdminZonePage = page(() => import('@/pages/admin/zone-page'), 'AdminZonePage')
 const AdminWarrantyOptionsPage = page(() => import('@/pages/admin/warranty-options-page'), 'AdminWarrantyOptionsPage')
-const AdminRefundsPage = page(() => import('@/pages/admin/refunds-page'), 'AdminRefundsPage')
+const AdminRefundsPage = page(() => import('@/pages/refunds-page'), 'AdminRefundsPage')
+const AdminSalesTasksPage = page(() => import('@/pages/sales-tasks-page'), 'AdminSalesTasksPage')
 const AdminReportsPage = page(() => import('@/pages/admin/reports-page'), 'AdminReportsPage')
 const AdminKnowledgeDocumentsPage = page(
   () => import('@/pages/admin/knowledge-documents-page'),
@@ -109,6 +124,9 @@ const AdminKnowledgeDocumentPage = page(
   () => import('@/pages/admin/knowledge-document-page'),
   'AdminKnowledgeDocumentPage',
 )
+
+// Dùng chung mọi cổng: backend cho mọi người đăng nhập dùng chatbot
+const AssistantPage = page(() => import('@/pages/assistant-page'), 'AssistantPage')
 
 type PortalConfig = {
   role: UserRole
@@ -159,11 +177,15 @@ export const protectedRoutes: RouteObject[] = [
       { path: customer.quotation, lazy: CustomerQuotationPage },
       { path: customer.projects, lazy: CustomerProjectsPage },
       { path: customer.project, lazy: CustomerProjectPage },
+      { path: customer.contracts, lazy: CustomerContractsPage },
+      { path: customer.contract, lazy: CustomerContractPage },
       { path: customer.packages, lazy: CustomerPackagesPage },
+      { path: customer.notifications, lazy: CustomerNotificationsPage },
       { path: customer.afterSales, lazy: CustomerAfterSalesPage },
       { path: customer.afterSalesRequest, lazy: CustomerAfterSalesRequestPage },
       { path: customer.products, lazy: CustomerCatalogPage },
       { path: customer.product, lazy: CustomerCatalogProductPage },
+      { path: customer.assistant, lazy: AssistantPage },
     ],
   }),
 
@@ -182,6 +204,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: ops.afterSalesRequest, lazy: OpsAfterSalesRequestPage },
       { path: ops.products, lazy: OpsCatalogPage },
       { path: ops.product, lazy: OpsCatalogProductPage },
+      { path: ops.assistant, lazy: AssistantPage },
     ],
   }),
 
@@ -193,6 +216,7 @@ export const protectedRoutes: RouteObject[] = [
     pages: [
       { path: tech.jobs, lazy: TechJobsPage },
       { path: tech.job, lazy: TechJobPage },
+      { path: tech.openJob, lazy: TechOpenJobPage },
       { path: tech.installations, lazy: TechInstallationsPage },
       { path: tech.installation, lazy: TechInstallationPage },
       { path: tech.afterSales, lazy: TechAfterSalesPage },
@@ -200,6 +224,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: tech.schedule, lazy: TechSchedulePage },
       { path: tech.products, lazy: TechCatalogPage },
       { path: tech.product, lazy: TechCatalogProductPage },
+      { path: tech.assistant, lazy: AssistantPage },
     ],
   }),
 
@@ -215,12 +240,17 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.contract, lazy: ManageContractPage },
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
       { path: manage.afterSalesRequest, lazy: ManageAfterSalesRequestPage },
+      { path: manage.salesTasks, lazy: ManageSalesTasksPage },
+      { path: manage.refunds, lazy: ManageRefundsPage },
+      { path: manage.packageCancellations, lazy: ManagePackageCancellationsPage },
+      { path: manage.packageCancellation, lazy: ManagePackageCancellationPage },
       { path: manage.dispatch, lazy: ManageDispatchRequestsPage },
       { path: manage.dispatchRequest, lazy: ManageDispatchRequestPage },
       { path: manage.technicians, lazy: ManageTechniciansPage },
       { path: manage.technician, lazy: ManageTechnicianPage },
       { path: manage.products, lazy: ManageCatalogPage },
       { path: manage.product, lazy: ManageCatalogProductPage },
+      { path: manage.assistant, lazy: AssistantPage },
     ],
   }),
 
@@ -248,9 +278,11 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.zone, lazy: AdminZonePage },
       { path: admin.warrantyOptions, lazy: AdminWarrantyOptionsPage },
       { path: admin.refunds, lazy: AdminRefundsPage },
+      { path: admin.salesTasks, lazy: AdminSalesTasksPage },
       { path: admin.reports, lazy: AdminReportsPage },
       { path: admin.knowledgeBase, lazy: AdminKnowledgeDocumentsPage },
       { path: admin.knowledgeDocument, lazy: AdminKnowledgeDocumentPage },
+      { path: admin.assistant, lazy: AssistantPage },
     ],
   }),
 

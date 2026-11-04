@@ -8,7 +8,11 @@ import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ProgressTracker, type TrackerNext } from '@/components/common/ui/progress-tracker'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { AssetCorrectionPanel } from '@/features/after-sales/AssetCorrectionPanel'
+import { ClaimDecisionPanel } from '@/features/after-sales/ClaimDecisionPanel'
 import { CancellationDecisionForm, CoverageForm, DisputeReviewForm } from '@/features/after-sales/ManagerDecisionForms'
+import { DuplicateOfNotice, RequestClosePanel } from '@/features/after-sales/RequestClosePanel'
+import { canDecideClaim } from '@/features/after-sales/managerAfterSalesRules'
 import { WarrantyActivationPanel } from '@/features/after-sales/WarrantyActivationPanel'
 import { ScheduleVisitForm } from '@/features/after-sales/ScheduleVisitForm'
 import { QuotationDetail, ServiceItemList, ServiceVisitList } from '@/features/after-sales/ServiceRequestParts'
@@ -59,6 +63,17 @@ function nextStep(r: ServiceRequestView): TrackerNext {
       action: { label: 'Xếp lịch', icon: 'event_available', target: 'schedule' },
     }
   }
+  // Hạng mục chỉ xét "gói thiên tai" sau khi hỗ trợ được duyệt, nên quyết định này đứng trước xét bảo hành
+  if (canDecideClaim(r) && visit?.status !== 'SCHEDULED')
+    return {
+      tone: 'danger',
+      title:
+        r.claim?.status === 'RECONSIDERATION_REQUESTED'
+          ? 'Khách xin xét lại hỗ trợ của gói thiên tai'
+          : 'Xét hỗ trợ của gói thiên tai',
+      body: 'Duyệt hoặc từ chối dựa trên ảnh và báo cáo của kỹ thuật viên.',
+      action: { label: 'Xét hỗ trợ', icon: 'gavel', target: 'claim' },
+    }
   if (visit?.status === 'SCHEDULED') {
     const when = formatAppointment(visit.startsAt, visit.endsAt)
     if (visit.assignmentStatus === 'PENDING')
@@ -155,8 +170,15 @@ function SchedulePanel({ request, zoneId }: { request: ServiceRequestView; zoneI
   )
 }
 
-// Chi tiết yêu cầu cho quản lý / quản trị: xếp lịch, xét bảo hành, xét khiếu nại, xét yêu cầu huỷ
-function AfterSalesRequestPage({ installationPattern }: { installationPattern: string }) {
+// Chi tiết yêu cầu cho quản lý / quản trị: xếp lịch, xét hỗ trợ thiên tai, xét bảo hành, xét khiếu nại, xét yêu cầu huỷ,
+// kết thúc yêu cầu (trùng, dừng việc, không thực hiện được), sửa thông tin thiết bị
+function AfterSalesRequestPage({
+  installationPattern,
+  detailPattern,
+}: {
+  installationPattern: string
+  detailPattern: string
+}) {
   const { id } = useParams()
   const query = useServiceRequestQuery(id)
   // Khu vực của công trình để biết kỹ thuật viên nào cùng khu vực
@@ -189,6 +211,9 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
             />
             <div className="space-y-6">
               <ProgressTracker steps={requestTrackerSteps(r)} next={next} />
+              {r.duplicateOfRequestId && (
+                <DuplicateOfNotice requestId={r.duplicateOfRequestId} detailPattern={detailPattern} />
+              )}
               {open && r.cancellationRequestedAt && (
                 <Panel id="cancellation" className="scroll-mt-6">
                   <PanelHeader title="Yêu cầu huỷ của khách" description={formatMoment(r.cancellationRequestedAt)} />
@@ -198,6 +223,7 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
                 </Panel>
               )}
               {open && <SchedulePanel request={r} zoneId={project.data?.zone?.zoneId ?? null} />}
+              <ClaimDecisionPanel request={r} />
               {open && pendingItems(r).length > 0 && (
                 <Panel id="coverage" className="scroll-mt-6">
                   <PanelHeader title="Xét bảo hành" description={`${pendingItems(r).length} hạng mục chờ quyết định`} />
@@ -224,6 +250,7 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
                 </Panel>
               )}
               {project.data && <WarrantyActivationPanel request={r} assets={project.data.assets} />}
+              {project.data && <AssetCorrectionPanel request={r} assets={project.data.assets} />}
               {r.visits.length > 0 && (
                 <Panel>
                   <PanelHeader title="Buổi hẹn" />
@@ -250,6 +277,7 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
                   </PanelBody>
                 </Panel>
               )}
+              <RequestClosePanel request={r} detailPattern={detailPattern} />
             </div>
           </>
         )
@@ -259,9 +287,19 @@ function AfterSalesRequestPage({ installationPattern }: { installationPattern: s
 }
 
 export function ManageAfterSalesRequestPage() {
-  return <AfterSalesRequestPage installationPattern={ROUTES.manage.installation} />
+  return (
+    <AfterSalesRequestPage
+      installationPattern={ROUTES.manage.installation}
+      detailPattern={ROUTES.manage.afterSalesRequest}
+    />
+  )
 }
 
 export function AdminAfterSalesRequestPage() {
-  return <AfterSalesRequestPage installationPattern={ROUTES.admin.installation} />
+  return (
+    <AfterSalesRequestPage
+      installationPattern={ROUTES.admin.installation}
+      detailPattern={ROUTES.admin.afterSalesRequest}
+    />
+  )
 }

@@ -27,6 +27,11 @@ export function listOpenAppointments() {
   return get<OpenAppointmentView[]>(ENDPOINTS.technicianAppointments.open)
 }
 
+/** Một lịch chờ nhận. 404 APPOINTMENT_NOT_FOUND khi lịch không còn chờ nhận hoặc nằm ngoài khu vực của mình */
+export function getOpenAppointment(id: string) {
+  return get<OpenAppointmentView>(ENDPOINTS.technicianAppointments.openById(id))
+}
+
 /** Người khác nhận trước thì trả 409 APPOINTMENT_ALREADY_TAKEN */
 export function acceptAppointment(id: string, body: AcceptAppointmentRequest) {
   return post<AssignmentView>(ENDPOINTS.technicianAppointments.accept(id), body)

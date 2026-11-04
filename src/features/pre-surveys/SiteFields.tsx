@@ -3,9 +3,11 @@ import { Button } from '@/components/common/ui/button'
 import { Combobox } from '@/components/common/ui/combobox'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Field, Input, Textarea, fieldMessageId } from '@/components/common/ui/field'
-import { useHcmCommunesQuery } from '@/hooks/useCommunes'
+import { useHcmCommunesQuery, useServiceProvinceQuery } from '@/hooks/useCommunes'
 import { HCM_PROVINCE } from '@/services/administrativeUnitService'
+import { errorMessage } from '@/services/api/errors'
 import type { FormErrors, SiteForm } from '@/features/pre-surveys/assessmentForm'
+import { LegacyWardLookup } from '@/features/pre-surveys/LegacyWardLookup'
 import { SURFACE_TYPES } from '@/common/preSurvey'
 import { cx } from '@/utils/cx'
 
@@ -45,18 +47,13 @@ export function SiteFields({ value, errors, onChange }: Props) {
       <fieldset className="border-t border-line pt-5">
         <legend className="float-left mb-4 w-full text-body font-semibold text-fg">Địa chỉ công trình</legend>
         <div className="clear-left grid gap-4 sm:grid-cols-2">
-          <Field label="Tỉnh, thành phố" htmlFor="province" hint="Hiện chỉ nhận công trình tại TP.HCM.">
-            {/* Ô chỉ đọc nền xám, vẫn focus được để đọc. Dùng dấu ! vì cx không gộp class trùng nhau */}
-            <Input
-              id="province"
-              value={HCM_PROVINCE.name}
-              readOnly
-              aria-describedby={fieldMessageId('province')}
-              className="bg-surface-2! text-fg-2!"
-            />
-          </Field>
+          <ProvinceField />
 
           <WardField value={value.ward} error={errors.ward ?? errors.communeCode} onChange={onChange} />
+
+          <div className="sm:col-span-2">
+            <LegacyWardLookup returnFocusTo="ward" onPick={(pick) => onChange(pick)} />
+          </div>
 
           <Field
             label="Số nhà, tên đường"
@@ -195,6 +192,41 @@ function SurfaceTypeCard({
         className={cx('shrink-0 text-[20px]', checked ? 'icon-fill text-accent-fg' : 'text-fg-3')}
       />
     </label>
+  )
+}
+
+// Tỉnh cố định mã 79 (chỉ nhận công trình ở TP.HCM); tên lấy từ danh mục để chắc mã còn hiệu lực. Danh mục lỗi hoặc không còn
+// mã này thì báo, không điền tên viết sẵn
+function ProvinceField() {
+  const province = useServiceProvinceQuery()
+  let error: string | undefined
+  if (province.isError) error = `Không tải được tên tỉnh, thành phố. ${errorMessage(province.error)}`
+  else if (province.data === null)
+    error = `Danh mục hành chính hiện không có mã tỉnh ${HCM_PROVINCE.code}. Liên hệ Smart Solar trước khi gửi.`
+  return (
+    <Field label="Tỉnh, thành phố" htmlFor="province" hint="Hiện chỉ nhận công trình tại TP.HCM." error={error}>
+      {/* Ô chỉ đọc nền xám, vẫn focus được để đọc. Dùng dấu ! vì cx không gộp class trùng nhau */}
+      <Input
+        id="province"
+        value={province.data?.name ?? ''}
+        placeholder={province.isPending ? 'Đang tải…' : undefined}
+        readOnly
+        aria-invalid={Boolean(error)}
+        aria-describedby={fieldMessageId('province')}
+        className="bg-surface-2! text-fg-2!"
+      />
+      {province.isError && (
+        <Button
+          size="sm"
+          variant="secondary"
+          icon="refresh"
+          className="self-start"
+          onClick={() => void province.refetch()}
+        >
+          Thử lại
+        </Button>
+      )}
+    </Field>
   )
 }
 

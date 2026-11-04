@@ -1,0 +1,2574 @@
+{
+  "capturedFrom": "smartsolar-api image c43e1cada345 (build 21/10/2026), GET /api/administrative-units/*, 2026-11-04",
+  "provinces": [
+    {
+      "code": "79",
+      "name": "Thành phố Hồ Chí Minh",
+      "unitType": "MUNICIPALITY"
+    }
+  ],
+  "legacy": {
+    "phuong 9": {
+      "query": "phuong 9",
+      "provinceCode": "79",
+      "matches": [
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27181",
+            "name": "Phường 9"
+          },
+          "legacyDistrict": {
+            "code": "771",
+            "name": "Quận 10"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27190",
+              "name": "Phường Vườn Lài",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "771",
+                "name": "Quận 10"
+              },
+              "legacyCommune": {
+                "code": "27181",
+                "name": "Phường 9"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27142",
+            "name": "Phường 9"
+          },
+          "legacyDistrict": {
+            "code": "770",
+            "name": "Quận 3"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27142",
+              "name": "Phường Nhiêu Lộc",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "770",
+                "name": "Quận 3"
+              },
+              "legacyCommune": {
+                "code": "27142",
+                "name": "Phường 9"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27265",
+            "name": "Phường 9"
+          },
+          "legacyDistrict": {
+            "code": "773",
+            "name": "Quận 4"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27265",
+              "name": "Phường Khánh Hội",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "773",
+                "name": "Quận 4"
+              },
+              "legacyCommune": {
+                "code": "27265",
+                "name": "Phường 9"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27304",
+            "name": "Phường 9"
+          },
+          "legacyDistrict": {
+            "code": "774",
+            "name": "Quận 5"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27316",
+              "name": "Phường An Đông",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "774",
+                "name": "Quận 5"
+              },
+              "legacyCommune": {
+                "code": "27304",
+                "name": "Phường 9"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27352",
+            "name": "Phường 9"
+          },
+          "legacyDistrict": {
+            "code": "775",
+            "name": "Quận 6"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27367",
+              "name": "Phường Bình Tây",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "775",
+                "name": "Quận 6"
+              },
+              "legacyCommune": {
+                "code": "27352",
+                "name": "Phường 9"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27049",
+            "name": "Phường 9"
+          },
+          "legacyDistrict": {
+            "code": "768",
+            "name": "Quận Phú Nhuận"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27043",
+              "name": "Phường Đức Nhuận",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "768",
+                "name": "Quận Phú Nhuận"
+              },
+              "legacyCommune": {
+                "code": "27049",
+                "name": "Phường 9"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27001",
+            "name": "Phường 9"
+          },
+          "legacyDistrict": {
+            "code": "766",
+            "name": "Quận Tân Bình"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26995",
+              "name": "Phường Tân Hòa",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "766",
+                "name": "Quận Tân Bình"
+              },
+              "legacyCommune": {
+                "code": "27001",
+                "name": "Phường 9"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26530",
+            "name": "Phường 9"
+          },
+          "legacyDistrict": {
+            "code": "747",
+            "name": "Thành phố Vũng Tàu"
+          },
+          "legacyProvince": {
+            "code": "77",
+            "name": "Tỉnh Bà Rịa - Vũng Tàu"
+          },
+          "candidates": [
+            {
+              "code": "26526",
+              "name": "Phường Tam Thắng",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "747",
+                "name": "Thành phố Vũng Tàu"
+              },
+              "legacyCommune": {
+                "code": "26530",
+                "name": "Phường 9"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        }
+      ],
+      "ambiguous": true,
+      "requiresConfirmation": true,
+      "truncated": false
+    },
+    "go vap": {
+      "query": "go vap",
+      "provinceCode": "79",
+      "matches": [
+        {
+          "matchType": "LEGACY_DISTRICT",
+          "legacyCommune": null,
+          "legacyDistrict": {
+            "code": "764",
+            "name": "Quận Gò Vấp"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26882",
+              "name": "Phường An Hội Tây",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26881",
+                "name": "Phường 12"
+              }
+            },
+            {
+              "code": "26882",
+              "name": "Phường An Hội Tây",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26882",
+                "name": "Phường 14"
+              }
+            },
+            {
+              "code": "26878",
+              "name": "Phường An Hội Đông",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26872",
+                "name": "Phường 15"
+              }
+            },
+            {
+              "code": "26878",
+              "name": "Phường An Hội Đông",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26878",
+                "name": "Phường 16"
+              }
+            },
+            {
+              "code": "26876",
+              "name": "Phường An Nhơn",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26876",
+                "name": "Phường 6"
+              }
+            },
+            {
+              "code": "26876",
+              "name": "Phường An Nhơn",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26887",
+                "name": "Phường 5"
+              }
+            },
+            {
+              "code": "26884",
+              "name": "Phường Gò Vấp",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26875",
+                "name": "Phường 17"
+              }
+            },
+            {
+              "code": "26884",
+              "name": "Phường Gò Vấp",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26884",
+                "name": "Phường 10"
+              }
+            },
+            {
+              "code": "26890",
+              "name": "Phường Hạnh Thông",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26890",
+                "name": "Phường 1"
+              }
+            },
+            {
+              "code": "26890",
+              "name": "Phường Hạnh Thông",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26902",
+                "name": "Phường 3"
+              }
+            },
+            {
+              "code": "26898",
+              "name": "Phường Thông Tây Hội",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26898",
+                "name": "Phường 8"
+              }
+            },
+            {
+              "code": "26898",
+              "name": "Phường Thông Tây Hội",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26899",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": true,
+          "requiresConfirmation": true
+        }
+      ],
+      "ambiguous": true,
+      "requiresConfirmation": true,
+      "truncated": false
+    },
+    "hiep thanh": {
+      "query": "hiep thanh",
+      "provinceCode": "79",
+      "matches": [
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26770",
+            "name": "Phường Hiệp Thành"
+          },
+          "legacyDistrict": {
+            "code": "761",
+            "name": "Quận 12"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26782",
+              "name": "Phường Tân Thới Hiệp",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "761",
+                "name": "Quận 12"
+              },
+              "legacyCommune": {
+                "code": "26770",
+                "name": "Phường Hiệp Thành"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "25741",
+            "name": "Phường Hiệp Thành"
+          },
+          "legacyDistrict": {
+            "code": "718",
+            "name": "Thành phố Thủ Dầu Một"
+          },
+          "legacyProvince": {
+            "code": "74",
+            "name": "Tỉnh Bình Dương"
+          },
+          "candidates": [
+            {
+              "code": "25750",
+              "name": "Phường Phú Lợi",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "PARTIAL",
+              "legacyDistrict": {
+                "code": "718",
+                "name": "Thành phố Thủ Dầu Một"
+              },
+              "legacyCommune": {
+                "code": "25741",
+                "name": "Phường Hiệp Thành"
+              }
+            },
+            {
+              "code": "25747",
+              "name": "Phường Thủ Dầu Một",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "PARTIAL",
+              "legacyDistrict": {
+                "code": "718",
+                "name": "Thành phố Thủ Dầu Một"
+              },
+              "legacyCommune": {
+                "code": "25741",
+                "name": "Phường Hiệp Thành"
+              }
+            }
+          ],
+          "ambiguous": true,
+          "requiresConfirmation": true
+        }
+      ],
+      "ambiguous": true,
+      "requiresConfirmation": true,
+      "truncated": false
+    },
+    "phuong": {
+      "query": "phuong",
+      "provinceCode": "79",
+      "matches": [
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27184",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "771",
+            "name": "Quận 10"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27190",
+              "name": "Phường Vườn Lài",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "771",
+                "name": "Quận 10"
+              },
+              "legacyCommune": {
+                "code": "27184",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27247",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "772",
+            "name": "Quận 11"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27238",
+              "name": "Phường Minh Phụng",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "772",
+                "name": "Quận 11"
+              },
+              "legacyCommune": {
+                "code": "27247",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27160",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "770",
+            "name": "Quận 3"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27154",
+              "name": "Phường Bàn Cờ",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "770",
+                "name": "Quận 3"
+              },
+              "legacyCommune": {
+                "code": "27160",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27298",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "773",
+            "name": "Quận 4"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27286",
+              "name": "Phường Vĩnh Hội",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "773",
+                "name": "Quận 4"
+              },
+              "legacyCommune": {
+                "code": "27298",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27325",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "774",
+            "name": "Quận 5"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27301",
+              "name": "Phường Chợ Quán",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "774",
+                "name": "Quận 5"
+              },
+              "legacyCommune": {
+                "code": "27325",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27373",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "775",
+            "name": "Quận 6"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27373",
+              "name": "Phường Bình Tiên",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "775",
+                "name": "Quận 6"
+              },
+              "legacyCommune": {
+                "code": "27373",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26944",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "765",
+            "name": "Quận Bình Thạnh"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26944",
+              "name": "Phường Gia Định",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "765",
+                "name": "Quận Bình Thạnh"
+              },
+              "legacyCommune": {
+                "code": "26944",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26890",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "764",
+            "name": "Quận Gò Vấp"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26890",
+              "name": "Phường Hạnh Thông",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26890",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27058",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "768",
+            "name": "Quận Phú Nhuận"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27058",
+              "name": "Phường Cầu Kiệu",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "768",
+                "name": "Quận Phú Nhuận"
+              },
+              "legacyCommune": {
+                "code": "27058",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26977",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "766",
+            "name": "Quận Tân Bình"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26977",
+              "name": "Phường Tân Sơn Hòa",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "766",
+                "name": "Quận Tân Bình"
+              },
+              "legacyCommune": {
+                "code": "26977",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26506",
+            "name": "Phường 1"
+          },
+          "legacyDistrict": {
+            "code": "747",
+            "name": "Thành phố Vũng Tàu"
+          },
+          "legacyProvince": {
+            "code": "77",
+            "name": "Tỉnh Bà Rịa - Vũng Tàu"
+          },
+          "candidates": [
+            {
+              "code": "26506",
+              "name": "Phường Vũng Tàu",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "747",
+                "name": "Thành phố Vũng Tàu"
+              },
+              "legacyCommune": {
+                "code": "26506",
+                "name": "Phường 1"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27178",
+            "name": "Phường 10"
+          },
+          "legacyDistrict": {
+            "code": "771",
+            "name": "Quận 10"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27190",
+              "name": "Phường Vườn Lài",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "771",
+                "name": "Quận 10"
+              },
+              "legacyCommune": {
+                "code": "27178",
+                "name": "Phường 10"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27232",
+            "name": "Phường 10"
+          },
+          "legacyDistrict": {
+            "code": "772",
+            "name": "Quận 11"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27232",
+              "name": "Phường Bình Thới",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "772",
+                "name": "Quận 11"
+              },
+              "legacyCommune": {
+                "code": "27232",
+                "name": "Phường 10"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27385",
+            "name": "Phường 10"
+          },
+          "legacyDistrict": {
+            "code": "775",
+            "name": "Quận 6"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27364",
+              "name": "Phường Bình Phú",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "775",
+                "name": "Quận 6"
+              },
+              "legacyCommune": {
+                "code": "27385",
+                "name": "Phường 10"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26884",
+            "name": "Phường 10"
+          },
+          "legacyDistrict": {
+            "code": "764",
+            "name": "Quận Gò Vấp"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26884",
+              "name": "Phường Gò Vấp",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26884",
+                "name": "Phường 10"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27070",
+            "name": "Phường 10"
+          },
+          "legacyDistrict": {
+            "code": "768",
+            "name": "Quận Phú Nhuận"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27073",
+              "name": "Phường Phú Nhuận",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "768",
+                "name": "Quận Phú Nhuận"
+              },
+              "legacyCommune": {
+                "code": "27070",
+                "name": "Phường 10"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26992",
+            "name": "Phường 10"
+          },
+          "legacyDistrict": {
+            "code": "766",
+            "name": "Quận Tân Bình"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26983",
+              "name": "Phường Bảy Hiền",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "766",
+                "name": "Quận Tân Bình"
+              },
+              "legacyCommune": {
+                "code": "26992",
+                "name": "Phường 10"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26536",
+            "name": "Phường 10"
+          },
+          "legacyDistrict": {
+            "code": "747",
+            "name": "Thành phố Vũng Tàu"
+          },
+          "legacyProvince": {
+            "code": "77",
+            "name": "Tỉnh Bà Rịa - Vũng Tàu"
+          },
+          "candidates": [
+            {
+              "code": "26536",
+              "name": "Phường Rạch Dừa",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "747",
+                "name": "Thành phố Vũng Tàu"
+              },
+              "legacyCommune": {
+                "code": "26536",
+                "name": "Phường 10"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27226",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "772",
+            "name": "Quận 11"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27226",
+              "name": "Phường Phú Thọ",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "772",
+                "name": "Quận 11"
+              },
+              "legacyCommune": {
+                "code": "27226",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27133",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "770",
+            "name": "Quận 3"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27142",
+              "name": "Phường Nhiêu Lộc",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "770",
+                "name": "Quận 3"
+              },
+              "legacyCommune": {
+                "code": "27133",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27328",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "774",
+            "name": "Quận 5"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27343",
+              "name": "Phường Chợ Lớn",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "774",
+                "name": "Quận 5"
+              },
+              "legacyCommune": {
+                "code": "27328",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27364",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "775",
+            "name": "Quận 6"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27364",
+              "name": "Phường Bình Phú",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "775",
+                "name": "Quận 6"
+              },
+              "legacyCommune": {
+                "code": "27364",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26908",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "765",
+            "name": "Quận Bình Thạnh"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26905",
+              "name": "Phường Bình Lợi Trung",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "765",
+                "name": "Quận Bình Thạnh"
+              },
+              "legacyCommune": {
+                "code": "26908",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26899",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "764",
+            "name": "Quận Gò Vấp"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26898",
+              "name": "Phường Thông Tây Hội",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26899",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27073",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "768",
+            "name": "Quận Phú Nhuận"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27073",
+              "name": "Phường Phú Nhuận",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "768",
+                "name": "Quận Phú Nhuận"
+              },
+              "legacyCommune": {
+                "code": "27073",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26983",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "766",
+            "name": "Quận Tân Bình"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26983",
+              "name": "Phường Bảy Hiền",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "766",
+                "name": "Quận Tân Bình"
+              },
+              "legacyCommune": {
+                "code": "26983",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26539",
+            "name": "Phường 11"
+          },
+          "legacyDistrict": {
+            "code": "747",
+            "name": "Thành phố Vũng Tàu"
+          },
+          "legacyProvince": {
+            "code": "77",
+            "name": "Tỉnh Bà Rịa - Vũng Tàu"
+          },
+          "candidates": [
+            {
+              "code": "26542",
+              "name": "Phường Phước Thắng",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "747",
+                "name": "Thành phố Vũng Tàu"
+              },
+              "legacyCommune": {
+                "code": "26539",
+                "name": "Phường 11"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27172",
+            "name": "Phường 12"
+          },
+          "legacyDistrict": {
+            "code": "771",
+            "name": "Quận 10"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27163",
+              "name": "Phường Hòa Hưng",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "771",
+                "name": "Quận 10"
+              },
+              "legacyCommune": {
+                "code": "27172",
+                "name": "Phường 12"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27130",
+            "name": "Phường 12"
+          },
+          "legacyDistrict": {
+            "code": "770",
+            "name": "Quận 3"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27142",
+              "name": "Phường Nhiêu Lộc",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "770",
+                "name": "Quận 3"
+              },
+              "legacyCommune": {
+                "code": "27130",
+                "name": "Phường 12"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27310",
+            "name": "Phường 12"
+          },
+          "legacyDistrict": {
+            "code": "774",
+            "name": "Quận 5"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27343",
+              "name": "Phường Chợ Lớn",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "774",
+                "name": "Quận 5"
+              },
+              "legacyCommune": {
+                "code": "27310",
+                "name": "Phường 12"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27358",
+            "name": "Phường 12"
+          },
+          "legacyDistrict": {
+            "code": "775",
+            "name": "Quận 6"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27349",
+              "name": "Phường Phú Lâm",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "775",
+                "name": "Quận 6"
+              },
+              "legacyCommune": {
+                "code": "27358",
+                "name": "Phường 12"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26917",
+            "name": "Phường 12"
+          },
+          "legacyDistrict": {
+            "code": "765",
+            "name": "Quận Bình Thạnh"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26929",
+              "name": "Phường Bình Thạnh",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "765",
+                "name": "Quận Bình Thạnh"
+              },
+              "legacyCommune": {
+                "code": "26917",
+                "name": "Phường 12"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26881",
+            "name": "Phường 12"
+          },
+          "legacyDistrict": {
+            "code": "764",
+            "name": "Quận Gò Vấp"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26882",
+              "name": "Phường An Hội Tây",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26881",
+                "name": "Phường 12"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26971",
+            "name": "Phường 12"
+          },
+          "legacyDistrict": {
+            "code": "766",
+            "name": "Quận Tân Bình"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26983",
+              "name": "Phường Bảy Hiền",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "766",
+                "name": "Quận Tân Bình"
+              },
+              "legacyCommune": {
+                "code": "26971",
+                "name": "Phường 12"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26542",
+            "name": "Phường 12"
+          },
+          "legacyDistrict": {
+            "code": "747",
+            "name": "Thành phố Vũng Tàu"
+          },
+          "legacyProvince": {
+            "code": "77",
+            "name": "Tỉnh Bà Rịa - Vũng Tàu"
+          },
+          "candidates": [
+            {
+              "code": "26542",
+              "name": "Phường Phước Thắng",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "747",
+                "name": "Thành phố Vũng Tàu"
+              },
+              "legacyCommune": {
+                "code": "26542",
+                "name": "Phường 12"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27166",
+            "name": "Phường 13"
+          },
+          "legacyDistrict": {
+            "code": "771",
+            "name": "Quận 10"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27163",
+              "name": "Phường Hòa Hưng",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "771",
+                "name": "Quận 10"
+              },
+              "legacyCommune": {
+                "code": "27166",
+                "name": "Phường 13"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27259",
+            "name": "Phường 13"
+          },
+          "legacyDistrict": {
+            "code": "773",
+            "name": "Quận 4"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27259",
+              "name": "Phường Xóm Chiếu",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "773",
+                "name": "Quận 4"
+              },
+              "legacyCommune": {
+                "code": "27259",
+                "name": "Phường 13"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27343",
+            "name": "Phường 13"
+          },
+          "legacyDistrict": {
+            "code": "774",
+            "name": "Quận 5"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27343",
+              "name": "Phường Chợ Lớn",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "774",
+                "name": "Quận 5"
+              },
+              "legacyCommune": {
+                "code": "27343",
+                "name": "Phường 13"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27349",
+            "name": "Phường 13"
+          },
+          "legacyDistrict": {
+            "code": "775",
+            "name": "Quận 6"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27349",
+              "name": "Phường Phú Lâm",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "775",
+                "name": "Quận 6"
+              },
+              "legacyCommune": {
+                "code": "27349",
+                "name": "Phường 13"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26905",
+            "name": "Phường 13"
+          },
+          "legacyDistrict": {
+            "code": "765",
+            "name": "Quận Bình Thạnh"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26905",
+              "name": "Phường Bình Lợi Trung",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "765",
+                "name": "Quận Bình Thạnh"
+              },
+              "legacyCommune": {
+                "code": "26905",
+                "name": "Phường 13"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27085",
+            "name": "Phường 13"
+          },
+          "legacyDistrict": {
+            "code": "768",
+            "name": "Quận Phú Nhuận"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27073",
+              "name": "Phường Phú Nhuận",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "768",
+                "name": "Quận Phú Nhuận"
+              },
+              "legacyCommune": {
+                "code": "27085",
+                "name": "Phường 13"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26974",
+            "name": "Phường 13"
+          },
+          "legacyDistrict": {
+            "code": "766",
+            "name": "Quận Tân Bình"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27004",
+              "name": "Phường Tân Bình",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "766",
+                "name": "Quận Tân Bình"
+              },
+              "legacyCommune": {
+                "code": "26974",
+                "name": "Phường 13"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27169",
+            "name": "Phường 14"
+          },
+          "legacyDistrict": {
+            "code": "771",
+            "name": "Quận 10"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27169",
+              "name": "Phường Diên Hồng",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "PARTIAL",
+              "legacyDistrict": {
+                "code": "771",
+                "name": "Quận 10"
+              },
+              "legacyCommune": {
+                "code": "27169",
+                "name": "Phường 14"
+              }
+            },
+            {
+              "code": "27163",
+              "name": "Phường Hòa Hưng",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "PARTIAL",
+              "legacyDistrict": {
+                "code": "771",
+                "name": "Quận 10"
+              },
+              "legacyCommune": {
+                "code": "27169",
+                "name": "Phường 14"
+              }
+            }
+          ],
+          "ambiguous": true,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27214",
+            "name": "Phường 14"
+          },
+          "legacyDistrict": {
+            "code": "772",
+            "name": "Quận 11"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27211",
+              "name": "Phường Hòa Bình",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "772",
+                "name": "Quận 11"
+              },
+              "legacyCommune": {
+                "code": "27214",
+                "name": "Phường 14"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27127",
+            "name": "Phường 14"
+          },
+          "legacyDistrict": {
+            "code": "770",
+            "name": "Quận 3"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27142",
+              "name": "Phường Nhiêu Lộc",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "770",
+                "name": "Quận 3"
+              },
+              "legacyCommune": {
+                "code": "27127",
+                "name": "Phường 14"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27331",
+            "name": "Phường 14"
+          },
+          "legacyDistrict": {
+            "code": "774",
+            "name": "Quận 5"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27343",
+              "name": "Phường Chợ Lớn",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "774",
+                "name": "Quận 5"
+              },
+              "legacyCommune": {
+                "code": "27331",
+                "name": "Phường 14"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27346",
+            "name": "Phường 14"
+          },
+          "legacyDistrict": {
+            "code": "775",
+            "name": "Quận 6"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27349",
+              "name": "Phường Phú Lâm",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "775",
+                "name": "Quận 6"
+              },
+              "legacyCommune": {
+                "code": "27346",
+                "name": "Phường 14"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "27421",
+            "name": "Phường 14"
+          },
+          "legacyDistrict": {
+            "code": "776",
+            "name": "Quận 8"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "27427",
+              "name": "Phường Phú Định",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "776",
+                "name": "Quận 8"
+              },
+              "legacyCommune": {
+                "code": "27421",
+                "name": "Phường 14"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26929",
+            "name": "Phường 14"
+          },
+          "legacyDistrict": {
+            "code": "765",
+            "name": "Quận Bình Thạnh"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26929",
+              "name": "Phường Bình Thạnh",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "765",
+                "name": "Quận Bình Thạnh"
+              },
+              "legacyCommune": {
+                "code": "26929",
+                "name": "Phường 14"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        },
+        {
+          "matchType": "LEGACY_COMMUNE",
+          "legacyCommune": {
+            "code": "26882",
+            "name": "Phường 14"
+          },
+          "legacyDistrict": {
+            "code": "764",
+            "name": "Quận Gò Vấp"
+          },
+          "legacyProvince": {
+            "code": "79",
+            "name": "Thành phố Hồ Chí Minh"
+          },
+          "candidates": [
+            {
+              "code": "26882",
+              "name": "Phường An Hội Tây",
+              "unitType": "WARD",
+              "provinceCode": "79",
+              "mergeType": "WHOLE",
+              "legacyDistrict": {
+                "code": "764",
+                "name": "Quận Gò Vấp"
+              },
+              "legacyCommune": {
+                "code": "26882",
+                "name": "Phường 14"
+              }
+            }
+          ],
+          "ambiguous": false,
+          "requiresConfirmation": true
+        }
+      ],
+      "ambiguous": true,
+      "requiresConfirmation": true,
+      "truncated": true
+    }
+  },
+  "communes": [
+    {
+      "code": "27316",
+      "name": "Phường An Đông",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26878",
+      "name": "Phường An Hội Đông",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26882",
+      "name": "Phường An Hội Tây",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26876",
+      "name": "Phường An Nhơn",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27154",
+      "name": "Phường Bàn Cờ",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26983",
+      "name": "Phường Bảy Hiền",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26905",
+      "name": "Phường Bình Lợi Trung",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27364",
+      "name": "Phường Bình Phú",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27367",
+      "name": "Phường Bình Tây",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26929",
+      "name": "Phường Bình Thạnh",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27232",
+      "name": "Phường Bình Thới",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27373",
+      "name": "Phường Bình Tiên",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27058",
+      "name": "Phường Cầu Kiệu",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27343",
+      "name": "Phường Chợ Lớn",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27301",
+      "name": "Phường Chợ Quán",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27169",
+      "name": "Phường Diên Hồng",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27043",
+      "name": "Phường Đức Nhuận",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26944",
+      "name": "Phường Gia Định",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26884",
+      "name": "Phường Gò Vấp",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26890",
+      "name": "Phường Hạnh Thông",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27211",
+      "name": "Phường Hòa Bình",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27163",
+      "name": "Phường Hòa Hưng",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27265",
+      "name": "Phường Khánh Hội",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27238",
+      "name": "Phường Minh Phụng",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27142",
+      "name": "Phường Nhiêu Lộc",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27427",
+      "name": "Phường Phú Định",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27349",
+      "name": "Phường Phú Lâm",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "25750",
+      "name": "Phường Phú Lợi",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27073",
+      "name": "Phường Phú Nhuận",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27226",
+      "name": "Phường Phú Thọ",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26542",
+      "name": "Phường Phước Thắng",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26536",
+      "name": "Phường Rạch Dừa",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26526",
+      "name": "Phường Tam Thắng",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27004",
+      "name": "Phường Tân Bình",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26995",
+      "name": "Phường Tân Hòa",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26977",
+      "name": "Phường Tân Sơn Hòa",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26782",
+      "name": "Phường Tân Thới Hiệp",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26898",
+      "name": "Phường Thông Tây Hội",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "25747",
+      "name": "Phường Thủ Dầu Một",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27286",
+      "name": "Phường Vĩnh Hội",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "26506",
+      "name": "Phường Vũng Tàu",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27190",
+      "name": "Phường Vườn Lài",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    },
+    {
+      "code": "27259",
+      "name": "Phường Xóm Chiếu",
+      "unitType": "WARD",
+      "provinceCode": "79"
+    }
+  ]
+}

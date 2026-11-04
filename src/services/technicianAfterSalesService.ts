@@ -1,5 +1,8 @@
 import type {
   AbsenceRequest,
+  ContinueRepairRequest,
+  DiagnosedItemRequest,
+  FinishOnSiteRequest,
   InspectionReportRequest,
   VisitResponseRequest,
   WorkReportRequest,
@@ -45,6 +48,25 @@ export function getEvidenceUrl(visitId: string, evidenceId: string) {
 /** Kết quả buổi kiểm tra: không lỗi, hoặc danh sách hạng mục hỏng. Cần ít nhất một ảnh của buổi này */
 export function reportInspection(visitId: string, body: InspectionReportRequest) {
   return post<TechnicianVisitView>(api.inspection(visitId), body)
+}
+
+/**
+ * Sửa luôn trong buổi kiểm tra đang chờ tại công trình (đã báo cáo kiểm tra với stayOnSite). Backend chỉ cho khi yêu cầu đã
+ * READY_FOR_WORK, có đủ linh kiện và giờ hiện tại + estimatedMinutes (1–480) còn trong khung giờ của buổi; không thì
+ * AFTER_SALES_PAYMENT_REQUIRED / AFTER_SALES_PARTS_UNAVAILABLE / AFTER_SALES_REPAIR_TIME_INSUFFICIENT
+ */
+export function continueRepair(visitId: string, body: ContinueRepairRequest) {
+  return post<TechnicianVisitView>(api.continueRepair(visitId), body)
+}
+
+/** Kết thúc buổi đang chờ tại công trình mà không sửa; báo cáo kiểm tra giữ nguyên, quản lý xếp buổi sửa riêng */
+export function finishOnSite(visitId: string, body: FinishOnSiteRequest) {
+  return post<TechnicianVisitView>(api.finish(visitId), body)
+}
+
+/** Hạng mục phát hiện thêm trong lúc sửa: chờ quản lý quyết định chi phí, có thể cần báo giá bổ sung */
+export function addSupplementaryItem(visitId: string, body: DiagnosedItemRequest) {
+  return post<TechnicianVisitView>(api.supplementaryItems(visitId), body)
 }
 
 /** Kết quả buổi sửa, bảo trì, làm lại. Cần ít nhất một ảnh của buổi này */

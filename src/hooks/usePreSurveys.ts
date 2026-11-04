@@ -11,9 +11,11 @@ import type {
   CustomerPreSurveyListItem,
   CustomerSiteListItem,
 } from '@/types/res/customersRes'
+import type { SiteLocationView } from '@/types/res/customerSiteLocationRes'
 import type { PreSurveySurfaceView, UpdatePreSurveySurfaceResponse } from '@/types/res/preSurveySurfaceRes'
 import type { CreatePreSurveyResponse, SubmitPreSurveyResponse } from '@/types/res/preSurveysRes'
 import type { ApiError } from '@/services/api/errors'
+import { HCM_PROVINCE } from '@/services/administrativeUnitService'
 
 // Backend chỉ cho đọc lại mặt lắp của bản nháp. Mọi lần ghi đều làm mới mặt lắp và danh sách mô phỏng
 
@@ -36,6 +38,24 @@ export function useCreatePropertySiteMutation() {
   return useMutation<CreatePropertySiteResponse, ApiError, CreatePropertySiteRequest>({
     mutationFn: (body) => preSurveyService.createPropertySite(body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: preSurveyKeys.mySites }),
+  })
+}
+
+/**
+ * Bổ sung mã phường, xã cho địa điểm đã có. Xong (kể cả lỗi) thì tải lại địa điểm, giờ trống khảo sát (khu vực phục vụ
+ * suy từ mã này) và yêu cầu khảo sát của khách
+ */
+export function useSetSiteLocationMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<SiteLocationView, ApiError, { siteId: string; communeCode: string }>({
+    mutationFn: ({ siteId, communeCode }) =>
+      preSurveyService.setSiteAdministrativeLocation(siteId, { provinceCode: HCM_PROVINCE.code, communeCode }),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: preSurveyKeys.mySites }),
+        queryClient.invalidateQueries({ queryKey: bookingKeys.slotsAll }),
+        queryClient.invalidateQueries({ queryKey: bookingKeys.all }),
+      ]),
   })
 }
 

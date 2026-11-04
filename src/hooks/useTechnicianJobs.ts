@@ -14,6 +14,7 @@ export const technicianJobKeys = {
   all: ['technician-jobs'] as const,
   list: () => [...technicianJobKeys.all, 'list'] as const,
   open: () => [...technicianJobKeys.all, 'open'] as const,
+  openDetail: (id: string) => [...technicianJobKeys.open(), id] as const,
   detail: (id: string) => [...technicianJobKeys.all, 'detail', id] as const,
   schedule: (date: string) => [...technicianJobKeys.all, 'schedule', date] as const,
 }
@@ -39,6 +40,17 @@ export function useOpenAppointmentsQuery({ enabled = true }: Options = {}) {
     queryFn: technicianJobService.listOpenAppointments,
     refetchInterval: JOBS_REFRESH_MS,
     enabled,
+  })
+}
+
+/** Một lịch chờ nhận, luôn tải lại khi mở để nút Nhận việc dùng revision mới nhất của backend */
+export function useOpenAppointmentQuery(id: string | undefined) {
+  return useQuery<OpenAppointmentView, ApiError>({
+    queryKey: technicianJobKeys.openDetail(id ?? ''),
+    queryFn: () => technicianJobService.getOpenAppointment(id!),
+    refetchOnMount: 'always',
+    refetchInterval: JOBS_REFRESH_MS,
+    enabled: Boolean(id),
   })
 }
 

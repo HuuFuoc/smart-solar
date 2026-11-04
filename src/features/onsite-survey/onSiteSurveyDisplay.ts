@@ -35,6 +35,49 @@ export function surveyStartOpensAt(startsAt: string) {
   return new Date(new Date(startsAt).getTime() - ONSITE_SURVEY_LIMITS.earlyStartMinutes * 60_000)
 }
 
+/** Tên ô theo tên trường backend ghi trong `changes` của một lần bổ sung */
+const AMENDMENT_FIELD_LABELS: Record<string, string> = {
+  roofType: 'Loại mái',
+  roofMaterial: 'Vật liệu mái',
+  roofLengthM: 'Chiều dài mái',
+  roofWidthM: 'Chiều rộng mái',
+  usableAreaM2: 'Diện tích lắp được',
+  tiltDegree: 'Độ dốc',
+  azimuthDegree: 'Hướng mái',
+  roofCondition: 'Tình trạng mái',
+  electricalCabinetNotes: 'Tủ điện',
+  electricalConnectionNotes: 'Đấu nối điện',
+  installationFeasibility: 'Khả năng lắp đặt',
+  proposedInverterLocation: 'Vị trí đặt inverter',
+  proposedPanelLayoutNotes: 'Bố trí tấm pin',
+  measuredLatitude: 'Vĩ độ đo',
+  measuredLongitude: 'Kinh độ đo',
+  notes: 'Ghi chú',
+  obstacles: 'Vật cản',
+}
+const AMENDMENT_UNITS: Record<string, string> = {
+  roofLengthM: 'm',
+  roofWidthM: 'm',
+  usableAreaM2: 'm²',
+  tiltDegree: 'độ',
+  azimuthDegree: 'độ',
+}
+
+export const amendmentFieldLabel = (field: string) => AMENDMENT_FIELD_LABELS[field] ?? field
+
+/** Giá trị cũ / mới của một ô trong lịch sử bổ sung; trống là "(trống)" */
+export function amendmentValueText(field: string, value: string | number | boolean | null) {
+  if (value === null || value === '') return '(trống)'
+  if (field === 'roofCondition') return roofConditionLabel(String(value))
+  if (field === 'installationFeasibility') return feasibilityLabel(String(value))
+  if (typeof value === 'number') {
+    const unit = AMENDMENT_UNITS[field]
+    const text = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 6 }).format(value)
+    return unit ? `${text} ${unit}` : text
+  }
+  return String(value)
+}
+
 /** "10,7754; 106,6996" */
 export function formatCoordinates(latitude: number | null, longitude: number | null) {
   if (latitude == null || longitude == null) return '—'

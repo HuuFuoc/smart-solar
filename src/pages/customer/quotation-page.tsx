@@ -10,6 +10,7 @@ import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/u
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
+import { ContractLinkPanel } from '@/features/contracts/ContractLinkPanel'
 import { AcceptQuotationDialog } from '@/features/quotations/AcceptQuotationDialog'
 import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
 import {
@@ -104,6 +105,7 @@ export function CustomerQuotationPage() {
                     </span>
                   </Notice>
                 )}
+                {q.status === 'ACCEPTED' && <ContractLinkPanel quotationId={q.quotationId} />}
                 {q.status === 'REVISION_REQUESTED' && q.revisionReason && (
                   <Notice title="Điều bạn yêu cầu sửa">
                     <span className="whitespace-pre-line">{q.revisionReason}</span>

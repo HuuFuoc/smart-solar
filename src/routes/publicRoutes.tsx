@@ -18,6 +18,9 @@ const ResetPasswordPage = page(() => import('@/pages/auth/ResetPasswordPage'), '
 const VerifyEmailPage = page(() => import('@/pages/auth/VerifyEmailPage'), 'VerifyEmailPage')
 const ForbiddenPage = page(() => import('@/pages/ForbiddenPage'), 'ForbiddenPage')
 
+// PayOS chuyển về
+const PaymentReturnPage = page(() => import('@/pages/payment-return-page'), 'PaymentReturnPage')
+
 // Chỉ ở dev
 const StyleguidePage = page(() => import('@/pages/StyleguidePage'), 'StyleguidePage')
 
@@ -43,6 +46,9 @@ export const publicRoutes: RouteObject[] = [
       { path: ROUTES.forbidden, lazy: ForbiddenPage },
     ],
   },
+  // Không có giao diện riêng: chuyển ngay về trang đã mở link, trang đó cần đăng nhập
+  { path: ROUTES.paymentReturn, lazy: PaymentReturnPage },
+  { path: ROUTES.paymentCancel, lazy: PaymentReturnPage },
   // Trang mẫu component chỉ có ở dev
   ...(import.meta.env.DEV ? [{ path: ROUTES.styleguide, lazy: StyleguidePage }] : []),
 ]

@@ -61,7 +61,8 @@ function nameFor(file: File, contentType: string) {
 }
 
 // Khai SHA-256 để backend so với object trên kho. crypto.subtle chỉ có trên HTTPS / localhost; thiếu thì bỏ qua
-async function sha256Hex(bytes: ArrayBuffer) {
+/** SHA-256 dạng hex thường, tính trên máy; null khi trình duyệt không có Web Crypto (trang không chạy qua HTTPS) */
+export async function sha256Hex(bytes: ArrayBuffer) {
   if (!globalThis.crypto?.subtle) return null
   const digest = await crypto.subtle.digest('SHA-256', bytes)
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')

@@ -6,7 +6,8 @@ import type {
   ContractTermsRequest,
   OfficialDocumentRequest,
 } from '@/types/req/salesContractsReq'
-import type { ContractView } from '@/types/res/customerContractsRes'
+import type { ContractDocumentTarget } from '@/services/contractService'
+import type { ContractDocumentUrlView, ContractView } from '@/types/res/customerContractsRes'
 import type { ContractPaymentView } from '@/types/res/staffPaymentsRes'
 
 // Hợp đồng lắp đặt phía nhân viên. Lệnh ghi thành công thì thay ngay bản đó trong cache; xong (kể cả lỗi 409 vì người khác
@@ -112,4 +113,14 @@ export function useCreateAmendmentMutation() {
     ({ contractId, body }: { contractId: string; body: Omit<ContractTermsRequest, 'revision'> }) =>
       contractService.createAmendment(contractId, body),
   )
+}
+
+/** Xin link ký sẵn của PDF chính thức / một bản ký khi người dùng bấm. Không lưu link vào cache: link hết hạn sau vài phút */
+export function useContractDocumentUrlMutation() {
+  return useMutation<ContractDocumentUrlView, ApiError, ContractDocumentTarget>({
+    mutationFn: ({ contractId, submissionId, disposition }) =>
+      submissionId
+        ? contractService.getSubmissionUrl(contractId, submissionId, disposition)
+        : contractService.getOfficialDocumentUrl(contractId, disposition),
+  })
 }

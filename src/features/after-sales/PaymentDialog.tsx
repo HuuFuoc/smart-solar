@@ -5,6 +5,7 @@ import { KeyValueList, Notice } from '@/components/common/ui/lists'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { isPayableAttempt, paymentStatusMeta } from '@/features/after-sales/afterSalesDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { rememberCheckout } from '@/features/payments/payosReturn'
 import { usePaymentQuery } from '@/hooks/useCustomerAfterSales'
 import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
@@ -43,10 +44,12 @@ function Payable({
   attempt,
   checking,
   onCheck,
+  returnPath,
 }: {
   attempt: PaymentAttemptView
   checking: boolean
   onCheck: () => void
+  returnPath?: string
 }) {
   return (
     <div className="mt-4 space-y-4">
@@ -60,7 +63,13 @@ function Payable({
       )}
       <div className="flex flex-wrap gap-3">
         {attempt.checkoutUrl && (
-          <a href={attempt.checkoutUrl} target="_blank" rel="noopener noreferrer" className={buttonClass('primary')}>
+          <a
+            href={attempt.checkoutUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonClass('primary')}
+            onClick={() => returnPath && rememberCheckout(attempt.orderCode, returnPath)}
+          >
             Mở trang thanh toán PayOS<span className="sr-only"> (mở tab mới)</span>
           </a>
         )}
@@ -73,7 +82,16 @@ function Payable({
 }
 
 /** Một link thanh toán PayOS của khách: số tiền, hạn, trạng thái đọc từ backend */
-export function PaymentDialog({ attemptId, onClose }: { attemptId: string | null; onClose: () => void }) {
+export function PaymentDialog({
+  attemptId,
+  onClose,
+  returnPath,
+}: {
+  attemptId: string | null
+  onClose: () => void
+  /** Trang PayOS chuyển khách về (mở lại hộp thoại này) */
+  returnPath?: string
+}) {
   const query = usePaymentQuery(attemptId)
   const attempt = query.data
 
@@ -120,7 +138,12 @@ export function PaymentDialog({ attemptId, onClose }: { attemptId: string | null
             ]}
           />
           {isPayableAttempt(attempt.status) ? (
-            <Payable attempt={attempt} checking={query.isFetching} onCheck={() => void query.refetch()} />
+            <Payable
+              attempt={attempt}
+              checking={query.isFetching}
+              onCheck={() => void query.refetch()}
+              returnPath={returnPath}
+            />
           ) : (
             <div className="mt-4">
               <Outcome attempt={attempt} />

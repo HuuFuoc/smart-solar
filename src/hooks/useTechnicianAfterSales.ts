@@ -2,7 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { uploadFile } from '@/services/fileService'
 import * as visitService from '@/services/technicianAfterSalesService'
 import type { ApiError } from '@/services/api/errors'
-import type { InspectionReportRequest, WorkReportRequest } from '@/types/req/technicianAfterSalesReq'
+import type {
+  ContinueRepairRequest,
+  DiagnosedItemRequest,
+  FinishOnSiteRequest,
+  InspectionReportRequest,
+  WorkReportRequest,
+} from '@/types/req/technicianAfterSalesReq'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 
 // Buổi hẹn bảo hành, sửa chữa, bảo trì của kỹ thuật viên. Thao tác xong (kể cả lỗi) thì tải lại từ server
@@ -23,10 +29,14 @@ export function useMyVisitsQuery({ enabled = true }: { enabled?: boolean } = {})
   })
 }
 
+/** Đang chờ tại công trình thì hỏi lại thường hơn để thấy ngay khi quản lý duyệt, khách trả tiền */
+const WAITING_REFRESH_MS = 20_000
+
 export function useMyVisitQuery(visitId: string | undefined) {
   return useQuery<TechnicianVisitView, ApiError>({
     queryKey: technicianAfterSalesKeys.visit(visitId ?? ''),
     queryFn: () => visitService.getVisit(visitId!),
+    refetchInterval: (query) => (query.state.data?.waitingOnSite ? WAITING_REFRESH_MS : false),
     enabled: Boolean(visitId),
   })
 }
@@ -58,6 +68,18 @@ export function useAddPhotoMutation() {
 
 export function useInspectionReportMutation() {
   return useVisitMutation<InspectionReportRequest>(visitService.reportInspection)
+}
+
+export function useContinueRepairMutation() {
+  return useVisitMutation<ContinueRepairRequest>(visitService.continueRepair)
+}
+
+export function useFinishOnSiteMutation() {
+  return useVisitMutation<FinishOnSiteRequest>(visitService.finishOnSite)
+}
+
+export function useSupplementaryItemMutation() {
+  return useVisitMutation<DiagnosedItemRequest>(visitService.addSupplementaryItem)
 }
 
 export function useWorkReportMutation() {

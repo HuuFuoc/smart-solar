@@ -24,6 +24,7 @@ export function ServiceItemList({ items }: { items: ServiceItemView[] }) {
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-body font-medium text-fg">{item.description}</p>
               <Badge tone={status.tone}>{status.label}</Badge>
+              {item.isSupplementary && <Badge tone="neutral">Phát sinh khi sửa</Badge>}
             </div>
             <p className="text-body text-fg-2">Chẩn đoán: {item.diagnosis}</p>
             {item.requiredParts && <p className="text-body text-fg-2">Vật tư cần: {item.requiredParts}</p>}

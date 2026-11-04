@@ -3,8 +3,14 @@ import { useEffect } from 'react'
 import { customerAfterSalesKeys, usePaymentQuery } from '@/hooks/useCustomerAfterSales'
 import * as afterSalesService from '@/services/customerAfterSalesService'
 import type { ApiError } from '@/services/api/errors'
-import type { CreateFaultRequest, OneTimeMaintenanceRequest } from '@/types/req/customerAfterSalesReq'
 import type {
+  CreateFaultRequest,
+  OneTimeMaintenanceRequest,
+  PreferredTimeRequest,
+  ReconsiderationRequest,
+} from '@/types/req/customerAfterSalesReq'
+import type {
+  NotificationView,
   PaymentAttemptView,
   ServiceRequestSummary,
   ServiceRequestView,
@@ -18,6 +24,7 @@ export const customerServiceKeys = {
   warranty: (projectId: string) => [...customerServiceKeys.all, 'warranty', projectId] as const,
   requests: () => [...customerServiceKeys.all, 'requests'] as const,
   request: (requestId: string) => [...customerServiceKeys.requests(), requestId] as const,
+  notifications: () => [...customerServiceKeys.all, 'notifications'] as const,
 }
 
 export function useWarrantyQuery(projectId: string | undefined) {
@@ -129,4 +136,54 @@ export function useQuotationPaymentQuery(attemptId: string | null) {
     if (status === 'PAID') void queryClient.invalidateQueries({ queryKey: customerServiceKeys.requests() })
   }, [status, queryClient])
   return query
+}
+
+/** Thông báo trong ứng dụng; tự tải lại để số cạnh menu cập nhật */
+export function useNotificationsQuery({ enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery<NotificationView[], ApiError>({
+    queryKey: customerServiceKeys.notifications(),
+    queryFn: afterSalesService.listNotifications,
+    refetchInterval: 60_000,
+    enabled,
+  })
+}
+
+/** Đặt một lượt bảo trì của gói. Lượt chỉ thành "đã đặt" theo backend nên tải lại cả gói đã mua */
+export function useBookMaintenanceMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<ServiceRequestView, ApiError, { entitlementId: string; body: PreferredTimeRequest }>({
+    mutationFn: ({ entitlementId, body }) => afterSalesService.bookMaintenance(entitlementId, body),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: customerServiceKeys.requests() }),
+        queryClient.invalidateQueries({ queryKey: customerAfterSalesKeys.subscriptions() }),
+      ]),
+  })
+}
+
+export function useRescheduleRequestMutation() {
+  const refresh = useRefreshRequests()
+  return useMutation<ServiceRequestView, ApiError, { requestId: string; preferredStartsAt: string }>({
+    mutationFn: ({ requestId, preferredStartsAt }) =>
+      afterSalesService.rescheduleRequest(requestId, { preferredStartsAt }),
+    onSettled: refresh,
+  })
+}
+
+export function useReconsiderationMutation() {
+  const refresh = useRefreshRequests()
+  return useMutation<ServiceRequestView, ApiError, { requestId: string; body: ReconsiderationRequest }>({
+    mutationFn: ({ requestId, body }) => afterSalesService.requestReconsideration(requestId, body),
+    onSettled: refresh,
+  })
+}
+
+/** Báo lỗi từ một lần bảo trì: tạo yêu cầu báo lỗi mới gắn với yêu cầu bảo trì đó */
+export function useReportFaultFromMaintenanceMutation() {
+  const refresh = useRefreshRequests()
+  return useMutation<ServiceRequestView, ApiError, { requestId: string; description: string | null }>({
+    mutationFn: ({ requestId, description }) =>
+      afterSalesService.reportFaultFromMaintenance(requestId, { description }),
+    onSettled: refresh,
+  })
 }

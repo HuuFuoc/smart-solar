@@ -61,18 +61,25 @@ làm lại, danh sách có thể dài thêm.
 
 ## Quản lý `/manage` (10)
 
-### Sau bán hàng (ManagerAfterSales) – đã gọi 7, còn 10
+### Sau bán hàng (ManagerAfterSales) – đã gọi 7, còn 10 (03/11/2026: 9 có màn, 1 bị chặn)
 
-- [ ] `POST /api/manager/after-sales/requests/{requestId}/claim-decision` – quyết định yêu cầu hỗ trợ của gói thiên tai
-- [ ] `POST /api/manager/after-sales/requests/{requestId}/duplicate` – đánh dấu trùng
-- [ ] `POST /api/manager/after-sales/requests/{requestId}/stop`
-- [ ] `POST /api/manager/after-sales/requests/{requestId}/not-fulfilled`
-- [ ] `PUT /api/manager/after-sales/assets/{assetId}` – sửa thiết bị
-- [ ] `POST /api/manager/after-sales/subscriptions/{subscriptionId}/cancellation-decision` – duyệt huỷ gói đã trả tiền
-- [ ] `GET /api/manager/after-sales/tasks`
-- [ ] `POST /api/manager/after-sales/tasks/{taskId}/assign`
-- [ ] `GET /api/manager/after-sales/refunds`
-- [ ] `POST /api/manager/after-sales/refunds/{refundId}/decision`
+Đánh dấu nghĩa là có màn gọi và đã chạy E2E với API giả (`tests/e2e/manager-portal.e2e.mjs`); chưa chạy với backend thật.
+Chi tiết và phần còn chặn: [manager-after-sales-verification.md](manager-after-sales-verification.md).
+
+- [x] `POST /api/manager/after-sales/requests/{requestId}/claim-decision` – khối "Hỗ trợ của gói thiên tai", trang chi
+      tiết yêu cầu (quản lý + quản trị)
+- [x] `POST /api/manager/after-sales/requests/{requestId}/duplicate` – "Kết thúc yêu cầu" → Đóng vì trùng
+- [x] `POST /api/manager/after-sales/requests/{requestId}/stop` – "Kết thúc yêu cầu" → Dừng việc (chỉ việc đã bắt đầu)
+- [x] `POST /api/manager/after-sales/requests/{requestId}/not-fulfilled` – "Kết thúc yêu cầu" → Không thực hiện được (bảo
+      trì lẻ chưa làm; huỷ + duyệt hoàn 100 %)
+- [x] `PUT /api/manager/after-sales/assets/{assetId}` – khối "Thiết bị của công trình" → Sửa
+- [ ] `POST /api/manager/after-sales/subscriptions/{subscriptionId}/cancellation-decision` – có service + hook, **chưa có
+      màn**: backend không có API cho quản lý đọc gói `CANCELLATION_REQUESTED`
+- [x] `GET /api/manager/after-sales/tasks` – `/manage/sales-tasks`, `/admin/sales-tasks`
+- [x] `POST /api/manager/after-sales/tasks/{taskId}/assign` – chỉ `/admin/sales-tasks` (quản lý không đọc được danh sách
+      kinh doanh)
+- [x] `GET /api/manager/after-sales/refunds` – `/manage/refunds`, `/admin/refunds`
+- [x] `POST /api/manager/after-sales/refunds/{refundId}/decision` – nút "Xét hoàn tiền" ở cả hai trang
 
 ## Kinh doanh `/ops` (13)
 
@@ -108,33 +115,40 @@ làm lại, danh sách có thể dài thêm.
 
 ## Khách hàng `/customer` (11)
 
-### Hợp đồng và thanh toán – ký và thanh toán riêng hợp đồng chưa có giao diện
+### Hợp đồng và thanh toán – `/customer/contracts(/:id)`, kiểm tra ở [customer-portal-verification.md](customer-portal-verification.md)
 
-- [ ] `GET /api/customers/me/contracts/{contractId}` (CustomerContracts)
-- [ ] `POST /api/customers/me/contracts/{contractId}/signed-document` – gửi bản khách đã ký (CustomerContracts)
-- [ ] `POST /api/customers/me/contracts/{contractId}/payments` (CustomerPayments)
-- [ ] `GET /api/customers/me/contracts/{contractId}/payments` (CustomerPayments)
-- [ ] `POST /api/customers/me/contracts/{contractId}/payments/cancel` (CustomerPayments)
+- [x] `GET /api/customers/me/contracts/{contractId}` (CustomerContracts)
+- [x] `POST /api/customers/me/contracts/{contractId}/signed-document` – gửi bản khách đã ký (CustomerContracts)
+- [x] `POST /api/customers/me/contracts/{contractId}/payments` (CustomerPayments)
+- [x] `GET /api/customers/me/contracts/{contractId}/payments` (CustomerPayments)
+- [x] `POST /api/customers/me/contracts/{contractId}/payments/cancel` (CustomerPayments)
 
 ### Sau bán hàng (CustomerAfterSales) – đã gọi 17, còn 5
 
-- [ ] `POST /api/customers/me/after-sales/maintenance/{entitlementId}/book` – đặt lịch lượt bảo trì của gói
-- [ ] `POST /api/customers/me/after-sales/requests/{requestId}/reschedule` – đổi giờ
-- [ ] `POST /api/customers/me/after-sales/requests/{requestId}/reconsideration` – xin xem xét lại
-- [ ] `POST /api/customers/me/after-sales/requests/{requestId}/report-fault`
-- [ ] `GET /api/customers/me/after-sales/notifications`
+- [x] `POST /api/customers/me/after-sales/maintenance/{entitlementId}/book` – đặt lịch lượt bảo trì của gói
+- [x] `POST /api/customers/me/after-sales/requests/{requestId}/reschedule` – đổi giờ
+- [x] `POST /api/customers/me/after-sales/requests/{requestId}/reconsideration` – xin xem xét lại
+- [x] `POST /api/customers/me/after-sales/requests/{requestId}/report-fault`
+- [x] `GET /api/customers/me/after-sales/notifications`
 
 ### Địa điểm
 
-- [ ] `PUT /api/customers/me/sites/{siteId}/administrative-location` – bổ sung phường, xã cho địa điểm cũ (CustomerSiteLocation)
+- [x] `PUT /api/customers/me/sites/{siteId}/administrative-location` – bổ sung phường, xã cho địa điểm cũ (CustomerSiteLocation)
 
 ## Chung (5)
 
-- [ ] `POST /api/chat/messages` (Chat – chatbot)
-- [ ] `GET /api/chat/sessions` (Chat)
-- [ ] `GET /api/chat/sessions/{sessionId}` (Chat)
-- [ ] `GET /api/administrative-units/provinces` – hiện cố định TP.HCM nên chưa cần
-- [ ] `GET /api/administrative-units/legacy-lookup` – tra phường, xã mới từ địa chỉ cũ
+Một module dùng chung, mỗi endpoint đếm một lần dù dùng ở nhiều cổng. Chatbot đã nối đủ nhưng image đang chạy để
+`Features__KnowledgeBaseEnabled=false` nên mọi lời gọi có token trả 503 `FEATURE_PENDING_MIGRATION`: trang hiện "chưa sẵn
+sàng", chưa thử được câu trả lời thật.
+
+- [x] `POST /api/chat/messages` (Chat) – trang "Trợ lý" của cả 5 cổng (`pages/assistant-page.tsx`): gửi câu hỏi, câu đầu mở
+      phiên mới
+- [x] `GET /api/chat/sessions` (Chat) – cột "Các cuộc trò chuyện" của trang Trợ lý
+- [x] `GET /api/chat/sessions/{sessionId}` (Chat) – mở lại một cuộc trò chuyện (`?phien=<mã>`)
+- [x] `GET /api/administrative-units/provinces` – tên tỉnh ở ô "Tỉnh, thành phố" (bước Địa điểm), chỉ đọc mã 79, không mở
+      phạm vi ra các tỉnh khác
+- [x] `GET /api/administrative-units/legacy-lookup` – "Chỉ biết địa chỉ cũ?" ở bước Địa điểm và hộp thoại "Bổ sung phường,
+      xã" (`LegacyWardLookup.tsx`)
 
 ## Không phải việc của FE
 

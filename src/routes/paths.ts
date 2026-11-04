@@ -12,6 +12,9 @@ export const ROUTES = {
   resetPassword: '/reset-password',
   verifyEmail: '/verify-email',
   forbidden: '/403',
+  /** ReturnUrl / CancelUrl của PayOS do backend cấu hình; chỉ chuyển khách về trang đã mở link thanh toán */
+  paymentReturn: '/payments/return',
+  paymentCancel: '/payments/cancel',
   /** Chỉ có ở dev */
   styleguide: '/styleguide',
 
@@ -25,8 +28,13 @@ export const ROUTES = {
     /** Công trình lắp đặt: tiến độ, ảnh thi công, nghiệm thu, bàn giao */
     projects: '/customer/projects',
     project: '/customer/projects/:id',
-    /** Gói bảo vệ thiên tai: mua, thanh toán PayOS, huỷ trước khi hiệu lực */
+    /** Hợp đồng lắp đặt: ký (gửi bản ký tay), thanh toán PayOS */
+    contracts: '/customer/contracts',
+    contract: '/customer/contracts/:id',
+    /** Gói bảo vệ thiên tai, bảo trì định kỳ: mua, thanh toán PayOS, huỷ trước khi hiệu lực, đặt lượt bảo trì */
     packages: '/customer/packages',
+    /** Thông báo trong ứng dụng của bảo hành, sửa chữa, gói dịch vụ */
+    notifications: '/customer/notifications',
     /** Bảo hành, sửa chữa, bảo trì lẻ: yêu cầu đã gửi */
     afterSales: '/customer/after-sales',
     afterSalesRequest: '/customer/after-sales/:id',
@@ -35,13 +43,14 @@ export const ROUTES = {
     /** Báo giá lắp đặt; chi tiết theo mã báo giá (mỗi bản một mã) */
     quotations: '/customer/quotations',
     quotation: '/customer/quotations/:id',
+    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
+    assistant: '/customer/assistant',
     // Màn mock đã ẩn
     estimate: '/customer/assessment/estimate',
     consultations: '/customer/consultations',
     consultation: '/customer/consultations/:id',
     warranty: '/customer/warranty',
     warrantyRequest: '/customer/warranty/:id',
-    assistant: '/customer/assistant',
   },
 
   ops: {
@@ -58,6 +67,8 @@ export const ROUTES = {
     afterSalesRequest: '/ops/after-sales/:id',
     products: '/ops/products',
     product: '/ops/products/:id',
+    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
+    assistant: '/ops/assistant',
     // Màn mock đã ẩn
     consultations: '/ops/consultations',
     customers: '/ops/customers',
@@ -71,6 +82,8 @@ export const ROUTES = {
     /** Lịch khảo sát được phân công */
     jobs: '/tech/jobs',
     job: '/tech/jobs/:id',
+    /** Một lịch trong khu vực đang chờ người nhận (chưa là việc của mình) */
+    openJob: '/tech/jobs/open/:id',
     /** Công trình lắp đặt quản lý giao */
     installations: '/tech/installations',
     installation: '/tech/installations/:id',
@@ -80,6 +93,8 @@ export const ROUTES = {
     schedule: '/tech/schedule',
     products: '/tech/products',
     product: '/tech/products/:id',
+    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
+    assistant: '/tech/assistant',
     // Màn mock đã ẩn
     tasks: '/tech/tasks',
     surveys: '/tech/surveys',
@@ -107,6 +122,15 @@ export const ROUTES = {
     /** Xếp kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý dùng chung trang với quản trị) */
     dispatch: '/manage/dispatch',
     dispatchRequest: '/manage/dispatch/:id',
+    /** Hàng việc sau bán của kinh doanh: xem, lọc (quản lý dùng chung trang với quản trị) */
+    salesTasks: '/manage/sales-tasks',
+    /** Khoản hoàn tiền làm tay: duyệt / từ chối (quản lý dùng chung trang với quản trị) */
+    refunds: '/manage/refunds',
+    /** Gói khách xin huỷ trước khi bắt đầu kỳ: hàng chờ → chi tiết → duyệt / từ chối */
+    packageCancellations: '/manage/package-cancellations',
+    packageCancellation: '/manage/package-cancellations/:id',
+    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
+    assistant: '/manage/assistant',
     // Màn mock đã ẩn
     projects: '/manage/projects',
     project: '/manage/projects/:id',
@@ -141,13 +165,17 @@ export const ROUTES = {
     zone: '/admin/zones/:id',
     /** Thời hạn bảo hành lắp đặt / sửa chữa cho kinh doanh chọn */
     warrantyOptions: '/admin/warranty-options',
-    /** Ghi nhận hoàn tiền đã chuyển cho khách */
+    /** Duyệt khoản hoàn tiền và ghi nhận đã chuyển cho khách */
     refunds: '/admin/refunds',
+    /** Hàng việc sau bán của kinh doanh: giao / giao lại */
+    salesTasks: '/admin/sales-tasks',
     /** Báo cáo thu tiền và hoạt động sau bán, xuất CSV */
     reports: '/admin/reports',
     /** Kho tri thức của chatbot; chi tiết theo mã tài liệu */
     knowledgeBase: '/admin/knowledge-base',
     knowledgeDocument: '/admin/knowledge-base/:id',
+    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
+    assistant: '/admin/assistant',
     // Màn mock đã ẩn
     roles: '/admin/roles',
     services: '/admin/services',

@@ -24,9 +24,19 @@ export type CreateFaultRequest = {
   incidentOccurredAt?: string | null
 }
 
+export type FaultFromMaintenanceRequest = {
+  description?: string | null
+}
+
 export type OneTimeMaintenanceRequest = {
   /** Format: uuid */
   projectId?: string
+  /** Format: date-time */
+  preferredStartsAt?: string
+  note?: string | null
+}
+
+export type PreferredTimeRequest = {
   /** Format: date-time */
   preferredStartsAt?: string
   note?: string | null
@@ -40,4 +50,9 @@ export type PurchaseRequest = {
   /** Format: uuid */
   disasterPackageId?: string | null
   includeContract?: boolean
+}
+
+export type ReconsiderationRequest = {
+  note?: string | null
+  evidenceFileIds?: string[] | null
 }

@@ -103,7 +103,10 @@ describe('A. ghi nhận hoàn tiền', () => {
   test('ghi nhận khoản đã duyệt kèm giờ Việt Nam; chưa xác nhận thì không gửi; khoản chờ duyệt không ghi nhận được', async () => {
     const state = createState()
     const page = await openAdmin(state, '/admin/refunds')
-    await page.getByText('Huỷ gói dịch vụ').first().waitFor()
+    await page
+      .getByText(/^Gói dịch vụ /)
+      .first()
+      .waitFor()
     await page.getByRole('button', { name: 'Ghi nhận đã hoàn' }).click()
     const dialog = page.getByRole('dialog', { name: 'Ghi nhận đã hoàn tiền' })
     await dialog.getByLabel('Mã giao dịch').fill('CK123')

@@ -8,6 +8,9 @@ import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { OnSiteSurveyFields, type DeclaredValues } from '@/features/onsite-survey/OnSiteSurveyFields'
+import { OnSiteSurveyAmendmentEditor } from '@/features/onsite-survey/OnSiteSurveyAmendmentEditor'
+import { OnSiteSurveyAmendments } from '@/features/onsite-survey/OnSiteSurveyAmendments'
+import { canAmend } from '@/features/onsite-survey/onSiteSurveyAmendment'
 import { OnSiteSurveyFiles, type AttachmentUrlFetcher } from '@/features/onsite-survey/OnSiteSurveyFiles'
 import { OnSiteSurveySummary } from '@/features/onsite-survey/OnSiteSurveySummary'
 import { OnSiteSurveyUpload } from '@/features/onsite-survey/OnSiteSurveyUpload'
@@ -38,7 +41,7 @@ import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
 // 1. Bấm "Bắt đầu khảo sát" khi tới nơi (sớm nhất 2 giờ trước giờ hẹn), backend ghi giờ bắt đầu.
 // 2. Nhập số đo, thêm ảnh; lưu bao nhiêu lần cũng được.
 // 3. "Hoàn thành khảo sát": cần đủ ô bắt buộc và ít nhất một ảnh Mái. Xong thì lịch hẹn và yêu cầu chuyển sang
-//    đã khảo sát, không sửa trên giao diện được nữa
+//    đã khảo sát; sau đó chỉ sửa bằng "Bổ sung biên bản" (lý do bắt buộc, backend giữ giá trị cũ trong lịch sử)
 
 /** Đồng hồ cập nhật mỗi 30 giây để nút Bắt đầu tự mở khi tới giờ */
 function useNow() {
@@ -84,13 +87,7 @@ export function OnSiteSurveyPanel({ job }: { job: TechnicianJobView }) {
           />
         ) : survey?.status === 'COMPLETED' || job.status === 'COMPLETED' ? (
           survey ? (
-            <div className="space-y-6">
-              <OnSiteSurveySummary survey={survey} />
-              <div>
-                <h3 className="mb-3 text-body font-semibold text-fg">Ảnh và tài liệu</h3>
-                <OnSiteSurveyFiles attachments={survey.attachments} getUrl={getUrl} emptyText="Không có tệp nào." />
-              </div>
-            </div>
+            <CompletedSurvey job={job} survey={survey} getUrl={getUrl} />
           ) : (
             <p className="text-body text-fg-2">Lịch này đã xong nhưng không có biên bản khảo sát.</p>
           )
@@ -102,6 +99,63 @@ export function OnSiteSurveyPanel({ job }: { job: TechnicianJobView }) {
         )}
       </PanelBody>
     </Panel>
+  )
+}
+
+/** Số liệu khách khai để đối chiếu ở từng ô */
+function declaredOf(job: TechnicianJobView): DeclaredValues {
+  const s = job.preSurvey
+  return {
+    widthM: s.surfaceWidthM,
+    lengthM: s.surfaceLengthM,
+    usableAreaM2: s.usableAreaM2,
+    tiltDegree: s.surfaceTiltDegree,
+    azimuthDegree: s.surfaceAzimuthDegree,
+  }
+}
+
+// Biên bản đã hoàn thành: chỉ đọc, kèm lịch sử bổ sung; sửa thì gửi một lần bổ sung có lý do
+function CompletedSurvey({
+  job,
+  survey,
+  getUrl,
+}: {
+  job: TechnicianJobView
+  survey: OnSiteSurveyView
+  getUrl: AttachmentUrlFetcher
+}) {
+  const [editing, setEditing] = useState(false)
+  const amendable = canAmend(survey, job)
+
+  if (editing && amendable)
+    return (
+      <OnSiteSurveyAmendmentEditor
+        // key: đổi biên bản (hiếm) thì dựng lại form từ đầu
+        key={survey.reportId}
+        appointmentId={job.appointmentId}
+        survey={survey}
+        declared={declaredOf(job)}
+        onClose={() => setEditing(false)}
+      />
+    )
+
+  return (
+    <div className="space-y-6">
+      <OnSiteSurveySummary survey={survey} />
+      <div>
+        <h3 className="mb-3 text-body font-semibold text-fg">Ảnh và tài liệu</h3>
+        <OnSiteSurveyFiles attachments={survey.attachments} getUrl={getUrl} emptyText="Không có tệp nào." />
+      </div>
+      <OnSiteSurveyAmendments survey={survey} />
+      {amendable && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-5">
+          <Button icon="edit_note" variant="soft" onClick={() => setEditing(true)}>
+            Bổ sung biên bản
+          </Button>
+          <span className="text-body text-fg-2">Đo sai hoặc thiếu ảnh thì gửi bổ sung kèm lý do.</span>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -179,14 +233,7 @@ function SurveyEditor({
   const roofPhotos = survey.attachments.filter((a) => a.category === 'ROOF').length
   const requiredLeft = Object.keys(validateOnSiteSurvey(form, { forCompletion: true })).length
 
-  const s = job.preSurvey
-  const declared: DeclaredValues = {
-    widthM: s.surfaceWidthM,
-    lengthM: s.surfaceLengthM,
-    usableAreaM2: s.usableAreaM2,
-    tiltDegree: s.surfaceTiltDegree,
-    azimuthDegree: s.surfaceAzimuthDegree,
-  }
+  const declared = declaredOf(job)
 
   function change(patch: Partial<OnSiteSurveyForm>) {
     setForm((current) => ({ ...current, ...patch }))
@@ -274,8 +321,8 @@ function SurveyEditor({
   return (
     <div className="space-y-6">
       <p className="tnum text-body text-fg-2">
-        Bắt đầu lúc {formatMoment(survey.startedAt)}. Lưu bao nhiêu lần cũng được; hoàn thành rồi thì không sửa được
-        nữa.
+        Bắt đầu lúc {formatMoment(survey.startedAt)}. Lưu bao nhiêu lần cũng được; hoàn thành rồi thì chỉ sửa được bằng
+        một lần bổ sung có lý do.
       </p>
 
       {stale && (
@@ -384,7 +431,7 @@ function SurveyEditor({
         <DialogTitle>Hoàn thành khảo sát?</DialogTitle>
         <p className="mt-2 text-body text-fg-2">
           {dirty ? 'Phần chưa lưu sẽ được lưu trước. ' : ''}Kết quả gửi cho bộ phận kinh doanh để báo giá; lịch hẹn và
-          yêu cầu chuyển sang đã khảo sát. Hoàn thành rồi thì không sửa trên giao diện được nữa.
+          yêu cầu chuyển sang đã khảo sát. Hoàn thành rồi thì muốn sửa phải gửi bổ sung kèm lý do.
         </p>
         <DialogFooter>
           <Button icon="close" variant="secondary" disabled={busy} onClick={() => setConfirming(false)}>

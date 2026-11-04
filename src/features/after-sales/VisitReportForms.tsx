@@ -5,17 +5,22 @@ import { FormActions } from '@/components/common/ui/form-actions'
 import { Checkbox, Field, Input, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { assetName } from '@/features/after-sales/serviceDisplay'
+import {
+  emptyItemDraft,
+  inspectionBody,
+  inspectionError,
+  ITEM_DESCRIPTION_MAX,
+  ITEM_DIAGNOSIS_MAX,
+  ITEM_PARTS_MAX,
+  REPORT_MAX,
+  type ItemDraft,
+} from '@/features/after-sales/technicianVisitRules'
+import { formatTime } from '@/features/scheduling/schedulingDisplay'
 import { useInspectionReportMutation, useWorkReportMutation } from '@/hooks/useTechnicianAfterSales'
 import { errorMessage } from '@/services/api/errors'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 
 // Báo cáo cuối buổi hẹn của kỹ thuật viên. Backend bắt có ít nhất một ảnh của buổi này trước khi nhận báo cáo
-
-const REPORT_MAX = 4000
-
-type ItemDraft = { assetId: string; description: string; diagnosis: string; requiredParts: string }
-
-const emptyItem = (): ItemDraft => ({ assetId: '', description: '', diagnosis: '', requiredParts: '' })
 
 function ErrorNotice({ message }: { message: string | null }) {
   if (!message) return null
@@ -26,40 +31,34 @@ function ErrorNotice({ message }: { message: string | null }) {
   )
 }
 
-/** Buổi kiểm tra: không phát hiện lỗi, hoặc liệt kê từng hạng mục hỏng để quản lý xét bảo hành */
+/**
+ * Buổi kiểm tra: không phát hiện lỗi, hoặc liệt kê từng hạng mục hỏng để quản lý xét bảo hành. Có hạng mục thì kỹ thuật
+ * viên chọn ở lại công trình (stayOnSite): buổi và khung giờ còn giữ, được duyệt và thanh toán kịp thì sửa luôn
+ */
 export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) {
   const send = useInspectionReportMutation()
   const [report, setReport] = useState('')
   const [noFault, setNoFault] = useState(false)
-  const [items, setItems] = useState<ItemDraft[]>([emptyItem()])
+  const [stayOnSite, setStayOnSite] = useState(false)
+  const [items, setItems] = useState<ItemDraft[]>([emptyItemDraft()])
   const [error, setError] = useState<string | null>(null)
 
   const setItem = (index: number, change: Partial<ItemDraft>) =>
     setItems((all) => all.map((item, i) => (i === index ? { ...item, ...change } : item)))
 
   async function submit() {
-    if (!report.trim()) return setError('Ghi bạn đã kiểm tra gì và thấy gì.')
-    if (!noFault && items.some((i) => !i.description.trim() || !i.diagnosis.trim()))
-      return setError('Mỗi hạng mục cần ghi tên và chẩn đoán.')
+    const draft = { report, noFault, stayOnSite, items }
+    const problem = inspectionError(draft)
+    if (problem) return setError(problem)
     setError(null)
     try {
-      await send.mutateAsync({
-        visitId: visit.visitId,
-        body: {
-          report: report.trim(),
-          noFaultFound: noFault,
-          items: noFault
-            ? []
-            : items.map((i) => ({
-                assetId: i.assetId || null,
-                description: i.description.trim(),
-                diagnosis: i.diagnosis.trim(),
-                requiredParts: i.requiredParts.trim() || null,
-              })),
-          stayOnSite: false,
-        },
-      })
-      toast.success('Đã gửi kết quả kiểm tra.')
+      const body = inspectionBody(draft)
+      await send.mutateAsync({ visitId: visit.visitId, body })
+      toast.success(
+        body.stayOnSite
+          ? 'Đã gửi kết quả kiểm tra. Chờ tại công trình: được duyệt và thanh toán kịp thì bấm Sửa luôn.'
+          : 'Đã gửi kết quả kiểm tra.',
+      )
     } catch (e) {
       setError(errorMessage(e))
     }
@@ -104,7 +103,7 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
                 <Field label="Tên hạng mục" htmlFor={`item-description-${index}`} required>
                   <Input
                     id={`item-description-${index}`}
-                    maxLength={300}
+                    maxLength={ITEM_DESCRIPTION_MAX}
                     placeholder="Vd: Thay quạt tản nhiệt inverter"
                     value={item.description}
                     onChange={(e) => setItem(index, { description: e.target.value })}
@@ -127,7 +126,7 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
                 <Field label="Chẩn đoán" htmlFor={`item-diagnosis-${index}`} required>
                   <Input
                     id={`item-diagnosis-${index}`}
-                    maxLength={2000}
+                    maxLength={ITEM_DIAGNOSIS_MAX}
                     value={item.diagnosis}
                     onChange={(e) => setItem(index, { diagnosis: e.target.value })}
                   />
@@ -135,7 +134,7 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
                 <Field label="Vật tư cần" htmlFor={`item-parts-${index}`}>
                   <Input
                     id={`item-parts-${index}`}
-                    maxLength={1000}
+                    maxLength={ITEM_PARTS_MAX}
                     value={item.requiredParts}
                     onChange={(e) => setItem(index, { requiredParts: e.target.value })}
                   />
@@ -143,9 +142,15 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
               </div>
             </div>
           ))}
-          <Button variant="soft" size="sm" icon="add" onClick={() => setItems((all) => [...all, emptyItem()])}>
+          <Button variant="soft" size="sm" icon="add" onClick={() => setItems((all) => [...all, emptyItemDraft()])}>
             Thêm hạng mục
           </Button>
+          <Checkbox
+            label="Ở lại công trình để sửa luôn"
+            description={`Giữ buổi hẹn mở tới ${formatTime(visit.endsAt)}. Quản lý duyệt hết hạng mục và khách trả phần phải trả kịp thì bạn sửa luôn, không phải hẹn buổi khác.`}
+            checked={stayOnSite}
+            onChange={(e) => setStayOnSite(e.target.checked)}
+          />
         </div>
       )}
       <ErrorNotice message={error} />

@@ -181,6 +181,27 @@ export const SALES_TASK_STATUSES: Record<string, string> = {
   CANCELLED: 'Đã huỷ',
 }
 
+/** SalesTaskStatuses trên hàng việc của quản lý: kinh doanh tự nhận, quản lý giao khi cần nên "chờ nhận" là việc chờ xử lý */
+export const SALES_TASK_QUEUE_STATUSES: Record<string, { label: string; tone: Tone }> = {
+  OPEN: { label: 'Chưa ai nhận', tone: 'danger' },
+  CLAIMED: { label: 'Đã có người nhận', tone: 'info' },
+  IN_PROGRESS: { label: 'Đang làm', tone: 'info' },
+  DONE: { label: 'Xong', tone: 'neutral' },
+  CANCELLED: { label: 'Đã huỷ', tone: 'neutral' },
+}
+
+/**
+ * ClaimStatuses: hỗ trợ của gói thiên tai cho một yêu cầu báo lỗi. Chờ xét là việc của quản lý nhưng báo đỏ ở khối Tình
+ * hình, nên nhãn trong khối là info. NOT_ELIGIBLE: không gói nào bảo vệ lúc xảy ra sự cố
+ */
+export const DISASTER_CLAIM_STATUSES: Record<string, { label: string; tone: Tone }> = {
+  NOT_ELIGIBLE: { label: 'Không đủ điều kiện', tone: 'neutral' },
+  SUBMITTED: { label: 'Chờ quản lý xét', tone: 'info' },
+  APPROVED: { label: 'Đã duyệt', tone: 'ok' },
+  REJECTED: { label: 'Đã từ chối', tone: 'neutral' },
+  RECONSIDERATION_REQUESTED: { label: 'Khách xin xét lại', tone: 'info' },
+}
+
 /**
  * FollowUpOutcomes: kết quả của việc nhắc khách. Bỏ trống là chưa có kết quả cuối (việc còn mở); WILL_BOOK_LATER cũng giữ việc
  * mở; các kết quả khác đóng việc. UNREACHABLE của việc nhắc bảo trì làm lượt bảo trì thành chưa thực hiện (không bị trừ)
@@ -242,6 +263,61 @@ export const DASHBOARD_METRICS: Record<string, { label: string; money?: boolean 
   package_purchases: { label: 'Gói đã thanh toán' },
   active_technicians: { label: 'Kỹ thuật viên có lịch làm' },
   technician_service_visits: { label: 'Buổi sau bán đã báo cáo' },
+}
+
+// Phía khách: lượt bảo trì của gói, hỗ trợ thiên tai, thông báo trong ứng dụng
+
+/** EntitlementStatuses: một lượt bảo trì của gói. AVAILABLE và NOT_COMPLETED đặt lịch được khi gói còn hiệu lực */
+export const ENTITLEMENT_STATUSES: Record<string, { label: string; tone: Tone }> = {
+  AVAILABLE: { label: 'Chưa đặt lịch', tone: 'info' },
+  NOT_COMPLETED: { label: 'Chưa thực hiện, đặt lại được', tone: 'info' },
+  BOOKED: { label: 'Đã đặt lịch', tone: 'ok' },
+  CONSUMED: { label: 'Đã bảo trì', tone: 'neutral' },
+  EXPIRED: { label: 'Hết hạn, chưa dùng', tone: 'neutral' },
+  EXPIRED_UNFULFILLED: { label: 'Hết hạn, Smart Solar chưa làm kịp', tone: 'neutral' },
+}
+
+/** Lượt đặt lịch được (BookMaintenanceAsync) */
+export const BOOKABLE_ENTITLEMENT_STATUSES: readonly string[] = ['AVAILABLE', 'NOT_COMPLETED']
+
+/** ClaimStatuses theo lời của khách */
+export const CUSTOMER_CLAIM_STATUSES: Record<string, { label: string; tone: Tone }> = {
+  NOT_ELIGIBLE: { label: 'Không thuộc gói đang có hiệu lực', tone: 'neutral' },
+  SUBMITTED: { label: 'Smart Solar đang xét', tone: 'info' },
+  APPROVED: { label: 'Được hỗ trợ', tone: 'ok' },
+  REJECTED: { label: 'Không được hỗ trợ', tone: 'neutral' },
+  RECONSIDERATION_REQUESTED: { label: 'Đang xét lại theo yêu cầu của bạn', tone: 'info' },
+}
+
+/** Giới hạn khi xin xét lại hỗ trợ thiên tai (RequestReconsiderationAsync, VerifiedEvidenceAsync) */
+export const RECONSIDERATION_LIMITS = { noteLength: 1000, photos: 10 } as const
+
+/**
+ * AfterSalesNotification.Type gửi cho khách. Câu của backend là tiếng Anh nên giao diện dùng nhãn này; loại lạ in nhãn chung.
+ * Thông báo có requestId thì mở trang yêu cầu, có subscriptionId thì mở trang gói
+ */
+export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
+  VISIT_SCHEDULED: 'Đã có lịch hẹn kỹ thuật viên',
+  VISIT_MISSED: 'Buổi bảo trì chưa làm được, bạn đặt lại được',
+  COVERAGE_DECIDED: 'Đã xét xong lỗi nào được bảo hành',
+  CLAIM_DECIDED: 'Đã có kết quả xét hỗ trợ thiên tai',
+  QUOTATION_ISSUED: 'Có báo giá mới chờ bạn duyệt',
+  QUOTATION_PAID: 'Đã nhận tiền báo giá',
+  QUOTATION_EXPIRED: 'Báo giá đã hết hạn',
+  NO_FAULT_FOUND: 'Kỹ thuật viên không thấy lỗi, mời bạn xác nhận',
+  ACCEPTANCE_REQUESTED: 'Đã làm xong, mời bạn nghiệm thu',
+  ACCEPTANCE_REMINDER: 'Nhắc nghiệm thu kết quả',
+  DISPUTE_REVIEWED: 'Đã xem ý kiến của bạn về kết quả',
+  REQUEST_DUPLICATE: 'Yêu cầu đã được gộp vào yêu cầu khác',
+  CANCELLATION_APPROVED: 'Yêu cầu huỷ đã được duyệt',
+  CANCELLATION_REJECTED: 'Yêu cầu huỷ không được duyệt',
+  WORK_STOPPED: 'Việc sửa chữa đã dừng',
+  SERVICE_NOT_FULFILLED: 'Chưa xếp được lịch, bạn được hoàn tiền',
+  REFUND_RECORDED: 'Smart Solar đã hoàn tiền',
+  PACKAGE_PAID: 'Đã nhận tiền gói dịch vụ',
+  PACKAGE_ACTIVE: 'Gói dịch vụ bắt đầu hiệu lực',
+  PACKAGE_EXPIRING: 'Gói dịch vụ sắp hết hạn',
+  MAINTENANCE_DUE: 'Tới tháng bảo trì, mời bạn đặt lịch',
 }
 
 /** Thứ tự các chỉ số tiền trên báo cáo: các nguồn thu, tổng, hoàn, thực thu */

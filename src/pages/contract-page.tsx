@@ -39,7 +39,9 @@ import { FileInfo } from '@/features/files/FileInfo'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { ContractDocumentButtons } from '@/features/contracts/ContractDocumentButtons'
 import {
+  useContractDocumentUrlMutation,
   useContractQuery,
   useIssueContractMutation,
   usePublishContractMutation,
@@ -237,6 +239,7 @@ function ContentPanel({ contract: c }: { contract: ContractView }) {
 }
 
 function ContractAside({ contract: c, viewer }: { contract: ContractView; viewer: ContractViewer }) {
+  const documentUrl = useContractDocumentUrlMutation()
   return (
     <PanelAside aria-label="Thông tin hợp đồng">
       <Panel>
@@ -268,7 +271,14 @@ function ContractAside({ contract: c, viewer }: { contract: ContractView; viewer
               { k: 'Thanh toán đủ', v: formatMoment(c.paidAt) },
             ]}
           />
-          {c.officialDocument && <p className="mt-4 text-meta text-fg-3">Trang này chưa mở hoặc tải được tệp PDF.</p>}
+          {c.officialDocument && (
+            <div className="mt-4">
+              <ContractDocumentButtons
+                name="PDF chính thức"
+                request={(disposition) => documentUrl.mutateAsync({ contractId: c.contractId, disposition })}
+              />
+            </div>
+          )}
         </PanelBody>
       </Panel>
     </PanelAside>

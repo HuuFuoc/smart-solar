@@ -17,7 +17,8 @@ import {
   submissionMatchesOfficial,
   type ContractViewer,
 } from '@/features/contracts/contractRules'
-import { useReviewContractMutation } from '@/hooks/useContracts'
+import { ContractDocumentButtons } from '@/features/contracts/ContractDocumentButtons'
+import { useContractDocumentUrlMutation, useReviewContractMutation } from '@/hooks/useContracts'
 import type { ContractView, SignatureSubmissionView } from '@/types/res/customerContractsRes'
 
 // Bản ký khách gửi và duyệt nội bộ (không phải xác thực chữ ký điện tử). Kinh doanh phụ trách hoặc quản lý duyệt; quản trị
@@ -26,6 +27,7 @@ import type { ContractView, SignatureSubmissionView } from '@/types/res/customer
 function SubmissionRow({ s, contract }: { s: SignatureSubmissionView; contract: ContractView }) {
   const outcome = signatureOutcomeMeta(s.outcome)
   const matches = submissionMatchesOfficial(s, contract)
+  const documentUrl = useContractDocumentUrlMutation()
   return (
     <li className="space-y-3 py-4 first:pt-0 last:pb-0">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -41,6 +43,12 @@ function SubmissionRow({ s, contract }: { s: SignatureSubmissionView; contract: 
           },
           ...(s.reviewedAt ? [{ k: 'Duyệt lúc', v: formatMoment(s.reviewedAt) }] : []),
         ]}
+      />
+      <ContractDocumentButtons
+        name={`bản ký gửi lúc ${formatMoment(s.submittedAt)}`}
+        request={(disposition) =>
+          documentUrl.mutateAsync({ contractId: contract.contractId, submissionId: s.submissionId, disposition })
+        }
       />
       {s.rejectionReason && (
         <Notice title="Lý do từ chối">
