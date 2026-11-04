@@ -331,8 +331,10 @@ function SunLight({
   shadowSize: number
 }) {
   const lightRef = useRef<THREE.DirectionalLight>(null)
-  const position = target.clone().add(directionToSun(sun).multiplyScalar(distance * 2))
-  const intensity = sun.elevation > 0 ? 0.6 + 1.6 * Math.sin(sun.elevation * DEGREE) : 0
+  const safeElevation = Math.max(0.5, sun.elevation)
+  const safeSun = useMemo(() => ({ elevation: safeElevation, azimuth: sun.azimuth }), [safeElevation, sun.azimuth])
+  const position = target.clone().add(directionToSun(safeSun).multiplyScalar(distance * 2))
+  const intensity = 0.6 + 1.6 * Math.sin(safeElevation * DEGREE)
 
   // Đèn chiếu về tâm mái; khung chụp bóng phủ vừa nhà và phần sân quanh nhà
   useLayoutEffect(() => {
@@ -619,14 +621,21 @@ export function SimulationScene({ detail, view, sun, onShadeChange }: SceneProps
   )
 
   const placements = detail.layout.details.placements
-  const { elevation, azimuth } = sun
-  // Mặt trời đã lặn thì không ô nào có nắng
+  const safeElevation = Math.max(0.5, sun.elevation)
+  const safeSun = useMemo(() => ({ elevation: safeElevation, azimuth: sun.azimuth }), [safeElevation, sun.azimuth])
+
   const shadedCells = useMemo(() => {
-    if (elevation <= 0) return placements.flatMap((_, panelIndex) => allCells(panelIndex))
-    return findShadedCells(placements, shadowCasters, directionToSun({ elevation, azimuth }))
-  }, [placements, shadowCasters, elevation, azimuth])
+    return findShadedCells(placements, shadowCasters, directionToSun(safeSun))
+  }, [placements, shadowCasters, safeSun])
+
+  const lastShadeKey = useRef('')
   useEffect(() => {
-    onShadeChange?.(summarizeShade(shadedCells, placements.length))
+    const summary = summarizeShade(shadedCells, placements.length)
+    const key = `${summary.affectedPanels}-${Math.round(summary.shadedPercent)}`
+    if (key !== lastShadeKey.current) {
+      lastShadeKey.current = key
+      onShadeChange?.(summary)
+    }
   }, [shadedCells, placements.length, onShadeChange])
 
   return (

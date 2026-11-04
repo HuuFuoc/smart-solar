@@ -12,6 +12,11 @@ import { useMyTasksQuery, useOpenTasksQuery } from '@/hooks/useSalesAfterSales'
 import { getSurveyRequest } from '@/services/surveyRequestService'
 import { errorMessage } from '@/services/api/errors'
 import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
+import {
+  isCompletedStatus,
+  isPendingStatus,
+  isScheduledStatus,
+} from '@/features/pre-surveys/preSurveyDisplay'
 
 import { SalesDashboardHeader } from '@/features/sales-dashboard/components/SalesDashboardHeader'
 import { SalesDashboardStats } from '@/features/sales-dashboard/components/SalesDashboardStats'
@@ -118,12 +123,12 @@ export function OpsDashboardPage() {
 
   // Statistical calculations from real dataset
   const totalCount = enrichedMySurveys.length
-  const pendingAssignmentCount = enrichedMySurveys.filter((s) => s.status === 'PENDING').length
-  const scheduledCount = enrichedMySurveys.filter((s) => s.status === 'SCHEDULED').length
-  const completedCount = enrichedMySurveys.filter((s) => s.status === 'COMPLETED').length
+  const pendingAssignmentCount = enrichedMySurveys.filter((s) => isPendingStatus(s.status)).length
+  const scheduledCount = enrichedMySurveys.filter((s) => isScheduledStatus(s.status)).length
+  const completedCount = enrichedMySurveys.filter((s) => isCompletedStatus(s.status)).length
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SalesDashboardHeader
         pendingCount={pendingSurveys.length}
         onRefresh={handleRefresh}
@@ -137,9 +142,10 @@ export function OpsDashboardPage() {
         completedSurveys={completedCount}
       />
 
-      {/* Hai cột cao gần bằng nhau: tiến độ và hồ sơ, bên cạnh là việc gấp, địa bàn và báo giá sau bán */}
-      <div className="grid gap-6 border-t border-line pt-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <div className="space-y-4">
+      {/* Grid 2 cột cân đối: Cột chính bên trái (~67%) và Cột phụ bên phải (~33%) */}
+      <div className="grid gap-6 items-start lg:grid-cols-12">
+        {/* Cột chính bên trái: Tiến độ mini + Bảng Hồ sơ của tôi */}
+        <div className="space-y-4 lg:col-span-8">
           <SalesPipelineFunnel
             total={totalCount}
             pending={pendingAssignmentCount}
@@ -150,7 +156,8 @@ export function OpsDashboardPage() {
           <SalesRecentSurveysCard surveys={enrichedMySurveys} />
         </div>
 
-        <div className="space-y-4">
+        {/* Cột phụ bên phải: Việc cần xử lý ngay, Báo giá dịch vụ sau bán và Địa bàn theo phường/xã */}
+        <div className="space-y-4 lg:col-span-4">
           <SalesUrgentActionsCard
             escalatedAppointments={escalatedAppointments}
             pendingRequests={pendingSurveys}
@@ -158,9 +165,9 @@ export function OpsDashboardPage() {
             isClaiming={claimMutation.isPending}
           />
 
-          <SalesRegionalDistributionCard surveys={enrichedMySurveys} />
-
           <SalesAfterSalesTasksCard tasks={openTasks} myTasks={myTasks} />
+
+          <SalesRegionalDistributionCard surveys={enrichedMySurveys} />
         </div>
       </div>
     </div>

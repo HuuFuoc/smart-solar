@@ -1,6 +1,4 @@
 import { ButtonLink } from '@/components/common/ui/button'
-import { ListRow } from '@/components/common/ui/list-row'
-import { Panel, PanelHeader } from '@/components/common/ui/panel'
 import { ROUTES, withId } from '@/routes/paths'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
@@ -13,40 +11,44 @@ export function SalesAfterSalesTasksCard({ tasks, myTasks }: SalesAfterSalesTask
   const allTasks = [...myTasks, ...tasks]
 
   return (
-    <Panel>
-      <PanelHeader
-        className="items-start"
-        title="Báo giá bảo hành, bảo trì"
-        action={
-          <ButtonLink to={ROUTES.ops.afterSales} size="sm" variant="info" icon="list">
-            Xem tất cả
-          </ButtonLink>
-        }
-      />
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-title font-semibold text-fg">Báo giá dịch vụ sau bán</h2>
+        <ButtonLink
+          to={ROUTES.ops.afterSales}
+          size="sm"
+          variant="ghost"
+          icon="list"
+          className="text-meta font-medium text-accent-fg hover:text-accent"
+        >
+          Xem tất cả
+        </ButtonLink>
+      </div>
+
       {allTasks.length === 0 ? (
-        <p className="text-body text-fg-2">Không có việc báo giá nào chờ</p>
+        <p className="py-2.5 text-center text-body text-fg-2">Không có việc báo giá nào chờ</p>
       ) : (
         <ul className="divide-y divide-line">
           {allTasks.slice(0, 4).map((task) => {
             const reqId = task.requestId || ''
             return (
-              <ListRow key={task.taskId} className="flex items-center justify-between gap-3 first:pt-0">
+              <li key={task.taskId} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
                 <div className="min-w-0">
-                  <p className="text-body font-semibold text-fg">
+                  <p className="font-semibold text-fg">
                     {task.taskType === 'REPAIR_QUOTATION' ? 'Báo giá sửa chữa' : 'Báo giá bảo trì'}
                   </p>
-                  <p className="text-meta text-fg-2">Mã yêu cầu {reqId ? reqId.slice(0, 8).toUpperCase() : 'N/A'}</p>
+                  <p className="text-meta text-fg-2">Mã yêu cầu: {reqId ? reqId.slice(0, 8).toUpperCase() : 'N/A'}</p>
                 </div>
                 {reqId ? (
-                  <ButtonLink to={withId(ROUTES.ops.afterSalesRequest, reqId)} size="sm" variant="soft">
+                  <ButtonLink to={withId(ROUTES.ops.afterSalesRequest, reqId)} size="sm" variant="soft" icon="arrow_forward">
                     Xử lý
                   </ButtonLink>
                 ) : null}
-              </ListRow>
+              </li>
             )
           })}
         </ul>
       )}
-    </Panel>
+    </div>
   )
 }

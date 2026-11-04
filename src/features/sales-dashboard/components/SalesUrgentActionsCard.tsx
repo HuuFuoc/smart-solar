@@ -1,7 +1,5 @@
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
-import { ListRow } from '@/components/common/ui/list-row'
-import { Panel, PanelHeader } from '@/components/common/ui/panel'
 import { ROUTES, withId } from '@/routes/paths'
 import type { EscalatedAppointmentView, PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
 import { formatRelative, isOverdue } from '@/features/pre-surveys/preSurveyDisplay'
@@ -25,53 +23,65 @@ export function SalesUrgentActionsCard({
   const warnings = myEscalated.length + overdueRequests.length
 
   return (
-    <Panel>
-      <PanelHeader
-        title="Việc cần xử lý ngay"
-        action={warnings > 0 ? <Badge tone="danger">{warnings} cảnh báo</Badge> : undefined}
-      />
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+      {/* Header */}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-title font-semibold text-fg">Việc cần xử lý ngay</h2>
+        {warnings > 0 ? (
+          <Badge tone="danger">{warnings} cảnh báo</Badge>
+        ) : (
+          <Badge tone="neutral">0 cảnh báo</Badge>
+        )}
+      </div>
+
       {!hasUrgent ? (
-        <p className="text-body text-fg-2">Không có việc cần xử lý ngay</p>
+        <p className="py-2.5 text-center text-body text-fg-2">Không có việc cần xử lý ngay</p>
       ) : (
-        <>
+        <div className="space-y-3">
           <ul className="divide-y divide-line">
             {myEscalated.map((item) => (
-              <ListRow key={item.surveyRequestId} className="space-y-1 first:pt-0">
-                <div className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="text-body font-semibold text-fg">{item.customerName}</span>
+              <li key={item.surveyRequestId} className="py-2.5 first:pt-0 last:pb-0 space-y-1.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</span>
                   <Badge tone="danger">Cần gán KTV</Badge>
                 </div>
                 <p className="text-meta text-fg-2">
                   {item.propertyName}, {item.province}
                 </p>
                 <p className="text-meta text-danger">Lịch hẹn chưa có KTV nhận trước thời hạn</p>
-                <ButtonLink to={withId(ROUTES.ops.survey, item.surveyRequestId)} size="sm" variant="primary">
-                  Gán KTV ngay
-                </ButtonLink>
-              </ListRow>
+                <div className="pt-1">
+                  <ButtonLink to={withId(ROUTES.ops.survey, item.surveyRequestId)} size="sm" variant="primary" icon="assignment_ind">
+                    Gán KTV ngay
+                  </ButtonLink>
+                </div>
+              </li>
             ))}
             {pendingRequests.slice(0, 3).map((item) => (
-              <ListRow key={item.surveyRequestId} className="space-y-1 first:pt-0">
-                <div className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="text-body font-semibold text-fg">{item.customerName}</span>
-                  {isOverdue(item.submittedAt) ? <Badge tone="warn">Chờ hơn 24 giờ</Badge> : <Badge>Mới gửi</Badge>}
+              <li key={item.surveyRequestId} className="py-2.5 first:pt-0 last:pb-0 space-y-1.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</span>
+                  {isOverdue(item.submittedAt) ? <Badge tone="warn">Chờ &gt; 24h</Badge> : <Badge tone="info">Mới gửi</Badge>}
                 </div>
                 <p className="text-meta text-fg-2">
-                  {item.propertyName}, {item.province}, gửi {formatRelative(item.submittedAt)}
+                  {[item.propertyName, item.province].filter(Boolean).join(', ')}, gửi {formatRelative(item.submittedAt)}
                 </p>
-                <Button size="sm" variant="soft" disabled={isClaiming} onClick={() => onClaim?.(item)}>
-                  Tiếp nhận hồ sơ
-                </Button>
-              </ListRow>
+                <div className="pt-1">
+                  <Button size="sm" variant="soft" icon="add_task" disabled={isClaiming} onClick={() => onClaim?.(item)}>
+                    Tiếp nhận hồ sơ
+                  </Button>
+                </div>
+              </li>
             ))}
           </ul>
           {pendingRequests.length > 3 && (
-            <ButtonLink to={ROUTES.ops.surveys} size="sm" variant="info" className="mt-2">
-              Xem thêm {pendingRequests.length - 3} yêu cầu chờ tiếp nhận
-            </ButtonLink>
+            <div className="border-t border-line pt-2 text-center">
+              <ButtonLink to={ROUTES.ops.surveys} size="sm" variant="ghost" icon="list" className="text-meta font-medium text-accent-fg hover:text-accent">
+                Xem thêm {pendingRequests.length - 3} yêu cầu chờ tiếp nhận
+              </ButtonLink>
+            </div>
           )}
-        </>
+        </div>
       )}
-    </Panel>
+    </div>
   )
 }

@@ -3,7 +3,6 @@ import { Button } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
 import { SearchInput } from '@/components/common/ui/field'
 import { PagedList } from '@/components/common/ui/pagination'
-import { Panel, PanelHeader } from '@/components/common/ui/panel'
 import { useHcmCommunesQuery } from '@/hooks/useCommunes'
 import type { MySurveyRequestItem } from '@/types/res/surveyRequestsRes'
 import { cx } from '@/utils/cx'
@@ -327,11 +326,14 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
   }, [allWards, filterMode, searchTerm, sortMode])
 
   return (
-    <Panel>
-      <PanelHeader
-        title="Hồ sơ theo phường, xã"
-        description={`${totalSurveysWithWard} hồ sơ ở ${hasDataCount} trên ${allWards.length} phường, xã`}
-      />
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+      <div className="mb-3">
+        <h2 className="text-title font-semibold text-fg">Hồ sơ theo phường, xã</h2>
+        <p className="text-meta text-fg-2 mt-0.5">
+          {totalSurveysWithWard} hồ sơ ở {hasDataCount} trên {allWards.length} phường, xã
+        </p>
+      </div>
+
       <FilterChips
         label="Lọc phường, xã"
         value={filterMode}
@@ -342,6 +344,7 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
           { value: 'zero_data', label: 'Chưa có', count: zeroDataCount },
         ]}
       />
+
       <div className="mt-3 flex items-center gap-2">
         <label className="min-w-0 flex-1">
           <span className="sr-only">Tìm phường, xã</span>
@@ -353,6 +356,7 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
           />
         </label>
         <Button
+          size="sm"
           className="shrink-0"
           icon={sortMode === 'count_desc' ? 'sort' : 'sort_by_alpha'}
           onClick={() => setSortMode((prev) => (prev === 'count_desc' ? 'name_asc' : 'count_desc'))}
@@ -362,7 +366,7 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
       </div>
 
       {filteredAndSortedWards.length === 0 ? (
-        <p className="mt-3 text-body text-fg-2">
+        <p className="mt-4 text-center text-body text-fg-2">
           {searchTerm
             ? `Không tìm thấy phường, xã nào khớp với "${searchTerm}".`
             : 'Chưa có dữ liệu phường, xã phù hợp.'}
@@ -372,15 +376,15 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
           key={`${filterMode}|${searchTerm}|${sortMode}`}
           items={filteredAndSortedWards}
           noun="phường, xã"
-          pageSize={8}
+          pageSize={5}
           keepScroll
         >
           {(wards) => (
-            <ul className="mt-2 divide-y divide-line">
+            <ul className="mt-2.5 divide-y divide-line">
               {wards.map((item) => {
                 const hasContracts = item.count > 0
                 return (
-                  <li key={item.location} className="py-1.5">
+                  <li key={item.location} className="py-1.5 first:pt-0.5 last:pb-0.5">
                     <div className="flex items-baseline justify-between gap-3 text-body">
                       <span className={hasContracts ? 'font-medium text-fg' : 'text-fg-2'}>{item.location}</span>
                       <span
@@ -389,11 +393,14 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
                         {item.count} hồ sơ{hasContracts ? ` (${item.pct}%)` : ''}
                       </span>
                     </div>
-                    {hasContracts && (
-                      <div aria-hidden className="mt-1 h-1 w-full overflow-hidden rounded-control bg-surface-2">
-                        <div className="h-full bg-accent" style={{ width: `${item.pct}%` }} />
-                      </div>
-                    )}
+                    <div aria-hidden className="mt-1.5 h-1.5 w-full overflow-hidden rounded-control bg-surface-3">
+                      {hasContracts ? (
+                        <div
+                          className="h-full rounded-control bg-accent transition-all duration-300"
+                          style={{ width: `${item.pct}%` }}
+                        />
+                      ) : null}
+                    </div>
                   </li>
                 )
               })}
@@ -401,6 +408,6 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
           )}
         </PagedList>
       )}
-    </Panel>
+    </div>
   )
 }

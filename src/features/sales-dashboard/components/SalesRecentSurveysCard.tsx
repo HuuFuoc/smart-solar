@@ -3,12 +3,18 @@ import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
 import { SearchInput } from '@/components/common/ui/field'
-import { ListRow } from '@/components/common/ui/list-row'
 import { PagedList } from '@/components/common/ui/pagination'
-import { Panel, PanelHeader } from '@/components/common/ui/panel'
+import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { ROUTES, withId } from '@/routes/paths'
 import type { MySurveyRequestItem } from '@/types/res/surveyRequestsRes'
-import { formatDateTime, formatRelative, surveyStatusMeta } from '@/features/pre-surveys/preSurveyDisplay'
+import {
+  formatDateTime,
+  formatRelative,
+  isCompletedStatus,
+  isPendingStatus,
+  isScheduledStatus,
+  surveyStatusMeta,
+} from '@/features/pre-surveys/preSurveyDisplay'
 
 type TabFilter = 'all' | 'pending' | 'scheduled' | 'completed'
 
@@ -31,10 +37,14 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
   const [tab, setTab] = useState<TabFilter>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
+  const pendingCount = surveys.filter((s) => isPendingStatus(s.status)).length
+  const scheduledCount = surveys.filter((s) => isScheduledStatus(s.status)).length
+  const completedCount = surveys.filter((s) => isCompletedStatus(s.status)).length
+
   const filteredSurveys = surveys.filter((item) => {
-    if (tab === 'pending' && item.status !== 'PENDING') return false
-    if (tab === 'scheduled' && item.status !== 'SCHEDULED') return false
-    if (tab === 'completed' && item.status !== 'COMPLETED') return false
+    if (tab === 'pending' && !isPendingStatus(item.status)) return false
+    if (tab === 'scheduled' && !isScheduledStatus(item.status)) return false
+    if (tab === 'completed' && !isCompletedStatus(item.status)) return false
 
     if (searchTerm.trim()) {
       const q = removeVietnameseTones(searchTerm)
@@ -46,85 +56,128 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
     return true
   })
 
-  const count = (status: string) => surveys.filter((s) => s.status === status).length
-
   return (
-    <Panel>
-      <PanelHeader
-        className="items-start"
-        title="Hồ sơ của tôi"
-        action={
-          <ButtonLink to={ROUTES.ops.surveysMine} size="sm" variant="info" icon="list">
-            Xem toàn bộ
-          </ButtonLink>
-        }
-      />
-      <div className="flex flex-col gap-2 2xl:flex-row 2xl:items-center 2xl:gap-4">
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+      {/* Hàng 1: Tiêu đề khối & Nút Xem toàn bộ */}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-title font-semibold text-fg">Hồ sơ của tôi</h2>
+          <span className="text-meta font-mono text-fg-3">({surveys.length})</span>
+        </div>
+        <ButtonLink
+          to={ROUTES.ops.surveysMine}
+          size="sm"
+          variant="ghost"
+          icon="list"
+          className="text-meta font-medium text-accent-fg hover:text-accent"
+        >
+          Xem toàn bộ
+        </ButtonLink>
+      </div>
+
+      {/* Hàng 2: Toolbar chung 1 hàng - Tabs trạng thái bên trái & Ô tìm kiếm bên phải */}
+      <div className="flex flex-col gap-3 border-b border-line pb-2 sm:flex-row sm:items-center sm:justify-between">
         <FilterChips
           label="Lọc hồ sơ theo trạng thái"
-          className="min-w-0 flex-1"
+          className="min-w-0 flex-1 shadow-none"
           value={tab}
           onChange={setTab}
           chips={[
             { value: 'all', label: 'Tất cả', count: surveys.length },
-            { value: 'pending', label: 'Chờ KTV', count: count('PENDING') },
-            { value: 'scheduled', label: 'Đã có lịch', count: count('SCHEDULED') },
-            { value: 'completed', label: 'Khảo sát xong', count: count('COMPLETED') },
+            { value: 'pending', label: 'Chờ KTV', count: pendingCount, attention: pendingCount > 0 },
+            { value: 'scheduled', label: 'Đã có lịch', count: scheduledCount },
+            { value: 'completed', label: 'Khảo sát xong', count: completedCount },
           ]}
         />
-        <label className="2xl:w-60">
-          <span className="sr-only">Tìm hồ sơ</span>
-          <SearchInput
-            name="survey-search"
-            placeholder="Tìm theo tên, địa chỉ"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </label>
+        <div className="shrink-0 sm:w-56 lg:w-64">
+          <label>
+            <span className="sr-only">Tìm hồ sơ</span>
+            <SearchInput
+              name="survey-search"
+              placeholder="Tìm theo tên, địa chỉ..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </label>
+        </div>
       </div>
 
+      {/* Danh sách dạng Table chuẩn dashboard */}
       {filteredSurveys.length === 0 ? (
-        <p className="mt-3 text-body text-fg-2">Không có hồ sơ nào khớp bộ lọc.</p>
+        <p className="py-8 text-center text-body text-fg-2">
+          {searchTerm ? `Không tìm thấy hồ sơ nào khớp với "${searchTerm}".` : 'Không có hồ sơ nào trong trạng thái này.'}
+        </p>
       ) : (
         <PagedList key={`${tab}|${searchTerm}`} items={filteredSurveys} noun="hồ sơ" pageSize={6} keepScroll>
           {(page) => (
-            <ul className="divide-y divide-line">
-              {page.map((item) => {
-                const statusInfo = surveyStatusMeta(item.status)
-                return (
-                  <ListRow
-                    key={item.surveyRequestId}
-                    className="grid gap-x-4 gap-y-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-baseline gap-x-2">
-                        <span className="text-body font-semibold text-fg">{item.customerName || 'Khách hàng'}</span>
-                        <span className="text-body text-fg-2">{item.propertyName || 'Công trình'}</span>
+            <Table className="mt-1">
+              <thead>
+                <tr>
+                  <Th>Khách hàng & Công trình</Th>
+                  <Th>Khu vực</Th>
+                  <Th>Trạng thái</Th>
+                  <Th>Thời gian</Th>
+                  <Th className="text-right">Thao tác</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {page.map((item) => {
+                  const statusInfo = surveyStatusMeta(item.status)
+                  const locationText =
+                    [item.ward, item.district, item.province].filter(Boolean).join(', ') || 'Chưa cập nhật vị trí'
+                  const isCompleted = isCompletedStatus(item.status)
+
+                  return (
+                    <Tr key={item.surveyRequestId} className="transition-colors">
+                      <Td className="py-2.5">
+                        <div className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</div>
+                        <div
+                          className="max-w-[170px] truncate text-meta text-fg-2"
+                          title={item.propertyName || 'Công trình'}
+                        >
+                          {item.propertyName || 'Công trình'}
+                        </div>
+                      </Td>
+                      <Td className="py-2.5">
+                        <div className="max-w-[190px] truncate text-meta text-fg-2" title={locationText}>
+                          {locationText}
+                        </div>
+                      </Td>
+                      <Td className="py-2.5">
                         <Badge tone={statusInfo.tone}>{statusInfo.label}</Badge>
-                      </div>
-                      <p className="mt-0.5 text-meta text-fg-2">
-                        {[item.ward, item.district, item.province].filter(Boolean).join(', ') || 'Chưa cập nhật vị trí'}
-                        , tiếp nhận {formatRelative(item.assignedAt)}
-                      </p>
-                      {item.scheduledAt && (
-                        <p className="text-meta text-fg">Lịch hẹn KTV: {formatDateTime(item.scheduledAt)}</p>
-                      )}
-                    </div>
-                    <ButtonLink
-                      to={withId(ROUTES.ops.survey, item.surveyRequestId)}
-                      size="sm"
-                      variant={item.status === 'COMPLETED' ? 'primary' : 'info'}
-                      icon={item.status === 'COMPLETED' ? 'request_quote' : 'visibility'}
-                    >
-                      {item.status === 'COMPLETED' ? 'Lập báo giá' : 'Chi tiết'}
-                    </ButtonLink>
-                  </ListRow>
-                )
-              })}
-            </ul>
+                      </Td>
+                      <Td className="py-2.5">
+                        <div className="whitespace-nowrap text-meta text-fg-3">
+                          Tiếp nhận {formatRelative(item.assignedAt)}
+                        </div>
+                        {item.scheduledAt && (
+                          <div
+                            className="whitespace-nowrap text-meta font-medium text-info"
+                            title={formatDateTime(item.scheduledAt)}
+                          >
+                            Hẹn: {formatDateTime(item.scheduledAt)}
+                          </div>
+                        )}
+                      </Td>
+                      <Td className="py-2.5 text-right whitespace-nowrap">
+                        <ButtonLink
+                          to={withId(ROUTES.ops.survey, item.surveyRequestId)}
+                          size="sm"
+                          variant={isCompleted ? 'primary' : 'ghost'}
+                          icon={isCompleted ? 'request_quote' : 'arrow_forward'}
+                          className={!isCompleted ? 'font-medium text-accent-fg hover:text-accent' : ''}
+                        >
+                          {isCompleted ? 'Lập báo giá' : 'Chi tiết'}
+                        </ButtonLink>
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </tbody>
+            </Table>
           )}
         </PagedList>
       )}
-    </Panel>
+    </div>
   )
 }
