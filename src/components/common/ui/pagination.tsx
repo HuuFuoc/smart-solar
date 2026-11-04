@@ -71,6 +71,7 @@ export function ListPager({
   total,
   noun,
   onChange,
+  keepScroll = false,
   className,
 }: {
   page: number
@@ -80,6 +81,8 @@ export function ListPager({
   total: number
   noun: string
   onChange: (page: number) => void
+  /** Danh sách chỉ là một khối trong trang: đổi trang không cuộn về đầu trang */
+  keepScroll?: boolean
   className?: string
 }) {
   return (
@@ -92,7 +95,7 @@ export function ListPager({
         pages={Math.max(1, pages)}
         onChange={(next) => {
           onChange(next)
-          window.scrollTo({ top: 0 })
+          if (!keepScroll) window.scrollTo({ top: 0 })
         }}
       />
     </div>
@@ -104,11 +107,13 @@ export function PagedList<T>({
   items,
   noun,
   pageSize = 10,
+  keepScroll,
   children,
 }: {
   items: T[]
   noun: string
   pageSize?: number
+  keepScroll?: boolean
   children: (pageItems: T[]) => ReactNode
 }) {
   const [page, setPage] = useState(1)
@@ -128,6 +133,7 @@ export function PagedList<T>({
         total={items.length}
         noun={noun}
         onChange={setPage}
+        keepScroll={keepScroll}
       />
     </>
   )

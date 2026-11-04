@@ -1,6 +1,7 @@
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
-import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
+import { ListRow } from '@/components/common/ui/list-row'
+import { Panel, PanelHeader } from '@/components/common/ui/panel'
 import { APPOINTMENT_LABELS, APPOINTMENT_TONES } from '@/common/scheduling'
 import { isUpcomingAppointment } from '@/features/customer-dashboard/services/dashboardChartService'
 import { ROUTES, withId } from '@/routes/paths'
@@ -25,64 +26,54 @@ export function UpcomingAppointmentsCard({ requests }: { requests: CustomerSurve
     .filter((r) => isUpcomingAppointment(r))
     .sort((a, b) => a.appointment!.startsAt.localeCompare(b.appointment!.startsAt))
 
-  const hasScroll = activeAppointments.length > 2
-
   return (
-    <Panel className="flex flex-col justify-between">
-      <div>
-        <PanelHeader
-          title="Lịch khảo sát"
-          description={activeAppointments.length > 0 ? `${activeAppointments.length} lịch sắp tới` : undefined}
-        />
-        <PanelBody>
-          {activeAppointments.length === 0 ? (
-            <p className="py-6 text-center text-body text-fg-3">Chưa có lịch khảo sát sắp tới.</p>
-          ) : (
-            <div className={hasScroll ? 'max-h-[260px] overflow-y-auto pr-1.5' : undefined}>
-              <ul className="divide-y divide-line">
-                {activeAppointments.map((item) => {
-                  const appt = item.appointment!
-                  const tone = APPOINTMENT_TONES.customer[appt.status] || 'neutral'
-                  const label = APPOINTMENT_LABELS[appt.status] || appt.status
+    <Panel>
+      <PanelHeader
+        className="items-start"
+        title="Lịch khảo sát"
+        description={activeAppointments.length > 0 ? `${activeAppointments.length} lịch sắp tới` : undefined}
+        action={
+          <ButtonLink to={ROUTES.customer.requests} size="sm" variant="info" icon="list">
+            Tất cả yêu cầu khảo sát
+          </ButtonLink>
+        }
+      />
+      {activeAppointments.length === 0 ? (
+        <p className="text-body text-fg-2">Chưa có lịch khảo sát sắp tới.</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {activeAppointments.slice(0, 5).map((item) => {
+            const appt = item.appointment!
+            const tone = APPOINTMENT_TONES.customer[appt.status] || 'neutral'
+            const label = APPOINTMENT_LABELS[appt.status] || appt.status
 
-                  return (
-                    <li key={item.surveyRequestId} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-medium text-fg-1">{item.propertyName}</p>
-                          <p className="text-meta text-fg-3">{formatDateTime(appt.startsAt)}</p>
-                        </div>
-                        <Badge tone={tone}>{label}</Badge>
-                      </div>
-                      {appt.assignedTechnicianName && (
-                        <p className="text-meta text-fg-2">
-                          Kỹ thuật viên: <span className="font-medium text-fg-1">{appt.assignedTechnicianName}</span>
-                        </p>
-                      )}
-                      <div className="pt-1">
-                        <ButtonLink
-                          to={withId(ROUTES.customer.request, item.surveyRequestId)}
-                          size="sm"
-                          variant="info"
-                          icon="visibility"
-                        >
-                          Xem lịch hẹn
-                        </ButtonLink>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          )}
-        </PanelBody>
-      </div>
-
-      <PanelFooter className="flex justify-end">
-        <ButtonLink to={ROUTES.customer.requests} size="sm" variant="info" icon="list">
-          Tất cả yêu cầu khảo sát
-        </ButtonLink>
-      </PanelFooter>
+            return (
+              <ListRow
+                key={item.surveyRequestId}
+                className="flex items-center justify-between gap-3 first:pt-0 last:pb-0"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium text-fg-1">{item.propertyName}</p>
+                  <p className="text-meta text-fg-2">
+                    {formatDateTime(appt.startsAt)}
+                    {appt.assignedTechnicianName && `, kỹ thuật viên ${appt.assignedTechnicianName}`}
+                  </p>
+                  <Badge tone={tone}>{label}</Badge>
+                </div>
+                <ButtonLink
+                  to={withId(ROUTES.customer.request, item.surveyRequestId)}
+                  size="sm"
+                  variant="info"
+                  icon="visibility"
+                  className="shrink-0"
+                >
+                  Xem
+                </ButtonLink>
+              </ListRow>
+            )
+          })}
+        </ul>
+      )}
     </Panel>
   )
 }

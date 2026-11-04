@@ -14,7 +14,7 @@ export function DashboardStats({
   pendingServices,
 }: DashboardStatsProps) {
   return (
-    <StatRow framed className="mb-8">
+    <StatRow>
       <Stat label="Dự án đang triển khai" value={activeProjects} tone={activeProjects > 0 ? 'ok' : undefined} />
       <Stat label="Lịch hẹn sắp tới" value={upcomingAppointments} tone={upcomingAppointments > 0 ? 'ok' : undefined} />
       <Stat label="Hệ thống đã bàn giao" value={completedProjects} />

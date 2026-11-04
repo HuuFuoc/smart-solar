@@ -123,14 +123,13 @@ export function OpsDashboardPage() {
   const completedCount = enrichedMySurveys.filter((s) => s.status === 'COMPLETED').length
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4">
       <SalesDashboardHeader
         pendingCount={pendingSurveys.length}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
       />
 
-      {/* 2. Top Metric Cards */}
       <SalesDashboardStats
         totalSurveys={totalCount}
         pendingAssignment={pendingAssignmentCount}
@@ -138,11 +137,9 @@ export function OpsDashboardPage() {
         completedSurveys={completedCount}
       />
 
-      {/* 3. Main Content Grid (8 cols / 4 cols) */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left column (8 cols): Funnel & Detailed surveys */}
-        <div className="space-y-6 lg:col-span-8">
-          {/* Conversion Funnel */}
+      {/* Hai cột cao gần bằng nhau: tiến độ và hồ sơ, bên cạnh là việc gấp, địa bàn và báo giá sau bán */}
+      <div className="grid gap-6 border-t border-line pt-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="space-y-4">
           <SalesPipelineFunnel
             total={totalCount}
             pending={pendingAssignmentCount}
@@ -150,13 +147,10 @@ export function OpsDashboardPage() {
             completed={completedCount}
           />
 
-          {/* Recent Claimed Surveys Table with search & tabs */}
           <SalesRecentSurveysCard surveys={enrichedMySurveys} />
         </div>
 
-        {/* Right column (4 cols): Urgent Actions, Regions & After-Sales */}
-        <div className="space-y-6 lg:col-span-4">
-          {/* Urgent Actions: Escalated & Pending claims */}
+        <div className="space-y-4">
           <SalesUrgentActionsCard
             escalatedAppointments={escalatedAppointments}
             pendingRequests={pendingSurveys}
@@ -164,10 +158,8 @@ export function OpsDashboardPage() {
             isClaiming={claimMutation.isPending}
           />
 
-          {/* Regional Geographic Distribution */}
           <SalesRegionalDistributionCard surveys={enrichedMySurveys} />
 
-          {/* After Sales Follow-up Tasks */}
           <SalesAfterSalesTasksCard tasks={openTasks} myTasks={myTasks} />
         </div>
       </div>

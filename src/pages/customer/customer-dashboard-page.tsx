@@ -65,7 +65,7 @@ export function CustomerDashboardPage() {
   const hasAnyData = installations.length > 0 || surveyRequests.length > 0 || serviceRequests.length > 0
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <DashboardHeader />
 
       <DashboardStats
@@ -79,16 +79,17 @@ export function CustomerDashboardPage() {
         <DashboardEmptyState />
       ) : (
         <>
-          {/* Tiến độ và lịch hẹn nằm ngang đặt ở đầu */}
           <WorkflowStatusBarChart surveyRequests={surveyRequests} serviceRequests={serviceRequests} />
 
           {/* Cột trái hai khối ngắn, cột phải danh sách dài để hai cột cao gần bằng nhau */}
-          <div className="grid gap-8 lg:grid-cols-2">
-            <div className="flex flex-col gap-8">
+          <div className="grid gap-6 border-t border-line pt-4 lg:grid-cols-2">
+            <div className="space-y-4">
               <ActiveProjectCard project={activeProject} />
               <UpcomingAppointmentsCard requests={surveyRequests} />
             </div>
-            <RecentServiceRequestsCard requests={serviceRequests} />
+            <div>
+              <RecentServiceRequestsCard requests={serviceRequests} />
+            </div>
           </div>
         </>
       )}
