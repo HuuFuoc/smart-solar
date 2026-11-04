@@ -1,4 +1,4 @@
-﻿import { ROUTES } from '@/routes/paths'
+import { ROUTES } from '@/routes/paths'
 
 export type PortalKey = 'customer' | 'ops' | 'manage' | 'admin' | 'tech'
 
@@ -97,10 +97,11 @@ export const PORTALS: Record<PortalKey, Portal> = {
   admin: {
     key: 'admin',
     name: 'Quản trị hệ thống',
-    home: ROUTES.admin.home,
+    home: ROUTES.admin.dashboard,
     groups: [
       {
         items: [
+          { label: 'Tổng quan', to: ROUTES.admin.dashboard, icon: 'dashboard', end: true },
           { label: 'Tài khoản', to: ROUTES.admin.users, icon: 'manage_accounts' },
           { label: 'Kỹ thuật viên', to: ROUTES.admin.technicians, icon: 'engineering' },
           { label: 'Khu vực phục vụ', to: ROUTES.admin.zones, icon: 'map' },

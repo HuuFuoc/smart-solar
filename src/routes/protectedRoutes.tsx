@@ -1,4 +1,4 @@
-﻿import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { TechLayout } from '@/components/layout/TechLayout'
@@ -78,6 +78,7 @@ const ManageAfterSalesRequestPage = page(
   'ManageAfterSalesRequestPage',
 )
 
+const AdminDashboardPage = page(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage')
 const AdminUsersPage = page(() => import('@/pages/admin/users-page'), 'AdminUsersPage')
 const AdminUserPage = page(() => import('@/pages/admin/user-page'), 'AdminUserPage')
 const AdminTechniciansPage = page(() => import('@/pages/technicians-page'), 'AdminTechniciansPage')
@@ -229,8 +230,9 @@ export const protectedRoutes: RouteObject[] = [
     role: 'admin',
     path: admin.home,
     Layout: AdminLayout,
-    start: admin.users,
+    start: admin.dashboard,
     pages: [
+      { path: admin.dashboard, lazy: AdminDashboardPage },
       { path: admin.users, lazy: AdminUsersPage },
       { path: admin.user, lazy: AdminUserPage },
       { path: admin.technicians, lazy: AdminTechniciansPage },
