@@ -60,13 +60,7 @@ export function CustomerPackagesPage() {
     <>
       <PageHeader
         title="Gói dịch vụ"
-        description={
-          toPay > 0 ? (
-            <Badge tone="danger" icon="payments">
-              {toPay} gói chờ bạn thanh toán
-            </Badge>
-          ) : undefined
-        }
+        description={toPay > 0 ? <Badge tone="danger">{toPay} gói chờ bạn thanh toán</Badge> : undefined}
       />
 
       <div className="space-y-4">

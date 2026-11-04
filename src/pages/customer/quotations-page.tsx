@@ -34,13 +34,7 @@ export function CustomerQuotationsPage() {
     <>
       <PageHeader
         title="Báo giá"
-        description={
-          waiting > 0 ? (
-            <Badge tone="danger" icon="request_quote">
-              {waiting} báo giá chờ bạn trả lời
-            </Badge>
-          ) : undefined
-        }
+        description={waiting > 0 ? <Badge tone="danger">{waiting} báo giá chờ bạn trả lời</Badge> : undefined}
       />
       <QueryBoundary query={query}>
         {(list) => {

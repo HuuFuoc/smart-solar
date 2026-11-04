@@ -45,7 +45,7 @@ export function AdminZonesPage() {
         title="Khu vực phục vụ"
         description={
           coverage.data && coverage.data.unmappedCommuneCount > 0 ? (
-            <Badge tone="danger" icon="warning">
+            <Badge tone="danger">
               {coverage.data.unmappedCommuneCount} phường, xã của {HCM_PROVINCE.name} chưa thuộc khu nào
             </Badge>
           ) : coverage.isError ? (

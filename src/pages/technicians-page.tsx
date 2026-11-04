@@ -29,9 +29,7 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
         title="Kỹ thuật viên"
         description={
           missing > 0 ? (
-            <Badge tone="danger" icon="wrong_location">
-              {missing} kỹ thuật viên chưa thuộc khu vực nào nên chưa nhận lịch được
-            </Badge>
+            <Badge tone="danger">{missing} kỹ thuật viên chưa thuộc khu vực nào nên chưa nhận lịch được</Badge>
           ) : undefined
         }
         actions={

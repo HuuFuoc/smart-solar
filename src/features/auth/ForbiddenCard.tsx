@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Badge } from '@/components/common/ui/badge'
 import { ROUTES } from '@/routes/paths'
 import { useAuth } from '@/context/AuthProvider'
 import { ROLE_LABELS, type UserRole } from '@/common/role'
@@ -30,10 +31,10 @@ export function ForbiddenCard() {
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-headline-md text-on-surface">{forbiddenContent.title}</h1>
           {requiredRole && (
-            <span className="rounded-full bg-error-container px-2 py-0.5 text-label-sm text-error">
+            <Badge tone="danger">
               {forbiddenContent.requiredPrefix}
               {ROLE_LABELS[requiredRole]}
-            </span>
+            </Badge>
           )}
         </div>
         <p className="mt-1 text-body-md text-on-surface-variant">

@@ -48,13 +48,7 @@ export function CustomerProjectsPage() {
     <>
       <PageHeader
         title="Công trình lắp đặt"
-        description={
-          waiting > 0 ? (
-            <Badge tone="danger" icon="task_alt">
-              {waiting} công trình chờ bạn nghiệm thu
-            </Badge>
-          ) : undefined
-        }
+        description={waiting > 0 ? <Badge tone="danger">{waiting} công trình chờ bạn nghiệm thu</Badge> : undefined}
       />
       <QueryBoundary query={query}>
         {(rows) =>

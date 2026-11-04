@@ -69,11 +69,7 @@ function AppointmentItem({
           <h3 className="text-body font-semibold text-fg">{item.propertyName}</h3>
           <Badge tone={status.tone}>{status.label}</Badge>
           {item.isCapacityHold && <Badge tone="neutral">Giữ chỗ tạm, chưa ai nhận</Badge>}
-          {item.potentialConflict && (
-            <Badge tone="danger" icon="warning">
-              Sát giờ lịch trước
-            </Badge>
-          )}
+          {item.potentialConflict && <Badge tone="danger">Sát giờ lịch trước</Badge>}
         </div>
       </div>
       {linkTo && (

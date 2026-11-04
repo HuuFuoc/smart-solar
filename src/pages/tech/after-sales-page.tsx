@@ -84,13 +84,7 @@ export function TechAfterSalesPage() {
     <>
       <PageHeader
         title="Bảo hành, sửa chữa"
-        description={
-          waiting > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {waiting} buổi hẹn chờ bạn nhận
-            </Badge>
-          ) : undefined
-        }
+        description={waiting > 0 ? <Badge tone="danger">{waiting} buổi hẹn chờ bạn nhận</Badge> : undefined}
       />
       <FilterChips
         label="Lọc buổi hẹn"

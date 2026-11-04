@@ -75,17 +75,15 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
      thì `dark:bg-fg` vẫn chạy và logo thành khối đen (người dùng báo 10/10/2026). Đừng viết `@media (prefers-color-scheme)` riêng.
      Giao diện đã lưu được áp bằng script trong `<head>` của `index.html` trước khi trang vẽ lần đầu (20/10/2026; trước đó ở
      `main.tsx`, phải chờ JS). Cần biết giao diện đang hiện thật (kể cả "theo hệ thống") thì dùng `useResolvedTheme()`.
-5. **Nhãn trạng thái**: `Badge` – mọi trạng thái là nhãn nền nhạt cùng hình dạng (bán kính 6px), màu theo vai trò ở
-   mục 4; `icon` chỉ cho thông báo cần làm ngay ở đầu trang. `Count` – số đếm cạnh mục menu/tab: `attention` = việc đang
-   chờ người xem, nền đỏ như số thông báo; còn lại nền xám. Việc cần làm ngay hiện thành Badge đỏ có icon ở mô tả đầu
-   trang (vd. "2 yêu cầu chờ hơn 1 ngày"). Nhãn trạng thái không bao giờ có viền; nút `soft` (cùng nền xanh nhạt) luôn
-   có viền xanh mảnh, nên "Đang bán" và "Mở bán lại" không trông giống nhau.
+5. **Nhãn trạng thái**: `Badge` – mọi trạng thái là chữ có màu theo vai trò ở mục 4, không nền, không viền, không chấm,
+   không icon. `Count` – số đếm cạnh mục menu/tab: `attention` = việc đang chờ người xem, nền đỏ như số thông báo; còn lại
+   là số xám không nền. Việc cần làm ngay là dòng chữ đỏ ở mô tả đầu trang (vd. "2 yêu cầu chờ hơn 1 ngày").
 6. **Không có chrome trang trí**: nhãn IN HOA giãn chữ, chip "badge" không mang thông tin,
    ô icon trang trí cạnh tiêu đề, mũi tên "→" dán sau nhãn link, dấu "•" nối chuỗi meta,
    chấm nhấp nháy `animate-pulse`. Chuyển động chỉ dùng cho trạng thái tải và phản hồi thao tác (hover, nhấn).
    Icon (Material Symbols qua `Icon` trong `components/common/stitch-ui/Icon.tsx`, dùng cho cả hai bộ) chỉ khi nó nói
    thêm điều chữ chưa nói hoặc giúp nhận ra nhanh: mục menu, hàng tài khoản; nút tạo (+), sửa, xoá, gọi, email, bản đồ,
-   lưu nháp, xoá bộ lọc, hiện mật khẩu, thử lại; `Notice` loại ok/warn/danger, toast, thông báo đầu trang. KHÔNG icon
+   lưu nháp, xoá bộ lọc, hiện mật khẩu, thử lại; `Notice` loại ok/warn/danger, toast. KHÔNG icon
    cho nút điều hướng bước (Tiếp tục, Quay lại), nút gửi form, nút hành động chính của dòng, `Notice` loại
    neutral/info, từng dòng chữ hay từng nhãn. Cỡ 16/20/24px (`text-[20px]`); đang chọn dùng bản tô đặc `icon-fill`.
    Icon nằm trong ô 1em và chỉ hiện khi font đã tải (`html.icons-ready`, gắn ở `main.tsx`), nên mạng chậm không lộ chữ
@@ -138,7 +136,7 @@ nhưng GIÁ TRỊ token nay lấy theo hệ chung ở trên. Những chỗ cố 
 | Màu nhấn      | `primary=#004328`, `primary-container=#0d5c3a`     | cả hai trỏ vào `--accent`                              |
 | Bán kính      | `rounded-lg/xl/2xl` (8–16px)                       | ánh xạ về 3px / 6px                                    |
 | Bóng          | 3 cấp elevation                                    | chỉ một bóng cho lớp nổi, thẻ tĩnh không bóng          |
-| Badge         | pill `rounded-full` tô nền theo trạng thái         | chỉ trạng thái cần chú ý mới tô nền                    |
+| Badge         | pill `rounded-full` tô nền theo trạng thái         | chữ không nền, chỉ trạng thái cần chú ý mới có màu     |
 
 1. Dùng đúng tên token Tailwind như file gốc: `bg-surface`, `bg-surface-container-lowest`,
    `text-on-surface-variant`, `bg-primary-container text-on-primary`, `text-headline-md`,

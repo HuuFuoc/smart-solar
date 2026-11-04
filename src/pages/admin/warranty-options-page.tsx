@@ -225,13 +225,11 @@ export function AdminWarrantyOptionsPage() {
         title="Thời hạn bảo hành"
         description={
           gap === 'none' ? (
-            <Badge tone="danger" icon="warning">
+            <Badge tone="danger">
               Chưa có thời hạn bảo hành lắp đặt nào đang dùng, kinh doanh chưa phát hành được hợp đồng
             </Badge>
           ) : gap === 'no-default' ? (
-            <Badge tone="danger" icon="warning">
-              Chưa có thời hạn lắp đặt mặc định, kinh doanh phải tự chọn khi lập hợp đồng
-            </Badge>
+            <Badge tone="danger">Chưa có thời hạn lắp đặt mặc định, kinh doanh phải tự chọn khi lập hợp đồng</Badge>
           ) : undefined
         }
         actions={

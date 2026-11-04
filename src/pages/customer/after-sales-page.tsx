@@ -20,11 +20,7 @@ export function CustomerAfterSalesPage() {
       <PageHeader
         title="Bảo hành, sửa chữa"
         description={
-          todo > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {todo} yêu cầu chờ bạn duyệt báo giá hoặc nghiệm thu
-            </Badge>
-          ) : undefined
+          todo > 0 ? <Badge tone="danger">{todo} yêu cầu chờ bạn duyệt báo giá hoặc nghiệm thu</Badge> : undefined
         }
         actions={
           <ButtonLink icon="construction" to={ROUTES.customer.projects} variant="info">

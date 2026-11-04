@@ -157,7 +157,7 @@ export function AdminProductsPage() {
         title="Sản phẩm"
         description={
           incompletePanels > 0 ? (
-            <Badge tone="danger" icon="warning">
+            <Badge tone="danger">
               {incompletePanels} tấm pin thiếu công suất hoặc kích thước, chưa dùng được cho mô phỏng bố trí
             </Badge>
           ) : undefined
@@ -180,7 +180,7 @@ export function AdminProductsPage() {
           />
         </label>
         {/* Backend chỉ lọc khớp đúng cả chuỗi nên dùng danh sách chọn */}
-        <label className="w-full sm:w-52">
+        <label className="w-full sm:w-44">
           <span className="sr-only">Loại sản phẩm</span>
           <Select
             name="productType"
@@ -227,7 +227,7 @@ export function AdminProductsPage() {
             ))}
           </Select>
         </label>
-        <label className="w-full sm:w-56">
+        <label className="w-full sm:w-48">
           <span className="sr-only">Sắp xếp</span>
           <Select name="sort" value={filter.sort} onChange={(e) => updateFilter({ sort: e.target.value })}>
             {PRODUCT_SORT_OPTIONS.map((option) => (

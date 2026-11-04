@@ -45,13 +45,9 @@ export function CustomerRequestsPage() {
         title="Yêu cầu khảo sát"
         description={
           toConfirm > 0 ? (
-            <Badge tone="danger" icon="event">
-              {toConfirm} đề xuất giờ khảo sát chờ bạn xác nhận
-            </Badge>
+            <Badge tone="danger">{toConfirm} đề xuất giờ khảo sát chờ bạn xác nhận</Badge>
           ) : toBook > 0 ? (
-            <Badge tone="danger" icon="event">
-              {toBook} yêu cầu chưa đặt giờ khảo sát
-            </Badge>
+            <Badge tone="danger">{toBook} yêu cầu chưa đặt giờ khảo sát</Badge>
           ) : undefined
         }
         actions={

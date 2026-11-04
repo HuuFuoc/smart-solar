@@ -43,11 +43,7 @@ function AfterSalesRequestsPage({ detailPattern }: { detailPattern: string }) {
       <PageHeader
         title="Bảo hành, sửa chữa"
         description={
-          groups.todo.length > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {groups.todo.length} yêu cầu chờ bạn xử lý
-            </Badge>
-          ) : undefined
+          groups.todo.length > 0 ? <Badge tone="danger">{groups.todo.length} yêu cầu chờ bạn xử lý</Badge> : undefined
         }
       />
       <FilterChips

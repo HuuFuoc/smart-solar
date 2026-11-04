@@ -89,13 +89,7 @@ function DispatchRequestsPage({ detailPattern }: { detailPattern: string }) {
     <>
       <PageHeader
         title="Điều phối kỹ thuật viên"
-        description={
-          overdue > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {overdue} yêu cầu quá hạn phản hồi
-            </Badge>
-          ) : undefined
-        }
+        description={overdue > 0 ? <Badge tone="danger">{overdue} yêu cầu quá hạn phản hồi</Badge> : undefined}
       />
       <FilterChips
         label="Lọc yêu cầu"

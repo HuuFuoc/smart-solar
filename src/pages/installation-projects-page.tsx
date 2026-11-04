@@ -67,16 +67,8 @@ function InstallationProjectsPage({
         description={
           readyCount || waitingCount ? (
             <span className="flex flex-wrap gap-2">
-              {readyCount > 0 && (
-                <Badge tone="danger" icon="contract">
-                  {readyCount} hợp đồng đã thanh toán chưa có dự án
-                </Badge>
-              )}
-              {waitingCount > 0 && (
-                <Badge tone="danger" icon="person_add">
-                  {waitingCount} dự án chờ xếp kỹ thuật viên
-                </Badge>
-              )}
+              {readyCount > 0 && <Badge tone="danger">{readyCount} hợp đồng đã thanh toán chưa có dự án</Badge>}
+              {waitingCount > 0 && <Badge tone="danger">{waitingCount} dự án chờ xếp kỹ thuật viên</Badge>}
             </span>
           ) : undefined
         }

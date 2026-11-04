@@ -95,9 +95,7 @@ export function AdminPackagesPage() {
         title="Gói dịch vụ"
         description={
           noDisasterOnSale ? (
-            <Badge tone="danger" icon="warning">
-              Chưa có gói bảo vệ thiên tai nào đang bán, khách chưa mua được
-            </Badge>
+            <Badge tone="danger">Chưa có gói bảo vệ thiên tai nào đang bán, khách chưa mua được</Badge>
           ) : undefined
         }
         actions={
