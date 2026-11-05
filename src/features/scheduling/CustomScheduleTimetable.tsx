@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
-import { Table, Th } from '@/components/common/ui/table'
 import { ConflictList } from '@/features/scheduling/ConflictList'
 import { conflictsOf } from '@/features/scheduling/schedulingDisplay'
 import { WEEK_DAYS } from '@/common/scheduling'
@@ -125,6 +124,7 @@ export function CustomScheduleTimetable({
 
   return (
     <div className="space-y-4">
+      {/* Thanh công cụ mẫu lịch nhanh */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-1 p-3.5 shadow-2xs">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-meta font-medium text-fg-2">Mẫu lịch nhanh:</span>
@@ -148,14 +148,15 @@ export function CustomScheduleTimetable({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
-        <Table stack>
+      {/* Bảng Thời khóa biểu tuần cố định cột */}
+      <div className="overflow-x-auto rounded-container border border-line bg-surface-1 shadow-sm">
+        <table className="w-full table-fixed border-collapse text-body">
           <thead>
-            <tr>
-              <Th className="w-44 border-r border-line">Thứ trong tuần</Th>
-              <Th className="border-r border-line">Thời khóa biểu các ca làm việc</Th>
-              <Th className="w-32 border-r border-line text-center">Thời lượng</Th>
-              <Th className="w-44 text-right">Thao tác nhanh</Th>
+            <tr className="border-b border-line-2 bg-surface-2/40 text-left text-meta font-semibold text-fg-2">
+              <th className="w-44 border-r border-line px-4 py-3">Thứ trong tuần</th>
+              <th className="border-r border-line px-4 py-3">Thời khóa biểu các ca làm việc</th>
+              <th className="w-28 border-r border-line px-3 py-3 text-center">Thời lượng</th>
+              <th className="w-44 px-4 py-3 text-right">Thao tác nhanh</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line/70">
@@ -169,8 +170,9 @@ export function CustomScheduleTimetable({
               />
             ))}
           </tbody>
-        </Table>
+        </table>
 
+        {/* Footer lưu cấu hình */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/40 px-4 py-3">
           <div className="flex items-center gap-3">
             <Button icon="save" variant="primary" disabled={save.isPending} onClick={() => void submit()}>
@@ -183,7 +185,9 @@ export function CustomScheduleTimetable({
               </span>
             )}
           </div>
-          <span className="text-meta text-fg-3">Lịch làm việc riêng có hiệu lực ngay sau khi lưu thành công</span>
+          <span className="text-meta text-fg-3">
+            Lịch làm việc riêng có hiệu lực ngay sau khi lưu thành công
+          </span>
         </div>
       </div>
 

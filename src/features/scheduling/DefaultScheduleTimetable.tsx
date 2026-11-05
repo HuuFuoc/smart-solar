@@ -90,3 +90,4 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
     </div>
   )
 }
+

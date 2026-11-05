@@ -20,6 +20,16 @@ export function toWeek(periods: WorkingPeriodView[]): Week {
   return week
 }
 
+export function calculatePeriodHours(start: string, end: string): string {
+  if (!start || !end) return ''
+  const [h1 = 0, m1 = 0] = start.split(':').map(Number)
+  const [h2 = 0, m2 = 0] = end.split(':').map(Number)
+  const minutes = h2 * 60 + m2 - (h1 * 60 + m1)
+  if (minutes <= 0) return ''
+  const hours = Math.round((minutes / 60) * 10) / 10
+  return `${hours} giờ`
+}
+
 export function calculateDayHours(periods: Period[]): number {
   let totalMinutes = 0
   for (const p of periods) {

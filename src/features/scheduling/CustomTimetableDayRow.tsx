@@ -1,6 +1,9 @@
 import { Button, IconButton } from '@/components/common/ui/button'
-import { Td, Tr } from '@/components/common/ui/table'
-import { calculateDayHours, type Period } from '@/features/scheduling/workingScheduleRules'
+import {
+  calculateDayHours,
+  calculatePeriodHours,
+  type Period,
+} from '@/features/scheduling/workingScheduleRules'
 
 interface CustomTimetableDayRowProps {
   dayLabel: string
@@ -46,8 +49,9 @@ export function CustomTimetableDayRow({
   }
 
   return (
-    <Tr className="transition-colors hover:bg-surface-2/40">
-      <Td label="Thứ" className="align-top border-r border-line">
+    <tr className="transition-colors hover:bg-surface-2/40">
+      {/* Cột 1: Thứ & Trạng thái ngày */}
+      <td className="w-44 border-r border-line px-4 py-3 align-top">
         <div className="flex flex-col gap-1.5">
           <label className="flex cursor-pointer items-center gap-2.5">
             <input
@@ -65,74 +69,93 @@ export function CustomTimetableDayRow({
                 {periods.length} ca làm
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded bg-slate-500/15 px-2 py-0.5 text-micro font-medium text-slate-500 dark:text-slate-400">
+              <span className="inline-flex items-center gap-1 rounded border border-slate-500/30 bg-slate-500/15 px-2 py-0.5 text-micro font-medium text-slate-500 dark:text-slate-400">
                 Nghỉ
               </span>
             )}
           </div>
         </div>
-      </Td>
+      </td>
 
-      <Td label="Ca làm việc" className="border-r border-line">
+      {/* Cột 2: Danh sách ca làm việc xếp theo chiều dọc (Không phình ngang) */}
+      <td className="border-r border-line px-4 py-2.5 align-top">
         {!isWorking ? (
-          <div className="flex items-center gap-3 py-1">
+          <div className="flex items-center gap-3 py-1.5">
             <span className="text-meta italic text-fg-3">Nghỉ cả ngày</span>
-            <Button size="sm" variant="ghost" icon="add" onClick={() => handleToggle(true)}>
-              + Đặt ca (8h-12h, 13h-17h)
+            <Button size="sm" variant="soft" icon="add" onClick={() => handleToggle(true)}>
+              Đặt ca (8h-12h, 13h-17h)
             </Button>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center gap-2.5 py-1">
-            {periods.map((p, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-2/60 px-2.5 py-1.5 shadow-2xs transition-colors hover:border-fg-3/40"
-              >
-                <span className="rounded bg-surface-1 px-1.5 py-0.5 text-micro font-semibold text-fg-2">
-                  Ca {i + 1}
-                </span>
-                <div className="flex items-center gap-1">
-                  <input
-                    type="time"
-                    step={1800}
-                    value={p.start}
-                    onChange={(e) => handlePeriodChange(i, { start: e.target.value })}
-                    aria-label={`${dayLabel}, Ca ${i + 1}, giờ bắt đầu`}
-                    className="h-7 w-24 rounded border border-line bg-surface-1 px-1.5 font-mono text-meta font-medium text-fg outline-none focus:border-accent"
-                  />
-                  <span className="text-meta text-fg-3">→</span>
-                  <input
-                    type="time"
-                    step={1800}
-                    value={p.end}
-                    onChange={(e) => handlePeriodChange(i, { end: e.target.value })}
-                    aria-label={`${dayLabel}, Ca ${i + 1}, giờ kết thúc`}
-                    className="h-7 w-24 rounded border border-line bg-surface-1 px-1.5 font-mono text-meta font-medium text-fg outline-none focus:border-accent"
-                  />
+          <div className="flex flex-col gap-2 py-1">
+            {periods.map((p, i) => {
+              const duration = calculatePeriodHours(p.start, p.end)
+              return (
+                <div
+                  key={i}
+                  className="flex flex-wrap items-center gap-2.5 rounded-lg border border-line bg-surface-2/60 px-3 py-1.5 shadow-2xs transition-colors hover:border-fg-3/40"
+                >
+                  <span className="shrink-0 rounded border border-line/60 bg-surface-1 px-2 py-0.5 text-micro font-semibold text-fg-2">
+                    Ca {i + 1}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="time"
+                      step={1800}
+                      value={p.start}
+                      onChange={(e) => handlePeriodChange(i, { start: e.target.value })}
+                      aria-label={`${dayLabel}, Ca ${i + 1}, giờ bắt đầu`}
+                      className="h-8.5 w-32 sm:w-36 rounded-md border border-line bg-surface-1 px-2.5 text-sm font-semibold tracking-wide text-fg outline-none focus:border-accent"
+                    />
+                    <span className="text-meta font-medium text-fg-3">đến</span>
+                    <input
+                      type="time"
+                      step={1800}
+                      value={p.end}
+                      onChange={(e) => handlePeriodChange(i, { end: e.target.value })}
+                      aria-label={`${dayLabel}, Ca ${i + 1}, giờ kết thúc`}
+                      className="h-8.5 w-32 sm:w-36 rounded-md border border-line bg-surface-1 px-2.5 text-sm font-semibold tracking-wide text-fg outline-none focus:border-accent"
+                    />
+                  </div>
+                  {duration && (
+                    <span className="rounded bg-surface-1/80 px-2 py-0.5 text-micro font-medium text-fg-2 tnum">
+                      {duration}
+                    </span>
+                  )}
+                  <div className="ml-auto">
+                    <IconButton
+                      icon="delete"
+                      variant="danger-quiet"
+                      label={`Xóa ca ${p.start}-${p.end} của ${dayLabel}`}
+                      tooltip="Xóa ca này"
+                      onClick={() => handleRemovePeriod(i)}
+                    />
+                  </div>
                 </div>
-                <IconButton
-                  icon="delete"
-                  variant="danger-quiet"
-                  label={`Xóa ca ${p.start}-${p.end} của ${dayLabel}`}
-                  tooltip="Xóa ca này"
-                  onClick={() => handleRemovePeriod(i)}
-                />
-              </div>
-            ))}
-            <Button size="sm" variant="soft" icon="add" onClick={handleAddPeriod}>
-              Thêm ca
-            </Button>
+              )
+            })}
+            <div>
+              <Button size="sm" variant="soft" icon="add" onClick={handleAddPeriod}>
+                + Thêm ca làm việc
+              </Button>
+            </div>
           </div>
         )}
-      </Td>
+      </td>
 
-      <Td label="Thời lượng" className="whitespace-nowrap border-r border-line text-center tnum">
-        {isWorking ? <span className="text-body font-semibold text-fg">{dayHours} giờ</span> : <span className="text-fg-3">—</span>}
-      </Td>
+      {/* Cột 3: Tổng thời lượng ngày */}
+      <td className="w-28 border-r border-line px-3 py-3 text-center align-middle tnum">
+        {isWorking ? (
+          <span className="text-body font-semibold text-fg">{dayHours} giờ</span>
+        ) : (
+          <span className="text-fg-3">—</span>
+        )}
+      </td>
 
-      <Td label="Thao tác" className="whitespace-nowrap text-right">
-        {isWorking && (
-          <div className="flex items-center justify-end gap-1">
+      {/* Cột 4: Thao tác nhanh */}
+      <td className="w-44 px-4 py-3 text-right align-middle">
+        {isWorking ? (
+          <div className="flex items-center justify-end gap-1.5">
             <Button
               size="sm"
               variant="ghost"
@@ -142,18 +165,22 @@ export function CustomTimetableDayRow({
             >
               Sao chép tuần
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
+            <IconButton
               icon="delete_sweep"
-              title="Đặt ngày này thành ngày nghỉ"
-              onClick={() => onUpdate([])}
-            >
-              Nghỉ
+              variant="danger-quiet"
+              label="Chuyển sang ngày nghỉ"
+              tooltip="Đặt ngày này thành ngày nghỉ"
+              onClick={() => handleToggle(false)}
+            />
+          </div>
+        ) : (
+          <div className="flex items-center justify-end">
+            <Button size="sm" variant="ghost" icon="add" onClick={() => handleToggle(true)}>
+              Bật ca làm
             </Button>
           </div>
         )}
-      </Td>
-    </Tr>
+      </td>
+    </tr>
   )
 }
