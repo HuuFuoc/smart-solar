@@ -1,7 +1,5 @@
 import { Link } from 'react-router'
-import { Badge } from '@/components/common/ui/badge'
 import { Button, IconButton } from '@/components/common/ui/button'
-import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { WithTooltip } from '@/components/common/ui/tooltip'
 import { ProductThumb } from '@/features/products/ProductGallery'
 import {
@@ -14,6 +12,7 @@ import {
 } from '@/features/products/productDisplay'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { formatMoney } from '@/utils/format'
+import { cx } from '@/utils/cx'
 
 // Bảng sản phẩm của /admin/products. Tấm pin thiếu công suất / kích thước thì báo ngay trong ô, bấm tên mở trang chi tiết
 
@@ -29,8 +28,6 @@ export type ProductsTableProps = {
   busyIds?: ReadonlySet<string>
 }
 
-// Thao tác cuối dòng: Sửa, Ảnh, Ngừng bán, rồi Xoá sau vạch ngăn (chỉ đỏ khi rê chuột để cột không thành dải đỏ)
-// Bảng xếp khối đến xl vì ở 1024px tên sản phẩm bị bóp quá hẹp
 export function ProductsTable({
   products,
   detailPath,
@@ -41,141 +38,193 @@ export function ProductsTable({
   busyIds,
 }: ProductsTableProps) {
   return (
-    <Table stack="xl">
-      <thead>
-        <tr>
-          <Th>Sản phẩm</Th>
-          <Th className="hidden md:table-cell">Loại / nhóm</Th>
-          {/* Từ xl đến 2xl gộp hãng và kích thước thành dòng phụ để bảng không tràn ngang, từ 2xl mỗi thứ một cột */}
-          <Th className="hidden 2xl:table-cell">Hãng / model</Th>
-          <Th className="text-right">Công suất</Th>
-          <Th className="hidden text-right 2xl:table-cell">Kích thước</Th>
-          <Th className="text-right">Đơn giá</Th>
-          <Th>Trạng thái</Th>
-          <Th className="text-right">
-            <span className="sr-only">Thao tác</span>
-          </Th>
-        </tr>
-      </thead>
-      <tbody>
-        {products.map((p) => {
-          const status = productStatusMeta(p.status)
-          const gaps = panelSpecGaps(p)
-          const active = isProductActive(p.status)
-          const busy = Boolean(p.id && busyIds?.has(p.id))
-          return (
-            <Tr key={p.id ?? p.sku}>
-              <Td label="Sản phẩm">
-                <div className="flex items-center gap-3">
-                  <ProductThumb product={p} className="size-10" />
-                  <div className="min-w-0">
-                    {p.id ? (
-                      <Link
-                        to={detailPath(p.id)}
-                        className="font-medium text-fg underline-offset-4 hover:text-accent-fg hover:underline"
-                      >
-                        {p.name || '—'}
-                      </Link>
+    <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-meta border-collapse">
+          <thead>
+            <tr className="border-b border-line bg-surface-2 text-fg-2 font-medium">
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
+                Sản phẩm
+              </th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold hidden md:table-cell">
+                Loại / Nhóm
+              </th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold hidden 2xl:table-cell">
+                Hãng / Model
+              </th>
+              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">
+                Công suất
+              </th>
+              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold hidden 2xl:table-cell">
+                Kích thước
+              </th>
+              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">
+                Đơn giá
+              </th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
+                Trạng thái
+              </th>
+              <th className="py-3 px-3.5 text-right text-meta font-semibold">
+                <span className="sr-only">Thao tác</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line/70">
+            {products.map((p) => {
+              const status = productStatusMeta(p.status)
+              const gaps = panelSpecGaps(p)
+              const active = isProductActive(p.status)
+              const busy = Boolean(p.id && busyIds?.has(p.id))
+              return (
+                <tr key={p.id ?? p.sku} className="group hover:bg-surface-2/60 transition-colors">
+                  {/* Cột 1: Sản phẩm */}
+                  <td className="py-3.5 px-3.5 border-r border-line align-top">
+                    <div className="flex items-center gap-3">
+                      <ProductThumb product={p} className="size-10 rounded-control border border-line/60" />
+                      <div className="min-w-0">
+                        {p.id ? (
+                          <Link
+                            to={detailPath(p.id)}
+                            className="font-semibold text-fg hover:text-primary transition-colors hover:underline"
+                          >
+                            {p.name || '—'}
+                          </Link>
+                        ) : (
+                          <p className="font-semibold text-fg">{p.name || '—'}</p>
+                        )}
+                        <p className="tnum text-[11px] text-fg-muted mt-0.5">{p.sku}</p>
+                        {(p.brand || p.model) && (
+                          <p className="hidden text-[11px] text-fg-muted xl:block 2xl:hidden">
+                            {[p.brand, p.model].filter(Boolean).join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Cột 2: Loại / nhóm */}
+                  <td className="py-3.5 px-3.5 border-r border-line align-top hidden md:table-cell">
+                    <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-surface-2 border border-line text-fg">
+                      {productTypeLabel(p.productType) ?? '—'}
+                    </span>
+                    <p className="text-[11px] text-fg-muted mt-1">
+                      {[productTypeLabel(p.productType) !== p.productType ? p.productType : null, p.category]
+                        .filter(Boolean)
+                        .join(', ')}
+                    </p>
+                  </td>
+
+                  {/* Cột 3: Hãng / model */}
+                  <td className="py-3.5 px-3.5 border-r border-line align-top hidden 2xl:table-cell">
+                    <p className="font-medium text-fg">{p.brand || '—'}</p>
+                    {p.model && <p className="text-[11px] text-fg-muted">{p.model}</p>}
+                  </td>
+
+                  {/* Cột 4: Công suất */}
+                  <td className="py-3.5 px-3.5 border-r border-line align-top tnum text-right whitespace-nowrap">
+                    {gaps.power ? (
+                      <span className="inline-flex text-xs text-danger font-medium">Thiếu công suất</span>
                     ) : (
-                      <p className="font-medium text-fg">{p.name || '—'}</p>
+                      <span className="font-medium text-fg">{formatPower(p.ratedPowerW) ?? '—'}</span>
                     )}
-                    <p className="tnum text-meta text-fg-3">{p.sku}</p>
-                    {(p.brand || p.model) && (
-                      <p className="hidden text-meta text-fg-3 xl:block 2xl:hidden">
-                        {[p.brand, p.model].filter(Boolean).join(', ')}
-                      </p>
+                    {(gaps.size || formatSize(p)) && (
+                      <div className="mt-1 hidden text-[11px] text-fg-muted xl:block 2xl:hidden">
+                        {gaps.size ? <span className="text-danger">Thiếu kích thước</span> : formatSize(p)}
+                      </div>
                     )}
-                  </div>
-                </div>
-              </Td>
-              <Td label="Loại / nhóm" className="hidden md:table-cell">
-                {productTypeLabel(p.productType) ?? '—'}
-                {/* Admin vẫn thấy mã loại vì bộ lọc và form dùng mã này */}
-                <p className="text-meta text-fg-3">
-                  {[productTypeLabel(p.productType) !== p.productType ? p.productType : null, p.category]
-                    .filter(Boolean)
-                    .join(', ')}
-                </p>
-              </Td>
-              <Td label="Hãng / model" className="hidden 2xl:table-cell">
-                {p.brand || '—'}
-                {p.model && <p className="text-meta text-fg-3">{p.model}</p>}
-              </Td>
-              <Td label="Công suất" className="tnum text-right whitespace-nowrap">
-                {gaps.power ? <Badge tone="danger">Thiếu công suất</Badge> : (formatPower(p.ratedPowerW) ?? '—')}
-                {(gaps.size || formatSize(p)) && (
-                  <div className="mt-1 hidden text-meta text-fg-3 xl:block 2xl:hidden">
-                    <span className="sr-only">Kích thước </span>
-                    {gaps.size ? <Badge tone="danger">Thiếu kích thước</Badge> : formatSize(p)}
-                  </div>
-                )}
-              </Td>
-              <Td label="Kích thước" className="tnum hidden text-right whitespace-nowrap 2xl:table-cell">
-                {gaps.size ? <Badge tone="danger">Thiếu kích thước</Badge> : (formatSize(p) ?? '—')}
-              </Td>
-              <Td label="Đơn giá" className="tnum text-right whitespace-nowrap">
-                <span>
-                  {formatMoney(p.unitPrice, p.currency)}
-                  {p.unit && <span className="text-fg-3"> / {p.unit}</span>}
-                </span>
-              </Td>
-              <Td label="Trạng thái" className="whitespace-nowrap">
-                <Badge tone={status.tone}>{status.label}</Badge>
-              </Td>
-              <Td label="Thao tác" className="text-right whitespace-nowrap">
-                {/* Không dùng lề âm vì ô cuối sát mép bảng, lấn ra sẽ sinh thanh cuộn ngang */}
-                <div className="inline-flex items-center gap-1">
-                  <Button
-                    variant="soft"
-                    size="sm"
-                    icon="edit"
-                    aria-label={`Sửa ${p.name ?? ''}`}
-                    onClick={() => onEdit(p)}
-                  >
-                    Sửa
-                  </Button>
-                  <IconButton
-                    size="sm"
-                    icon="photo_library"
-                    label={`Ảnh của ${p.name ?? ''}`}
-                    tooltip="Ảnh sản phẩm"
-                    onClick={() => onImages(p)}
-                  />
-                  <WithTooltip label={busy ? 'Đang đổi…' : active ? 'Ngừng bán (ẩn khỏi danh mục)' : 'Mở bán lại'}>
-                    {(tip) => (
+                  </td>
+
+                  {/* Cột 5: Kích thước */}
+                  <td className="py-3.5 px-3.5 border-r border-line align-top tnum hidden text-right whitespace-nowrap 2xl:table-cell">
+                    {gaps.size ? (
+                      <span className="text-xs text-danger font-medium">Thiếu kích thước</span>
+                    ) : (
+                      formatSize(p) ?? '—'
+                    )}
+                  </td>
+
+                  {/* Cột 6: Đơn giá */}
+                  <td className="py-3.5 px-3.5 border-r border-line align-top tnum text-right whitespace-nowrap">
+                    <span className="font-semibold text-fg">
+                      {formatMoney(p.unitPrice, p.currency)}
+                    </span>
+                    {p.unit && <span className="text-fg-muted text-[12px]"> / {p.unit}</span>}
+                  </td>
+
+                  {/* Cột 7: Trạng thái */}
+                  <td className="py-3.5 px-3.5 border-r border-line align-top whitespace-nowrap">
+                    <span
+                      className={cx(
+                        'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border',
+                        status.tone === 'ok'
+                          ? 'bg-ok-soft text-ok border-ok/20'
+                          : 'bg-surface-3 text-fg-2 border-line',
+                      )}
+                    >
+                      <span
+                        className={cx('size-1.5 rounded-full', status.tone === 'ok' ? 'bg-ok' : 'bg-fg-muted')}
+                      />
+                      {status.label}
+                    </span>
+                  </td>
+
+                  {/* Cột 8: Thao tác */}
+                  <td className="py-3.5 px-3.5 align-top text-right whitespace-nowrap">
+                    <div className="inline-flex items-center gap-1">
                       <Button
+                        variant="soft"
                         size="sm"
-                        variant="ghost"
-                        bleed={false}
-                        icon={active ? 'visibility_off' : 'visibility'}
-                        aria-label={`${active ? 'Ngừng bán' : 'Mở bán lại'} ${p.name ?? ''}`}
-                        disabled={busy}
-                        onClick={() => onToggleStatus(p)}
-                        {...tip}
+                        icon="edit"
+                        aria-label={`Sửa ${p.name ?? ''}`}
+                        onClick={() => onEdit(p)}
                       >
-                        {/* Chỉ ẩn chữ khi bảng chia cột mà còn hẹp (xl đến wide) */}
-                        <span className="xl:max-wide:sr-only">
-                          {busy ? 'Đang đổi…' : active ? 'Ngừng bán' : 'Mở bán lại'}
-                        </span>
+                        Sửa
                       </Button>
-                    )}
-                  </WithTooltip>
-                  <span aria-hidden className="mx-1 h-5 w-px bg-line" />
-                  <IconButton
-                    size="sm"
-                    variant="danger-quiet"
-                    icon="delete"
-                    label={`Xoá ${p.name ?? ''}`}
-                    tooltip="Xoá sản phẩm"
-                    disabled={busy}
-                    onClick={() => onDelete(p)}
-                  />
-                </div>
-              </Td>
-            </Tr>
-          )
-        })}
-      </tbody>
-    </Table>
+                      <IconButton
+                        size="sm"
+                        icon="photo_library"
+                        label={`Ảnh của ${p.name ?? ''}`}
+                        tooltip="Ảnh sản phẩm"
+                        onClick={() => onImages(p)}
+                      />
+                      <WithTooltip
+                        label={busy ? 'Đang đổi…' : active ? 'Ngừng bán (ẩn khỏi danh mục)' : 'Mở bán lại'}
+                      >
+                        {(tip) => (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            bleed={false}
+                            icon={active ? 'visibility_off' : 'visibility'}
+                            aria-label={`${active ? 'Ngừng bán' : 'Mở bán lại'} ${p.name ?? ''}`}
+                            disabled={busy}
+                            onClick={() => onToggleStatus(p)}
+                            {...tip}
+                          >
+                            <span className="xl:max-wide:sr-only">
+                              {busy ? 'Đang đổi…' : active ? 'Ngừng bán' : 'Mở bán lại'}
+                            </span>
+                          </Button>
+                        )}
+                      </WithTooltip>
+                      <span aria-hidden className="mx-1 h-5 w-px bg-line" />
+                      <IconButton
+                        size="sm"
+                        variant="danger-quiet"
+                        icon="delete"
+                        label={`Xoá ${p.name ?? ''}`}
+                        tooltip="Xoá sản phẩm"
+                        disabled={busy}
+                        onClick={() => onDelete(p)}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }

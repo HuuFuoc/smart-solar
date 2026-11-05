@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
-import { REFUND_STATUSES } from '@/common/afterSales'
-import { Badge } from '@/components/common/ui/badge'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
@@ -41,10 +40,48 @@ const GROUP_LABELS: Record<Group, string> = {
   all: 'Tất cả',
 }
 
+const STATUS_BADGE_CONFIG: Record<
+  string,
+  { label: string; bg: string; text: string; border: string; dot: string; icon: string }
+> = {
+  APPROVED: {
+    label: 'Chờ ghi nhận',
+    bg: 'bg-amber-500/15',
+    text: 'text-amber-600 dark:text-amber-400',
+    border: 'border-amber-500/30',
+    dot: 'bg-amber-500',
+    icon: 'hourglass_empty',
+  },
+  PENDING_APPROVAL: {
+    label: 'Chờ quản lý duyệt',
+    bg: 'bg-blue-500/15',
+    text: 'text-blue-600 dark:text-blue-400',
+    border: 'border-blue-500/30',
+    dot: 'bg-blue-500',
+    icon: 'pending',
+  },
+  REFUNDED: {
+    label: 'Đã hoàn tiền',
+    bg: 'bg-emerald-500/15',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    border: 'border-emerald-500/30',
+    dot: 'bg-emerald-500',
+    icon: 'check_circle',
+  },
+  REJECTED: {
+    label: 'Từ chối hoàn',
+    bg: 'bg-slate-500/15',
+    text: 'text-slate-600 dark:text-slate-300',
+    border: 'border-slate-500/30',
+    dot: 'bg-slate-400',
+    icon: 'cancel',
+  },
+}
+
 const vnd = (amount: number | null) => formatMoney(amount, 'VND')
 
 function sourceLabel(r: RefundView) {
-  if (r.subscriptionId) return `Huỷ gói dịch vụ ${shortCode(r.subscriptionId)}`
+  if (r.subscriptionId) return `Hủy gói dịch vụ ${shortCode(r.subscriptionId)}`
   if (r.requestId) return `Yêu cầu bảo hành, sửa chữa ${shortCode(r.requestId)}`
   if (r.quotationId) return `Báo giá ${shortCode(r.quotationId)}`
   return 'Khoản thanh toán'
@@ -85,7 +122,6 @@ function RecordDialog({ refund, onOpenChange }: { refund: RefundView | null; onO
       toast.success(`Đã ghi nhận hoàn ${vnd(refund.approvedAmount)}`)
       onOpenChange(false)
     } catch (e) {
-      // Khoản vừa đổi trạng thái: danh sách đã tải lại, đóng để người dùng xem bản mới
       if (isApiError(e) && (e.code === 'AFTER_SALES_INVALID_STATE' || e.code === 'REFUND_NOT_FOUND')) {
         toast.error(errorMessage(e))
         onOpenChange(false)
@@ -173,7 +209,7 @@ function RecordDialog({ refund, onOpenChange }: { refund: RefundView | null; onO
           )}
           <DialogFooter>
             <Button icon="close" variant="secondary" disabled={record.isPending} onClick={() => onOpenChange(false)}>
-              Huỷ
+              Hủy
             </Button>
             <Button icon="task_alt" type="submit" variant="primary" disabled={record.isPending}>
               {record.isPending ? 'Đang ghi nhận…' : 'Ghi nhận đã hoàn'}
@@ -218,7 +254,7 @@ export function AdminRefundsPage() {
       {query.data && (
         <FilterChips
           label="Nhóm khoản hoàn tiền"
-          className="mb-6"
+          className="mb-4"
           chips={(['approved', 'pending', 'refunded', 'rejected', 'all'] as const).map((g) => ({
             value: g,
             label: GROUP_LABELS[g],
@@ -228,6 +264,29 @@ export function AdminRefundsPage() {
           onChange={setGroup}
         />
       )}
+
+      {/* Thanh chú thích trạng thái & tổng hợp */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-1 px-4 py-2.5 text-meta shadow-sm">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="font-medium text-fg-2">Chú thích trạng thái:</span>
+          {Object.entries(STATUS_BADGE_CONFIG).map(([key, cfg]) => (
+            <div key={key} className="flex items-center gap-1.5">
+              <span className={`inline-block h-2 w-2 rounded-full ${cfg.dot}`} />
+              <span className="text-fg-2">{cfg.label}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-4 text-fg-3">
+          <span>
+            Hiển thị: <strong className="text-fg-1 font-semibold">{items.length}</strong> khoản
+          </span>
+          {group === 'approved' && items.length > 0 && (
+            <span className="text-amber-600 dark:text-amber-400 font-medium">
+              Cần ghi nhận: {vnd(items.reduce((sum, r) => sum + (r.approvedAmount ?? 0), 0))}
+            </span>
+          )}
+        </div>
+      </div>
 
       <section aria-label={GROUP_LABELS[group]} aria-busy={query.isFetching}>
         {query.isPending ? (
@@ -256,71 +315,91 @@ export function AdminRefundsPage() {
             description={group === 'approved' ? 'Khoản quản lý đã duyệt sẽ hiện ở đây.' : undefined}
           />
         ) : (
-          <Table stack>
-            <thead>
-              <tr>
-                <Th>Khoản</Th>
-                <Th className="text-right">Số tiền</Th>
-                <Th>Trạng thái</Th>
-                <Th>Thời gian</Th>
-                <Th className="text-right">
-                  <span className="sr-only">Thao tác</span>
-                </Th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((r) => {
-                const status = REFUND_STATUSES[r.status] ?? { label: r.status, tone: 'neutral' as const }
-                return (
-                  <Tr key={r.refundId}>
-                    <Td label="Khoản">
-                      <p className="font-medium text-fg">
-                        {r.requestId ? (
-                          <Link to={withId(ROUTES.admin.afterSalesRequest, r.requestId)} className="ui-link">
-                            {sourceLabel(r)}
-                          </Link>
-                        ) : (
-                          sourceLabel(r)
+          <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+            <Table stack>
+              <thead>
+                <tr>
+                  <Th className="border-r border-line">Khoản hoàn tiền</Th>
+                  <Th className="border-r border-line text-right">Số tiền</Th>
+                  <Th className="border-r border-line">Trạng thái</Th>
+                  <Th className="border-r border-line">Thời gian & Tham chiếu</Th>
+                  <Th className="text-right">
+                    <span>Thao tác</span>
+                  </Th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line/70">
+                {items.map((r) => {
+                  const cfg = STATUS_BADGE_CONFIG[r.status] ?? {
+                    label: r.status,
+                    bg: 'bg-surface-2',
+                    text: 'text-fg-2',
+                    border: 'border-line',
+                    dot: 'bg-fg-3',
+                    icon: 'help_outline',
+                  }
+                  return (
+                    <Tr key={r.refundId} className="hover:bg-surface-2/60 transition-colors">
+                      <Td label="Khoản" className="border-r border-line">
+                        <p className="font-semibold text-fg">
+                          {r.requestId ? (
+                            <Link to={withId(ROUTES.admin.afterSalesRequest, r.requestId)} className="ui-link font-medium">
+                              {sourceLabel(r)}
+                            </Link>
+                          ) : (
+                            sourceLabel(r)
+                          )}
+                        </p>
+                        <p className="mt-0.5 line-clamp-2 max-w-[56ch] text-meta text-fg-3">{r.reason}</p>
+                        {r.decisionNote && (
+                          <p className="mt-0.5 max-w-[56ch] text-meta text-fg-2 italic">Quản lý: {r.decisionNote}</p>
                         )}
-                      </p>
-                      <p className="line-clamp-2 max-w-[56ch] text-meta text-fg-3">{r.reason}</p>
-                      {r.decisionNote && (
-                        <p className="max-w-[56ch] text-meta text-fg-3">Quản lý ghi: {r.decisionNote}</p>
-                      )}
-                    </Td>
-                    <Td label="Số tiền" className="tnum text-right whitespace-nowrap">
-                      {r.approvedAmount != null ? vnd(r.approvedAmount) : vnd(r.originalAmount)}
-                      {r.approvedAmount != null && r.approvedAmount !== r.originalAmount && (
-                        <p className="text-meta text-fg-3">Gốc {vnd(r.originalAmount)}</p>
-                      )}
-                    </Td>
-                    <Td label="Trạng thái" className="whitespace-nowrap">
-                      <Badge tone={status.tone}>{status.label}</Badge>
-                    </Td>
-                    <Td label="Thời gian" className="tnum text-meta whitespace-nowrap text-fg-2">
-                      {r.refundedAt ? (
-                        <>
-                          Hoàn lúc {formatMoment(r.refundedAt)}
-                          {r.refundReference && <p>Mã {r.refundReference}</p>}
-                        </>
-                      ) : r.approvedAt ? (
-                        `Duyệt lúc ${formatMoment(r.approvedAt)}`
-                      ) : (
-                        `Tạo lúc ${formatMoment(r.createdAt)}`
-                      )}
-                    </Td>
-                    <Td label="Thao tác" className="text-right whitespace-nowrap">
-                      {r.status === 'APPROVED' && (
-                        <Button size="sm" variant="soft" icon="task_alt" onClick={() => setRecording(r)}>
-                          Ghi nhận đã hoàn
-                        </Button>
-                      )}
-                    </Td>
-                  </Tr>
-                )
-              })}
-            </tbody>
-          </Table>
+                      </Td>
+                      <Td label="Số tiền" className="border-r border-line tnum text-right whitespace-nowrap">
+                        <span className="font-semibold text-fg">
+                          {r.approvedAmount != null ? vnd(r.approvedAmount) : vnd(r.originalAmount)}
+                        </span>
+                        {r.approvedAmount != null && r.approvedAmount !== r.originalAmount && (
+                          <p className="text-meta text-fg-3 line-through">Gốc {vnd(r.originalAmount)}</p>
+                        )}
+                      </Td>
+                      <Td label="Trạng thái" className="border-r border-line whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-meta font-medium border ${cfg.bg} ${cfg.text} ${cfg.border}`}
+                        >
+                          <Icon name={cfg.icon} className="text-[16px]" aria-hidden />
+                          <span>{cfg.label}</span>
+                        </span>
+                      </Td>
+                      <Td label="Thời gian" className="border-r border-line tnum text-meta whitespace-nowrap text-fg-2">
+                        {r.refundedAt ? (
+                          <>
+                            <div className="font-medium text-fg">Hoàn lúc {formatMoment(r.refundedAt)}</div>
+                            {r.refundReference && <p className="text-fg-3">Mã GD: {r.refundReference}</p>}
+                          </>
+                        ) : r.approvedAt ? (
+                          <div className="font-medium text-fg">Duyệt lúc {formatMoment(r.approvedAt)}</div>
+                        ) : (
+                          <div className="text-fg-3">Tạo lúc {formatMoment(r.createdAt)}</div>
+                        )}
+                      </Td>
+                      <Td label="Thao tác" className="text-right whitespace-nowrap">
+                        {r.status === 'APPROVED' && (
+                          <Button size="sm" variant="soft" icon="task_alt" onClick={() => setRecording(r)}>
+                            Ghi nhận đã hoàn
+                          </Button>
+                        )}
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </tbody>
+            </Table>
+            <div className="border-t border-line bg-surface-2/40 px-4 py-2 text-meta text-fg-3 flex items-center justify-between">
+              <span>Đang hiển thị {items.length} trên tổng {all.length} khoản hoàn tiền</span>
+              <span className="tnum">Cổng quản trị SmartSolar</span>
+            </div>
+          </div>
         )}
       </section>
 
