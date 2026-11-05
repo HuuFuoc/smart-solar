@@ -853,13 +853,15 @@ function AssessmentWizard({ onReopen }: { onReopen: () => void }) {
 
   return (
     <>
-      <PageHeader title="Đánh giá sơ bộ" />
+      {/* Quy trình đặt giữa trang: tiêu đề và tiến độ chung một cột với các bước có form */}
+      <div className="mx-auto max-w-3xl">
+        <PageHeader title="Đánh giá sơ bộ" />
+        {/* Điện thoại: tiến độ nằm ở đầu khung của bước */}
+        <WizardSteps steps={wizardSteps} label="Các bước đánh giá sơ bộ" className="mb-6 hidden md:block" />
+      </div>
 
-      {/* Điện thoại: tiến độ nằm ở đầu khung của bước */}
-      <WizardSteps steps={wizardSteps} label="Các bước đánh giá sơ bộ" className="mb-6 hidden max-w-3xl md:block" />
-
-      {/* Bước có form hẹp giữ một cột vừa đọc, cột phụ xuống dưới khung. Mặt lắp và mô phỏng dùng hết chiều ngang */}
-      <div className={cx('space-y-4', !wide && 'max-w-3xl')}>
+      {/* Bước có form hẹp giữ một cột vừa đọc ở giữa, cột phụ xuống dưới khung. Mặt lắp và mô phỏng dùng hết chiều ngang */}
+      <div className={cx('space-y-4', !wide && 'mx-auto max-w-3xl')}>
         {step <= STEP.SITE && !submitted && <SavedDrafts currentId={draft.preSurveyId} onOpen={openSavedDraft} />}
         <AssessmentStepCard
           steps={wizardSteps}

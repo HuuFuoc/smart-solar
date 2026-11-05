@@ -146,11 +146,7 @@ export function OpsAfterSalesPage() {
       <PageHeader
         title="Bảo hành, sửa chữa"
         description={
-          groups.open.length > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {groups.open.length} việc chờ nhận
-            </Badge>
-          ) : undefined
+          groups.open.length > 0 ? <Badge tone="danger">{groups.open.length} việc chờ nhận</Badge> : undefined
         }
       />
       <FilterChips

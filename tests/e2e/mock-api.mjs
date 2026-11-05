@@ -307,6 +307,7 @@ export function handle(state, method, url, bodyText) {
 
   // Layout và các danh sách nền
   if (method === 'GET' && path === '/products') return ok(page([state.product]))
+  if (method === 'GET' && path === '/admin/products') return ok(page([state.product]))
   if (method === 'GET' && path === '/admin/users') {
     const items = q.role ? USERS.filter((x) => x.roles.includes(q.role)) : USERS
     return ok(page(items))

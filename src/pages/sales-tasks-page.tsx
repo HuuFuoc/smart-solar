@@ -121,7 +121,7 @@ function SalesTasksPage({ viewer }: { viewer: Viewer }) {
   const query = param === undefined ? all : filtered
   const sales = useSalesAssigneesQuery()
   const salesUsers = sales.data
-  const nameOf = (id: string | null) => (id ? (salesUsers?.find((u) => u.userId === id)?.fullName || null) : null)
+  const nameOf = (id: string | null) => (id ? salesUsers?.find((u) => u.userId === id)?.fullName || null : null)
 
   const count = (f: TaskStatusFilter) => {
     const list = all.data ?? []
@@ -147,13 +147,7 @@ function SalesTasksPage({ viewer }: { viewer: Viewer }) {
     <>
       <PageHeader
         title="Việc của kinh doanh"
-        description={
-          unassigned > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {unassigned} việc chưa ai nhận
-            </Badge>
-          ) : undefined
-        }
+        description={unassigned > 0 ? <Badge tone="danger">{unassigned} việc chưa ai nhận</Badge> : undefined}
       />
       {all.data && (
         <FilterChips

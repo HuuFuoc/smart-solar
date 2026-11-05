@@ -119,11 +119,11 @@ export function SchedulingAuditTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-control border border-line bg-surface-1">
+      <div className="overflow-x-auto rounded-container border border-line bg-surface-1 shadow-sm">
         <table className="w-full text-left text-body">
           <thead className="border-b border-line bg-canvas text-meta font-medium text-fg-3">
             <tr>
-              <th className="px-4 py-3">
+              <th className="border-r border-line px-4 py-3">
                 <button
                   type="button"
                   onClick={toggleSort}
@@ -133,13 +133,13 @@ export function SchedulingAuditTable() {
                   <span className="text-accent">{sortOrder === 'desc' ? '↓' : '↑'}</span>
                 </button>
               </th>
-              <th className="px-4 py-3">Cài đặt được thay đổi</th>
-              <th className="px-4 py-3">Giá trị (Cũ → Mới)</th>
-              <th className="px-4 py-3">Đơn vị</th>
+              <th className="border-r border-line px-4 py-3">Cài đặt được thay đổi</th>
+              <th className="border-r border-line px-4 py-3">Giá trị (Cũ → Mới)</th>
+              <th className="border-r border-line px-4 py-3">Đơn vị</th>
               <th className="px-4 py-3">Lý do điều chỉnh (Reason)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-line text-meta">
+          <tbody className="divide-y divide-line/70 text-meta">
             {isLoading ? (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-fg-3">
@@ -154,20 +154,20 @@ export function SchedulingAuditTable() {
               </tr>
             ) : (
               sortedItems.map((r) => (
-                <tr key={r.id} className="hover:bg-canvas/50">
-                  <td className="whitespace-nowrap px-4 py-3 text-fg-2">
+                <tr key={r.id} className="hover:bg-surface-2/60 transition-colors">
+                  <td className="border-r border-line whitespace-nowrap px-4 py-3 text-fg-2">
                     {new Date(r.changedAt).toLocaleString('vi-VN')}
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-fg-1">{KEY_LABEL_MAP.get(r.key) || r.key}</div>
+                  <td className="border-r border-line px-4 py-3">
+                    <div className="font-semibold text-fg-1">{KEY_LABEL_MAP.get(r.key) || r.key}</div>
                     <div className="font-mono text-xs text-fg-3">{r.key}</div>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <span className="text-err line-through">{r.oldValue}</span>
+                  <td className="border-r border-line whitespace-nowrap px-4 py-3">
+                    <span className="text-rose-600 dark:text-rose-400 line-through">{r.oldValue}</span>
                     <span className="mx-2 text-fg-3">→</span>
-                    <span className="font-semibold text-ok">{r.newValue}</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{r.newValue}</span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="border-r border-line px-4 py-3">
                     <Badge tone="neutral">{r.unit}</Badge>
                   </td>
                   <td className="max-w-md px-4 py-3 text-fg-1">

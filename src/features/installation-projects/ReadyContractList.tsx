@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
@@ -52,7 +53,7 @@ function CreateProjectDialog({
     >
       <DialogTitle>Tạo dự án thi công</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Mỗi hợp đồng chỉ có một dự án thi công, kể cả khi dự án đó bị huỷ sau này. Dự án mới ở trạng thái chờ xếp kỹ
+        Mỗi hợp đồng chỉ có một dự án thi công, kể cả khi dự án đó bị hủy sau này. Dự án mới ở trạng thái chờ xếp kỹ
         thuật viên.
       </p>
       <Facts
@@ -66,7 +67,7 @@ function CreateProjectDialog({
       <DialogFooter className="items-center">
         <ErrorLine message={error} />
         <Button icon="close" variant="secondary" disabled={create.isPending} onClick={onClose}>
-          Huỷ
+          Hủy
         </Button>
         <Button icon="add" variant="primary" disabled={create.isPending} onClick={() => void submit()}>
           {create.isPending ? 'Đang tạo…' : 'Tạo dự án'}
@@ -83,63 +84,67 @@ export function ReadyContractList({
 }: {
   rows: PaidContractSource[]
   detailPattern: string
-  /** Trang chi tiết hợp đồng (thanh toán, bản ký) của portal đang xem */
   contractPattern: string
 }) {
   const [picked, setPicked] = useState<PaidContractSource | null>(null)
   return (
     <>
-      <Table stack>
-        <thead>
-          <tr>
-            <Th>Hợp đồng</Th>
-            <Th className="text-right">Giá trị</Th>
-            <Th>Thanh toán đủ lúc</Th>
-            <Th>Vị trí công trình</Th>
-            <Th>
-              <span className="sr-only">Thao tác</span>
-            </Th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((c) => (
-            <Tr key={c.contractId}>
-              <Td label="Hợp đồng">
-                <Link className="font-medium ui-link" to={withId(contractPattern, c.contractId)}>
-                  {c.contractNumber}
-                </Link>
-                <p className="tnum text-meta text-fg-2">Yêu cầu khảo sát {shortCode(c.surveyRequestId)}</p>
-              </Td>
-              <Td label="Giá trị" className="tnum lg:text-right">
-                {formatMoney(c.totalAmount, 'VND')}
-              </Td>
-              <Td label="Thanh toán đủ lúc" className="tnum">
-                {formatMoment(c.paidAt)}
-              </Td>
-              <Td label="Vị trí công trình">
-                {c.latitude != null && c.longitude != null ? (
-                  <a
-                    className="tnum ui-link"
-                    href={`https://www.google.com/maps?q=${c.latitude},${c.longitude}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {c.latitude}, {c.longitude}
-                    <span className="sr-only"> (mở bản đồ ở tab mới)</span>
-                  </a>
-                ) : (
-                  <span className="text-fg-3">Chưa có toạ độ</span>
-                )}
-              </Td>
-              <Td className="lg:text-right">
-                <Button icon="add" size="sm" variant="soft" onClick={() => setPicked(c)}>
-                  Tạo dự án
-                </Button>
-              </Td>
-            </Tr>
-          ))}
-        </tbody>
-      </Table>
+      <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+        <Table stack>
+          <thead>
+            <tr>
+              <Th className="border-r border-line">Hợp đồng đã thanh toán</Th>
+              <Th className="border-r border-line text-right">Giá trị hợp đồng</Th>
+              <Th className="border-r border-line">Thời điểm thanh toán</Th>
+              <Th className="border-r border-line">Vị trí công trình</Th>
+              <Th className="text-right">
+                <span>Thao tác</span>
+              </Th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line/70">
+            {rows.map((c) => (
+              <Tr key={c.contractId} className="hover:bg-surface-2/60 transition-colors">
+                <Td label="Hợp đồng" className="border-r border-line">
+                  <Link className="font-semibold ui-link" to={withId(contractPattern, c.contractId)}>
+                    {c.contractNumber}
+                  </Link>
+                  <p className="tnum text-meta text-fg-2 mt-0.5">Khảo sát {shortCode(c.surveyRequestId)}</p>
+                </Td>
+                <Td label="Giá trị" className="border-r border-line tnum lg:text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                  {formatMoney(c.totalAmount, 'VND')}
+                </Td>
+                <Td label="Thanh toán" className="border-r border-line tnum text-meta text-fg-2">
+                  {formatMoment(c.paidAt)}
+                </Td>
+                <Td label="Vị trí" className="border-r border-line">
+                  {c.latitude != null && c.longitude != null ? (
+                    <a
+                      className="tnum ui-link inline-flex items-center gap-1 font-mono text-meta"
+                      href={`https://www.google.com/maps?q=${c.latitude},${c.longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Icon name="location_on" className="text-accent text-[16px]" aria-hidden />
+                      {c.latitude}, {c.longitude}
+                    </a>
+                  ) : (
+                    <span className="text-fg-3 italic">Chưa có tọa độ</span>
+                  )}
+                </Td>
+                <Td className="lg:text-right">
+                  <Button icon="add" size="sm" variant="soft" onClick={() => setPicked(c)}>
+                    Tạo dự án
+                  </Button>
+                </Td>
+              </Tr>
+            ))}
+          </tbody>
+        </Table>
+        <div className="border-t border-line bg-surface-2/40 px-4 py-2.5 text-meta text-fg-3 flex items-center justify-between">
+          <span>Có <strong>{rows.length}</strong> hợp đồng sẵn sàng khởi tạo dự án thi công</span>
+        </div>
+      </div>
       {picked && (
         <CreateProjectDialog
           key={picked.contractId}

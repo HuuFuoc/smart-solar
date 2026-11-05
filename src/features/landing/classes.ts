@@ -1,7 +1,9 @@
 import { cx } from '@/utils/cx'
 
-/** Container của các trang công khai: 1200px, lề 16 / 32, tự canh giữa từ 1280. */
+/** Container của trang chủ: 1200px, lề 16 / 32, tự canh giữa từ 1280. */
 export const LANDING_CONTAINER = 'mx-auto w-full max-w-landing px-4 md:px-8 xl:px-0'
+/** Các trang công khai khác trang chủ (sản phẩm…): rộng hết màn, lề 24px như portal */
+export const PUBLIC_WIDE_CONTAINER = 'w-full px-4 md:px-6'
 
 /** Lưới 4 cột trên mobile, 12 cột từ lg (cột 78px, gutter 24px ở 1200). */
 export const PAGE_GRID = 'grid grid-cols-4 gap-x-4 lg:grid-cols-12 lg:gap-x-6'

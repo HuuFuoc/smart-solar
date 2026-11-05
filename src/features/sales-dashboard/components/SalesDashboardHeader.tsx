@@ -1,8 +1,9 @@
-import { Link } from 'react-router'
-import { Badge } from '@/components/common/ui/badge'
-import { Button } from '@/components/common/stitch-ui/Button'
 import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Badge } from '@/components/common/ui/badge'
+import { Button, ButtonLink } from '@/components/common/ui/button'
+import { PageHeader } from '@/components/common/ui/page-header'
 import { ROUTES } from '@/routes/paths'
+import { cx } from '@/utils/cx'
 
 type SalesDashboardHeaderProps = {
   pendingCount: number
@@ -12,30 +13,25 @@ type SalesDashboardHeaderProps = {
 
 export function SalesDashboardHeader({ pendingCount, onRefresh, isRefreshing }: SalesDashboardHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="space-y-2">
-        <h1 className="text-headline-md font-bold text-on-surface sm:text-headline-lg">Tổng quan</h1>
-        {pendingCount > 0 && (
-          <Badge tone="danger" icon="assignment_late">
-            {pendingCount} yêu cầu mới chờ tiếp nhận
-          </Badge>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2.5">
-        {onRefresh && (
-          <Button variant="tonal" size="sm" onClick={onRefresh} disabled={isRefreshing}>
-            <Icon name="refresh" className={isRefreshing ? 'animate-spin' : ''} />
-            Làm mới
-          </Button>
-        )}
-        <Link to={ROUTES.ops.surveys}>
-          <Button variant="primary" size="sm">
-            <Icon name="add_task" />
+    <PageHeader
+      title="Tổng quan"
+      description={pendingCount > 0 ? <Badge tone="danger">{pendingCount} yêu cầu mới chờ tiếp nhận</Badge> : undefined}
+      actions={
+        <>
+          {onRefresh && (
+            <Button
+              icon={<Icon name="refresh" className={cx('-ml-0.5 text-[20px]', isRefreshing && 'animate-spin')} />}
+              disabled={isRefreshing}
+              onClick={onRefresh}
+            >
+              Làm mới
+            </Button>
+          )}
+          <ButtonLink to={ROUTES.ops.surveys} variant="primary" icon="add_task">
             Tiếp nhận khảo sát
-          </Button>
-        </Link>
-      </div>
-    </div>
+          </ButtonLink>
+        </>
+      }
+    />
   )
 }

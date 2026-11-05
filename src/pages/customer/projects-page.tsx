@@ -2,6 +2,7 @@ import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { ListRow } from '@/components/common/ui/list-row'
 import { PageHeader } from '@/components/common/ui/page-header'
+import { PagedList } from '@/components/common/ui/pagination'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
 import {
@@ -47,54 +48,54 @@ export function CustomerProjectsPage() {
     <>
       <PageHeader
         title="Công trình lắp đặt"
-        description={
-          waiting > 0 ? (
-            <Badge tone="danger" icon="task_alt">
-              {waiting} công trình chờ bạn nghiệm thu
-            </Badge>
-          ) : undefined
-        }
+        description={waiting > 0 ? <Badge tone="danger">{waiting} công trình chờ bạn nghiệm thu</Badge> : undefined}
       />
       <QueryBoundary query={query}>
         {(rows) =>
           rows.length === 0 ? (
             <EmptyState title="Chưa có công trình lắp đặt" />
           ) : (
-            <ul className="divide-y divide-line">
-              {[...rows].sort(byNextAction).map((p) => {
-                const status = installationStatusMeta(p.status, 'customer')
-                const decide = awaitsCustomerDecision(p)
-                return (
-                  <ListRow key={p.projectId}>
-                    <div className="grid gap-x-8 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-                      <div className="min-w-0">
-                        <h2 className="text-title font-semibold">
-                          Công trình <span className="tnum">{shortCode(p.projectId)}</span>
-                        </h2>
-                        <p className="mt-1 text-body text-fg-2">
-                          Hợp đồng <span className="tnum">{shortCode(p.contractId)}</span>
-                        </p>
-                        <p className="mt-2 text-body text-fg">
-                          {summary(p)}
-                          {p.technicianName && <span className="text-fg-2">, kỹ thuật viên {p.technicianName}</span>}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
-                        <Badge tone={status.tone}>{status.label}</Badge>
-                        <ButtonLink
-                          icon="visibility"
-                          to={withId(ROUTES.customer.project, p.projectId)}
-                          size="sm"
-                          variant="info"
-                        >
-                          {decide ? 'Xem và nghiệm thu' : 'Xem tiến độ'}
-                        </ButtonLink>
-                      </div>
-                    </div>
-                  </ListRow>
-                )
-              })}
-            </ul>
+            <PagedList items={[...rows].sort(byNextAction)} noun="công trình">
+              {(page) => (
+                <ul className="divide-y divide-line">
+                  {page.map((p) => {
+                    const status = installationStatusMeta(p.status, 'customer')
+                    const decide = awaitsCustomerDecision(p)
+                    return (
+                      <ListRow key={p.projectId}>
+                        <div className="grid gap-x-8 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                          <div className="min-w-0">
+                            <h2 className="text-title font-semibold">
+                              Công trình <span className="tnum">{shortCode(p.projectId)}</span>
+                            </h2>
+                            <p className="mt-1 text-body text-fg-2">
+                              Hợp đồng <span className="tnum">{shortCode(p.contractId)}</span>
+                            </p>
+                            <p className="mt-2 text-body text-fg">
+                              {summary(p)}
+                              {p.technicianName && (
+                                <span className="text-fg-2">, kỹ thuật viên {p.technicianName}</span>
+                              )}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
+                            <Badge tone={status.tone}>{status.label}</Badge>
+                            <ButtonLink
+                              icon="visibility"
+                              to={withId(ROUTES.customer.project, p.projectId)}
+                              size="sm"
+                              variant="info"
+                            >
+                              {decide ? 'Xem và nghiệm thu' : 'Xem tiến độ'}
+                            </ButtonLink>
+                          </div>
+                        </div>
+                      </ListRow>
+                    )
+                  })}
+                </ul>
+              )}
+            </PagedList>
           )
         }
       </QueryBoundary>

@@ -32,6 +32,12 @@ export type CreateProductRequest = {
   spec?: unknown
   imageUrl?: string | null
   status?: string | null
+  images?: ProductImageRequest[] | null
+}
+
+export type ProductImageRequest = {
+  url?: string | null
+  altText?: string | null
 }
 
 export type ReorderProductImagesRequest = {
@@ -58,5 +64,4 @@ export type UpdateProductRequest = {
   /** Format: int32 */
   warrantyMonth?: number | null
   spec?: unknown
-  imageUrl?: string | null
 }

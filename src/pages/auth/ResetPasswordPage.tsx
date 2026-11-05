@@ -1,3 +1,4 @@
+import { Badge } from '@/components/common/ui/badge'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -11,7 +12,6 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'
 import { useResetPasswordMutation } from '@/hooks/useAuthMutations'
 import { errorMessage } from '@/services/api/errors'
-import { cn } from '@/utils/cn'
 import { isStrongPassword, resetContent } from '@/data/auth'
 
 const schema = z
@@ -68,14 +68,7 @@ export function ResetPasswordPage() {
   return (
     <AuthCard>
       <div className="mb-2 flex items-center justify-end">
-        <span
-          className={cn(
-            'rounded-full px-2 py-0.5 text-label-sm',
-            token ? 'bg-primary-fixed text-on-primary-fixed' : 'bg-error-container text-on-error-container',
-          )}
-        >
-          {token ? resetContent.tokenValid : resetContent.tokenInvalid}
-        </span>
+        <Badge tone={token ? 'ok' : 'danger'}>{token ? resetContent.tokenValid : resetContent.tokenInvalid}</Badge>
       </div>
       <h1 className="mb-space-xs text-headline-md text-on-surface">{resetContent.title}</h1>
 

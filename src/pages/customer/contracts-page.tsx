@@ -43,13 +43,7 @@ export function CustomerContractsPage() {
     <>
       <PageHeader
         title="Hợp đồng"
-        description={
-          todo > 0 ? (
-            <Badge tone="danger" icon="draw">
-              {todo} hợp đồng chờ bạn ký hoặc thanh toán
-            </Badge>
-          ) : undefined
-        }
+        description={todo > 0 ? <Badge tone="danger">{todo} hợp đồng chờ bạn ký hoặc thanh toán</Badge> : undefined}
       />
       <QueryBoundary query={query}>
         {(list) => {

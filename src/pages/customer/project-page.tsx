@@ -26,13 +26,14 @@ import {
   pendingAcceptance,
 } from '@/features/installations/installationDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
-import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { formatMoment, vnDate } from '@/features/scheduling/schedulingDisplay'
 import {
   useEvidenceUrlFetcher,
   useHandoverQuery,
   useInstallationEvidenceQuery,
   useMyInstallationQuery,
 } from '@/hooks/useCustomerInstallations'
+import { useWarrantyQuery } from '@/hooks/useCustomerServiceRequests'
 import type {
   AcceptanceView,
   AssetView,
@@ -197,11 +198,19 @@ function EvidencePanel({ projectId }: { projectId: string }) {
   )
 }
 
-/** Bảng thiết bị; khi đã bàn giao có thêm cột hạn bảo hành do backend tính từ ngày bàn giao */
-function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
-  const handedOver = assets.some((a) => 'warrantyEndsOn' in a)
+/**
+ * Bảng thiết bị. Đã bàn giao thì thêm cột hạn bảo hành của hãng đã xác nhận (`warrantyOf`), không dùng ngày backend
+ * tự tính từ ngày bàn giao vì khác với hạn ở khối bảo hành
+ */
+function AssetTable({
+  assets,
+  warrantyOf,
+}: {
+  assets: (AssetView | HandoverAssetView)[]
+  warrantyOf?: (asset: AssetView | HandoverAssetView) => string
+}) {
   return (
-    <Table stack>
+    <Table stack="xl">
       <thead>
         <tr>
           <Th>Thiết bị</Th>
@@ -209,7 +218,7 @@ function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
           <Th>Số serial</Th>
           <Th>Vị trí</Th>
           <Th>Bảo hành</Th>
-          {handedOver && <Th>Bảo hành đến</Th>}
+          {warrantyOf && <Th>Bảo hành hãng đến</Th>}
         </tr>
       </thead>
       <tbody>
@@ -226,9 +235,9 @@ function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
             </Td>
             <Td label="Vị trí">{a.positionCode || '—'}</Td>
             <Td label="Bảo hành">{formatWarrantyMonths(a.warrantyMonths)}</Td>
-            {handedOver && (
-              <Td label="Bảo hành đến" className="tnum">
-                {'warrantyEndsOn' in a ? formatDateOnly(a.warrantyEndsOn) : '—'}
+            {warrantyOf && (
+              <Td label="Bảo hành hãng đến" className="tnum">
+                {warrantyOf(a)}
               </Td>
             )}
           </Tr>
@@ -240,7 +249,16 @@ function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
 
 function HandoverPanel({ projectId }: { projectId: string }) {
   const handover = useHandoverQuery(projectId, true)
+  // Cùng dữ liệu với khối bảo hành, sửa chữa nên không gọi thêm
+  const warranty = useWarrantyQuery(projectId)
   const h = handover.data
+  const warrantyOf = (a: AssetView | HandoverAssetView) => {
+    const asset = warranty.data?.assets.find(
+      (w) => w.serialNumber === a.serialNumber && w.manufacturer === a.manufacturer,
+    )
+    if (!asset || asset.warrantyMonths == null || asset.warrantyMonths === 0) return '—'
+    return asset.warrantyEndsAt ? formatDateOnly(vnDate(asset.warrantyEndsAt)) : 'Chưa xác nhận'
+  }
   return (
     <Panel>
       <PanelHeader
@@ -263,7 +281,7 @@ function HandoverPanel({ projectId }: { projectId: string }) {
         ) : h.assets.length === 0 ? (
           <p className="text-body text-fg-2">Biên bản bàn giao chưa ghi thiết bị nào.</p>
         ) : (
-          <AssetTable assets={h.assets} />
+          <AssetTable assets={h.assets} warrantyOf={warrantyOf} />
         )}
       </PanelBody>
     </Panel>

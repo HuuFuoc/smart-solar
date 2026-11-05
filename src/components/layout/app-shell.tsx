@@ -162,7 +162,7 @@ export function AppShell({
           <LocationBar portal={portal} crumb={crumb?.pathname === location.pathname ? crumb.label : null} />
         </div>
         <PageCrumbContext value={setCrumb}>
-          <main id="main" className="w-full px-4 py-6 md:px-6">
+          <main id="main" className="w-full p-4">
             {children}
           </main>
         </PageCrumbContext>

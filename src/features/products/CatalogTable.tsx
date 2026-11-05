@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
+import { ProductThumb } from '@/features/products/ProductGallery'
 import { formatPower, formatSize, formatWarranty, productTypeLabel } from '@/features/products/productDisplay'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { formatMoney } from '@/utils/format'
@@ -29,22 +30,7 @@ export function CatalogTable({
           <Tr key={p.id} className="group relative cursor-pointer">
             <Td label="Sản phẩm">
               <div className="flex items-center gap-3">
-                <div className="size-12 shrink-0 overflow-hidden rounded-control bg-surface-2">
-                  {p.imageUrl && (
-                    <img
-                      // key theo link: sửa link ảnh thì ảnh mới được tải lại dù link cũ từng lỗi.
-                      key={p.imageUrl}
-                      src={p.imageUrl}
-                      alt=""
-                      loading="lazy"
-                      // Link ảnh hỏng: ẩn ảnh, giữ ô xám làm chỗ trống thay cho biểu tượng ảnh vỡ.
-                      onError={(e) => {
-                        e.currentTarget.hidden = true
-                      }}
-                      className="size-full object-cover"
-                    />
-                  )}
-                </div>
+                <ProductThumb product={p} className="size-12" />
                 <div className="min-w-0">
                   <Link
                     to={detailPath(p.id ?? '')}

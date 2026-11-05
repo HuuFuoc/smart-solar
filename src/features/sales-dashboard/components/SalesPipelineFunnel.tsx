@@ -1,4 +1,3 @@
-import { Card } from '@/components/common/stitch-ui/Card'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 
 type SalesPipelineFunnelProps = {
@@ -10,72 +9,75 @@ type SalesPipelineFunnelProps = {
 
 export function SalesPipelineFunnel({ total, pending, scheduled, completed }: SalesPipelineFunnelProps) {
   const safeTotal = total > 0 ? total : 1
-  const pendingPct = Math.round((pending / safeTotal) * 100)
-  const scheduledPct = Math.round((scheduled / safeTotal) * 100)
-  const completedPct = Math.round((completed / safeTotal) * 100)
+  const pendingPct = total > 0 ? Math.round((pending / safeTotal) * 100) : 0
+  const scheduledPct = total > 0 ? Math.round((scheduled / safeTotal) * 100) : 0
+  const completedPct = total > 0 ? Math.round((completed / safeTotal) * 100) : 0
 
   return (
-    <Card className="flex flex-col gap-5 p-5">
-      <div className="flex items-center justify-between border-b border-surface-container-highest pb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Icon name="filter_alt" className="text-[20px]" />
-          </div>
-          <h3 className="text-label-lg font-bold text-on-surface">Tiến độ hồ sơ</h3>
+    <div className="rounded-container border border-line bg-surface-2 p-3 sm:p-4 shadow-sm">
+      {/* Header dòng đơn: Tiêu đề + Legend ngắn gọn */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex items-center gap-2">
+          <Icon name="timeline" className="text-[18px] text-fg-2" />
+          <span className="text-body font-semibold text-fg">Tiến độ quy trình</span>
+          <span className="text-meta text-fg-3">({total} hồ sơ)</span>
         </div>
-        <span className="rounded-full bg-surface-container px-3 py-1 text-label-sm font-semibold text-on-surface-variant">
-          {total} hồ sơ
-        </span>
+
+        {/* Legend trực quan thu gọn */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-meta">
+          <div className="flex items-center gap-1.5">
+            <span className="size-2 shrink-0 rounded-full bg-warn" aria-hidden />
+            <span className="text-fg-2">Chờ KTV:</span>
+            <span className="tnum font-medium text-fg">
+              {pending} <span className="text-fg-3">({pendingPct}%)</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="size-2 shrink-0 rounded-full bg-info" aria-hidden />
+            <span className="text-fg-2">Đã có lịch:</span>
+            <span className="tnum font-medium text-fg">
+              {scheduled} <span className="text-fg-3">({scheduledPct}%)</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="size-2 shrink-0 rounded-full bg-ok" aria-hidden />
+            <span className="text-fg-2">Sẵn sàng báo giá:</span>
+            <span className="tnum font-medium text-fg">
+              {completed} <span className="text-fg-3">({completedPct}%)</span>
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex h-3 w-full overflow-hidden rounded-full bg-surface-container-highest">
+      {/* Thanh Multi-segment Progress Bar mini */}
+      <div
+        aria-hidden
+        className="mt-2.5 flex h-2 w-full overflow-hidden rounded-control bg-surface-3"
+        role="progressbar"
+        aria-label="Tiến độ hồ sơ khảo sát"
+      >
+        {pendingPct > 0 && (
           <div
-            className="bg-amber-500 transition-all duration-500"
+            className="h-full bg-warn transition-all duration-300"
             style={{ width: `${pendingPct}%` }}
-            title={`Chờ xếp lịch: ${pending} (${pendingPct}%)`}
+            title={`Chờ KTV: ${pending} (${pendingPct}%)`}
           />
+        )}
+        {scheduledPct > 0 && (
           <div
-            className="bg-blue-500 transition-all duration-500"
+            className="h-full bg-info transition-all duration-300"
             style={{ width: `${scheduledPct}%` }}
-            title={`Đã lên lịch: ${scheduled} (${scheduledPct}%)`}
+            title={`Đã có lịch: ${scheduled} (${scheduledPct}%)`}
           />
+        )}
+        {completedPct > 0 && (
           <div
-            className="bg-emerald-500 transition-all duration-500"
+            className="h-full bg-ok transition-all duration-300"
             style={{ width: `${completedPct}%` }}
-            title={`Đã khảo sát xong: ${completed} (${completedPct}%)`}
+            title={`Sẵn sàng báo giá: ${completed} (${completedPct}%)`}
           />
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 pt-2">
-          <div className="flex flex-col rounded-xl bg-amber-500/10 p-3">
-            <div className="flex items-center gap-1.5 text-label-sm font-semibold text-amber-700 dark:text-amber-300">
-              <span className="h-2 w-2 rounded-full bg-amber-500" />
-              Chờ xếp lịch
-            </div>
-            <span className="mt-1 text-headline-sm font-bold text-amber-900 dark:text-amber-100">{pending}</span>
-            <span className="text-body-sm text-amber-700/80 dark:text-amber-300/80">{pendingPct}% tổng số</span>
-          </div>
-
-          <div className="flex flex-col rounded-xl bg-blue-500/10 p-3">
-            <div className="flex items-center gap-1.5 text-label-sm font-semibold text-blue-700 dark:text-blue-300">
-              <span className="h-2 w-2 rounded-full bg-blue-500" />
-              Đã có lịch KTV
-            </div>
-            <span className="mt-1 text-headline-sm font-bold text-blue-900 dark:text-blue-100">{scheduled}</span>
-            <span className="text-body-sm text-blue-700/80 dark:text-blue-300/80">{scheduledPct}% tổng số</span>
-          </div>
-
-          <div className="flex flex-col rounded-xl bg-emerald-500/10 p-3">
-            <div className="flex items-center gap-1.5 text-label-sm font-semibold text-emerald-700 dark:text-emerald-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Sẵn sàng báo giá
-            </div>
-            <span className="mt-1 text-headline-sm font-bold text-emerald-900 dark:text-emerald-100">{completed}</span>
-            <span className="text-body-sm text-emerald-700/80 dark:text-emerald-300/80">{completedPct}% tổng số</span>
-          </div>
-        </div>
+        )}
       </div>
-    </Card>
+    </div>
   )
 }

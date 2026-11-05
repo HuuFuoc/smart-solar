@@ -55,15 +55,9 @@ export function OpsSurveysPage() {
         description={
           overdue || unscheduled ? (
             <span className="flex flex-wrap gap-2">
-              {overdue > 0 && (
-                <Badge tone="danger" icon="schedule">
-                  {overdue} yêu cầu chờ hơn 1 ngày chưa ai nhận
-                </Badge>
-              )}
+              {overdue > 0 && <Badge tone="danger">{overdue} yêu cầu chờ hơn 1 ngày chưa ai nhận</Badge>}
               {unscheduled > 0 && (
-                <Badge tone="danger" icon="event_busy">
-                  {unscheduled} yêu cầu của bạn cần phân công kỹ thuật viên
-                </Badge>
+                <Badge tone="danger">{unscheduled} yêu cầu của bạn cần phân công kỹ thuật viên</Badge>
               )}
             </span>
           ) : undefined

@@ -7,7 +7,7 @@ export function Panel({ raised, className, children, ...rest }: HTMLAttributes<H
   return (
     <section
       className={cx(
-        raised ? 'rounded-container border border-line p-5' : 'border-t border-line pt-4 first:border-t-0 first:pt-0',
+        raised ? 'rounded-container border border-line p-4' : 'border-t border-line pt-4 first:border-t-0 first:pt-0',
         className,
       )}
       {...rest}
@@ -20,7 +20,7 @@ export function Panel({ raised, className, children, ...rest }: HTMLAttributes<H
 // Cột phụ của trang chi tiết / wizard, nền xám nhạt
 export function PanelAside({ className, children, ...rest }: HTMLAttributes<HTMLElement>) {
   return (
-    <aside className={cx('space-y-4 self-start rounded-container bg-surface-2 p-4 lg:p-5', className)} {...rest}>
+    <aside className={cx('space-y-4 self-start rounded-container bg-surface-2 p-4', className)} {...rest}>
       {children}
     </aside>
   )

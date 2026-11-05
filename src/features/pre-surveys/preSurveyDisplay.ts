@@ -66,21 +66,47 @@ export function addressMapUrl(address: string) {
   return address === '—' ? null : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 }
 
+export function isPendingStatus(status: unknown): boolean {
+  return status === 'PENDING' || status === 1 || status === '1'
+}
+
+export function isScheduledStatus(status: unknown): boolean {
+  return status === 'SCHEDULED' || status === 4 || status === '4'
+}
+
+export function isCompletedStatus(status: unknown): boolean {
+  return status === 'COMPLETED' || status === 5 || status === '5'
+}
+
+export function isCancelledStatus(status: unknown): boolean {
+  return status === 'CANCELLED' || status === 6 || status === '6'
+}
+
+export function normalizeSurveyStatus(status: unknown): SurveyRequestStatus {
+  if (isPendingStatus(status)) return 'PENDING'
+  if (isScheduledStatus(status)) return 'SCHEDULED'
+  if (isCompletedStatus(status)) return 'COMPLETED'
+  if (isCancelledStatus(status)) return 'CANCELLED'
+  if (status === 'CLOSED') return 'CLOSED'
+  return String(status ?? '') as SurveyRequestStatus
+}
+
 /** Chưa có kỹ thuật viên xác nhận lịch khảo sát */
-export function needsScheduling(status: SurveyRequestStatus | null | undefined) {
-  return status === 'PENDING'
+export function needsScheduling(status: unknown) {
+  return isPendingStatus(status)
 }
 
 /** Khách đã rút hoặc sales đã đóng: không mở lại, mọi thao tác đều ẩn */
-export function isClosedRequest(status: SurveyRequestStatus | null | undefined) {
-  return status === 'CANCELLED' || status === 'CLOSED'
+export function isClosedRequest(status: unknown) {
+  return status === 'CLOSED' || isCancelledStatus(status)
 }
 
-export function surveyStatusMeta(status: SurveyRequestStatus | null | undefined): { label: string; tone: Tone } {
-  const known = status ? SURVEY_REQUEST_STATUSES[status] : undefined
+export function surveyStatusMeta(status: unknown): { label: string; tone: Tone } {
+  const normalized = normalizeSurveyStatus(status)
+  const known = SURVEY_REQUEST_STATUSES[normalized]
   if (known) return known
   // Trạng thái lạ thì in nguyên văn
-  return { label: status || '—', tone: 'neutral' }
+  return { label: String(status || '—'), tone: 'neutral' }
 }
 
 const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })

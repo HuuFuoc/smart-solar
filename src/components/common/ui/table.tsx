@@ -42,7 +42,7 @@ export function Td({ label, className, ...rest }: TdHTMLAttributes<HTMLTableCell
     <td
       data-label={label}
       className={cx(
-        'border-b border-line px-3 py-3 align-top first:pl-0 last:pr-0 lg:first:pl-3 lg:last:pr-3',
+        'border-b border-line px-3 py-2 align-top first:pl-0 last:pr-0 lg:first:pl-3 lg:last:pr-3',
         className,
       )}
       {...rest}

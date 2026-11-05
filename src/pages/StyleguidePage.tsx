@@ -241,7 +241,7 @@ export function StyleguidePage() {
           id="badges"
           title="StatusBadge"
           source="DESIGN.md › Badges & Lifecycle Indicators"
-          description="Pill rounded-full py-1 px-3 label-sm + chấm 6px. 5 variant đầu theo bảng Status & Lifecycle Palette."
+          description="Chữ label-sm, không nền. Trạng thái cần chú ý mới có màu."
         >
           <Card className="flex flex-col gap-space-md">
             <div className="flex flex-wrap items-center gap-space-xs">

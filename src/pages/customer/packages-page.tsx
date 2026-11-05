@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { SERVICE_PACKAGE_KINDS } from '@/common/afterSales'
 import { Badge } from '@/components/common/ui/badge'
 import { PageHeader } from '@/components/common/ui/page-header'
+import { PagedList } from '@/components/common/ui/pagination'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { awaitsPayment, packageKindLabel } from '@/features/after-sales/afterSalesDisplay'
@@ -79,13 +80,7 @@ export function CustomerPackagesPage() {
     <>
       <PageHeader
         title="Gói dịch vụ"
-        description={
-          toPay > 0 ? (
-            <Badge tone="danger" icon="payments">
-              {toPay} gói chờ bạn thanh toán
-            </Badge>
-          ) : undefined
-        }
+        description={toPay > 0 ? <Badge tone="danger">{toPay} gói chờ bạn thanh toán</Badge> : undefined}
       />
 
       <div className="space-y-4">
@@ -102,13 +97,17 @@ export function CustomerPackagesPage() {
             <Panel>
               <PanelHeader title="Gói của bạn" />
               <PanelBody>
-                <SubscriptionList
-                  items={mine}
-                  contractNumbers={contractNumbers}
-                  onPay={setPayingAttemptId}
-                  onCancel={setCancelling}
-                  onBook={(entitlement, subscription) => setBooking({ entitlement, subscription })}
-                />
+                <PagedList items={mine} noun="gói">
+                  {(page) => (
+                    <SubscriptionList
+                      items={page}
+                      contractNumbers={contractNumbers}
+                      onPay={setPayingAttemptId}
+                      onCancel={setCancelling}
+                      onBook={(entitlement, subscription) => setBooking({ entitlement, subscription })}
+                    />
+                  )}
+                </PagedList>
               </PanelBody>
             </Panel>
           )

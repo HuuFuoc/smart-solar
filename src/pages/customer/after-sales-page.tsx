@@ -1,6 +1,7 @@
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { PageHeader } from '@/components/common/ui/page-header'
+import { PagedList } from '@/components/common/ui/pagination'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
 import { ServiceRequestList } from '@/features/after-sales/ServiceRequestList'
@@ -19,11 +20,7 @@ export function CustomerAfterSalesPage() {
       <PageHeader
         title="Bảo hành, sửa chữa"
         description={
-          todo > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {todo} yêu cầu chờ bạn duyệt báo giá hoặc nghiệm thu
-            </Badge>
-          ) : undefined
+          todo > 0 ? <Badge tone="danger">{todo} yêu cầu chờ bạn duyệt báo giá hoặc nghiệm thu</Badge> : undefined
         }
         actions={
           <ButtonLink icon="construction" to={ROUTES.customer.projects} variant="info">
@@ -39,7 +36,11 @@ export function CustomerAfterSalesPage() {
               description="Mở công trình đã bàn giao rồi bấm Báo lỗi hoặc Đặt bảo trì lẻ."
             />
           ) : (
-            <ServiceRequestList rows={rows} viewer="customer" detailPattern={ROUTES.customer.afterSalesRequest} />
+            <PagedList items={rows} noun="yêu cầu">
+              {(page) => (
+                <ServiceRequestList rows={page} viewer="customer" detailPattern={ROUTES.customer.afterSalesRequest} />
+              )}
+            </PagedList>
           )
         }
       </QueryBoundary>

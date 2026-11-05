@@ -63,7 +63,7 @@ export function ActivityList({ items, className }: { items: ActivityItem[]; clas
       {items.map((item, i) => (
         <li
           key={i}
-          className="flex flex-col gap-1 py-4 first:pt-0 last:pb-0 @md:grid @md:grid-cols-[104px_1fr] @md:gap-4"
+          className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 @md:grid @md:grid-cols-[104px_1fr] @md:gap-4"
         >
           <time className="tnum text-meta text-fg-3">{item.time}</time>
           <div className="min-w-0">
@@ -79,7 +79,10 @@ export function ActivityList({ items, className }: { items: ActivityItem[]; clas
 
 export type KV = { k: ReactNode; v: ReactNode }
 
-/* Definition list for specs and properties. */
+/*
+ * Definition list for specs and properties. Label takes 40% (at least 140px); in a narrow column (side panel at 1024px)
+ * the value drops under its label instead of overflowing the page.
+ */
 export function KeyValueList({ items, className, columns = 1 }: { items: KV[]; className?: string; columns?: 1 | 2 }) {
   return (
     <dl className={cx('grid gap-x-8 text-body', columns === 2 ? 'sm:grid-cols-2' : '', className)}>
@@ -88,12 +91,12 @@ export function KeyValueList({ items, className, columns = 1 }: { items: KV[]; c
         <div
           key={i}
           className={cx(
-            'grid grid-cols-[minmax(140px,40%)_1fr] gap-4 border-t border-line py-2 first:border-t-0 first:pt-0',
+            'flex flex-wrap gap-x-4 gap-y-0.5 border-t border-line py-2 first:border-t-0 first:pt-0',
             columns === 2 && 'sm:nth-2:border-t-0 sm:nth-2:pt-0',
           )}
         >
-          <dt className="text-fg-2">{item.k}</dt>
-          <dd className="min-w-0 font-medium text-fg">{item.v}</dd>
+          <dt className="min-w-35 basis-2/5 text-fg-2">{item.k}</dt>
+          <dd className="min-w-0 grow basis-24 font-medium text-fg">{item.v}</dd>
         </div>
       ))}
     </dl>

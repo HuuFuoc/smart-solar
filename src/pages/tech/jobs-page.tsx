@@ -186,11 +186,7 @@ export function TechJobsPage() {
       <PageHeader
         title="Việc của tôi"
         description={
-          canTake > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {canTake} lịch trong khu vực đang chờ người nhận
-            </Badge>
-          ) : undefined
+          canTake > 0 ? <Badge tone="danger">{canTake} lịch trong khu vực đang chờ người nhận</Badge> : undefined
         }
         actions={
           <ButtonLink variant="info" to={ROUTES.tech.schedule} icon="calendar_month">

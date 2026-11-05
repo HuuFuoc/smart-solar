@@ -2,28 +2,39 @@ import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
-import { Checkbox } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Skeleton } from '@/components/common/ui/states'
 import { ConflictList } from '@/features/scheduling/ConflictList'
 import { conflictsOf } from '@/features/scheduling/schedulingDisplay'
+import { ZoneCheckCard } from '@/features/scheduling/ZoneCheckCard'
 import { useOperationalZonesQuery, useSetTechnicianZonesMutation } from '@/hooks/useTechnicianAdmin'
 import { errorMessage } from '@/services/api/errors'
 import type { TechnicianProfileView } from '@/types/res/adminTechniciansRes'
 
-// Khu vực phục vụ của kỹ thuật viên. Khách đặt giờ ở phường thuộc khu nào thì kỹ thuật viên của khu đó thấy và nhận lịch.
-// Danh sách khu vực do admin lập; mỗi lần lưu là thay cả danh sách
+// Khu vực phục vụ của kỹ thuật viên
 export function TechnicianZonesForm({ technician }: { technician: TechnicianProfileView }) {
   const zones = useOperationalZonesQuery()
   const save = useSetTechnicianZonesMutation()
   const [selected, setSelected] = useState(() => new Set(technician.zones.map((zone) => zone.zoneId)))
   const [failure, setFailure] = useState<unknown>(null)
 
-  function toggle(zoneId: string, checked: boolean) {
+  function toggle(zoneId: string) {
     const next = new Set(selected)
-    if (checked) next.add(zoneId)
-    else next.delete(zoneId)
+    if (next.has(zoneId)) next.delete(zoneId)
+    else next.add(zoneId)
     setSelected(next)
+    setFailure(null)
+  }
+
+  function selectAll() {
+    if (!zones.data) return
+    const activeIds = zones.data.filter((z) => z.isActive).map((z) => z.zoneId)
+    setSelected(new Set(activeIds))
+    setFailure(null)
+  }
+
+  function clearAll() {
+    setSelected(new Set())
     setFailure(null)
   }
 
@@ -45,32 +56,59 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
   }
 
   const conflicts = conflictsOf(failure)
+  const activeCount = zones.data.filter((z) => z.isActive).length
+
   return (
     <form noValidate onSubmit={submit} className="space-y-6">
-      <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-3">
-        {zones.data.map((zone) => (
-          <Checkbox
-            key={zone.zoneId}
-            label={zone.name}
-            description={`${zone.communeCount} phường, xã${zone.isServiceable ? '' : ', đang tạm ngừng'}`}
-            checked={selected.has(zone.zoneId)}
-            disabled={!zone.isActive}
-            onChange={(e) => toggle(zone.zoneId, e.target.checked)}
-          />
-        ))}
+      <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/40 px-4 py-3">
+          <div>
+            <h3 className="font-semibold text-fg">Phân công khu vực địa bàn</h3>
+            <p className="text-meta text-fg-2">
+              Kỹ thuật viên sẽ nhận được yêu cầu khảo sát, lắp đặt và sửa chữa tại các khu vực được chọn.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" type="button" onClick={selectAll}>
+              Chọn tất cả
+            </Button>
+            <Button size="sm" variant="ghost" type="button" onClick={clearAll}>
+              Bỏ chọn tất cả
+            </Button>
+            <span className="rounded-full border border-line bg-surface-1 px-3 py-1 text-meta font-semibold text-fg">
+              Đã chọn: <strong className="text-accent">{selected.size}</strong> / {activeCount}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          {zones.data.map((zone) => (
+            <ZoneCheckCard
+              key={zone.zoneId}
+              zone={zone}
+              checked={selected.has(zone.zoneId)}
+              onToggle={() => toggle(zone.zoneId)}
+            />
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/30 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Button icon="save" type="submit" variant="primary" disabled={save.isPending}>
+              {save.isPending ? 'Đang lưu…' : `Lưu khu vực phục vụ (${selected.size})`}
+            </Button>
+            {failure !== null && conflicts.length === 0 && (
+              <span className="flex items-center gap-1.5 text-meta font-medium text-danger" role="alert">
+                <Icon name="error" className="shrink-0 text-[18px]" />
+                {errorMessage(failure)}
+              </span>
+            )}
+          </div>
+          <span className="text-meta text-fg-3">Khu vực có hiệu lực ngay khi kỹ thuật viên nhận lịch</span>
+        </div>
       </div>
+
       <ConflictList conflicts={conflicts} />
-      <div className="flex flex-wrap items-center gap-3">
-        <Button icon="save" type="submit" variant="primary" disabled={save.isPending}>
-          {save.isPending ? 'Đang lưu…' : `Lưu khu vực (${selected.size})`}
-        </Button>
-        {failure !== null && conflicts.length === 0 && (
-          <span className="flex items-center gap-1.5 text-body font-medium text-danger" role="alert">
-            <Icon name="error" className="shrink-0 text-[20px]" />
-            {errorMessage(failure)}
-          </span>
-        )}
-      </div>
     </form>
   )
 }

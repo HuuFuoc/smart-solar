@@ -11,7 +11,11 @@ import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState, ErrorState, Skeleton, UnavailableState } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { usePageCrumb } from '@/components/layout/page-crumb'
-import { formatDurationMonths, packageKindLabel, subscriptionStatusMeta } from '@/features/after-sales/afterSalesDisplay'
+import {
+  formatDurationMonths,
+  packageKindLabel,
+  subscriptionStatusMeta,
+} from '@/features/after-sales/afterSalesDisplay'
 import { managerActionError } from '@/features/after-sales/managerAfterSalesDisplay'
 import {
   PACKAGE_CANCELLATION_NOTE_MAX,
@@ -48,9 +52,7 @@ export function ManagePackageCancellationsPage() {
         title="Huỷ gói"
         description={
           items.length > 0 ? (
-            <Badge tone="danger" icon="pending_actions">
-              {items.length} gói chờ xét huỷ
-            </Badge>
+            <Badge tone="danger">{items.length} gói chờ xét huỷ</Badge>
           ) : (
             'Gói khách đã trả tiền và xin huỷ trước khi bắt đầu kỳ.'
           )
@@ -143,7 +145,10 @@ function DecisionPanel({ item }: { item: ManagerSubscriptionView }) {
     setError(null)
     if (Object.keys(packageCancellationErrors(s.price, input, priceText)).length > 0) return
     try {
-      const result = await decide.mutateAsync({ subscriptionId: s.subscriptionId, body: packageCancellationBody(input) })
+      const result = await decide.mutateAsync({
+        subscriptionId: s.subscriptionId,
+        body: packageCancellationBody(input),
+      })
       toast.success(
         result.status === 'CANCELLED'
           ? 'Đã duyệt huỷ gói. Khoản hoàn đã duyệt, chờ quản trị chuyển tiền và ghi nhận.'
@@ -224,8 +229,8 @@ function DecisionPanel({ item }: { item: ManagerSubscriptionView }) {
           )}
           {input.approve && (
             <Notice tone="neutral">
-              Duyệt chưa phải đã hoàn tiền. Gói bị huỷ ngay; quản trị chuyển tiền cho khách ngoài hệ thống rồi ghi nhận ở
-              mục Hoàn tiền.
+              Duyệt chưa phải đã hoàn tiền. Gói bị huỷ ngay; quản trị chuyển tiền cho khách ngoài hệ thống rồi ghi nhận
+              ở mục Hoàn tiền.
             </Notice>
           )}
           {error && (

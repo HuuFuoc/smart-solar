@@ -1,11 +1,11 @@
+import type { ProductStatusFilter } from '@/common/product'
 import type {
   AddProductImageRequest,
   ChangeProductStatusRequest,
   CreateProductRequest,
   UpdateProductRequest,
 } from '@/types/req/adminProductsReq'
-import type { ProductDeletedResponse, ProductResponse } from '@/types/res/adminProductsRes'
-import type { ProductResponsePagedResult } from '@/types/res/productsRes'
+import type { ProductDeletedResponse, ProductResponse, ProductResponsePagedResult } from '@/types/res/adminProductsRes'
 import { get, post, put, patch, del } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
@@ -32,12 +32,15 @@ export type ProductListParams = {
   SortDirection?: ProductSortDirection
 }
 
+/** Danh sách quản lý nhận thêm `status`, mặc định ALL */
+export type AdminProductListParams = ProductListParams & { status?: ProductStatusFilter }
+
 /** Bỏ các giá trị rỗng để URL không mang `?Search=&Brand=` */
-function compact(params: ProductListParams) {
+function compact(params: AdminProductListParams) {
   return Object.fromEntries(Object.entries(params).filter(([, value]) => value !== undefined && value !== ''))
 }
 
-/** GET /api/products */
+/** GET /api/products, chỉ sản phẩm đang bán */
 export function listProducts(params: ProductListParams = {}) {
   return get<ProductResponsePagedResult>(ENDPOINTS.products.base, { params: compact(params) })
 }
@@ -45,6 +48,11 @@ export function listProducts(params: ProductListParams = {}) {
 /** GET /api/products/{id} */
 export function getProduct(id: string) {
   return get<ProductResponse>(ENDPOINTS.products.byId(id))
+}
+
+/** GET /api/admin/products: như danh mục công khai, có cả sản phẩm ngừng bán. Chung giới hạn ghi của danh mục */
+export function listAdminProducts(params: AdminProductListParams = {}) {
+  return get<ProductResponsePagedResult>(ENDPOINTS.adminProducts.base, { params: compact(params) })
 }
 
 /** POST /api/admin/products, trả 201 kèm sản phẩm vừa tạo */

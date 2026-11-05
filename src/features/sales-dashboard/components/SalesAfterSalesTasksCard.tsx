@@ -1,7 +1,4 @@
-import { Link } from 'react-router'
-import { Card } from '@/components/common/stitch-ui/Card'
-import { Button } from '@/components/common/stitch-ui/Button'
-import { Icon } from '@/components/common/stitch-ui/Icon'
+import { ButtonLink } from '@/components/common/ui/button'
 import { ROUTES, withId } from '@/routes/paths'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
@@ -14,55 +11,44 @@ export function SalesAfterSalesTasksCard({ tasks, myTasks }: SalesAfterSalesTask
   const allTasks = [...myTasks, ...tasks]
 
   return (
-    <Card className="flex flex-col gap-4 p-5">
-      <div className="flex items-center justify-between border-b border-surface-container-highest pb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-tertiary-container/20 text-tertiary-container">
-            <Icon name="handyman" className="text-[20px]" />
-          </div>
-          <h3 className="text-label-lg font-bold text-on-surface">Báo giá bảo hành, bảo trì</h3>
-        </div>
-        <Link to={ROUTES.ops.afterSales}>
-          <span className="text-label-sm font-semibold text-primary hover:underline">Xem tất cả →</span>
-        </Link>
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-title font-semibold text-fg">Báo giá dịch vụ sau bán</h2>
+        <ButtonLink
+          to={ROUTES.ops.afterSales}
+          size="sm"
+          variant="ghost"
+          icon="list"
+          className="text-meta font-medium text-accent-fg hover:text-accent"
+        >
+          Xem tất cả
+        </ButtonLink>
       </div>
 
       {allTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-6 text-center">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-on-surface-variant">
-            <Icon name="task_alt" className="text-[24px]" />
-          </div>
-          <p className="mt-2 text-label-md font-semibold text-on-surface">Không có việc báo giá nào chờ</p>
-        </div>
+        <p className="py-2.5 text-center text-body text-fg-2">Không có việc báo giá nào chờ</p>
       ) : (
-        <div className="space-y-2.5">
+        <ul className="divide-y divide-line">
           {allTasks.slice(0, 4).map((task) => {
             const reqId = task.requestId || ''
             return (
-              <div
-                key={task.taskId}
-                className="flex items-center justify-between rounded-xl bg-surface-container-low p-3"
-              >
-                <div className="space-y-0.5">
-                  <span className="text-label-sm font-semibold text-on-surface">
+              <li key={task.taskId} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                <div className="min-w-0">
+                  <p className="font-semibold text-fg">
                     {task.taskType === 'REPAIR_QUOTATION' ? 'Báo giá sửa chữa' : 'Báo giá bảo trì'}
-                  </span>
-                  <p className="text-body-xs text-on-surface-variant">
-                    Mã yêu cầu: {reqId ? reqId.slice(0, 8).toUpperCase() : 'N/A'}
                   </p>
+                  <p className="text-meta text-fg-2">Mã yêu cầu: {reqId ? reqId.slice(0, 8).toUpperCase() : 'N/A'}</p>
                 </div>
                 {reqId ? (
-                  <Link to={withId(ROUTES.ops.afterSalesRequest, reqId)}>
-                    <Button size="sm" variant="tonal">
-                      Xử lý
-                    </Button>
-                  </Link>
+                  <ButtonLink to={withId(ROUTES.ops.afterSalesRequest, reqId)} size="sm" variant="soft" icon="arrow_forward">
+                    Xử lý
+                  </ButtonLink>
                 ) : null}
-              </div>
+              </li>
             )
           })}
-        </div>
+        </ul>
       )}
-    </Card>
+    </div>
   )
 }

@@ -19,7 +19,7 @@ export function PageHeader({
   className?: string
 }) {
   return (
-    <div className={cx('mb-6 flex flex-wrap items-start justify-between gap-x-8 gap-y-4', className)}>
+    <div className={cx('mb-4 flex flex-wrap items-start justify-between gap-x-8 gap-y-3', className)}>
       <div className="min-w-0 max-w-[64ch]">
         {back && (
           <div className="mb-3">
@@ -33,7 +33,7 @@ export function PageHeader({
         )}
         {meta && <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-meta text-fg-2">{meta}</div>}
         <h1 className="text-figure font-semibold">{title}</h1>
-        {description && <p className="mt-3 text-body text-fg-2">{description}</p>}
+        {description && <p className="mt-1 text-body text-fg-2">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
     </div>

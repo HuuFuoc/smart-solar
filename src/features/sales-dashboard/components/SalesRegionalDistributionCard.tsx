@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Card } from '@/components/common/stitch-ui/Card'
-import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Button } from '@/components/common/ui/button'
+import { FilterChips } from '@/components/common/ui/chips'
+import { SearchInput } from '@/components/common/ui/field'
+import { PagedList } from '@/components/common/ui/pagination'
 import { useHcmCommunesQuery } from '@/hooks/useCommunes'
 import type { MySurveyRequestItem } from '@/types/res/surveyRequestsRes'
+import { cx } from '@/utils/cx'
 
 type SalesRegionalDistributionCardProps = {
   surveys: MySurveyRequestItem[]
@@ -323,169 +326,88 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
   }, [allWards, filterMode, searchTerm, sortMode])
 
   return (
-    <Card className="flex flex-col gap-4 p-5 shadow-sm">
-      {/* Header */}
-      <div className="flex flex-col gap-2 border-b border-surface-container-highest pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
-              <Icon name="location_city" className="text-[22px]" />
-            </div>
-            <h3 className="text-label-lg font-bold text-on-surface">Hồ sơ theo phường, xã</h3>
-          </div>
-          <span className="shrink-0 rounded-full bg-secondary/10 px-3 py-1 text-label-xs font-semibold text-secondary">
-            {allWards.length} phường/xã ({hasDataCount} có hồ sơ)
-          </span>
-        </div>
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+      <div className="mb-3">
+        <h2 className="text-title font-semibold text-fg">Hồ sơ theo phường, xã</h2>
+        <p className="text-meta text-fg-2 mt-0.5">
+          {totalSurveysWithWard} hồ sơ ở {hasDataCount} trên {allWards.length} phường, xã
+        </p>
       </div>
 
-      {/* Filter Tabs: Tất cả / Có hồ sơ / Chưa có hồ sơ */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-label-xs">
-        <button
-          type="button"
-          onClick={() => setFilterMode('all')}
-          className={`rounded-lg px-2.5 py-1.5 font-medium transition-colors ${
-            filterMode === 'all'
-              ? 'bg-secondary text-on-secondary shadow-sm'
-              : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-          }`}
-        >
-          Tất cả ({allWards.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setFilterMode('has_data')}
-          className={`rounded-lg px-2.5 py-1.5 font-medium transition-colors ${
-            filterMode === 'has_data'
-              ? 'bg-secondary text-on-secondary shadow-sm'
-              : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-          }`}
-        >
-          Có hồ sơ ({hasDataCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setFilterMode('zero_data')}
-          className={`rounded-lg px-2.5 py-1.5 font-medium transition-colors ${
-            filterMode === 'zero_data'
-              ? 'bg-secondary text-on-secondary shadow-sm'
-              : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-          }`}
-        >
-          Chưa có hồ sơ ({zeroDataCount})
-        </button>
-      </div>
+      <FilterChips
+        label="Lọc phường, xã"
+        value={filterMode}
+        onChange={setFilterMode}
+        chips={[
+          { value: 'all', label: 'Tất cả', count: allWards.length },
+          { value: 'has_data', label: 'Có hồ sơ', count: hasDataCount },
+          { value: 'zero_data', label: 'Chưa có', count: zeroDataCount },
+        ]}
+      />
 
-      {/* Toolbar: Search input & Sort toggle */}
-      <div className="flex items-center gap-2">
-        <div className="relative min-w-0 flex-1">
-          <Icon
-            name="search"
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant"
-          />
-          <input
-            type="text"
+      <div className="mt-3 flex items-center gap-2">
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">Tìm phường, xã</span>
+          <SearchInput
+            name="ward-search"
+            placeholder="Tìm phường, xã"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Tìm tên phường, xã (không dấu)..."
-            className="h-9 w-full rounded-xl border border-surface-container-highest bg-surface-container-low pl-9 pr-8 text-body-sm text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:outline-none"
           />
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
-              title="Xóa tìm kiếm"
-            >
-              <Icon name="close" className="text-[16px]" />
-            </button>
-          )}
-        </div>
-
-        {/* Nút đổi sắp xếp */}
-        <button
-          type="button"
+        </label>
+        <Button
+          size="sm"
+          className="shrink-0"
+          icon={sortMode === 'count_desc' ? 'sort' : 'sort_by_alpha'}
           onClick={() => setSortMode((prev) => (prev === 'count_desc' ? 'name_asc' : 'count_desc'))}
-          className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-xl border border-surface-container-highest bg-surface-container-low px-3 text-label-sm font-medium text-on-surface transition-colors hover:bg-surface-container"
-          title={sortMode === 'count_desc' ? 'Đang xếp: Số lượng nhiều nhất' : 'Đang xếp: Tên A-Z'}
         >
-          <Icon name={sortMode === 'count_desc' ? 'sort' : 'sort_by_alpha'} className="text-[18px] text-primary" />
-          <span>{sortMode === 'count_desc' ? 'Nhiều nhất' : 'Tên A-Z'}</span>
-        </button>
+          {sortMode === 'count_desc' ? 'Nhiều nhất' : 'Tên A-Z'}
+        </Button>
       </div>
 
-      {/* Danh sách cuộn tất cả các phường / xã */}
-      <div
-        className="max-h-[380px] space-y-1.5 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:var(--color-surface-container-highest)_transparent]"
-        tabIndex={0}
-        aria-label="Danh sách phường xã TP.HCM"
-      >
-        {filteredAndSortedWards.length === 0 ? (
-          <div className="py-8 text-center text-body-sm text-on-surface-variant">
-            {searchTerm ? (
-              <p>Không tìm thấy phường, xã nào khớp với "{searchTerm}".</p>
-            ) : (
-              <p>Chưa có dữ liệu phường, xã phù hợp.</p>
-            )}
-          </div>
-        ) : (
-          filteredAndSortedWards.map((item) => {
-            const hasContracts = item.count > 0
-            return (
-              <div
-                key={item.location}
-                className={`rounded-lg p-2 transition-colors ${
-                  hasContracts
-                    ? 'bg-surface-container-lowest hover:bg-surface-container-low'
-                    : 'opacity-70 hover:opacity-100 hover:bg-surface-container-lowest'
-                }`}
-              >
-                <div className="flex items-center justify-between text-body-sm">
-                  <span
-                    className={`flex items-center gap-1.5 ${
-                      hasContracts ? 'font-medium text-on-surface' : 'text-on-surface-variant font-normal'
-                    }`}
-                  >
-                    <Icon
-                      name="location_on"
-                      className={`text-[16px] ${hasContracts ? 'text-secondary' : 'text-on-surface-variant/40'}`}
-                    />
-                    {item.location}
-                  </span>
-                  <span
-                    className={`text-label-sm ${
-                      hasContracts ? 'font-bold text-on-surface' : 'text-body-xs text-on-surface-variant/60 font-normal'
-                    }`}
-                  >
-                    {item.count} hồ sơ {hasContracts ? `(${item.pct}%)` : ''}
-                  </span>
-                </div>
-                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-container-highest/60">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      hasContracts ? 'bg-secondary' : 'bg-transparent'
-                    }`}
-                    style={{ width: `${item.pct}%` }}
-                  />
-                </div>
-              </div>
-            )
-          })
-        )}
-      </div>
-
-      {/* Footer nhỏ báo số lượng */}
-      <div className="flex items-center justify-between border-t border-surface-container-highest pt-2.5 text-body-xs text-on-surface-variant">
-        <span>
-          Đang hiển thị <strong className="text-on-surface">{filteredAndSortedWards.length}</strong> / {allWards.length}{' '}
-          địa bàn
-        </span>
-        {totalSurveysWithWard > 0 && (
-          <span>
-            Tổng: <strong className="text-on-surface">{totalSurveysWithWard}</strong> hồ sơ hợp lệ
-          </span>
-        )}
-      </div>
-    </Card>
+      {filteredAndSortedWards.length === 0 ? (
+        <p className="mt-4 text-center text-body text-fg-2">
+          {searchTerm
+            ? `Không tìm thấy phường, xã nào khớp với "${searchTerm}".`
+            : 'Chưa có dữ liệu phường, xã phù hợp.'}
+        </p>
+      ) : (
+        <PagedList
+          key={`${filterMode}|${searchTerm}|${sortMode}`}
+          items={filteredAndSortedWards}
+          noun="phường, xã"
+          pageSize={5}
+          keepScroll
+        >
+          {(wards) => (
+            <ul className="mt-2.5 divide-y divide-line">
+              {wards.map((item) => {
+                const hasContracts = item.count > 0
+                return (
+                  <li key={item.location} className="py-1.5 first:pt-0.5 last:pb-0.5">
+                    <div className="flex items-baseline justify-between gap-3 text-body">
+                      <span className={hasContracts ? 'font-medium text-fg' : 'text-fg-2'}>{item.location}</span>
+                      <span
+                        className={cx('tnum shrink-0 text-meta', hasContracts ? 'font-semibold text-fg' : 'text-fg-3')}
+                      >
+                        {item.count} hồ sơ{hasContracts ? ` (${item.pct}%)` : ''}
+                      </span>
+                    </div>
+                    <div aria-hidden className="mt-1.5 h-1.5 w-full overflow-hidden rounded-control bg-surface-3">
+                      {hasContracts ? (
+                        <div
+                          className="h-full rounded-control bg-accent transition-all duration-300"
+                          style={{ width: `${item.pct}%` }}
+                        />
+                      ) : null}
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </PagedList>
+      )}
+    </div>
   )
 }

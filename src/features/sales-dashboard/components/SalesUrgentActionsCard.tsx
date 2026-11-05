@@ -1,8 +1,5 @@
-import { Link } from 'react-router'
-import { Card } from '@/components/common/stitch-ui/Card'
-import { Button } from '@/components/common/stitch-ui/Button'
-import { Icon } from '@/components/common/stitch-ui/Icon'
-import { StatusBadge } from '@/components/common/stitch-ui/StatusBadge'
+import { Badge } from '@/components/common/ui/badge'
+import { Button, ButtonLink } from '@/components/common/ui/button'
 import { ROUTES, withId } from '@/routes/paths'
 import type { EscalatedAppointmentView, PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
 import { formatRelative, isOverdue } from '@/features/pre-surveys/preSurveyDisplay'
@@ -26,89 +23,65 @@ export function SalesUrgentActionsCard({
   const warnings = myEscalated.length + overdueRequests.length
 
   return (
-    <Card className="flex flex-col gap-4 p-5">
-      <div className="flex items-center justify-between border-b border-surface-container-highest pb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-error/10 text-error">
-            <Icon name="notification_important" className="text-[20px]" />
-          </div>
-          <h3 className="text-label-lg font-bold text-on-surface">Việc cần xử lý ngay</h3>
-        </div>
-        {warnings > 0 && (
-          <span className="rounded-full bg-error-container/60 px-2.5 py-0.5 text-label-sm font-semibold text-on-error-container">
-            {warnings} cảnh báo
-          </span>
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+      {/* Header */}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-title font-semibold text-fg">Việc cần xử lý ngay</h2>
+        {warnings > 0 ? (
+          <Badge tone="danger">{warnings} cảnh báo</Badge>
+        ) : (
+          <Badge tone="neutral">0 cảnh báo</Badge>
         )}
       </div>
 
       {!hasUrgent ? (
-        <div className="flex flex-col items-center justify-center py-6 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-            <Icon name="check_circle" className="text-[28px]" />
-          </div>
-          <p className="mt-2 text-label-lg font-semibold text-on-surface">Không có việc cần xử lý ngay</p>
-        </div>
+        <p className="py-2.5 text-center text-body text-fg-2">Không có việc cần xử lý ngay</p>
       ) : (
         <div className="space-y-3">
-          {myEscalated.map((item) => (
-            <div
-              key={item.surveyRequestId}
-              className="flex flex-col gap-2 rounded-xl border border-error/30 bg-error-container/20 p-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-label-md font-bold text-on-surface">{item.customerName}</span>
-                  <StatusBadge variant="error">Cần gán KTV</StatusBadge>
+          <ul className="divide-y divide-line">
+            {myEscalated.map((item) => (
+              <li key={item.surveyRequestId} className="py-2.5 first:pt-0 last:pb-0 space-y-1.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</span>
+                  <Badge tone="danger">Cần gán KTV</Badge>
                 </div>
-                <p className="text-body-sm text-on-surface-variant">
-                  {item.propertyName} • {item.province}
+                <p className="text-meta text-fg-2">
+                  {item.propertyName}, {item.province}
                 </p>
-                <p className="text-body-xs font-medium text-error">Lịch hẹn chưa có KTV nhận trước thời hạn</p>
-              </div>
-              <Link to={withId(ROUTES.ops.survey, item.surveyRequestId)}>
-                <Button size="sm" variant="primary">
-                  Gán KTV ngay
-                </Button>
-              </Link>
-            </div>
-          ))}
-
-          {pendingRequests.slice(0, 3).map((item) => (
-            <div
-              key={item.surveyRequestId}
-              className="flex flex-col gap-2 rounded-xl border border-surface-container-highest bg-surface-container-low p-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-label-md font-bold text-on-surface">{item.customerName}</span>
-                  {isOverdue(item.submittedAt) ? (
-                    <StatusBadge variant="warning">Chờ {'>'}24h</StatusBadge>
-                  ) : (
-                    <StatusBadge variant="active">Mới gửi</StatusBadge>
-                  )}
+                <p className="text-meta text-danger">Lịch hẹn chưa có KTV nhận trước thời hạn</p>
+                <div className="pt-1">
+                  <ButtonLink to={withId(ROUTES.ops.survey, item.surveyRequestId)} size="sm" variant="primary" icon="assignment_ind">
+                    Gán KTV ngay
+                  </ButtonLink>
                 </div>
-                <p className="text-body-sm text-on-surface-variant">
-                  {item.propertyName} • {item.province}
+              </li>
+            ))}
+            {pendingRequests.slice(0, 3).map((item) => (
+              <li key={item.surveyRequestId} className="py-2.5 first:pt-0 last:pb-0 space-y-1.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</span>
+                  {isOverdue(item.submittedAt) ? <Badge tone="warn">Chờ &gt; 24h</Badge> : <Badge tone="info">Mới gửi</Badge>}
+                </div>
+                <p className="text-meta text-fg-2">
+                  {[item.propertyName, item.province].filter(Boolean).join(', ')}, gửi {formatRelative(item.submittedAt)}
                 </p>
-                <p className="text-body-xs text-on-surface-variant">Gửi lúc {formatRelative(item.submittedAt)}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="secondary" disabled={isClaiming} onClick={() => onClaim && onClaim(item)}>
-                  Tiếp nhận hồ sơ
-                </Button>
-              </div>
-            </div>
-          ))}
-
+                <div className="pt-1">
+                  <Button size="sm" variant="soft" icon="add_task" disabled={isClaiming} onClick={() => onClaim?.(item)}>
+                    Tiếp nhận hồ sơ
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
           {pendingRequests.length > 3 && (
-            <div className="pt-1 text-center">
-              <Link to={ROUTES.ops.surveys} className="text-label-sm font-semibold text-primary hover:underline">
-                Xem thêm {pendingRequests.length - 3} yêu cầu chờ tiếp nhận khác →
-              </Link>
+            <div className="border-t border-line pt-2 text-center">
+              <ButtonLink to={ROUTES.ops.surveys} size="sm" variant="ghost" icon="list" className="text-meta font-medium text-accent-fg hover:text-accent">
+                Xem thêm {pendingRequests.length - 3} yêu cầu chờ tiếp nhận
+              </ButtonLink>
             </div>
           )}
         </div>
       )}
-    </Card>
+    </div>
   )
 }

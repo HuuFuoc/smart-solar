@@ -46,3 +46,15 @@ export type ProductResponse = {
   /** Format: date-time */
   updatedAt?: string
 }
+
+export type ProductResponsePagedResult = {
+  items?: ProductResponse[] | null
+  /** Format: int32 */
+  page?: number
+  /** Format: int32 */
+  pageSize?: number
+  /** Format: int32 */
+  totalItems?: number
+  /** Format: int32 */
+  totalPages?: number
+}

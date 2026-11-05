@@ -5,30 +5,37 @@ import { useAuth } from '@/context/AuthProvider'
 import { awaitsPayment } from '@/features/after-sales/afterSalesDisplay'
 import { isTodo } from '@/features/after-sales/serviceDisplay'
 import { isCustomerTodo } from '@/features/contracts/customerContractRules'
+import { customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
 import { awaitsCustomerDecision } from '@/features/installations/installationDisplay'
 import { latestPerRequest } from '@/features/quotations/quotationDisplay'
-import { canBook } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useSubscriptionsQuery } from '@/hooks/useCustomerAfterSales'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
 import { useMyQuotationsQuery } from '@/hooks/useCustomerQuotations'
 import { useMyServiceRequestsQuery, useNotificationsQuery } from '@/hooks/useCustomerServiceRequests'
+import { useMyDispatchesQuery } from '@/hooks/useDispatch'
 import { useNavAlert } from '@/hooks/useNavAlert'
 import { ROUTES } from '@/routes/paths'
 import type { NotificationView, ServiceRequestSummary, SubscriptionView } from '@/types/res/customerAfterSalesRes'
 import type { ContractView } from '@/types/res/customerContractsRes'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
+import type { CustomerDispatchView } from '@/types/res/dispatchRes'
 import type { QuotationView } from '@/types/res/quotationsRes'
 
 // Số đỏ cạnh menu: việc chờ khách (đặt giờ khảo sát, trả lời báo giá, nghiệm thu, duyệt báo giá sửa chữa, thanh toán gói)
 // và mục có thay đổi khách chưa xem (kỹ thuật viên nhận lịch, công trình được xếp lịch...)
+type RequestItem = { request: CustomerSurveyRequestView; dispatch: CustomerDispatchView | undefined }
 const requestAlert = {
-  key: (r: CustomerSurveyRequestView) => r.surveyRequestId,
-  sig: (r: CustomerSurveyRequestView) =>
-    [r.status, r.appointment?.appointmentId, r.appointment?.status, r.appointment?.acceptanceStatus].join('|'),
-  todo: canBook,
+  key: ({ request: r }: RequestItem) => r.surveyRequestId,
+  // Phần điều phối chỉ thêm khi có, để dấu "đã xem" của yêu cầu không nhờ xếp kỹ thuật viên vẫn giữ nguyên
+  sig: ({ request: r, dispatch: d }: RequestItem) => {
+    const base = [r.status, r.appointment?.appointmentId, r.appointment?.status, r.appointment?.acceptanceStatus]
+    return (d ? [...base, d.status, d.liveProposal?.proposalId] : base).join('|')
+  },
+  // Đặt giờ hoặc trả lời giờ Smart Solar đề xuất; đang chờ nhân viên xếp người thì không tính
+  todo: ({ request, dispatch }: RequestItem) => customerRequestTodo(request, dispatch),
 }
 // Mỗi yêu cầu chỉ tính bản báo giá mới nhất
 const quotationAlert = {
@@ -68,7 +75,16 @@ export function CustomerLayout({ children }: { children?: ReactNode }) {
   const enabled = useAuth().user?.role === 'customer'
   const quotations = useMyQuotationsQuery({ enabled }).data
   const latestQuotations = useMemo(() => quotations && latestPerRequest(quotations), [quotations])
-  const requests = useNavAlert(ROUTES.customer.requests, useMyRequestsQuery({ enabled }).data, requestAlert)
+  const requestRows = useMyRequestsQuery({ enabled }).data
+  const { dispatches, pending } = useMyDispatchesQuery(requestRows, { enabled })
+  const requestItems = useMemo(
+    () =>
+      requestRows && !pending
+        ? requestRows.map((request) => ({ request, dispatch: dispatches.get(request.surveyRequestId) }))
+        : undefined,
+    [requestRows, dispatches, pending],
+  )
+  const requests = useNavAlert(ROUTES.customer.requests, requestItems, requestAlert)
   const quotes = useNavAlert(ROUTES.customer.quotations, latestQuotations, quotationAlert)
   const projects = useNavAlert(ROUTES.customer.projects, useMyInstallationsQuery({ enabled }).data, projectAlert)
   const services = useNavAlert(ROUTES.customer.afterSales, useMyServiceRequestsQuery({ enabled }).data, serviceAlert)

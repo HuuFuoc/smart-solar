@@ -75,17 +75,15 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
      thì `dark:bg-fg` vẫn chạy và logo thành khối đen (người dùng báo 10/10/2026). Đừng viết `@media (prefers-color-scheme)` riêng.
      Giao diện đã lưu được áp bằng script trong `<head>` của `index.html` trước khi trang vẽ lần đầu (20/10/2026; trước đó ở
      `main.tsx`, phải chờ JS). Cần biết giao diện đang hiện thật (kể cả "theo hệ thống") thì dùng `useResolvedTheme()`.
-5. **Nhãn trạng thái**: `Badge` – mọi trạng thái là nhãn nền nhạt cùng hình dạng (bán kính 6px), màu theo vai trò ở
-   mục 4; `icon` chỉ cho thông báo cần làm ngay ở đầu trang. `Count` – số đếm cạnh mục menu/tab: `attention` = việc đang
-   chờ người xem, nền đỏ như số thông báo; còn lại nền xám. Việc cần làm ngay hiện thành Badge đỏ có icon ở mô tả đầu
-   trang (vd. "2 yêu cầu chờ hơn 1 ngày"). Nhãn trạng thái không bao giờ có viền; nút `soft` (cùng nền xanh nhạt) luôn
-   có viền xanh mảnh, nên "Đang bán" và "Mở bán lại" không trông giống nhau.
+5. **Nhãn trạng thái**: `Badge` – mọi trạng thái là chữ có màu theo vai trò ở mục 4, không nền, không viền, không chấm,
+   không icon. `Count` – số đếm cạnh mục menu/tab: `attention` = việc đang chờ người xem, nền đỏ như số thông báo; còn lại
+   là số xám không nền. Việc cần làm ngay là dòng chữ đỏ ở mô tả đầu trang (vd. "2 yêu cầu chờ hơn 1 ngày").
 6. **Không có chrome trang trí**: nhãn IN HOA giãn chữ, chip "badge" không mang thông tin,
    ô icon trang trí cạnh tiêu đề, mũi tên "→" dán sau nhãn link, dấu "•" nối chuỗi meta,
    chấm nhấp nháy `animate-pulse`. Chuyển động chỉ dùng cho trạng thái tải và phản hồi thao tác (hover, nhấn).
    Icon (Material Symbols qua `Icon` trong `components/common/stitch-ui/Icon.tsx`, dùng cho cả hai bộ) chỉ khi nó nói
    thêm điều chữ chưa nói hoặc giúp nhận ra nhanh: mục menu, hàng tài khoản; nút tạo (+), sửa, xoá, gọi, email, bản đồ,
-   lưu nháp, xoá bộ lọc, hiện mật khẩu, thử lại; `Notice` loại ok/warn/danger, toast, thông báo đầu trang. KHÔNG icon
+   lưu nháp, xoá bộ lọc, hiện mật khẩu, thử lại; `Notice` loại ok/warn/danger, toast. KHÔNG icon
    cho nút điều hướng bước (Tiếp tục, Quay lại), nút gửi form, nút hành động chính của dòng, `Notice` loại
    neutral/info, từng dòng chữ hay từng nhãn. Cỡ 16/20/24px (`text-[20px]`); đang chọn dùng bản tô đặc `icon-fill`.
    Icon nằm trong ô 1em và chỉ hiện khi font đã tải (`html.icons-ready`, gắn ở `main.tsx`), nên mạng chậm không lộ chữ
@@ -138,7 +136,7 @@ nhưng GIÁ TRỊ token nay lấy theo hệ chung ở trên. Những chỗ cố 
 | Màu nhấn      | `primary=#004328`, `primary-container=#0d5c3a`     | cả hai trỏ vào `--accent`                              |
 | Bán kính      | `rounded-lg/xl/2xl` (8–16px)                       | ánh xạ về 3px / 6px                                    |
 | Bóng          | 3 cấp elevation                                    | chỉ một bóng cho lớp nổi, thẻ tĩnh không bóng          |
-| Badge         | pill `rounded-full` tô nền theo trạng thái         | chỉ trạng thái cần chú ý mới tô nền                    |
+| Badge         | pill `rounded-full` tô nền theo trạng thái         | chữ không nền, chỉ trạng thái cần chú ý mới có màu     |
 
 1. Dùng đúng tên token Tailwind như file gốc: `bg-surface`, `bg-surface-container-lowest`,
    `text-on-surface-variant`, `bg-primary-container text-on-primary`, `text-headline-md`,
@@ -242,7 +240,9 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   (`presigned-upload`, đăng ký, verify, GET); `ReasonRequest` của after-sales đặt tên
   `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt. Cùng cách đó (22/10/2026) với 9
   path khảo sát tại công trình (tag TechnicianOnSiteSurvey, StaffOnSiteSurvey); `ObstacleRequest` / `RevisionRequest` của
-  backend đặt tên `OnSiteSurveyObstacleRequest` / `OnSiteSurveyRevisionRequest` cho khỏi trùng. Cùng cách đó với 11 path báo
+  backend đặt tên `OnSiteSurveyObstacleRequest` / `OnSiteSurveyRevisionRequest` cho khỏi trùng. Cùng cách đó (03/11/2026)
+  với 9 path sản phẩm của image `v2-deddde8` (thêm GET danh sách của quản trị; bỏ `FieldError` vì không schema nào dùng);
+  `PagedResult` của sản phẩm vì vậy nằm trong `adminProductsRes.ts`, không còn `productsRes.ts`. Cùng cách đó với 11 path báo
   giá lắp đặt (tag SalesQuotations, CustomerQuotations); `QuotationLineRequest` của luồng lắp đặt
   đặt tên `InstallationQuotationLineRequest` vì trùng tên dòng báo giá sửa chữa (tag SalesAfterSales), response viết tay ở
   `types/res/quotationsRes.ts` theo record C# của backend `main` (7c79fa8, `Modules.Quotations`). Cùng cách đó (03/11/2026) với
@@ -467,11 +467,17 @@ nhập làm nguồn chính + kéo thả vật cản.
     chú thích (`caption`) nằm ngay dưới hình. Khung 3D 4:3, khung rộng từ 60rem (container query) thì cao vừa khung nhìn.
   - Trang chi tiết của sales và kỹ thuật viên: lịch + số liệu khách khai chiếm 2/3 cạnh cột thông tin khách, mô phỏng nằm
     dưới cùng và trải hết chiều ngang (người dùng thấy cột phải trống suốt chiều dài mô phỏng là phí chỗ).
-- `/admin` → `/admin/products`: quản lý sản phẩm (`pages/admin/products-page.tsx`, bộ portal kit; tấm pin thiếu
-  công suất/kích thước được tô cảnh báo vì mô phỏng không dùng được). Backend ẩn sản phẩm INACTIVE khỏi GET danh sách
-  và GET chi tiết với mọi vai trò (dò 08/10/2026), nên: tạo mới luôn ACTIVE; "Ngừng bán" hỏi xác nhận, có "Hoàn tác";
-  sản phẩm đã ngừng bán được nhớ trong localStorage (`features/products/hiddenProducts.ts`) để "Mở bán lại" — chỉ trên
-  trình duyệt đã bấm. Khi backend có cách liệt kê sản phẩm ngừng bán thì bỏ cơ chế này.
+- `/admin` → `/admin/products(/:id)`: quản lý sản phẩm (`pages/admin/products-page.tsx`, `product-page.tsx`, bộ portal
+  kit; tấm pin thiếu công suất/kích thước được tô cảnh báo vì mô phỏng không dùng được). Danh sách đọc
+  GET /api/admin/products (lọc `status` ACTIVE / INACTIVE / ALL, mặc định ALL) và chi tiết GET /api/admin/products/{id}
+  nên thấy cả sản phẩm ngừng bán (GET /api/products công khai chỉ trả sản phẩm đang bán). Mọi API `/api/admin/products…`,
+  kể cả GET, chung giới hạn 30 lần / phút (`CatalogWritePolicy`) nên hai query quản trị không tự làm mới khi quay lại tab.
+  "Ngừng bán" hỏi xác nhận, có "Hoàn tác". Ảnh sản phẩm là danh sách (`images`, tối đa 10, đúng một ảnh chính; `imageUrl`
+  cũ chỉ còn là link ảnh chính), sửa trong `ProductImagesDialog` (nút ảnh trên từng dòng, nút "Quản lý ảnh" ở trang chi
+  tiết): thêm bằng link https, đặt ảnh chính, đổi thứ tự, xoá (4 API `/images…`, mỗi thao tác lưu ngay; backend không nhận
+  tải tệp ảnh). Form thêm sản phẩm có một link ảnh chính, PUT không đụng tới ảnh. INVERTER có ô riêng cho thông số trong
+  `spec` (`ratedAcPowerW`, `maxDcInputPowerW`, `maxDcVoltageV`, `mpptCount`, `efficiencyPercent`, `phase`) vì backend
+  kiểm tra đúng kiểu số; các trang danh mục hiện các thông số này có tên tiếng Việt và đơn vị.
 - `/admin/packages` (menu "Gói dịch vụ"): gói sau lắp đặt, tag AdminAfterSales (chỉ ADMIN; code chưa lên git, luật đọc từ
   `ServicePackageHandlers` trong DLL của image đang chạy). Hai tab "Bảo vệ thiên tai" / "Bảo trì định kỳ" (`?loai=bao-tri`),
   GET .../packages trả cả gói ngừng bán, response là `PackageView` của `customerAfterSalesRes.ts`. Form (`PackageFormDialog.tsx`,
@@ -723,10 +729,10 @@ thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
   đủ email, cỡ 13px, xuống dòng ở bất kỳ ký tự nào – không cắt, không tự đặt tên. Dưới lg: thanh trên (nút Menu + biểu tượng
   - "Smart Solar", cuộn qua h1 thì đổi thành tên mục) mở sidebar thành drawer 288px: nền tối, focus vào nút đóng, phần còn lại
     `inert`, Esc / bấm nền / chọn trang thì đóng và trả focus về nút Menu. Đóng / mở drawer suy ra từ đường dẫn lúc mở, không
-    đặt state trong effect. `<main>` tối đa `max-w-7xl` (1280px) căn giữa, lề 16/24px như portal để ActionBar và Table lấn mép
-    đúng; trang con có dòng định vị "Sản phẩm / <tên>". Control bên trong vẫn là portal kit.
+    đặt state trong effect. `<main>` rộng hết, lề 16px như khung nhân viên để ActionBar và Table lấn mép
+    đúng; trang con có nút viền "← <mục>" về mục đang chọn trên menu (tên trang đã ở tiêu đề). Control bên trong vẫn là portal kit.
 
-Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 24px. Đầu rail là biểu tượng
+Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 16px. Đầu rail là biểu tượng
 thương hiệu (`public/images/mark-96.png`, nền trong suốt) + "Smart Solar" + tên portal (ngắt dòng cân bằng `text-balance`); mỗi mục
 menu có icon (`icon` trong `config/portals.ts`, bắt buộc). Mục menu bo đủ 4 góc, thẳng mép với mọi hàng khác của rail; mục đang mở
 có nền `accent-muted` + vạch accent 3px nằm trong mép trái + icon tô đặc; nhóm chứa nó đậm lên. Rail chia ba phần: đầu, menu
@@ -755,7 +761,7 @@ vai trò (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm tầng T�
   KHÔNG copy rail vào từng page; layout còn được vẽ làm khung chờ (`hydrateFallbackElement`) TRƯỚC `RequireRole` nên
   query trong layout phải chờ `useAuth().user` đúng vai trò mới gọi API.
 
-Mật độ (bố cục gọn 05/10/2026, cho khung nhân viên và cả hai bộ component; cổng khách hàng thì nội dung căn giữa tối đa 1280px): lề nội dung 24px (`px-6`, bộ Stitch `px-space-lg`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; khoảng cách tiêu đề trang → nội dung 24px; giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; `ListRow` `py-4`. Thêm màn mới thì theo đúng các bậc này, đừng quay lại 48px.
+Mật độ (gọn thêm 03/11/2026, cho cả khung nhân viên và khung khách hàng): lề nội dung 16px (`p-4`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; tiêu đề trang → nội dung 16px (`PageHeader` `mb-4`); giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; ô bảng `py-2`, `ListRow` `py-3`, Panel có khung `p-4`. Danh sách của khách luôn có dòng "Hiển thị x–y trên N" + thanh trang, 10 dòng/trang (`PagedList` khi API trả cả danh sách, `ListPager` khi API phân trang; `components/common/ui/pagination.tsx`). Thêm màn mới thì theo đúng các bậc này, đừng quay lại 24px hay 48px.
 
 Menu Admin (subtitle "Quản trị hệ thống"): Tổng quan, Người dùng, Vai trò & quyền, Sản phẩm,
 Danh mục dịch vụ, Nhóm hàng, Kho tri thức AI, Cấu hình kỹ thuật, Báo cáo, Cài đặt hệ thống.
@@ -776,6 +782,8 @@ Trang chủ và các màn xác thực KHÔNG dùng `AppShell`/sidebar.
   số liệu tiết kiệm, số khách, chứng nhận, đánh giá, thông tin liên hệ. Nút "Đăng ký khảo sát" đi theo `surveyPath`
   (`features/landing/survey-link.ts`): chưa đăng nhập → `/register`, khách hàng → `/customer/assessment`, nhân viên
   → portal của mình. Nội dung ở `src/data/landing.ts`; token riêng (`font-vn`, `max-w-landing`, `ld-*`) ở `src/styles/landing.css`.
+  Chỉ trang chủ nằm trong khung `max-w-landing` (1200px); các trang công khai khác (Sản phẩm, chi tiết sản phẩm) cùng header,
+  footer của chúng rộng hết màn, lề 16/24px (`PUBLIC_WIDE_CONTAINER` trong `features/landing/classes.ts`).
   - Header dính: Giải pháp, Quy trình, Sản phẩm, Đăng nhập, nút "Đăng ký khảo sát", nút sáng / tối (`theme-toggle.tsx`) ở mép
     phải. Dưới lg: logo + nút sáng / tối + nút "Menu" mở bảng liên kết dưới header (Esc đóng, trả focus về nút Menu). Nút sáng /
     tối: khung 40px bo 6px (theo quy tắc bán kính, không tròn) + vùng bấm 44px, icon 20px là giao diện sẽ chuyển sang, tên đọc

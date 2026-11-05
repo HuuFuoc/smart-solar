@@ -83,13 +83,7 @@ export function TechInstallationsPage() {
     <>
       <PageHeader
         title="Lắp đặt"
-        description={
-          waiting > 0 ? (
-            <Badge tone="danger" icon="assignment_late">
-              {waiting} công trình chờ bạn nhận việc
-            </Badge>
-          ) : undefined
-        }
+        description={waiting > 0 ? <Badge tone="danger">{waiting} công trình chờ bạn nhận việc</Badge> : undefined}
       />
       <FilterChips
         label="Lọc công trình"

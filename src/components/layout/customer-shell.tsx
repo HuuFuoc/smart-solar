@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Avatar } from '@/components/common/ui/avatar'
 import { Count } from '@/components/common/ui/badge'
+import { ButtonLink } from '@/components/common/ui/button'
 import { Segmented } from '@/components/common/ui/segmented'
 import { WithTooltip } from '@/components/common/ui/tooltip'
 import type { RailCount } from '@/components/layout/app-shell'
@@ -23,7 +24,8 @@ import { ROUTES } from '@/routes/paths'
 import { cx } from '@/utils/cx'
 
 // Khung của cổng khách hàng: sidebar trái (logo, menu, tài khoản ở đáy), nội dung bên phải
-// Từ lg sidebar rộng 264px (đủ cho "Bảo hành, sửa chữa" kèm số đỏ), thu gọn được còn cột icon 64px.
+// Từ lg sidebar rộng 208px như khung nhân viên (tên dài như "Bảo hành, sửa chữa" xuống dòng), thu gọn được còn cột
+// icon 64px. Nội dung không giới hạn bề rộng, lề 24px
 // Dưới lg sidebar là drawer mở bằng nút Menu
 // Mở drawer thì focus vào nút đóng và phần còn lại của trang bị khoá (inert), đóng thì trả focus về nút Menu
 const DESKTOP = '(min-width: 64rem)'
@@ -123,7 +125,7 @@ export function CustomerShell({
         aria-label="Điều hướng cổng khách hàng"
         className={cx(
           'fixed inset-y-0 left-0 z-40 flex flex-col border-r border-line bg-rail duration-200 motion-reduce:transition-none',
-          compact ? 'w-16' : 'w-72 lg:w-66',
+          compact ? 'w-16' : 'w-72 lg:w-52',
           // Khi đóng thì ẩn hẳn (invisible) để link bên trong không nhận Tab
           drawerOpen
             ? 'visible translate-x-0 transition-[translate]'
@@ -142,11 +144,11 @@ export function CustomerShell({
         <nav
           aria-label={portal.name}
           className={cx(
-            'min-h-0 flex-1 overflow-y-auto overscroll-contain py-4 [scrollbar-width:thin]',
+            'min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 [scrollbar-width:thin]',
             compact ? 'px-3' : 'px-4',
           )}
         >
-          <ul className="space-y-1">
+          <ul className="space-y-0.5">
             {items.map((item) => (
               <li key={item.label}>
                 {/* Chọn trang trong drawer thì đóng drawer và trả focus về nút Menu */}
@@ -190,7 +192,7 @@ export function CustomerShell({
       </aside>
 
       {/* Drawer đang mở thì phần còn lại không nhận focus hay thao tác */}
-      <div inert={drawerOpen || undefined} className={compact ? 'lg:pl-16' : 'lg:pl-66'}>
+      <div inert={drawerOpen || undefined} className={compact ? 'lg:pl-16' : 'lg:pl-52'}>
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-line bg-canvas px-4 md:px-6 lg:hidden">
           <button
             ref={menuButtonRef}
@@ -218,21 +220,13 @@ export function CustomerShell({
         </header>
 
         <PageCrumbContext value={setCrumb}>
-          <main id="main" className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 lg:py-8">
+          <main id="main" className="w-full p-4">
+            {/* Trang chi tiết: nút quay về mục đang chọn trên menu, tên trang đã có ở tiêu đề ngay dưới */}
             {current && !onItemPage && (
-              <nav aria-label="Vị trí hiện tại" className="mb-4 flex min-w-0 items-center gap-2 text-meta">
-                <Link
-                  to={current.to}
-                  className="tap shrink-0 text-fg-2 underline-offset-4 hover:text-accent-fg hover:underline"
-                >
+              <nav aria-label="Quay lại" className="mb-4">
+                <ButtonLink to={current.to} icon="arrow_back" size="sm">
                   {current.label}
-                </Link>
-                <span aria-hidden className="text-fg-3">
-                  /
-                </span>
-                <span aria-current="page" className="truncate font-semibold text-fg">
-                  {crumbLabel ?? '…'}
-                </span>
+                </ButtonLink>
               </nav>
             )}
             {children}
@@ -265,8 +259,9 @@ function usePastPageTitle(pathname: string) {
   return pastOn === pathname
 }
 
-// Hàng của sidebar cao 44px ở mọi cỡ màn hình (khách hàng không cần mật độ như công cụ nhân viên)
-const sidebarRow = 'press flex h-11 w-full items-center gap-3 rounded-control px-3 text-left text-body'
+// Hàng của sidebar cao 44px trên màn cảm ứng, 36px từ lg như khung nhân viên; tên dài xuống dòng thay vì bị cắt
+const sidebarRow =
+  'press flex min-h-11 w-full items-center gap-3 rounded-control px-3 py-1.5 text-left text-body lg:min-h-9'
 // Nút vuông của sidebar thu gọn, căn giữa cột 64px
 const sidebarIcon = 'press relative mx-auto flex size-10 items-center justify-center rounded-control'
 // Mục đang mở: nền nhạt + vạch 3px bên trái + icon tô đặc + chữ đậm, không chỉ dựa vào màu
@@ -356,7 +351,7 @@ function SidebarLink({
         name={item.icon}
         className={cx('shrink-0 text-[20px]', active ? 'icon-fill text-accent-fg' : 'text-fg-3 group-hover:text-fg-2')}
       />
-      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      <span className="min-w-0 flex-1 leading-snug">{item.label}</span>
       {count?.value ? <Count value={count.value} attention={count.attention} className="-ml-1" /> : null}
     </Link>
   )

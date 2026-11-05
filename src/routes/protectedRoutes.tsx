@@ -1,4 +1,4 @@
-﻿import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { TechLayout } from '@/components/layout/TechLayout'
@@ -92,11 +92,13 @@ const ManagePackageCancellationPage = page(
   'ManagePackageCancellationPage',
 )
 
+const AdminDashboardPage = page(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage')
 const AdminUsersPage = page(() => import('@/pages/admin/users-page'), 'AdminUsersPage')
 const AdminUserPage = page(() => import('@/pages/admin/user-page'), 'AdminUserPage')
 const AdminTechniciansPage = page(() => import('@/pages/technicians-page'), 'AdminTechniciansPage')
 const AdminTechnicianPage = page(() => import('@/pages/technician-page'), 'AdminTechnicianPage')
 const AdminProductsPage = page(() => import('@/pages/admin/products-page'), 'AdminProductsPage')
+const AdminProductPage = page(() => import('@/pages/admin/product-page'), 'AdminProductPage')
 const AdminPackagesPage = page(() => import('@/pages/admin/packages-page'), 'AdminPackagesPage')
 const AdminInstallationProjectsPage = page(
   () => import('@/pages/installation-projects-page'),
@@ -258,13 +260,15 @@ export const protectedRoutes: RouteObject[] = [
     role: 'admin',
     path: admin.home,
     Layout: AdminLayout,
-    start: admin.users,
+    start: admin.dashboard,
     pages: [
+      { path: admin.dashboard, lazy: AdminDashboardPage },
       { path: admin.users, lazy: AdminUsersPage },
       { path: admin.user, lazy: AdminUserPage },
       { path: admin.technicians, lazy: AdminTechniciansPage },
       { path: admin.technician, lazy: AdminTechnicianPage },
       { path: admin.products, lazy: AdminProductsPage },
+      { path: admin.product, lazy: AdminProductPage },
       { path: admin.installations, lazy: AdminInstallationProjectsPage },
       { path: admin.installation, lazy: AdminInstallationProjectPage },
       { path: admin.contract, lazy: AdminContractPage },

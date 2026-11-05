@@ -41,11 +41,11 @@ export const COMPASS_GRID = [
 /** 8 hướng theo chiều kim đồng hồ từ Bắc, cách nhau 45 độ */
 export const DIRECTIONS = ['Bắc', 'Đông Bắc', 'Đông', 'Đông Nam', 'Nam', 'Tây Nam', 'Tây', 'Tây Bắc']
 
-// Chưa có kỹ thuật viên là đang chờ kỹ thuật viên trong khu vực nhận, chưa phải việc của sales nên không tô đỏ
+// Trạng thái yêu cầu khảo sát thực địa
 export const SURVEY_REQUEST_STATUSES: Partial<Record<SurveyRequestStatus, { label: string; tone: Tone }>> = {
-  PENDING: { label: 'Chưa có kỹ thuật viên', tone: 'info' },
-  SCHEDULED: { label: 'Đã hẹn khảo sát', tone: 'ok' },
-  COMPLETED: { label: 'Hoàn tất', tone: 'neutral' },
+  PENDING: { label: 'Chờ KTV', tone: 'warn' },
+  SCHEDULED: { label: 'Đã hẹn khảo sát', tone: 'info' },
+  COMPLETED: { label: 'Khảo sát xong', tone: 'ok' },
   CANCELLED: { label: 'Khách đã rút yêu cầu', tone: 'neutral' },
   CLOSED: { label: 'Đã đóng', tone: 'neutral' },
 }

@@ -4,7 +4,7 @@ import '@fontsource/be-vietnam-pro/600.css'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, type To } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
-import { LANDING_CONTAINER, TEXT_LINK, ctaClass } from '@/features/landing/classes'
+import { LANDING_CONTAINER, PUBLIC_WIDE_CONTAINER, TEXT_LINK, ctaClass } from '@/features/landing/classes'
 import { ThemeToggle } from '@/features/landing/theme-toggle'
 import { ROUTES } from '@/routes/paths'
 import { homePathForRole } from '@/config/roles'
@@ -20,6 +20,8 @@ const workflowLink = { pathname: ROUTES.home, hash: `#${workflow.id}` }
 export function PublicLayout() {
   // Trang chủ kết thúc bằng dải CTA nên footer đứng sát
   const onHome = useLocation().pathname === ROUTES.home
+  // Chỉ trang chủ giữ khung giữa 1200px; header, footer theo cùng khung với nội dung để thẳng lề
+  const frame = onHome ? LANDING_CONTAINER : PUBLIC_WIDE_CONTAINER
   // Đã đăng nhập: thay "Đăng nhập" bằng đường vào trang làm việc, ẩn nút đăng ký.
   const { user } = useAuth()
   const account = user
@@ -51,7 +53,7 @@ export function PublicLayout() {
       </a>
 
       <header className="sticky top-0 z-40 border-b border-line bg-canvas">
-        <div className={cx('flex h-14 items-center gap-4 lg:h-16', LANDING_CONTAINER)}>
+        <div className={cx('flex h-14 items-center gap-4 lg:h-16', frame)}>
           {/* Ở dark mode logo đặt trên nền sáng vì chữ "Smart" màu navy khó thấy */}
           <Link to={ROUTES.home} className="flex shrink-0 items-center rounded-control dark:bg-fg dark:px-2 dark:py-1">
             <img
@@ -108,7 +110,7 @@ export function PublicLayout() {
 
         {menuOpen && (
           <div id="public-menu" className="border-t border-line lg:hidden">
-            <nav aria-label="Liên kết chính" className={cx(LANDING_CONTAINER, 'flex flex-col py-3')}>
+            <nav aria-label="Liên kết chính" className={cx(frame, 'flex flex-col py-3')}>
               <MenuLink to={solutionLink} onClick={closeMenu}>
                 {header.solution}
               </MenuLink>
@@ -135,11 +137,11 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className={cx('border-t border-line', !onHome && 'mt-24 lg:mt-32')}>
+      <footer className={cx('border-t border-line', !onHome && 'mt-8')}>
         <div
           className={cx(
             'flex flex-col gap-3 py-8 ld-meta text-fg-2 lg:flex-row lg:flex-wrap lg:items-baseline lg:justify-between lg:gap-x-8',
-            LANDING_CONTAINER,
+            frame,
           )}
         >
           <img
