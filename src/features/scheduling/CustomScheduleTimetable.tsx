@@ -149,28 +149,30 @@ export function CustomScheduleTimetable({
       </div>
 
       {/* Bảng Thời khóa biểu tuần cố định cột */}
-      <div className="overflow-x-auto rounded-container border border-line bg-surface-1 shadow-sm">
-        <table className="w-full table-fixed border-collapse text-body">
-          <thead>
-            <tr className="border-b border-line-2 bg-surface-2/40 text-left text-meta font-semibold text-fg-2">
-              <th className="w-44 border-r border-line px-4 py-3">Thứ trong tuần</th>
-              <th className="border-r border-line px-4 py-3">Thời khóa biểu các ca làm việc</th>
-              <th className="w-28 border-r border-line px-3 py-3 text-center">Thời lượng</th>
-              <th className="w-44 px-4 py-3 text-right">Thao tác nhanh</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line/70">
-            {WEEK_DAYS.map((d) => (
-              <CustomTimetableDayRow
-                key={d.value}
-                dayLabel={d.label}
-                periods={week[d.value]}
-                onUpdate={(periods) => update(d.value, periods)}
-                onCopyAll={() => copyDayToAll(d.value)}
-              />
-            ))}
-          </tbody>
-        </table>
+      <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed border-collapse text-body">
+            <thead>
+              <tr className="border-b border-line-2 bg-surface-2/30 text-left text-meta font-semibold text-fg-2">
+                <th className="w-40 border-r border-line px-4 py-2.5">Thứ trong tuần</th>
+                <th className="border-r border-line px-4 py-2.5">Thời khóa biểu các ca làm việc</th>
+                <th className="w-24 border-r border-line px-3 py-2.5 text-center">Thời lượng</th>
+                <th className="w-36 px-3 py-2.5 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line/70">
+              {WEEK_DAYS.map((d) => (
+                <CustomTimetableDayRow
+                  key={d.value}
+                  dayLabel={d.label}
+                  periods={week[d.value]}
+                  onUpdate={(periods) => update(d.value, periods)}
+                  onCopyAll={() => copyDayToAll(d.value)}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Footer lưu cấu hình */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/40 px-4 py-3">
