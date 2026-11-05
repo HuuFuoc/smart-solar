@@ -1,15 +1,31 @@
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { toast } from 'sonner'
+import { CUSTOMER_CLAIM_STATUSES, DISASTER_TYPES } from '@/common/afterSales'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
-import { KeyValueList, Notice } from '@/components/common/ui/lists'
+import { KeyValueList, Notice, type KV } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ProgressTracker, type TrackerNext } from '@/components/common/ui/progress-tracker'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { CustomerQuotationPanel } from '@/features/after-sales/CustomerQuotationPanel'
+import {
+  BOOKING_LEAD_DAYS,
+  CHANGE_LEAD_HOURS,
+  canReportFaultFromMaintenance,
+  canRequestReconsideration,
+  canReschedule,
+  entitlementDeadline,
+  entitlementOf,
+  maintenanceFinding,
+  rescheduleDeadline,
+  rescheduleTooLate,
+} from '@/features/after-sales/customerServiceRules'
+import { MaintenanceFaultDialog } from '@/features/after-sales/MaintenanceFaultDialog'
+import { PreferredTimeDialog } from '@/features/after-sales/PreferredTimeDialog'
+import { ReconsiderationDialog } from '@/features/after-sales/ReconsiderationDialog'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { ServicePhotos } from '@/features/after-sales/ServicePhotos'
 import { QuotationDetail, ServiceItemList, ServiceVisitList } from '@/features/after-sales/ServiceRequestParts'
@@ -29,11 +45,13 @@ import {
 import { formatDateOnly } from '@/features/installations/installationDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatAppointment, formatMoment, vnDate } from '@/features/scheduling/schedulingDisplay'
+import { useSubscriptionsQuery } from '@/hooks/useCustomerAfterSales'
 import {
   useCancelRequestMutation,
   useCompletionMutation,
   useConfirmAppointmentMutation,
   useMyServiceRequestQuery,
+  useRescheduleRequestMutation,
 } from '@/hooks/useCustomerServiceRequests'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
@@ -207,30 +225,128 @@ function AcceptancePanel({ request, onReject }: { request: ServiceRequestView; o
   )
 }
 
-function RequestFacts({ request: r, onCancel }: { request: ServiceRequestView; onCancel: () => void }) {
-  const items = [
+function RequestFacts({
+  request: r,
+  onCancel,
+  onReschedule,
+}: {
+  request: ServiceRequestView
+  onCancel: () => void
+  onReschedule: () => void
+}) {
+  const items: KV[] = [
     { k: 'Loại', v: requestKindLabel(r.kind) },
     { k: 'Ngày gửi', v: formatMoment(r.createdAt) },
   ]
   if (r.kind === 'FAULT') items.push({ k: 'Bảo hành lắp đặt', v: installationWarrantyText(r) })
+  if (r.originRequestId)
+    items.push({
+      k: 'Phát hiện khi bảo trì',
+      v: (
+        <Link to={withId(ROUTES.customer.afterSalesRequest, r.originRequestId)} className="ui-link">
+          Xem yêu cầu bảo trì
+        </Link>
+      ),
+    })
   if (r.preferredStartsAt) items.push({ k: 'Giờ bạn muốn hẹn', v: formatMoment(r.preferredStartsAt) })
   if (r.completedAt) items.push({ k: 'Hoàn thành', v: formatMoment(r.completedAt) })
   if (r.cancelledAt) items.push({ k: 'Huỷ lúc', v: formatMoment(r.cancelledAt) })
+  // Giờ lúc mở trang. Giờ máy có thể lệch giờ hệ thống: nút khoá theo giờ máy, backend vẫn kiểm (AFTER_SALES_CHANGE_TOO_LATE)
+  const [now] = useState(() => Date.now())
+  const reschedulable = canReschedule(r)
+  const tooLate = reschedulable && rescheduleTooLate(r, now)
+  const deadline = rescheduleDeadline(r)
   return (
     <Panel>
       <PanelHeader
         title="Nội dung yêu cầu"
         action={
-          customerCanCancel(r) && (
-            <Button icon="cancel" size="sm" variant="danger" onClick={onCancel}>
-              Huỷ yêu cầu
-            </Button>
+          (reschedulable || customerCanCancel(r)) && (
+            <div className="flex flex-wrap gap-3">
+              {reschedulable && (
+                <Button icon="edit_calendar" size="sm" variant="soft" disabled={tooLate} onClick={onReschedule}>
+                  Đổi giờ
+                </Button>
+              )}
+              {customerCanCancel(r) && (
+                <Button icon="cancel" size="sm" variant="danger" onClick={onCancel}>
+                  Huỷ yêu cầu
+                </Button>
+              )}
+            </div>
           )
         }
       />
       <PanelBody className="space-y-4">
         <p className="max-w-[72ch] text-body whitespace-pre-line text-fg">{r.description}</p>
         <KeyValueList items={items} columns={2} />
+        {reschedulable && deadline !== null && (
+          <p className="tnum text-meta text-fg-2">
+            {tooLate
+              ? `Đã quá hạn đổi giờ trên mạng (trước giờ hẹn ${CHANGE_LEAD_HOURS} giờ). Liên hệ Smart Solar nếu cần đổi.`
+              : `Đổi giờ được tới ${formatMoment(new Date(deadline).toISOString())}.`}
+          </p>
+        )}
+      </PanelBody>
+    </Panel>
+  )
+}
+
+/** Hỗ trợ của gói thiên tai cho yêu cầu báo lỗi: kết quả xét và xin xét lại (một lần) */
+function ClaimPanel({ request: r, onReconsider }: { request: ServiceRequestView; onReconsider: () => void }) {
+  const claim = r.claim
+  if (!claim) return null
+  const status = CUSTOMER_CLAIM_STATUSES[claim.status] ?? { label: claim.status, tone: 'neutral' as const }
+  const items: KV[] = [
+    { k: 'Thiên tai', v: DISASTER_TYPES[claim.disasterType] ?? claim.disasterType },
+    { k: 'Ngày xảy ra', v: formatMoment(claim.incidentOccurredAt) },
+    { k: 'Kết quả', v: <Badge tone={status.tone}>{status.label}</Badge> },
+  ]
+  if (claim.decisionReason) items.push({ k: 'Lý do', v: claim.decisionReason })
+  if (claim.reconsiderationRequestedAt)
+    items.push({ k: 'Bạn xin xét lại lúc', v: formatMoment(claim.reconsiderationRequestedAt) })
+  return (
+    <Panel>
+      <PanelHeader
+        title="Hỗ trợ thiên tai"
+        action={
+          canRequestReconsideration(r) && (
+            <Button icon="replay" size="sm" variant="soft" onClick={onReconsider}>
+              Xin xét lại
+            </Button>
+          )
+        }
+      />
+      <PanelBody className="space-y-4">
+        <KeyValueList items={items} columns={2} />
+        {canRequestReconsideration(r) && (
+          <p className="text-meta text-fg-2">
+            Mỗi yêu cầu chỉ xin xét lại được một lần, kèm thông tin hoặc ảnh bổ sung.
+          </p>
+        )}
+      </PanelBody>
+    </Panel>
+  )
+}
+
+/** Lỗi kỹ thuật viên phát hiện trong lần bảo trì: khách báo lỗi thành yêu cầu riêng, vẫn gắn với lần bảo trì này */
+function MaintenanceFindingPanel({ request: r, onReport }: { request: ServiceRequestView; onReport: () => void }) {
+  if (!canReportFaultFromMaintenance(r)) return null
+  const finding = maintenanceFinding(r)
+  return (
+    <Panel>
+      <PanelHeader
+        title="Phát hiện khi bảo trì"
+        action={
+          <Button icon="report" size="sm" variant="danger" onClick={onReport}>
+            Báo lỗi
+          </Button>
+        }
+      />
+      <PanelBody>
+        <p className="max-w-[72ch] text-body whitespace-pre-line text-fg-2">
+          {finding ?? 'Kỹ thuật viên không ghi lỗi nào. Thấy lỗi sau lần bảo trì này thì báo lỗi ở đây.'}
+        </p>
       </PanelBody>
     </Panel>
   )
@@ -243,7 +359,10 @@ export function CustomerAfterSalesRequestPage() {
   const query = useMyServiceRequestQuery(id)
   const cancel = useCancelRequestMutation()
   const completion = useCompletionMutation()
-  const [dialog, setDialog] = useState<'cancel' | 'reject-work' | null>(null)
+  const reschedule = useRescheduleRequestMutation()
+  // Chỉ để biết kỳ và hạn của lượt bảo trì khi đổi giờ; chưa tải được thì chỉ kiểm thời gian đặt trước
+  const subscriptions = useSubscriptionsQuery()
+  const [dialog, setDialog] = useState<'cancel' | 'reject-work' | 'reschedule' | 'reconsider' | 'fault' | null>(null)
   const getUrl = useCallback((evidenceId: string) => getEvidenceUrl(id ?? '', evidenceId), [id])
   usePageCrumb(query.data ? query.data.requestNumber : null)
 
@@ -254,6 +373,7 @@ export function CustomerAfterSalesRequestPage() {
         const next = nextStep(r)
         const quotation = openQuotation(r)
         const pastQuotations = r.quotations.filter((q) => q !== quotation)
+        const visit = entitlementOf(r, subscriptions.data ?? [])
         return (
           <>
             <PageHeader
@@ -280,7 +400,13 @@ export function CustomerAfterSalesRequestPage() {
               {r.status === 'PENDING_CUSTOMER_ACCEPTANCE' && (
                 <AcceptancePanel request={r} onReject={() => setDialog('reject-work')} />
               )}
-              <RequestFacts request={r} onCancel={() => setDialog('cancel')} />
+              <ClaimPanel request={r} onReconsider={() => setDialog('reconsider')} />
+              <MaintenanceFindingPanel request={r} onReport={() => setDialog('fault')} />
+              <RequestFacts
+                request={r}
+                onCancel={() => setDialog('cancel')}
+                onReschedule={() => setDialog('reschedule')}
+              />
               {r.items.length > 0 && (
                 <Panel>
                   <PanelHeader title="Kết quả kiểm tra" description={`${r.items.length} hạng mục`} />
@@ -330,6 +456,35 @@ export function CustomerAfterSalesRequestPage() {
               }}
               onClose={() => setDialog(null)}
             />
+            <PreferredTimeDialog
+              open={dialog === 'reschedule'}
+              title="Đổi giờ hẹn"
+              icon="edit_calendar"
+              submitLabel="Đổi giờ"
+              limits={{
+                leadDays: BOOKING_LEAD_DAYS,
+                periodStartsAt: visit?.entitlement.periodStartsAt ?? null,
+                latestAt: visit ? entitlementDeadline(visit.entitlement, visit.subscription) : null,
+              }}
+              onClose={() => setDialog(null)}
+              onSubmit={async (preferredStartsAt) => {
+                await reschedule.mutateAsync({ requestId: r.requestId, preferredStartsAt })
+                toast.success('Đã đổi giờ. Smart Solar sẽ xếp lại lịch và báo lịch hẹn mới.')
+                setDialog(null)
+              }}
+            >
+              <p>Buổi đã hẹn (nếu có) bị huỷ và Smart Solar xếp lại theo giờ mới.</p>
+            </PreferredTimeDialog>
+            {dialog === 'reconsider' && (
+              <ReconsiderationDialog requestId={r.requestId} onClose={() => setDialog(null)} />
+            )}
+            {dialog === 'fault' && (
+              <MaintenanceFaultDialog
+                requestId={r.requestId}
+                finding={maintenanceFinding(r)}
+                onClose={() => setDialog(null)}
+              />
+            )}
             <ReasonDialog
               open={dialog === 'reject-work'}
               title="Kết quả chưa đạt?"

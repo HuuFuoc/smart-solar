@@ -4,12 +4,22 @@ export type AbsenceRequest = {
   note?: string | null
 }
 
+export type ContinueRepairRequest = {
+  /** Format: int32 */
+  estimatedMinutes?: number
+  partsAvailable?: boolean
+}
+
 export type DiagnosedItemRequest = {
   /** Format: uuid */
   assetId?: string | null
   description?: string | null
   diagnosis?: string | null
   requiredParts?: string | null
+}
+
+export type FinishOnSiteRequest = {
+  note?: string | null
 }
 
 export type InspectionReportRequest = {

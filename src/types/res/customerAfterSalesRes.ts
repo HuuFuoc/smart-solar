@@ -290,6 +290,41 @@ export type PossibleDuplicateView = {
   createdAt: string
 }
 
+/** ClaimStatuses: NOT_ELIGIBLE (không gói nào bảo vệ lúc xảy ra sự cố), SUBMITTED, APPROVED, REJECTED, RECONSIDERATION_REQUESTED */
+export type DisasterClaimStatus =
+  'NOT_ELIGIBLE' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'RECONSIDERATION_REQUESTED' | (string & {})
+
+/** Yêu cầu hỗ trợ của gói thiên tai gắn với một yêu cầu báo lỗi (DisasterClaimView) */
+export type DisasterClaimView = {
+  claimId: string
+  disasterType: DisasterType
+  incidentOccurredAt: string
+  status: DisasterClaimStatus
+  decisionReason: string | null
+  reconsiderationRequestedAt: string | null
+  /** Backend tính: bị từ chối và chưa xin xét lại lần nào (mỗi yêu cầu chỉ được xin một lần) */
+  canRequestReconsideration: boolean
+  subscriptionId: string | null
+  coveragePercent: number
+  perIncidentLimit: number
+  supportReserved: number
+  supportConsumed: number
+}
+
+/**
+ * GET /api/customers/me/after-sales/notifications: 100 thông báo mới nhất, mới nhất trước. `message` là câu tiếng Anh của
+ * backend nên giao diện dịch theo `type`. Backend chưa có lệnh đánh dấu đã đọc nên `readAt` luôn null
+ */
+export type NotificationView = {
+  notificationId: string
+  type: string
+  message: string
+  requestId: string | null
+  subscriptionId: string | null
+  createdAt: string
+  readAt: string | null
+}
+
 /** Chi tiết một yêu cầu cho khách, kinh doanh, quản lý; mọi thao tác ghi trên yêu cầu cũng trả về view này */
 export type ServiceRequestView = {
   requestId: string
@@ -326,8 +361,8 @@ export type ServiceRequestView = {
   items: ServiceItemView[]
   visits: ServiceVisitView[]
   quotations: ServiceQuotationView[]
-  /** Yêu cầu hỗ trợ thiên tai, web chưa dùng */
-  claim: unknown
+  /** Yêu cầu hỗ trợ của gói thiên tai, chỉ có khi khách báo lỗi kèm loại thiên tai */
+  claim: DisasterClaimView | null
   evidence: ServiceEvidenceView[]
   possibleDuplicates: PossibleDuplicateView[]
   /** null với khách */

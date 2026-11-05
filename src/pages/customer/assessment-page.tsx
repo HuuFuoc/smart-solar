@@ -26,6 +26,7 @@ import {
   useCreatePreSurveyMutation,
   useCreatePropertySiteMutation,
   useSaveSurfaceMutation,
+  useSetSiteLocationMutation,
   useSubmitPreSurveyMutation,
   useSurfaceQuery,
   useUpdatePreSurveyMutation,
@@ -78,6 +79,7 @@ import {
 } from '@/features/pre-surveys/surfaceForm'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage, isApiError, type ApiError } from '@/services/api/errors'
+import type { CreatePropertySiteRequest } from '@/types/req/customersReq'
 import type { CustomerPreSurveyListItem, CustomerSiteListItem } from '@/types/res/customersRes'
 import type { PreSurveySurfaceView } from '@/types/res/preSurveySurfaceRes'
 import type { SelectedSimulation } from '@/types/res/simulationsRes'
@@ -237,6 +239,7 @@ function AssessmentWizard({ onReopen }: { onReopen: () => void }) {
   // ---------- Gọi API ----------
   const createProfile = useCreateCustomerProfileMutation()
   const createSite = useCreatePropertySiteMutation()
+  const setSiteLocation = useSetSiteLocationMutation()
   const createPreSurvey = useCreatePreSurveyMutation()
   const updatePreSurvey = useUpdatePreSurveyMutation()
   const saveSurfaceMutation = useSaveSurfaceMutation()
@@ -245,7 +248,15 @@ function AssessmentWizard({ onReopen }: { onReopen: () => void }) {
   const [savingSurface, setSavingSurface] = useState(false)
   // Mô phỏng có thể chạy tới ~30 giây. Lúc đó cũng tính là bận, vì gửi giữa chừng thì lần chạy bị 409
   const runningSimulation = useIsMutating({ mutationKey: CREATE_SIMULATION_KEY }) > 0
-  const mutations = [createProfile, createSite, createPreSurvey, updatePreSurvey, saveSurfaceMutation, submitPreSurvey]
+  const mutations = [
+    createProfile,
+    createSite,
+    setSiteLocation,
+    createPreSurvey,
+    updatePreSurvey,
+    saveSurfaceMutation,
+    submitPreSurvey,
+  ]
   const busy = savingSurface || runningSimulation || mutations.some((mutation) => mutation.isPending)
 
   // ---------- Hàm cập nhật state dùng chung ----------
@@ -444,6 +455,14 @@ function AssessmentWizard({ onReopen }: { onReopen: () => void }) {
 
   // ---------- Bước 2: địa điểm ----------
 
+  /** Địa điểm cũ thiếu mã phường, xã nhưng đủ toạ độ ở TP.HCM, và form chỉ khác ở phường, xã vừa chọn trong danh sách */
+  function onlyAddsLocationCode(saved: CreatePropertySiteRequest, form: SiteForm) {
+    if (saved.communeCode || !form.communeCode) return false
+    if (!hasCoordinates(saved.latitude, saved.longitude) || !isInHcm(saved.latitude!, saved.longitude!)) return false
+    const rest = (f: SiteForm) => ({ ...f, ward: '', communeCode: '' })
+    return isSameJson(rest(siteToForm(saved)), rest(form))
+  }
+
   async function saveSite() {
     // Khách không sửa gì (chỉ bấm Quay lại rồi Tiếp tục) thì đi tiếp, không tạo địa điểm mới.
     // Trừ địa điểm cũ thiếu toạ độ, toạ độ ngoài TP.HCM hoặc chưa có mã phường, xã: lưu lại thì có đủ.
@@ -468,6 +487,32 @@ function AssessmentWizard({ onReopen }: { onReopen: () => void }) {
     // Đã có địa điểm giống hệt thì không tạo lại
     if (draft.siteId && isSameJson(draft.site, result.data)) {
       goToStep(STEP.SURFACE)
+      return
+    }
+
+    // Địa điểm cũ chỉ thiếu mã phường, xã (đã có toạ độ ở TP.HCM) và khách không sửa ô nào khác: bổ sung mã trên chính
+    // địa điểm đó, giữ bản nháp đang làm thay vì tạo địa điểm và bản nháp mới
+    if (draft.siteId && savedSite && onlyAddsLocationCode(savedSite, site)) {
+      try {
+        const location = await setSiteLocation.mutateAsync({ siteId: draft.siteId, communeCode: site.communeCode })
+        updateDraft({
+          ...draft,
+          site: {
+            ...savedSite,
+            provinceCode: location.provinceCode,
+            communeCode: location.communeCode,
+            ward: location.communeName ?? site.ward,
+          },
+        })
+        toast.success('Đã bổ sung phường, xã cho địa điểm.')
+        goToStep(STEP.SURFACE)
+      } catch (error) {
+        if (isApiError(error) && error.code?.startsWith('ADMINISTRATIVE_LOCATION_')) {
+          showFieldErrors({ ward: errorMessage(error) })
+          return
+        }
+        showServerError(error, site)
+      }
       return
     }
 

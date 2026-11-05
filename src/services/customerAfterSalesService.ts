@@ -2,10 +2,14 @@ import type {
   AfterSalesReasonRequest,
   CompletionDecisionRequest,
   CreateFaultRequest,
+  FaultFromMaintenanceRequest,
   OneTimeMaintenanceRequest,
+  PreferredTimeRequest,
   PurchaseRequest,
+  ReconsiderationRequest,
 } from '@/types/req/customerAfterSalesReq'
 import type {
+  NotificationView,
   PackageView,
   PaymentAttemptView,
   PurchaseView,
@@ -112,4 +116,32 @@ export function getEvidenceUrl(requestId: string, evidenceId: string) {
 /** Tạo (hoặc lấy lại) link PayOS cho báo giá đã đồng ý. Đã trả tiền hay chưa phải hỏi lại bằng getPayment */
 export function checkoutQuotation(quotationId: string) {
   return post<PaymentAttemptView>(api.checkoutQuotation(quotationId))
+}
+
+/**
+ * Đặt một lượt bảo trì của gói (201): giờ muốn hẹn cách lúc gửi ít nhất số ngày backend cấu hình (mặc định 7), không trước
+ * kỳ của lượt và trước khi gói hết hạn. Tạo một yêu cầu MAINTENANCE gắn với lượt đó
+ */
+export function bookMaintenance(entitlementId: string, body: PreferredTimeRequest) {
+  return post<ServiceRequestView>(api.bookMaintenance(entitlementId), body)
+}
+
+/** Đổi giờ muốn hẹn của yêu cầu bảo trì. Backend bỏ qua `note`; buổi đã hẹn chỉ đổi được tới trước giờ hẹn 24 giờ (mặc định) */
+export function rescheduleRequest(requestId: string, body: PreferredTimeRequest) {
+  return post<ServiceRequestView>(api.reschedule(requestId), body)
+}
+
+/** Xin xét lại hỗ trợ thiên tai bị từ chối, một lần mỗi yêu cầu. `note` bắt buộc; ảnh SERVICE_EVIDENCE khách tự tải, tối đa 10 */
+export function requestReconsideration(requestId: string, body: ReconsiderationRequest) {
+  return post<ServiceRequestView>(api.reconsideration(requestId), body)
+}
+
+/** Báo lỗi phát hiện khi bảo trì (201): yêu cầu FAULT mới có originRequestId là yêu cầu bảo trì này */
+export function reportFaultFromMaintenance(requestId: string, body: FaultFromMaintenanceRequest) {
+  return post<ServiceRequestView>(api.reportFault(requestId), body)
+}
+
+/** Thông báo trong ứng dụng (backend không gửi email hay push cho các việc này) */
+export function listNotifications() {
+  return get<NotificationView[]>(api.notifications)
 }

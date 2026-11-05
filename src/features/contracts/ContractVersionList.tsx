@@ -11,18 +11,21 @@ export function ContractVersionList({
   versions,
   detailPattern,
   currentId,
+  viewer = 'staff',
 }: {
   versions: ContractView[]
   /** Đường dẫn trang chi tiết hợp đồng của portal đang xem */
   detailPattern: string
   /** Phiên bản đang mở trên trang, không vẽ nút mở */
   currentId?: string
+  /** Nhãn trạng thái theo người xem */
+  viewer?: 'staff' | 'customer'
 }) {
   const byId = new Map(versions.map((v) => [v.contractId, v]))
   return (
     <ul className="divide-y divide-line">
       {[...versions].sort(byVersionDesc).map((c) => {
-        const status = contractStatusMeta(c.status)
+        const status = contractStatusMeta(c.status, viewer)
         const previous = c.previousContractId ? byId.get(c.previousContractId) : undefined
         return (
           <li key={c.contractId} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">

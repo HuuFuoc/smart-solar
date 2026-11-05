@@ -3,7 +3,7 @@ import { technicianJobKeys } from '@/hooks/useTechnicianJobs'
 import { uploadFile } from '@/services/fileService'
 import * as onSiteSurveyService from '@/services/onSiteSurveyService'
 import { isApiError, type ApiError } from '@/services/api/errors'
-import type { OnSiteSurveyRequest } from '@/types/req/technicianOnSiteSurveyReq'
+import type { OnSiteSurveyAmendmentRequest, OnSiteSurveyRequest } from '@/types/req/technicianOnSiteSurveyReq'
 import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
 
 export const onSiteSurveyKeys = {
@@ -77,6 +77,13 @@ export function useAddOnSiteSurveyFileMutation(appointmentId: string) {
 export function useRemoveOnSiteSurveyFileMutation(appointmentId: string) {
   return useSurveyMutation<string>(appointmentId, (attachmentId) =>
     onSiteSurveyService.removeOnSiteSurveyAttachment(appointmentId, attachmentId),
+  )
+}
+
+/** Bổ sung biên bản đã hoàn thành. Tệp đã tải lên kho trước (ONSITE_SURVEY_EVIDENCE), ở đây chỉ gửi fileId */
+export function useAmendOnSiteSurveyMutation(appointmentId: string) {
+  return useSurveyMutation<OnSiteSurveyAmendmentRequest>(appointmentId, (body) =>
+    onSiteSurveyService.amendOnSiteSurvey(appointmentId, body),
   )
 }
 

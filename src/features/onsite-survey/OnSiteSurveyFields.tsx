@@ -52,12 +52,15 @@ export function OnSiteSurveyFields({
   onChange,
   declared,
   disabled,
+  amending,
 }: {
   value: OnSiteSurveyForm
   errors: OnSiteSurveyErrors
   onChange: (patch: Partial<OnSiteSurveyForm>) => void
   declared: DeclaredValues | null
   disabled?: boolean
+  /** Bổ sung biên bản đã hoàn thành: không có lưu nháp, ô bắt buộc phải đủ */
+  amending?: boolean
 }) {
   const azimuth = readDecimal(value.azimuthDegree)
   const length = readDecimal(value.roofLengthM)
@@ -97,8 +100,16 @@ export function OnSiteSurveyFields({
   return (
     <div className="space-y-6">
       <p className="text-meta text-fg-2">
-        Ô có dấu <span className="text-danger">*</span> phải có trước khi hoàn thành khảo sát. Lưu được khi chưa điền
-        đủ.
+        {amending ? (
+          <>
+            Ô có dấu <span className="text-danger">*</span> vẫn phải có sau khi bổ sung.
+          </>
+        ) : (
+          <>
+            Ô có dấu <span className="text-danger">*</span> phải có trước khi hoàn thành khảo sát. Lưu được khi chưa
+            điền đủ.
+          </>
+        )}
       </p>
 
       <Section title="Mái">

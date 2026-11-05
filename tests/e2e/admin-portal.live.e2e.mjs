@@ -44,7 +44,7 @@ describe('cổng quản trị với backend thật', { skip }, () => {
   before(async () => {
     // Không theo dõi file: phiên khác sửa code trong lúc chạy thì trang không bị nạp lại giữa chừng
     server = await createServer({
-      server: { port: 3165, strictPort: false, hmr: false, watch: null },
+      server: { host: '127.0.0.1', port: 3165, strictPort: false, hmr: false, watch: null },
       logLevel: 'error',
     })
     await server.listen()

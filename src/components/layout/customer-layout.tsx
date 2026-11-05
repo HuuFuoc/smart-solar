@@ -4,18 +4,21 @@ import { CustomerShell } from '@/components/layout/customer-shell'
 import { useAuth } from '@/context/AuthProvider'
 import { awaitsPayment } from '@/features/after-sales/afterSalesDisplay'
 import { isTodo } from '@/features/after-sales/serviceDisplay'
+import { isCustomerTodo } from '@/features/contracts/customerContractRules'
 import { customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
 import { awaitsCustomerDecision } from '@/features/installations/installationDisplay'
 import { latestPerRequest } from '@/features/quotations/quotationDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useSubscriptionsQuery } from '@/hooks/useCustomerAfterSales'
+import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
 import { useMyQuotationsQuery } from '@/hooks/useCustomerQuotations'
-import { useMyServiceRequestsQuery } from '@/hooks/useCustomerServiceRequests'
+import { useMyServiceRequestsQuery, useNotificationsQuery } from '@/hooks/useCustomerServiceRequests'
 import { useMyDispatchesQuery } from '@/hooks/useDispatch'
 import { useNavAlert } from '@/hooks/useNavAlert'
 import { ROUTES } from '@/routes/paths'
-import type { ServiceRequestSummary, SubscriptionView } from '@/types/res/customerAfterSalesRes'
+import type { NotificationView, ServiceRequestSummary, SubscriptionView } from '@/types/res/customerAfterSalesRes'
+import type { ContractView } from '@/types/res/customerContractsRes'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 import type { CustomerDispatchView } from '@/types/res/dispatchRes'
@@ -50,6 +53,16 @@ const serviceAlert = {
   sig: (r: ServiceRequestSummary) => r.status,
   todo: (r: ServiceRequestSummary) => isTodo(r.status, 'customer'),
 }
+const contractAlert = {
+  key: (c: ContractView) => c.contractId,
+  sig: (c: ContractView) => c.status,
+  todo: isCustomerTodo,
+}
+// Thông báo mới kể từ lần xem trước trên trình duyệt này (backend chưa có lệnh đánh dấu đã đọc)
+const notificationAlert = {
+  key: (n: NotificationView) => n.notificationId,
+  sig: () => '',
+}
 const subscriptionAlert = {
   key: (s: SubscriptionView) => s.subscriptionId,
   sig: (s: SubscriptionView) => s.status,
@@ -76,6 +89,12 @@ export function CustomerLayout({ children }: { children?: ReactNode }) {
   const projects = useNavAlert(ROUTES.customer.projects, useMyInstallationsQuery({ enabled }).data, projectAlert)
   const services = useNavAlert(ROUTES.customer.afterSales, useMyServiceRequestsQuery({ enabled }).data, serviceAlert)
   const packages = useNavAlert(ROUTES.customer.packages, useSubscriptionsQuery({ enabled }).data, subscriptionAlert)
+  const contracts = useNavAlert(ROUTES.customer.contracts, useMyContractsQuery({ enabled }).data, contractAlert)
+  const notifications = useNavAlert(
+    ROUTES.customer.notifications,
+    useNotificationsQuery({ enabled }).data,
+    notificationAlert,
+  )
   return (
     <CustomerShell
       badges={{
@@ -84,6 +103,9 @@ export function CustomerLayout({ children }: { children?: ReactNode }) {
         [ROUTES.customer.projects]: { value: projects, attention: true },
         [ROUTES.customer.afterSales]: { value: services, attention: true },
         [ROUTES.customer.packages]: { value: packages, attention: true },
+        [ROUTES.customer.contracts]: { value: contracts, attention: true },
+        // Cùng sự việc đã báo đỏ ở mục của nó nên số thông báo là xám
+        [ROUTES.customer.notifications]: { value: notifications },
       }}
     >
       {children ?? <Outlet />}

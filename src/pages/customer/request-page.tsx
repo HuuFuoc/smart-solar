@@ -12,6 +12,7 @@ import { CustomerDispatchPanel, DispatchOutcomeNotice } from '@/features/dispatc
 import { DispatchRequestForm } from '@/features/dispatch/DispatchRequestForm'
 import { customerDispatchMeta, isActiveDispatch } from '@/features/dispatch/dispatchDisplay'
 import { formatDateTime, shortCode } from '@/features/pre-surveys/preSurveyDisplay'
+import { ContractLinkPanel } from '@/features/contracts/ContractLinkPanel'
 import { RequestQuotationPanel } from '@/features/quotations/RequestQuotationPanel'
 import { BookingPanel } from '@/features/scheduling/BookingPanel'
 import { CancelBookingDialog } from '@/features/scheduling/CancelBookingDialog'
@@ -212,6 +213,7 @@ export function CustomerRequestPage() {
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
                 <RequestQuotationPanel surveyRequestId={r.surveyRequestId} />
+                <ContractLinkPanel surveyRequestId={r.surveyRequestId} />
                 {isClosedCustomerRequest(r) ? (
                   <EmptyState
                     title="Yêu cầu này đã đóng"

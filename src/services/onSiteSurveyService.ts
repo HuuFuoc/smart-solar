@@ -1,4 +1,5 @@
 import type {
+  OnSiteSurveyAmendmentRequest,
   OnSiteSurveyAttachmentRequest,
   OnSiteSurveyRequest,
   OnSiteSurveyRevisionRequest,
@@ -46,6 +47,14 @@ export function getMyOnSiteSurveyAttachmentUrl(appointmentId: string, attachment
 /** POST complete: cần đã bắt đầu, đủ số đo bắt buộc và ít nhất một ảnh mái. Lịch hẹn và yêu cầu chuyển sang xong */
 export function completeOnSiteSurvey(appointmentId: string, body: OnSiteSurveyRevisionRequest) {
   return post<OnSiteSurveyView>(tech.complete(appointmentId), body)
+}
+
+/**
+ * POST amendments: sửa biên bản đã hoàn thành. Ô null giữ nguyên, `obstacles` có mặt thì thay cả danh sách; backend giữ giá
+ * trị cũ trong lịch sử và tăng `version`. Tệp bổ sung phải là ONSITE_SURVEY_EVIDENCE đã xác minh, được gắn với loại DOCUMENT
+ */
+export function amendOnSiteSurvey(appointmentId: string, body: OnSiteSurveyAmendmentRequest) {
+  return post<OnSiteSurveyView>(tech.amendments(appointmentId), body)
 }
 
 /** GET cho kinh doanh đang phụ trách yêu cầu, quản lý, quản trị. 404 ONSITE_SURVEY_NOT_FOUND khi chưa có biên bản */

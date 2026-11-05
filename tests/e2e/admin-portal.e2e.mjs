@@ -13,7 +13,10 @@ let baseUrl
 
 before(async () => {
   // Không theo dõi file: phiên khác sửa code trong lúc chạy thì trang không bị nạp lại giữa chừng
-  server = await createServer({ server: { port: 3155, strictPort: false, hmr: false, watch: null }, logLevel: 'error' })
+  server = await createServer({
+    server: { host: '127.0.0.1', port: 3155, strictPort: false, hmr: false, watch: null },
+    logLevel: 'error',
+  })
   await server.listen()
   baseUrl = server.resolvedUrls.local[0].replace(/\/$/, '')
   // Bản Chromium đầy đủ (headless mới), không cần tải thêm chromium-headless-shell
@@ -103,7 +106,10 @@ describe('A. ghi nhận hoàn tiền', () => {
   test('ghi nhận khoản đã duyệt kèm giờ Việt Nam; chưa xác nhận thì không gửi; khoản chờ duyệt không ghi nhận được', async () => {
     const state = createState()
     const page = await openAdmin(state, '/admin/refunds')
-    await page.getByText('Huỷ gói dịch vụ').first().waitFor()
+    await page
+      .getByText(/^Gói dịch vụ /)
+      .first()
+      .waitFor()
     await page.getByRole('button', { name: 'Ghi nhận đã hoàn' }).click()
     const dialog = page.getByRole('dialog', { name: 'Ghi nhận đã hoàn tiền' })
     await dialog.getByLabel('Mã giao dịch').fill('CK123')

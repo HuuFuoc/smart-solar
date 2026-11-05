@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
@@ -8,6 +9,7 @@ import { isPayableAttempt, paymentStatusMeta } from '@/features/after-sales/afte
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { QuotationDetail } from '@/features/after-sales/ServiceRequestParts'
 import { formatVnd } from '@/features/after-sales/serviceDisplay'
+import { rememberCheckout } from '@/features/payments/payosReturn'
 import {
   useAcceptQuotationMutation,
   useCheckoutQuotationMutation,
@@ -24,6 +26,8 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
   const reject = useRejectQuotationMutation()
   const checkout = useCheckoutQuotationMutation()
   const payment = useQuotationPaymentQuery(quotation.currentPaymentAttemptId)
+  // PayOS chuyển về thì đưa khách lại trang yêu cầu này
+  const { pathname } = useLocation()
   const [rejecting, setRejecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const busy = accept.isPending || checkout.isPending
@@ -78,7 +82,13 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
             )}
             <div className="flex flex-wrap gap-3">
               {payable?.checkoutUrl ? (
-                <a href={payable.checkoutUrl} target="_blank" rel="noreferrer" className={buttonClass('primary')}>
+                <a
+                  href={payable.checkoutUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={buttonClass('primary')}
+                  onClick={() => rememberCheckout(payable.orderCode, pathname)}
+                >
                   Mở trang thanh toán PayOS
                 </a>
               ) : (

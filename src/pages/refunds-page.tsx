@@ -10,8 +10,10 @@ import { KeyValueList, Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { EmptyState, ErrorState, Skeleton, UnavailableState } from '@/components/common/ui/states'
+import { RefundDecisionDialog } from '@/features/after-sales/RefundDecisionDialog'
 import { REFUND_REFERENCE_MAX, refundedAtError, refundedAtValue } from '@/features/after-sales/adminAfterSalesRules'
-import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
+import { refundSourceLabel, refundStatusMeta } from '@/features/after-sales/managerAfterSalesDisplay'
+import { canDecideRefund, refundReasonText } from '@/features/after-sales/managerAfterSalesRules'
 import { formatMoment, todayVn } from '@/features/scheduling/schedulingDisplay'
 import { useRecordRefundMutation } from '@/hooks/useAdminAfterSales'
 import { useRefundsQuery } from '@/hooks/useManagerAfterSales'
@@ -20,8 +22,10 @@ import { ROUTES, withId } from '@/routes/paths'
 import type { RefundView } from '@/types/res/managerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
 
-// Hoàn tiền làm tay: quản lý duyệt ở cổng quản lý, quản trị ghi nhận ở đây sau khi đã chuyển tiền ngoài hệ thống.
-// Không có lệnh hoàn qua PayOS. Ngày đã chuyển tiền quyết định khoản này thuộc kỳ nào trên báo cáo sau bán
+// Hoàn tiền làm tay, quản lý và quản trị dùng chung: khoản chờ duyệt thì quản lý (backend cho cả quản trị) duyệt số tiền
+// hoặc từ chối; khoản đã duyệt thì quản trị ghi nhận sau khi đã chuyển tiền ngoài hệ thống. Không có lệnh hoàn qua PayOS.
+// Ngày đã chuyển tiền quyết định khoản này thuộc kỳ nào trên báo cáo sau bán. Khoản do huỷ gói, dừng việc, không thực
+// hiện được đã được duyệt sẵn khi quản lý quyết định, nên không xét lần hai
 
 type Group = 'approved' | 'pending' | 'refunded' | 'rejected' | 'all'
 
@@ -80,11 +84,17 @@ const STATUS_BADGE_CONFIG: Record<
 
 const vnd = (amount: number | null) => formatMoney(amount, 'VND')
 
-function sourceLabel(r: RefundView) {
-  if (r.subscriptionId) return `Hủy gói dịch vụ ${shortCode(r.subscriptionId)}`
-  if (r.requestId) return `Yêu cầu bảo hành, sửa chữa ${shortCode(r.requestId)}`
-  if (r.quotationId) return `Báo giá ${shortCode(r.quotationId)}`
-  return 'Khoản thanh toán'
+type Viewer = 'manager' | 'admin'
+
+// Quản lý mở trang ở nhóm chờ mình duyệt, quản trị ở nhóm chờ mình ghi nhận
+const GROUP_ORDER: Record<Viewer, Group[]> = {
+  manager: ['pending', 'approved', 'refunded', 'rejected', 'all'],
+  admin: ['approved', 'pending', 'refunded', 'rejected', 'all'],
+}
+
+const REQUEST_PATTERN: Record<Viewer, string> = {
+  manager: ROUTES.manage.afterSalesRequest,
+  admin: ROUTES.admin.afterSalesRequest,
 }
 
 /** Giờ hiện tại làm tròn xuống 15 phút, theo giờ Việt Nam */
@@ -150,7 +160,7 @@ function RecordDialog({ refund, onOpenChange }: { refund: RefundView | null; onO
           <KeyValueList
             className="mt-4"
             items={[
-              { k: 'Khoản', v: sourceLabel(refund) },
+              { k: 'Khoản', v: refundSourceLabel(refund) },
               { k: 'Số tiền đã duyệt', v: <span className="tnum font-semibold">{vnd(refund.approvedAmount)}</span> },
               { k: 'Quản lý duyệt lúc', v: formatMoment(refund.approvedAt) },
             ]}
@@ -221,12 +231,15 @@ function RecordDialog({ refund, onOpenChange }: { refund: RefundView | null; onO
   )
 }
 
-export function AdminRefundsPage() {
+function RefundsPage({ viewer }: { viewer: Viewer }) {
   const [params, setParams] = useSearchParams()
   const raw = params.get('nhom')
-  const group: Group = raw && raw in GROUP_LABELS ? (raw as Group) : 'approved'
+  const order = GROUP_ORDER[viewer]
+  const start = order[0]!
+  const group: Group = raw && raw in GROUP_LABELS ? (raw as Group) : start
   const query = useRefundsQuery()
   const [recording, setRecording] = useState<RefundView | null>(null)
+  const [deciding, setDeciding] = useState<RefundView | null>(null)
 
   const all = query.data ?? []
   const count = (g: Group) => (g === 'all' ? all.length : all.filter((r) => r.status === GROUP_STATUS[g]).length)
@@ -237,7 +250,7 @@ export function AdminRefundsPage() {
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
-        if (next === 'approved') p.delete('nhom')
+        if (next === start) p.delete('nhom')
         else p.set('nhom', next)
         return p
       },
@@ -255,7 +268,7 @@ export function AdminRefundsPage() {
         <FilterChips
           label="Nhóm khoản hoàn tiền"
           className="mb-4"
-          chips={(['approved', 'pending', 'refunded', 'rejected', 'all'] as const).map((g) => ({
+          chips={order.map((g) => ({
             value: g,
             label: GROUP_LABELS[g],
             count: count(g),
@@ -272,7 +285,7 @@ export function AdminRefundsPage() {
           {Object.entries(STATUS_BADGE_CONFIG).map(([key, cfg]) => (
             <div key={key} className="flex items-center gap-1.5">
               <span className={`inline-block h-2 w-2 rounded-full ${cfg.dot}`} />
-              <span className="text-fg-2">{cfg.label}</span>
+              <span className="text-fg-2">{refundStatusMeta(key).label}</span>
             </div>
           ))}
         </div>
@@ -310,9 +323,17 @@ export function AdminRefundsPage() {
             title={
               group === 'approved'
                 ? 'Không có khoản nào chờ ghi nhận'
-                : `Không có khoản nào: ${GROUP_LABELS[group].toLowerCase()}`
+                : group === 'pending'
+                  ? 'Không có khoản nào chờ duyệt'
+                  : `Không có khoản nào: ${GROUP_LABELS[group].toLowerCase()}`
             }
-            description={group === 'approved' ? 'Khoản quản lý đã duyệt sẽ hiện ở đây.' : undefined}
+            description={
+              group === 'approved'
+                ? 'Khoản quản lý đã duyệt sẽ hiện ở đây.'
+                : group === 'pending'
+                  ? 'Khoản hệ thống tự tạo (khách trả tiền nhưng không áp dụng được, công trình bị huỷ trước khi bàn giao) hiện ở đây.'
+                  : undefined
+            }
           />
         ) : (
           <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
@@ -331,7 +352,7 @@ export function AdminRefundsPage() {
               <tbody className="divide-y divide-line/70">
                 {items.map((r) => {
                   const cfg = STATUS_BADGE_CONFIG[r.status] ?? {
-                    label: r.status,
+                    label: refundStatusMeta(r.status).label,
                     bg: 'bg-surface-2',
                     text: 'text-fg-2',
                     border: 'border-line',
@@ -343,16 +364,20 @@ export function AdminRefundsPage() {
                       <Td label="Khoản" className="border-r border-line">
                         <p className="font-semibold text-fg">
                           {r.requestId ? (
-                            <Link to={withId(ROUTES.admin.afterSalesRequest, r.requestId)} className="ui-link font-medium">
-                              {sourceLabel(r)}
+                            <Link to={withId(REQUEST_PATTERN[viewer], r.requestId)} className="ui-link font-medium">
+                              {refundSourceLabel(r)}
                             </Link>
                           ) : (
-                            sourceLabel(r)
+                            refundSourceLabel(r)
                           )}
                         </p>
-                        <p className="mt-0.5 line-clamp-2 max-w-[56ch] text-meta text-fg-3">{r.reason}</p>
+                        <p className="mt-0.5 line-clamp-2 max-w-[56ch] text-meta text-fg-3">
+                          {refundReasonText(r.reason)}
+                        </p>
                         {r.decisionNote && (
-                          <p className="mt-0.5 max-w-[56ch] text-meta text-fg-2 italic">Quản lý: {r.decisionNote}</p>
+                          <p className="mt-0.5 max-w-[56ch] text-meta text-fg-2 italic">
+                            Quản lý ghi: {r.decisionNote}
+                          </p>
                         )}
                       </Td>
                       <Td label="Số tiền" className="border-r border-line tnum text-right whitespace-nowrap">
@@ -368,7 +393,7 @@ export function AdminRefundsPage() {
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-meta font-medium border ${cfg.bg} ${cfg.text} ${cfg.border}`}
                         >
                           <Icon name={cfg.icon} className="text-[16px]" aria-hidden />
-                          <span>{cfg.label}</span>
+                          <span>{refundStatusMeta(r.status).label}</span>
                         </span>
                       </Td>
                       <Td label="Thời gian" className="border-r border-line tnum text-meta whitespace-nowrap text-fg-2">
@@ -384,7 +409,12 @@ export function AdminRefundsPage() {
                         )}
                       </Td>
                       <Td label="Thao tác" className="text-right whitespace-nowrap">
-                        {r.status === 'APPROVED' && (
+                        {canDecideRefund(r) && (
+                          <Button size="sm" variant="info" icon="gavel" onClick={() => setDeciding(r)}>
+                            Xét hoàn tiền
+                          </Button>
+                        )}
+                        {viewer === 'admin' && r.status === 'APPROVED' && (
                           <Button size="sm" variant="soft" icon="task_alt" onClick={() => setRecording(r)}>
                             Ghi nhận đã hoàn
                           </Button>
@@ -396,18 +426,33 @@ export function AdminRefundsPage() {
               </tbody>
             </Table>
             <div className="border-t border-line bg-surface-2/40 px-4 py-2 text-meta text-fg-3 flex items-center justify-between">
-              <span>Đang hiển thị {items.length} trên tổng {all.length} khoản hoàn tiền</span>
-              <span className="tnum">Cổng quản trị SmartSolar</span>
+              <span>
+                Đang hiển thị {items.length} trên tổng {all.length} khoản hoàn tiền
+              </span>
+              <span className="tnum">
+                {viewer === 'admin' ? 'Cổng quản trị SmartSolar' : 'Cổng quản lý SmartSolar'}
+              </span>
             </div>
           </div>
         )}
       </section>
 
-      <RecordDialog
-        key={recording?.refundId ?? 'closed'}
-        refund={recording}
-        onOpenChange={(open) => !open && setRecording(null)}
-      />
+      {viewer === 'admin' && (
+        <RecordDialog
+          key={recording?.refundId ?? 'closed'}
+          refund={recording}
+          onOpenChange={(open) => !open && setRecording(null)}
+        />
+      )}
+      <RefundDecisionDialog refund={deciding} onClose={() => setDeciding(null)} />
     </>
   )
+}
+
+export function ManageRefundsPage() {
+  return <RefundsPage viewer="manager" />
+}
+
+export function AdminRefundsPage() {
+  return <RefundsPage viewer="admin" />
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button } from '@/components/common/ui/button'
+import { Button, ButtonLink } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Select } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
@@ -9,6 +9,7 @@ import { PackageFacts } from '@/features/after-sales/PackageList'
 import { usePurchaseMutation } from '@/hooks/useCustomerAfterSales'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
+import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { PackageView } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
@@ -36,6 +37,8 @@ export function PurchaseDialog({
 }) {
   const [contractId, setContractId] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // Hợp đồng đang có link thanh toán riêng (mở ở trang hợp đồng) nên không gộp vào link mua gói được
+  const [busyContractId, setBusyContractId] = useState<string | null>(null)
   const purchase = usePurchaseMutation()
   const contracts = useMyContractsQuery()
   // Chỉ để bỏ hợp đồng có công trình đã huỷ; chưa tải xong hay lỗi thì backend tự từ chối
@@ -49,12 +52,14 @@ export function PurchaseDialog({
     if (purchase.isPending) return
     setContractId('')
     setError(null)
+    setBusyContractId(null)
     onClose()
   }
 
   async function confirm() {
     if (!pkg || !selected || purchase.isPending) return
     setError(null)
+    setBusyContractId(null)
     try {
       // Mỗi loại gói một ô id; backend từ chối nếu id không đúng loại
       const maintenance = isMaintenance(pkg.kind)
@@ -68,6 +73,13 @@ export function PurchaseDialog({
       onPurchased(view.checkout.paymentAttemptId)
     } catch (e) {
       const linkFailed = isApiError(e) && e.code !== null && LINK_FAILED.has(e.code)
+      if (isApiError(e) && e.code === 'PAYMENT_CHECKOUT_IN_PROGRESS' && selected.includeContract) {
+        setBusyContractId(selected.contract.contractId)
+        setError(
+          `Hợp đồng ${selected.contract.contractNumber} đang có một link thanh toán chưa xong. Thanh toán hoặc huỷ link đó ở trang hợp đồng rồi mua gói lại.`,
+        )
+        return
+      }
       setError(
         linkFailed
           ? `${errorMessage(e)} Đơn mua vẫn được ghi ở mục Gói của bạn với trạng thái chờ thanh toán; huỷ đơn đó trước khi mua lại.`
@@ -138,7 +150,21 @@ export function PurchaseDialog({
 
           {error && (
             <div role="alert" className="mt-4">
-              <Notice tone="danger">{error}</Notice>
+              <Notice tone="danger">
+                {error}
+                {busyContractId && (
+                  <span className="mt-3 flex">
+                    <ButtonLink
+                      to={withId(ROUTES.customer.contract, busyContractId)}
+                      size="sm"
+                      variant="info"
+                      icon="history_edu"
+                    >
+                      Mở hợp đồng
+                    </ButtonLink>
+                  </span>
+                )}
+              </Notice>
             </div>
           )}
 

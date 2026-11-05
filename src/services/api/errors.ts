@@ -230,16 +230,25 @@ const ERROR_MESSAGES: Record<string, string> = {
   AFTER_SALES_WARRANTY_ACTIVATION_RECORDED: 'Thiết bị này đã có ngày kích hoạt bảo hành. Ngày đã ghi không sửa được.',
   AFTER_SALES_PAYMENT_REQUIRED: 'Khách chưa thanh toán phần phải trả tiền nên chưa làm được.',
   AFTER_SALES_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh hiện trường của buổi này trước khi gửi báo cáo.',
+  AFTER_SALES_PARTS_UNAVAILABLE:
+    'Chưa đủ linh kiện nên không sửa luôn được. Kết thúc buổi chờ để quản lý xếp buổi sửa.',
+  AFTER_SALES_REPAIR_TIME_INSUFFICIENT:
+    'Thời gian sửa vượt khung giờ của buổi này. Kết thúc buổi chờ để quản lý xếp buổi sửa riêng.',
   AFTER_SALES_CHANGE_TOO_LATE: 'Đã quá hạn đổi hoặc huỷ trên mạng. Liên hệ Smart Solar.',
   AFTER_SALES_TECHNICIAN_UNAVAILABLE:
     'Kỹ thuật viên không nhận được buổi hẹn vào giờ này (trùng lịch, nghỉ hoặc ngoài giờ làm). Chọn người khác hoặc đổi giờ.',
   MAINTENANCE_BOOKING_TOO_SOON: 'Ngày hẹn quá gần so với thời gian phải đặt trước. Chọn ngày xa hơn.',
+  MAINTENANCE_OUTSIDE_PERIOD:
+    'Giờ hẹn nằm ngoài thời gian đặt được của lượt bảo trì này. Chọn ngày trong khoảng được ghi.',
+  MAINTENANCE_ENTITLEMENT_NOT_FOUND: 'Không tìm thấy lượt bảo trì này trong gói của bạn. Danh sách đã được tải lại.',
+  SITE_HAS_ACTIVE_INSTALLATION: 'Công trình đang thi công nên chưa đổi được phường, xã của địa điểm.',
   // Khảo sát tại công trình
   ONSITE_APPOINTMENT_NOT_FOUND: 'Không tìm thấy lịch khảo sát, hoặc lịch không còn giao cho bạn.',
   ONSITE_APPOINTMENT_NOT_CONFIRMED: 'Nhận lịch này trước rồi mới khảo sát được.',
   ONSITE_SURVEY_TOO_EARLY: 'Chưa tới giờ bắt đầu khảo sát. Bắt đầu được khi gần tới giờ hẹn.',
   ONSITE_SURVEY_NOT_FOUND: 'Bấm Bắt đầu khảo sát trước rồi mới thêm ảnh được.',
-  ONSITE_SURVEY_ALREADY_COMPLETED: 'Khảo sát này đã hoàn thành nên không sửa được nữa.',
+  ONSITE_SURVEY_ALREADY_COMPLETED: 'Khảo sát này đã hoàn thành. Muốn sửa thì gửi bổ sung biên bản kèm lý do.',
+  ONSITE_SURVEY_NOT_COMPLETED: 'Biên bản chưa hoàn thành nên chưa bổ sung được. Sửa thẳng trên biên bản rồi lưu.',
   ONSITE_SURVEY_NOT_STARTED: 'Bấm Bắt đầu khảo sát tại công trình trước khi hoàn thành.',
   ONSITE_SURVEY_INCOMPLETE: 'Còn thiếu số đo bắt buộc. Điền các ô được đánh dấu rồi hoàn thành lại.',
   ONSITE_SURVEY_STALE_REVISION: 'Biên bản vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
@@ -249,6 +258,9 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Trạng thái đã thay đổi nên không làm được thao tác này. Tải lại trang để xem trạng thái mới.',
   SALES_TASK_NOT_FOUND: 'Không tìm thấy việc này.',
   SALES_TASK_ALREADY_CLAIMED: 'Việc này vừa có người nhận trước. Danh sách đã được tải lại.',
+  AFTER_SALES_DUPLICATE_SERIAL: 'Đã có thiết bị khác cùng hãng và số serial này. Kiểm tra lại số serial.',
+  DISASTER_CLAIM_NOT_APPROVED: 'Hỗ trợ của gói thiên tai chưa được duyệt. Xét hỗ trợ trước rồi mới chọn gói thiên tai.',
+  DISASTER_RECONSIDERATION_USED: 'Yêu cầu này đã được xét lại một lần.',
   // Báo giá lắp đặt
   QUOTATION_NOT_FOUND: 'Không tìm thấy báo giá.',
   QUOTATION_SURVEY_NOT_COMPLETED: 'Kỹ thuật viên chưa hoàn thành khảo sát tại công trình nên chưa lập báo giá được.',
@@ -275,6 +287,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   CONTRACT_CANONICAL_HASH_MISMATCH:
     'PDF không được tạo từ phiên bản hợp đồng đang xem (mã nội dung không khớp). Tạo lại PDF từ đúng phiên bản.',
   CONTRACT_DOCUMENT_MISSING: 'Gắn PDF hợp đồng chính thức trước khi gửi khách ký.',
+  CONTRACT_DOCUMENT_NOT_FOUND: 'Hợp đồng chưa có tài liệu này.',
   CONTRACT_WRONG_DOCUMENT_VERSION: 'Bản ký không phải bản in của PDF hợp đồng chính thức hiện tại.',
   CONTRACT_REJECTION_REASON_REQUIRED: 'Ghi lý do từ chối bản ký.',
   CONTRACT_WARRANTY_VALIDATION_FAILED: 'Thời hạn bảo hành này không còn được dùng. Chọn lại thời hạn trong danh sách.',
@@ -319,6 +332,11 @@ const ERROR_MESSAGES: Record<string, string> = {
   RAG_INVALID_STATE: 'Tài liệu vừa đổi trạng thái nên không làm được thao tác này. Đã tải lại để xem trạng thái mới.',
   RAG_STALE_REVISION: 'Tài liệu vừa được sửa ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
   RAG_SERVICE_UNAVAILABLE: 'Dịch vụ chatbot tạm thời không phản hồi. Thử lại sau ít phút.',
+  RAG_SESSION_NOT_FOUND: 'Không tìm thấy cuộc trò chuyện này. Mở cuộc trò chuyện mới để hỏi tiếp.',
+  RAG_MESSAGE_TOO_LONG: 'Câu hỏi phải có từ 1 đến 8.000 ký tự.',
+  // Hạn mức theo ngày của từng người hoặc của cả hệ thống, backend không nói là hạn mức nào
+  RAG_QUOTA_EXCEEDED: 'Đã hết lượt hỏi trợ lý trong hôm nay. Hỏi lại vào ngày mai.',
+  RAG_TOO_MANY_CONCURRENT_REQUESTS: 'Câu hỏi trước vẫn đang được trả lời. Chờ xong rồi hỏi tiếp.',
   RAG_CONFIG_VALIDATION_FAILED: 'Cấu hình chưa hợp lệ. Kiểm tra lại các tham số được báo lỗi.',
   RAG_CONFIG_STALE_REVISION: 'Cấu hình vừa được sửa ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
   RAG_CONFIG_DRAFT_NOT_FOUND: 'Không còn bản nháp nào. Đã tải lại cấu hình.',

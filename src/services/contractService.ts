@@ -4,7 +4,7 @@ import type {
   OfficialDocumentRequest,
 } from '@/types/req/salesContractsReq'
 import type { RevisionRequest } from '@/types/req/salesQuotationsReq'
-import type { ContractView } from '@/types/res/customerContractsRes'
+import type { ContractDocumentUrlView, ContractView } from '@/types/res/customerContractsRes'
 import type { ContractPaymentView } from '@/types/res/staffPaymentsRes'
 import { get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
@@ -14,6 +14,12 @@ import { ENDPOINTS } from '@/services/api/endpoints'
 // Giá do backend chép từ báo giá đã đồng ý, FE không gửi tiền
 
 const api = ENDPOINTS.contracts
+
+/** inline: mở xem trong trình duyệt; attachment: tải về */
+export type DocumentDisposition = 'inline' | 'attachment'
+
+/** Tài liệu của một hợp đồng: PDF chính thức, hoặc bản ký có mã `submissionId` */
+export type ContractDocumentTarget = { contractId: string; submissionId?: string; disposition: DocumentDisposition }
 
 /** Mọi phiên bản hợp đồng của một yêu cầu khảo sát (kể cả bản bị phụ lục thay) */
 export function listForSurveyRequest(surveyRequestId: string) {
@@ -63,4 +69,17 @@ export function createAmendment(contractId: string, body: Omit<ContractTermsRequ
 /** Trạng thái thanh toán của hợp đồng phía nhân viên (Sales, Manager, Admin), kèm lịch sử */
 export function getContractPayments(contractId: string) {
   return get<ContractPaymentView>(api.payments(contractId))
+}
+
+/**
+ * Link ký sẵn của PDF chính thức (cùng phạm vi đọc với GET /contracts/{id}). Link sống vài phút, gắn đúng phiên bản tệp đã xác minh
+ * nên tải về đúng tệp có SHA-256 hợp đồng ghi
+ */
+export function getOfficialDocumentUrl(contractId: string, disposition: DocumentDisposition) {
+  return get<ContractDocumentUrlView>(api.officialDocumentUrl(contractId), { params: { disposition } })
+}
+
+/** Link ký sẵn của một bản khách đã ký (mã lấy từ `submissions` của hợp đồng) */
+export function getSubmissionUrl(contractId: string, submissionId: string, disposition: DocumentDisposition) {
+  return get<ContractDocumentUrlView>(api.submissionUrl(contractId, submissionId), { params: { disposition } })
 }

@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { Badge } from '@/components/common/ui/badge'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState } from '@/components/common/ui/states'
+import { OnSiteSurveyAmendments } from '@/features/onsite-survey/OnSiteSurveyAmendments'
 import { OnSiteSurveyFiles } from '@/features/onsite-survey/OnSiteSurveyFiles'
 import { OnSiteSurveySummary } from '@/features/onsite-survey/OnSiteSurveySummary'
 import { onSiteSurveyStatusMeta } from '@/features/onsite-survey/onSiteSurveyDisplay'
@@ -52,6 +53,7 @@ export function OnSiteSurveyResultPanel({ surveyRequestId, enabled }: { surveyRe
               <h3 className="mb-3 text-body font-semibold text-fg">Ảnh và tài liệu</h3>
               <OnSiteSurveyFiles attachments={survey.attachments} getUrl={getUrl} emptyText="Không có tệp nào." />
             </div>
+            <OnSiteSurveyAmendments survey={survey} />
           </>
         ) : (
           <p className="tnum text-body text-fg-2">

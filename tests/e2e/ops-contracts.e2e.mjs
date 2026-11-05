@@ -24,7 +24,7 @@ let baseUrl
 const PDF = { name: 'hop-dong.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n% test\n%%EOF\n') }
 
 before(async () => {
-  server = await createServer({ server: { port: 3175, strictPort: false }, logLevel: 'error' })
+  server = await createServer({ server: { host: '127.0.0.1', port: 3175, strictPort: false }, logLevel: 'error' })
   await server.listen()
   baseUrl = server.resolvedUrls.local[0].replace(/\/$/, '')
   browser = await chromium.launch({ channel: 'chromium' })

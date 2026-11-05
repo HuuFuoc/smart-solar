@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import { Button, IconButton } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
+import { SiteLocationDialog } from '@/features/pre-surveys/SiteLocationDialog'
 import { addMonths, monthCells, monthLabel, monthOf } from '@/features/scheduling/calendarMonth'
 import {
   BOOKING_HORIZON_DAYS,
@@ -172,6 +173,8 @@ export function SlotPicker({
   const today = todayVn()
   const slots = useSurveySlotsQuery(propertySiteId, date)
   const name = useId()
+  // Địa điểm cũ chưa có mã phường, xã: khách bổ sung ngay trên địa điểm này rồi giờ trống tự tải lại
+  const [fixingLocation, setFixingLocation] = useState(false)
   const list = slots.data?.slots ?? []
   // Ca sáng / chiều theo giờ Việt Nam của giờ bắt đầu.
   const morning = list.filter((s) => formatTime(s.startsAt) < '12:00')
@@ -216,7 +219,16 @@ export function SlotPicker({
             // Khu vực của công trình chưa có kỹ thuật viên nhận lịch: báo lý do, khách nhờ Smart Solar xếp người
             <Notice tone="warn" title="Chưa đặt được giờ khảo sát">
               {coverageText(slots.data.coverageStatus)}{' '}
-              {slots.data.dispatchAvailable && onRequestDispatch ? (
+              {slots.data.coverageStatus === 'SITE_LOCATION_REQUIRED' ? (
+                <>
+                  Chọn phường, xã của công trình để xem giờ trống.
+                  <span className="mt-3 flex">
+                    <Button icon="edit_location_alt" size="sm" variant="soft" onClick={() => setFixingLocation(true)}>
+                      Bổ sung phường, xã
+                    </Button>
+                  </span>
+                </>
+              ) : slots.data.dispatchAvailable && onRequestDispatch ? (
                 <>
                   Smart Solar xếp kỹ thuật viên giúp bạn được.
                   <span className="mt-3 flex">
@@ -258,6 +270,7 @@ export function SlotPicker({
           )}
         </fieldset>
       </div>
+      {fixingLocation && <SiteLocationDialog siteId={propertySiteId} onClose={() => setFixingLocation(false)} />}
     </div>
   )
 }

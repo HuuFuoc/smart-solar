@@ -69,3 +69,19 @@ export type ContractView = {
   /** Số tháng bảo hành lắp đặt; null với hợp đồng cũ */
   warrantyMonths: number | null
 }
+
+/**
+ * Link tải ký sẵn của PDF chính thức hoặc một bản ký (AttachedFileUrlView). GET /api/customers/me/contracts/{id}/official-document/url,
+ * .../submissions/{submissionId}/url và hai đường tương ứng phía nhân viên /api/contracts/{id}/... (API bổ sung trên nhánh kiểm thử).
+ * Link hết hạn sau vài phút: chỉ xin khi người dùng bấm, không lưu
+ */
+export type ContractDocumentUrlView = {
+  /** Mã tệp PDF chính thức, hoặc mã bản ký */
+  id: string
+  url: string
+  expiresAt: string
+  /** inline | attachment */
+  disposition: string
+  contentType: string
+  fileName: string
+}

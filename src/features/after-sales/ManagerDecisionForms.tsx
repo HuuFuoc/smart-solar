@@ -4,6 +4,7 @@ import { Button } from '@/components/common/ui/button'
 import { FormActions } from '@/components/common/ui/form-actions'
 import { Field, Input, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
+import { disasterCoverageAllowed } from '@/features/after-sales/managerAfterSalesRules'
 import { formatVnd, pendingItems } from '@/features/after-sales/serviceDisplay'
 import {
   useDecideCancellationMutation,
@@ -27,13 +28,19 @@ function ErrorNotice({ message }: { message: string | null }) {
 type Choice = { coverage: string; reason: string }
 
 /**
- * Chọn bảo hành lắp đặt / bảo hành sửa chữa / khách trả tiền cho từng hạng mục. Bảo hành chỉ chọn được khi còn hạn lúc
- * khách báo lỗi; gói thiên tai chưa làm trên web. Hạng mục khách trả tiền sẽ sang kinh doanh báo giá
+ * Chọn bảo hành lắp đặt / bảo hành sửa chữa / gói thiên tai / khách trả tiền cho từng hạng mục. Bảo hành chỉ chọn được khi
+ * còn hạn lúc khách báo lỗi; gói thiên tai chỉ khi hỗ trợ đã được duyệt (backend tính phần gói trả trên báo giá). Hạng mục
+ * khách trả tiền hoặc gói thiên tai hỗ trợ sẽ sang kinh doanh báo giá
  */
 export function CoverageForm({ request }: { request: ServiceRequestView }) {
   const decide = useDecideCoverageMutation()
   const items = pendingItems(request)
-  const firstChoice = request.withinInstallationWarranty ? 'INSTALLATION_WARRANTY' : 'CHARGEABLE'
+  // Thứ tự ưu tiên của backend: bảo hành lắp đặt (miễn phí), rồi gói thiên tai đã duyệt, còn lại khách trả tiền
+  const firstChoice = request.withinInstallationWarranty
+    ? 'INSTALLATION_WARRANTY'
+    : disasterCoverageAllowed(request)
+      ? 'DISASTER_PROTECTION'
+      : 'CHARGEABLE'
   const [choices, setChoices] = useState<Record<string, Choice>>({})
   const [error, setError] = useState<string | null>(null)
   const choiceOf = (item: ServiceItemView) => choices[item.itemId] ?? { coverage: firstChoice, reason: '' }
@@ -81,6 +88,10 @@ export function CoverageForm({ request }: { request: ServiceRequestView }) {
                   </option>
                   <option value="REPAIR_WARRANTY" disabled={!request.withinRepairWarranty}>
                     Bảo hành sửa chữa{request.withinRepairWarranty ? '' : ' (không có)'}
+                  </option>
+                  <option value="DISASTER_PROTECTION" disabled={!disasterCoverageAllowed(request)}>
+                    Gói bảo vệ thiên tai
+                    {disasterCoverageAllowed(request) ? '' : request.claim ? ' (chưa duyệt hỗ trợ)' : ' (không có)'}
                   </option>
                   <option value="CHARGEABLE">Khách trả tiền</option>
                 </Select>

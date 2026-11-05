@@ -21,7 +21,10 @@ import {
   startBlocker,
   technicianVisitMeta,
 } from '@/features/after-sales/technicianVisitDisplay'
+import { canAddSupplementary, canReportInspection, canReportWork } from '@/features/after-sales/technicianVisitRules'
 import { InspectionReportForm, WorkReportForm } from '@/features/after-sales/VisitReportForms'
+import { OnSiteWaitPanel } from '@/features/after-sales/OnSiteWaitPanel'
+import { SupplementaryItemDialog } from '@/features/after-sales/SupplementaryItemDialog'
 import { addressMapUrl } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatAppointment } from '@/features/scheduling/schedulingDisplay'
 import {
@@ -62,6 +65,13 @@ function nextStep(v: TechnicianVisitView): TrackerNext {
           action: { label: 'Bắt đầu', icon: 'play_arrow', target: 'visit-action' },
         }
   }
+  if (v.waitingOnSite)
+    return {
+      tone: 'info',
+      title: 'Đang chờ tại công trình để sửa luôn',
+      body: 'Quản lý duyệt hết hạng mục và khách trả phần phải trả thì bấm Sửa luôn. Không chờ được nữa thì kết thúc buổi chờ.',
+      action: { label: 'Xem điều kiện', icon: 'visibility', target: 'visit-onsite' },
+    }
   if (v.status === 'IN_PROGRESS')
     return {
       tone: 'danger',
@@ -164,7 +174,7 @@ export function TechAfterSalesVisitPage() {
   const query = useMyVisitQuery(id)
   const respond = useRespondVisitMutation()
   const absence = useAbsenceMutation()
-  const [dialog, setDialog] = useState<'decline' | 'absent' | null>(null)
+  const [dialog, setDialog] = useState<'decline' | 'absent' | 'supplementary' | null>(null)
   const getUrl = useCallback((evidenceId: string) => getEvidenceUrl(id ?? '', evidenceId), [id])
   usePageCrumb(query.data ? query.data.requestNumber : null)
 
@@ -173,7 +183,6 @@ export function TechAfterSalesVisitPage() {
       {(v) => {
         const status = technicianVisitMeta(v)
         const next = nextStep(v)
-        const working = v.status === 'IN_PROGRESS'
         return (
           <>
             <PageHeader
@@ -208,11 +217,36 @@ export function TechAfterSalesVisitPage() {
                 </Panel>
               )}
 
-              {working && (
+              {v.waitingOnSite && <OnSiteWaitPanel visit={v} />}
+
+              {canReportInspection(v) && (
                 <Panel>
-                  <PanelHeader title={v.purpose === 'INSPECTION' ? 'Kết quả kiểm tra' : 'Báo cáo công việc'} />
+                  <PanelHeader title="Kết quả kiểm tra" />
                   <PanelBody>
-                    {v.purpose === 'INSPECTION' ? <InspectionReportForm visit={v} /> : <WorkReportForm visit={v} />}
+                    <InspectionReportForm visit={v} />
+                  </PanelBody>
+                </Panel>
+              )}
+
+              {canReportWork(v) && (
+                <Panel>
+                  <PanelHeader title="Báo cáo công việc" />
+                  <PanelBody>
+                    <WorkReportForm visit={v} />
+                  </PanelBody>
+                </Panel>
+              )}
+
+              {canAddSupplementary(v) && (
+                <Panel>
+                  <PanelHeader
+                    title="Hạng mục phát sinh"
+                    description="Lỗi khác thấy khi đang sửa: quản lý quyết định chi phí trước khi bạn làm"
+                  />
+                  <PanelBody>
+                    <Button icon="add" variant="soft" onClick={() => setDialog('supplementary')}>
+                      Báo hạng mục phát sinh
+                    </Button>
                   </PanelBody>
                 </Panel>
               )}
@@ -293,6 +327,7 @@ export function TechAfterSalesVisitPage() {
               }}
               onClose={() => setDialog(null)}
             />
+            <SupplementaryItemDialog visit={v} open={dialog === 'supplementary'} onClose={() => setDialog(null)} />
             <ReasonDialog
               open={dialog === 'absent'}
               title="Báo khách vắng?"

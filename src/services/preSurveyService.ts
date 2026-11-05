@@ -1,4 +1,5 @@
 import type { CreateCustomerProfileRequest, CreatePropertySiteRequest } from '@/types/req/customersReq'
+import type { SetSiteAdministrativeLocationRequest } from '@/types/req/customerSiteLocationReq'
 import type { UpdatePreSurveySurfaceRequest } from '@/types/req/preSurveySurfaceReq'
 import type { CreatePreSurveyRequest, UpdatePreSurveyRequest } from '@/types/req/preSurveysReq'
 import type {
@@ -8,6 +9,7 @@ import type {
   CustomerPreSurveyListItem,
   CustomerSiteListItem,
 } from '@/types/res/customersRes'
+import type { SiteLocationView } from '@/types/res/customerSiteLocationRes'
 import type { PreSurveySurfaceView, UpdatePreSurveySurfaceResponse } from '@/types/res/preSurveySurfaceRes'
 import type { CreatePreSurveyResponse, SubmitPreSurveyResponse } from '@/types/res/preSurveysRes'
 import { get, post, put } from '@/services/api/client'
@@ -35,6 +37,14 @@ export function listMyDrafts() {
 /** Chưa có hồ sơ thì trả CUSTOMER_PROFILE_NOT_FOUND */
 export function createPropertySite(body: CreatePropertySiteRequest) {
   return post<CreatePropertySiteResponse>(ENDPOINTS.customers.sites, body)
+}
+
+/**
+ * Bổ sung / sửa mã tỉnh và phường, xã của địa điểm đã có (bắt buộc cả hai), không đổi toạ độ hay tên. Bị từ chối khi địa
+ * điểm đang có lịch khảo sát (SITE_HAS_ACTIVE_BOOKING) hoặc dự án thi công chưa xong (SITE_HAS_ACTIVE_INSTALLATION)
+ */
+export function setSiteAdministrativeLocation(siteId: string, body: SetSiteAdministrativeLocationRequest) {
+  return put<SiteLocationView>(ENDPOINTS.customerSiteLocation.administrativeLocation(siteId), body)
 }
 
 /** Tạo bản nháp cho một địa điểm của khách */

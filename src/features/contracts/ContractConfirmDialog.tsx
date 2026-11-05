@@ -15,6 +15,8 @@ export function ContractConfirmDialog({
   successText,
   run,
   onClose,
+  variant = 'primary',
+  formatError = contractErrorMessage,
 }: {
   title: string
   children: ReactNode
@@ -23,6 +25,9 @@ export function ContractConfirmDialog({
   successText: string
   run: () => Promise<unknown>
   onClose: () => void
+  variant?: 'primary' | 'danger-solid'
+  /** Câu lỗi theo người xem; mặc định là câu cho nhân viên */
+  formatError?: (error: unknown) => string
 }) {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -35,7 +40,7 @@ export function ContractConfirmDialog({
       toast.success(successText)
       onClose()
     } catch (e) {
-      setError(contractErrorMessage(e))
+      setError(formatError(e))
     } finally {
       setPending(false)
     }
@@ -54,7 +59,7 @@ export function ContractConfirmDialog({
         <Button icon="close" variant="secondary" disabled={pending} onClick={onClose}>
           Đóng
         </Button>
-        <Button icon={icon} variant="primary" disabled={pending} onClick={() => void submit()}>
+        <Button icon={icon} variant={variant} disabled={pending} onClick={() => void submit()}>
           {pending ? 'Đang gửi…' : confirmLabel}
         </Button>
       </DialogFooter>

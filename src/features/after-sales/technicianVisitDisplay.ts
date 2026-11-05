@@ -33,6 +33,7 @@ export function startBlocker(v: TechnicianVisitView, now = new Date()) {
 export function technicianVisitMeta(v: TechnicianVisitView): { label: string; tone: Tone } {
   if (awaitsAnswer(v)) return { label: 'Chờ bạn nhận', tone: 'danger' }
   if (v.status === 'SCHEDULED') return { label: 'Đã nhận, chờ tới giờ', tone: 'ok' }
+  if (v.waitingOnSite) return { label: 'Chờ tại công trình', tone: 'info' }
   if (v.status === 'IN_PROGRESS') return { label: 'Đang làm', tone: 'info' }
   return visitStatusMeta(v.status)
 }

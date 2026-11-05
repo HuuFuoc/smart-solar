@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
@@ -67,16 +67,25 @@ function JobTime({ job }: { job: { startsAt: string; endsAt: string } }) {
   )
 }
 
-function JobPlace({ name, area }: { name: string; area: (string | null)[] }) {
+function JobPlace({ name, area, to }: { name: string; area: (string | null)[]; to?: string }) {
   return (
     <ListCell wide>
-      <h3 className="font-semibold">{name}</h3>
+      <h3 className="font-semibold">
+        {to ? (
+          <Link to={to} className="ui-link">
+            {name}
+          </Link>
+        ) : (
+          name
+        )}
+      </h3>
       <p className="mt-0.5 text-meta text-fg-2">{area.filter(Boolean).join(', ')}</p>
     </ListCell>
   )
 }
 
-// Một lịch đang chờ người nhận. Chưa có địa chỉ cụ thể và số điện thoại khách cho tới khi nhận
+// Một lịch đang chờ người nhận. Chưa có địa chỉ cụ thể và số điện thoại khách cho tới khi nhận. Tên công trình mở trang
+// chi tiết (tải lại từ backend trước khi nhận)
 function OpenJobRow({ job }: { job: OpenAppointmentView }) {
   const accept = useAcceptAppointmentMutation()
   const navigate = useNavigate()
@@ -96,7 +105,11 @@ function OpenJobRow({ job }: { job: OpenAppointmentView }) {
     <ListRow>
       <ListCells columns={COLUMNS}>
         <JobTime job={job} />
-        <JobPlace name={job.propertyName} area={[job.ward, job.province]} />
+        <JobPlace
+          name={job.propertyName}
+          area={[job.ward, job.province]}
+          to={withId(ROUTES.tech.openJob, job.appointmentId)}
+        />
         <ListCell label="Khu vực">{job.zone?.name ?? '—'}</ListCell>
         <ListCell label="Mặt lắp">
           {surfaceTypeLabel(job.installationSurfaceType)}, dùng được {formatArea(job.usableAreaM2)}
