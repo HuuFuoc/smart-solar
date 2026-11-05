@@ -6,12 +6,12 @@ import { Notice } from '@/components/common/ui/lists'
 import { Skeleton } from '@/components/common/ui/states'
 import { ConflictList } from '@/features/scheduling/ConflictList'
 import { conflictsOf } from '@/features/scheduling/schedulingDisplay'
+import { ZoneCheckCard } from '@/features/scheduling/ZoneCheckCard'
 import { useOperationalZonesQuery, useSetTechnicianZonesMutation } from '@/hooks/useTechnicianAdmin'
 import { errorMessage } from '@/services/api/errors'
 import type { TechnicianProfileView } from '@/types/res/adminTechniciansRes'
 
-// Khu vực phục vụ của kỹ thuật viên. Khách đặt giờ ở phường thuộc khu nào thì kỹ thuật viên của khu đó thấy và nhận lịch.
-// Danh sách khu vực do admin lập; mỗi lần lưu là thay cả danh sách
+// Khu vực phục vụ của kỹ thuật viên
 export function TechnicianZonesForm({ technician }: { technician: TechnicianProfileView }) {
   const zones = useOperationalZonesQuery()
   const save = useSetTechnicianZonesMutation()
@@ -61,7 +61,6 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
   return (
     <form noValidate onSubmit={submit} className="space-y-6">
       <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
-        {/* Header khung khu vực */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/40 px-4 py-3">
           <div>
             <h3 className="font-semibold text-fg">Phân công khu vực địa bàn</h3>
@@ -82,70 +81,17 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
           </div>
         </div>
 
-        {/* Lưới các thẻ khu vực phục vụ */}
         <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
-          {zones.data.map((zone) => {
-            const isChecked = selected.has(zone.zoneId)
-            const isDisabled = !zone.isActive
-            return (
-              <div
-                key={zone.zoneId}
-                role="checkbox"
-                tabIndex={isDisabled ? -1 : 0}
-                aria-checked={isChecked}
-                aria-disabled={isDisabled}
-                onClick={() => !isDisabled && toggle(zone.zoneId)}
-                onKeyDown={(e) => {
-                  if (!isDisabled && (e.key === ' ' || e.key === 'Enter')) {
-                    e.preventDefault()
-                    toggle(zone.zoneId)
-                  }
-                }}
-                className={`relative flex cursor-pointer select-none items-start gap-3 rounded-container border p-3.5 transition-all ${
-                  isDisabled
-                    ? 'cursor-not-allowed border-line bg-surface-2/30 opacity-50'
-                    : isChecked
-                      ? 'border-emerald-500/50 bg-emerald-500/10 shadow-2xs hover:border-emerald-500'
-                      : 'border-line bg-surface-1 hover:border-fg-3 hover:bg-surface-2/50'
-                }`}
-              >
-                {/* Custom Checkbox Box */}
-                <div
-                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
-                    isChecked
-                      ? 'border-emerald-500 bg-emerald-500 text-white'
-                      : 'border-fg-3 bg-canvas'
-                  }`}
-                >
-                  {isChecked && <Icon name="check" className="text-[16px] text-white" />}
-                </div>
-
-                {/* Thông tin khu vực */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-semibold text-fg">{zone.name}</span>
-                    {zone.code && (
-                      <span className="font-mono text-micro text-fg-3">{zone.code}</span>
-                    )}
-                  </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-micro font-medium text-fg-2">
-                      <Icon name="location_on" className="text-accent text-[13px]" />
-                      {zone.communeCount} phường, xã
-                    </span>
-                    {!zone.isServiceable && (
-                      <span className="inline-block rounded bg-amber-500/15 px-1.5 py-0.5 text-micro font-medium text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                        Tạm ngưng
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+          {zones.data.map((zone) => (
+            <ZoneCheckCard
+              key={zone.zoneId}
+              zone={zone}
+              checked={selected.has(zone.zoneId)}
+              onToggle={() => toggle(zone.zoneId)}
+            />
+          ))}
         </div>
 
-        {/* Footer điều khiển */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/30 px-4 py-3">
           <div className="flex items-center gap-3">
             <Button icon="save" type="submit" variant="primary" disabled={save.isPending}>
@@ -158,9 +104,7 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
               </span>
             )}
           </div>
-          <span className="text-meta text-fg-3">
-            Khu vực có hiệu lực ngay khi kỹ thuật viên nhận lịch
-          </span>
+          <span className="text-meta text-fg-3">Khu vực có hiệu lực ngay khi kỹ thuật viên nhận lịch</span>
         </div>
       </div>
 
