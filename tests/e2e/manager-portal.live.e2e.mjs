@@ -39,7 +39,7 @@ async function until(check, label) {
 describe('cổng quản lý với backend thật', { skip }, () => {
   before(async () => {
     server = await createServer({
-      server: { port: 3185, strictPort: false, hmr: false, watch: null },
+      server: { host: '127.0.0.1', port: 3185, strictPort: false, hmr: false, watch: null },
       logLevel: 'error',
     })
     await server.listen()

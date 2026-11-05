@@ -12,9 +12,17 @@ export const MAILPIT = (process.env.AUDIT_MAILPIT ?? 'http://127.0.0.1:58025').r
 
 function loadAccounts() {
   const file = process.env.AUDIT_ACCOUNTS_FILE
-  const fromFile = file && fs.existsSync(file)
-    ? Object.fromEntries(fs.readFileSync(file, 'utf8').trim().split('\n').filter(Boolean).map((l) => l.split(/=(.*)/s).slice(0, 2)))
-    : {}
+  const fromFile =
+    file && fs.existsSync(file)
+      ? Object.fromEntries(
+          fs
+            .readFileSync(file, 'utf8')
+            .trim()
+            .split('\n')
+            .filter(Boolean)
+            .map((l) => l.split(/=(.*)/s).slice(0, 2)),
+        )
+      : {}
   return { ...fromFile, ...Object.fromEntries(Object.entries(process.env).filter(([k]) => k.startsWith('E2E_'))) }
 }
 const ACCOUNTS = loadAccounts()
@@ -60,7 +68,11 @@ export async function userId(role) {
 export async function call(role, method, path, body) {
   const headers = { 'content-type': 'application/json' }
   if (role) headers.authorization = `Bearer ${await token(role)}`
-  const res = await fetch(`${STACK_API}/api${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) })
+  const res = await fetch(`${STACK_API}/api${path}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
   if (res.status === 401 && role && tokens.has(role)) {
     tokens.delete(role)
     return call(role, method, path, body)
@@ -70,13 +82,23 @@ export async function call(role, method, path, body) {
   try {
     json = JSON.parse(text)
   } catch {}
-  return { status: res.status, data: json?.data, error: json?.error, traceId: json?.traceId, raw: json ? null : text, headers: res.headers }
+  return {
+    status: res.status,
+    data: json?.data,
+    error: json?.error,
+    traceId: json?.traceId,
+    raw: json ? null : text,
+    headers: res.headers,
+  }
 }
 
 /** Như `call` nhưng ném lỗi khi không 2xx (dùng cho bước tiền đề) */
 export async function must(role, method, path, body) {
   const r = await call(role, method, path, body)
-  if (r.status >= 300) throw new Error(`${method} ${path} (${role}) → ${r.status} ${r.error?.code ?? ''} ${r.error?.message ?? r.raw ?? ''}`)
+  if (r.status >= 300)
+    throw new Error(
+      `${method} ${path} (${role}) → ${r.status} ${r.error?.code ?? ''} ${r.error?.message ?? r.raw ?? ''}`,
+    )
   return r.data
 }
 
@@ -84,8 +106,17 @@ export const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex'
 
 /** Tải tệp đúng luồng của FE: xin link PUT → PUT thẳng lên kho → đăng ký (backend đọc lại, xác minh) → fileId đã VERIFIED */
 export async function uploadFile(role, purpose, fileName, contentType, bytes) {
-  const link = await must(role, 'POST', '/files/presigned-upload', { purpose, fileName, contentType, sizeBytes: bytes.length })
-  const put = await fetch(link.url ?? link.uploadUrl, { method: 'PUT', headers: link.headers ?? { 'content-type': contentType }, body: bytes })
+  const link = await must(role, 'POST', '/files/presigned-upload', {
+    purpose,
+    fileName,
+    contentType,
+    sizeBytes: bytes.length,
+  })
+  const put = await fetch(link.url ?? link.uploadUrl, {
+    method: 'PUT',
+    headers: link.headers ?? { 'content-type': contentType },
+    body: bytes,
+  })
   if (!put.ok) throw new Error(`PUT kho tệp ${put.status}`)
   let file = await must(role, 'POST', '/files', {
     purpose,
@@ -112,7 +143,10 @@ export function tinyPdf(text) {
 
 /** PNG 1×1 hợp lệ */
 export const tinyPng = () =>
-  Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
+  Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  )
 
 /** Token trong link của thư mới nhất gửi tới `to` */
 export async function mailToken(to, pathPart) {
@@ -132,7 +166,9 @@ export async function mailToken(to, pathPart) {
 
 const BASELINE = JSON.parse(fs.readFileSync(new URL('./stack-baseline.json', import.meta.url), 'utf8'))
 const normalize = (p) => p.toLowerCase().replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, '{}')
-const BASELINE_INDEX = new Map(BASELINE.map(([id, , m, p]) => [`${m} ${p.toLowerCase().replace(/\{[^}]+\}/g, '{}')}`, id]))
+const BASELINE_INDEX = new Map(
+  BASELINE.map(([id, , m, p]) => [`${m} ${p.toLowerCase().replace(/\{[^}]+\}/g, '{}')}`, id]),
+)
 /** ID baseline (A01…G05) của một request, hoặc null nếu không thuộc 76 */
 export const baselineId = (method, pathname) => BASELINE_INDEX.get(`${method} ${normalize(pathname)}`) ?? null
 

@@ -299,7 +299,10 @@ describe('xét huỷ gói đã trả tiền (subscriptions/cancellation-decision
   test('duyệt: lỗi ở ô số tiền; từ chối: không kiểm số tiền, chỉ giới hạn ghi chú 500 ký tự', () => {
     const approve = (amount) => ({ approve: true, amount, note: '' })
     assert.deepEqual(packageCancellationErrors(2_000_000, approve('1.500.000'), '2.000.000 ₫'), {})
-    assert.match(packageCancellationErrors(2_000_000, approve('2.500.000'), '2.000.000 ₫').amount, /Không vượt quá 2.000.000/)
+    assert.match(
+      packageCancellationErrors(2_000_000, approve('2.500.000'), '2.000.000 ₫').amount,
+      /Không vượt quá 2.000.000/,
+    )
     assert.match(packageCancellationErrors(2_000_000, approve('1,5'), '2.000.000 ₫').amount, /số nguyên/)
     const reject = (note) => ({ approve: false, amount: '9.999.999', note })
     assert.deepEqual(packageCancellationErrors(2_000_000, reject(''), '2.000.000 ₫'), {})

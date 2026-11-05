@@ -12,14 +12,27 @@ const tag = new Date().toISOString().slice(11, 19).replace(/:/g, '')
 // Địa chỉ cũ (quận Gò Vấp) → một phường mới chưa thuộc khu phục vụ nào (chọn lúc chạy, nên chạy lại giai đoạn này vẫn có phường
 // chưa phục vụ dù lần trước đã mở thêm phường vào khu)
 const OLD_WARD = 'Gò Vấp'
-const CANDIDATES = ['Phường An Hội Tây', 'Phường Hạnh Thông', 'Phường An Nhơn', 'Phường Thông Tây Hội', 'Phường An Hội Đông']
+const CANDIDATES = [
+  'Phường An Hội Tây',
+  'Phường Hạnh Thông',
+  'Phường An Nhơn',
+  'Phường Thông Tây Hội',
+  'Phường An Hội Đông',
+]
 const zoneCodes =
   !skip && state.zoneId
     ? (await S.must('ADMIN', 'GET', `/admin/operational-zones/${state.zoneId}`)).communes.map((c) => c.code)
     : []
 const catalog = skip ? [] : await S.must(null, 'GET', '/administrative-units/communes?provinceCode=79')
-const NEW_WARD = CANDIDATES.find((name) => !zoneCodes.includes(catalog.find((c) => c.name === name)?.code)) ?? CANDIDATES[0]
-const LEGACY_SITE = { district: 'Quận Gò Vấp', ward: 'Phường 12', streetLine: '5 Quang Trung', latitude: 10.8395, longitude: 106.6634 }
+const NEW_WARD =
+  CANDIDATES.find((name) => !zoneCodes.includes(catalog.find((c) => c.name === name)?.code)) ?? CANDIDATES[0]
+const LEGACY_SITE = {
+  district: 'Quận Gò Vấp',
+  ward: 'Phường 12',
+  streetLine: '5 Quang Trung',
+  latitude: 10.8395,
+  longitude: 106.6634,
+}
 
 describe('5. Địa chỉ hành chính, điều phối, người phụ trách', { skip }, () => {
   test('G04 + G05: bước Địa điểm hiện tên tỉnh từ danh mục; tra địa chỉ cũ (1 ký tự không gọi), chọn mới đổ vào ô', async () => {
@@ -78,7 +91,9 @@ describe('5. Địa chỉ hành chính, điều phối, người phụ trách', 
       surfaceAzimuthDegree: 180,
       obstacles: [],
     })
-    state.dispatchSurveyRequestId = (await S.must('CUSTOMER2', 'POST', `/pre-surveys/${pre.preSurveyId}/submit`)).surveyRequestId
+    state.dispatchSurveyRequestId = (
+      await S.must('CUSTOMER2', 'POST', `/pre-surveys/${pre.preSurveyId}/submit`)
+    ).surveyRequestId
 
     const page = await as('CUSTOMER2', `/customer/requests/${state.dispatchSurveyRequestId}`)
     await page.getByRole('button', { name: 'Bổ sung phường, xã' }).click()
@@ -87,11 +102,17 @@ describe('5. Địa chỉ hành chính, điều phối, người phụ trách', 
     let t = mark()
     await dialog.getByRole('searchbox', { name: 'Tên phường, xã hoặc quận, huyện cũ' }).fill(OLD_WARD)
     await expectCall('G05', t)
-    await dialog.getByRole('button', { name: new RegExp(`^Chọn ${NEW_WARD} `) }).first().click()
+    await dialog
+      .getByRole('button', { name: new RegExp(`^Chọn ${NEW_WARD} `) })
+      .first()
+      .click()
     t = mark()
     await dialog.getByRole('button', { name: 'Lưu phường, xã' }).click()
     await expectCall('C11', t)
-    await until(async () => (await page.getByRole('dialog', { name: 'Bổ sung phường, xã' }).count()) === 0, 'đóng hộp thoại')
+    await until(
+      async () => (await page.getByRole('dialog', { name: 'Bổ sung phường, xã' }).count()) === 0,
+      'đóng hộp thoại',
+    )
     const communes = await S.must(null, 'GET', '/administrative-units/communes?provinceCode=79')
     const target = communes.find((c) => c.name === NEW_WARD)
     const saved = (await S.must('CUSTOMER2', 'GET', '/customers/me/sites?pageSize=100')).items.find(
@@ -102,9 +123,20 @@ describe('5. Địa chỉ hành chính, điều phối, người phụ trách', 
     // Phường mới chưa thuộc khu nào: chỗ chọn giờ chuyển sang nhờ xếp kỹ thuật viên
     await page.getByRole('button', { name: 'Nhờ xếp kỹ thuật viên' }).waitFor()
 
-    const bad = await S.call('CUSTOMER2', 'PUT', `/customers/me/sites/${site.propertySiteId}/administrative-location`, { provinceCode: '79', communeCode: '00000' })
-    assert.ok(bad.status >= 400 && /^ADMINISTRATIVE_LOCATION_/.test(bad.error?.code ?? ''), `mã lạ: ${bad.status} ${bad.error?.code}`)
-    const other = await S.call('CUSTOMER', 'PUT', `/customers/me/sites/${site.propertySiteId}/administrative-location`, { provinceCode: '79', communeCode: target.code })
+    const bad = await S.call('CUSTOMER2', 'PUT', `/customers/me/sites/${site.propertySiteId}/administrative-location`, {
+      provinceCode: '79',
+      communeCode: '00000',
+    })
+    assert.ok(
+      bad.status >= 400 && /^ADMINISTRATIVE_LOCATION_/.test(bad.error?.code ?? ''),
+      `mã lạ: ${bad.status} ${bad.error?.code}`,
+    )
+    const other = await S.call(
+      'CUSTOMER',
+      'PUT',
+      `/customers/me/sites/${site.propertySiteId}/administrative-location`,
+      { provinceCode: '79', communeCode: target.code },
+    )
     assert.ok(other.status === 403 || other.status === 404, `khách khác sửa địa điểm: ${other.status}`)
   })
 
@@ -114,7 +146,10 @@ describe('5. Địa chỉ hành chính, điều phối, người phụ trách', 
     const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
     for (const role of ['TECH', 'TECH2']) {
       const id = await S.userId(role)
-      await S.must('ADMIN', 'PUT', `/admin/technicians/${id}/profile`, { isSchedulingActive: true, maxAppointmentsPerDay: 20 })
+      await S.must('ADMIN', 'PUT', `/admin/technicians/${id}/profile`, {
+        isSchedulingActive: true,
+        maxAppointmentsPerDay: 20,
+      })
       await S.must('ADMIN', 'PUT', `/admin/technicians/${id}/working-schedule`, {
         useDefault: false,
         periods: days.map((day) => ({ day, start: '00:00', end: '23:59' })),
@@ -163,11 +198,16 @@ describe('5. Địa chỉ hành chính, điều phối, người phụ trách', 
     await page.getByText(/Đã phân công Kỹ Thuật Hai/).waitFor()
     const availability = await S.must('MANAGER', 'GET', `/technicians/availability?surveyRequestId=${sr}`)
     assert.equal(availability.technicians.find((x) => x.isAssigned)?.technicianUserId, tech2)
-    const stale = await S.call('ADMIN', 'POST', `/admin/survey-appointments/${availability.appointmentId}/assign-technician`, {
-      technicianUserId: await S.userId('TECH'),
-      reason: 'Thử revision cũ',
-      expectedRevision: availability.revision - 1,
-    })
+    const stale = await S.call(
+      'ADMIN',
+      'POST',
+      `/admin/survey-appointments/${availability.appointmentId}/assign-technician`,
+      {
+        technicianUserId: await S.userId('TECH'),
+        reason: 'Thử revision cũ',
+        expectedRevision: availability.revision - 1,
+      },
+    )
     assert.equal(stale.status, 409, `revision cũ: ${stale.status} ${stale.error?.code}`)
 
     await page.getByRole('button', { name: 'Đổi kinh doanh phụ trách' }).click()
@@ -183,7 +223,10 @@ describe('5. Địa chỉ hành chính, điều phối, người phụ trách', 
     await page.getByText(/Đã giao yêu cầu cho Kinh Doanh Hai/).waitFor()
     const visible = await S.call('SALES2', 'GET', `/survey-requests/${sr}`)
     assert.equal(visible.status, 200, 'kinh doanh mới đọc được yêu cầu')
-    const salesTry = await S.call('SALES', 'PUT', `/admin/survey-requests/${sr}/sales-owner`, { saleUserId: await S.userId('SALES'), reason: 'Thử quyền' })
+    const salesTry = await S.call('SALES', 'PUT', `/admin/survey-requests/${sr}/sales-owner`, {
+      saleUserId: await S.userId('SALES'),
+      reason: 'Thử quyền',
+    })
     assert.equal(salesTry.status, 403, 'kinh doanh không tự giành yêu cầu')
 
     // Trả khu về như trước (để chạy lại giai đoạn này vẫn có phường chưa phục vụ); backend có thể từ chối nếu còn lịch đã hẹn

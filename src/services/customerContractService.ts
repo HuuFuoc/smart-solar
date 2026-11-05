@@ -32,7 +32,9 @@ export function submitSignedDocument(contractId: string, body: SignedDocumentReq
  * phút và gắn đúng phiên bản tệp đã xác minh: tải về là đúng tệp có SHA-256 hợp đồng ghi
  */
 export function getOfficialDocumentUrl(contractId: string, disposition: DocumentDisposition) {
-  return get<ContractDocumentUrlView>(ENDPOINTS.customerContracts.officialDocumentUrl(contractId), { params: { disposition } })
+  return get<ContractDocumentUrlView>(ENDPOINTS.customerContracts.officialDocumentUrl(contractId), {
+    params: { disposition },
+  })
 }
 
 /** Link ký sẵn của một bản ký khách đã gửi (mã lấy từ `submissions`) */

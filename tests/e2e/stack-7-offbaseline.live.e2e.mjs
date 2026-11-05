@@ -72,9 +72,13 @@ describe('7. Năm lời gọi ngoài baseline trên deddde8', { skip }, () => {
     const list = await S.must('CUSTOMER', 'GET', '/customers/me/survey-requests')
     assert.equal((Array.isArray(list) ? list : list.items).find((x) => x.surveyRequestId === sr).status, 'CANCELLED')
     // Rút lần hai: backend coi là lặp lại vô hại (200, không đổi gì)
-    const again = await S.call('CUSTOMER', 'POST', `/customers/me/survey-requests/${sr}/withdraw`, { reason: 'Lần hai' })
+    const again = await S.call('CUSTOMER', 'POST', `/customers/me/survey-requests/${sr}/withdraw`, {
+      reason: 'Lần hai',
+    })
     assert.equal(again.status, 200)
-    const other = await S.call('CUSTOMER2', 'POST', `/customers/me/survey-requests/${sr}/withdraw`, { reason: 'Không phải của tôi' })
+    const other = await S.call('CUSTOMER2', 'POST', `/customers/me/survey-requests/${sr}/withdraw`, {
+      reason: 'Không phải của tôi',
+    })
     assert.ok(other.status === 403 || other.status === 404, `khách khác rút: ${other.status}`)
   })
 
@@ -90,20 +94,27 @@ describe('7. Năm lời gọi ngoài baseline trên deddde8', { skip }, () => {
     await dialog.getByRole('button', { name: 'Đóng yêu cầu' }).click()
     const call = await saw('POST', /^\/api\/survey-requests\/\{id\}\/close$/, t)
     assert.equal(call.status, 200)
-    const other = await S.call('SALES2', 'POST', `/survey-requests/${sr}/close`, { reasonCode: 'OTHER', note: 'Thử quyền' })
+    const other = await S.call('SALES2', 'POST', `/survey-requests/${sr}/close`, {
+      reasonCode: 'OTHER',
+      note: 'Thử quyền',
+    })
     assert.ok(other.status >= 400, `kinh doanh khác đóng: ${other.status}`)
   })
 
   test('POST /manager/after-sales/assets/{id}/warranty-activation: quản lý ghi ngày kích hoạt bảo hành của hãng kèm phiếu', async () => {
     assert.ok(state.projectId && state.inverterAssetId, 'cần chạy giai đoạn 4 trước')
-    const fault = await F.reportFault(state.projectId, `Inverter mất kết nối (${tag})`, { suspectedAssetId: state.inverterAssetId })
+    const fault = await F.reportFault(state.projectId, `Inverter mất kết nối (${tag})`, {
+      suspectedAssetId: state.inverterAssetId,
+    })
     const page = await as('MANAGER', `/manage/after-sales/${fault.requestId}`)
     await page.getByRole('button', { name: 'Ghi ngày kích hoạt' }).first().click()
     const dialog = page.getByRole('dialog', { name: 'Ghi ngày kích hoạt bảo hành của hãng' })
     // Ô ngày gõ dd/mm/yyyy, nhận giá trị khi rời ô
     await dialog.locator('#activation-date').fill(F.vnDate(-1).split('-').reverse().join('/'))
     await dialog.locator('#activation-date').press('Tab')
-    await dialog.locator('input[type=file]').setInputFiles({ name: 'phieu-bao-hanh.pdf', mimeType: 'application/pdf', buffer: S.tinyPdf('Phieu bao hanh') })
+    await dialog
+      .locator('input[type=file]')
+      .setInputFiles({ name: 'phieu-bao-hanh.pdf', mimeType: 'application/pdf', buffer: S.tinyPdf('Phieu bao hanh') })
     await dialog.locator('#activation-reason').fill('Ngày ghi trên phiếu bảo hành của hãng')
     const t = mark()
     await dialog.getByRole('button', { name: 'Ghi ngày kích hoạt' }).click()

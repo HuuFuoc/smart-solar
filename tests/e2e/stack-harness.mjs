@@ -28,7 +28,11 @@ export async function setupStack(phase) {
   before(async () => {
     if (skip) return
     process.env.API_PROXY_TARGET = S.STACK_API
-    server = await createServer({ server: { port: 3301, strictPort: false, hmr: false, watch: null }, logLevel: 'error' })
+    // Nghe thẳng IPv4: `localhost` có máy phân giải ra ::1 cho Vite nhưng 127.0.0.1 cho Chromium, module tải lỗi ngẫu nhiên
+    server = await createServer({
+      server: { host: '127.0.0.1', port: 3301, strictPort: false, hmr: false, watch: null },
+      logLevel: 'error',
+    })
     await server.listen()
     baseUrl = server.resolvedUrls.local[0].replace(/\/$/, '')
     browser = await chromium.launch({ channel: 'chromium' })
@@ -39,7 +43,10 @@ export async function setupStack(phase) {
     if (dir) {
       fs.mkdirSync(dir, { recursive: true })
       fs.writeFileSync(statePath, JSON.stringify(state, null, 1))
-      fs.writeFileSync(path.join(dir, `stack-${phase}-${runAt}.json`), JSON.stringify({ phase, runAt, api: S.STACK_API, state, evidence }, null, 1))
+      fs.writeFileSync(
+        path.join(dir, `stack-${phase}-${runAt}.json`),
+        JSON.stringify({ phase, runAt, api: S.STACK_API, state, evidence }, null, 1),
+      )
     }
     await browser?.close()
     await server?.close()
@@ -49,7 +56,11 @@ export async function setupStack(phase) {
   async function as(role, pathname) {
     let page = pages.get(role)
     if (!page) {
-      const context = await browser.newContext({ locale: 'vi-VN', timezoneId: 'Asia/Ho_Chi_Minh', acceptDownloads: true })
+      const context = await browser.newContext({
+        locale: 'vi-VN',
+        timezoneId: 'Asia/Ho_Chi_Minh',
+        acceptDownloads: true,
+      })
       page = await context.newPage()
       page.setDefaultTimeout(30_000)
       S.recordApi(page, evidence, role)

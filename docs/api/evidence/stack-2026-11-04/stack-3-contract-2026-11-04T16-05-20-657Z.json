@@ -1,0 +1,2408 @@
+{
+  "phase": "3-contract",
+  "runAt": "2026-11-04T16-05-20-657Z",
+  "api": "http://127.0.0.1:8090",
+  "state": {
+    "zoneId": "a96ea6f0-93ae-4650-b4b5-fe1ada2d42c5",
+    "unmappedCommunes": 167,
+    "productId": "3d1dbc03-6c1e-4e86-9923-347133535d41",
+    "productName": "Tấm pin kiểm thử 160336",
+    "csvHeader": "metric,description,current (2026-11-01..2026-11-30),previous (2026-10-01..2026-10-31),change_percent\r",
+    "kbDocId": "41790d29-4fae-4646-8965-91f6455c8a16",
+    "kbTitle": "Chính sách bảo hành 160358",
+    "chatSession": "1863bf1a-b26f-4d38-8115-1c6bf38aa512",
+    "answerWithoutPublished": "INSUFFICIENT_CONTEXT",
+    "ragActiveVersion": 3,
+    "siteId": "ff1a9995-affb-4081-92de-73aef158cc47",
+    "siteName": "Nhà phố Lê Lợi 160520",
+    "surveyRequestId": "f7b93908-cb08-4e54-87c8-70102fc9c729",
+    "surveyStartsAt": "2026-11-05T08:00:00+07:00",
+    "appointmentId": "128589ec-0713-4d59-9e1e-5c3796a5f596",
+    "quotationId": "a2a86446-dbaa-4647-b86c-898d3be35bce",
+    "contractId": "6430196c-3ae9-4368-a415-5fbbfb05f0f6",
+    "supersededContractId": "8f1b3307-c04e-4a27-b6ea-7c7d19a05223",
+    "officialDownloadName": "hop-dong.pdf"
+  },
+  "evidence": [
+    {
+      "at": "2026-11-04T16:05:25.145Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-7f538939e459d726a46c3354bb9029a3-9659f3b78315ba11-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.321Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-41e2f4c80e78d02079fa087e3b529d17-4b7efcb2aa5e3231-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.321Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/installation-projects",
+      "status": 200,
+      "traceId": "00-702c9ca556c97db11d3ee96cfe87b1be-05b10b15324c5c80-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.348Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-e5816f7d6e83a90a35ed3c44b3f3ee29-459c11b105ffe8be-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.411Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-9d3c1431c5477a2fd44f08fd4077c8ba-896fab2a3daf9760-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.906Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-141d4a86e964d0c371d3deca22e1efff-beeb461b959994b9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.942Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/installation-projects",
+      "status": 200,
+      "traceId": "00-1675040b96b688cd943b6b4b7f8acce6-2203bf7bdd23a63c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.942Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-b562c9482908e87a076f1762423ed193-83f6df31842aac24-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.960Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-70574ea0d32c593868e870a4f33949e6-f5a6ce28e9a70232-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:25.990Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-14ba0c91ebe6a4ce1cd3073bb2eab119-010a51ebc8d30d9d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:26.167Z",
+      "actor": "TECH",
+      "id": "T01",
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments/{id}",
+      "status": 200,
+      "traceId": "00-f989548ba8b877508721b82fa25dbe66-c89bc62dc54bc48e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:26.499Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "POST",
+      "path": "/api/technicians/me/appointments/{id}/accept",
+      "status": 200,
+      "traceId": "00-57872fefd709ff5b627c276d5a63b295-1fb92378f9a3059c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:26.523Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-44b6aff1bd7ba908b929b5883478a28c-2d05aa6328ecff5c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:26.523Z",
+      "actor": "TECH",
+      "id": "T01",
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments/{id}",
+      "status": 404,
+      "traceId": "00-77781ed6aa6c3e6d0a1e9b900db5f69e-4bf5e4a9b1a51a57-00",
+      "code": "APPOINTMENT_NOT_FOUND"
+    },
+    {
+      "at": "2026-11-04T16:05:26.545Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-87fdf9ecb860a82b43c0d0f8a54e6351-fa5937efa1405b47-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:26.557Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-8df7794a55001bacf6fbc7a4ece9e4e6-a5ac3693e1703dd8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:26.718Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments/{id}",
+      "status": 200,
+      "traceId": "00-9261e62f6c0720324dc533373757558d-65f58a0a332617de-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:26.764Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments/{id}/onsite-survey",
+      "status": 200,
+      "traceId": "00-ed1ae922eadad9e45349af7ebf97b7bc-1da06d08a735fe73-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.365Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-f56d81710471c59eae166f2d3e1d5b89-350ab3553324ea17-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.391Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/installation-projects",
+      "status": 200,
+      "traceId": "00-ffcae8e36caf8d0743b3c202344b1197-aeaccb838bc7ae77-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.414Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-465fc70f4e7ea51919ba4b43ed689470-0ee6f1ccb08300e4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.414Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-cafbae68aa28ef7e4d0a7af8e7129caa-dc00048742113dc4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.414Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-e2145e9ecf7d13ae671560dab7e74317-d2a37fa1f7d06778-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.414Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments/{id}",
+      "status": 200,
+      "traceId": "00-8ef43b211125cb800d44338f2e780033-be4f64006f40ee3f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.451Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments/{id}/onsite-survey",
+      "status": 200,
+      "traceId": "00-6111481793e8467b4453aea9afd6b3ef-41dd67b873f17e17-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.500Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments/{id}/onsite-survey/attachments/{id}/url",
+      "status": 200,
+      "traceId": "00-9e74ebd9998fa415511cceb9dc202435-7e2ce57573b348dc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.533Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments/{id}/onsite-survey/attachments/{id}/url",
+      "status": 200,
+      "traceId": "00-c382e608875118e8eba330cdca53486d-53356567ce48892d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.944Z",
+      "actor": "TECH",
+      "id": "T02",
+      "method": "POST",
+      "path": "/api/technicians/me/appointments/{id}/onsite-survey/amendments",
+      "status": 200,
+      "traceId": "00-b467e4eb14cea55d5068ac815b0745fd-c1284d89cd131f97-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.966Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments/{id}/onsite-survey/attachments/{id}/url",
+      "status": 200,
+      "traceId": "00-8eb9111f65ca861cca4d360d8a208608-301c95d147f6fe01-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:27.997Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments/{id}/onsite-survey/attachments/{id}/url",
+      "status": 200,
+      "traceId": "00-07268ab5b88a9c268f659079c0948503-b8bce95009d46d05-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:30.892Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-21d9cbc03cc23ae9fbd281a9ef69d14b-a8125f43f2d77569-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:30.976Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-8f00bc19018877b7be3e253c0e81f153-70a87a72beebae0a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:30.986Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-f10f9bd1af02b5b4c8fc7601f9243b38-34fff3fef2ab54d4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:30.986Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-5908250d6a00ea7241645933c0d65833-8ef80a2a46f767a9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.000Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-a43c7b0f1ec0ea756933a73be3d58062-0e263b7344b7ca14-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.013Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-62b944af3f61433390976eff462de4fd-e84b302b6417ccc7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.187Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/administrative-units/communes",
+      "status": 200,
+      "traceId": "00-651a2f90bfa391c51af86250d11d9057-1497242370c3ce99-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.187Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-8d7558ada73c03e9be5fa890afcd40fe-2b323b2abf7e45ac-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.187Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-cacaefeb82109db611a41589912d8d70-e8ac64c07779612b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.187Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-3e60b3dde8a575eb0cba868d8d5bb891-cb34abd4b4049607-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.187Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-11471303b49df66dd32a44c36511248c-712c4f05e97e034a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.187Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-1fd9babd481524df544447d244c971e4-9dc1c6e2a77f5f35-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:31.213Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}",
+      "status": 200,
+      "traceId": "00-008e5b664ee44fe2595238d7536e683a-4db1c324c2cbf06f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.325Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-125e2d8df84d8425c25d8ff54813a188-a52c0df749f000f1-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.344Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-8ad6822a96ff1f918cfa129d510ffa3f-abd4d9bf97340bf5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.344Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-4cac3b785465fa7a006d1e126483098e-89c1ac69bb089b1e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.344Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-215739ace428138ebd317f4dbc6b0770-c3d81ae89a1ebb4a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.345Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-6b8f8eb37e65c2fdf7ed2df13fe3e7fb-a983fdd85893d78b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.345Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-388616c1091b668e4032a3f025a5b337-fa80bcbbe690c358-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.380Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-ece473e983b9d6eadad4f8730b23b520-44b98d849d9c59b3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.410Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-243dbcc9af0e0ec874673f9cbb4606be-f23148f7b128be53-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.410Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-6144942f2b96d1b58e04892f09e263f4-c3b7b93c686b796c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.410Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-a17b796f459ac177c05b735a316b2721-dcaa632cff7b7634-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.410Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-195d6a34a60095cd5006dd63826b5600-748e793151f72ae4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.411Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}",
+      "status": 200,
+      "traceId": "00-9a7e922e94489512036928ae61a07b77-1383b636e7cb4ed4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.462Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/onsite-survey",
+      "status": 200,
+      "traceId": "00-411054a7b5181d255d0a6d1f2b4cbd2b-00e47926360ba9b2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.514Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/quotations",
+      "status": 200,
+      "traceId": "00-f73fe0c4eb8dc192e8de0b89fef1c124-141de555dac82a2c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.522Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/onsite-survey/attachments/{id}/url",
+      "status": 200,
+      "traceId": "00-f6b144e6af20725a5824427d6a68605c-471cbf55b63706e0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.523Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/pre-surveys/{id}/simulations",
+      "status": 200,
+      "traceId": "00-f101982326beac88c803183d6cc8759c-2b28a97bec0e1bdf-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.523Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/onsite-survey/attachments/{id}/url",
+      "status": 200,
+      "traceId": "00-23d9634299453d9bbc2f3394920db9f6-7a8a83cf5fad6373-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.689Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files/presigned-upload",
+      "status": 200,
+      "traceId": "00-901156ee78b17efb28c411c25cbd0825-8c692e19f42f85b1-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.737Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files",
+      "status": 201,
+      "traceId": "00-00a6f95eda2b79870f93d735be809bf5-03cdc095656e2c45-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.795Z",
+      "actor": "SALES",
+      "id": "S11",
+      "method": "PUT",
+      "path": "/api/quotations/{id}/document",
+      "status": 200,
+      "traceId": "00-c1d2f4f222c773703d10981360c5b120-12151f3bba31815f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.817Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/quotations",
+      "status": 200,
+      "traceId": "00-506a853f19ee88034674a5f98b5ad848-c5690c963e9b5345-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:33.827Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-1ff53f2097a53e95981327e8d6b55b8d-67b73a396c3f64f3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.222Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-fca7254b02ca555cbcdbaab4f7c63c85-ff903c7d7bf5fca7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.250Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-210e501eb1249e90253f6f8113a3241a-120604c74efa600b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.250Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-98dfc14b83828d75b06f51d2f0637d92-db592e7a424f0e32-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.250Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-b374b0e3bf296f164787712f3e71cf6b-4cc447ca9d0b3628-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.250Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-98113045208727dd999a2e4d876eb722-a86b117ddffa17bf-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.250Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-33e9de28001f35927fdceeac7e78c51e-ddbaeef3f7a9e181-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.286Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}",
+      "status": 200,
+      "traceId": "00-7db8a158aae85623dfaf6c20164812fe-347197e4366cbeff-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.336Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/onsite-survey",
+      "status": 200,
+      "traceId": "00-6495cd99c6b1cbf542ba3972d5604c1e-ef01ab9fa4133193-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.336Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/pre-surveys/{id}/simulations",
+      "status": 200,
+      "traceId": "00-a57ef3f0311d5fc2822fc1574e091694-2cc79a46e58946d9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.398Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/quotations",
+      "status": 200,
+      "traceId": "00-4a1731b1a9dcec10041b2fd2d8feda42-d577637306ae9c84-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.407Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/onsite-survey/attachments/{id}/url",
+      "status": 200,
+      "traceId": "00-ff4978658887ad85c6e2ac1bd5f25c7b-6b190ad7f0eb21a2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.407Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/onsite-survey/attachments/{id}/url",
+      "status": 200,
+      "traceId": "00-5759780d57ded001d8376b4024cbf68d-a847dc851b28ec99-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.410Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-09a81fb72e136d6f9c0de24693de767a-6002a0e0f4e57d44-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.447Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-e369fb13b8dc52cc6df50735cd450a84-3ee8a061d5e7476b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.590Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/warranty-options",
+      "status": 200,
+      "traceId": "00-e634050413494b781291e03ab1fb7440-80eb77b9c35daa5a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.945Z",
+      "actor": "SALES",
+      "id": "S01",
+      "method": "POST",
+      "path": "/api/quotations/{id}/contracts",
+      "status": 201,
+      "traceId": "00-9e4982d2b093123affee1601f2bc785e-3b4efaacde1cb9d4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:34.984Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-43ff6873fe7bc7fb8ba7a5aac169f7cf-e77bc870a69432d5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.057Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-2afa47d031d1cfe0563b458eadb62589-8a6127d33ce68149-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.081Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-2550c855e6f33fc79aac571ae935b7ac-2bb1846d6a6b0078-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.272Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/warranty-options",
+      "status": 200,
+      "traceId": "00-725a4b558da54d802655319a10d81cc6-d69de1734910c82b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.388Z",
+      "actor": "SALES",
+      "id": "S04",
+      "method": "PUT",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-bc46b38c3667067b5b5889c7f9b2274a-b753e95cd87bbf10-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.399Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-b226e15104d5452792956b6c92b10184-825e70f994bb2663-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.420Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-ccc44b89ba2aec8b4512d2c25e80ca3a-41a1919324849b44-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.729Z",
+      "actor": "SALES",
+      "id": "S05",
+      "method": "POST",
+      "path": "/api/contracts/{id}/issue",
+      "status": 200,
+      "traceId": "00-938be717972315eca6d4605e28de5347-b67348a6e0f570e2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.747Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-3013e6f410004c606ddc7e84d944adbe-e80a43de56954ad6-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:35.748Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-0fc48fb0c61a2d9c3753aa4ea9cc283e-3e5ac79ff39fa5bc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.143Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files/presigned-upload",
+      "status": 200,
+      "traceId": "00-e72f4b8d15779af99f80f426f6938835-8cc139170043a30f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.187Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files",
+      "status": 201,
+      "traceId": "00-64c4957379dc1b88fe54e1733cb0814d-60e07d9034a5b6c5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.234Z",
+      "actor": "SALES",
+      "id": "S06",
+      "method": "PUT",
+      "path": "/api/contracts/{id}/official-document",
+      "status": 200,
+      "traceId": "00-d484c48f0ab6bec38c511871200d95ac-bdf60eb623cda64b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.245Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-f07609516d446557949e59fbb3c08a8f-7c94d0894562aff4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.256Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-cee376666b2c9ab8e38025d636eb109a-e8b47edded4dbf8f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.257Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-b3c183062f41161e3e8beaf0e8f90e2c-6a9dba1ebede5cf4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.541Z",
+      "actor": "SALES",
+      "id": "S07",
+      "method": "POST",
+      "path": "/api/contracts/{id}/publish",
+      "status": 200,
+      "traceId": "00-f436731b177a241f0827f1bd2a8963f4-8d6e325064af9622-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.557Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-03d26a37e29651ad9038878669e39b89-f7e6afae87983b1f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.557Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-48834e99d0edce599f59bd25e066c0a5-631118f713bc76da-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.844Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/warranty-options",
+      "status": 200,
+      "traceId": "00-cc93f3e982414aac7e2e316f4110c65c-6c06070d288710bc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.937Z",
+      "actor": "SALES",
+      "id": "S09",
+      "method": "POST",
+      "path": "/api/contracts/{id}/amendments",
+      "status": 201,
+      "traceId": "00-2f7df61387583fd0324b2f15f999651f-fdbd0f396fa4f18d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.956Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-63a284e797e6cb8d586dd38dc1d5e1b4-1bdfdceb5ddfcdd4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:36.971Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-82d058a678337aaa0fd30953146b861f-f0ed0903379cbf2d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.017Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-5482ab41ce4a3703b46b3b1d9565bc08-10e9d7b8f75bfc75-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.370Z",
+      "actor": "SALES",
+      "id": "S05",
+      "method": "POST",
+      "path": "/api/contracts/{id}/issue",
+      "status": 200,
+      "traceId": "00-544e9bf6a088218abe68b036ee8c1df2-98e6af1a70907113-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.414Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-5fdae46cee4d0c79136084d9e3206b6f-257831e5e2098b59-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.429Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-935dfa2522ab64a81e2210866d62ed35-34e7e66931cbfb05-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.837Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files/presigned-upload",
+      "status": 200,
+      "traceId": "00-8a5c99b4f0ea6bf7d35f12b8179634cf-acb436f4a86ba869-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.888Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files",
+      "status": 201,
+      "traceId": "00-4d121cd0fc1cc3f728797e2b614ffab0-ef7f472b2842b3b4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.940Z",
+      "actor": "SALES",
+      "id": "S06",
+      "method": "PUT",
+      "path": "/api/contracts/{id}/official-document",
+      "status": 200,
+      "traceId": "00-842b4516bbe7384bb7cb83df7a7d8af2-64bfd30e08cac9bf-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.992Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-3f0c188d6591eba82b7e40bd97f5d540-973e877799870159-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:37.992Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-6fbaf99ad32701dc2ad97f0b17b28c06-81dae4dc62126db9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.009Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-45122b5f6b24cad0c8037e1ee022494d-b7883ac976672094-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.310Z",
+      "actor": "SALES",
+      "id": "S07",
+      "method": "POST",
+      "path": "/api/contracts/{id}/publish",
+      "status": 200,
+      "traceId": "00-e555bce467040e7df7fc0de982d80036-346da35e0fe53471-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.365Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-33eae848e14f04e19bb3f18b1d48e568-06c02efe4bc1ef9e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.365Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-567f2ce8eaa162b69ed2e977409afb35-527a8c905b43b585-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.921Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-6185d3788d52cbff24e8132be5640029-5aaab7bd72ca0d7f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.972Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-181fe410cbb94bcc7b2cd9e105f5493a-544ddab97a723740-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.972Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-aa335e1475783303541c3f192553d9ec-15613c4adcf071c9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.973Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-c74f2251f3fccf376cc28c3f3dc59582-4ed711a8f5bd64a0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.973Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-0b6bf9c0d29d146d873d11e1257799e0-f9fea2ee7b6ac6e8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:38.973Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-7bca5fc95412996e04f302459f709cef-105a1d53a1677948-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.080Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-16e83942bcc14c4e27cd698013e01fcf-eddfbf321901cba8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.080Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-b0e6571065157e6ceca084e0ae0cb0ab-e2da3f7e0d1d6781-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.080Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-617ce6366459b349b895d81d6aa1da38-6a3004d249fd90b5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.080Z",
+      "actor": "SALES",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-8a9b2daa30757fedd3a12599eb63994c-d7af8f5dd393c133-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.080Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-cd5cd6e17f249f5ae9b7c63560a6b5c0-3341152d6d250b72-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.080Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-b40df82b6b04c93164fd6f7193c29438-0047d677d0033f78-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.146Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-f1e608d912b2b2881244a174a7cf75b9-9e2dc295d2a66cf9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.152Z",
+      "actor": "SALES",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-b470e1f5a24f31fa2532dad73f445192-321eb6db3847dd45-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:39.274Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/contracts/{id}/official-document/url",
+      "status": 200,
+      "traceId": "00-aab916e6444d9a4511309eee14627471-daffcf593559ab56-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.295Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-4ac527353573b93426b10015bccd36f7-fb6fd8809c4f0977-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.388Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-cbf1be080a41389deba2dbfa3ee120cd-822a24b8df9c6e1a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.388Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-f35647f20bb13bb49da8023d8bcdde52-700c57acb68e8946-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.388Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-6d5934e036383cb9adeddbc896328cf3-c304d6942c3d48d4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.403Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-86747b4a98649e3d3a70326bf318c540-399dc222936921a2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.403Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-06f42b69059a531109baf2abc931ad79-55a92c2664a00110-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.409Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-62f528be7bd19f6ea63c44d4e12040e6-01b299fc5a6a063f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.413Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-ba138c6fa3508c3717583370023e234b-095f0591b4e06252-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.450Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-421cf83fb2216b14be42b2a5a7fa2459-7ea8ca3a85821aef-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.450Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-f8fa8469a81eeb7f565dd3276145c3c9-322b5614239b5dcc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:41.450Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-a4b36d9c01d045e0ee124cb6c4930b4a-713a300a3f3d63b9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.014Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-fe477c6bfb89578c7811df89ad827e25-949b8ced5b99dc7e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.049Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-8ddf396a3578110337e13291098453b0-3183c7bebaa32358-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.049Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-5cf496a3e38298413eeb9ee2f387f205-e4cd2f7bf2ce40d7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.109Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-37a5025f1098bb57bd2ad992a3665224-0927bd73789bfa1f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.109Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-46c1175f195a752aac0e212ccf35ebd8-fafe22aef588016f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.110Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-ac498982c80fe7afd7830136c01cd3a5-4aea99e0ebc55d2f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.110Z",
+      "actor": "CUSTOMER",
+      "id": "C01",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}",
+      "status": 200,
+      "traceId": "00-e3735543583ad21dc05322a5dfbf8c36-716ea1ff6776025c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.110Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-564ba37fac22b38eb0a5d0eef96fbb8b-99aaca75aa6bd79d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.110Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-ff7b1abcb348367aa7964f3fcc2f8f06-acb2ceeac88ec634-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.210Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}/official-document/url",
+      "status": 200,
+      "traceId": "00-af6846c93e5e5b58efb3c01ed8b94511-681d54df79f3799f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.790Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-7bdb62a4a9fd5dc203c61861df62d5c6-565d60b9f01cb88c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.833Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-e83b9d8f68402eadaf45a445375c20cf-2511ca617bbbb7d5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.833Z",
+      "actor": "CUSTOMER",
+      "id": "C01",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}",
+      "status": 200,
+      "traceId": "00-12108bc38b500ea2e042d111943f587b-2e974a37fb435964-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.833Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-a6a29d135aa2acbf59bf98697adc6611-55bfcdc470e9ace3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.854Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-d67b120a5290689d7e7bd8ac7e233c1a-c6a962fbf2fb87c5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.854Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-33dec76f8180f698312904c302c482e9-d1668e9695153550-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.854Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-80b86cb0407314d15fd8adf764df5889-d15fff35df96b3b7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.854Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-cf3b2b743a9222b88191c719ae10aac8-327174dfbfa7a9ff-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:46.854Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-69a0591cdce47448f1ac89b744c6a456-98a19c992e12f4c6-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.035Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files/presigned-upload",
+      "status": 200,
+      "traceId": "00-b9af9765fa44db297bc8d007acf73349-d3d5625edab9e4a4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.083Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files",
+      "status": 201,
+      "traceId": "00-ddf79d9ad85096b00b882cf09242e791-24506fe3b46815d0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.151Z",
+      "actor": "CUSTOMER",
+      "id": "C02",
+      "method": "POST",
+      "path": "/api/customers/me/contracts/{id}/signed-document",
+      "status": 200,
+      "traceId": "00-ef04c349a1cb069bc7d2585c6dfe0869-8b3235da73c4e18d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.185Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-0dd7ae4d083f9dccc8b7f2bdbfc986bb-2edcba0981176bb7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.185Z",
+      "actor": "CUSTOMER",
+      "id": "C01",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}",
+      "status": 200,
+      "traceId": "00-99d29f7c1704b08bcae8539a2b6de50e-3e9b16583f2a4d55-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.485Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-f0bcdd00a865a2151a2b79d1ba4de837-3b0dd32358e92228-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.532Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-2ca048603882a08f992224aff3f1b254-7d2abac16c4ece33-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.532Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-fb0590c0ffb20cb6e60c116a1ec18b14-80ccd1b7e3d281c0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.532Z",
+      "actor": "CUSTOMER",
+      "id": "C01",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}",
+      "status": 200,
+      "traceId": "00-50ec945247ebc23caef2697b70b421b0-7107aa85defda756-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.561Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-63e6dfe06e8dee58a4ac980bd5634e99-09291845f54d2b82-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.561Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-e3ab43b846da44323b1b6b50b10a4cfa-c37b1345c0a88d0d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.561Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-d5b96642b8971a5252e845bceb47dbfa-e9b53e6f4407a7d5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.561Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-93c9891293fd1b3caf94b0ee4a8fe80d-d3c02d55126eda67-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.561Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-8a6083d69385e52f38798c2e12c230d6-57e087450adbf577-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:47.631Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}/submissions/{id}/url",
+      "status": 200,
+      "traceId": "00-c6762eb6ead9d40c96b5542f1f10764e-6c81a8d385c2ed62-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.528Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-b6b0d6d485e2698b9b20934c79c61765-3a77c84f3b1eb8c9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.773Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-7311d42daa338e165b7156a3a9adf6ea-c60e53b97bd57d6f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.814Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-8250db9eae7b38635a354c7403da753b-2d4310bfd142650a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.814Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-b3859689a5f9aa9789a87c05f06e0025-245d39a585a0b9af-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.814Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-3b9dfae06e2fa7f59ddb0c0808fb13ca-27218cda63c49e59-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.853Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-fe66eaf854179e26c487adb953a44a81-7bf8bc5366290ae2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.853Z",
+      "actor": "MANAGER",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-cc909156dc3aef2fdd326973e5d21d4d-a3c3cd0ca4434437-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.853Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-bf88c5d19e19e18548a6a1698acb6563-f498f6a3c19d5a90-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.853Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-af360a9efe6b081643f868ed3c39d09c-89e005cca70b8f4e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.853Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-2c472ce12c8814150af9cda3c5a42159-4cb7bbf04b1bca2e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.853Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-827746275907150a2e22e45887ed3f4f-bfd741924072a8ad-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.880Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-c4348ccb651fac16b591a213ed3bcd61-1ac390a931ced7cb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.895Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-11015360c820136a3dee6de553caafc7-186890d512385261-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.895Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-a30d10d4a3a90f8c4577e060155cd194-7a8301cce72dc21c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.896Z",
+      "actor": "MANAGER",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-fa44c70118a477c7ca5ddd9f3ea8524a-470c45dad6d5884c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:49.974Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/contracts/{id}/submissions/{id}/url",
+      "status": 200,
+      "traceId": "00-79520fa00d14f0b5c9dc0c2b79fb25b9-ce3bd4bdd240eec8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.261Z",
+      "actor": "MANAGER",
+      "id": "S08",
+      "method": "POST",
+      "path": "/api/contracts/{id}/review",
+      "status": 200,
+      "traceId": "00-ce42e2507d2a034a051c03ff21df8fd2-ee22013cc88316a5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.291Z",
+      "actor": "MANAGER",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-34f3192ef10d6eb7a5033a2fd9165fd0-65db4c0e555dfae9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.291Z",
+      "actor": "MANAGER",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-5e7641ecbcc363a4368e5986a277d112-87127cc3e7b09851-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.310Z",
+      "actor": "MANAGER",
+      "id": "S10",
+      "method": "GET",
+      "path": "/api/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-54dc3ab25b6c6d2f522920221975789a-d50760bdf837fb01-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.679Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-2be23eae1592ab1a9333fe995c930e98-0c3ca97988b66913-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.724Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-a0001dfa26b6c3490aefe26a2f043cd8-859bf26bdf8e4528-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.724Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-10c909e642fe7579f83999973fa6f83d-a2c024cdf6158489-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.750Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-35b79d36c97727f2566bb6cc03e098ff-bc6d065b2fbdf4d4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.751Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-6be64268fdfeaf7add28b085d6999291-17170eb0e7d64b1b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.759Z",
+      "actor": "MANAGER",
+      "id": "S03",
+      "method": "GET",
+      "path": "/api/contracts/{id}",
+      "status": 200,
+      "traceId": "00-0124527b519497de160ed3ed38cb32b7-91b79a7ca936b6bf-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.759Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-76c559e54d19738fbc3d9ab451660b98-88dc38e2e9c74ca7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.765Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-1531dcdc2b845f442e7127b3e2b53c13-6e2fe0fd1c07ef0a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.770Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-78e70e92d81816f47c35f7ca6ce67183-5a7442d1e61ec4d0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.770Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-44f73a19f56ee65278e5b0d3537baf2b-f5a4a02b3354c676-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.770Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-cba66744966858dcde17873c5713f097-b592ff3b596d1df7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.794Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-0a4fcb6b3e39e81532d168424fb04b5c-ae27b83e51e7504c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/files/{id}",
+      "status": 200,
+      "traceId": "00-cc582175b8db1b214f3dbb6aea3dd510-17580425698cfa90-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.795Z",
+      "actor": "MANAGER",
+      "id": "S02",
+      "method": "GET",
+      "path": "/api/survey-requests/{id}/contracts",
+      "status": 200,
+      "traceId": "00-ed9025bcda6cb64c84d5ac4a846bce58-d752095171ef2195-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:50.795Z",
+      "actor": "MANAGER",
+      "id": "S10",
+      "method": "GET",
+      "path": "/api/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-969194759694427741e4a0572a97c248-1dcde71a03954164-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.138Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-36f4e187020c323124c2f997d5a441c4-5af1ec5af22eb028-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.230Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-b9456c7f8fd346ea79409f8938cb3bf4-fc4826fb13479cc9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.233Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-d336134327ae05eb02cd8b98bef12655-6d7bbf83785fdc5f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.233Z",
+      "actor": "CUSTOMER",
+      "id": "C01",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}",
+      "status": 200,
+      "traceId": "00-40fd01105d6037492ac30b29cb64fbdf-5f8de2769db33a83-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.233Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-fa5980a98803b79465846d8fe722c68d-abb65ec9ed7222bc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.233Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-d5713457df2138e38b7bd45fc1455c32-75e112a910d759a4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.233Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-732e340604c3df2d2e4ca4dcdd231c8f-f90455568dc93810-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.277Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-b30d18ca614a7c8788ebc55cd9f5a04e-bf89858673acbab9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.277Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-2d9544627eacb8b2bb1c313d27de4663-2494a60865c1f967-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.291Z",
+      "actor": "CUSTOMER",
+      "id": "C04",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-3bf0de1cbe31eaf483e64a03d2745405-173f553e1ca711d3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.531Z",
+      "actor": "CUSTOMER",
+      "id": "C03",
+      "method": "POST",
+      "path": "/api/customers/me/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-03fb2f823ac8f35f824d299a60eb5c4b-225402b210e98986-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.580Z",
+      "actor": "CUSTOMER",
+      "id": "C04",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-5b165f3aff9668a9f3f8584dd06af0ba-700fd1e0830ae6b0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.871Z",
+      "actor": "CUSTOMER",
+      "id": "C05",
+      "method": "POST",
+      "path": "/api/customers/me/contracts/{id}/payments/cancel",
+      "status": 200,
+      "traceId": "00-856602ee01ffb797f8e119027e1786ac-5be61bc0c055d0b3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:51.909Z",
+      "actor": "CUSTOMER",
+      "id": "C04",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-62877f1b6653abcdf2a2d52283b8c4ee-e3ed2892e37075bf-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:52.178Z",
+      "actor": "CUSTOMER",
+      "id": "C03",
+      "method": "POST",
+      "path": "/api/customers/me/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-d04ed3092e70793050497c28aad3797f-8785762e3ae48f43-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:52.217Z",
+      "actor": "CUSTOMER",
+      "id": "C04",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-32f7d40621c33cf3fd392395e1282f4b-f7cb61a58ec99e54-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.384Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-9185dc7f3ddfa4a0c20550b51534314f-5f2a08f0074068b9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.460Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-672f47883e9569628ba9e84456a13bc7-ceb6dca1d7217b16-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.460Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-eed977bca7402c31f54cef0ec6ede5f0-d2f8dc0b090f6047-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.460Z",
+      "actor": "CUSTOMER",
+      "id": "C01",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}",
+      "status": 200,
+      "traceId": "00-553f678f2b267d51c4e39ccd09f96965-b65263548fc7bab6-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.541Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-af77bc39c12574b23c35a01ebc27c95e-bc497c831fbbbffb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.541Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-dd57e129c98a888f977a713c0e4e3258-966d2707433a9cb4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.541Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-c03e5763e383b55263a65871d2f8a5ce-9d392cad268ede1f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.541Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-e0cef1396628137ffea3b48e47d4a689-8083d432af07fee4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.541Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-00c7aa427b7ea4c8145e7b485c405830-b841541776f6bb26-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:53.551Z",
+      "actor": "CUSTOMER",
+      "id": "C04",
+      "method": "GET",
+      "path": "/api/customers/me/contracts/{id}/payments",
+      "status": 200,
+      "traceId": "00-ed55f827f051447fc8afb163cfe18d65-8311b153f098731f-00",
+      "code": null
+    }
+  ]
+}

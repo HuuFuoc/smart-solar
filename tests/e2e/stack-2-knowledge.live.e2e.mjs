@@ -20,7 +20,9 @@ const kbReady = (documentId, ms = 120_000) =>
     async () => {
       const d = await S.must('ADMIN', 'GET', `/admin/knowledge-documents/${documentId}`)
       const v = d.versions?.find((x) => x.versionId === d.latestVersionId)
-      return v && ['READY_FOR_REVIEW', 'PUBLISHED', 'WITHDRAWN'].includes(v.status) && !d.jobs.some((j) => ['PENDING', 'RUNNING', 'RETRY_WAITING'].includes(j.status))
+      return v &&
+        ['READY_FOR_REVIEW', 'PUBLISHED', 'WITHDRAWN'].includes(v.status) &&
+        !d.jobs.some((j) => ['PENDING', 'RUNNING', 'RETRY_WAITING'].includes(j.status))
         ? d
         : null
     },
@@ -86,13 +88,19 @@ describe('2. Kho tri thức, RAG, trợ lý', { skip }, () => {
     await expectCall('G01', t)
     await page.waitForURL(/phien=/)
     const thread = page.getByRole('list', { name: 'Nội dung cuộc trò chuyện' })
-    await thread.getByText(/Chinh sach bao hanh Smart Solar/).first().waitFor()
+    await thread
+      .getByText(/Chinh sach bao hanh Smart Solar/)
+      .first()
+      .waitFor()
     await page.getByText(TITLE).first().waitFor()
     state.chatSession = new URL(page.url()).searchParams.get('phien')
     const t2 = mark()
     await page.reload({ waitUntil: 'domcontentloaded' })
     await expectCall('G03', t2)
-    await thread.getByText(/Chinh sach bao hanh Smart Solar/).first().waitFor()
+    await thread
+      .getByText(/Chinh sach bao hanh Smart Solar/)
+      .first()
+      .waitFor()
     const other = await S.call('CUSTOMER2', 'GET', `/chat/sessions/${state.chatSession}`)
     assert.equal(other.status, 404)
   })
@@ -103,7 +111,11 @@ describe('2. Kho tri thức, RAG, trợ lý', { skip }, () => {
     await page.getByRole('button', { name: 'Gỡ công bố' }).click()
     await page.getByRole('dialog', { name: 'Xác nhận' }).getByRole('button', { name: 'Gỡ công bố' }).click()
     await expectCall('A18', t)
-    const ask = await S.call('CUSTOMER', 'POST', '/chat/messages', { sessionId: null, message: 'Inverter bao hanh bao lau?', clientMessageId: null })
+    const ask = await S.call('CUSTOMER', 'POST', '/chat/messages', {
+      sessionId: null,
+      message: 'Inverter bao hanh bao lau?',
+      clientMessageId: null,
+    })
     state.answerWithoutPublished = ask.data?.answer?.status
     assert.equal(ask.data?.answer?.status, 'INSUFFICIENT_CONTEXT')
 
@@ -127,7 +139,10 @@ describe('2. Kho tri thức, RAG, trợ lý', { skip }, () => {
       await add.getByRole('button', { name: 'Thêm phiên bản' }).click()
       await expectCall('A16', t, 201)
       await until(
-        async () => (await S.must('ADMIN', 'GET', `/admin/knowledge-documents/${state.kbDocId}`)).jobs.some((j) => j.status === 'FAILED'),
+        async () =>
+          (await S.must('ADMIN', 'GET', `/admin/knowledge-documents/${state.kbDocId}`)).jobs.some(
+            (j) => j.status === 'FAILED',
+          ),
         'lượt nạp FAILED',
         180_000,
         3000,
@@ -135,7 +150,11 @@ describe('2. Kho tri thức, RAG, trợ lý', { skip }, () => {
     } finally {
       execFileSync('docker', ['start', 'ss-audit-rag-service-1'])
     }
-    await until(async () => (await fetch('http://127.0.0.1:58000/health/live').catch(() => null))?.ok, 'RAG sống lại', 60_000)
+    await until(
+      async () => (await fetch('http://127.0.0.1:58000/health/live').catch(() => null))?.ok,
+      'RAG sống lại',
+      60_000,
+    )
     await page.reload({ waitUntil: 'domcontentloaded' })
     t = mark()
     await page.getByRole('button', { name: 'Chạy lại' }).first().click()
@@ -147,8 +166,19 @@ describe('2. Kho tri thức, RAG, trợ lý', { skip }, () => {
     await page.getByRole('dialog', { name: 'Xác nhận' }).getByRole('button', { name: 'Công bố' }).click()
     await expectCall('A17', t)
 
-    const fileId = await S.uploadFile('ADMIN', 'KNOWLEDGE_DOCUMENT', 'tam.txt', 'text/plain', Buffer.from('Tai lieu tam de luu tru.\n'))
-    const temp = await S.must('ADMIN', 'POST', '/admin/knowledge-documents', { fileId, title: `Tài liệu tạm ${tag}`, category: 'OTHER', tags: [] })
+    const fileId = await S.uploadFile(
+      'ADMIN',
+      'KNOWLEDGE_DOCUMENT',
+      'tam.txt',
+      'text/plain',
+      Buffer.from('Tai lieu tam de luu tru.\n'),
+    )
+    const temp = await S.must('ADMIN', 'POST', '/admin/knowledge-documents', {
+      fileId,
+      title: `Tài liệu tạm ${tag}`,
+      category: 'OTHER',
+      tags: [],
+    })
     await page.goto(url(`/admin/knowledge-base/${temp.documentId}`), { waitUntil: 'domcontentloaded' })
     t = mark()
     await page.getByRole('button', { name: 'Lưu trữ' }).click()
@@ -179,8 +209,14 @@ describe('2. Kho tri thức, RAG, trợ lý', { skip }, () => {
       await page.getByRole('button', { name: 'Lưu bản nháp' }).click()
       await page.getByRole('button', { name: 'Áp dụng bản nháp' }).click()
       if (chunk)
-        await page.getByRole('dialog', { name: 'Áp dụng bản nháp đổi cách cắt đoạn' }).getByRole('button', { name: 'Áp dụng' }).click()
-      await page.getByText(/Cấu hình v\d+ đang được dùng/).first().waitFor()
+        await page
+          .getByRole('dialog', { name: 'Áp dụng bản nháp đổi cách cắt đoạn' })
+          .getByRole('button', { name: 'Áp dụng' })
+          .click()
+      await page
+        .getByText(/Cấu hình v\d+ đang được dùng/)
+        .first()
+        .waitFor()
     }
     t = mark()
     await page.getByRole('button', { name: 'Nạp lại tài liệu theo cấu hình mới' }).click()
@@ -189,7 +225,10 @@ describe('2. Kho tri thức, RAG, trợ lý', { skip }, () => {
     await page.getByRole('button', { name: 'Nhật ký thay đổi' }).click()
     await page.getByRole('button', { name: 'Phiên bản AI / RAG' }).click()
     await page.getByRole('button', { name: 'Khôi phục' }).first().click()
-    await page.getByRole('dialog', { name: 'Khôi phục phiên bản cấu hình' }).getByRole('button', { name: 'Khôi phục' }).click()
+    await page
+      .getByRole('dialog', { name: 'Khôi phục phiên bản cấu hình' })
+      .getByRole('button', { name: 'Khôi phục' })
+      .click()
     await expectCall('A23', t)
     const cfg = await S.must('ADMIN', 'GET', '/admin/rag-configuration')
     state.ragActiveVersion = cfg.active?.version

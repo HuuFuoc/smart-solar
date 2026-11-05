@@ -13,7 +13,10 @@ let baseUrl
 
 before(async () => {
   // Không theo dõi file: phiên khác sửa code trong lúc chạy thì trang không bị nạp lại giữa chừng
-  server = await createServer({ server: { port: 3155, strictPort: false, hmr: false, watch: null }, logLevel: 'error' })
+  server = await createServer({
+    server: { host: '127.0.0.1', port: 3155, strictPort: false, hmr: false, watch: null },
+    logLevel: 'error',
+  })
   await server.listen()
   baseUrl = server.resolvedUrls.local[0].replace(/\/$/, '')
   // Bản Chromium đầy đủ (headless mới), không cần tải thêm chromium-headless-shell

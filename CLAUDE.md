@@ -336,13 +336,17 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
     xoá được (BE giữ giá trị cũ khi bỏ trống). Chi tiết công trình không trả `specifications` nên ô thông số chỉ ghi mới.
   - Lỗi `AFTER_SALES_INVALID_STATE` dịch theo câu gốc của BE (`managerActionError` ở `managerAfterSalesDisplay.ts`).
 - Hàng việc kinh doanh `/manage/sales-tasks`, `/admin/sales-tasks` (`pages/sales-tasks-page.tsx`): GET tasks, trạng thái cụ thể
-  gửi `status` lên BE, loại / người giữ lọc ở máy. Giao / giao lại (lý do bắt buộc khi đã có người giữ) chỉ ở cổng quản trị: chọn
-  người cần `GET /admin/users?role=SALES` mà BE chỉ cho ADMIN. Không đếm hạn xử lý ở FE.
+  gửi `status` lên BE, loại / người giữ lọc ở máy. Giao / giao lại (lý do bắt buộc khi đã có người giữ) ở cả hai cổng: người nhận
+  lấy từ `GET /manager/after-sales/sales-assignees` (MANAGER + ADMIN, chỉ mã + họ tên kinh doanh đang hoạt động), không dùng
+  `GET /admin/users`. API này chỉ có trong bản vá backend chưa merge (`smart-solar-backend-test`, nhánh
+  `test/post-audit-remediation`); backend chưa vá thì hộp "Giao việc" báo lỗi. Không đếm hạn xử lý ở FE.
 - Hoàn tiền `/manage/refunds`, `/admin/refunds` (`pages/refunds-page.tsx`): khoản `PENDING_APPROVAL` có "Xét hoàn tiền" (duyệt
   số ≤ số gốc / không hoàn, cả hai vai trò); khoản `APPROVED` chỉ quản trị "Ghi nhận đã hoàn". Khoản do huỷ gói, dừng việc,
   không thực hiện được đã được duyệt sẵn nên không xét lần hai. Lý do tiếng Anh của BE dịch ở `refundReasonText`.
-- Xét huỷ gói đã trả tiền: có service + hook (`useDecidePackageCancellationMutation`), chưa có màn vì BE không có API cho quản
-  lý đọc gói `CANCELLATION_REQUESTED`.
+- Xét huỷ gói đã trả tiền `/manage/package-cancellations(/:id)` (menu "Huỷ gói", `pages/package-cancellations-page.tsx`, luật
+  `packageCancellationErrors/Body`): hàng chờ `GET /manager/after-sales/subscriptions` (mặc định `CANCELLATION_REQUESTED`) và chi
+  tiết `GET …/subscriptions/{id}` thuộc bản vá backend chưa merge (như `sales-assignees`). Đồng ý gửi số hoàn ≤ giá, không ghi
+  chú; từ chối không gửi số tiền, gói về PAID. Duyệt tạo khoản hoàn "đã duyệt", quản trị ghi nhận ở Hoàn tiền.
 - Kỹ thuật viên `/tech/after-sales` + `/:id` (theo mã buổi hẹn): nhận / từ chối, bắt đầu (sớm nhất 2 giờ trước giờ hẹn, khoá
   nút và ghi rõ giờ), ảnh hiện trường (`uploadFile` mục đích `SERVICE_EVIDENCE`, gắn vào buổi hẹn; BE bắt ít nhất 1 ảnh trước
   báo cáo), báo cáo kiểm tra (không lỗi hoặc danh sách hạng mục), báo cáo sửa / bảo trì, khách vắng.
@@ -372,7 +376,7 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
   `SERVICE_EVIDENCE`); "Phát hiện khi bảo trì" → báo lỗi thành yêu cầu FAULT có `originRequestId` (trang yêu cầu đó dẫn về yêu cầu
   bảo trì gốc); `/customer/notifications` dịch theo `type` (`CUSTOMER_NOTIFICATION_TYPES`), số cạnh menu xám, đếm thông báo mới
   kể từ lần xem trên trình duyệt (backend chưa có lệnh đánh dấu đã đọc).
-- Chưa làm: thay thiết bị trong báo cáo, màn xét huỷ gói của quản lý (thiếu API đọc).
+- Chưa làm: thay thiết bị trong báo cáo.
 - Chữ trên giao diện không nhắc tới backend, máy chủ, token, kho lưu trữ hay mã lỗi; lỗi BE luôn qua bảng `errors.ts`.
 
 **Mặt lắp + mô phỏng do backend tính** (BE nhánh `feature/presurvey-flow`, commit 833ff3c, nối 09/10/2026; tài liệu tích hợp
@@ -614,21 +618,25 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
   `CONTRACT_DOCUMENT` rồi gửi `revision` + `canonicalHash` của phiên bản lúc mở hộp thoại (người dùng tick xác nhận), không
   tự tính hash.
 - Duyệt bản ký (`SignaturePanel`): kinh doanh phụ trách và quản lý (`/manage/contracts/:id`); quản trị
-  (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. Chưa xem được nội dung tệp (không có API link tải).
+  (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. "Xem" / "Tải về" PDF chính thức và từng bản ký
+  (`ContractDocumentButtons`): xin link ký sẵn đúng lúc bấm (`GET /contracts/{id}/official-document/url`,
+  `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Các API link này thuộc
+  bản vá backend chưa merge (quyền: quản lý / quản trị, hoặc kinh doanh phụ trách).
 - Thanh toán (`ContractPaymentPanel`, `GET /contracts/{id}/payments`, cả 3 cổng): chỉ đọc, hỏi lại 30 giây / lần khi SIGNED;
   REVIEW_REQUIRED / REFUND_REQUIRED tô đỏ. PAID: quản lý / quản trị có nút sang "Hợp đồng chờ tạo dự án"; số hợp đồng ở danh
   sách đó dẫn về trang hợp đồng.
 - Mọi lệnh ghi gửi `revision` đang hiện; 409 thì báo lỗi, tải lại, không tự gửi lại. 429 báo số giây theo Retry-After (10 lệnh
   ghi / phút). Yêu cầu khảo sát đã có hợp đồng còn hiệu lực thì ẩn "Đóng yêu cầu" (backend 31/10 từ chối).
-- Chưa làm: huỷ bản nháp hợp đồng (`POST /contracts/{id}/discard`, chỉ có ở backend 31/10), xem / tải PDF và bản ký.
+- Chưa làm: huỷ bản nháp hợp đồng (`POST /contracts/{id}/discard`, chỉ có ở backend 31/10).
 
 **Hợp đồng và thanh toán, phía khách** (03/11/2026; `/customer/contracts(/:id)`, menu "Hợp đồng"; backend `main` 7c79fa8:
 `CustomerContractsController`, `ContractHandlers.SubmitSignedDocumentAsync`, `CustomerPaymentsController`, `PaymentService`).
 Luật ở `features/contracts/customerContractRules.ts`, hiển thị ở `customerContractDisplay.ts`, hook `useCustomerContracts.ts`.
 Kiểm tra và các chỗ còn chặn: `docs/api/customer-portal-verification.md`.
 
-- Ký (`CustomerSignPanel`, `SignContractDialog`): chưa có API tải PDF chính thức cho khách (`GET /api/files/{id}` chỉ trả cho
-  người tải lên) nên không có nút tải; khách nhận PDF từ kinh doanh, kiểm tệp đang giữ bằng SHA-256 tính trên máy (không tải lên).
+- Ký (`CustomerSignPanel`, `SignContractDialog`): khách xem / tải PDF chính thức và bản ký của mình qua link ký sẵn
+  (`GET /customers/me/contracts/{id}/official-document/url`, `…/submissions/{sid}/url`; chỉ chủ hợp đồng, bản vá backend chưa
+  merge), rồi kiểm tệp đang giữ bằng SHA-256 tính trên máy (không tải lên).
   SHA-256 của PDF chính thức được chụp lúc mở hộp thoại và gửi đúng mã đó; hợp đồng đổi phiên bản thì khoá nút gửi, lỗi
   `RESIGN_ERROR_CODES` bắt xem lại và ký lại, không tự gửi lại. Bản ký tải lên `SIGNED_CONTRACT` (PDF ≤ 20 MB).
 - Thanh toán (`CustomerContractPayment`): chỉ khi SIGNED; link tạo khi khách bấm (backend trả lại link còn sống), hỏi lại 5 giây /
@@ -927,6 +935,9 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
 - `npm run build` – `tsc -b && vite build`; phải pass trước khi coi một màn là xong
 - `npm run typecheck` – `tsc -b` (nhanh hơn build, dùng khi lặp)
 - `npm run gen:api` – sinh lại `src/types/req` và `src/types/res` từ `docs/api/swagger.json`
+- E2E trên backend thật của stack kiểm thử riêng (`tests/e2e/stack-<n>-*.live.e2e.mjs`, chạy theo thứ tự 1 → 8, giai đoạn 6
+  sau giai đoạn 4 ít nhất 1 giờ): cần `AUDIT_STACK_API`, `AUDIT_ACCOUNTS_FILE`, `AUDIT_EVIDENCE_DIR`; không khai thì tự bỏ qua.
+  Dựng stack và tài khoản: `local-test/` trong worktree backend. Cách chạy và kết quả: `docs/api/SmartSolar_Post_Audit_Remediation.md`
 - `npm run lint` – oxlint (KHÔNG dùng ESLint: repo dùng `typescript@7`, gói này không còn API JS nên typescript-eslint không chạy được)
 - `npm run format` – prettier cho toàn repo (cấu hình `.prettierrc.json`: không `;`, nháy đơn, rộng 120). Chạy trước khi commit; `npm run format:check` để kiểm
 - Comment trong code: câu ngắn, nói lý do, không ghi ngày tháng / "người dùng chốt" / "rà code" (lịch sử để ở git)

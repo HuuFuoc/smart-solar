@@ -25,7 +25,10 @@ let baseUrl
 const ADMIN = { sub: 'admin-1', role: 'ADMIN' }
 
 before(async () => {
-  server = await createServer({ server: { port: 3191, strictPort: false, hmr: false, watch: null }, logLevel: 'error' })
+  server = await createServer({
+    server: { host: '127.0.0.1', port: 3191, strictPort: false, hmr: false, watch: null },
+    logLevel: 'error',
+  })
   await server.listen()
   baseUrl = server.resolvedUrls.local[0].replace(/\/$/, '')
   browser = await chromium.launch({ channel: 'chromium' })

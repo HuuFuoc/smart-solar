@@ -25,7 +25,12 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
       })
     const communes = await S.must(null, 'GET', '/administrative-units/communes?provinceCode=79')
     const benThanh = communes.find((c) => c.name === 'Phường Bến Thành')
-    await S.call('CUSTOMER', 'POST', '/customers/me', { customerType: 'INDIVIDUAL', companyName: null, taxCode: null, note: null })
+    await S.call('CUSTOMER', 'POST', '/customers/me', {
+      customerType: 'INDIVIDUAL',
+      companyName: null,
+      taxCode: null,
+      note: null,
+    })
     const site = await S.must('CUSTOMER', 'POST', '/customers/me/sites', {
       name: `Nhà phố Lê Lợi ${tag}`,
       province: 'Thành phố Hồ Chí Minh',
@@ -62,14 +67,20 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     state.surveyRequestId = (await S.must('CUSTOMER', 'POST', `/pre-surveys/${pre.preSurveyId}/submit`)).surveyRequestId
     // Giờ hẹn ngày mai (bắt đầu khảo sát chỉ được trong 24 giờ trước giờ hẹn); chạy lại nhiều lần thì nới số lịch / ngày
     const tech = await S.userId('TECH')
-    await S.must('ADMIN', 'PUT', `/admin/technicians/${tech}/profile`, { isSchedulingActive: true, maxAppointmentsPerDay: 20 })
+    await S.must('ADMIN', 'PUT', `/admin/technicians/${tech}/profile`, {
+      isSchedulingActive: true,
+      maxAppointmentsPerDay: 20,
+    })
     const day = new Date(Date.now() + 31 * 3600_000).toISOString().slice(0, 10)
     const slots = await S.must('CUSTOMER', 'GET', `/survey-slots?propertySiteId=${site.propertySiteId}&date=${day}`)
     const slot = slots.slots.find((x) => x.canBook)
     assert.ok(slot, `không còn giờ trống ngày ${day}: ${slots.coverageStatus}`)
     state.surveyStartsAt = slot.startsAt
     state.appointmentId = (
-      await S.must('CUSTOMER', 'POST', `/customers/me/survey-requests/${state.surveyRequestId}/booking`, { startsAt: slot.startsAt, note: null })
+      await S.must('CUSTOMER', 'POST', `/customers/me/survey-requests/${state.surveyRequestId}/booking`, {
+        startsAt: slot.startsAt,
+        note: null,
+      })
     ).appointmentId
   })
 
@@ -112,7 +123,11 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
       billOfMaterials: null,
     })
     const photo = await S.uploadFile('TECH', 'ONSITE_SURVEY_EVIDENCE', 'mai.png', 'image/png', S.tinyPng())
-    const att = await S.must('TECH', 'POST', `/technicians/me/appointments/${a}/onsite-survey/attachments`, { fileId: photo, category: 'ROOF', caption: 'Mái' })
+    const att = await S.must('TECH', 'POST', `/technicians/me/appointments/${a}/onsite-survey/attachments`, {
+      fileId: photo,
+      category: 'ROOF',
+      caption: 'Mái',
+    })
     await S.must('TECH', 'POST', `/technicians/me/appointments/${a}/onsite-survey/complete`, { revision: att.revision })
 
     const page = await as('TECH', `/tech/jobs/${a}`)
@@ -121,12 +136,17 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     await page.locator('#amendment-reason').fill('Đo lại chiều rộng mái theo thước laser')
     await page.locator('#os-roofWidthM').fill('5,5')
     await page.getByRole('button', { name: 'Gửi bổ sung' }).click()
-    await page.getByRole('dialog', { name: 'Gửi bổ sung biên bản?' }).getByRole('button', { name: 'Gửi bổ sung' }).click()
+    await page
+      .getByRole('dialog', { name: 'Gửi bổ sung biên bản?' })
+      .getByRole('button', { name: 'Gửi bổ sung' })
+      .click()
     await expectCall('T02', t)
-    const report = await S.must('SALES', 'GET', `/survey-requests/${state.surveyRequestId}/onsite-survey`).catch(async () => {
-      await S.must('SALES', 'POST', `/survey-requests/${state.surveyRequestId}/claim`)
-      return S.must('SALES', 'GET', `/survey-requests/${state.surveyRequestId}/onsite-survey`)
-    })
+    const report = await S.must('SALES', 'GET', `/survey-requests/${state.surveyRequestId}/onsite-survey`).catch(
+      async () => {
+        await S.must('SALES', 'POST', `/survey-requests/${state.surveyRequestId}/claim`)
+        return S.must('SALES', 'GET', `/survey-requests/${state.surveyRequestId}/onsite-survey`)
+      },
+    )
     assert.equal(report.data.roofWidthM, 5.5)
     assert.equal(report.version, 2)
     assert.ok(report.amendments.length >= 1, 'có lịch sử bổ sung')
@@ -161,7 +181,9 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     const page = await as('SALES', `/ops/surveys/${sr}`)
     const t = mark()
     const section = page.getByRole('region', { name: 'Tệp PDF báo giá' })
-    await section.locator('input[type=file]').setInputFiles({ name: 'bao-gia.pdf', mimeType: 'application/pdf', buffer: QUOTE_PDF })
+    await section
+      .locator('input[type=file]')
+      .setInputFiles({ name: 'bao-gia.pdf', mimeType: 'application/pdf', buffer: QUOTE_PDF })
     await section.getByRole('button', { name: 'Gắn vào báo giá' }).click()
     await expectCall('S11', t)
     await section.getByText('bao-gia.pdf').waitFor()
@@ -198,7 +220,9 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     t = mark()
     await page.getByRole('button', { name: 'Lập phụ lục' }).click()
     const amend = page.getByRole('dialog', { name: 'Lập phụ lục' })
-    await amend.getByLabel('Điều khoản').fill(`Điều 1. Lắp đặt hệ 5,5 kWp tại 12 Lê Lợi (${tag}). Phụ lục: đổi vị trí inverter.`)
+    await amend
+      .getByLabel('Điều khoản')
+      .fill(`Điều 1. Lắp đặt hệ 5,5 kWp tại 12 Lê Lợi (${tag}). Phụ lục: đổi vị trí inverter.`)
     await amend.getByRole('button', { name: 'Lập phụ lục' }).click()
     await expectCall('S09', t, 201)
     await page.waitForURL((u) => u.pathname.startsWith('/ops/contracts/') && !u.pathname.endsWith(v1))
@@ -225,7 +249,9 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     t = mark()
     await page.getByRole('button', { name: 'Gắn PDF chính thức' }).click()
     const doc = page.getByRole('dialog', { name: 'Gắn PDF hợp đồng chính thức' })
-    await doc.locator('input[type=file]').setInputFiles({ name: 'hop-dong.pdf', mimeType: 'application/pdf', buffer: OFFICIAL_PDF })
+    await doc
+      .locator('input[type=file]')
+      .setInputFiles({ name: 'hop-dong.pdf', mimeType: 'application/pdf', buffer: OFFICIAL_PDF })
     await doc.getByRole('checkbox').check()
     await doc.getByRole('button', { name: 'Gắn PDF' }).click()
     await expectCall('S06', t)
@@ -234,7 +260,10 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     await page.locator('#contract-actions').getByRole('button', { name: 'Gửi khách ký' }).click()
     await page.getByRole('dialog', { name: 'Gửi khách ký?' }).getByRole('button', { name: 'Gửi khách ký' }).click()
     await expectCall('S07', t)
-    await page.getByText(/Chờ khách ký/).first().waitFor()
+    await page
+      .getByText(/Chờ khách ký/)
+      .first()
+      .waitFor()
   }
 
   test('PDF hợp đồng (API bổ sung): kinh doanh và khách tải đúng tệp; người khác không đọc được', async () => {
@@ -249,14 +278,23 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     const t = mark()
     await page.getByRole('heading', { name: /^Hợp đồng / }).waitFor()
     await expectCall('C01', t)
-    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Tải PDF chính thức' }).first().click()])
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Tải PDF chính thức' }).first().click(),
+    ])
     const bytes = fs.readFileSync(await download.path())
     assert.equal(S.sha256(bytes), S.sha256(OFFICIAL_PDF))
     state.officialDownloadName = download.suggestedFilename()
 
-    assert.equal((await S.call('CUSTOMER2', 'GET', `/customers/me/contracts/${state.contractId}/official-document/url`)).status, 404)
+    assert.equal(
+      (await S.call('CUSTOMER2', 'GET', `/customers/me/contracts/${state.contractId}/official-document/url`)).status,
+      404,
+    )
     assert.equal((await S.call('SALES2', 'GET', `/contracts/${state.contractId}/official-document/url`)).status, 404)
-    assert.equal((await S.call('MANAGER', 'GET', `/contracts/${state.contractId}/official-document/url?disposition=bogus`)).status, 400)
+    assert.equal(
+      (await S.call('MANAGER', 'GET', `/contracts/${state.contractId}/official-document/url?disposition=bogus`)).status,
+      400,
+    )
   })
 
   test('C02: khách kiểm SHA-256 PDF đang giữ rồi gửi bản ký; tải lại thấy "đang kiểm tra" và tải được bản ký', async () => {
@@ -264,20 +302,38 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     const t = mark()
     await page.locator('#contract-sign').getByRole('button', { name: 'Gửi bản đã ký' }).click()
     const dialog = page.getByRole('dialog', { name: 'Gửi bản hợp đồng đã ký' })
-    await dialog.locator('input[type=file]').nth(0).setInputFiles({ name: 'hop-dong.pdf', mimeType: 'application/pdf', buffer: OFFICIAL_PDF })
+    await dialog
+      .locator('input[type=file]')
+      .nth(0)
+      .setInputFiles({ name: 'hop-dong.pdf', mimeType: 'application/pdf', buffer: OFFICIAL_PDF })
     await dialog.getByText('đúng là PDF chính thức của phiên bản này').waitFor()
-    await dialog.locator('input[type=file]').nth(1).setInputFiles({ name: 'ban-da-ky.pdf', mimeType: 'application/pdf', buffer: SIGNED_PDF })
+    await dialog
+      .locator('input[type=file]')
+      .nth(1)
+      .setInputFiles({ name: 'ban-da-ky.pdf', mimeType: 'application/pdf', buffer: SIGNED_PDF })
     await dialog.getByRole('button', { name: 'Gửi bản ký' }).click()
     await expectCall('C02', t)
     await page.reload({ waitUntil: 'domcontentloaded' })
     await page.getByText('Smart Solar đang kiểm tra bản ký').first().waitFor()
-    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /^Tải bản ký gửi / }).first().click()])
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page
+        .getByRole('button', { name: /^Tải bản ký gửi / })
+        .first()
+        .click(),
+    ])
     assert.equal(S.sha256(fs.readFileSync(await download.path())), S.sha256(SIGNED_PDF))
   })
 
   test('S08: quản lý mở hợp đồng, tải bản ký, duyệt; trạng thái SIGNED sau tải lại', async () => {
     const page = await as('MANAGER', `/manage/contracts/${state.contractId}`)
-    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /^Tải bản ký gửi lúc / }).first().click()])
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page
+        .getByRole('button', { name: /^Tải bản ký gửi lúc / })
+        .first()
+        .click(),
+    ])
     assert.equal(S.sha256(fs.readFileSync(await download.path())), S.sha256(SIGNED_PDF))
     const t = mark()
     await page.locator('#contract-review').getByRole('button', { name: 'Duyệt bản ký' }).click()
@@ -302,7 +358,10 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     await expectCall('C05', t)
     await pay.getByRole('button', { name: 'Tạo link thanh toán' }).click()
     await pay.getByText('Mã đơn PayOS').waitFor()
-    const [checkout] = await Promise.all([page.waitForEvent('popup'), pay.getByRole('link', { name: /Mở trang thanh toán PayOS/ }).click()])
+    const [checkout] = await Promise.all([
+      page.waitForEvent('popup'),
+      pay.getByRole('link', { name: /Mở trang thanh toán PayOS/ }).click(),
+    ])
     // Trang PayOS giả chuyển về Payments__ReturnUrl của stack (cổng dev 3000); E2E chạy Vite ở cổng khác nên mở cùng query tại đây
     const back = checkout.waitForRequest((r) => r.url().includes('/payments/return'), { timeout: 30_000 })
     await checkout.getByRole('button', { name: /Đã chuyển khoản/ }).click()
@@ -311,9 +370,17 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     const landing = await page.context().newPage()
     await landing.goto(url(`/payments/return${returned.search}`), { waitUntil: 'domcontentloaded' })
     await landing.waitForURL(/\/customer\/contracts\//, { timeout: 60_000 })
-    await until(async () => (await S.must('CUSTOMER', 'GET', `/customers/me/contracts/${state.contractId}`)).status === 'PAID', 'PAID', 60_000, 2000)
+    await until(
+      async () => (await S.must('CUSTOMER', 'GET', `/customers/me/contracts/${state.contractId}`)).status === 'PAID',
+      'PAID',
+      60_000,
+      2000,
+    )
     await page.reload({ waitUntil: 'domcontentloaded' })
-    await page.getByText(/Đã thanh toán đủ lúc/).first().waitFor()
+    await page
+      .getByText(/Đã thanh toán đủ lúc/)
+      .first()
+      .waitFor()
     const staff = await S.must('MANAGER', 'GET', `/contracts/${state.contractId}/payments`)
     assert.equal(staff.contractStatus, 'PAID')
   })

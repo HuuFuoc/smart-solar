@@ -43,7 +43,7 @@ const PNG = {
 }
 
 before(async () => {
-  server = await createServer({ server: { port: 3176, strictPort: false }, logLevel: 'error' })
+  server = await createServer({ server: { host: '127.0.0.1', port: 3176, strictPort: false }, logLevel: 'error' })
   await server.listen()
   baseUrl = server.resolvedUrls.local[0].replace(/\/$/, '')
   browser = await chromium.launch({ channel: 'chromium' })

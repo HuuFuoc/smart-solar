@@ -17,7 +17,10 @@ const SALES = { role: 'SALES', userId: 's1' }
 
 before(async () => {
   // Không theo dõi file: phiên khác sửa code trong lúc chạy thì trang không bị nạp lại giữa chừng
-  server = await createServer({ server: { port: 3175, strictPort: false, hmr: false, watch: null }, logLevel: 'error' })
+  server = await createServer({
+    server: { host: '127.0.0.1', port: 3175, strictPort: false, hmr: false, watch: null },
+    logLevel: 'error',
+  })
   await server.listen()
   baseUrl = server.resolvedUrls.local[0].replace(/\/$/, '')
   browser = await chromium.launch({ channel: 'chromium' })
@@ -486,7 +489,10 @@ describe('E. huỷ gói đã trả tiền', () => {
     await page.getByText('Đổi ý', { exact: true }).waitFor()
     await page.getByLabel('Không đồng ý huỷ').check()
     await page.getByRole('button', { name: 'Từ chối huỷ' }).click()
-    await waitFor(() => lastSent(state, 'POST', '/manager/after-sales/subscriptions/sub-2/cancellation-decision'), 'từ chối')
+    await waitFor(
+      () => lastSent(state, 'POST', '/manager/after-sales/subscriptions/sub-2/cancellation-decision'),
+      'từ chối',
+    )
     assert.deepEqual(lastSent(state, 'POST', '/manager/after-sales/subscriptions/sub-2/cancellation-decision').body, {
       approve: false,
       refundAmount: null,
@@ -499,7 +505,10 @@ describe('E. huỷ gói đã trả tiền', () => {
     await page.getByLabel('Đồng ý huỷ gói và hoàn tiền').check()
     await page.locator('#package-refund').fill('2.500.000')
     await page.getByRole('button', { name: 'Duyệt huỷ gói' }).click()
-    await page.getByText(/Không vượt quá 2\.000\.000/).first().waitFor()
+    await page
+      .getByText(/Không vượt quá 2\.000\.000/)
+      .first()
+      .waitFor()
     assert.equal(sent(state, 'POST', '/manager/after-sales/subscriptions/sub-1/cancellation-decision').length, 0)
     await page.locator('#package-refund').fill('1.500.000')
     await page.getByRole('button', { name: 'Duyệt huỷ gói' }).click()
@@ -510,7 +519,10 @@ describe('E. huỷ gói đã trả tiền', () => {
       note: null,
     })
     const created = state.refunds.find((r) => r.subscriptionId === 'sub-1')
-    assert.deepEqual([created.status, created.approvedAmount, created.originalAmount], ['APPROVED', 1_500_000, 2_000_000])
+    assert.deepEqual(
+      [created.status, created.approvedAmount, created.originalAmount],
+      ['APPROVED', 1_500_000, 2_000_000],
+    )
     await page.context().close()
   })
 
@@ -520,7 +532,10 @@ describe('E. huỷ gói đã trả tiền', () => {
     await page.getByRole('button', { name: 'Duyệt huỷ gói' }).waitFor()
     state.subscriptions[0].subscription.status = 'PAID'
     await page.getByRole('button', { name: 'Duyệt huỷ gói' }).click()
-    await waitFor(() => sent(state, 'POST', '/manager/after-sales/subscriptions/sub-1/cancellation-decision').length === 1, 'gửi')
+    await waitFor(
+      () => sent(state, 'POST', '/manager/after-sales/subscriptions/sub-1/cancellation-decision').length === 1,
+      'gửi',
+    )
     await page.waitForTimeout(500)
     assert.equal(sent(state, 'POST', '/manager/after-sales/subscriptions/sub-1/cancellation-decision').length, 1)
     assert.equal(state.refunds.filter((r) => r.subscriptionId === 'sub-1').length, 0)
@@ -530,9 +545,17 @@ describe('E. huỷ gói đã trả tiền', () => {
   test('menu quản lý có Huỷ gói; khách không gọi được API quản lý', async () => {
     const state = createManagerState()
     const page = await open(state, MANAGER, '/manage/package-cancellations')
-    await page.getByLabel('Điều hướng chính').getByRole('link', { name: /^Huỷ gói/ }).waitFor()
+    await page
+      .getByLabel('Điều hướng chính')
+      .getByRole('link', { name: /^Huỷ gói/ })
+      .waitFor()
     await page.context().close()
-    const r = handleManager(state, { role: 'CUSTOMER', userId: 'cus-1' }, 'GET', 'http://x/api/manager/after-sales/subscriptions')
+    const r = handleManager(
+      state,
+      { role: 'CUSTOMER', userId: 'cus-1' },
+      'GET',
+      'http://x/api/manager/after-sales/subscriptions',
+    )
     assert.equal(r.status, 403)
   })
 })

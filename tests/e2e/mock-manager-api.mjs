@@ -237,7 +237,10 @@ export function createManagerState() {
     /** Gói đã trả tiền khách xin huỷ (ManagerSubscriptionView) */
     subscriptions: [
       managerSubscription('sub-1', 'Bảo trì 12 tháng', 2_000_000, 'Chuyển nhà, không cần bảo trì nữa'),
-      managerSubscription('sub-2', 'Bảo vệ bão 1 năm', 1_500_000, 'Đổi ý', { kind: 'DISASTER_PROTECTION', visitMonths: [] }),
+      managerSubscription('sub-2', 'Bảo vệ bão 1 năm', 1_500_000, 'Đổi ý', {
+        kind: 'DISASTER_PROTECTION',
+        visitMonths: [],
+      }),
     ],
     /** Lệnh danh sách việc trả 503 FEATURE_PENDING_MIGRATION */
     tasksUnavailable: false,
@@ -560,7 +563,8 @@ export function handleManager(state, who, method, url, bodyText) {
     const found = state.subscriptions.find((x) => x.subscription.subscriptionId === hit[1])
     if (!found) return fail(404, 'SUBSCRIPTION_NOT_FOUND', 'Subscription was not found.')
     const sub = found.subscription
-    if (sub.status !== 'CANCELLATION_REQUESTED') return fail(409, 'AFTER_SALES_INVALID_STATE', 'No cancellation is waiting.')
+    if (sub.status !== 'CANCELLATION_REQUESTED')
+      return fail(409, 'AFTER_SALES_INVALID_STATE', 'No cancellation is waiting.')
     if (!body.approve) {
       sub.status = 'PAID'
       sub.cancellationRequestedAt = null

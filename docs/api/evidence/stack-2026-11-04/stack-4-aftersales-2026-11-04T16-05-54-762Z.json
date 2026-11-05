@@ -1,0 +1,3873 @@
+{
+  "phase": "4-aftersales",
+  "runAt": "2026-11-04T16-05-54-762Z",
+  "api": "http://127.0.0.1:8090",
+  "state": {
+    "zoneId": "a96ea6f0-93ae-4650-b4b5-fe1ada2d42c5",
+    "unmappedCommunes": 167,
+    "productId": "3d1dbc03-6c1e-4e86-9923-347133535d41",
+    "productName": "Tấm pin kiểm thử 160336",
+    "csvHeader": "metric,description,current (2026-11-01..2026-11-30),previous (2026-10-01..2026-10-31),change_percent\r",
+    "kbDocId": "41790d29-4fae-4646-8965-91f6455c8a16",
+    "kbTitle": "Chính sách bảo hành 160358",
+    "chatSession": "1863bf1a-b26f-4d38-8115-1c6bf38aa512",
+    "answerWithoutPublished": "INSUFFICIENT_CONTEXT",
+    "ragActiveVersion": 3,
+    "siteId": "ff1a9995-affb-4081-92de-73aef158cc47",
+    "siteName": "Nhà phố Lê Lợi 160520",
+    "surveyRequestId": "f7b93908-cb08-4e54-87c8-70102fc9c729",
+    "surveyStartsAt": "2026-11-05T08:00:00+07:00",
+    "appointmentId": "128589ec-0713-4d59-9e1e-5c3796a5f596",
+    "quotationId": "a2a86446-dbaa-4647-b86c-898d3be35bce",
+    "contractId": "6430196c-3ae9-4368-a415-5fbbfb05f0f6",
+    "supersededContractId": "8f1b3307-c04e-4a27-b6ea-7c7d19a05223",
+    "officialDownloadName": "hop-dong.pdf",
+    "maintenancePackageId": "47f807a7-76b8-403f-b6bc-1feb6b9e4233",
+    "maintenancePackageName": "Bảo trì 12 tháng 160554",
+    "disasterPackageId": "d054b0c8-5b28-46ac-9c25-44a78f2d5b06",
+    "cancelledSubscriptionId": "8b7eff2e-bad8-45ba-96ab-988335846093",
+    "packageRefundId": "9de14ab0-9349-4dbe-a8ae-ee14c8e0bef0",
+    "projectId": "be696d08-bf56-4b81-9e3b-ea89344c785f",
+    "inverterAssetId": "b85677ec-2d7a-4009-bd28-0663bfc283a6",
+    "panelAssetId": "97ced500-7c2b-40a8-82d6-b3b6272633d0",
+    "maintenanceSubscriptionId": "682c027b-fa49-45cb-a0d1-76a51b331b0c",
+    "maintenancePurchasedAt": "2026-11-04T16:07:07.765Z",
+    "coverageStartsAt": "2026-11-04T23:07:07.601042+07:00",
+    "claimRequestId": "42d3eb7c-e56d-49a7-b0d5-d61882e2ea27",
+    "quotationTaskId": "b28eb9f2-1689-4910-8b44-d58395f6e4b4",
+    "followUpEntitlementId": "ab737aff-b0df-4d89-ae81-8f01b4fb07ba",
+    "secondContractId": "9d772e5a-583d-46ba-864b-d64247e481a7"
+  },
+  "evidence": [
+    {
+      "at": "2026-11-04T16:05:58.442Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-7a27907c20b6bde5a341d33e05d97c2e-615b26d21832668e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.532Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-58b3b77c3b4f29891a8fa4e4a8526982-ac217fb9dd0437d2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.532Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-f7f333d70f33a580ffbf9d94c27801b2-21276dc93e213eeb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.546Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-fc7204a1c2316d0ddc4736ee87231370-a86e9bc11f4cc374-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.546Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-4fb1f3df33dd1881ec9b2b6b1f565b2d-5acaf9d586e7ee6c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.546Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-57b335e10cc1631e69f83d84c4677591-f39c575e679bfc86-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.546Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-a3753bb87da12d71d17b597857ad4017-566427c494617eed-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.547Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-0e657041e9564d55d4b21d05b30591ed-7f1d4d9d156e152e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.547Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-d1420baa13df974c0f483c6beb4f1ba9-583c41c28d7c0934-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.558Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-595814ceeb18d5450f439b2744fdac61-6c3a687e1c2e4455-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:58.590Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-06eecd6e6e4cb85e074b9fd1a6518082-4ea15a91fa383983-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.047Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-d35ef4ffab94afbd232dc9b19a719755-35fa98ca880a6c0d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.078Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-82c2110af61a16b6b0d3dbfe59a802e2-20fb5ca9cc46e77b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.078Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-a141d52b519c6762518022fde59e9e5d-0b07453f6b99745e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.078Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-6df027bc01f37fda52e064e746bd5a33-5aaf35d60f982b1f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.092Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-5f6735fd21a4248d70aedb18952969c5-2c18bc3f2ffaf147-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.092Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-08b7392a8306e3b3a1b4db82eada3d82-33c60d6797d6bfb9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.092Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-a21afceb5048ee77d574df2f1234909c-b2608db7ef6611b5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.092Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-32f39af0fb88aaae6e4669f91befc340-1997b8ac8f3084ae-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.092Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-161889f5994a9327d1ff16673d10d61a-1d9bdf7656893240-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.097Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-5596f54443d8fd1c079903ce2c3e0a64-745a155411e56c95-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.203Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions/{id}",
+      "status": 200,
+      "traceId": "00-1ddee55ab8da4febe58bd20f457ac763-7a59a2e0445c27f4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.434Z",
+      "actor": "MANAGER",
+      "id": "M06",
+      "method": "POST",
+      "path": "/api/manager/after-sales/subscriptions/{id}/cancellation-decision",
+      "status": 200,
+      "traceId": "00-e51638ef53776905c4afea29da0bf4a5-6b3e1aa88acad95c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.444Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-5d0eb76d3821c32714851f4f77bcf0d1-14858bad5d22d6e9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.444Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-5e5e247347715eeece8abcc1642c50cc-57208665c871447e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.445Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions/{id}",
+      "status": 200,
+      "traceId": "00-14532d84c9aefb03a95a2a691e377ed7-e045c9eb0e9c131e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.962Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-fcd0eb754ecf59db5a8063222813d0b2-c92d185be0787c8e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.992Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-673354395575ab6ed08b181b9b651d45-285c21478311f53b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.992Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-d5a63fea32ccaacfb96e13e010bd0551-07b29e49a73fe479-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.992Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-51965c404c9157b0efa935cd51003d23-091e1648e0b4d20b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:05:59.992Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-06efda9a291b7988003d9da121a2e9d4-f4e3bb030cda2562-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.004Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-76f41c7a37efe3ad0b2ca24f64771587-9de098461193ce04-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.004Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-1027e95f5133659ab90e593243200c44-68468ce69e2a4f19-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.004Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-bfc9da8032beff6f4e1f3ab881132bd8-006ba47dfd6d2e79-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.004Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-f234001b19d9577c3537e0b669b1f4c3-ad9ebbb6759ec9d5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.004Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-29ad9b22d2615d641ef44e77476c5bcd-8ab3a5dd40fa19e4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.100Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions/{id}",
+      "status": 200,
+      "traceId": "00-b5efdcf72878514693d0f54c43c77ea3-ecae91a374bf1930-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.333Z",
+      "actor": "MANAGER",
+      "id": "M06",
+      "method": "POST",
+      "path": "/api/manager/after-sales/subscriptions/{id}/cancellation-decision",
+      "status": 200,
+      "traceId": "00-0ff7c3824fe1198952fbfd44c9b00fda-12ceffc82870d638-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.341Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-44d91f0dbf063e5f56b25ff50a7163ec-3405150ac4256091-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.350Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-b7d5006047edc9fd4b7eb4eea662531a-1a64950fcc7a406e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.350Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions/{id}",
+      "status": 200,
+      "traceId": "00-e43ddae711434fb81ae620ad524fa0cd-259077ada30471be-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.750Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-16e3804fa3ef3ce5c5ab61739e516b59-fc5d87aadb59e650-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.784Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-e20219086239d0dec50b01bf5b6280a5-d6c007606e4d8c35-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.784Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-99a27f23cf96b1f3027e2648b95b1462-d9b18d352a87073e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.794Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-56b9e3db621ed99a58266abb5c99cc43-45105156dc3fcbd1-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.794Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-506195299aa14212384a828f3345ea8b-8983301dda46c391-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-106e0289bd57952a82431f52cdd394be-65e1114394019061-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-7d2b3a9af9c33e60ba572ebe1a8a70f3-190051915cd33ae4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.795Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-082301573a84b7ed962fe7c1c5bb22ad-8ec8a9ce254488b5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-fb950788be95acc0f11756e8ca69256f-c207428ee01cde1f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:00.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-8194eab629ea07b5b4b5d26f8680d766-0b07958d21304db4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.548Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-859e29bf0ccb16e799917041a271df6d-0c3e4f339a51be02-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.642Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-a381c6779a9148c51e4c70459cdb6e2c-a8a02f73fef0410e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.642Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-8d3f0cafc37bf7c68aa4cc2c6697d6a1-c4ba0ee708fee41f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.642Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-38273cf4e920956ecd45e7128410e0cb-6bdbcdfb5bfaa984-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.642Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "traceId": "00-2dd52e03d1f0809dd4958eaf7d2227b8-7033fd66f458ab82-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.642Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/users",
+      "status": 200,
+      "traceId": "00-ba4d1c42a96e62fce4345fdc7b6dd72f-c069c95e44d53821-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.661Z",
+      "actor": "ADMIN",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-7a8ab51ff698f9e1d1223a15f07aabff-7cf614dc02de8f9c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.661Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/after-sales/packages",
+      "status": 200,
+      "traceId": "00-096ac36a64649b19a3cabedd100b9d9b-20a15e7f854bcbfb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.661Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-ec7da143c33284b7753b819b8d3f1cfd-de38ef7c1f3f4292-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.661Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-12e2f1d0037c4263fc694bf1a13fdb3c-edbcec62ca1adaf4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.666Z",
+      "actor": "ADMIN",
+      "id": "A01",
+      "method": "GET",
+      "path": "/api/admin/after-sales/warranty-options",
+      "status": 200,
+      "traceId": "00-4bff9af9819b2cf83811ca24f7c80c90-e7258d7b2447f4e0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.666Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-2d2a953920b50ecdb08f9d7af4affc9f-b0594400fd38f8ff-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.666Z",
+      "actor": "ADMIN",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-dcd5ca2597feb64b2520540f65590ef2-7629654c28dd6bd7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:02.709Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/users",
+      "status": 200,
+      "traceId": "00-a8dbfb1e6c5d54d861205a14fdc96648-b5497af38d8c4357-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.443Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-47841ebad4b51d1935ae22af461cda8d-8bde4be4d37726b3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.493Z",
+      "actor": "ADMIN",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-5a43606113c66450684866fc3f489f0e-c20b291f6a740bb1-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.504Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-a66e41bc044181909b92ae62a43ff5d4-a3f18de1c226dabc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.504Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-92b4fd445fc1dd6e588350246fa1ce16-5269171c8492f834-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.504Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-2f59f4b8153c7f168e5a37c8b0437184-7235544d3729ca49-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.504Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "traceId": "00-94d7b0d78ea032e90dacf23aa952af16-21f05a9bdab5ed73-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.504Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/users",
+      "status": 200,
+      "traceId": "00-c19ac1aee30e30ea0bed6159b2c512af-3ed6250383145b5b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.504Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-c391fbfa458248712f39e89293a783e0-55df85faf594da13-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.504Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-1ee7d5f11023595f190ecf97e9dc3d53-c781ae9fdb5651ad-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.504Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-806806004080bb4b742b621686d4af2b-54f57adb71b5c590-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.505Z",
+      "actor": "ADMIN",
+      "id": "A01",
+      "method": "GET",
+      "path": "/api/admin/after-sales/warranty-options",
+      "status": 200,
+      "traceId": "00-4ceb285824b88dc2f269a0ee7e037cbd-a19327e9d1e1d267-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.505Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/after-sales/packages",
+      "status": 200,
+      "traceId": "00-0f32704dbe383f959e790560d5ab58ff-1208901dc55bbddd-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:03.505Z",
+      "actor": "ADMIN",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-54a5464cd290fa8b6738224546b8682b-803e626f92fcf4ad-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:04.312Z",
+      "actor": "ADMIN",
+      "id": "A03",
+      "method": "POST",
+      "path": "/api/admin/after-sales/refunds/{id}/record",
+      "status": 200,
+      "traceId": "00-f58f3eb5e072bee45c5316fa97a81cd5-93422dd4f2daa1fa-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:06:04.324Z",
+      "actor": "ADMIN",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-c27d79d2b6f5630d7285f6470fc7c276-f07867e67778de89-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:00.801Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-fa1f2f13e2e92a2b8e23dd547569b5c8-5a99d5236a03a739-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:00.820Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-04a7bb3b2d09449755a33dc159421bc1-09f51aa08d3fd37f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:00.826Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-a7c432fcd60f0ba28b23a3ed5dcfb9fd-931f870943dd6577-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:00.826Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-99a014ef0b368168a1192d90756be1b3-f77ad3bb82d88267-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:00.826Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-4cb6a24db16526f66d4a9793e6d434f7-02f92aea96ebc655-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:00.826Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-1c1fa9356718fbc92685f34566b70056-8ee71c76f81658c6-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:00.826Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-aefb9b42017f89f2c64cc86c3c9ccc40-55634efa492bb0ae-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:03.555Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-81f6c60ab46102eaad6730291fb57c05-cfd803594da5480e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:03.557Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-9bcd09245bcb95d4a40f377d3a6618f3-7e7646e34534f1ed-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:03.580Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-2ca01a83eea0532efbe5401ce3694fad-f47493ae65cb9c5c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:03.580Z",
+      "actor": "ADMIN",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-e27feef808100b8f331bd2375c40de45-c27239f7dce223eb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:03.580Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-069dfce2985218c0f5b217bc20eb7206-3b371793ab12b23d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:03.580Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-833fcc43d45a0ca76847e9f48d780217-462820b0edde5226-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.290Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-2b661c14557754df0a98fdb822307b29-92d3dada938b31e7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.325Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-636001c2e66f54e24fa6a3f25fc3244e-36582e62ca97d1bc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.337Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-0462afe9cd8ed90df82c66d225e5e150-507cc435d95f12f8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.337Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-f07f4661ff3406aaf4afc142f05a7efe-988e8d00384ab785-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.337Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-3cc8d1c76af32ab9ceacf8647d112917-cb5b6c7a16c3ac7d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.337Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-c4cf63ebe294ac5b735972d790a5f591-8995cd0b943be8d9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.337Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-df1afe2a2761ce9f0a125c1dd882fb34-7743674b412be3f7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.342Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-ac66febebd0f0d6ec75fd6c7cfd23bda-17a262a5e5d2118d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.342Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-d7472b624077479c05dbf121f54868df-6f225aa146c7310b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.342Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-8b7fe2ac5346e466b0e00ec6438ed674-92446e5ae82f93f5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.380Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-5cc59f5de106bf7d4fadcf181bf6492f-7d78841ffc63a763-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.380Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-d39413e9eabe9011b18b2950a9e5189c-d3a0408429886e5d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.380Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-0583e752a9e61b8627b98fd001df6cf5-77fd7073d3688d01-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.382Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-2eba47fdf4e889c371859c172e5af660-32b3f16a020ae8c3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.383Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-edb338cd13d5861c6a828a77ebdc254e-6befa837301fc438-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.383Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-1130c6bc8744e603704f01585b4c5b41-d51fd4797a31c028-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.384Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-e9a55a7fa0afa6fbb20b2494b0ae758a-17fbbf3035ed9de5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.384Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-ea784d24fbad0376f940f0f89aa19b32-25ac0bd671e9a33e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.384Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-399eaf5a29d87786a8d897e62d3739ee-0f940615ba58fc6b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.414Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-50598142c9bf956eba630f2730f2559d-1fbb6cea5afb93e4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.438Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-efffd932dcfe56dbad00d7a3a18af63f-df5ea334c18706ca-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.471Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects/{id}",
+      "status": 200,
+      "traceId": "00-8f0fe9c7152a438ff47ae9c516cb838d-c7f8e2891875a492-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.655Z",
+      "actor": "MANAGER",
+      "id": "M01",
+      "method": "POST",
+      "path": "/api/manager/after-sales/requests/{id}/claim-decision",
+      "status": 200,
+      "traceId": "00-c8df798b2a6cbeb54eabd8b6b57f9658-07aba111674ab222-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.657Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-dd66b548125c0a7e520779f3671b85d7-f7be5aec61d4f193-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:20.677Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-7068cf546a0bf2cf69a62f85820cc7b5-7533eed0edf85513-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.536Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-836f92eed7385ca4bde0b3b1303de6a1-0a2f664de69065df-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.613Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-1fd81cf9cd4122f673151437c0d081f0-fbdd64c4835f6ff6-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.613Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-fd156695fd3983d67d1ed30f727e0c4f-8e537281d1e114ab-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.626Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-16e79a35a90b58968c83f4ece66759e2-80085f5105f9d461-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.626Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-b56de21e5baef3fd3eac1114dabe8bf6-385e097ecf6ba922-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.638Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-6fc77e40a717c72d1e29f9577355b65e-e6db797339de92be-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.638Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-1e08b0c15e20292e5885f0b3fe2a95ea-a5fcf5afa010f74e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.638Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-5ecf732a35b615e6ae737352f3cbad5b-497926e68ed31fd9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.910Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-52305fba22c3b33eb90360e165aa96ea-eea4107eb05874cc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.952Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-b9293add2dd5f367a05b7a2b989ce82f-a3a82778b82fc6ba-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.952Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-cc0b7c135c7d92ccc9fd06bb5eb34d1f-3cd03afe3443a13b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.952Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-4cf5f126845017d2826febaac0676ca7-dfdcaedc33e16b49-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.960Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-948a7c35cab2a3801a5f90628d9a543a-0b794a3c446ecfa1-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.970Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-207c95cf000406d2e502dd7a951b9cfc-3c878b1f3417da2e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.970Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-6be81eb182ecab48b1f18534b9969327-8d075916266c30ba-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.970Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-74b68059532c7dc92bc7e4f335de3fe0-c77856cbdde2e450-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:22.981Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-e14562040f120902c037fc52b64312dc-d5d620ceb8f8f7c3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.142Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files/presigned-upload",
+      "status": 200,
+      "traceId": "00-b0e9c317adc865f0bd26232b5b289c33-a31683001218fd4d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.187Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/files",
+      "status": 201,
+      "traceId": "00-3550fbc12283c308b0e8efdcd4c29c22-4b304656fb329888-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.251Z",
+      "actor": "CUSTOMER",
+      "id": "C08",
+      "method": "POST",
+      "path": "/api/customers/me/after-sales/requests/{id}/reconsideration",
+      "status": 200,
+      "traceId": "00-af31ea360b63affe6ac07eaefc97b26d-4dbc2278ee10f09e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.255Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-31975db308d7d93f54e7afcaec7724f5-cac34c2c7a42868b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.280Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-8df9d393aac855930639bec571cfbd32-666056405b0fa6a3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.293Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-2b461813086ad04d98228dcd26354d8e-02148a7dbbbc7004-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.304Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-b53e18d721a3539578dba25c824950c7-a36d1083664b290b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.614Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-9ab0b7217ca8db8e77db85e94666c561-85fd4fe476d193bb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.651Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-5d336491bbb30b979ee916296389a8bb-1aafa8ffc2114281-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.653Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-b0c07c420b41f1463a8743913475e673-9130b76c2bdec63c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.653Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-345620e723bd79266ac866e1425c35e1-b743fc87cf1d8fa2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.653Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-dddfc213306085c55c6df6ba33def481-cad0e8ca47888773-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.655Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-0dd5e7d17492eb8a2d86a21506c6ad06-22ad0ed7023be810-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.680Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-dbc4c799d822efa4006e4847aafd6bf0-0e2a56ef9136bb55-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.681Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-49bbe0793f5452a7f4c4e09ef0609def-c93ea9d909806666-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.681Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-71860f30fbad79a21a5e9c79d40a6f55-b7c3b9601abd2a80-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.681Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-2076d3eecc5444f3e85cbd51c15c1706-6b67652dcae83f1e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.681Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-32b75711345f651102a125f57c5721b5-0dfa83fb83a87c17-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.700Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-95f894b9ee4f289de8f873e10c3efea5-6ef0b886408e70dd-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.706Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-9c97679449bb711998d30f370cc748d6-e789a167f9c89b4b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.736Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-08eae2f012608ddf29df154b1323146e-ac0ecaa34899e715-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.736Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects/{id}",
+      "status": 200,
+      "traceId": "00-aabe9f6dd48e11f4003f440c6da359f5-1cdbffba34957402-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.802Z",
+      "actor": "MANAGER",
+      "id": "M01",
+      "method": "POST",
+      "path": "/api/manager/after-sales/requests/{id}/claim-decision",
+      "status": 200,
+      "traceId": "00-bb61bad02fe4d51544ac8568a7138abc-a3cef51c13c84869-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.814Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-5d10b85fb011b02c6ae2475bb0454dea-91b8d28accb125b2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:23.814Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-c0038ac8befe139b7855437d0a80dda4-64da36396762d3ef-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:24.783Z",
+      "actor": "MANAGER",
+      "id": "M05",
+      "method": "PUT",
+      "path": "/api/manager/after-sales/assets/{id}",
+      "status": 200,
+      "traceId": "00-a2d8014922aca47cd232eb0a34792ee0-348a70202a10b19b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:24.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-4fbed7776050d29395f19ecf1e9f6264-41b16d123df37f95-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:24.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-8233f5990f8c20181cace7209d392c6d-536351d61a18bf80-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:24.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-81899faea6ed88a9251f49a52f103715-7f91bb03bccf5f66-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:24.795Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-5762e39e1fb77e0ecbf4ba6ec20dc34f-9cb081243f45a427-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:24.807Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects/{id}",
+      "status": 200,
+      "traceId": "00-61bd9031ddcdb96ee3f38e1df66d48a0-d2ad1531d669df15-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.235Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-1c1165a2560df9a7345a7703610d420c-04dd413bcff89f63-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.273Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-00ae72394975dab2d33d918adabed047-09f9fe8f5d7b04ad-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.273Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-1fb28c5385115d2db69537d0e728451e-8f5b6188eb81582c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.273Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-45a9d4ce2a6700644ec4c1b07b3e0349-07b03da58e5a6d2a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.273Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-81b998132ab34533c655a316c7ed41b3-03d1e2b0a0909a74-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.300Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-a7a42995120566a9e65c0d9688afb6df-210bdcee716f8b8d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.300Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-61f6304a09dbffbcb30f6593aaf7476c-423f1f80dc3afc1f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.300Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-2e0c53442ad9dce70164e71ab2071ac5-5835086c389bc0b8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.300Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-bf56673bf382cef657edeff16158dc9f-376d8c17ba83afa5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.300Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-208c7f2530abdfcb24ba99fa0d7b5548-691033bda46649f4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.300Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-43910da893f2ad962994f9b3a17b9836-62f92cdfcc13f68c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.315Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-5d14a4a0ddea0c3ab7fefc9631e81771-d69312cb23166ba0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.341Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects/{id}",
+      "status": 200,
+      "traceId": "00-286b10e3877b0bc716651691ac330345-a551f554db92e807-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.404Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-76eb7df8aa40c0ec2c5dce670401ae3a-67dbe4446842ec18-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.433Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-2b24ab53a3b762b3a76325e8d44436b2-10da9661e80871de-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.538Z",
+      "actor": "MANAGER",
+      "id": "M02",
+      "method": "POST",
+      "path": "/api/manager/after-sales/requests/{id}/duplicate",
+      "status": 200,
+      "traceId": "00-0951527e65e1d1d5b85341e5d63fd9ad-ce6c770d836708f3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.557Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-55bc1b9207fbc4c06446852ab1b7b769-20d3425fa0d4b7d2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.557Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-d571440789f36102976f52657b919b15-e25eb770fb00d4e0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.557Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-ea40441098bda8b55e58071ce6db9f04-fe02b99caa57932f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:25.574Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-3cc98fd9f0c57e038e218e02ef353769-656fae4f1ee9b6f9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:27.755Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-b883d2e8ad0a44427f208bd0561290f3-1aaeb887dcb378fd-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:27.818Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-0d501e112336d81cb0e6132f2900f740-3ef69ac77b8a800a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:27.818Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-5d904f1a9484318b18a9632fba43d234-3c438df94a762c11-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:27.831Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-4444fb2a9cd3694c152de63a5d24ab4e-570ccc4b3d997a54-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:27.847Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/installation-projects",
+      "status": 200,
+      "traceId": "00-3d667fe817a1534c871d23bf6f5f4b6f-d8bb783d0a5a06ec-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:27.881Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-baccc457a65713c4dbd68d771b6b43d5-db6ed1db7a77bef7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:27.883Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-c1e637543b07c273f690052e4fb1a0a2-99f7e04157a37643-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.458Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-f3e4ea54c2f9669e814a581fcfff3d74-18fcc94feb51b6f4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.500Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-6d930128aaef586a0210cc9e4bded037-ac4411cd02971cfb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.506Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-da886f829f289023fa46b05d684f0a8d-76d2fd2baed4b8f9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.527Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-4d85ecd44982524cd0c1742791dfd0ab-044286dab6687996-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.527Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-0ca87bb0ec19d822c93087f6a7e131ed-7adbe3c01b3757ad-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.538Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/installation-projects",
+      "status": 200,
+      "traceId": "00-1e9a3c89163479fb98e25b36bfcd651a-b6b53a14c14b1448-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.559Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-52dc525427047175f3a8100e16a0e728-a081fc23df0ad5e4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.562Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-6a43d67f7d50f78bd98103e0b9777888-c1ebefc6e0f5c261-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.767Z",
+      "actor": "TECH",
+      "id": "T03",
+      "method": "POST",
+      "path": "/api/technicians/me/after-sales/visits/{id}/continue-repair",
+      "status": 409,
+      "traceId": "00-ff93b583e114be1ecabe87bae8d01148-e9020351c3e5796d-00",
+      "code": "AFTER_SALES_PAYMENT_REQUIRED"
+    },
+    {
+      "at": "2026-11-04T16:07:28.792Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-cb97ab42bd70b7714ae8a6399a4b51a5-9ff303bf9002180b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:28.792Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-ed88ce4bb585c5d15de99f53fbc76d8d-f886a7f509223e25-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.256Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-7e229199574fea8e5cccb9bf35eff115-833a8203f4497758-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.295Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-383bfaf2229fd1defaeaa912254502a9-c39f719dca43212f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.302Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-8145b5c7ee0d0fc1149136cb40eb1ce8-4e397bc0fc8f29ab-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.322Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-17f7d324cfd417413759323622782965-aefdbb5e4a399225-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.322Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-76c66d0ddc6de64581df7e3db80794ca-22c2f72ef8864e17-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.332Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/installation-projects",
+      "status": 200,
+      "traceId": "00-ed49c12dabed28e354585694d507cf7e-41c3e858f9a550b2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.337Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-d021582a8e19361b849df304e0f76a3d-85e0a17c39bf77eb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.351Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-aac19142900c0545886cae1e53db58a6-d7d6b9c69fc38932-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.492Z",
+      "actor": "TECH",
+      "id": "T03",
+      "method": "POST",
+      "path": "/api/technicians/me/after-sales/visits/{id}/continue-repair",
+      "status": 409,
+      "traceId": "00-7d7409cd24258fc292482f17799c0085-6c1616401d80c65f-00",
+      "code": "AFTER_SALES_REPAIR_TIME_INSUFFICIENT"
+    },
+    {
+      "at": "2026-11-04T16:07:29.511Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-8aaa4bd38d94c3469a2b2ee3ec6c9f3a-4bfc20891ab3c0d3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.511Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-77cf1afa6e679a57aa319fe202b39b69-dc1d86a44e1f19cd-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.908Z",
+      "actor": "TECH",
+      "id": "T03",
+      "method": "POST",
+      "path": "/api/technicians/me/after-sales/visits/{id}/continue-repair",
+      "status": 200,
+      "traceId": "00-b0f3c291135575e0d0f168a24aae0812-2d3fdbb9d5e35170-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.924Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-f91c1a8a9c7455c89729d9c058bf7ff6-80fa849496c38650-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:29.937Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-0accb3a4c5aa9c111f1bee9738f00405-82c61f18fdf7eeed-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:30.852Z",
+      "actor": "TECH",
+      "id": "T05",
+      "method": "POST",
+      "path": "/api/technicians/me/after-sales/visits/{id}/supplementary-items",
+      "status": 200,
+      "traceId": "00-51a1fac8187855bc4b106202d5db0847-1ed90f4382c23d82-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:30.883Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-ae793bfee73112c81d66ca24e80c0ecc-7a0d80282d11a602-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:30.883Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-f3575add75d0416bd800899167fc81d5-4cbc41485ddb2520-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.304Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-db9e9f9424776f2ef00751cf9535febe-8b5c4a083fffaa3c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.352Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-5e6101a436df9b269c42670b45627f2e-3b2bd0130d827941-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.352Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-f5379266ef17889986faefe9d3b20e61-66758d941a238ddb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.352Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-0865b8e9c8f6ae1edd212de10eda9db7-2d3d2d1c8f316507-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.352Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-32816353a1ae16ab36d05e8207d8d50d-c6a77624058f5366-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.361Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-b9d378c871cdb7ef337edbe25eba2a58-1ef41ca82257182f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.378Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-19f20f42c7c2f8322a1eecfdf18d7267-da6910a687aa3f83-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.378Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-8977146d4626604033504495e8c2051a-15d70fb1e96414de-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.378Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-27d5eb3cd24f26a091e853e838e05427-57302240654d8356-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.378Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-8e289b0372fecdb2433bcbfe06b82a5c-026f450aced2e916-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.378Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-271f6180c5f660ade0797b4d7c5c1b13-eea318c28e18a122-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.409Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-9d082c81cff54760f847f2ee9c50011a-89b9e8572ad1018d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.417Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-1f52d513dfebe1fd065d593ce7f21dd1-0bc93264e0f04ec3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.432Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects/{id}",
+      "status": 200,
+      "traceId": "00-1dad6e0446c1f1f8086e49b561082230-1b2ef3265595b168-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.669Z",
+      "actor": "MANAGER",
+      "id": "M03",
+      "method": "POST",
+      "path": "/api/manager/after-sales/requests/{id}/stop",
+      "status": 200,
+      "traceId": "00-8f746becf24d28d4005b87412b56320e-75009f796c1cb229-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.691Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-54a496d0ebd99c0f373f338a64816bdf-fe06383d29664eb3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.691Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-3bcdbb3c681866a60237f9b4644149e2-008fd84e2a853ead-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:31.691Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-2ab73c6ba35f664c1a80cd2293e7b4e0-888914ea5b09f8e8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.478Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-360b5eecdb4e866a6464b889bfa11f05-fbc4847562670058-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.529Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-73b0ee6196291801e91f8f20da2cd49b-b91ac77fc7f7e13e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.529Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-37f0094ebc319b10e4266da2c9d0405c-03d959ef3c86f850-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.529Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-546dd3826aed0b610d1b825846bc3b77-c47ecc2ca08243ff-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.532Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-672b5436d80ec54b6735e0aa15ec41f8-9d2b07548f2177be-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.539Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-1700aee86cf373df0257b7c8ff9bfb59-ea5d61c81891b61a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.545Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-ab49337d4ac6a9cd2f14a7df01133b60-3cd428bd83704c75-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.545Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/sales-assignees",
+      "status": 200,
+      "traceId": "00-dd97c4a56c515f35eb572e49d3a0e41a-134d7c338d4f7bc0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.545Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-5eb1caa58076a3167897c081517480da-2bfbf98f636c3c1f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.545Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-b097a3f1c09b5613722086398c9eb706-af23bfd1a22db9e3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.545Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-88613ddee74493c5f5e706cc631249bd-8594cea0544545f8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.903Z",
+      "actor": "MANAGER",
+      "id": "M08",
+      "method": "POST",
+      "path": "/api/manager/after-sales/tasks/{id}/assign",
+      "status": 200,
+      "traceId": "00-1655e3690d423086a32f88a3e939f77e-9559b2040adf90c9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:32.923Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-64da2ab4bef030d079c358092bed76c8-0dcef9fe888e761c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:34.897Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "traceId": "00-dcbc45f01323fe5676b1223af10a5a41-cb9425a4e5686cb3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:34.958Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-ab3846fc5ce5159a484829f9fe7478af-6590fc0e456f49e3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:34.958Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-0ca7191e762935bfa2284c569be03630-d62df301848f94dc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:34.958Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-e9bdf8a0336c20af268c7a73ba511b58-1a4a183acf5f762a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:34.958Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-5285418d6df60812c9484767138ff83d-0e2aac9b37d48eef-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:34.969Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-c6d061202ef7d15348dafffb2677daf4-13210d4d75a95615-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:35.143Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/administrative-units/communes",
+      "status": 200,
+      "traceId": "00-e201aa54bf3d7265bb4d6e300e3d6cc5-d6be43381f64714c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:35.143Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-b134087b4f2e81d6c27c0a501c8c95fe-c93d1667bf87316e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:35.143Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-754e2a7f234f9f37919ed50e279fd3ee-771f38b78e80003d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:35.143Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-904b66309a0218ffc4cb2b2790486197-46887860c5c14ae4-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:35.175Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-e7bb48e0560147be4899d349636e46c9-d4d083914f145800-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:35.175Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-ae4c220bad422d7784014dc36810068f-03289c2abef2008f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:35.175Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/{id}",
+      "status": 200,
+      "traceId": "00-5e2fa451664d0a90cab4eefdf44e08e9-d25882e76ef3d228-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:35.989Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-69206c2aa2ff7348c4e1debff22093ae-54747da090b4f151-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.017Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-7c7de6f2bd6fac5742d89934412aea24-c3e72080bc0cb92e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.026Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-99af6a1988eecd00e4a3fcf3244d28dd-20b966360f3561d8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.026Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/pending",
+      "status": 200,
+      "traceId": "00-61542e6a86c16fa7dd3ded7b28ceacc3-ab0cc49ca77e2999-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.026Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/escalated",
+      "status": 200,
+      "traceId": "00-d4a6b3f5cff56181220bfabfa0411a84-e38ddf100af73709-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.026Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/survey-requests/my",
+      "status": 200,
+      "traceId": "00-0f85f082f40c33549cf8258a1c69363d-c986a3fb13be2b96-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.127Z",
+      "actor": "SALES",
+      "id": "S12",
+      "method": "POST",
+      "path": "/api/sales/after-sales/tasks/{id}/start",
+      "status": 200,
+      "traceId": "00-596a9f64037bacce6f8136cbad9e6481-72bfbdaf1785cc4a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.149Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/mine",
+      "status": 200,
+      "traceId": "00-148aff591214f0081e59a4bc76f1cae1-f5ff6989f22de778-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.149Z",
+      "actor": "SALES",
+      "id": null,
+      "method": "GET",
+      "path": "/api/sales/after-sales/tasks/open",
+      "status": 200,
+      "traceId": "00-ff0385fe20989739252277880cb380dd-3db90131afd582f3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.762Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-af8a1c81bcc53efebf58b89fa2328aa0-c3d71820b968ecc6-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.848Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/appointments",
+      "status": 200,
+      "traceId": "00-61c91e21bc68b0963978e8e50c2cc49e-fbe3a756353c0e9b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.896Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/open-appointments",
+      "status": 200,
+      "traceId": "00-0992d618cb5c8f99ab08a2a1d7322844-8fda06c34f5bb5cc-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.898Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-61d6d0c1e3072ccba5e26026eb2f4d33-73dec6070847a5b8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.898Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-98761198974781140846ba58032cf3a0-1c0e3223677f0e8e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.919Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/installation-projects",
+      "status": 200,
+      "traceId": "00-32c9373b93eea3602ab21b8a2398eab1-8a7756bbb13edc46-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.924Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-d603c26fa7c0f97f3de3970a7fb1bb58-d0d6d9d5028875ce-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:36.924Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-55f7b524371caab7ce7d05eab201ad6b-5cc71ac605d8b308-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:37.083Z",
+      "actor": "TECH",
+      "id": "T03",
+      "method": "POST",
+      "path": "/api/technicians/me/after-sales/visits/{id}/continue-repair",
+      "status": 409,
+      "traceId": "00-bf044299091a251dc9b916661b342827-c6363359e14de15b-00",
+      "code": "AFTER_SALES_PAYMENT_REQUIRED"
+    },
+    {
+      "at": "2026-11-04T16:07:37.110Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-3e3d05a8f7f37f72ccd8f24d404f7bab-66257d1cf3fcdc0b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:37.110Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-cef8f61f10988a6800bcafb85792cd04-ffa4461d615f5157-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:37.549Z",
+      "actor": "TECH",
+      "id": "T04",
+      "method": "POST",
+      "path": "/api/technicians/me/after-sales/visits/{id}/finish",
+      "status": 200,
+      "traceId": "00-a486aa21c185543f51e9ffc18a877e37-3d64874df31463f2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:37.646Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}",
+      "status": 200,
+      "traceId": "00-fb59a5910d09774880ee75f72a408389-426c05671b60de6b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:37.646Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits",
+      "status": 200,
+      "traceId": "00-45e2fab91c9cc5c234a3fd148a4bc3fb-292914f65bdaef92-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:37.658Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-f82d9119551194cd791b8535a63056fd-037ed69f13e681f9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:37.658Z",
+      "actor": "TECH",
+      "id": null,
+      "method": "GET",
+      "path": "/api/technicians/me/after-sales/visits/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-2f946dbca08034a0b3fe5ee5e8739803-7fdea04dd269de60-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.206Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-e47b389c95e714ae87147d6ee235ba0b-a55c115b2e813092-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.315Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-848672768d8eff2c886f850d005632f2-067281204e7853d3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.363Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-57f4cf51e08a8d9bdcd9adfedf18067c-033d305950afaaca-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.364Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-6949438ae4ede468dfdbd8597039f57f-3ee63dbf84707f57-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.364Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/packages",
+      "status": 200,
+      "traceId": "00-5a453bc21669470710bf3543484f4d8d-e142c82658bb82b9-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.364Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/packages",
+      "status": 200,
+      "traceId": "00-ef520ecadbaa03ad4a19788497ff3d5d-b0eecac0c73bf08c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.364Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-006e5c6bdc2ff8d6275a82faf4eeb1f7-c951c17d66a5d0d8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.364Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-422f5c7e2f2d8101ca22dc7daa5a1e6b-bbf222edadeaa145-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.364Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-b8c2d7fca81abfaba16217f0a9b7486b-3a6f0225e632b1ce-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.365Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-5e4dd16a312ef44ac37dfb2f05722e46-27a4246b497467e8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.666Z",
+      "actor": "CUSTOMER",
+      "id": "C06",
+      "method": "POST",
+      "path": "/api/customers/me/after-sales/maintenance/{id}/book",
+      "status": 201,
+      "traceId": "00-38cb44731f0a5cfe366b5da837cc2250-3fb0c8bbe7679be0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.707Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-1596708bf1ed26b9eec1d8fb0a8fbe15-986f10603cf81724-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.750Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-5f761e89b6fbd7ddb627e651a47e136f-20e159bf43be6e2d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.861Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-0e540ade30c9ade4a3f81aabd1bc54de-7c774544a4f441a8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:38.876Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-a3b02e2d1cab76fef3fbcfc8c3ff1b7c-11f60c6097afc271-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.356Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-e5cd9074c005dbc572dcadf87723022d-a50d2c996b699f56-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.427Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-232f96d3a23f42f3fa30e9098d9d7ba6-da9ccc2d2bced497-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.427Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-96da89ef12e125f16c62c54c28a10e1a-8bd9eaad3bd5d48a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.427Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-3aa49a5905f59237c66aa2e765566596-d4ef8fd5cb6213d7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.427Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-83661de1b4faa50972cea67258d373fe-6c2e1ac36aa8396e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.462Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-aa4c6abf4085c57d7524cb6803b3d8fb-9602d5d40a633763-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.462Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-a1506bdf6a7a7b13f4f8ae74e5a67201-cfaa9a1435510b0d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.462Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-67207c4ca28af467cc9896e35d3ca71a-a30025a6bfbd4300-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.462Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-962c2b7bd9050ef6e3ff33848fb3ee27-beca2592a4ed7a0d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.818Z",
+      "actor": "CUSTOMER",
+      "id": "C07",
+      "method": "POST",
+      "path": "/api/customers/me/after-sales/requests/{id}/reschedule",
+      "status": 200,
+      "traceId": "00-0c5d6a224f6467ac68a9264558b81085-7d3425b0ecee889d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.856Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-312bc83f8c6c7b450b6af923442a75d9-d8b0bd922eec723d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:39.888Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-9234d913aa47689285e46c6a39b7bb18-b1e966bc4fd7e094-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:40.873Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-f9912bbdc862b0b60d1988b6997781b2-6a17f15382a9f01b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:40.942Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-4309300c0190c63cbdfe19d4dc74c606-b9743b77f3f348b2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.006Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-618af0c70ec230eaaf34f6d7b842cb02-8ffdd80120136d76-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.006Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-fbe4b0738ec3af91884102b82ae0705b-857dc14fb26905f3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.006Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-277b0dbb99993a064802b13217a09c67-2c356d755523e415-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.007Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-5601592ad91bc47fd87615b90991f5bb-5e81714751c94a43-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.007Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-c05844a6f5a8639e30f6ec557486b927-2979e2b8fc5a9d86-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.007Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-1853b6ed30fd2a019a0d0f20105c3e2e-aff84b4ad93d24d2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.007Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-67edeeccc8543da2571819739e3c103d-0af3993930ac394d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.049Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-23727f5f0f232778d4c31c77302a7fff-593bb1542cb6c0bb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.049Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}/evidence/{id}/url",
+      "status": 200,
+      "traceId": "00-3a901dbc28089c8f73bce6a8d465ce4e-28087b9d885585c1-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.252Z",
+      "actor": "CUSTOMER",
+      "id": "C09",
+      "method": "POST",
+      "path": "/api/customers/me/after-sales/requests/{id}/report-fault",
+      "status": 201,
+      "traceId": "00-d8595e2459adecc639163b423e85135a-3db2c2331a8c17d1-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.308Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-bb9aa26ed8e032e76775ab652f0decf2-75e974b71cf997f3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.312Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-6ad087f686244fdae8026e685eccfa7d-c7940109c5e8b7a7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.375Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-512f2df323058fe99cef48639dd24ff0-9bc6820bb7c6be59-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.761Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-fa195e8bec7b0af5f3641d34eda002f2-c1fcc613fe06973b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.845Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/requests",
+      "status": 200,
+      "traceId": "00-8a979ae02d226c694e79c73adceb9ced-6e6177807f799e9a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.846Z",
+      "actor": "CUSTOMER",
+      "id": "C10",
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/notifications",
+      "status": 200,
+      "traceId": "00-b664aa75fb9a4fc61d122aaf4780f908-225f0ab5740592b5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.871Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/survey-requests",
+      "status": 200,
+      "traceId": "00-ab6fcab442630dc2e8321ca495e83d17-3c71cd0bc7388bf7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.871Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/quotations",
+      "status": 200,
+      "traceId": "00-0685c6badca4512729df0738e8b06ab0-fa80d31ff08972e5-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.871Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-54503fa754de557fc2f6a7261d4afea5-c93f5dff1703ac19-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.875Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/contracts",
+      "status": 200,
+      "traceId": "00-9b96a5b534f54300b80c165a212ade59-f9c5c29c9de99ff3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:41.876Z",
+      "actor": "CUSTOMER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/customers/me/installation-projects",
+      "status": 200,
+      "traceId": "00-8f9e7cbb0cdde900a79652eac8c8c211-b83dd78d2c163728-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.300Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-33927ad8eea5516253dd48f469061540-8de2081f599821a7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.354Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-db8db5b963965a629f3e04e39dee9a38-1808a9ec36209f5a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.354Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-a830a6ac928d1eab112bdae5e77b7aaf-55f15656c9938ce0-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.354Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-281bd58fe6638cdbcaed59e14119cbc5-2cf05d4db1caab91-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.355Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-17ec0411dd69b2ab00b4d44fe7f04bef-5322dd17d310d7bb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.357Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-0d0c7fcbc92c6cc5ead2b4908f95dae8-82210755d5217574-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.357Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-72814405764863df07b54c0c1a27a756-f16ca5030512e133-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.371Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-650aba2b014d9b9083bc450cb1187fb9-7691df37863553fe-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.371Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-0b7dd4193eb944f34e73f549dc297fd1-3fcd6f43a95f5378-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.372Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-c61d90cca45f0896858b7b0f709e1801-b815144ed57338f7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.373Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-bc181e775238c663f551d0e8adbb3cb1-787a45334edfff35-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.407Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects/{id}",
+      "status": 200,
+      "traceId": "00-26eb73f675443b4a47150f86a042a036-a771bf619b90ade8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.642Z",
+      "actor": "MANAGER",
+      "id": "M04",
+      "method": "POST",
+      "path": "/api/manager/after-sales/requests/{id}/not-fulfilled",
+      "status": 200,
+      "traceId": "00-14e14acc9742bcc6a3dab6cae444c319-d4688dfc24cdbee7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.655Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-0f229ee42998b5ca6d52fb6926d1f3da-2a6b2ff59cfc5ec3-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.655Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-f1da8b1634efec8b8eec13071e54568e-db6375a147e73f4c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:42.659Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests/{id}",
+      "status": 200,
+      "traceId": "00-1936794edf70e1467cfa1a49c8f08505-35a330038c239501-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.337Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-3f34f03679e902449126c5ede74a6cfa-ac584f984353b331-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.367Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-e89beedf1eeaa47f2c5acf2f8f5021ee-952f7767bf2a1731-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.367Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-a551a2ec7ceeacb8220f61080a71b875-27a50896e78b279d-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.369Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-0a4368fbb1a056fa8ba4217f42af1596-6d18cae329d25cea-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.369Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-9a86b9eba5c088be1055342bd3bf2680-a0fbf93d06d39b8e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.369Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-951f1e2bdaad1aa18fd2b46e90981f59-f3e5143377e8b4c2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.374Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-39085e7e8162ef619907b27c8d40027f-b896ae5755ce412c-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.374Z",
+      "actor": "MANAGER",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-9ae3e4492ebace2eeeca28e3519177e5-9d7a5f5509f8e0d6-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.374Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-e35e9182ee9c6eb086526e64fcc31117-222b1d4c253a966e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:49.374Z",
+      "actor": "MANAGER",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/subscriptions",
+      "status": 200,
+      "traceId": "00-1bd3c57de3dc65b80c5b4f147cc7226b-fd1aecf5ba4b05cf-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.196Z",
+      "actor": "MANAGER",
+      "id": "M10",
+      "method": "POST",
+      "path": "/api/manager/after-sales/refunds/{id}/decision",
+      "status": 200,
+      "traceId": "00-9403d76baf06b93c1a44c15db7cea2d4-996c4643caa555ed-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.216Z",
+      "actor": "MANAGER",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-66f9d90292e4adbf2ad760323a1cfdee-dc6cb899beed3983-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.881Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": 200,
+      "traceId": "00-e3fb622d06761f2bbf3550af51b2f940-65143e01b9605d6e-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.939Z",
+      "actor": "ADMIN",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-eadf4538a5f9324d7569097f25ecc57c-96a5587dfbcd2047-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.939Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/manager/after-sales/requests",
+      "status": 200,
+      "traceId": "00-1340cae98b810ac071d4043dc4d5f609-02cac0ccbc130c6f-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.967Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installations/ready-contracts",
+      "status": 200,
+      "traceId": "00-629c8c0d437519009ecec43b59bd8e8f-cc4f4958cc72346b-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.967Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "traceId": "00-e6c9ab709b9687e0c0f439451f9bb4c5-60fdd02793950c63-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.968Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/installation-projects",
+      "status": 200,
+      "traceId": "00-e3eab55f7e4ddc2b74337e6db58e758b-2e7d9829dda4b1e8-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.968Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/users",
+      "status": 200,
+      "traceId": "00-7ed0da01636e2d507b982aef8582c925-b642fb2d328a3ce6-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.975Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/technicians",
+      "status": 200,
+      "traceId": "00-4264543d494a93c4d5af9f97a7e20465-cf00f82768d672d7-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.976Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-67d9d6ee3b68f8e3813e17edd8d24c17-a592102ba45c0fdb-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.976Z",
+      "actor": "ADMIN",
+      "id": "A01",
+      "method": "GET",
+      "path": "/api/admin/after-sales/warranty-options",
+      "status": 200,
+      "traceId": "00-9c191bd3e9d1710c679bf1d7dbce6386-ea359b6336fcacb2-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.976Z",
+      "actor": "ADMIN",
+      "id": "M07",
+      "method": "GET",
+      "path": "/api/manager/after-sales/tasks",
+      "status": 200,
+      "traceId": "00-313121106772bbd414b0a03d969d7f07-be485d662ad7d39a-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.976Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/after-sales/packages",
+      "status": 200,
+      "traceId": "00-7923414d4c5ae9622b11075ff22b7755-23545523f9d0f046-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:50.976Z",
+      "actor": "ADMIN",
+      "id": null,
+      "method": "GET",
+      "path": "/api/admin/dispatch-requests",
+      "status": 200,
+      "traceId": "00-d15476178647a5c4efbe4d2dd7a8c860-9e1615ab5c4c7990-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:51.295Z",
+      "actor": "ADMIN",
+      "id": "A03",
+      "method": "POST",
+      "path": "/api/admin/after-sales/refunds/{id}/record",
+      "status": 200,
+      "traceId": "00-a1f4ac15e3a0fb59fb7d34f63ba9c050-4bac655f2e768c67-00",
+      "code": null
+    },
+    {
+      "at": "2026-11-04T16:07:51.326Z",
+      "actor": "ADMIN",
+      "id": "M09",
+      "method": "GET",
+      "path": "/api/manager/after-sales/refunds",
+      "status": 200,
+      "traceId": "00-c4af2b7346f5d0fa4b4f1b4a5424b9ad-803486ad830792e7-00",
+      "code": null
+    }
+  ]
+}

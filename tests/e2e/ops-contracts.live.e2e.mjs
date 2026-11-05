@@ -33,7 +33,7 @@ async function until(check, label) {
 
 describe('cổng kinh doanh với backend thật (chỉ đọc)', { skip }, () => {
   before(async () => {
-    server = await createServer({ server: { port: 3185, strictPort: false }, logLevel: 'error' })
+    server = await createServer({ server: { host: '127.0.0.1', port: 3185, strictPort: false }, logLevel: 'error' })
     await server.listen()
     baseUrl = server.resolvedUrls.local[0].replace(/\/$/, '')
     browser = await chromium.launch({ channel: 'chromium' })

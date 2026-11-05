@@ -57,8 +57,8 @@ export function CustomerSignPanel({ contract: c }: { contract: ContractView }) {
         {c.officialDocument && <ContractDocumentButtons name="PDF chính thức" request={request()} />}
         {canSign && (
           <Notice>
-            Tải PDF chính thức, in và ký tay, rồi quét thành PDF để gửi lại. Mã nội dung in trên PDF phải trùng mã ở đây; khi
-            gửi bản ký, bạn kiểm tra được tệp PDF đang giữ có đúng bản chính thức không.
+            Tải PDF chính thức, in và ký tay, rồi quét thành PDF để gửi lại. Mã nội dung in trên PDF phải trùng mã ở
+            đây; khi gửi bản ký, bạn kiểm tra được tệp PDF đang giữ có đúng bản chính thức không.
           </Notice>
         )}
         {c.status === 'UNDER_REVIEW' && (

@@ -33,7 +33,7 @@ async function until(check, label) {
 describe('cổng kỹ thuật viên với backend thật', { skip }, () => {
   before(async () => {
     server = await createServer({
-      server: { port: 3196, strictPort: false, hmr: false, watch: null },
+      server: { host: '127.0.0.1', port: 3196, strictPort: false, hmr: false, watch: null },
       logLevel: 'error',
     })
     await server.listen()

@@ -29,7 +29,11 @@ export async function payFake(orderCode) {
 
 /** Cài đặt sau bán cho kiểm thử: bảo vệ thiên tai không chờ, nhắc khách sau 1 giờ (mức nhỏ nhất), báo trước bảo trì 60 ngày */
 export async function setAfterSalesSettings() {
-  const wanted = { 'afterSales.disasterWaitingDays': [0, 'DAYS'], 'afterSales.customerResponseHours': [1, 'HOURS'], 'afterSales.maintenanceNoticeLeadDays': [60, 'DAYS'] }
+  const wanted = {
+    'afterSales.disasterWaitingDays': [0, 'DAYS'],
+    'afterSales.customerResponseHours': [1, 'HOURS'],
+    'afterSales.maintenanceNoticeLeadDays': [60, 'DAYS'],
+  }
   const current = await S.must('ADMIN', 'GET', '/admin/system-settings/scheduling')
   const changes = Object.entries(wanted)
     .filter(([key, [value]]) => current.settings.find((s) => s.key === key)?.value !== value)
@@ -74,7 +78,11 @@ export async function buyPackages(customer, contractId, packages) {
   return poll(async () => {
     const subs = await S.must(customer, 'GET', '/customers/me/after-sales/subscriptions')
     const mine = subs.filter((s) => buy.subscriptionIds.includes(s.subscriptionId))
-    return mine.length === buy.subscriptionIds.length && mine.every((s) => s.status === 'PAID' || s.status === 'ACTIVE') && mine
+    return (
+      mine.length === buy.subscriptionIds.length &&
+      mine.every((s) => s.status === 'PAID' || s.status === 'ACTIVE') &&
+      mine
+    )
   }, 'gói được ghi nhận đã trả tiền')
 }
 
@@ -119,7 +127,11 @@ export async function installAndHandOver(contractId, panelProductId) {
   let p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
   const startsAt = vnAt(70_000)
   const endsAt = vnAt(8 * 3600_000)
-  await S.must('MANAGER', 'GET', `/installation-projects/${projectId}/technician-candidates?startsAt=${encodeURIComponent(startsAt)}&endsAt=${encodeURIComponent(endsAt)}`)
+  await S.must(
+    'MANAGER',
+    'GET',
+    `/installation-projects/${projectId}/technician-candidates?startsAt=${encodeURIComponent(startsAt)}&endsAt=${encodeURIComponent(endsAt)}`,
+  )
   await S.must('MANAGER', 'PUT', `/installation-projects/${projectId}/assignment`, {
     technicianUserId: tech,
     scheduledStartsAt: startsAt,
@@ -131,7 +143,13 @@ export async function installAndHandOver(contractId, panelProductId) {
   p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
   for (const item of p.checklist ?? []) {
     if (!item.isRequired || item.status === 'SATISFIED') continue
-    const doc = await S.uploadFile('MANAGER', 'PROJECT_DOCUMENT', 'bien-ban.pdf', 'application/pdf', S.tinyPdf('Checklist dat'))
+    const doc = await S.uploadFile(
+      'MANAGER',
+      'PROJECT_DOCUMENT',
+      'bien-ban.pdf',
+      'application/pdf',
+      S.tinyPdf('Checklist dat'),
+    )
     const fresh = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
     await S.must('MANAGER', 'PUT', `/installation-projects/${projectId}/checklist/${item.itemId}`, {
       revision: fresh.revision,
@@ -144,30 +162,60 @@ export async function installAndHandOver(contractId, panelProductId) {
   // Kỹ thuật viên chỉ bắt đầu được từ giờ đã giao
   await sleep(Math.max(0, Date.parse(startsAt) - Date.now()) + 5000)
   const tv = await S.must('TECH', 'GET', `/technicians/me/installation-projects/${projectId}`)
-  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/accept`, { expectedRevision: tv.revision })
+  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/accept`, {
+    expectedRevision: tv.revision,
+  })
   await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/start`)
   const photo = await S.uploadFile('TECH', 'INSTALLATION_EVIDENCE', 'lap-dat.png', 'image/png', S.tinyPng())
-  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/evidence`, { fileId: photo, caption: 'Đã lắp xong' })
+  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/evidence`, {
+    fileId: photo,
+    caption: 'Đã lắp xong',
+  })
   const stamp = Date.now()
   await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/assets`, {
     assets: [
-      { assetType: 'PANEL', productId: panelProductId, manufacturer: 'Audit', model: 'A550', serialNumber: `PV-${stamp}`, positionCode: 'R1', warrantyMonths: null },
-      { assetType: 'INVERTER', productId: await inverterProductId(), manufacturer: 'Audit', model: 'INV5', serialNumber: `INV-${stamp}`, positionCode: 'T1', warrantyMonths: null },
+      {
+        assetType: 'PANEL',
+        productId: panelProductId,
+        manufacturer: 'Audit',
+        model: 'A550',
+        serialNumber: `PV-${stamp}`,
+        positionCode: 'R1',
+        warrantyMonths: null,
+      },
+      {
+        assetType: 'INVERTER',
+        productId: await inverterProductId(),
+        manufacturer: 'Audit',
+        model: 'INV5',
+        serialNumber: `INV-${stamp}`,
+        positionCode: 'T1',
+        warrantyMonths: null,
+      },
     ],
   })
   p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
-  const approve = await S.call('MANAGER', 'POST', `/installation-projects/${projectId}/equipment-substitution/approve`, {
-    reason: 'Kiểm thử: lắp thêm inverter ngoài báo giá',
-    expectedRevision: p.revision,
-  })
+  const approve = await S.call(
+    'MANAGER',
+    'POST',
+    `/installation-projects/${projectId}/equipment-substitution/approve`,
+    {
+      reason: 'Kiểm thử: lắp thêm inverter ngoài báo giá',
+      expectedRevision: p.revision,
+    },
+  )
   // Không lệch thiết bị thì backend từ chối lệnh duyệt; báo cáo bên dưới sẽ hỏng nếu thật ra cần duyệt
   const tv2 = await S.must('TECH', 'GET', `/technicians/me/installation-projects/${projectId}`)
   await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/completion-report`, {
     completionReport: 'Lắp đặt hoàn tất, chạy thử đạt.',
     expectedRevision: tv2.revision,
   })
-  if (approve.status < 300) await S.must('CUSTOMER', 'POST', `/customers/me/installation-projects/${projectId}/equipment-substitution/approve`)
-  await S.must('CUSTOMER', 'POST', `/customers/me/installation-projects/${projectId}/acceptance`, { decision: 'ACCEPT', reason: null })
+  if (approve.status < 300)
+    await S.must('CUSTOMER', 'POST', `/customers/me/installation-projects/${projectId}/equipment-substitution/approve`)
+  await S.must('CUSTOMER', 'POST', `/customers/me/installation-projects/${projectId}/acceptance`, {
+    decision: 'ACCEPT',
+    reason: null,
+  })
   await S.must('CUSTOMER', 'GET', `/customers/me/installation-projects/${projectId}/handover`)
   const view = await S.must('CUSTOMER', 'GET', `/customers/me/installation-projects/${projectId}`)
   assert.equal(view.status, 'COMPLETED')
@@ -207,7 +255,10 @@ export async function startVisit(visitId) {
   await S.must('TECH', 'POST', `/technicians/me/after-sales/visits/${visitId}/respond`, { accept: true, reason: null })
   await S.must('TECH', 'POST', `/technicians/me/after-sales/visits/${visitId}/start`)
   const photo = await S.uploadFile('TECH', 'SERVICE_EVIDENCE', 'hien-truong.png', 'image/png', S.tinyPng())
-  await S.must('TECH', 'POST', `/technicians/me/after-sales/visits/${visitId}/evidence`, { fileId: photo, caption: 'Hiện trường' })
+  await S.must('TECH', 'POST', `/technicians/me/after-sales/visits/${visitId}/evidence`, {
+    fileId: photo,
+    caption: 'Hiện trường',
+  })
 }
 
 /** Báo cáo kiểm tra có một hạng mục và ở lại công trình để sửa luôn (ngoài 76) */
@@ -225,7 +276,11 @@ export async function decideCoverage(requestId, coverage) {
   return S.must('MANAGER', 'POST', `/manager/after-sales/requests/${requestId}/coverage`, {
     decisions: r.items
       .filter((i) => i.coverage === 'PENDING')
-      .map((i) => ({ itemId: i.itemId, coverage, reason: coverage === 'CHARGEABLE' ? 'Hư hỏng do sử dụng, ngoài bảo hành' : null })),
+      .map((i) => ({
+        itemId: i.itemId,
+        coverage,
+        reason: coverage === 'CHARGEABLE' ? 'Hư hỏng do sử dụng, ngoài bảo hành' : null,
+      })),
   })
 }
 
@@ -235,7 +290,12 @@ export async function decideCoverage(requestId, coverage) {
  * Trả { contractId, surveyRequestId }
  */
 export async function paidContract(customer, label, productId) {
-  await S.call(customer, 'POST', '/customers/me', { customerType: 'INDIVIDUAL', companyName: null, taxCode: null, note: null })
+  await S.call(customer, 'POST', '/customers/me', {
+    customerType: 'INDIVIDUAL',
+    companyName: null,
+    taxCode: null,
+    note: null,
+  })
   const communes = await S.must(null, 'GET', '/administrative-units/communes?provinceCode=79')
   const benThanh = communes.find((c) => c.name === 'Phường Bến Thành')
   const site = await S.must(customer, 'POST', '/customers/me/sites', {
@@ -274,9 +334,14 @@ export async function paidContract(customer, label, productId) {
   const slots = await S.must(customer, 'GET', `/survey-slots?propertySiteId=${site.propertySiteId}&date=${day}`)
   const slot = slots.slots.find((x) => x.canBook)
   assert.ok(slot, `không còn giờ trống ngày ${day}: ${slots.coverageStatus}`)
-  const { appointmentId } = await S.must(customer, 'POST', `/customers/me/survey-requests/${surveyRequestId}/booking`, { startsAt: slot.startsAt, note: null })
+  const { appointmentId } = await S.must(customer, 'POST', `/customers/me/survey-requests/${surveyRequestId}/booking`, {
+    startsAt: slot.startsAt,
+    note: null,
+  })
   const open = await S.must('TECH', 'GET', `/technicians/me/open-appointments/${appointmentId}`)
-  await S.must('TECH', 'POST', `/technicians/me/appointments/${appointmentId}/accept`, { expectedRevision: open.revision })
+  await S.must('TECH', 'POST', `/technicians/me/appointments/${appointmentId}/accept`, {
+    expectedRevision: open.revision,
+  })
   const start = await S.must('TECH', 'POST', `/technicians/me/appointments/${appointmentId}/onsite-survey/start`)
   await S.must('TECH', 'PUT', `/technicians/me/appointments/${appointmentId}/onsite-survey`, {
     revision: start.revision,
@@ -300,8 +365,14 @@ export async function paidContract(customer, label, productId) {
     billOfMaterials: null,
   })
   const roof = await S.uploadFile('TECH', 'ONSITE_SURVEY_EVIDENCE', 'mai.png', 'image/png', S.tinyPng())
-  const att = await S.must('TECH', 'POST', `/technicians/me/appointments/${appointmentId}/onsite-survey/attachments`, { fileId: roof, category: 'ROOF', caption: 'Mái' })
-  await S.must('TECH', 'POST', `/technicians/me/appointments/${appointmentId}/onsite-survey/complete`, { revision: att.revision })
+  const att = await S.must('TECH', 'POST', `/technicians/me/appointments/${appointmentId}/onsite-survey/attachments`, {
+    fileId: roof,
+    category: 'ROOF',
+    caption: 'Mái',
+  })
+  await S.must('TECH', 'POST', `/technicians/me/appointments/${appointmentId}/onsite-survey/complete`, {
+    revision: att.revision,
+  })
 
   await S.call('SALES', 'POST', `/survey-requests/${surveyRequestId}/claim`)
   let q = await S.must('SALES', 'POST', `/survey-requests/${surveyRequestId}/quotations`, {
@@ -331,14 +402,34 @@ export async function paidContract(customer, label, productId) {
   c = await S.must('SALES', 'POST', `/contracts/${c.contractId}/issue`, { revision: c.revision })
   const official = S.tinyPdf(`Hop dong ${label}`)
   const officialId = await S.uploadFile('SALES', 'CONTRACT_DOCUMENT', 'hop-dong.pdf', 'application/pdf', official)
-  c = await S.must('SALES', 'PUT', `/contracts/${c.contractId}/official-document`, { revision: c.revision, fileId: officialId, canonicalHash: c.canonicalHash })
+  c = await S.must('SALES', 'PUT', `/contracts/${c.contractId}/official-document`, {
+    revision: c.revision,
+    fileId: officialId,
+    canonicalHash: c.canonicalHash,
+  })
   c = await S.must('SALES', 'POST', `/contracts/${c.contractId}/publish`, { revision: c.revision })
-  const signedId = await S.uploadFile(customer, 'SIGNED_CONTRACT', 'ban-ky.pdf', 'application/pdf', S.tinyPdf(`Ban ky ${label}`))
-  await S.must(customer, 'POST', `/customers/me/contracts/${c.contractId}/signed-document`, { fileId: signedId, officialDocumentSha256: S.sha256(official) })
+  const signedId = await S.uploadFile(
+    customer,
+    'SIGNED_CONTRACT',
+    'ban-ky.pdf',
+    'application/pdf',
+    S.tinyPdf(`Ban ky ${label}`),
+  )
+  await S.must(customer, 'POST', `/customers/me/contracts/${c.contractId}/signed-document`, {
+    fileId: signedId,
+    officialDocumentSha256: S.sha256(official),
+  })
   c = await S.must('MANAGER', 'GET', `/contracts/${c.contractId}`)
-  await S.must('MANAGER', 'POST', `/contracts/${c.contractId}/review`, { revision: c.revision, decision: 'APPROVE', reason: null })
+  await S.must('MANAGER', 'POST', `/contracts/${c.contractId}/review`, {
+    revision: c.revision,
+    decision: 'APPROVE',
+    reason: null,
+  })
   const link = await S.must(customer, 'POST', `/customers/me/contracts/${c.contractId}/payments`)
   await payFake(link.orderCode)
-  await poll(async () => (await S.must(customer, 'GET', `/customers/me/contracts/${c.contractId}`)).status === 'PAID', 'hợp đồng thứ hai đã thanh toán')
+  await poll(
+    async () => (await S.must(customer, 'GET', `/customers/me/contracts/${c.contractId}`)).status === 'PAID',
+    'hợp đồng thứ hai đã thanh toán',
+  )
   return { contractId: c.contractId, surveyRequestId }
 }

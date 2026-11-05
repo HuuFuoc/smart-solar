@@ -51,7 +51,10 @@ describe('1. Quản trị: thời hạn bảo hành, khu vực, ảnh sản ph�
     await page.getByLabel('Thêm phường, xã').fill('ben thanh')
     await page.getByRole('option', { name: 'Phường Bến Thành' }).click()
     await page.getByRole('button', { name: 'Lưu danh sách' }).click()
-    await page.getByRole('dialog', { name: 'Lưu phường, xã của khu' }).getByRole('button', { name: 'Lưu', exact: true }).click()
+    await page
+      .getByRole('dialog', { name: 'Lưu phường, xã của khu' })
+      .getByRole('button', { name: 'Lưu', exact: true })
+      .click()
     await expectCall('A09', t)
     await page.getByRole('heading', { name: 'Phường, xã (1)' }).waitFor()
 
@@ -65,7 +68,10 @@ describe('1. Quản trị: thời hạn bảo hành, khu vực, ảnh sản ph�
 
     // Ngoài 76: kỹ thuật viên nhận lịch trong khu này
     const tech = await S.userId('TECH')
-    await S.must('ADMIN', 'PUT', `/admin/technicians/${tech}/profile`, { isSchedulingActive: true, maxAppointmentsPerDay: 4 })
+    await S.must('ADMIN', 'PUT', `/admin/technicians/${tech}/profile`, {
+      isSchedulingActive: true,
+      maxAppointmentsPerDay: 4,
+    })
     await S.must('ADMIN', 'PUT', `/admin/technicians/${tech}/zones`, { zoneIds: [state.zoneId] })
     t = mark()
     await page.reload({ waitUntil: 'domcontentloaded' })
@@ -128,7 +134,10 @@ describe('1. Quản trị: thời hạn bảo hành, khu vực, ảnh sản ph�
     const t = mark()
     await page.getByText('Tiền hợp đồng lắp đặt').waitFor()
     await expectCall('A04', t)
-    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Tải CSV' }).click()])
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Tải CSV' }).click(),
+    ])
     await expectCall('A05', t)
     const csv = fs.readFileSync(await download.path(), 'utf8')
     state.csvHeader = csv.split('\n')[0].slice(0, 120)

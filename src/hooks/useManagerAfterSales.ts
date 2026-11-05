@@ -35,7 +35,8 @@ export const managerAfterSalesKeys = {
   refunds: () => [...managerAfterSalesKeys.all, 'refunds'] as const,
   tasks: (status?: string) => [...managerAfterSalesKeys.all, 'tasks', status ?? 'all'] as const,
   subscriptions: () => [...managerAfterSalesKeys.all, 'subscriptions'] as const,
-  subscription: (subscriptionId: string) => [...managerAfterSalesKeys.subscriptions(), 'detail', subscriptionId] as const,
+  subscription: (subscriptionId: string) =>
+    [...managerAfterSalesKeys.subscriptions(), 'detail', subscriptionId] as const,
   salesAssignees: () => [...managerAfterSalesKeys.all, 'sales-assignees'] as const,
 }
 

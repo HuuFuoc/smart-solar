@@ -105,7 +105,7 @@ describe(
     before(async () => {
       process.env.API_PROXY_TARGET ??= apiBase
       server = await createServer({
-        server: { port: 3192, strictPort: false, hmr: false, watch: null },
+        server: { host: '127.0.0.1', port: 3192, strictPort: false, hmr: false, watch: null },
         logLevel: 'error',
       })
       await server.listen()

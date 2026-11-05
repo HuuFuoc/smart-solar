@@ -13,7 +13,10 @@ describe('6. Việc nhắc khách của kinh doanh', { skip }, () => {
   test('M08 + S12 + S13: quản lý giao việc nhắc → kinh doanh bắt đầu → ghi liên hệ (giờ chưa tới bị chặn) → hẹn sau giữ việc mở → không liên lạc được đóng việc', async () => {
     assert.ok(state.followUpEntitlementId && state.maintenancePurchasedAt, 'cần chạy giai đoạn 4 trước')
     const due = Date.parse(state.maintenancePurchasedAt) + 3600_000
-    assert.ok(Date.now() > due - 10 * 60_000, `chưa đủ 1 giờ kể từ giai đoạn 4 (chạy sau ${new Date(due).toISOString()})`)
+    assert.ok(
+      Date.now() > due - 10 * 60_000,
+      `chưa đủ 1 giờ kể từ giai đoạn 4 (chạy sau ${new Date(due).toISOString()})`,
+    )
     const task = await F.poll(
       async () =>
         (await S.must('MANAGER', 'GET', '/manager/after-sales/tasks')).find(
@@ -26,7 +29,9 @@ describe('6. Việc nhắc khách của kinh doanh', { skip }, () => {
     assert.equal(task.status, 'OPEN')
 
     const manager = await as('MANAGER', '/manage/sales-tasks')
-    const row = manager.locator('section li', { hasText: 'Nhắc khách đặt lịch bảo trì' }).filter({ has: manager.getByRole('button', { name: 'Giao việc' }) })
+    const row = manager
+      .locator('section li', { hasText: 'Nhắc khách đặt lịch bảo trì' })
+      .filter({ has: manager.getByRole('button', { name: 'Giao việc' }) })
     await row.first().getByRole('button', { name: 'Giao việc' }).click()
     const assign = manager.getByRole('dialog', { name: 'Giao việc' })
     await assign.locator('#assign-sales').selectOption(await S.userId('SALES'))
@@ -36,7 +41,9 @@ describe('6. Việc nhắc khách của kinh doanh', { skip }, () => {
 
     // Hồi quy cổng quản trị: giao lại cùng lệnh M08, danh sách kinh doanh lấy từ cùng API; thiếu lý do bị chặn ở giao diện
     const admin = await as('ADMIN', '/admin/sales-tasks')
-    const held = admin.locator('section li', { hasText: 'Nhắc khách đặt lịch bảo trì' }).filter({ has: admin.getByRole('button', { name: 'Giao lại' }) })
+    const held = admin
+      .locator('section li', { hasText: 'Nhắc khách đặt lịch bảo trì' })
+      .filter({ has: admin.getByRole('button', { name: 'Giao lại' }) })
     await held.first().getByRole('button', { name: 'Giao lại' }).click()
     const reassign = admin.getByRole('dialog', { name: 'Giao việc' })
     await reassign.locator('#assign-sales').selectOption(await S.userId('SALES2'))
@@ -49,10 +56,16 @@ describe('6. Việc nhắc khách của kinh doanh', { skip }, () => {
     await expectCall('M08', t)
     assert.equal(evidence.slice(t).filter((e) => e.id === 'M08' && e.actor === 'ADMIN').length, 1)
     const notMine = await S.call('SALES', 'POST', `/sales/after-sales/tasks/${task.taskId}/start`)
-    assert.equal(notMine.error?.code, 'AFTER_SALES_INVALID_STATE', 'người cũ không bắt đầu được việc đã giao cho người khác')
+    assert.equal(
+      notMine.error?.code,
+      'AFTER_SALES_INVALID_STATE',
+      'người cũ không bắt đầu được việc đã giao cho người khác',
+    )
 
     const sales = await as('SALES2', '/ops/after-sales')
-    const mine = sales.locator('main li', { hasText: 'Nhắc khách đặt lịch bảo trì' }).filter({ hasText: 'Lượt bảo trì của gói' })
+    const mine = sales
+      .locator('main li', { hasText: 'Nhắc khách đặt lịch bảo trì' })
+      .filter({ hasText: 'Lượt bảo trì của gói' })
     t = mark()
     await mine.getByRole('button', { name: 'Bắt đầu' }).click()
     await expectCall('S12', t)
@@ -84,7 +97,9 @@ describe('6. Việc nhắc khách của kinh doanh', { skip }, () => {
     t = mark()
     await follow.getByRole('button', { name: 'Lưu liên hệ' }).click()
     await expectCall('S13', t)
-    current = (await S.must('MANAGER', 'GET', '/manager/after-sales/tasks?status=DONE')).find((x) => x.taskId === task.taskId)
+    current = (await S.must('MANAGER', 'GET', '/manager/after-sales/tasks?status=DONE')).find(
+      (x) => x.taskId === task.taskId,
+    )
     assert.deepEqual([current.status, current.outcome], ['DONE', 'UNREACHABLE'])
     const entitlement = (await S.must('CUSTOMER', 'GET', '/customers/me/after-sales/subscriptions'))
       .flatMap((s) => s.entitlements ?? [])
