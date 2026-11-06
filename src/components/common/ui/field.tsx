@@ -11,6 +11,7 @@ export function Field({
   error,
   htmlFor,
   required,
+  optional,
   children,
   className,
 }: {
@@ -19,6 +20,8 @@ export function Field({
   error?: string
   htmlFor?: string
   required?: boolean
+  /** Ghi "(không bắt buộc)" cạnh nhãn, thay cho dòng gợi ý "Không bắt buộc." dưới ô */
+  optional?: boolean
   children: ReactNode
   className?: string
 }) {
@@ -31,6 +34,7 @@ export function Field({
             {' *'}
           </span>
         )}
+        {optional && <span className="font-normal text-fg-2"> (không bắt buộc)</span>}
       </label>
       {children}
       {error ? (
