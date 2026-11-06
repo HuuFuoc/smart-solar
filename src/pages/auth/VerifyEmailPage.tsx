@@ -81,7 +81,7 @@ export function VerifyEmailPage() {
   if (verifyState === 'pending') {
     return (
       <AuthCard className="items-center text-center">
-        <Icon name="progress_activity" className="mb-space-md animate-spin text-[42px] text-accent-fg" />
+        <Icon name="progress_activity" className="mb-space-md animate-spin text-[24px] text-accent-fg" />
         <h1 className="text-headline-xl text-on-surface">{verifyContent.verifyingTitle}</h1>
       </AuthCard>
     )
@@ -90,15 +90,12 @@ export function VerifyEmailPage() {
   if (verifyState === 'success') {
     return (
       <AuthCard className="items-center text-center">
-        <div className="mb-space-md flex h-20 w-20 items-center justify-center rounded-full bg-tertiary-fixed text-on-tertiary-fixed">
-          <Icon name="task_alt" className="text-[42px]" />
-        </div>
         <h1 className="mb-space-lg text-headline-xl text-on-surface">{verifyContent.successTitle}</h1>
         <Link
           to={ROUTES.login}
           className="flex h-12 w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-primary text-label-lg text-on-primary shadow-sm transition-all hover:bg-primary-container"
         >
-          <Icon name="login" className="text-[18px]" />
+          <Icon name="login" className="text-[20px]" />
           {verifyContent.goToLogin}
         </Link>
       </AuthCard>
@@ -108,9 +105,6 @@ export function VerifyEmailPage() {
   if (verifyState === 'error') {
     return (
       <AuthCard className="items-center text-center">
-        <div className="mb-space-md flex h-20 w-20 items-center justify-center rounded-full bg-error-container text-error">
-          <Icon name="link_off" className="text-[42px]" />
-        </div>
         <h1 className="mb-1 text-headline-xl text-on-surface">{verifyContent.failedTitle}</h1>
         <p className="mb-space-lg max-w-md text-body-md text-on-surface-variant">{verifyError}</p>
         {!emailParam && (
@@ -137,7 +131,7 @@ export function VerifyEmailPage() {
           >
             <Icon
               name={resendMutation.isPending ? 'progress_activity' : 'forward_to_inbox'}
-              className={resendMutation.isPending ? 'animate-spin text-[18px]' : 'text-[18px]'}
+              className={resendMutation.isPending ? 'animate-spin text-[20px]' : 'text-[20px]'}
             />
             <span>
               {secondsLeft > 0
@@ -149,7 +143,7 @@ export function VerifyEmailPage() {
             to={ROUTES.login}
             className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-surface-container px-6 text-label-lg text-on-surface transition-all hover:bg-surface-container-high sm:w-auto"
           >
-            <Icon name="arrow_back" className="text-[18px]" />
+            <Icon name="arrow_back" className="text-[20px]" />
             {verifyContent.backToLogin}
           </Link>
         </div>
@@ -159,10 +153,6 @@ export function VerifyEmailPage() {
 
   return (
     <AuthCard className="items-center text-center">
-      <div className="relative mb-space-md flex h-20 w-20 items-center justify-center rounded-full bg-surface-container-high text-accent-fg shadow-sm">
-        <Icon name="mark_email_unread" className="text-[42px]" />
-      </div>
-
       <h1 className="mb-1 text-headline-xl text-on-surface">{verifyContent.title}</h1>
       <p className="mb-space-md max-w-md text-body-lg text-on-surface-variant">{verifyContent.description}</p>
 
@@ -199,7 +189,7 @@ export function VerifyEmailPage() {
         >
           <Icon
             name={resendMutation.isPending ? 'progress_activity' : 'forward_to_inbox'}
-            className={resendMutation.isPending ? 'animate-spin text-[18px]' : 'text-[18px]'}
+            className={resendMutation.isPending ? 'animate-spin text-[20px]' : 'text-[20px]'}
           />
           <span>
             {secondsLeft > 0 ? verifyContent.resendCountdown.replace('%s', String(secondsLeft)) : verifyContent.resend}
@@ -209,7 +199,7 @@ export function VerifyEmailPage() {
           to={ROUTES.login}
           className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-surface-container px-6 text-label-lg text-on-surface transition-all hover:bg-surface-container-high sm:w-auto"
         >
-          <Icon name="arrow_back" className="text-[18px]" />
+          <Icon name="arrow_back" className="text-[20px]" />
           {verifyContent.backToLogin}
         </Link>
       </div>

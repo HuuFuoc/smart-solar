@@ -100,9 +100,9 @@ export function LoginPage() {
             type="button"
             aria-label="Đóng thông báo lỗi"
             onClick={() => setFormError(null)}
-            className="p-1 text-on-error-container/70 transition-colors hover:text-on-error-container"
+            className="press -my-2 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-control text-on-error-container/70 transition-colors hover:text-on-error-container"
           >
-            <Icon name="close" className="text-[18px]" />
+            <Icon name="close" className="text-[20px]" />
           </button>
         </div>
       )}
@@ -165,7 +165,10 @@ export function LoginPage() {
             'hover:bg-primary-container hover:shadow-md active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70',
           )}
         >
-          {submitting && <Icon name="progress_activity" className="animate-spin text-[20px]" />}
+          <Icon
+            name={submitting ? 'progress_activity' : 'login'}
+            className={submitting ? 'animate-spin text-[20px]' : 'text-[20px]'}
+          />
           <span>{submitting ? loginContent.submitting : loginContent.submit}</span>
         </button>
       </form>

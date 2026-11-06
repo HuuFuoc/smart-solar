@@ -49,11 +49,12 @@ export function PasswordInput({ leadingIcon, ...rest }: PasswordInputProps) {
       leadingIcon={leadingIcon}
       type={visible ? 'text' : 'password'}
       trailing={
+        // Vùng bấm 44px, lấn vào lề phải của ô để icon vẫn đứng đúng chỗ cũ
         <button
           type="button"
           aria-label={visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
           onClick={() => setVisible((value) => !value)}
-          className="p-1 text-on-surface-variant transition-colors hover:text-on-surface"
+          className="press -mr-3 inline-flex size-11 items-center justify-center rounded-control text-on-surface-variant transition-colors hover:text-on-surface"
         >
           <Icon name={visible ? 'visibility' : 'visibility_off'} className="text-[20px]" />
         </button>

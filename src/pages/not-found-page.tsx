@@ -8,7 +8,8 @@ import { useAuth } from '@/context/AuthProvider'
 export function NotFoundPage() {
   const error = useRouteError()
   const notFound = error == null || (isRouteErrorResponse(error) && error.status === 404)
-  const message = !notFound && error instanceof Error ? error.message : undefined
+  // Câu lỗi kỹ thuật chỉ hiện khi chạy dev; người dùng chỉ cần biết cách thoát ra
+  const message = import.meta.env.DEV && !notFound && error instanceof Error ? error.message : undefined
   // Đã đăng nhập thì nút chính về trang làm việc của vai trò; chưa đăng nhập thì về landing.
   const { user } = useAuth()
   const home = user ? homePathForRole(user.role) : ROUTES.home
