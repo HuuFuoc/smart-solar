@@ -39,20 +39,20 @@ export function SalesUrgentActionsCard({
               <li key={item.surveyRequestId} className="py-2.5 first:pt-0 last:pb-0 space-y-1.5">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</span>
-                  <Badge tone="danger">Cần gán KTV</Badge>
+                  <Badge tone="danger">Cần phân công</Badge>
                 </div>
                 <p className="text-meta text-fg-2">
                   {item.propertyName}, {item.province}
                 </p>
-                <p className="text-meta text-danger">Lịch hẹn chưa có KTV nhận trước thời hạn</p>
+                <p className="text-meta text-danger">Lịch quá hạn mà không kỹ thuật viên nào nhận</p>
                 <div className="pt-1">
                   <ButtonLink
                     to={withId(ROUTES.ops.survey, item.surveyRequestId)}
                     size="sm"
-                    variant="primary"
+                    variant="soft"
                     icon="assignment_ind"
                   >
-                    Gán KTV ngay
+                    Phân công kỹ thuật viên
                   </ButtonLink>
                 </div>
               </li>
@@ -62,7 +62,7 @@ export function SalesUrgentActionsCard({
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</span>
                   {isOverdue(item.submittedAt) ? (
-                    <Badge tone="warn">Chờ &gt; 24h</Badge>
+                    <Badge tone="warn">Chờ hơn 1 ngày</Badge>
                   ) : (
                     <Badge tone="info">Mới gửi</Badge>
                   )}
@@ -92,7 +92,7 @@ export function SalesUrgentActionsCard({
                 size="sm"
                 variant="ghost"
                 icon="list"
-                className="text-meta font-medium text-accent-fg hover:text-accent"
+                className="text-meta font-medium text-accent-fg hover:underline"
               >
                 Xem thêm {pendingRequests.length - 3} yêu cầu chờ tiếp nhận
               </ButtonLink>

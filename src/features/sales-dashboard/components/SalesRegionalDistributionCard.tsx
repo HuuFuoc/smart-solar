@@ -223,7 +223,7 @@ function isValidWardName(name: string | null | undefined): boolean {
 export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistributionCardProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortMode, setSortMode] = useState<SortMode>('count_desc')
-  const [filterMode, setFilterMode] = useState<FilterMode>('all')
+  const [filterMode, setFilterMode] = useState<FilterMode>('has_data')
 
   // Lấy toàn bộ 168 phường/xã của TP.HCM từ API backend
   const { data: remoteCommunes } = useHcmCommunesQuery()

@@ -69,7 +69,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
           size="sm"
           variant="ghost"
           icon="list"
-          className="text-meta font-medium text-accent-fg hover:text-accent"
+          className="text-meta font-medium text-accent-fg hover:underline"
         >
           Xem toàn bộ
         </ButtonLink>
@@ -84,7 +84,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
           onChange={setTab}
           chips={[
             { value: 'all', label: 'Tất cả', count: surveys.length },
-            { value: 'pending', label: 'Chờ KTV', count: pendingCount, attention: pendingCount > 0 },
+            { value: 'pending', label: 'Chờ kỹ thuật viên', count: pendingCount },
             { value: 'scheduled', label: 'Đã có lịch', count: scheduledCount },
             { value: 'completed', label: 'Khảo sát xong', count: completedCount },
           ]}
@@ -133,17 +133,10 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                     <Tr key={item.surveyRequestId} className="transition-colors">
                       <Td className="py-2.5">
                         <div className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</div>
-                        <div
-                          className="max-w-[170px] truncate text-meta text-fg-2"
-                          title={item.propertyName || 'Công trình'}
-                        >
-                          {item.propertyName || 'Công trình'}
-                        </div>
+                        <div className="text-meta text-fg-2">{item.propertyName || 'Công trình'}</div>
                       </Td>
                       <Td className="py-2.5">
-                        <div className="max-w-[190px] truncate text-meta text-fg-2" title={locationText}>
-                          {locationText}
-                        </div>
+                        <div className="text-meta text-fg-2">{locationText}</div>
                       </Td>
                       <Td className="py-2.5">
                         <Badge tone={statusInfo.tone}>{statusInfo.label}</Badge>
@@ -153,10 +146,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                           Tiếp nhận {formatRelative(item.assignedAt)}
                         </div>
                         {item.scheduledAt && (
-                          <div
-                            className="whitespace-nowrap text-meta font-medium text-info"
-                            title={formatDateTime(item.scheduledAt)}
-                          >
+                          <div className="whitespace-nowrap text-meta text-fg">
                             Hẹn: {formatDateTime(item.scheduledAt)}
                           </div>
                         )}
@@ -165,11 +155,11 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                         <ButtonLink
                           to={withId(ROUTES.ops.survey, item.surveyRequestId)}
                           size="sm"
-                          variant={isCompleted ? 'primary' : 'ghost'}
-                          icon={isCompleted ? 'request_quote' : 'arrow_forward'}
-                          className={!isCompleted ? 'font-medium text-accent-fg hover:text-accent' : ''}
+                          // Nút trên dòng không đặc: lập báo giá và mở chi tiết đều là info
+                          variant="info"
+                          icon={isCompleted ? 'request_quote' : 'visibility'}
                         >
-                          {isCompleted ? 'Lập báo giá' : 'Chi tiết'}
+                          {isCompleted ? 'Lập báo giá' : 'Mở'}
                         </ButtonLink>
                       </Td>
                     </Tr>
