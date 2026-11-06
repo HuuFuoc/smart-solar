@@ -90,6 +90,7 @@ export function PublicLayout() {
           <div className="ml-auto flex items-center gap-2 lg:ml-2 lg:gap-4">
             {!user && (
               <Link to={ROUTES.register} className={ctaClass('md', 'hidden lg:inline-flex')}>
+                <Icon name="assignment" className="text-[20px]" />
                 {header.register}
               </Link>
             )}
@@ -125,6 +126,7 @@ export function PublicLayout() {
               </MenuLink>
               {!user && (
                 <Link to={ROUTES.register} onClick={closeMenu} className={ctaClass('lg', 'mt-3 flex')}>
+                  <Icon name="assignment" className="text-[20px]" />
                   {header.register}
                 </Link>
               )}
@@ -152,17 +154,18 @@ export function PublicLayout() {
             loading="lazy"
             className="h-7 w-auto self-start dark:rounded-control dark:bg-fg dark:px-2 dark:py-1"
           />
+          {/* Dưới lg mỗi link cao 44px để bấm được bằng ngón tay */}
           <nav aria-label="Liên kết cuối trang" className="flex flex-wrap gap-x-6">
-            <Link to={solutionLink} className={cx(TEXT_LINK, 'inline-block py-1')}>
+            <Link to={solutionLink} className={cx(TEXT_LINK, FOOTER_LINK)}>
               {header.solution}
             </Link>
-            <Link to={workflowLink} className={cx(TEXT_LINK, 'inline-block py-1')}>
+            <Link to={workflowLink} className={cx(TEXT_LINK, FOOTER_LINK)}>
               {header.process}
             </Link>
-            <Link to={ROUTES.products} className={cx(TEXT_LINK, 'inline-block py-1')}>
+            <Link to={ROUTES.products} className={cx(TEXT_LINK, FOOTER_LINK)}>
               {header.products}
             </Link>
-            <Link to={account.to} className={cx(TEXT_LINK, 'inline-block py-1')}>
+            <Link to={account.to} className={cx(TEXT_LINK, FOOTER_LINK)}>
               {account.label}
             </Link>
           </nav>
@@ -172,6 +175,8 @@ export function PublicLayout() {
     </div>
   )
 }
+
+const FOOTER_LINK = 'inline-flex min-h-11 items-center lg:min-h-0 lg:py-1'
 
 function HeaderLink({ to, children }: { to: To; children: ReactNode }) {
   return (

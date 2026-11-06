@@ -13,7 +13,7 @@ export const PAGE_GRID = 'grid grid-cols-4 gap-x-4 lg:grid-cols-12 lg:gap-x-6'
 export function ctaClass(size: 'lg' | 'md' = 'lg', display = 'inline-flex') {
   return cx(
     display,
-    'press items-center justify-center rounded-control bg-accent text-on-accent ld-action whitespace-nowrap hover:bg-accent-hover',
+    'press items-center justify-center gap-2 rounded-control bg-accent text-on-accent ld-action whitespace-nowrap hover:bg-accent-hover',
     size === 'lg' ? 'h-12 px-6' : 'h-11 px-4 lg:h-10',
   )
 }
@@ -22,7 +22,7 @@ export function ctaClass(size: 'lg' | 'md' = 'lg', display = 'inline-flex') {
 export function secondaryCtaClass(display = 'inline-flex') {
   return cx(
     display,
-    'press h-12 items-center justify-center rounded-control border border-line-2 bg-canvas px-6 text-fg ld-action whitespace-nowrap hover:border-fg-3 hover:bg-surface-2',
+    'press h-12 items-center justify-center gap-2 rounded-control border border-line-2 bg-canvas px-6 text-fg ld-action whitespace-nowrap hover:border-fg-3 hover:bg-surface-2',
   )
 }
 
