@@ -43,7 +43,7 @@ export const DIRECTIONS = ['Bắc', 'Đông Bắc', 'Đông', 'Đông Nam', 'Nam
 
 // Trạng thái yêu cầu khảo sát thực địa
 export const SURVEY_REQUEST_STATUSES: Partial<Record<SurveyRequestStatus, { label: string; tone: Tone }>> = {
-  PENDING: { label: 'Chờ KTV', tone: 'warn' },
+  PENDING: { label: 'Chờ kỹ thuật viên', tone: 'warn' },
   SCHEDULED: { label: 'Đã hẹn khảo sát', tone: 'info' },
   COMPLETED: { label: 'Khảo sát xong', tone: 'ok' },
   CANCELLED: { label: 'Khách đã rút yêu cầu', tone: 'neutral' },

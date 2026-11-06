@@ -83,7 +83,8 @@ export function ProgressTracker({
           {next.body}
           {next.action && (
             <div className="mt-3">
-              <Button size="sm" variant="primary" icon={next.action.icon} onClick={() => goTo(next.action!.target)}>
+              {/* Chỉ cuộn tới khối làm việc; nút đặc thật nằm ở khối đó nên nút này không đặc */}
+              <Button size="sm" variant="secondary" icon={next.action.icon} onClick={() => goTo(next.action!.target)}>
                 {next.action.label}
               </Button>
             </div>
