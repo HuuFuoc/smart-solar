@@ -361,7 +361,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   ADMIN_RECOVERY_NOT_ALLOWED: 'Tài khoản đang tạm khoá hoặc bị vô hiệu: kích hoạt lại trước khi gửi link.',
   // Mã chung
   AUTH_FORBIDDEN: 'Tài khoản của bạn không có quyền xem nội dung này.',
-  RESOURCE_NOT_FOUND: 'Không tìm thấy dữ liệu yêu cầu. Kiểm tra lại đường dẫn.',
+  RESOURCE_NOT_FOUND: 'Nội dung có thể đã bị xoá, hoặc đường dẫn không đúng.',
   REQUEST_NOT_ACCEPTABLE: 'Hệ thống không hỗ trợ thao tác này.',
 }
 
@@ -377,7 +377,7 @@ const STATUS_MESSAGES: Record<number, string> = {
   // Đăng nhập sai luôn có mã AUTH_INVALID_CREDENTIALS; 401 không mã chỉ còn là phiên hết hạn.
   401: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
   403: 'Bạn không có quyền thực hiện thao tác này.',
-  404: 'Không tìm thấy dữ liệu yêu cầu.',
+  404: 'Nội dung có thể đã bị xoá, hoặc đường dẫn không đúng.',
   409: 'Dữ liệu đã tồn tại trên hệ thống.',
   422: 'Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại.',
   429: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.',

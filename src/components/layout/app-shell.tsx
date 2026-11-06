@@ -238,12 +238,11 @@ function Rail({
                 <p className="text-meta text-balance text-fg-2">{portal.name}</p>
               </div>
             </div>
-            {/* Chỉ icon ✕ (tên đọc + tooltip "Đóng menu") để tên portal đủ chỗ trên một dòng. */}
+            {/* Chỉ icon ✕ (có tên đọc) để tên portal đủ chỗ trên một dòng; chỉ hiện trong drawer cảm ứng */}
             <button
               ref={closeButtonRef}
               type="button"
               aria-label="Đóng menu"
-              title="Đóng menu"
               className="press -mt-1.5 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-control text-fg-2 hover:bg-hover hover:text-fg lg:hidden"
               onClick={onClose}
             >
@@ -333,21 +332,26 @@ function RailLink({ item, count }: { item: NavItem; count?: RailCount }) {
         name={item.icon}
         className={cx('shrink-0 text-[20px]', on ? 'icon-fill text-accent-fg' : 'text-fg-3 group-hover:text-fg-2')}
       />
-      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      {/* Rail hẹp: tên dài xuống dòng thay vì bị cắt */}
+      <span className="min-w-0 flex-1 leading-snug text-balance">{item.label}</span>
       {item.badge && <span className="text-meta text-accent-fg">{item.badge}</span>}
       {!item.badge && count?.value ? <Count value={count.value} attention={count.attention} /> : null}
     </>
   )
   if (isPlaceholder) {
     return (
-      <button
-        type="button"
-        className={cx(className(false), 'w-[calc(100%+1.5rem)] text-left')}
-        aria-disabled
-        title="Chưa có trong bản này"
-      >
-        {inner(false)}
-      </button>
+      <WithTooltip side="right" label="Chưa có trong bản này">
+        {(tip) => (
+          <button
+            type="button"
+            className={cx(className(false), 'w-[calc(100%+1.5rem)] text-left')}
+            aria-disabled
+            {...tip}
+          >
+            {inner(false)}
+          </button>
+        )}
+      </WithTooltip>
     )
   }
   return (
