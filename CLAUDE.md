@@ -58,7 +58,8 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
      ở lề; "Chưa hẹn" ở đầu trang chi tiết thì dòng thời gian chỉ ghi chữ. Khối đỏ đặc (số đếm, nút xoá đặc) dùng
      `danger-fill` + `on-danger`; chữ đỏ dùng `danger`.
    - `warn` (vàng): lưu ý không đòi làm ngay (dữ liệu chưa làm mới được, không vẽ được 3D, sản phẩm đã ngừng bán).
-   - `ok` đang hoạt động / đúng tiến độ; `info` đang xử lý, thông tin cần đọc; `neutral` đã xong / không hoạt động.
+   - `ok` đang hoạt động / đúng tiến độ; `info` đang xử lý, thông tin cần đọc, và là màu nút xem / mở / xử lý (quy tắc 9);
+     `neutral` đã xong / không hoạt động. `warn` cũng là màu nút tạm dừng / việc cần chú ý (quy tắc 9).
    - Màu vật thể / dữ liệu (09/10/2026): `pv-glass` + `pv-frame` vẽ tấm pin trên mặt bằng 2D (màu vật liệu, không mang nghĩa
      trạng thái; 3D dùng hex cùng tông vì three.js không đọc token); `chart-1` là cột biểu đồ một chuỗi (đo bằng validator của
      skill dataviz ≥ 3:1 trên canvas ở cả hai chế độ). Chữ trên biểu đồ vẫn dùng token chữ (`fg-2`, `fg-3`), không dùng màu cột.
@@ -81,11 +82,9 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
 6. **Không có chrome trang trí**: nhãn IN HOA giãn chữ, chip "badge" không mang thông tin,
    ô icon trang trí cạnh tiêu đề, mũi tên "→" dán sau nhãn link, dấu "•" nối chuỗi meta,
    chấm nhấp nháy `animate-pulse`. Chuyển động chỉ dùng cho trạng thái tải và phản hồi thao tác (hover, nhấn).
-   Icon (Material Symbols qua `Icon` trong `components/common/stitch-ui/Icon.tsx`, dùng cho cả hai bộ) chỉ khi nó nói
-   thêm điều chữ chưa nói hoặc giúp nhận ra nhanh: mục menu, hàng tài khoản; nút tạo (+), sửa, xoá, gọi, email, bản đồ,
-   lưu nháp, xoá bộ lọc, hiện mật khẩu, thử lại; `Notice` loại ok/warn/danger, toast. KHÔNG icon
-   cho nút điều hướng bước (Tiếp tục, Quay lại), nút gửi form, nút hành động chính của dòng, `Notice` loại
-   neutral/info, từng dòng chữ hay từng nhãn. Cỡ 16/20/24px (`text-[20px]`); đang chọn dùng bản tô đặc `icon-fill`.
+   Icon (Material Symbols qua `Icon` trong `components/common/stitch-ui/Icon.tsx`, dùng cho cả hai bộ): mọi nút (quy tắc
+   9), mục menu, hàng tài khoản, `Notice` loại ok/warn/danger, toast. KHÔNG icon cho `Notice` loại neutral/info, từng
+   dòng chữ hay từng nhãn. Cỡ 16/20/24px (`text-[20px]`); đang chọn dùng bản tô đặc `icon-fill`.
    Icon nằm trong ô 1em và chỉ hiện khi font đã tải (`html.icons-ready`, gắn ở `main.tsx`), nên mạng chậm không lộ chữ
    tên icon.
 7. **Khoảng cách** theo thang 4/8/12/16/24/32/48/64 (`space-*` của bộ Stitch đã theo thang này).
@@ -95,12 +94,13 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
    (xanh dương) xem, mở chi tiết, xử lý; `warn` tạm dừng, việc cần chú ý (Ngừng bán, Khách vắng, Trả lại việc);
    `danger` từ chối, huỷ, xoá, báo lỗi; `secondary` đóng hộp thoại, thử lại, tải về; `danger-solid` xác nhận xoá.
    Icon Material Symbols qua prop `icon` (vd. visibility, edit, add, send, save, close, block, report, refresh).
-10. **Thứ bậc thao tác** (`Button`): `primary` nút đặc, một nút mỗi màn; `soft` hành động chính của từng dòng / khối
-    (Nhận yêu cầu, Mở yêu cầu, Mở bán lại), nền xanh nhạt + viền; `secondary` nút trắng có viền; `ghost` thao tác kín
-    đáo (`bleed={false}` khi nằm trong cụm nút); `danger` viền đỏ cho phá huỷ hoàn tác được trong hộp thoại (Ngừng bán);
-    `danger-quiet` nút xoá lặp lại trên từng dòng (xám khi nghỉ, đỏ khi rê / focus, đứng sau vạch ngăn) để cột thao tác
-    không thành dải đỏ; `danger-solid` nút đặc đỏ chỉ để xác nhận việc không hoàn tác (Xoá). Cùng một thao tác dùng cùng
-    một kiểu ở mọi màn (vd. "Sửa" luôn là `secondary` sm có icon). Nút chỉ có icon dùng `IconButton` (`label` = aria-label,
+10. **Thứ bậc thao tác** (`Button`, loại việc theo quy tắc 9): `primary` nút đặc, một nút mỗi màn – nút trên từng dòng
+    của danh sách không bao giờ đặc; trên dòng / khối: nhận việc, thêm, sửa, đổi = `soft` (nền xanh nhạt + viền); xem,
+    mở, xử lý = `info`; `secondary` nút trắng có viền cho đóng, thử lại, tải về; `ghost` thao tác kín đáo
+    (`bleed={false}` khi nằm trong cụm nút); `warn` cho tạm dừng hoàn tác được (Ngừng bán); `danger` viền đỏ cho từ chối,
+    huỷ, xoá; `danger-quiet` nút xoá lặp lại trên từng dòng (xám khi nghỉ, đỏ khi rê / focus, đứng sau vạch ngăn) để cột
+    thao tác không thành dải đỏ; `danger-solid` nút đặc đỏ chỉ để xác nhận việc không hoàn tác (Xoá). Cùng một thao tác
+    dùng cùng một kiểu ở mọi màn (vd. "Sửa" luôn là `soft` sm có icon `edit`). Nút chỉ có icon dùng `IconButton` (`label` = aria-label,
     `tooltip` = chữ ngắn khi label dài); tooltip thật dùng `WithTooltip` (`ui/tooltip.tsx`: hiện cả khi focus bàn phím,
     vẽ ra body nên khung cuộn không cắt, tự né mép màn hình), không dùng `title`.
     Link trong nội dung dùng utility `ui-link` (màu thương hiệu + gạch chân). Chọn một trong vài lựa chọn ngang hàng
@@ -113,13 +113,16 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
 - Vite + React + TypeScript, react-router (giữ nguyên như package.json hiện tại – KHÔNG chuyển sang Next.js)
 - Tailwind CSS v4 qua `@tailwindcss/vite` (`@theme` trong `src/styles/globals.css`)
 - shadcn/ui cho primitives (dialog, dropdown, tabs, checkbox…) – restyle theo token bên dưới
-- Font: portal dùng Schibsted Grotesk (`globals.css`, thiếu dấu tiếng Việt U+1EA0–1EF1 – xem `docs/design/landing-brief.md`); trang công khai dùng Be Vietnam Pro (`@fontsource/be-vietnam-pro`, nạp trong `PublicLayout`). Plus Jakarta Sans đã bỏ.
+- Font: portal nhân viên dùng Schibsted Grotesk (`globals.css`); tệp font thiếu glyph ơ / ư (U+01A0, U+01A1, U+01AF, U+01B0)
+  và cả khoảng U+1EA0–1EF1 (ạ ả ấ ộ ợ ữ…), các chữ này rơi về font hệ thống (đo bằng trình duyệt 06/11/2026; người dùng
+  giữ font này); trang công khai, xác thực và khung khách hàng dùng Be Vietnam Pro (`@fontsource/be-vietnam-pro`, nạp trong `PublicLayout`). Plus Jakarta Sans đã bỏ.
 - Icon: Material Symbols Outlined – link Google Fonts trong `index.html`; giữ đúng tên icon như trong file thiết kế (`grid_view`, `solar_power`, `manage_accounts`…)
 - State/data: màn đang hiện đều gọi API thật (auth, sản phẩm, đánh giá sơ bộ, yêu cầu khảo sát); mock trong `src/data/*.ts` chỉ còn phục vụ các màn đã ẩn (xem "Chỉ hiện màn có dữ liệu thật")
 
 ## Nguồn thiết kế (KHÔNG sửa thư mục này)
 
-`design/stitch/stitch_smart_solar_customer_portal/` là bản export từ Google Stitch. Mỗi màn hình có:
+`design/stitch/stitch_smart_solar_customer_portal/` là bản export từ Google Stitch, chỉ có ở máy người dựng (`/design` nằm
+trong `.gitignore`, không có trên git). Không có thư mục này thì bỏ qua mục này và mục "Biến thể đã chốt". Mỗi màn hình có:
 
 - `design/stitch/stitch_smart_solar_customer_portal/<screen>/code.html` – markup tham chiếu (Tailwind CDN)
 - `design/stitch/stitch_smart_solar_customer_portal/<screen>/screen.png` – ảnh kết quả mong đợi. LUÔN mở ảnh này để đối chiếu, không chỉ đọc HTML.
@@ -134,9 +137,9 @@ nhưng GIÁ TRỊ token nay lấy theo hệ chung ở trên. Những chỗ cố 
 | ------------- | -------------------------------------------------- | ------------------------------------------------------ |
 | Màu nền / chữ | `surface=#f8f9ff`, `on-surface=#0d1c2e` (ngả xanh) | trỏ vào `--canvas`, `--fg` của portal kit (trung tính) |
 | Màu nhấn      | `primary=#004328`, `primary-container=#0d5c3a`     | cả hai trỏ vào `--accent`                              |
-| Bán kính      | `rounded-lg/xl/2xl` (8–16px)                       | ánh xạ về 3px / 6px                                    |
+| Bán kính      | `rounded-lg/xl/2xl` (8–16px)                       | mọi `rounded-*` ánh xạ về 6px                          |
 | Bóng          | 3 cấp elevation                                    | chỉ một bóng cho lớp nổi, thẻ tĩnh không bóng          |
-| Badge         | pill `rounded-full` tô nền theo trạng thái         | chữ không nền, chỉ trạng thái cần chú ý mới có màu     |
+| Badge         | pill `rounded-full` tô nền theo trạng thái         | chữ không nền, màu theo vai trò (quy tắc 5)            |
 
 1. Dùng đúng tên token Tailwind như file gốc: `bg-surface`, `bg-surface-container-lowest`,
    `text-on-surface-variant`, `bg-primary-container text-on-primary`, `text-headline-md`,
@@ -262,7 +265,10 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
 Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock giữ code trong `pages/<portal>/` nhưng không có route,
 đường dẫn cũ trong portal rơi vào route `*` và chuyển về trang chủ portal. Đang hiện:
 
-- `/customer` → `/customer/assessment`: đánh giá sơ bộ 5 bước (hồ sơ → địa điểm → mặt lắp → mô phỏng → xem lại và gửi),
+- Trang đầu của portal (`start` trong `routes/protectedRoutes.tsx`): `/customer` → `/customer/dashboard`, `/ops` →
+  `/ops/dashboard`, `/admin` → `/admin/dashboard`, `/tech` → `/tech/jobs`, `/manage` → `/manage/technicians`. Ba trang tổng
+  quan dùng portal kit như mọi màn khác: không chip / ô icon trang trí, không trạng thái mà backend không trả.
+- `/customer/assessment`: đánh giá sơ bộ 5 bước (hồ sơ → địa điểm → mặt lắp → mô phỏng → xem lại và gửi),
   `features/pre-surveys`. Các bước (người dùng 10/10/2026 chọn): `WizardSteps` có tóm tắt từng bước đã xong và bấm để quay
   lại (trừ hồ sơ – không sửa được); nút chính ghi tên bước sau ("Tiếp tục: Mặt lắp"); đổi bước do khách bấm thì cuộn về đầu
   trang và focus tiêu đề "Bước N/5 <tên bước>" của khung bước.
@@ -274,7 +280,7 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
   chính chung một hàng (dùng `order`). Địa điểm: ô bắt buộc có `*` + dòng "Ô có dấu * là bắt buộc."; nhóm "Địa chỉ công trình"
   theo thứ tự tỉnh (chỉ đọc) → phường, xã → số nhà; bề mặt lắp là thẻ chọn (radio ẩn, cả thẻ bấm được, phím mũi tên chuyển,
   đang chọn có viền + nền xanh nhạt + dấu tích; icon ở `icon` của `SURFACE_TYPES`).
-- `/ops` → `/ops/surveys` + `/ops/surveys/:id`: yêu cầu khảo sát chờ nhận / của tôi / chi tiết (kèm mô phỏng khách đã chọn).
+- `/ops/surveys` + `/ops/surveys/:id`: yêu cầu khảo sát chờ nhận / của tôi / chi tiết (kèm mô phỏng khách đã chọn).
 - `/customer/products(/:id)`, `/ops/products(/:id)`: catalog sản phẩm (GET /api/products) bản portal kit, `pages/catalog-page.tsx`.
 - `/customer/projects(/:id)` (menu "Lắp đặt", 21/10/2026): công trình lắp đặt của khách, tag CustomerInstallations (tài liệu
   BE `guides/installation-workflow-api-integration.md`). View của khách không có tên / địa chỉ công trình nên tiêu đề là
@@ -471,7 +477,7 @@ nhập làm nguồn chính + kéo thả vật cản.
     chú thích (`caption`) nằm ngay dưới hình. Khung 3D 4:3, khung rộng từ 60rem (container query) thì cao vừa khung nhìn.
   - Trang chi tiết của sales và kỹ thuật viên: lịch + số liệu khách khai chiếm 2/3 cạnh cột thông tin khách, mô phỏng nằm
     dưới cùng và trải hết chiều ngang (người dùng thấy cột phải trống suốt chiều dài mô phỏng là phí chỗ).
-- `/admin` → `/admin/products(/:id)`: quản lý sản phẩm (`pages/admin/products-page.tsx`, `product-page.tsx`, bộ portal
+- `/admin/products(/:id)`: quản lý sản phẩm (`pages/admin/products-page.tsx`, `product-page.tsx`, bộ portal
   kit; tấm pin thiếu công suất/kích thước được tô cảnh báo vì mô phỏng không dùng được). Danh sách đọc
   GET /api/admin/products (lọc `status` ACTIVE / INACTIVE / ALL, mặc định ALL) và chi tiết GET /api/admin/products/{id}
   nên thấy cả sản phẩm ngừng bán (GET /api/products công khai chỉ trả sản phẩm đang bán). Mọi API `/api/admin/products…`,
@@ -771,13 +777,8 @@ vai trò (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm tầng T�
 
 Mật độ (gọn thêm 03/11/2026, cho cả khung nhân viên và khung khách hàng): lề nội dung 16px (`p-4`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; tiêu đề trang → nội dung 16px (`PageHeader` `mb-4`); giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; ô bảng `py-2`, `ListRow` `py-3`, Panel có khung `p-4`. Danh sách của khách luôn có dòng "Hiển thị x–y trên N" + thanh trang, 10 dòng/trang (`PagedList` khi API trả cả danh sách, `ListPager` khi API phân trang; `components/common/ui/pagination.tsx`). Thêm màn mới thì theo đúng các bậc này, đừng quay lại 24px hay 48px.
 
-Menu Admin (subtitle "Quản trị hệ thống"): Tổng quan, Người dùng, Vai trò & quyền, Sản phẩm,
-Danh mục dịch vụ, Nhóm hàng, Kho tri thức AI, Cấu hình kỹ thuật, Báo cáo, Cài đặt hệ thống.
-
-Menu Kỹ thuật viên (subtitle "Kỹ thuật hiện trường"): Tổng quan, Việc của tôi (badge số),
-Khảo sát, Lắp đặt, Bảo hành & bảo trì, Lịch làm việc; cuối sidebar là khối user (tên, chức danh)
-
-- Cảnh báo + Tài khoản + Đổi mật khẩu + Đăng xuất.
+Menu của từng portal nằm ở `config/portals.ts` và chỉ có màn có dữ liệu thật (mục "Chỉ hiện màn có dữ liệu thật").
+Tên mục dài thì xuống dòng trong rail, không cắt bằng "…".
 
 ## Màn công khai & xác thực
 
@@ -820,11 +821,9 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
     Chuyển động chỉ transform/opacity, không thư viện: `ld-rise` (chữ, nút hero), khối nội dung bọc `<Reveal>`
     (IntersectionObserver, hiện một lần khi cuộn tới). `prefers-reduced-motion` tắt hết và hiện nội dung ngay. Favicon sinh từ
     `public/images/Logo.png` (`public/favicon-32/48.png`, `apple-touch-icon.png`).
-- `AuthLayout` – theo `auth_portal`: lưới 12 cột, panel `primary-container` bên trái
-  (`lg:col-span-5`: tiêu đề "Chuyển dịch Năng lượng Xanh cho Ngôi nhà Việt", ảnh nhà, 2 ô số liệu
-  1.240 kWh / ~3,85 Tr ₫), `<Outlet/>` trong card trắng bên phải (`lg:col-span-7`), footer chỉ còn
-  dòng bản quyền. Dưới `lg` ẩn panel trái. Các chip trang trí (chip "nền tảng", chip vai trò,
-  chip bảo mật) và hai vệt blur đã bỏ theo quy tắc giao diện chung.
+- `AuthLayout`: lưới 12 cột, bên trái (`lg:col-span-5`) chỉ là một ảnh (`authImages` ở `data/auth.ts`: ảnh đăng nhập, ảnh
+  đăng ký; ảnh đăng nhập có sẵn chữ nên `/403` dùng ảnh đăng ký), bên phải (`lg:col-span-7`) header logo + "Về trang chủ",
+  `<Outlet/>`, footer dòng bản quyền. Dưới `lg` ảnh thấp lại nằm trên form. Không có ô số liệu (không bịa số).
 - BỎ thanh tab "Auth Hub" trong `auth_portal/code.html`: đó chỉ là tab demo của Stitch để xem 5 view trong 1 file. Header của `AuthLayout` chỉ giữ logo + link về trang chủ; mỗi view là một route riêng.
 - Khối "Phiên làm việc hiện tại" (IP, JWT, thời gian còn lại) trong view "Trạng thái phiên" chỉ để demo – KHÔNG dựng.
 
@@ -923,6 +922,10 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
   `three` + `@react-three/fiber` chỉ cho 3D: mô phỏng (05/10/2026) và tấm pin ở trang chủ (20/10/2026); không thêm drei, dùng
   module trong `three/examples/jsm`.
 - Không sửa bất kỳ file nào trong `design/stitch/stitch_smart_solar_customer_portal/`.
+- Skill `design-taste-frontend` (taste-skill) viết cho website công ty: chỉ lấy phần copy (tiêu đề gọi tên thứ, nút = động
+  từ + tân ngữ, một dữ kiện thật ở màn đầu), một hệ nút / thẻ / link, thẳng mép, và script kiểm tra cho `/`, `/products`.
+  Không theo phần trái các quy tắc trên: starter / palette của skill, card loop, ảnh kho, bỏ 3D, ngưỡng 7:1, ép mỗi section
+  đúng một màn hình ở portal. Hover nâng thẻ 2px chỉ cho thẻ có link ở `/products` (phản hồi thao tác).
 
 ## Lệnh
 
