@@ -124,6 +124,12 @@ export function formatArea(value: number | null | undefined) {
   return value == null ? '—' : `${decimal.format(value)} m²`
 }
 
+/** "38 / 45 m²": diện tích dùng được trên tổng, một đơn vị cho gọn trong cột hẹp */
+export function formatAreaPair(usable: number | null | undefined, total: number | null | undefined) {
+  if (usable == null || total == null) return `${formatArea(usable)} / ${formatArea(total)}`
+  return `${decimal.format(usable)} / ${decimal.format(total)} m²`
+}
+
 export function formatDateTime(iso: string | null | undefined) {
   if (!iso) return '—'
   const date = new Date(iso)
