@@ -43,27 +43,19 @@ export function ProductsTable({
         <table className="w-full text-left text-meta border-collapse">
           <thead>
             <tr className="border-b border-line bg-surface-2 text-fg-2 font-medium">
-              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                Sản phẩm
-              </th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Sản phẩm</th>
               <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold hidden md:table-cell">
                 Loại / Nhóm
               </th>
               <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold hidden 2xl:table-cell">
                 Hãng / Model
               </th>
-              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">
-                Công suất
-              </th>
+              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">Công suất</th>
               <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold hidden 2xl:table-cell">
                 Kích thước
               </th>
-              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">
-                Đơn giá
-              </th>
-              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                Trạng thái
-              </th>
+              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">Đơn giá</th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Trạng thái</th>
               <th className="py-3 px-3.5 text-right text-meta font-semibold">
                 <span className="sr-only">Thao tác</span>
               </th>
@@ -139,15 +131,13 @@ export function ProductsTable({
                     {gaps.size ? (
                       <span className="text-xs text-danger font-medium">Thiếu kích thước</span>
                     ) : (
-                      formatSize(p) ?? '—'
+                      (formatSize(p) ?? '—')
                     )}
                   </td>
 
                   {/* Cột 6: Đơn giá */}
                   <td className="py-3.5 px-3.5 border-r border-line align-top tnum text-right whitespace-nowrap">
-                    <span className="font-semibold text-fg">
-                      {formatMoney(p.unitPrice, p.currency)}
-                    </span>
+                    <span className="font-semibold text-fg">{formatMoney(p.unitPrice, p.currency)}</span>
                     {p.unit && <span className="text-fg-muted text-[12px]"> / {p.unit}</span>}
                   </td>
 
@@ -156,14 +146,10 @@ export function ProductsTable({
                     <span
                       className={cx(
                         'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border',
-                        status.tone === 'ok'
-                          ? 'bg-ok-soft text-ok border-ok/20'
-                          : 'bg-surface-3 text-fg-2 border-line',
+                        status.tone === 'ok' ? 'bg-ok-soft text-ok border-ok/20' : 'bg-surface-3 text-fg-2 border-line',
                       )}
                     >
-                      <span
-                        className={cx('size-1.5 rounded-full', status.tone === 'ok' ? 'bg-ok' : 'bg-fg-muted')}
-                      />
+                      <span className={cx('size-1.5 rounded-full', status.tone === 'ok' ? 'bg-ok' : 'bg-fg-muted')} />
                       {status.label}
                     </span>
                   </td>
@@ -187,9 +173,7 @@ export function ProductsTable({
                         tooltip="Ảnh sản phẩm"
                         onClick={() => onImages(p)}
                       />
-                      <WithTooltip
-                        label={busy ? 'Đang đổi…' : active ? 'Ngừng bán (ẩn khỏi danh mục)' : 'Mở bán lại'}
-                      >
+                      <WithTooltip label={busy ? 'Đang đổi…' : active ? 'Ngừng bán (ẩn khỏi danh mục)' : 'Mở bán lại'}>
                         {(tip) => (
                           <Button
                             size="sm"

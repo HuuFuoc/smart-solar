@@ -8,10 +8,7 @@ import { withId } from '@/routes/paths'
 import type { InstallationProjectSummary } from '@/types/res/managerInstallationsRes'
 
 // Danh sách dự án thi công kèm đường kẻ cột dọc và định dạng thẻ trực quan
-const STATUS_BADGE_STYLE: Record<
-  string,
-  { bg: string; text: string; border: string; dot: string; icon: string }
-> = {
+const STATUS_BADGE_STYLE: Record<string, { bg: string; text: string; border: string; dot: string; icon: string }> = {
   PENDING_ASSIGNMENT: {
     bg: 'bg-rose-500/15',
     text: 'text-rose-600 dark:text-rose-400',
@@ -136,7 +133,9 @@ export function ProjectTable({ rows, detailPattern }: { rows: InstallationProjec
                 </Td>
                 <Td label="Lịch thi công" className="border-r border-line tnum">
                   {p.scheduledStartsAt ? (
-                    <span className="font-medium text-fg">{formatInterval(p.scheduledStartsAt, p.scheduledEndsAt)}</span>
+                    <span className="font-medium text-fg">
+                      {formatInterval(p.scheduledStartsAt, p.scheduledEndsAt)}
+                    </span>
                   ) : (
                     <span className="text-fg-3 italic">Chưa xếp lịch</span>
                   )}
@@ -150,7 +149,9 @@ export function ProjectTable({ rows, detailPattern }: { rows: InstallationProjec
         </tbody>
       </Table>
       <div className="border-t border-line bg-surface-2/40 px-4 py-2.5 text-meta text-fg-3 flex items-center justify-between">
-        <span>Hiển thị <strong>{rows.length}</strong> dự án thi công</span>
+        <span>
+          Hiển thị <strong>{rows.length}</strong> dự án thi công
+        </span>
         <span className="tnum">SmartSolar Field Operations</span>
       </div>
     </div>

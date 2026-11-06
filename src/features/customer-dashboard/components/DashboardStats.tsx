@@ -54,9 +54,7 @@ function StatCard({ label, value, unit, icon, hint, iconBgClass, valueClass }: S
       {/* Bottom: Số liệu to nổi bật & Chú thích phụ */}
       <div className="mt-3 flex items-baseline justify-between gap-2">
         <div className="flex items-baseline gap-1.5">
-          <span className={cx('tnum text-display font-bold tracking-tight', valueClass || 'text-fg')}>
-            {value}
-          </span>
+          <span className={cx('tnum text-display font-bold tracking-tight', valueClass || 'text-fg')}>{value}</span>
           {unit && <span className="text-meta text-fg-2 font-medium">{unit}</span>}
         </div>
         <span className="text-meta text-fg-3 truncate max-w-[130px]" title={hint}>

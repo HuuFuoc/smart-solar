@@ -27,11 +27,7 @@ export function SalesUrgentActionsCard({
       {/* Header */}
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-title font-semibold text-fg">Việc cần xử lý ngay</h2>
-        {warnings > 0 ? (
-          <Badge tone="danger">{warnings} cảnh báo</Badge>
-        ) : (
-          <Badge tone="neutral">0 cảnh báo</Badge>
-        )}
+        {warnings > 0 ? <Badge tone="danger">{warnings} cảnh báo</Badge> : <Badge tone="neutral">0 cảnh báo</Badge>}
       </div>
 
       {!hasUrgent ? (
@@ -50,7 +46,12 @@ export function SalesUrgentActionsCard({
                 </p>
                 <p className="text-meta text-danger">Lịch hẹn chưa có KTV nhận trước thời hạn</p>
                 <div className="pt-1">
-                  <ButtonLink to={withId(ROUTES.ops.survey, item.surveyRequestId)} size="sm" variant="primary" icon="assignment_ind">
+                  <ButtonLink
+                    to={withId(ROUTES.ops.survey, item.surveyRequestId)}
+                    size="sm"
+                    variant="primary"
+                    icon="assignment_ind"
+                  >
                     Gán KTV ngay
                   </ButtonLink>
                 </div>
@@ -60,13 +61,24 @@ export function SalesUrgentActionsCard({
               <li key={item.surveyRequestId} className="py-2.5 first:pt-0 last:pb-0 space-y-1.5">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</span>
-                  {isOverdue(item.submittedAt) ? <Badge tone="warn">Chờ &gt; 24h</Badge> : <Badge tone="info">Mới gửi</Badge>}
+                  {isOverdue(item.submittedAt) ? (
+                    <Badge tone="warn">Chờ &gt; 24h</Badge>
+                  ) : (
+                    <Badge tone="info">Mới gửi</Badge>
+                  )}
                 </div>
                 <p className="text-meta text-fg-2">
-                  {[item.propertyName, item.province].filter(Boolean).join(', ')}, gửi {formatRelative(item.submittedAt)}
+                  {[item.propertyName, item.province].filter(Boolean).join(', ')}, gửi{' '}
+                  {formatRelative(item.submittedAt)}
                 </p>
                 <div className="pt-1">
-                  <Button size="sm" variant="soft" icon="add_task" disabled={isClaiming} onClick={() => onClaim?.(item)}>
+                  <Button
+                    size="sm"
+                    variant="soft"
+                    icon="add_task"
+                    disabled={isClaiming}
+                    onClick={() => onClaim?.(item)}
+                  >
                     Tiếp nhận hồ sơ
                   </Button>
                 </div>
@@ -75,7 +87,13 @@ export function SalesUrgentActionsCard({
           </ul>
           {pendingRequests.length > 3 && (
             <div className="border-t border-line pt-2 text-center">
-              <ButtonLink to={ROUTES.ops.surveys} size="sm" variant="ghost" icon="list" className="text-meta font-medium text-accent-fg hover:text-accent">
+              <ButtonLink
+                to={ROUTES.ops.surveys}
+                size="sm"
+                variant="ghost"
+                icon="list"
+                className="text-meta font-medium text-accent-fg hover:text-accent"
+              >
                 Xem thêm {pendingRequests.length - 3} yêu cầu chờ tiếp nhận
               </ButtonLink>
             </div>

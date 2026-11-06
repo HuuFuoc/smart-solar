@@ -120,7 +120,8 @@ export function AdminActionAlertsCard({
     alerts.push({
       id: 'warranty-gap',
       title: 'Thiếu cấu hình thời hạn bảo hành lắp đặt',
-      description: 'Hệ thống chưa có gói bảo hành mặc định cho hợp đồng thi công mới. Cần cấu hình trong danh mục bảo hành.',
+      description:
+        'Hệ thống chưa có gói bảo hành mặc định cho hợp đồng thi công mới. Cần cấu hình trong danh mục bảo hành.',
       tone: 'warn',
       badgeText: 'Cấu hình thiếu',
       icon: 'policy',
@@ -138,13 +139,9 @@ export function AdminActionAlertsCard({
           Cảnh báo & Việc cần xử lý gấp
         </h3>
         {alerts.length > 0 ? (
-          <Badge tone="danger">
-            {alerts.length} vấn đề
-          </Badge>
+          <Badge tone="danger">{alerts.length} vấn đề</Badge>
         ) : (
-          <Badge tone="ok">
-            Tất cả ổn định
-          </Badge>
+          <Badge tone="ok">Tất cả ổn định</Badge>
         )}
       </div>
 
@@ -176,19 +173,13 @@ export function AdminActionAlertsCard({
                   >
                     <Icon name={alert.icon} className="text-[17px]" />
                   </div>
-                  <span className="text-meta font-semibold text-fg leading-tight">
-                    {alert.title}
-                  </span>
+                  <span className="text-meta font-semibold text-fg leading-tight">{alert.title}</span>
                 </div>
-                <Badge tone={alert.tone}>
-                  {alert.badgeText}
-                </Badge>
+                <Badge tone={alert.tone}>{alert.badgeText}</Badge>
               </div>
 
               {/* Nội dung mô tả */}
-              <p className="text-meta text-fg-2 leading-relaxed py-2.5">
-                {alert.description}
-              </p>
+              <p className="text-meta text-fg-2 leading-relaxed py-2.5">{alert.description}</p>
 
               {/* Nút hành động có đường ngăn cách trên */}
               <div className="flex items-center justify-between border-t border-line/60 pt-2">

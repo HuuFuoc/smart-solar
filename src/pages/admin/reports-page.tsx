@@ -288,7 +288,10 @@ export function AdminReportsPage() {
               </StatRow>
             </Panel>
             <Panel className="overflow-hidden border border-line bg-surface-1 shadow-sm">
-              <PanelHeader title="Hoạt động nghiệp vụ" description="Biến động các chỉ số vận hành sau bán giữa hai kỳ đối chiếu." />
+              <PanelHeader
+                title="Hoạt động nghiệp vụ"
+                description="Biến động các chỉ số vận hành sau bán giữa hai kỳ đối chiếu."
+              />
               <div className="overflow-hidden rounded-container border border-line bg-surface-1">
                 <Table stack>
                   <thead>

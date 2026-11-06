@@ -247,13 +247,7 @@ export function AdminWarrantyOptionsPage() {
         }
       />
 
-      <Segmented
-        label="Loại bảo hành"
-        options={KIND_OPTIONS}
-        value={kind}
-        onChange={setKind}
-        className="sm:w-fit"
-      />
+      <Segmented label="Loại bảo hành" options={KIND_OPTIONS} value={kind} onChange={setKind} className="sm:w-fit" />
       <p className="max-w-prose text-meta text-fg-2">{KIND_HINTS[kind]}</p>
 
       {/* Chú thích trạng thái cấu hình thời hạn */}
@@ -343,9 +337,7 @@ export function AdminWarrantyOptionsPage() {
                                 o.isActive ? 'bg-ok-soft text-ok border-ok/20' : 'bg-surface-3 text-fg-2 border-line',
                               )}
                             >
-                              <span
-                                className={cx('size-1.5 rounded-full', o.isActive ? 'bg-ok' : 'bg-fg-muted')}
-                              />
+                              <span className={cx('size-1.5 rounded-full', o.isActive ? 'bg-ok' : 'bg-fg-muted')} />
                               {o.isActive ? 'Đang dùng' : 'Đã tắt'}
                             </span>
                             {o.isDefault && (

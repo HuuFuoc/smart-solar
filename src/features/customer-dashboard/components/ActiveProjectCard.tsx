@@ -148,7 +148,10 @@ export function ActiveProjectCard({ installations, surveyRequests = [] }: Active
                 <div className="grid grid-cols-2 gap-3 pt-1 text-meta sm:grid-cols-3">
                   <div className="rounded-control bg-surface-2 p-2">
                     <p className="text-fg-3">Lịch thi công</p>
-                    <p className="font-medium text-fg truncate" title={formatScheduleTime(activeProject.scheduledStartsAt)}>
+                    <p
+                      className="font-medium text-fg truncate"
+                      title={formatScheduleTime(activeProject.scheduledStartsAt)}
+                    >
                       {formatScheduleTime(activeProject.scheduledStartsAt)}
                     </p>
                   </div>

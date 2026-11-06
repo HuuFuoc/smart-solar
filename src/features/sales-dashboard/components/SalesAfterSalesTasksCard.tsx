@@ -40,7 +40,12 @@ export function SalesAfterSalesTasksCard({ tasks, myTasks }: SalesAfterSalesTask
                   <p className="text-meta text-fg-2">Mã yêu cầu: {reqId ? reqId.slice(0, 8).toUpperCase() : 'N/A'}</p>
                 </div>
                 {reqId ? (
-                  <ButtonLink to={withId(ROUTES.ops.afterSalesRequest, reqId)} size="sm" variant="soft" icon="arrow_forward">
+                  <ButtonLink
+                    to={withId(ROUTES.ops.afterSalesRequest, reqId)}
+                    size="sm"
+                    variant="soft"
+                    icon="arrow_forward"
+                  >
                     Xử lý
                   </ButtonLink>
                 ) : null}

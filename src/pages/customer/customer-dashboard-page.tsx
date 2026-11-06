@@ -62,11 +62,7 @@ export function CustomerDashboardPage() {
     refetch: refetchServices,
   } = useMyServiceRequestsQuery()
 
-  const {
-    data: quotations = [],
-    isLoading: loadingQuotations,
-    refetch: refetchQuotations,
-  } = useMyQuotationsQuery()
+  const { data: quotations = [], isLoading: loadingQuotations, refetch: refetchQuotations } = useMyQuotationsQuery()
 
   const {
     data: subscriptions = [],

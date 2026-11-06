@@ -53,10 +53,7 @@ export function AdminDashboardPage() {
     techniciansQuery.isLoading
 
   const isError =
-    readyContractsQuery.isError &&
-    projectsQuery.isError &&
-    serviceRequestsQuery.isError &&
-    techniciansQuery.isError
+    readyContractsQuery.isError && projectsQuery.isError && serviceRequestsQuery.isError && techniciansQuery.isError
 
   // Hàm làm mới toàn bộ dữ liệu thực tế từ server
   const handleRefreshAll = async () => {
@@ -92,13 +89,9 @@ export function AdminDashboardPage() {
   const warrantyOptions = warrantyOptionsQuery.data ?? []
 
   // Tính toán chỉ số nghiệp vụ chuẩn xác từ dữ liệu thực tế
-  const inProgressProjects = projects.filter(
-    (p) => p.status === 'IN_PROGRESS' || p.status === 'SCHEDULED',
-  ).length
+  const inProgressProjects = projects.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'SCHEDULED').length
   const readyContractsCount = readyContracts.length
-  const openDispatchCount = dispatchItems.filter(
-    (d) => d.status === 'OPEN' || d.status === 'PROPOSAL_PENDING',
-  ).length
+  const openDispatchCount = dispatchItems.filter((d) => d.status === 'OPEN' || d.status === 'PROPOSAL_PENDING').length
   const pendingServicesCount = serviceRequests.filter(
     (s) => s.status !== 'COMPLETED' && s.status !== 'CANCELLED',
   ).length
@@ -108,9 +101,7 @@ export function AdminDashboardPage() {
 
   const readyTechnicians = technicians.filter((t) => t.readyForScheduling).length
   const missingBaseTechCount = technicians.filter((t) => t.zones.length === 0).length
-  const refundsToRecordCount = refunds.filter(
-    (r) => r.status === 'APPROVED' && !r.refundedAt,
-  ).length
+  const refundsToRecordCount = refunds.filter((r) => r.status === 'APPROVED' && !r.refundedAt).length
   const warrantyGap = Boolean(installationWarrantyGap(warrantyOptions))
 
   // Đếm tổng số vấn đề cần xử lý
@@ -137,11 +128,7 @@ export function AdminDashboardPage() {
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
       {/* 1. Header & Live Actions trong khung container ngăn cách */}
       <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
-        <AdminDashboardHeader
-          onRefresh={handleRefreshAll}
-          isRefreshing={isRefreshing}
-          criticalCount={criticalCount}
-        />
+        <AdminDashboardHeader onRefresh={handleRefreshAll} isRefreshing={isRefreshing} criticalCount={criticalCount} />
       </div>
 
       {/* 2. Top KPI Cards: Trích xuất trực tiếp từ API thực */}
@@ -210,7 +197,9 @@ export function AdminDashboardPage() {
                   </div>
                   <p className="font-semibold text-fg text-xs">Gói dịch vụ</p>
                 </div>
-                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Gói bảo dưỡng, thiên tai</p>
+                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">
+                  Gói bảo dưỡng, thiên tai
+                </p>
               </Link>
 
               <Link

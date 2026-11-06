@@ -63,7 +63,11 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
                     )}
                   </td>
                   <td className="w-24 border-r border-line px-3 py-3 text-center tnum">
-                    {isWorking ? <span className="font-semibold text-fg">{hours} giờ</span> : <span className="text-fg-3">—</span>}
+                    {isWorking ? (
+                      <span className="font-semibold text-fg">{hours} giờ</span>
+                    ) : (
+                      <span className="text-fg-3">—</span>
+                    )}
                   </td>
                   <td className="w-36 px-4 py-3 text-center whitespace-nowrap">
                     {isWorking ? (

@@ -124,21 +124,13 @@ export function AdminZonesPage() {
               <table className="w-full text-left text-meta border-collapse">
                 <thead>
                   <tr className="border-b border-line bg-surface-2 text-fg-2 font-medium">
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                      Khu vực
-                    </th>
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                      Trạng thái
-                    </th>
-                    <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">
-                      Phường, xã
-                    </th>
+                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Khu vực</th>
+                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Trạng thái</th>
+                    <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">Phường, xã</th>
                     <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">
                       Kỹ thuật viên
                     </th>
-                    <th className="py-3 px-3.5 text-left text-meta font-semibold">
-                      Quản lý phụ trách
-                    </th>
+                    <th className="py-3 px-3.5 text-left text-meta font-semibold">Quản lý phụ trách</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line/70">
@@ -169,7 +161,9 @@ export function AdminZonesPage() {
                             <span
                               className={cx(
                                 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border',
-                                state.tone === 'ok' ? 'bg-ok-soft text-ok border-ok/20' : 'bg-surface-3 text-fg-2 border-line',
+                                state.tone === 'ok'
+                                  ? 'bg-ok-soft text-ok border-ok/20'
+                                  : 'bg-surface-3 text-fg-2 border-line',
                               )}
                             >
                               <span

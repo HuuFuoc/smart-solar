@@ -96,7 +96,9 @@ export function ServiceRequestList({
         </tbody>
       </Table>
       <div className="border-t border-line bg-surface-2/40 px-4 py-2.5 text-meta text-fg-3 flex items-center justify-between">
-        <span>Tổng cộng <strong>{rows.length}</strong> yêu cầu dịch vụ</span>
+        <span>
+          Tổng cộng <strong>{rows.length}</strong> yêu cầu dịch vụ
+        </span>
         <span className="tnum">Hệ thống bảo hành SmartSolar</span>
       </div>
     </div>

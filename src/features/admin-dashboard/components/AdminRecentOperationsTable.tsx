@@ -173,7 +173,9 @@ export function AdminRecentOperationsTable({
                           <td className="py-3 px-3.5 text-fg-2">
                             {project.scheduledStartsAt ? (
                               <div>
-                                <span className="text-primary font-medium">{formatDateTimeText(project.scheduledStartsAt)}</span>
+                                <span className="text-primary font-medium">
+                                  {formatDateTimeText(project.scheduledStartsAt)}
+                                </span>
                                 <p className="text-[11px] text-fg-muted">Lịch hẹn thi công</p>
                               </div>
                             ) : (
@@ -184,9 +186,7 @@ export function AdminRecentOperationsTable({
                             )}
                           </td>
                           <td className="py-3 px-3.5">
-                            <Badge tone={meta.tone}>
-                              {meta.label}
-                            </Badge>
+                            <Badge tone={meta.tone}>{meta.label}</Badge>
                           </td>
                           <td className="py-3 px-3.5 text-right">
                             <Link
@@ -204,7 +204,9 @@ export function AdminRecentOperationsTable({
                 </table>
               </div>
               <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-[12px] text-fg-muted bg-surface-2/40">
-                <span>Hiển thị {Math.min(6, projects.length)} trên {projects.length} dự án</span>
+                <span>
+                  Hiển thị {Math.min(6, projects.length)} trên {projects.length} dự án
+                </span>
                 <Link to={ROUTES.admin.installations} className="text-primary hover:underline font-medium">
                   Xem tất cả danh sách &rarr;
                 </Link>
@@ -250,15 +252,13 @@ export function AdminRecentOperationsTable({
                           </td>
                           <td className="py-3 px-3.5 max-w-[280px]">
                             <span className="font-medium text-fg">{requestKindLabel(req.kind)}</span>
-                            <p className="text-[12px] text-fg-2 line-clamp-1 truncate">{req.description || 'Không có mô tả chi tiết'}</p>
+                            <p className="text-[12px] text-fg-2 line-clamp-1 truncate">
+                              {req.description || 'Không có mô tả chi tiết'}
+                            </p>
                           </td>
-                          <td className="py-3 px-3.5 text-fg-2">
-                            {formatDateTimeText(req.createdAt)}
-                          </td>
+                          <td className="py-3 px-3.5 text-fg-2">{formatDateTimeText(req.createdAt)}</td>
                           <td className="py-3 px-3.5">
-                            <Badge tone={meta.tone}>
-                              {meta.label}
-                            </Badge>
+                            <Badge tone={meta.tone}>{meta.label}</Badge>
                           </td>
                           <td className="py-3 px-3.5 text-right">
                             <Link
@@ -276,7 +276,9 @@ export function AdminRecentOperationsTable({
                 </table>
               </div>
               <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-[12px] text-fg-muted bg-surface-2/40">
-                <span>Hiển thị {Math.min(6, serviceRequests.length)} trên {serviceRequests.length} yêu cầu</span>
+                <span>
+                  Hiển thị {Math.min(6, serviceRequests.length)} trên {serviceRequests.length} yêu cầu
+                </span>
                 <Link to={ROUTES.admin.afterSales} className="text-primary hover:underline font-medium">
                   Xem tất cả danh sách &rarr;
                 </Link>
@@ -322,15 +324,13 @@ export function AdminRecentOperationsTable({
                           </td>
                           <td className="py-3 px-3.5">
                             <p className="font-medium text-fg">{item.customerName}</p>
-                            <p className="text-[12px] text-fg-2 truncate max-w-[220px]">{item.propertyName} ({item.province})</p>
+                            <p className="text-[12px] text-fg-2 truncate max-w-[220px]">
+                              {item.propertyName} ({item.province})
+                            </p>
                           </td>
-                          <td className="py-3 px-3.5 text-fg-2">
-                            {item.zone?.name || item.province || '—'}
-                          </td>
+                          <td className="py-3 px-3.5 text-fg-2">{item.zone?.name || item.province || '—'}</td>
                           <td className="py-3 px-3.5">
-                            <Badge tone={meta.tone}>
-                              {meta.label}
-                            </Badge>
+                            <Badge tone={meta.tone}>{meta.label}</Badge>
                           </td>
                           <td className="py-3 px-3.5 text-right">
                             <Link
@@ -348,7 +348,9 @@ export function AdminRecentOperationsTable({
                 </table>
               </div>
               <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-[12px] text-fg-muted bg-surface-2/40">
-                <span>Hiển thị {Math.min(6, dispatchItems.length)} trên {dispatchItems.length} yêu cầu</span>
+                <span>
+                  Hiển thị {Math.min(6, dispatchItems.length)} trên {dispatchItems.length} yêu cầu
+                </span>
                 <Link to={ROUTES.admin.dispatch} className="text-primary hover:underline font-medium">
                   Xem tất cả danh sách &rarr;
                 </Link>

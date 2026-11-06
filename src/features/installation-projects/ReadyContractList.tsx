@@ -111,7 +111,10 @@ export function ReadyContractList({
                   </Link>
                   <p className="tnum text-meta text-fg-2 mt-0.5">Khảo sát {shortCode(c.surveyRequestId)}</p>
                 </Td>
-                <Td label="Giá trị" className="border-r border-line tnum lg:text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                <Td
+                  label="Giá trị"
+                  className="border-r border-line tnum lg:text-right font-semibold text-emerald-600 dark:text-emerald-400"
+                >
                   {formatMoney(c.totalAmount, 'VND')}
                 </Td>
                 <Td label="Thanh toán" className="border-r border-line tnum text-meta text-fg-2">
@@ -142,7 +145,9 @@ export function ReadyContractList({
           </tbody>
         </Table>
         <div className="border-t border-line bg-surface-2/40 px-4 py-2.5 text-meta text-fg-3 flex items-center justify-between">
-          <span>Có <strong>{rows.length}</strong> hợp đồng sẵn sàng khởi tạo dự án thi công</span>
+          <span>
+            Có <strong>{rows.length}</strong> hợp đồng sẵn sàng khởi tạo dự án thi công
+          </span>
         </div>
       </div>
       {picked && (

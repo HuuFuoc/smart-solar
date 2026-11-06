@@ -18,10 +18,7 @@ import { isFeatureUnavailable, pendingMigrationsOf, rateLimitedMessage } from '@
 // Kho tri thức của chatbot: tài liệu (pdf, docx, txt, md) có nhiều phiên bản, chỉ phiên bản đã công bố được dùng để trả lời.
 // Bộ lọc gửi thẳng lên backend và nằm trên địa chỉ
 
-const DOC_STATUS_STYLE: Record<
-  string,
-  { bg: string; text: string; border: string; dot: string; icon: string }
-> = {
+const DOC_STATUS_STYLE: Record<string, { bg: string; text: string; border: string; dot: string; icon: string }> = {
   PUBLISHED: {
     bg: 'bg-emerald-500/15',
     text: 'text-emerald-600 dark:text-emerald-400',
@@ -265,7 +262,9 @@ export function AdminKnowledgeDocumentsPage() {
               </tbody>
             </Table>
             <div className="border-t border-line bg-surface-2/40 px-4 py-2.5 text-meta text-fg-3 flex items-center justify-between">
-              <span>Hiển thị <strong>{query.data.length}</strong> tài liệu trong kho tri thức</span>
+              <span>
+                Hiển thị <strong>{query.data.length}</strong> tài liệu trong kho tri thức
+              </span>
               <span className="tnum">SmartSolar RAG Knowledge Engine</span>
             </div>
           </div>

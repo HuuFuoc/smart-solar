@@ -80,8 +80,8 @@ export function WorkingScheduleEditor({ technicianUserId }: { technicianUserId: 
                 <div>
                   <h4 className="font-semibold text-fg">Đang áp dụng giờ riêng</h4>
                   <p className="mt-1 text-meta text-fg-2">
-                    Kỹ thuật viên này hiện đang sử dụng lịch làm việc riêng. Khi chuyển về giờ chung của hệ thống (mặc định
-                    08:00-12:00 và 13:00-17:00 mỗi ngày), cấu hình giờ riêng sẽ được đặt lại.
+                    Kỹ thuật viên này hiện đang sử dụng lịch làm việc riêng. Khi chuyển về giờ chung của hệ thống (mặc
+                    định 08:00-12:00 và 13:00-17:00 mỗi ngày), cấu hình giờ riêng sẽ được đặt lại.
                   </p>
                   <div className="mt-4">
                     <Button

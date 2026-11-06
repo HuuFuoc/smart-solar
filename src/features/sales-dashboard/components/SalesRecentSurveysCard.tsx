@@ -105,7 +105,9 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
       {/* Danh sách dạng Table chuẩn dashboard */}
       {filteredSurveys.length === 0 ? (
         <p className="py-8 text-center text-body text-fg-2">
-          {searchTerm ? `Không tìm thấy hồ sơ nào khớp với "${searchTerm}".` : 'Không có hồ sơ nào trong trạng thái này.'}
+          {searchTerm
+            ? `Không tìm thấy hồ sơ nào khớp với "${searchTerm}".`
+            : 'Không có hồ sơ nào trong trạng thái này.'}
         </p>
       ) : (
         <PagedList key={`${tab}|${searchTerm}`} items={filteredSurveys} noun="hồ sơ" pageSize={6} keepScroll>

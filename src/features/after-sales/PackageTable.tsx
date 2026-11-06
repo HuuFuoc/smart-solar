@@ -52,21 +52,11 @@ export function PackageTable({
         <table className="w-full text-left text-meta border-collapse">
           <thead>
             <tr className="border-b border-line bg-surface-2 text-fg-2 font-medium">
-              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                Tên gói dịch vụ
-              </th>
-              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">
-                Đơn giá
-              </th>
-              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                Thời hạn
-              </th>
-              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                Quyền lợi bảo vệ
-              </th>
-              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                Trạng thái
-              </th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Tên gói dịch vụ</th>
+              <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">Đơn giá</th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Thời hạn</th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Quyền lợi bảo vệ</th>
+              <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Trạng thái</th>
               <th className="py-3 px-3.5 text-right text-meta font-semibold">
                 <span className="sr-only">Thao tác</span>
               </th>
@@ -106,14 +96,10 @@ export function PackageTable({
                     <span
                       className={cx(
                         'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border',
-                        sale.tone === 'ok'
-                          ? 'bg-ok-soft text-ok border-ok/20'
-                          : 'bg-surface-3 text-fg-2 border-line',
+                        sale.tone === 'ok' ? 'bg-ok-soft text-ok border-ok/20' : 'bg-surface-3 text-fg-2 border-line',
                       )}
                     >
-                      <span
-                        className={cx('size-1.5 rounded-full', sale.tone === 'ok' ? 'bg-ok' : 'bg-fg-muted')}
-                      />
+                      <span className={cx('size-1.5 rounded-full', sale.tone === 'ok' ? 'bg-ok' : 'bg-fg-muted')} />
                       {sale.label}
                     </span>
                   </td>

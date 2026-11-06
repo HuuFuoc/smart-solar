@@ -53,9 +53,7 @@ function KpiCard({ label, value, unit, hint, icon, iconBgClass, valueClass, to }
       {/* Bottom: Số liệu lớn & Ghi chú phụ */}
       <div className="mt-3 flex items-baseline justify-between gap-2 pt-0.5">
         <div className="flex items-baseline gap-1.5">
-          <span className={cx('tnum text-display font-bold tracking-tight', valueClass || 'text-fg')}>
-            {value}
-          </span>
+          <span className={cx('tnum text-display font-bold tracking-tight', valueClass || 'text-fg')}>{value}</span>
           <span className="text-meta font-medium text-fg-2">{unit}</span>
         </div>
         <span className="text-[12px] text-fg-3 truncate max-w-[130px] font-medium" title={hint}>

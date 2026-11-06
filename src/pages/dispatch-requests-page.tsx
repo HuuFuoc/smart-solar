@@ -24,10 +24,7 @@ const EMPTY: Record<Tab, { title: string; description?: string }> = {
   closed: { title: 'Chưa có yêu cầu nào đã xong' },
 }
 
-const DISPATCH_BADGE_STYLE: Record<
-  string,
-  { bg: string; text: string; border: string; dot: string; icon: string }
-> = {
+const DISPATCH_BADGE_STYLE: Record<string, { bg: string; text: string; border: string; dot: string; icon: string }> = {
   OPEN: {
     bg: 'bg-rose-500/15',
     text: 'text-rose-600 dark:text-rose-400',
@@ -194,7 +191,9 @@ function DispatchRequestsPage({ detailPattern }: { detailPattern: string }) {
                             <span>{status.label}</span>
                           </span>
                           {text && (
-                            <p className={`mt-1 text-meta ${r.sla.overdue ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-fg-2'}`}>
+                            <p
+                              className={`mt-1 text-meta ${r.sla.overdue ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-fg-2'}`}
+                            >
                               {text}
                             </p>
                           )}

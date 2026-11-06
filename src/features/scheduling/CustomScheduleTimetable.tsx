@@ -23,11 +23,7 @@ interface CustomScheduleTimetableProps {
   onSaved: () => void
 }
 
-export function CustomScheduleTimetable({
-  initial,
-  technicianUserId,
-  onSaved,
-}: CustomScheduleTimetableProps) {
+export function CustomScheduleTimetable({ initial, technicianUserId, onSaved }: CustomScheduleTimetableProps) {
   const [week, setWeek] = useState<Week>(initial)
   const [issue, setIssue] = useState<string | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
@@ -97,7 +93,9 @@ export function CustomScheduleTimetable({
       updated[d.value] = periodsToCopy.map((p) => ({ ...p }))
     }
     setWeek(updated)
-    toast.success(`Đã sao chép ca làm việc của ${WEEK_DAYS.find((d) => d.value === sourceDay)?.label} cho toàn bộ tuần.`)
+    toast.success(
+      `Đã sao chép ca làm việc của ${WEEK_DAYS.find((d) => d.value === sourceDay)?.label} cho toàn bộ tuần.`,
+    )
   }
 
   async function submit() {
@@ -187,9 +185,7 @@ export function CustomScheduleTimetable({
               </span>
             )}
           </div>
-          <span className="text-meta text-fg-3">
-            Lịch làm việc riêng có hiệu lực ngay sau khi lưu thành công
-          </span>
+          <span className="text-meta text-fg-3">Lịch làm việc riêng có hiệu lực ngay sau khi lưu thành công</span>
         </div>
       </div>
 

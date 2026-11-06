@@ -80,9 +80,7 @@ function AfterSalesRequestsPage({ detailPattern }: { detailPattern: string }) {
             Hiển thị: <strong className="text-fg-1">{groups[tab].length}</strong> yêu cầu
           </span>
           {groups.todo.length > 0 && (
-            <span className="text-rose-600 dark:text-rose-400 font-medium">
-              {groups.todo.length} chờ tiếp nhận
-            </span>
+            <span className="text-rose-600 dark:text-rose-400 font-medium">{groups.todo.length} chờ tiếp nhận</span>
           )}
         </div>
       </div>

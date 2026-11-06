@@ -232,7 +232,7 @@ export function AdminUsersPage() {
                 <Icon name={cfg.icon} className="text-[13px]" />
                 <span>{cfg.label}</span>
               </span>
-            );
+            )
           })}
         </div>
         <div className="text-meta text-fg-2">
@@ -265,26 +265,23 @@ export function AdminUsersPage() {
             }
           />
         ) : (
-          <div className={cx('overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm', query.isPlaceholderData && 'opacity-70')}>
+          <div
+            className={cx(
+              'overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm',
+              query.isPlaceholderData && 'opacity-70',
+            )}
+          >
             <div className="overflow-x-auto">
               <table className="w-full text-left text-meta border-collapse">
                 <thead>
                   <tr className="border-b border-line bg-surface-2 text-fg-2 font-medium">
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                      Tài khoản
-                    </th>
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                      Vai trò
-                    </th>
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                      Trạng thái
-                    </th>
+                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Tài khoản</th>
+                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Vai trò</th>
+                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Trạng thái</th>
                     <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
                       Đăng nhập gần nhất
                     </th>
-                    <th className="py-3 px-3.5 text-left text-meta font-semibold">
-                      Tạo lúc
-                    </th>
+                    <th className="py-3 px-3.5 text-left text-meta font-semibold">Tạo lúc</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line/70">
@@ -370,7 +367,9 @@ export function AdminUsersPage() {
             {/* Footer bảng */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/40 px-3.5 py-2.5 text-meta text-fg-2">
               <p className="tnum text-xs">
-                Hiển thị <strong className="text-fg">{from}</strong> – <strong className="text-fg">{from + users.length - 1}</strong> trên <strong className="text-fg">{total}</strong> tài khoản
+                Hiển thị <strong className="text-fg">{from}</strong> –{' '}
+                <strong className="text-fg">{from + users.length - 1}</strong> trên{' '}
+                <strong className="text-fg">{total}</strong> tài khoản
               </p>
               {pages > 1 && <Pagination page={page} pages={pages} onChange={setPage} />}
             </div>

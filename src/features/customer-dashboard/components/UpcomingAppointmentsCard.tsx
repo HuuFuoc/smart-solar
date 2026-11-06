@@ -73,12 +73,8 @@ export function UpcomingAppointmentsCard({ requests }: { requests: CustomerSurve
                     </p>
                     <Badge tone={tone}>{label}</Badge>
                   </div>
-                  <p className="text-meta font-medium text-info font-mono">
-                    {formatDateTime(appt.startsAt)}
-                  </p>
-                  <p className="text-meta text-fg-2">
-                    KTV: {appt.assignedTechnicianName || 'Chờ phân công'}
-                  </p>
+                  <p className="text-meta font-medium text-info font-mono">{formatDateTime(appt.startsAt)}</p>
+                  <p className="text-meta text-fg-2">KTV: {appt.assignedTechnicianName || 'Chờ phân công'}</p>
                 </div>
 
                 <ButtonLink

@@ -26,9 +26,7 @@ export function AdminDashboardHeader({ onRefresh, isRefreshing, criticalCount = 
             </span>
           )}
         </div>
-        <h1 className="mt-1.5 text-display font-bold tracking-tight text-fg">
-          Trung tâm quản trị & điều hành
-        </h1>
+        <h1 className="mt-1.5 text-display font-bold tracking-tight text-fg">Trung tâm quản trị & điều hành</h1>
         <p className="mt-1 text-meta text-fg-2 sm:text-body">
           Giám sát sức khỏe hệ thống toàn diện: nhân sự KTV, thi công lắp đặt, điều phối hiện trường và dịch vụ sau bán.
         </p>

@@ -16,7 +16,8 @@ export function DashboardEmptyState() {
             Chào mừng bạn đến với Hệ sinh thái SmartSolar
           </h2>
           <p className="mt-2 text-meta text-fg-2 sm:text-body">
-            Bạn chưa có công trình lắp đặt nào. Hãy bắt đầu hành trình chuyển đổi năng lượng xanh với 3 bước đơn giản dưới đây:
+            Bạn chưa có công trình lắp đặt nào. Hãy bắt đầu hành trình chuyển đổi năng lượng xanh với 3 bước đơn giản
+            dưới đây:
           </p>
         </div>
 

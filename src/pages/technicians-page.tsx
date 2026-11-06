@@ -64,9 +64,7 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
         title="Kỹ thuật viên"
         description={
           missing > 0 ? (
-            <Badge tone="danger">
-              {missing} kỹ thuật viên chưa thuộc khu vực nào nên chưa nhận lịch được
-            </Badge>
+            <Badge tone="danger">{missing} kỹ thuật viên chưa thuộc khu vực nào nên chưa nhận lịch được</Badge>
           ) : undefined
         }
         actions={
@@ -111,7 +109,8 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
           ))}
         </div>
         <div className="text-meta text-fg-2">
-          Sẵn sàng: <strong className="text-ok">{readyCount}</strong> / <strong className="font-semibold text-fg">{query.data?.length ?? 0}</strong> KTV
+          Sẵn sàng: <strong className="text-ok">{readyCount}</strong> /{' '}
+          <strong className="font-semibold text-fg">{query.data?.length ?? 0}</strong> KTV
         </div>
       </div>
 
@@ -157,9 +156,7 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
                       <th className="py-3 px-3.5 border-r border-line text-right text-meta font-semibold">
                         Lịch / ngày
                       </th>
-                      <th className="py-3 px-3.5 text-left text-meta font-semibold">
-                        Giờ làm việc
-                      </th>
+                      <th className="py-3 px-3.5 text-left text-meta font-semibold">Giờ làm việc</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line/70">
@@ -265,7 +262,8 @@ function TechniciansPage({ detailPattern, usersLink }: { detailPattern: string; 
               {/* Footer bảng */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/40 px-3.5 py-2.5 text-meta text-fg-2">
                 <p className="tnum text-xs">
-                  Hiển thị <strong className="text-fg">{shown.length}</strong> trên <strong className="text-fg">{rows.length}</strong> kỹ thuật viên
+                  Hiển thị <strong className="text-fg">{shown.length}</strong> trên{' '}
+                  <strong className="text-fg">{rows.length}</strong> kỹ thuật viên
                 </p>
                 {missing > 0 && (
                   <span className="text-danger text-xs font-medium">

@@ -35,9 +35,7 @@ function KpiCard({ label, value, icon, hint, iconBgClass, valueClass }: KpiCardP
 
       {/* Bottom: Số liệu to nổi bật & Chú thích nhỏ */}
       <div className="mt-3 flex items-baseline justify-between gap-2">
-        <span className={cx('tnum text-display font-bold tracking-tight', valueClass || 'text-fg')}>
-          {value}
-        </span>
+        <span className={cx('tnum text-display font-bold tracking-tight', valueClass || 'text-fg')}>{value}</span>
         <span className="text-meta text-fg-3">{hint}</span>
       </div>
     </div>

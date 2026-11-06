@@ -71,7 +71,8 @@ export function CustomerServicesWidget({
               >
                 <div className="min-w-0">
                   <p className="font-semibold text-fg truncate">
-                    {sub.packageName || (sub.kind === 'MAINTENANCE' ? 'Gói bảo dưỡng định kỳ SolarCare' : 'Gói bảo vệ rủi ro thiên tai')}
+                    {sub.packageName ||
+                      (sub.kind === 'MAINTENANCE' ? 'Gói bảo dưỡng định kỳ SolarCare' : 'Gói bảo vệ rủi ro thiên tai')}
                   </p>
                   <p className="text-fg-3">Hết hạn: {sub.endsAt ? formatDate(sub.endsAt) : 'Chưa kích hoạt'}</p>
                 </div>

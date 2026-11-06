@@ -8,12 +8,7 @@ interface CustomTimetableDayRowProps {
   onCopyAll: () => void
 }
 
-export function CustomTimetableDayRow({
-  dayLabel,
-  periods,
-  onUpdate,
-  onCopyAll,
-}: CustomTimetableDayRowProps) {
+export function CustomTimetableDayRow({ dayLabel, periods, onUpdate, onCopyAll }: CustomTimetableDayRowProps) {
   const isWorking = periods.length > 0
   const dayHours = calculateDayHours(periods)
 
@@ -162,13 +157,7 @@ export function CustomTimetableDayRow({
           </div>
         ) : (
           <div className="flex items-center justify-end">
-            <Button
-              size="sm"
-              variant="ghost"
-              icon="add"
-              className="text-xs px-2"
-              onClick={() => handleToggle(true)}
-            >
+            <Button size="sm" variant="ghost" icon="add" className="text-xs px-2" onClick={() => handleToggle(true)}>
               Bật ca
             </Button>
           </div>
