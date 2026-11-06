@@ -121,7 +121,7 @@ function OpenJobRow({ job }: { job: OpenAppointmentView }) {
           {job.canAccept ? (
             <Button
               size="sm"
-              variant="primary"
+              variant="soft"
               icon="task_alt"
               disabled={accept.isPending}
               onClick={() => void onAccept()}
