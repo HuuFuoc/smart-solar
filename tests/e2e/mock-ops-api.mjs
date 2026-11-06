@@ -34,6 +34,7 @@ export function createOpsState({ role = 'SALES', userId = 'sales-1' } = {}) {
     fileChanged: false,
     paymentsUnavailable: false,
     rateLimitWrites: false,
+    queues: surveyQueues(),
     survey: {
       surveyRequestId: SR,
       preSurveyId: 'ps-1',
@@ -102,6 +103,133 @@ function task(taskId, taskType, status, extra = {}) {
     revision: 0,
     ...extra,
   }
+}
+
+// Hàng chờ của kinh doanh, giờ tính từ lúc tạo state: đủ các trạng thái mà danh sách xếp và tô màu
+// (chờ hơn 1 ngày, chưa đặt giờ, chờ kỹ thuật viên nhận, đã hẹn, quá giờ, cần phân công, đã xong, thiếu tên)
+function surveyQueues(now = Date.now()) {
+  const at = (hours) => new Date(now + hours * 3600_000).toISOString()
+  const place = (communeName) => ({ province: 'Thành phố Hồ Chí Minh', district: null, ward: communeName, communeName })
+  const appt = (id, status, startHours, extra = {}) => ({
+    appointmentId: id,
+    status,
+    startsAt: at(startHours),
+    endsAt: at(startHours + 1.5),
+    acceptanceDeadlineAt: status === 'PENDING_ACCEPTANCE' ? at(startHours - 24) : null,
+    technicianUserId: null,
+    technicianName: null,
+    isOverdue: false,
+    ...extra,
+  })
+  const pending = [
+    {
+      surveyRequestId: 'sr-p1',
+      preSurveyId: 'ps-p1',
+      customerName: 'Trần Thị Hoa',
+      propertyName: 'Nhà phố Phạm Ngũ Lão',
+      ...place('Phường Bến Thành'),
+      installationSurfaceType: 'ROOFTOP',
+      totalAreaM2: 45,
+      usableAreaM2: 38,
+      submittedAt: at(-50),
+      appointment: appt('a-p1', 'PENDING_ACCEPTANCE', 22),
+    },
+    {
+      surveyRequestId: 'sr-p2',
+      preSurveyId: 'ps-p2',
+      customerName: 'Lê Minh Tuấn',
+      propertyName: 'Nhà vườn Thủ Đức',
+      ...place('Phường Thủ Đức'),
+      installationSurfaceType: 'ROOFTOP',
+      totalAreaM2: 60,
+      usableAreaM2: 52.5,
+      submittedAt: at(-3),
+      appointment: null,
+    },
+    {
+      surveyRequestId: 'sr-p3',
+      preSurveyId: 'ps-p3',
+      customerName: 'Phạm Quốc Bảo',
+      propertyName: 'Nhà ống Gò Vấp',
+      ...place('Phường Gò Vấp'),
+      installationSurfaceType: 'ROOFTOP',
+      totalAreaM2: 32,
+      usableAreaM2: 25,
+      submittedAt: at(-20),
+      appointment: appt('a-p3', 'PENDING_ACCEPTANCE', 46),
+    },
+    {
+      surveyRequestId: 'sr-p4',
+      preSurveyId: 'ps-p4',
+      customerName: null,
+      propertyName: null,
+      ...place('Xã Bình Chánh'),
+      installationSurfaceType: 'GROUND',
+      totalAreaM2: 80,
+      usableAreaM2: 70,
+      submittedAt: at(-30),
+      appointment: null,
+    },
+  ]
+  const mine = (id, customerName, propertyName, commune, status, assignedHours, appointment) => ({
+    surveyRequestId: id,
+    preSurveyId: `ps-${id}`,
+    customerName,
+    propertyName,
+    ...place(commune),
+    status,
+    submittedAt: at(assignedHours - 4),
+    assignedAt: at(assignedHours),
+    scheduledAt: status === 'SCHEDULED' ? (appointment?.startsAt ?? null) : null,
+    appointment,
+  })
+  const my = [
+    mine('sr-m1', 'Đỗ Thanh Hương', 'Nhà phố Tân Định', 'Phường Tân Định', 'SCHEDULED', -30, {
+      ...appt('a-m1', 'ACCEPTED', 18),
+      technicianUserId: 't1',
+      technicianName: 'Nguyễn Kỹ Thuật',
+    }),
+    mine('sr-m2', 'Vũ Hải Nam', 'Biệt thự Thảo Điền', 'Phường An Khánh', 'PENDING', -40, appt('a-m2', 'ESCALATED', 30)),
+    mine('sr-m3', 'Hoàng Lan', 'Nhà phố Bình Thạnh', 'Phường Bình Thạnh', 'PENDING', -8, null),
+    mine('sr-m4', 'Ngô Đức Anh', 'Nhà phố Phú Nhuận', 'Phường Phú Nhuận', 'SCHEDULED', -60, {
+      ...appt('a-m4', 'ACCEPTED', -5),
+      technicianUserId: 't2',
+      technicianName: 'Trần Kỹ Thuật',
+      isOverdue: true,
+    }),
+    mine(
+      'sr-m5',
+      'Bùi Thị Mai',
+      'Nhà phố Cầu Ông Lãnh',
+      'Phường Cầu Ông Lãnh',
+      'PENDING',
+      -12,
+      appt('a-m5', 'PENDING_ACCEPTANCE', 40),
+    ),
+    mine(SR, 'Nguyễn Văn Khách', 'Nhà phố Bến Thành', 'Phường Bến Thành', 'COMPLETED', -300, null),
+  ]
+  const escalated = [
+    {
+      appointmentId: 'a-m2',
+      surveyRequestId: 'sr-m2',
+      startsAt: at(30),
+      endsAt: at(31.5),
+      status: 'ESCALATED',
+      acceptanceDeadlineAt: at(-2),
+      escalatedAt: at(-2),
+      revision: 2,
+      zone: { zoneId: 'zone-1', code: 'KHU-Q2', name: 'Thủ Đức' },
+      customerName: 'Vũ Hải Nam',
+      propertyName: 'Biệt thự Thảo Điền',
+      province: 'Thành phố Hồ Chí Minh',
+      district: null,
+      ward: 'Phường An Khánh',
+      assignedSaleId: 'sales-1',
+      ownedByMe: true,
+      hasEligibleTechnician: true,
+    },
+  ]
+  return { pending, my, escalated }
 }
 
 export function quotationView(extra = {}) {
@@ -312,12 +440,10 @@ export function handleOps(state, method, url, bodyText) {
       userId: state.userId,
     })
 
-  // Menu và khung
-  if (
-    method === 'GET' &&
-    ['/survey-requests/pending', '/survey-requests/my', '/survey-requests/escalated'].includes(path)
-  )
-    return ok([])
+  // Hàng chờ yêu cầu khảo sát (tab Chờ nhận / Của tôi, số trên menu)
+  if (method === 'GET' && path === '/survey-requests/pending') return ok(state.queues.pending)
+  if (method === 'GET' && path === '/survey-requests/my') return ok(state.queues.my)
+  if (method === 'GET' && path === '/survey-requests/escalated') return ok(state.queues.escalated)
   if (method === 'GET' && path === '/installations/ready-contracts')
     return ok(
       state.contracts
