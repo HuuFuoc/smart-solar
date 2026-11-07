@@ -57,7 +57,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
   })
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5">
       {/* Hàng 1: Tiêu đề khối & Nút Xem toàn bộ */}
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">

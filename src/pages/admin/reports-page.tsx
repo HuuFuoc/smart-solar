@@ -50,11 +50,11 @@ function metricValue(m: DashboardMetric, value: number) {
 }
 
 function changeText(m: DashboardMetric) {
-  if (m.changePercent == null) return m.previous === 0 && m.current !== 0 ? 'Kỳ trước bằng 0' : '-'
+  if (m.changePercent == null) return m.previous === 0 && m.current !== 0 ? 'Kỳ trước bằng 0' : '—'
   return `${percent.format(m.changePercent)}%`
 }
 
-const rangeLabel = (from: string, to: string) => `${formatDay(from, { year: true })} — ${formatDay(to, { year: true })}`
+const rangeLabel = (from: string, to: string) => `${formatDay(from, { year: true })} – ${formatDay(to, { year: true })}`
 
 function download(csv: string, name: string) {
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
@@ -111,6 +111,7 @@ export function AdminReportsPage() {
     !filter.status
 
   const view = query.data
+  // Số đang hiện là của bộ lọc khác (đang tải bộ lọc mới) thì chưa cho xuất, để tệp khớp đúng bảng
   const showingCurrent = Boolean(view) && !query.isPlaceholderData && valid
   const metrics = view?.metrics ?? []
   const money = DASHBOARD_MONEY_KEYS.map((key) => metrics.find((m) => m.key === key)).filter(
@@ -134,7 +135,7 @@ export function AdminReportsPage() {
     <>
       <PageHeader
         title="Báo cáo sau bán"
-        description="Tiền thu qua PayOS theo thời điểm giao dịch, tiền hoàn theo ngày đã chuyển trả. Thực thu = tổng thu trừ đã hoàn."
+        description="Tiền thu qua PayOS theo thời điểm giao dịch, tiền hoàn theo ngày đã chuyển trả. Thực thu = tổng thu − đã hoàn."
         actions={
           <Button
             icon="download"
@@ -156,7 +157,7 @@ export function AdminReportsPage() {
           <div className="flex flex-wrap items-center gap-2">
             <DateField className="w-40" label="Kỳ xem từ ngày" value={filter.from} onChange={(from) => set({ from })} />
             <span aria-hidden className="text-fg-3">
-              —
+              –
             </span>
             <DateField className="w-40" label="Kỳ xem đến ngày" value={filter.to} onChange={(to) => set({ to })} />
           </div>
@@ -176,7 +177,7 @@ export function AdminReportsPage() {
               onChange={(compareFrom) => set({ compareFrom })}
             />
             <span aria-hidden className="text-fg-3">
-              —
+              –
             </span>
             <DateField
               className="w-40"
@@ -191,7 +192,7 @@ export function AdminReportsPage() {
             </p>
           )}
         </fieldset>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3 md:col-span-2 xl:col-span-3 xl:max-w-5xl">
           <Field label="Khu vực" htmlFor="report-zone">
             <Select
               id="report-zone"
@@ -271,9 +272,9 @@ export function AdminReportsPage() {
               Kỳ xem <span className="font-medium text-fg">{rangeLabel(view.from, view.to)}</span>, so với{' '}
               <span className="font-medium text-fg">{rangeLabel(view.compareFrom, view.compareTo)}</span>
             </p>
-            <Panel className="overflow-hidden border border-line bg-surface-1 shadow-sm">
+            <Panel>
               <PanelHeader
-                title="Doanh thu & Tài chính"
+                title="Tiền"
                 description="Bộ lọc khu vực, loại dịch vụ, trạng thái áp cho các khoản liên quan."
               />
               <StatRow framed className="lg:grid-cols-3 xl:grid-cols-6">
@@ -287,59 +288,34 @@ export function AdminReportsPage() {
                 ))}
               </StatRow>
             </Panel>
-            <Panel className="overflow-hidden border border-line bg-surface-1 shadow-sm">
-              <PanelHeader
-                title="Hoạt động nghiệp vụ"
-                description="Biến động các chỉ số vận hành sau bán giữa hai kỳ đối chiếu."
-              />
-              <div className="overflow-hidden rounded-container border border-line bg-surface-1">
-                <Table stack>
-                  <thead>
-                    <tr>
-                      <Th className="border-r border-line">Chỉ số hoạt động</Th>
-                      <Th className="border-r border-line text-right">Kỳ xem</Th>
-                      <Th className="border-r border-line text-right">Kỳ so sánh</Th>
-                      <Th className="text-right">Biến động (%)</Th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-line/70">
-                    {activity.map((m) => {
-                      const isPositive = (m.changePercent ?? 0) > 0
-                      const isNegative = (m.changePercent ?? 0) < 0
-                      return (
-                        <Tr key={m.key} className="hover:bg-surface-2/60 transition-colors">
-                          <Td label="Chỉ số" className="border-r border-line font-medium text-fg">
-                            {DASHBOARD_METRICS[m.key]?.label ?? m.description}
-                          </Td>
-                          <Td label="Kỳ xem" className="border-r border-line tnum text-right font-semibold text-fg">
-                            {metricValue(m, m.current)}
-                          </Td>
-                          <Td label="Kỳ so sánh" className="border-r border-line tnum text-right text-fg-2">
-                            {metricValue(m, m.previous)}
-                          </Td>
-                          <Td label="Thay đổi" className="tnum text-right">
-                            <span
-                              className={`inline-block font-semibold ${
-                                isPositive
-                                  ? 'text-emerald-600 dark:text-emerald-400'
-                                  : isNegative
-                                    ? 'text-rose-600 dark:text-rose-400'
-                                    : 'text-fg-2'
-                              }`}
-                            >
-                              {changeText(m)}
-                            </span>
-                          </Td>
-                        </Tr>
-                      )
-                    })}
-                  </tbody>
-                </Table>
-                <div className="border-t border-line bg-surface-2/40 px-4 py-2 text-meta text-fg-3 flex items-center justify-between">
-                  <span>Theo dõi {activity.length} chỉ số sau bán</span>
-                  <span className="tnum">Hệ thống phân tích SmartSolar</span>
-                </div>
-              </div>
+            <Panel>
+              <PanelHeader title="Hoạt động" />
+              <Table stack>
+                <thead>
+                  <tr>
+                    <Th>Chỉ số</Th>
+                    <Th className="text-right">Kỳ xem</Th>
+                    <Th className="text-right">Kỳ so sánh</Th>
+                    <Th className="text-right">Thay đổi</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activity.map((m) => (
+                    <Tr key={m.key}>
+                      <Td label="Chỉ số">{DASHBOARD_METRICS[m.key]?.label ?? m.description}</Td>
+                      <Td label="Kỳ xem" className="tnum text-right">
+                        {metricValue(m, m.current)}
+                      </Td>
+                      <Td label="Kỳ so sánh" className="tnum text-right text-fg-2">
+                        {metricValue(m, m.previous)}
+                      </Td>
+                      <Td label="Thay đổi" className="tnum text-right text-fg-2">
+                        {changeText(m)}
+                      </Td>
+                    </Tr>
+                  ))}
+                </tbody>
+              </Table>
             </Panel>
           </div>
         ) : null}

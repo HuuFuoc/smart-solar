@@ -12,7 +12,7 @@ export function SalesPipelineFunnel({ total, pending, scheduled, completed }: Sa
   const completedPct = total > 0 ? Math.round((completed / safeTotal) * 100) : 0
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-3 sm:p-4 shadow-sm">
+    <div className="rounded-container border border-line bg-surface-2 p-3 sm:p-4">
       {/* Header dòng đơn: Tiêu đề + Legend ngắn gọn */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">

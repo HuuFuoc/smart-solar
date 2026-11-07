@@ -48,16 +48,15 @@ function AfterSalesRequestsPage({ detailPattern }: { detailPattern: string }) {
       />
       <FilterChips
         label="Lọc yêu cầu"
-        className="mb-4"
+        className="mb-6"
         value={tab}
         onChange={setPicked}
         chips={[
-          { value: 'todo', label: 'Chờ bạn xử lý', count: groups.todo.length },
+          { value: 'todo', label: 'Chờ bạn', count: groups.todo.length },
           { value: 'open', label: 'Đang làm', count: groups.open.length },
           { value: 'closed', label: 'Đã đóng', count: groups.closed.length },
         ]}
       />
-
       <QueryBoundary query={query}>
         {() =>
           groups[tab].length === 0 ? (

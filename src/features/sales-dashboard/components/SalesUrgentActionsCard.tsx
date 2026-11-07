@@ -23,7 +23,7 @@ export function SalesUrgentActionsCard({
   const warnings = myEscalated.length + overdueRequests.length
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5">
       {/* Header */}
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-title font-semibold text-fg">Việc cần xử lý ngay</h2>

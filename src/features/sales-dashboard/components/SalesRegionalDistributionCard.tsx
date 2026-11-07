@@ -326,7 +326,7 @@ export function SalesRegionalDistributionCard({ surveys }: SalesRegionalDistribu
   }, [allWards, filterMode, searchTerm, sortMode])
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5">
       <div className="mb-3">
         <h2 className="text-title font-semibold text-fg">Hồ sơ theo phường, xã</h2>
         <p className="text-meta text-fg-2 mt-0.5">

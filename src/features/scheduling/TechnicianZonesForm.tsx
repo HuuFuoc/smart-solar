@@ -60,7 +60,7 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
 
   return (
     <form noValidate onSubmit={submit} className="space-y-6">
-      <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+      <div className="overflow-hidden rounded-container border border-line bg-canvas">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/40 px-4 py-3">
           <div>
             <h3 className="font-semibold text-fg">Phân công khu vực địa bàn</h3>
@@ -75,8 +75,8 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
             <Button size="sm" variant="ghost" type="button" onClick={clearAll}>
               Bỏ chọn tất cả
             </Button>
-            <span className="rounded-full border border-line bg-surface-1 px-3 py-1 text-meta font-semibold text-fg">
-              Đã chọn: <strong className="text-accent">{selected.size}</strong> / {activeCount}
+            <span className="rounded-full border border-line bg-canvas px-3 py-1 text-meta font-semibold text-fg">
+              Đã chọn: <strong className="text-accent-fg">{selected.size}</strong> / {activeCount}
             </span>
           </div>
         </div>

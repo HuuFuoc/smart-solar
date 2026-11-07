@@ -141,7 +141,7 @@ export function CustomScheduleTimetable({ initial, technicianUserId, onSaved }: 
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full border border-line bg-surface-2 px-3 py-1 text-meta font-semibold text-fg">
-            Tổng: <strong className="text-accent">{totalWeekHours} giờ</strong> ({activeDaysCount} ngày làm việc)
+            Tổng: <strong className="text-accent-fg">{totalWeekHours} giờ</strong> ({activeDaysCount} ngày làm việc)
           </span>
         </div>
       </div>

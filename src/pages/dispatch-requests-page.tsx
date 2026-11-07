@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
+import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
-import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { EmptyState } from '@/components/common/ui/states'
 import { dispatchReasonLabel, dispatchStatusMeta } from '@/features/dispatch/dispatchDisplay'
 import { formatAppointment, formatMoment } from '@/features/scheduling/schedulingDisplay'
@@ -23,6 +23,9 @@ const EMPTY: Record<Tab, { title: string; description?: string }> = {
   closed: { title: 'Chưa có yêu cầu nào đã xong' },
 }
 
+const COLUMNS = 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)_minmax(0,1.3fr)_minmax(0,1.8fr)_9rem]'
+
+/** Hạn phản hồi hoặc đề xuất đang chờ: chỉ là chữ, việc cần làm đã báo đỏ ở nhãn trạng thái */
 function situation(r: DispatchQueueItemView) {
   const p = r.liveProposal
   if (r.status === 'PROPOSAL_PENDING' && p)
@@ -34,6 +37,35 @@ function situation(r: DispatchQueueItemView) {
   return r.sla.escalated ? `${due}, đã báo quản trị.` : `${due}.`
 }
 
+function DispatchRow({ row: r, detailPattern }: { row: DispatchQueueItemView; detailPattern: string }) {
+  const status = dispatchStatusMeta(r.status)
+  const text = situation(r)
+  return (
+    <ListRow>
+      <ListCells columns={COLUMNS}>
+        <ListCell wide>
+          <h2 className="font-semibold">{r.propertyName || 'Công trình chưa đặt tên'}</h2>
+          <p className="mt-0.5 text-meta text-fg-2">
+            {[r.zone?.name ?? 'Chưa thuộc khu vực nào', r.province].filter(Boolean).join(', ')}
+          </p>
+        </ListCell>
+        <ListCell label="Khách hàng">{r.customerName || '—'}</ListCell>
+        <ListCell label="Lý do">{dispatchReasonLabel(r.reason)}</ListCell>
+        <ListCell label="Tình hình">
+          <Badge tone={status.tone}>{status.label}</Badge>
+          {text && <p className="mt-1 text-meta text-fg-2">{text}</p>}
+        </ListCell>
+        <ListCell wide className="lg:justify-self-end">
+          <ButtonLink icon="visibility" to={withId(detailPattern, r.dispatchRequestId)} size="sm" variant="info">
+            Mở yêu cầu
+          </ButtonLink>
+        </ListCell>
+      </ListCells>
+    </ListRow>
+  )
+}
+
+// Hàng chờ điều phối của quản lý và quản trị: công trình chưa có kỹ thuật viên nhận lịch, hạn phản hồi sớm nhất trước
 function DispatchRequestsPage({ detailPattern }: { detailPattern: string }) {
   const active = useDispatchQueueQuery()
   const [picked, setPicked] = useState<Tab | null>(null)
@@ -41,6 +73,7 @@ function DispatchRequestsPage({ detailPattern }: { detailPattern: string }) {
   const todo = rows.filter((r) => r.status === 'OPEN')
   const waiting = rows.filter((r) => r.status === 'PROPOSAL_PENDING')
   const tab: Tab = picked ?? (todo.length > 0 || waiting.length === 0 ? 'todo' : 'waiting')
+  // Yêu cầu đã xong chỉ tải khi mở tab, gần đây nhất trước
   const done = useDispatchQueueQuery({ done: true, enabled: tab === 'closed' })
   const groups: Record<Tab, DispatchQueueItemView[]> = {
     todo,
@@ -60,7 +93,7 @@ function DispatchRequestsPage({ detailPattern }: { detailPattern: string }) {
       />
       <FilterChips
         label="Lọc yêu cầu"
-        className="mb-4"
+        className="mb-6"
         value={tab}
         onChange={setPicked}
         chips={[
@@ -69,67 +102,19 @@ function DispatchRequestsPage({ detailPattern }: { detailPattern: string }) {
           { value: 'closed', label: 'Đã xong', count: done.data?.totalItems },
         ]}
       />
-
       <QueryBoundary query={query}>
         {() =>
           groups[tab].length === 0 ? (
             <EmptyState {...EMPTY[tab]} />
           ) : (
-            <div>
-              <Table stack>
-                <thead>
-                  <tr>
-                    <Th>Công trình & Địa bàn</Th>
-                    <Th>Khách hàng</Th>
-                    <Th>Lý do điều phối</Th>
-                    <Th>Tình hình / SLA</Th>
-                    <Th className="text-right">
-                      <span className="sr-only">Thao tác</span>
-                    </Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {groups[tab].map((r) => {
-                    const status = dispatchStatusMeta(r.status)
-                    const text = situation(r)
-                    return (
-                      <Tr key={r.dispatchRequestId}>
-                        <Td label="Công trình">
-                          <h2 className="font-semibold text-fg">{r.propertyName || 'Công trình chưa đặt tên'}</h2>
-                          <p className="mt-0.5 text-meta text-fg-2">
-                            {[r.zone?.name ?? 'Chưa thuộc khu vực nào', r.province].filter(Boolean).join(', ')}
-                          </p>
-                        </Td>
-                        <Td label="Khách hàng" className="font-medium text-fg">
-                          {r.customerName || '-'}
-                        </Td>
-                        <Td label="Lý do" className="text-meta text-fg-2">
-                          {dispatchReasonLabel(r.reason)}
-                        </Td>
-                        <Td label="Tình hình">
-                          <Badge tone={status.tone}>{status.label}</Badge>
-                          {text && (
-                            <p className={`mt-1 text-meta ${r.sla.overdue ? 'font-medium text-danger' : 'text-fg-2'}`}>
-                              {text}
-                            </p>
-                          )}
-                        </Td>
-                        <Td label="Thao tác" className="text-right whitespace-nowrap">
-                          <ButtonLink
-                            icon="visibility"
-                            to={withId(detailPattern, r.dispatchRequestId)}
-                            size="sm"
-                            variant="info"
-                          >
-                            Mở yêu cầu
-                          </ButtonLink>
-                        </Td>
-                      </Tr>
-                    )
-                  })}
-                </tbody>
-              </Table>
-            </div>
+            <>
+              <ListHead columns={COLUMNS} labels={['Công trình', 'Khách hàng', 'Lý do', 'Tình hình', '']} />
+              <ul className="divide-y divide-line">
+                {groups[tab].map((r) => (
+                  <DispatchRow key={r.dispatchRequestId} row={r} detailPattern={detailPattern} />
+                ))}
+              </ul>
+            </>
           )
         }
       </QueryBoundary>

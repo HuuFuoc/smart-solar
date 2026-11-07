@@ -16,7 +16,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
           <p className="text-meta text-fg-2">Lịch làm việc mặc định được áp dụng cho toàn bộ đội ngũ kỹ thuật viên.</p>
         </div>
         <span className="rounded-full border border-line bg-canvas px-3 py-1 text-meta font-semibold text-fg">
-          Tổng thời lượng: <strong className="text-accent">{totalWeekHours} giờ</strong> / tuần
+          Tổng thời lượng: <strong className="text-accent-fg">{totalWeekHours} giờ</strong> / tuần
         </span>
       </div>
 
@@ -39,7 +39,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
                 <tr key={d.value} className="transition-colors hover:bg-surface-2/50">
                   <td className="w-40 border-r border-line px-4 py-3 font-medium text-fg">
                     <div className="flex items-center gap-2">
-                      <Icon name="calendar_today" className="text-accent text-[16px]" />
+                      <Icon name="calendar_today" className="text-accent-fg text-[16px]" />
                       <span className="font-semibold text-fg">{d.label}</span>
                     </div>
                   </td>
@@ -51,7 +51,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
                             key={i}
                             className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-3 py-1 font-mono text-meta font-medium text-fg"
                           >
-                            <Icon name="schedule" className="text-accent text-[15px]" />
+                            <Icon name="schedule" className="text-accent-fg text-[15px]" />
                             <span>
                               {p.start} — {p.end}
                             </span>

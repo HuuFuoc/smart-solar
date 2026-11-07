@@ -46,7 +46,7 @@ export function ZoneCheckCard({ zone, checked, onToggle }: ZoneCheckCardProps) {
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center gap-1 rounded-control bg-surface-2 px-1.5 py-0.5 text-meta font-medium text-fg-2">
-            <Icon name="location_on" className="text-accent text-[13px]" />
+            <Icon name="location_on" className="text-accent-fg text-meta" />
             {zone.communeCount} phường, xã
           </span>
           {!zone.isServiceable && (

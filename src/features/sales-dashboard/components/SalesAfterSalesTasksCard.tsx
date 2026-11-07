@@ -11,7 +11,7 @@ export function SalesAfterSalesTasksCard({ tasks, myTasks }: SalesAfterSalesTask
   const allTasks = [...myTasks, ...tasks]
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-title font-semibold text-fg">Báo giá dịch vụ sau bán</h2>
         <ButtonLink

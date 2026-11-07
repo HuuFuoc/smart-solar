@@ -49,7 +49,7 @@ export function CustomTimetableDayRow({ dayLabel, periods, onUpdate, onCopyAll }
               type="checkbox"
               checked={isWorking}
               onChange={(e) => handleToggle(e.target.checked)}
-              className="h-4 w-4 rounded-control border-fg-3 text-accent focus:ring-accent"
+              className="h-4 w-4 rounded-control border-fg-3 text-accent-fg focus:ring-accent"
             />
             <span className="font-semibold text-fg">{dayLabel}</span>
           </label>

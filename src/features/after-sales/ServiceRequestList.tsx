@@ -1,14 +1,17 @@
 import { Link } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
-import { Table, Td, Th, Tr } from '@/components/common/ui/table'
+import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
 import { isTodo, requestKindLabel, requestStatusMeta, type ServiceViewer } from '@/features/after-sales/serviceDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { withId } from '@/routes/paths'
 import type { ServiceRequestSummary } from '@/types/res/customerAfterSalesRes'
 
-// Yêu cầu bảo hành, sửa chữa, bảo trì: mỗi yêu cầu một dòng. Trạng thái là chữ có màu theo vai trò (đỏ = việc của
-// người đang xem); nút trên dòng không đặc
+// Danh sách yêu cầu dạng cột, khách và quản lý dùng chung. `detailPattern` là đường dẫn chi tiết có ":id"
+
+const COLUMNS = 'lg:grid-cols-[minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)_8rem]'
+const LABELS = ['Yêu cầu', 'Loại', 'Ngày gửi', 'Tình hình', '']
+
 export function ServiceRequestList({
   rows,
   viewer,
@@ -19,51 +22,42 @@ export function ServiceRequestList({
   detailPattern: string
 }) {
   return (
-    <Table stack>
-      <thead>
-        <tr>
-          <Th>Yêu cầu</Th>
-          <Th>Loại</Th>
-          <Th>Ngày gửi</Th>
-          <Th>Tình hình</Th>
-          <Th>
-            <span className="sr-only">Thao tác</span>
-          </Th>
-        </tr>
-      </thead>
-      <tbody>
+    <div>
+      <ListHead columns={COLUMNS} labels={LABELS} />
+      <ul className="divide-y divide-line">
         {rows.map((r) => {
           const status = requestStatusMeta(r.status, viewer)
-          const todo = isTodo(r.status, viewer)
           return (
-            <Tr key={r.requestId}>
-              <Td label="Yêu cầu">
-                <Link to={withId(detailPattern, r.requestId)} className="tnum font-semibold text-fg hover:underline">
-                  {r.requestNumber}
-                </Link>
-                {r.description && <p className="mt-0.5 line-clamp-2 text-meta text-fg-2">{r.description}</p>}
-              </Td>
-              <Td label="Loại">{requestKindLabel(r.kind)}</Td>
-              <Td label="Ngày gửi" className="tnum whitespace-nowrap text-fg-2">
-                {formatMoment(r.createdAt)}
-              </Td>
-              <Td label="Tình hình">
-                <Badge tone={status.tone}>{status.label}</Badge>
-              </Td>
-              <Td className="lg:text-right">
-                <ButtonLink
-                  icon={todo ? 'arrow_forward' : 'visibility'}
-                  variant="info"
-                  to={withId(detailPattern, r.requestId)}
-                  size="sm"
-                >
-                  {todo ? 'Xử lý' : 'Xem'}
-                </ButtonLink>
-              </Td>
-            </Tr>
+            <ListRow key={r.requestId}>
+              <ListCells columns={COLUMNS}>
+                <ListCell wide>
+                  <Link to={withId(detailPattern, r.requestId)} className="tnum font-semibold hover:underline">
+                    {r.requestNumber}
+                  </Link>
+                  <p className="mt-0.5 line-clamp-2 text-meta text-fg-2">{r.description}</p>
+                </ListCell>
+                <ListCell label="Loại">{requestKindLabel(r.kind)}</ListCell>
+                <ListCell label="Ngày gửi" className="tnum">
+                  {formatMoment(r.createdAt)}
+                </ListCell>
+                <ListCell label="Tình hình">
+                  <Badge tone={status.tone}>{status.label}</Badge>
+                </ListCell>
+                <ListCell wide className="lg:justify-self-end">
+                  <ButtonLink
+                    icon={isTodo(r.status, viewer) ? 'arrow_forward' : 'visibility'}
+                    variant="info"
+                    to={withId(detailPattern, r.requestId)}
+                    size="sm"
+                  >
+                    {isTodo(r.status, viewer) ? 'Xử lý' : 'Xem'}
+                  </ButtonLink>
+                </ListCell>
+              </ListCells>
+            </ListRow>
           )
         })}
-      </tbody>
-    </Table>
+      </ul>
+    </div>
   )
 }

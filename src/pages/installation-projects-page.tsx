@@ -79,6 +79,7 @@ function InstallationProjectsPage({
         className="mb-4"
         value={tab}
         onChange={setTab}
+        // Số trên tab để xám vì số đỏ đã có ở menu và đầu trang
         chips={[
           { value: 'du-an', label: 'Dự án', count: status ? undefined : projects.data?.length },
           { value: 'hop-dong', label: 'Hợp đồng chờ tạo dự án', count: ready.data?.length },
@@ -97,27 +98,24 @@ function InstallationProjectsPage({
         </QueryBoundary>
       ) : (
         <>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <FilterBar className="mb-0 flex-1">
-              <label className="w-full sm:w-72">
-                <span className="sr-only">Lọc theo trạng thái</span>
-                <Select active={status !== undefined} value={status ?? ''} onChange={(e) => setStatus(e.target.value)}>
-                  <option value="">Tất cả trạng thái</option>
-                  {INSTALLATION_STATUS_ORDER.map((value) => (
-                    <option key={value} value={value}>
-                      {projectStatusMeta(value).label}
-                    </option>
-                  ))}
-                </Select>
-              </label>
-              {status && (
-                <Button variant="ghost" bleed={false} icon="filter_alt_off" onClick={() => setStatus('')}>
-                  Xoá bộ lọc
-                </Button>
-              )}
-            </FilterBar>
-          </div>
-
+          <FilterBar>
+            <label className="w-full sm:w-72">
+              <span className="sr-only">Lọc theo trạng thái</span>
+              <Select active={status !== undefined} value={status ?? ''} onChange={(e) => setStatus(e.target.value)}>
+                <option value="">Tất cả trạng thái</option>
+                {INSTALLATION_STATUS_ORDER.map((value) => (
+                  <option key={value} value={value}>
+                    {projectStatusMeta(value).label}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            {status && (
+              <Button variant="ghost" bleed={false} icon="filter_alt_off" onClick={() => setStatus('')}>
+                Xoá bộ lọc
+              </Button>
+            )}
+          </FilterBar>
           <QueryBoundary query={projects}>
             {(rows) =>
               rows.length > 0 ? (
@@ -130,6 +128,7 @@ function InstallationProjectsPage({
               ) : (
                 <EmptyState
                   title="Chưa có dự án thi công nào"
+
                   action={
                     readyCount > 0 ? (
                       <Button icon="visibility" size="sm" variant="info" onClick={() => setTab('hop-dong')}>

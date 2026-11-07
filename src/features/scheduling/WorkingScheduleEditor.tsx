@@ -76,7 +76,7 @@ export function WorkingScheduleEditor({ technicianUserId }: { technicianUserId: 
           ) : (
             <div className="rounded-container border border-line bg-canvas p-4">
               <div className="flex items-start gap-3">
-                <Icon name="info" className="mt-0.5 shrink-0 text-[20px] text-accent" />
+                <Icon name="info" className="mt-0.5 shrink-0 text-[20px] text-accent-fg" />
                 <div>
                   <h4 className="font-semibold text-fg">Đang áp dụng giờ riêng</h4>
                   <p className="mt-1 text-meta text-fg-2">

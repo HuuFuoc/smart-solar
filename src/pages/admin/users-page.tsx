@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { Checkbox, SearchInput, Select } from '@/components/common/ui/field'
 import { FilterBar } from '@/components/common/ui/filter-bar'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Pagination } from '@/components/common/ui/pagination'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
+import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { formatDateTime, formatRelative } from '@/features/pre-surveys/preSurveyDisplay'
 import { AccountFormDialog } from '@/features/users/AccountFormDialog'
 import { ROLE_CODES, USER_STATUSES } from '@/common/user'
-import { activationMessage, userStatusMeta } from '@/features/users/userDisplay'
+import { activationMessage, rolesText, userStatusMeta } from '@/features/users/userDisplay'
 import { useAdminUsersQuery } from '@/hooks/useAdminUsers'
 import type { AdminUserListParams } from '@/services/adminUserService'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
@@ -25,86 +26,13 @@ const PAGE_SIZE = 20
 const SORTS = [
   { value: 'createdAt:desc', label: 'Mới tạo trước' },
   { value: 'createdAt:asc', label: 'Cũ trước' },
-  { value: 'name:asc', label: 'Tên A→Z' },
-  { value: 'name:desc', label: 'Tên Z→A' },
+  { value: 'name:asc', label: 'Tên A–Z' },
+  { value: 'name:desc', label: 'Tên Z–A' },
   { value: 'status:asc', label: 'Theo trạng thái' },
 ] as const
 
 type Filter = { search: string; role: string; status: string; sort: string; includeDeleted: boolean }
 const defaultFilter: Filter = { search: '', role: '', status: '', sort: SORTS[0].value, includeDeleted: false }
-
-// Cấu hình màu sắc, icon và chú thích riêng biệt cho từng vai trò
-export const ROLE_CONFIG: Record<
-  string,
-  { label: string; icon: string; bg: string; text: string; border: string; desc: string }
-> = {
-  ADMIN: {
-    label: 'Quản trị viên',
-    icon: 'admin_panel_settings',
-    bg: 'bg-purple-500/15',
-    text: 'text-purple-600 dark:text-purple-400',
-    border: 'border-purple-500/30',
-    desc: 'Toàn quyền quản trị tham số và cấu hình hệ thống',
-  },
-  MANAGER: {
-    label: 'Quản lý',
-    icon: 'shield_person',
-    bg: 'bg-blue-500/15',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-500/30',
-    desc: 'Điều hành, duyệt hợp đồng, dự án và bảo hành',
-  },
-  SALES: {
-    label: 'Kinh doanh',
-    icon: 'point_of_sale',
-    bg: 'bg-amber-500/15',
-    text: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-500/30',
-    desc: 'Tư vấn, tiếp nhận khảo sát và lập báo giá',
-  },
-  TECHNICIAN: {
-    label: 'Kỹ thuật viên',
-    icon: 'engineering',
-    bg: 'bg-emerald-500/15',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-500/30',
-    desc: 'Khảo sát thực địa, thi công lắp đặt và sửa chữa',
-  },
-  CUSTOMER: {
-    label: 'Khách hàng',
-    icon: 'person',
-    bg: 'bg-slate-500/15',
-    text: 'text-slate-600 dark:text-slate-300',
-    border: 'border-slate-500/30',
-    desc: 'Chủ sở hữu công trình điện mặt trời',
-  },
-}
-
-function RoleBadge({ role }: { role: string }) {
-  const cfg = ROLE_CONFIG[role] ?? {
-    label: role,
-    icon: 'badge',
-    bg: 'bg-surface-3',
-    text: 'text-fg-2',
-    border: 'border-line',
-    desc: '',
-  }
-
-  return (
-    <span
-      title={cfg.desc || undefined}
-      className={cx(
-        'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border shadow-2xs transition-transform hover:scale-105',
-        cfg.bg,
-        cfg.text,
-        cfg.border,
-      )}
-    >
-      <Icon name={cfg.icon} className="text-[13px]" />
-      <span>{cfg.label}</span>
-    </span>
-  )
-}
 
 // Danh sách tài khoản (tìm, lọc, sắp xếp, phân trang phía server). Bấm dòng để mở chi tiết
 export function AdminUsersPage() {
@@ -135,7 +63,7 @@ export function AdminUsersPage() {
   const from = (page - 1) * PAGE_SIZE + 1
 
   return (
-    <div className="space-y-4">
+    <>
       <PageHeader
         title="Tài khoản"
         actions={
@@ -145,7 +73,6 @@ export function AdminUsersPage() {
         }
       />
 
-      {/* Thanh bộ lọc */}
       <FilterBar>
         <label className="min-w-0 flex-1 basis-64">
           <span className="sr-only">Tìm tài khoản</span>
@@ -208,39 +135,6 @@ export function AdminUsersPage() {
         )}
       </FilterBar>
 
-      {/* Chú thích màu sắc vai trò người dùng (Legend Bar) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-2 p-3 sm:px-4 shadow-xs">
-        <div className="flex flex-wrap items-center gap-2 text-meta">
-          <span className="font-semibold text-fg flex items-center gap-1.5 pr-2.5 border-r border-line/70">
-            <Icon name="palette" className="text-primary text-[18px]" />
-            Chú thích vai trò:
-          </span>
-          {ROLE_CODES.map((r) => {
-            const cfg = ROLE_CONFIG[r.value]
-            if (!cfg) return null
-            return (
-              <span
-                key={r.value}
-                title={cfg.desc}
-                className={cx(
-                  'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border cursor-help shadow-2xs',
-                  cfg.bg,
-                  cfg.text,
-                  cfg.border,
-                )}
-              >
-                <Icon name={cfg.icon} className="text-[13px]" />
-                <span>{cfg.label}</span>
-              </span>
-            )
-          })}
-        </div>
-        <div className="text-meta text-fg-2">
-          Tổng số: <strong className="font-semibold text-fg">{total}</strong> tài khoản
-        </div>
-      </div>
-
-      {/* Danh sách bảng tài khoản với cột dọc chia ngăn cách */}
       <section aria-label="Danh sách tài khoản" aria-live="polite" aria-busy={query.isFetching}>
         {query.isError && !query.data ? (
           <ErrorState
@@ -265,117 +159,62 @@ export function AdminUsersPage() {
             }
           />
         ) : (
-          <div
-            className={cx(
-              'overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm',
-              query.isPlaceholderData && 'opacity-70',
-            )}
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-meta border-collapse">
-                <thead>
-                  <tr className="border-b border-line bg-surface-2 text-fg-2 font-medium">
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Tài khoản</th>
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Vai trò</th>
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">Trạng thái</th>
-                    <th className="py-3 px-3.5 border-r border-line text-left text-meta font-semibold">
-                      Đăng nhập gần nhất
-                    </th>
-                    <th className="py-3 px-3.5 text-left text-meta font-semibold">Tạo lúc</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line/70">
-                  {users.map((u) => {
-                    const status = userStatusMeta(u)
-                    return (
-                      <tr
-                        key={u.id}
-                        onClick={() => navigate(withId(ROUTES.admin.user, u.id))}
-                        className="group hover:bg-surface-2/60 transition-colors cursor-pointer"
-                      >
-                        {/* Cột 1: Tài khoản */}
-                        <td className="py-3.5 px-3.5 border-r border-line align-top">
-                          <Link
-                            to={withId(ROUTES.admin.user, u.id)}
-                            onClick={(e) => e.stopPropagation()}
-                            className="font-semibold text-fg group-hover:text-primary transition-colors hover:underline"
-                          >
-                            {u.fullName || u.email}
-                          </Link>
-                          <p className="text-[12px] text-fg-2 break-all mt-0.5">{u.email}</p>
-                        </td>
-
-                        {/* Cột 2: Vai trò có màu sắc và icon riêng biệt */}
-                        <td className="py-3.5 px-3.5 border-r border-line align-top">
-                          <div className="flex flex-wrap gap-1.5">
-                            {u.roles.length > 0 ? (
-                              u.roles.map((r) => <RoleBadge key={r} role={r} />)
-                            ) : (
-                              <span className="text-fg-muted italic text-xs">Chưa có vai trò</span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Cột 3: Trạng thái */}
-                        <td className="py-3.5 px-3.5 border-r border-line align-top">
-                          <span
-                            className={cx(
-                              'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border',
-                              status.tone === 'ok' && 'bg-ok-soft text-ok border-ok/20',
-                              status.tone === 'info' && 'bg-info-soft text-info border-info/20',
-                              status.tone === 'warn' && 'bg-warn-soft text-warn border-warn/20',
-                              status.tone === 'danger' && 'bg-danger-soft text-danger border-danger/20',
-                              status.tone === 'neutral' && 'bg-surface-3 text-fg-2 border-line',
-                            )}
-                          >
-                            <span
-                              className={cx(
-                                'size-1.5 rounded-full',
-                                status.tone === 'ok' && 'bg-ok',
-                                status.tone === 'info' && 'bg-info',
-                                status.tone === 'warn' && 'bg-warn',
-                                status.tone === 'danger' && 'bg-danger',
-                                status.tone === 'neutral' && 'bg-fg-muted',
-                              )}
-                            />
-                            {status.label}
-                          </span>
-                        </td>
-
-                        {/* Cột 4: Đăng nhập gần nhất */}
-                        <td className="py-3.5 px-3.5 border-r border-line align-top text-meta whitespace-nowrap">
-                          {u.lastLoginAt ? (
-                            <time title={formatDateTime(u.lastLoginAt)} className="font-medium text-fg">
-                              {formatRelative(u.lastLoginAt)}
-                            </time>
-                          ) : (
-                            <span className="text-fg-3 italic">Chưa đăng nhập</span>
-                          )}
-                        </td>
-
-                        {/* Cột 5: Tạo lúc */}
-                        <td className="py-3.5 px-3.5 align-top text-meta text-fg-2 tnum whitespace-nowrap">
-                          {formatDateTime(u.createdAt)}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Footer bảng */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/40 px-3.5 py-2.5 text-meta text-fg-2">
-              <p className="tnum text-xs">
-                Hiển thị <strong className="text-fg">{from}</strong> –{' '}
-                <strong className="text-fg">{from + users.length - 1}</strong> trên{' '}
-                <strong className="text-fg">{total}</strong> tài khoản
-              </p>
-              {pages > 1 && <Pagination page={page} pages={pages} onChange={setPage} />}
-            </div>
+          <div className={cx(query.isPlaceholderData && 'opacity-70')}>
+            <Table stack>
+              <thead>
+                <tr>
+                  <Th>Tài khoản</Th>
+                  <Th>Vai trò</Th>
+                  <Th>Trạng thái</Th>
+                  <Th>Đăng nhập gần nhất</Th>
+                  <Th>Tạo lúc</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => {
+                  const status = userStatusMeta(u)
+                  return (
+                    <Tr key={u.id} className="group relative cursor-pointer">
+                      <Td label="Tài khoản">
+                        <Link
+                          to={withId(ROUTES.admin.user, u.id)}
+                          className="font-medium text-fg underline-offset-4 after:absolute after:inset-0 group-hover:text-accent-fg group-hover:underline"
+                        >
+                          {u.fullName || u.email}
+                        </Link>
+                        <p className="text-meta text-fg-2 wrap-anywhere">{u.email}</p>
+                      </Td>
+                      <Td label="Vai trò">{rolesText(u.roles)}</Td>
+                      <Td label="Trạng thái">
+                        <Badge tone={status.tone}>{status.label}</Badge>
+                      </Td>
+                      <Td label="Đăng nhập gần nhất" className="whitespace-nowrap">
+                        {u.lastLoginAt ? (
+                          <time title={formatDateTime(u.lastLoginAt)}>{formatRelative(u.lastLoginAt)}</time>
+                        ) : (
+                          <span className="text-fg-3">Chưa đăng nhập</span>
+                        )}
+                      </Td>
+                      <Td label="Tạo lúc" className="tnum whitespace-nowrap">
+                        {formatDateTime(u.createdAt)}
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </tbody>
+            </Table>
           </div>
         )}
       </section>
+
+      {users.length > 0 && (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <p className="tnum text-meta text-fg-2">
+            Hiển thị {from}–{from + users.length - 1} trên {total} tài khoản
+          </p>
+          {pages > 1 && <Pagination page={page} pages={pages} onChange={setPage} />}
+        </div>
+      )}
 
       <AccountFormDialog
         open={creating}
@@ -388,8 +227,6 @@ export function AdminUsersPage() {
           navigate(withId(ROUTES.admin.user, result.user.id))
         }}
       />
-    </div>
+    </>
   )
 }
-
-export default AdminUsersPage
