@@ -22,7 +22,7 @@ hai ăn chung một hệ token trong `src/styles/globals.css`:
   bước (vòng số + đường nối, bước xong có ✓ + tóm tắt và bấm được để quay lại; điện thoại là khối gọn "Bước 3/5: …" + thanh
   tiến độ + "Tiếp theo: …"; `WizardProgress` là riêng thanh tiến độ + "Tiếp theo" khi tên bước đã nằm ở tiêu đề ngay trên),
   khác `Stepper` (dải tiến độ hành trình, chỉ để xem). `Field` có `htmlFor` thì dòng gợi ý / lỗi có id `fieldMessageId(htmlFor)`
-  để ô nhập gắn `aria-describedby`. Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
+  để ô nhập gắn `aria-describedby`; `optional` ghi "(không bắt buộc)" cạnh nhãn thay cho dòng gợi ý lặp dưới từng ô. Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
   không có trên git.
 - `src/components/common/stitch-ui` (file PascalCase, token `surface/on-surface/primary…`,
   Material Symbols): trang công khai/xác thực, hộp thoại hết phiên, `/styleguide` (chỉ chạy ở dev) và các màn
