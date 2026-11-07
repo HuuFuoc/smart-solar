@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { SearchInput, Select } from '@/components/common/ui/field'
@@ -244,35 +243,6 @@ export function AdminProductsPage() {
           </Button>
         )}
       </FilterBar>
-
-      {/* Chú thích phân loại sản phẩm & trạng thái */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-2 p-3 sm:px-4 shadow-xs">
-        <div className="flex flex-wrap items-center gap-2 text-meta">
-          <span className="font-semibold text-fg flex items-center gap-1.5 pr-2.5 border-r border-line/70">
-            <Icon name="palette" className="text-primary text-[18px]" />
-            Phân loại thiết bị:
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent-soft text-accent-fg border border-accent/20">
-            <Icon name="solar_power" className="text-[13px]" />
-            Tấm pin mặt trời
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-info-soft text-info border border-info/20">
-            <Icon name="electrical_services" className="text-[13px]" />
-            Biến tần (Inverter)
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-warn-soft text-warn border border-warn/20">
-            <Icon name="battery_charging_full" className="text-[13px]" />
-            Pin lưu trữ / Ắc quy
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-ok-soft text-ok border border-ok/20">
-            <Icon name="build" className="text-[13px]" />
-            Vật tư & Dịch vụ
-          </span>
-        </div>
-        <div className="text-meta text-fg-2">
-          Tổng số: <strong className="font-semibold text-fg">{total}</strong> sản phẩm
-        </div>
-      </div>
 
       <section
         ref={listRef}

@@ -54,7 +54,7 @@ export function AfterSalesPolicyTab({ settings, isSaving, onSave }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-surface-1 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-canvas p-4">
         <h3 className="text-body font-semibold text-fg-1">Chính sách Điều phối & Dịch vụ Sau bán</h3>
         {hasChanges && (
           <div className="flex items-center gap-2">

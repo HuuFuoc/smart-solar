@@ -1,3 +1,4 @@
+import { Button } from '@/components/common/ui/button'
 import { Badge } from '@/components/common/ui/badge'
 
 type SettingFieldInputProps = {
@@ -31,7 +32,7 @@ export function SettingFieldInput({
   const isChanged = defaultValue !== undefined && value !== defaultValue
 
   return (
-    <div className="flex flex-col justify-between rounded-control border border-line bg-surface-1 p-3.5 transition-colors hover:border-fg-3/40">
+    <div className="flex flex-col justify-between rounded-control border border-line bg-canvas p-3.5 transition-colors hover:border-fg-3/40">
       <div>
         <div className="flex items-center justify-between gap-2">
           <label htmlFor={id} className="text-body font-medium text-fg-1">
@@ -53,20 +54,24 @@ export function SettingFieldInput({
             value={Number.isNaN(value) ? '' : value}
             disabled={disabled}
             onChange={(e) => onChange(Number(e.target.value))}
-            className={`w-full rounded-control border px-3 py-1.5 text-body text-fg-1 outline-none transition-colors ${
-              hasError ? 'border-err bg-err/10 focus:border-err' : 'border-line bg-canvas focus:border-accent'
+            className={`h-11 w-full rounded-control border px-3 text-body text-fg outline-none transition-colors lg:h-9 ${
+              hasError
+                ? 'border-danger bg-danger-soft focus:border-danger'
+                : 'border-line-2 bg-canvas focus:border-accent'
             }`}
           />
           {defaultValue !== undefined && value !== defaultValue && (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="restart_alt"
+              bleed={false}
               disabled={disabled}
-              title={`Khôi phục mặc định: ${defaultValue}`}
+              aria-label={`Dùng giá trị mặc định: ${defaultValue}`}
               onClick={() => onChange(defaultValue)}
-              className="text-meta text-accent hover:underline disabled:opacity-50"
             >
               Mặc định
-            </button>
+            </Button>
           )}
         </div>
         <div className="mt-1 flex items-center justify-between text-meta text-fg-3">
@@ -76,7 +81,7 @@ export function SettingFieldInput({
           {defaultValue !== undefined && <span>Mặc định: {defaultValue}</span>}
         </div>
         {hasError && (
-          <p className="mt-1 text-meta text-err">
+          <p className="mt-1 text-meta text-danger">
             Giá trị phải nằm trong khoảng từ {min} đến {max} {unit}.
           </p>
         )}
