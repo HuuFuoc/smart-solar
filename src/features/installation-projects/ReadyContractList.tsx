@@ -89,38 +89,35 @@ export function ReadyContractList({
   const [picked, setPicked] = useState<PaidContractSource | null>(null)
   return (
     <>
-      <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+      <div>
         <Table stack>
           <thead>
             <tr>
-              <Th className="border-r border-line">Hợp đồng đã thanh toán</Th>
-              <Th className="border-r border-line text-right">Giá trị hợp đồng</Th>
-              <Th className="border-r border-line">Thời điểm thanh toán</Th>
-              <Th className="border-r border-line">Vị trí công trình</Th>
+              <Th>Hợp đồng đã thanh toán</Th>
+              <Th className="text-right">Giá trị hợp đồng</Th>
+              <Th>Thời điểm thanh toán</Th>
+              <Th>Vị trí công trình</Th>
               <Th className="text-right">
                 <span>Thao tác</span>
               </Th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-line/70">
+          <tbody>
             {rows.map((c) => (
               <Tr key={c.contractId} className="hover:bg-surface-2/60 transition-colors">
-                <Td label="Hợp đồng" className="border-r border-line">
+                <Td label="Hợp đồng">
                   <Link className="font-semibold ui-link" to={withId(contractPattern, c.contractId)}>
                     {c.contractNumber}
                   </Link>
                   <p className="tnum text-meta text-fg-2 mt-0.5">Khảo sát {shortCode(c.surveyRequestId)}</p>
                 </Td>
-                <Td
-                  label="Giá trị"
-                  className="border-r border-line tnum lg:text-right font-semibold text-emerald-600 dark:text-emerald-400"
-                >
+                <Td label="Giá trị" className="tnum lg:text-right font-semibold text-fg">
                   {formatMoney(c.totalAmount, 'VND')}
                 </Td>
-                <Td label="Thanh toán" className="border-r border-line tnum text-meta text-fg-2">
+                <Td label="Thanh toán" className="tnum text-meta text-fg-2">
                   {formatMoment(c.paidAt)}
                 </Td>
-                <Td label="Vị trí" className="border-r border-line">
+                <Td label="Vị trí">
                   {c.latitude != null && c.longitude != null ? (
                     <a
                       className="tnum ui-link inline-flex items-center gap-1 font-mono text-meta"
@@ -128,7 +125,7 @@ export function ReadyContractList({
                       target="_blank"
                       rel="noreferrer"
                     >
-                      <Icon name="location_on" className="text-accent text-[16px]" aria-hidden />
+                      <Icon name="location_on" className="text-[16px]" aria-hidden />
                       {c.latitude}, {c.longitude}
                     </a>
                   ) : (
@@ -144,11 +141,6 @@ export function ReadyContractList({
             ))}
           </tbody>
         </Table>
-        <div className="border-t border-line bg-surface-2/40 px-4 py-2.5 text-meta text-fg-3 flex items-center justify-between">
-          <span>
-            Có <strong>{rows.length}</strong> hợp đồng sẵn sàng khởi tạo dự án thi công
-          </span>
-        </div>
       </div>
       {picked && (
         <CreateProjectDialog

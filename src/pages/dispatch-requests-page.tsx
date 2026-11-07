@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
@@ -22,44 +21,6 @@ const EMPTY: Record<Tab, { title: string; description?: string }> = {
   },
   waiting: { title: 'Không có đề xuất nào chờ khách trả lời' },
   closed: { title: 'Chưa có yêu cầu nào đã xong' },
-}
-
-const DISPATCH_BADGE_STYLE: Record<string, { bg: string; text: string; border: string; dot: string; icon: string }> = {
-  OPEN: {
-    bg: 'bg-rose-500/15',
-    text: 'text-rose-600 dark:text-rose-400',
-    border: 'border-rose-500/30',
-    dot: 'bg-rose-500',
-    icon: 'error_outline',
-  },
-  PROPOSAL_PENDING: {
-    bg: 'bg-blue-500/15',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-500/30',
-    dot: 'bg-blue-500',
-    icon: 'hourglass_top',
-  },
-  ASSIGNED: {
-    bg: 'bg-emerald-500/15',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-500/30',
-    dot: 'bg-emerald-500',
-    icon: 'check_circle',
-  },
-  UNSERVICEABLE: {
-    bg: 'bg-slate-500/15',
-    text: 'text-slate-600 dark:text-slate-300',
-    border: 'border-slate-500/30',
-    dot: 'bg-slate-400',
-    icon: 'block',
-  },
-  CLOSED: {
-    bg: 'bg-slate-500/15',
-    text: 'text-slate-600 dark:text-slate-300',
-    border: 'border-slate-500/30',
-    dot: 'bg-slate-400',
-    icon: 'done_all',
-  },
 }
 
 function situation(r: DispatchQueueItemView) {
@@ -109,91 +70,46 @@ function DispatchRequestsPage({ detailPattern }: { detailPattern: string }) {
         ]}
       />
 
-      {/* Thanh chú thích điều phối & tổng hợp */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-1 px-4 py-2.5 text-meta shadow-sm">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="font-medium text-fg-2">Chú thích:</span>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-rose-500" />
-            <span className="text-fg-2">Cần xếp KTV</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
-            <span className="text-fg-2">Chờ khách duyệt</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-fg-2">Đã hoàn tất</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 text-fg-3">
-          {overdue > 0 && (
-            <span className="text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
-              <Icon name="warning" className="text-[16px]" aria-hidden />
-              {overdue} quá hạn SLA
-            </span>
-          )}
-          <span>
-            Hiển thị: <strong className="text-fg-1">{groups[tab].length}</strong> yêu cầu
-          </span>
-        </div>
-      </div>
-
       <QueryBoundary query={query}>
         {() =>
           groups[tab].length === 0 ? (
             <EmptyState {...EMPTY[tab]} />
           ) : (
-            <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+            <div>
               <Table stack>
                 <thead>
                   <tr>
-                    <Th className="border-r border-line">Công trình & Địa bàn</Th>
-                    <Th className="border-r border-line">Khách hàng</Th>
-                    <Th className="border-r border-line">Lý do điều phối</Th>
-                    <Th className="border-r border-line">Tình hình / SLA</Th>
+                    <Th>Công trình & Địa bàn</Th>
+                    <Th>Khách hàng</Th>
+                    <Th>Lý do điều phối</Th>
+                    <Th>Tình hình / SLA</Th>
                     <Th className="text-right">
-                      <span>Thao tác</span>
+                      <span className="sr-only">Thao tác</span>
                     </Th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-line/70">
+                <tbody>
                   {groups[tab].map((r) => {
                     const status = dispatchStatusMeta(r.status)
                     const text = situation(r)
-                    const style = DISPATCH_BADGE_STYLE[r.status] ?? {
-                      bg: 'bg-surface-2',
-                      text: 'text-fg-2',
-                      border: 'border-line',
-                      dot: 'bg-fg-3',
-                      icon: 'info',
-                    }
                     return (
-                      <Tr key={r.dispatchRequestId} className="hover:bg-surface-2/60 transition-colors">
-                        <Td label="Công trình" className="border-r border-line">
+                      <Tr key={r.dispatchRequestId}>
+                        <Td label="Công trình">
                           <h2 className="font-semibold text-fg">{r.propertyName || 'Công trình chưa đặt tên'}</h2>
-                          <p className="mt-0.5 text-meta text-fg-2 flex items-center gap-1">
-                            <Icon name="location_on" className="text-accent text-[16px]" aria-hidden />
+                          <p className="mt-0.5 text-meta text-fg-2">
                             {[r.zone?.name ?? 'Chưa thuộc khu vực nào', r.province].filter(Boolean).join(', ')}
                           </p>
                         </Td>
-                        <Td label="Khách hàng" className="border-r border-line font-medium text-fg">
+                        <Td label="Khách hàng" className="font-medium text-fg">
                           {r.customerName || '-'}
                         </Td>
-                        <Td label="Lý do" className="border-r border-line text-meta text-fg-2">
+                        <Td label="Lý do" className="text-meta text-fg-2">
                           {dispatchReasonLabel(r.reason)}
                         </Td>
-                        <Td label="Tình hình" className="border-r border-line">
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-meta font-medium border ${style.bg} ${style.text} ${style.border}`}
-                          >
-                            <Icon name={style.icon} className="text-[16px]" aria-hidden />
-                            <span>{status.label}</span>
-                          </span>
+                        <Td label="Tình hình">
+                          <Badge tone={status.tone}>{status.label}</Badge>
                           {text && (
-                            <p
-                              className={`mt-1 text-meta ${r.sla.overdue ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-fg-2'}`}
-                            >
+                            <p className={`mt-1 text-meta ${r.sla.overdue ? 'font-medium text-danger' : 'text-fg-2'}`}>
                               {text}
                             </p>
                           )}
@@ -213,10 +129,6 @@ function DispatchRequestsPage({ detailPattern }: { detailPattern: string }) {
                   })}
                 </tbody>
               </Table>
-              <div className="border-t border-line bg-surface-2/40 px-4 py-2.5 text-meta text-fg-3 flex items-center justify-between">
-                <span>Danh sách hàng chờ điều phối SmartSolar</span>
-                <span className="tnum">Tổng {groups[tab].length} yêu cầu</span>
-              </div>
             </div>
           )
         }

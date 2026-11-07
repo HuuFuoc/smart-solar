@@ -22,15 +22,6 @@ import { ROUTES } from '@/routes/paths'
 
 type Tab = 'du-an' | 'hop-dong'
 
-const STATUS_LEGEND = [
-  { label: 'Chờ xếp KTV', dot: 'bg-rose-500' },
-  { label: 'Chờ KTV nhận', dot: 'bg-amber-500' },
-  { label: 'Đã lên lịch', dot: 'bg-teal-500' },
-  { label: 'Đang lắp đặt', dot: 'bg-blue-500' },
-  { label: 'Chờ nghiệm thu', dot: 'bg-purple-500' },
-  { label: 'Hoàn thành', dot: 'bg-emerald-500' },
-]
-
 function InstallationProjectsPage({
   detailPattern,
   contractPattern,
@@ -125,22 +116,6 @@ function InstallationProjectsPage({
                 </Button>
               )}
             </FilterBar>
-          </div>
-
-          {/* Thanh chú thích tiến trình */}
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-1 px-4 py-2 text-meta shadow-sm">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-medium text-fg-2">Tiến trình thi công:</span>
-              {STATUS_LEGEND.map((item) => (
-                <div key={item.label} className="flex items-center gap-1.5">
-                  <span className={`inline-block h-2 w-2 rounded-full ${item.dot}`} />
-                  <span className="text-fg-2">{item.label}</span>
-                </div>
-              ))}
-            </div>
-            <span className="text-fg-3">
-              Tổng số dự án: <strong className="text-fg-1">{projects.data?.length ?? 0}</strong>
-            </span>
           </div>
 
           <QueryBoundary query={projects}>

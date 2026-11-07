@@ -74,7 +74,7 @@ export function WorkingScheduleEditor({ technicianUserId }: { technicianUserId: 
           {schedule.usesDefault ? (
             <DefaultScheduleTimetable schedule={schedule} />
           ) : (
-            <div className="rounded-container border border-line bg-surface-1 p-4 shadow-sm">
+            <div className="rounded-container border border-line bg-canvas p-4">
               <div className="flex items-start gap-3">
                 <Icon name="info" className="mt-0.5 shrink-0 text-[20px] text-accent" />
                 <div>

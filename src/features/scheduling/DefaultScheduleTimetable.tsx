@@ -9,13 +9,13 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
   const activeDaysCount = WEEK_DAYS.filter((d) => week[d.value].length > 0).length
 
   return (
-    <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+    <div className="overflow-hidden rounded-container border border-line bg-canvas">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/40 px-4 py-3">
         <div>
           <h3 className="font-semibold text-fg">Thời khóa biểu giờ chuẩn của hệ thống</h3>
           <p className="text-meta text-fg-2">Lịch làm việc mặc định được áp dụng cho toàn bộ đội ngũ kỹ thuật viên.</p>
         </div>
-        <span className="rounded-full border border-line bg-surface-1 px-3 py-1 text-meta font-semibold text-fg">
+        <span className="rounded-full border border-line bg-canvas px-3 py-1 text-meta font-semibold text-fg">
           Tổng thời lượng: <strong className="text-accent">{totalWeekHours} giờ</strong> / tuần
         </span>
       </div>
@@ -49,7 +49,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
                         {periods.map((p, i) => (
                           <span
                             key={i}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-3 py-1 font-mono text-meta font-medium text-fg shadow-2xs"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-3 py-1 font-mono text-meta font-medium text-fg"
                           >
                             <Icon name="schedule" className="text-accent text-[15px]" />
                             <span>
@@ -71,13 +71,11 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
                   </td>
                   <td className="w-36 px-4 py-3 text-center whitespace-nowrap">
                     {isWorking ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-meta font-medium text-emerald-600 dark:text-emerald-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="inline-flex items-center gap-1 rounded-full border border-ok/30 bg-ok-soft px-2.5 py-0.5 text-meta font-medium text-ok">
                         Làm việc
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-slate-500/30 bg-slate-500/15 px-2.5 py-0.5 text-meta font-medium text-slate-500 dark:text-slate-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                      <span className="inline-flex items-center gap-1 rounded-full border border-line bg-surface-3 px-2.5 py-0.5 text-meta font-medium text-fg-2">
                         Nghỉ
                       </span>
                     )}
@@ -91,7 +89,6 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line bg-surface-2/30 px-4 py-2.5 text-meta text-fg-3">
         <span>Tiêu chuẩn: {activeDaysCount} ngày làm việc mỗi tuần</span>
-        <span className="tnum">SmartSolar System Timetable</span>
       </div>
     </div>
   )
