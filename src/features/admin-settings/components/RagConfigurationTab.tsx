@@ -211,7 +211,7 @@ function RagConfigForm({ initialValues, configState, modelCatalog, onActivated }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-surface-1 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-canvas p-4">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-body font-semibold text-fg-1">Cấu hình chatbot</h3>
           <Badge tone="ok">

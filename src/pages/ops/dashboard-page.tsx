@@ -12,11 +12,7 @@ import { useMyTasksQuery, useOpenTasksQuery } from '@/hooks/useSalesAfterSales'
 import { getSurveyRequest } from '@/services/surveyRequestService'
 import { errorMessage } from '@/services/api/errors'
 import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
-import {
-  isCompletedStatus,
-  isPendingStatus,
-  isScheduledStatus,
-} from '@/features/pre-surveys/preSurveyDisplay'
+import { isCompletedStatus, isPendingStatus, isScheduledStatus } from '@/features/pre-surveys/preSurveyDisplay'
 
 import { SalesDashboardHeader } from '@/features/sales-dashboard/components/SalesDashboardHeader'
 import { SalesDashboardStats } from '@/features/sales-dashboard/components/SalesDashboardStats'

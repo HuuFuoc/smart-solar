@@ -14,7 +14,8 @@ export function ProductCard({ product }: { product: ProductResponse }) {
   return (
     <Link
       to={withId(ROUTES.product, product.id ?? '')}
-      className="group flex h-full flex-col overflow-hidden rounded-container border border-line bg-canvas transition-colors hover:border-line-2"
+      // Rê chuột: thẻ nâng 2px và viền đậm lên (phản hồi thao tác, không bóng); giảm chuyển động thì đứng yên
+      className="group flex h-full flex-col overflow-hidden rounded-container border border-line bg-canvas transition-[border-color,translate] duration-200 hover:-translate-y-0.5 hover:border-line-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
       <div className="aspect-[4/3] overflow-hidden bg-surface-2">
         {image ? (

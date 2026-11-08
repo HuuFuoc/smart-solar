@@ -1,3 +1,4 @@
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '@/context/AuthProvider'
@@ -25,9 +26,11 @@ export function HeroSection() {
         <p className="mx-auto mt-4 max-w-xl ld-lede text-balance text-fg-2 ld-rise ld-delay-1 lg:mt-5">{hero.lede}</p>
         <div className="mt-8 flex flex-col gap-3 ld-rise ld-delay-2 sm:flex-row sm:justify-center">
           <Link to={surveyPath(user)} className={ctaClass()}>
+            <Icon name="assignment" className="text-[20px]" />
             {hero.cta}
           </Link>
           <a href={`#${solution.id}`} className={secondaryCtaClass()}>
+            <Icon name="arrow_downward" className="text-[20px]" />
             {hero.secondary}
           </a>
         </div>

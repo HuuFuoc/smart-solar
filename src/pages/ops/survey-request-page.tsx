@@ -10,12 +10,12 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
-import { Stat, StatRow } from '@/components/common/ui/stat'
 import { EmptyState } from '@/components/common/ui/states'
 import {
   addressMapUrl,
   directionLabel,
   formatAddress,
+  formatAreaPair,
   formatDateTime,
   isClosedRequest,
   isOverdue,
@@ -308,7 +308,8 @@ export function OpsSurveyRequestPage() {
               actions={
                 <>
                   {r.customerPhone && (
-                    <a className={buttonClass('primary')} href={`tel:${r.customerPhone}`}>
+                    // Cùng kiểu nút gọi với trang kỹ thuật viên; nút đặc dành cho việc chính của từng giai đoạn
+                    <a className={buttonClass('soft')} href={`tel:${r.customerPhone}`}>
                       <Icon name="call" className="-ml-0.5 text-[20px]" />
                       Gọi {r.customerPhone}
                     </a>
@@ -355,33 +356,21 @@ export function OpsSurveyRequestPage() {
                 <Panel>
                   <PanelHeader title="Số liệu khách khai" />
                   <PanelBody className="space-y-6">
-                    {/* Dùng lg: vì cx không gộp class, chỉ breakpoint lớn hơn mới đè được md:grid-cols-4 */}
-                    <StatRow className="lg:grid-cols-5">
-                      <Stat
-                        label="Diện tích dùng được"
-                        value={r.usableAreaM2 == null ? '—' : num.format(r.usableAreaM2)}
-                        unit="m²"
-                      />
-                      <Stat
-                        label="Tổng diện tích"
-                        value={r.totalAreaM2 == null ? '—' : num.format(r.totalAreaM2)}
-                        unit="m²"
-                      />
-                      <Stat
-                        label="Độ dốc mái"
-                        value={r.tiltDegree == null ? '—' : num.format(r.tiltDegree)}
-                        unit="độ"
-                      />
-                      <Stat
-                        label="Hướng mái"
-                        value={r.azimuthDegree == null ? '—' : num.format(r.azimuthDegree)}
-                        unit={r.azimuthDegree == null ? undefined : `độ, ${directionLabel(r.azimuthDegree)}`}
-                      />
-                      <Stat
-                        label="Vật cản"
-                        value={r.hasObstruction == null ? '—' : r.hasObstruction ? 'Có' : 'Không'}
-                      />
-                    </StatRow>
+                    {/* Số khách tự khai chỉ để đối chiếu: cùng cỡ chữ với biên bản đo thực tế, không to hơn */}
+                    <Facts
+                      items={[
+                        { k: 'Dùng được / tổng', v: formatAreaPair(r.usableAreaM2, r.totalAreaM2) },
+                        { k: 'Độ dốc mái', v: r.tiltDegree == null ? '—' : `${num.format(r.tiltDegree)} độ` },
+                        {
+                          k: 'Hướng mái',
+                          v:
+                            r.azimuthDegree == null
+                              ? '—'
+                              : `${num.format(r.azimuthDegree)} độ, ${directionLabel(r.azimuthDegree)}`,
+                        },
+                        { k: 'Vật cản', v: r.hasObstruction == null ? '—' : r.hasObstruction ? 'Có' : 'Không' },
+                      ]}
+                    />
                     <Facts
                       items={[
                         { k: 'Bề mặt', v: surfaceTypeLabel(r.installationSurfaceType) },

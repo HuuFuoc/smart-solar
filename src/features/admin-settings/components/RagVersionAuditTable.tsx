@@ -17,6 +17,7 @@ export function RagVersionAuditTable() {
 
   const { data, isLoading } = useRagVersionsQuery(page, pageSize)
   const rollback = useRollbackRagMutation()
+  // Khôi phục là chép phiên bản cũ thành phiên bản mới rồi áp dụng; chỉ phiên bản đã từng dùng (SUPERSEDED)
   const [restoring, setRestoring] = useState<RagConfigurationView | null>(null)
   const [restored, setRestored] = useState<RagActivationView | null>(null)
 
@@ -56,42 +57,42 @@ export function RagVersionAuditTable() {
         <button
           type="button"
           onClick={toggleSort}
-          className="flex items-center gap-1.5 rounded-control border border-line bg-surface-1 px-3 py-1.5 text-meta font-medium text-fg-1 transition-colors hover:border-accent"
+          className="flex items-center gap-1.5 rounded-control border border-line bg-canvas px-3 py-1.5 text-meta font-medium text-fg-1 transition-colors hover:border-accent"
         >
           <span>Sắp xếp thời gian:</span>
-          <span className="font-semibold text-accent">
+          <span className="font-semibold text-accent-fg">
             {sortOrder === 'desc' ? 'Mới nhất trước ↓' : 'Cũ nhất trước ↑'}
           </span>
         </button>
         <span className="text-meta text-fg-3">Tổng cộng: {totalItems} phiên bản</span>
       </div>
 
-      <div className="overflow-x-auto rounded-container border border-line bg-surface-1 shadow-sm">
+      <div className="overflow-x-auto rounded-control border border-line bg-canvas">
         <table className="w-full text-left text-body">
           <thead className="border-b border-line bg-canvas text-meta font-medium text-fg-3">
             <tr>
-              <th className="border-r border-line px-4 py-3">Phiên bản</th>
-              <th className="border-r border-line px-4 py-3">Trạng thái</th>
-              <th className="border-r border-line px-4 py-3">Mô hình LLM</th>
-              <th className="border-r border-line px-4 py-3">Chunk / Overlap</th>
-              <th className="border-r border-line px-4 py-3">Top K / Min Score</th>
-              <th className="border-r border-line px-4 py-3">
+              <th className="px-4 py-3">Phiên bản</th>
+              <th className="px-4 py-3">Trạng thái</th>
+              <th className="px-4 py-3">Mô hình LLM</th>
+              <th className="px-4 py-3">Chunk / Overlap</th>
+              <th className="px-4 py-3">Top K / Min Score</th>
+              <th className="px-4 py-3">
                 <button
                   type="button"
                   onClick={toggleSort}
-                  className="inline-flex items-center gap-1 font-semibold text-fg-1 hover:text-accent"
+                  className="inline-flex items-center gap-1 font-semibold text-fg-1 hover:text-accent-fg"
                 >
                   <span>Thời điểm</span>
-                  <span className="text-accent">{sortOrder === 'desc' ? '↓' : '↑'}</span>
+                  <span className="text-accent-fg">{sortOrder === 'desc' ? '↓' : '↑'}</span>
                 </button>
               </th>
-              <th className="border-r border-line px-4 py-3">Ghi chú</th>
-              <th className="px-4 py-3 text-right">
+              <th className="px-4 py-3">Ghi chú</th>
+              <th className="px-4 py-3">
                 <span className="sr-only">Thao tác</span>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-line/70 text-meta">
+          <tbody className="divide-y divide-line text-meta">
             {isLoading ? (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-fg-3">
@@ -106,28 +107,28 @@ export function RagVersionAuditTable() {
               </tr>
             ) : (
               sortedItems.map((v) => (
-                <tr key={v.version} className="hover:bg-surface-2/60 transition-colors">
-                  <td className="border-r border-line px-4 py-3 font-semibold text-fg-1">v{v.version}</td>
-                  <td className="border-r border-line px-4 py-3">
+                <tr key={v.version} className="hover:bg-canvas/50">
+                  <td className="px-4 py-3 font-semibold text-fg-1">v{v.version}</td>
+                  <td className="px-4 py-3">
                     <Badge tone={v.status === 'ACTIVE' ? 'ok' : v.status === 'DRAFT' ? 'warn' : 'neutral'}>
                       {STATUS_LABELS[v.status] ?? v.status}
                     </Badge>
                   </td>
-                  <td className="border-r border-line px-4 py-3 font-mono text-fg-1">{v.generationModel}</td>
-                  <td className="border-r border-line whitespace-nowrap px-4 py-3 text-fg-2">
+                  <td className="px-4 py-3 font-mono text-fg-1">{v.generationModel}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-fg-2">
                     {v.chunkCharacters} / {v.chunkOverlap} ký tự
                   </td>
-                  <td className="border-r border-line whitespace-nowrap px-4 py-3 text-fg-2">
+                  <td className="whitespace-nowrap px-4 py-3 text-fg-2">
                     K={v.topK} | Score ≥ {v.minScore}
                   </td>
-                  <td className="border-r border-line whitespace-nowrap px-4 py-3 text-fg-2">
+                  <td className="whitespace-nowrap px-4 py-3 text-fg-2">
                     {v.activatedAt
                       ? new Date(v.activatedAt).toLocaleString('vi-VN')
                       : v.createdAt
                         ? new Date(v.createdAt).toLocaleString('vi-VN')
-                        : '-'}
+                        : '—'}
                   </td>
-                  <td className="border-r border-line max-w-xs px-4 py-3 text-fg-3">{v.notes || '-'}</td>
+                  <td className="max-w-xs px-4 py-3 text-fg-3">{v.notes || '—'}</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     {v.status === 'SUPERSEDED' && (
                       <Button
@@ -175,7 +176,7 @@ export function RagVersionAuditTable() {
         </p>
         <DialogFooter>
           <Button icon="close" variant="secondary" disabled={rollback.isPending} onClick={() => setRestoring(null)}>
-            Hủy
+            Huỷ
           </Button>
           <Button icon="history" variant="primary" disabled={rollback.isPending} onClick={() => void confirmRestore()}>
             {rollback.isPending ? 'Đang khôi phục…' : 'Khôi phục'}

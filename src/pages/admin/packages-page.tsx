@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { SERVICE_PACKAGE_KINDS } from '@/common/afterSales'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
@@ -91,7 +90,7 @@ export function AdminPackagesPage() {
   const stoppingBusy = Boolean(stopping && pendingIds.has(stopping.packageId))
 
   return (
-    <div className="space-y-4">
+    <>
       <PageHeader
         title="Gói dịch vụ"
         description={
@@ -101,37 +100,12 @@ export function AdminPackagesPage() {
         }
         actions={
           <Button variant="primary" icon="add" onClick={() => setForm({ open: true, pkg: null })}>
-            Thêm gói dịch vụ
+            Thêm gói
           </Button>
         }
       />
 
-      <Segmented label="Loại gói" options={KIND_OPTIONS} value={kind} onChange={setKind} className="sm:w-fit" />
-
-      {/* Chú thích loại gói dịch vụ & Trạng thái */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-2 p-3 sm:px-4 shadow-xs">
-        <div className="flex flex-wrap items-center gap-2 text-meta">
-          <span className="font-semibold text-fg flex items-center gap-1.5 pr-2.5 border-r border-line/70">
-            <Icon name="palette" className="text-primary text-[18px]" />
-            Chú thích gói dịch vụ:
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent-soft text-accent-fg border border-accent/20">
-            <Icon name="shield" className="text-[13px]" />
-            Bảo vệ thiên tai (Hỗ trợ % sự cố)
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-info-soft text-info border border-info/20">
-            <Icon name="build" className="text-[13px]" />
-            Bảo trì định kỳ (Theo tháng)
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-ok-soft text-ok border border-ok/20">
-            <span className="size-1.5 rounded-full bg-ok" />
-            Đang bán
-          </span>
-        </div>
-        <div className="text-meta text-fg-2">
-          Đang bán: <strong className="text-ok">{selling}</strong> / {items.length} gói
-        </div>
-      </div>
+      <Segmented label="Loại gói" options={KIND_OPTIONS} value={kind} onChange={setKind} className="mb-6 sm:w-fit" />
 
       <section aria-label={`Gói ${packageKindLabel(kind).toLowerCase()}`} aria-busy={query.isFetching}>
         {query.isPending ? (
@@ -148,16 +122,21 @@ export function AdminPackagesPage() {
         ) : items.length === 0 ? (
           <EmptyState
             title={`Chưa có gói ${packageKindLabel(kind).toLowerCase()} nào`}
-            description={'Bấm "Thêm gói dịch vụ" để tạo gói đầu tiên.'}
+            description={'Bấm "Thêm gói" để tạo gói đầu tiên.'}
           />
         ) : (
-          <PackageTable
-            items={items}
-            busyIds={pendingIds}
-            onEdit={(pkg) => setForm({ open: true, pkg })}
-            onStop={setStopping}
-            onReopen={(pkg) => void reopen(pkg)}
-          />
+          <>
+            <PackageTable
+              items={items}
+              busyIds={pendingIds}
+              onEdit={(pkg) => setForm({ open: true, pkg })}
+              onStop={setStopping}
+              onReopen={(pkg) => void reopen(pkg)}
+            />
+            <p className="tnum mt-6 text-meta text-fg-2">
+              {items.length} gói, {selling} gói đang bán
+            </p>
+          </>
         )}
       </section>
 
@@ -167,7 +146,6 @@ export function AdminPackagesPage() {
         kind={kind}
         onOpenChange={(open) => setForm((prev) => ({ ...prev, open }))}
       />
-
       <ModalDialog
         open={Boolean(stopping)}
         onOpenChange={(open) => !open && setStopping(null)}
@@ -193,8 +171,6 @@ export function AdminPackagesPage() {
           </Button>
         </DialogFooter>
       </ModalDialog>
-    </div>
+    </>
   )
 }
-
-export default AdminPackagesPage

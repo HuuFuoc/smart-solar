@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { ButtonLink } from '@/components/common/ui/button'
 import { Pagination } from '@/components/common/ui/pagination'
+import { useAuth } from '@/context/AuthProvider'
+import { surveyPath } from '@/features/landing/survey-link'
 import { SearchInput, Select } from '@/components/common/ui/field'
 import { PUBLIC_WIDE_CONTAINER } from '@/features/landing/classes'
 import { CatalogError } from '@/features/products/CatalogError'
@@ -15,6 +18,7 @@ import { cx } from '@/utils/cx'
 const PAGE_SIZE = 12
 
 export function ProductCatalogPage() {
+  const { user } = useAuth()
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState(PRODUCT_SORT_OPTIONS[0]!.value)
   const [page, setPage] = useState(1)
@@ -73,7 +77,19 @@ export function ProductCatalogPage() {
         ) : products.length === 0 ? (
           <div className="rounded-container border border-line px-6 py-10 text-center">
             <p className="ld-body font-semibold text-fg">{debouncedSearch ? 'Không tìm thấy sản phẩm phù hợp' : 'Chưa có sản phẩm nào'}</p>
-            {debouncedSearch && <p className="mt-2 ld-body text-fg-2">Thử từ khoá khác hoặc xoá ô tìm kiếm.</p>}
+            {debouncedSearch ? (
+              <p className="mt-2 ld-body text-fg-2">Thử từ khoá khác hoặc xoá ô tìm kiếm.</p>
+            ) : (
+              // Danh mục trống vẫn có lối đi tiếp: thiết bị được tư vấn khi khảo sát
+              <>
+                <p className="mx-auto mt-2 max-w-[46ch] ld-body text-fg-2">
+                  Kỹ thuật viên tư vấn thiết bị phù hợp khi đến khảo sát mái nhà của bạn.
+                </p>
+                <ButtonLink to={surveyPath(user)} variant="primary" icon="assignment" className="mt-4">
+                  Đăng ký khảo sát
+                </ButtonLink>
+              </>
+            )}
           </div>
         ) : (
           <ul className={cx('grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5', query.isFetching && 'opacity-70')}>

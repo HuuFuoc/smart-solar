@@ -21,7 +21,7 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-control border border-line bg-surface-1 p-3.5">
+        <div className="rounded-control border border-line bg-canvas p-3.5">
           <label htmlFor="rag-model-select" className="text-body font-medium text-fg-1">
             Mô hình sinh nội dung (LLM)
           </label>
@@ -40,7 +40,7 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           </select>
         </div>
 
-        <div className="rounded-control border border-line bg-surface-1 p-3.5">
+        <div className="rounded-control border border-line bg-canvas p-3.5">
           <label htmlFor="rag-prompt-select" className="text-body font-medium text-fg-1">
             Phiên bản Prompt hệ thống
           </label>
@@ -161,7 +161,7 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
         />
       </div>
 
-      <div className="rounded-control border border-line bg-surface-1 p-3.5">
+      <div className="rounded-control border border-line bg-canvas p-3.5">
         <label htmlFor="rag-notes-input" className="text-body font-medium text-fg-1">
           Ghi chú bản nháp (Notes)
         </label>

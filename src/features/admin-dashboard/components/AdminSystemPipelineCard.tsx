@@ -22,7 +22,7 @@ export function AdminSystemPipelineCard({
 }: AdminSystemPipelineCardProps) {
   if (isLoading) {
     return (
-      <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm space-y-4">
+      <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <Skeleton className="h-5 w-48" />
           <Skeleton className="h-5 w-24" />
@@ -59,69 +59,46 @@ export function AdminSystemPipelineCard({
   const resolutionRate = Math.round((completedServices / totalServices) * 100)
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm space-y-4">
+    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 space-y-4">
       {/* Header với đường ngăn cách */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
         <div>
-          <h3 className="text-body font-semibold text-fg flex items-center gap-2">
-            <Icon name="query_stats" className="text-primary text-[20px]" />
-            Giám sát vận hành & Tiến độ thi công toàn hệ thống
-          </h3>
-          <p className="text-meta text-fg-2 mt-0.5">
-            Tổng hợp dữ liệu theo thời gian thực từ các module thi công, dịch vụ và danh mục
-          </p>
+          <h2 className="text-title font-semibold">Tiến độ thi công</h2>
         </div>
-        <ButtonLink to={ROUTES.admin.installations} variant="ghost" size="sm" className="text-primary gap-1">
+        <ButtonLink to={ROUTES.admin.installations} variant="ghost" size="sm" className="text-accent-fg gap-1">
+          <Icon name="list" className="text-[16px]" />
           <span>Xem chi tiết thi công</span>
-          <Icon name="arrow_forward" className="text-[16px]" />
         </ButtonLink>
       </div>
 
       {/* Bảng con 1: Khối tiến trình vòng đời dự án lắp đặt có viền riêng biệt */}
-      <div className="rounded-control border border-line bg-surface-1 p-3.5 sm:p-4 space-y-3 shadow-xs">
+      <div className="rounded-control border border-line bg-canvas p-3.5 sm:p-4 space-y-3">
         <div className="flex items-center justify-between text-meta">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-fg">Tiến trình vòng đời dự án</span>
-            <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[11px] font-semibold text-fg-2">
-              {projects.length} công trình
-            </span>
+            <span className="tnum text-meta text-fg-2">{projects.length} công trình</span>
           </div>
-          <span className="text-fg-muted text-[12px]">Phân bổ theo giai đoạn</span>
+          <span className="text-fg-muted text-meta">Phân bổ theo giai đoạn</span>
         </div>
 
         {/* Thanh bar phân đoạn */}
         <div className="flex h-3 w-full overflow-hidden rounded-full bg-surface-3 border border-line/40">
           {projects.length === 0 ? (
-            <div className="w-full bg-surface-3 text-center text-[10px] text-fg-muted leading-3">Chưa có dự án</div>
+            // Thanh rỗng; "0 công trình" đã ghi ở tiêu đề dòng nên không nhét chữ vào thanh 12px
+            <div className="w-full bg-surface-3" />
           ) : (
             <>
               {pendingPct > 0 && (
-                <div
-                  style={{ width: `${pendingPct}%` }}
-                  className="bg-warn transition-all duration-300"
-                  title={`Chờ gán & xác nhận: ${pendingAssign} (${pendingPct}%)`}
-                />
+                <div style={{ width: `${pendingPct}%` }} className="bg-warn transition-all duration-300" />
               )}
               {inProgressPct > 0 && (
-                <div
-                  style={{ width: `${inProgressPct}%` }}
-                  className="bg-accent transition-all duration-300"
-                  title={`Đang thi công: ${inProgress} (${inProgressPct}%)`}
-                />
+                <div style={{ width: `${inProgressPct}%` }} className="bg-accent transition-all duration-300" />
               )}
               {acceptancePct > 0 && (
-                <div
-                  style={{ width: `${acceptancePct}%` }}
-                  className="bg-info transition-all duration-300"
-                  title={`Chờ nghiệm thu / Rework: ${awaitingAcceptance} (${acceptancePct}%)`}
-                />
+                <div style={{ width: `${acceptancePct}%` }} className="bg-info transition-all duration-300" />
               )}
               {completedPct > 0 && (
-                <div
-                  style={{ width: `${completedPct}%` }}
-                  className="bg-ok transition-all duration-300"
-                  title={`Hoàn thành: ${completed} (${completedPct}%)`}
-                />
+                <div style={{ width: `${completedPct}%` }} className="bg-ok transition-all duration-300" />
               )}
             </>
           )}
@@ -131,34 +108,30 @@ export function AdminSystemPipelineCard({
         <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-line/60 text-meta sm:grid-cols-4">
           <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="size-2 rounded-full bg-warn shrink-0" />
-              <span className="text-fg-2 text-[12px] truncate">Chờ gán KTV</span>
+              <span className="text-fg-2 text-meta truncate">Chờ gán kỹ thuật viên</span>
             </div>
-            <span className="font-semibold text-fg text-xs pl-1">{pendingAssign}</span>
+            <span className="font-semibold text-fg text-meta pl-1">{pendingAssign}</span>
           </div>
 
           <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="size-2 rounded-full bg-accent shrink-0" />
-              <span className="text-fg-2 text-[12px] truncate">Đang thi công</span>
+              <span className="text-fg-2 text-meta truncate">Đang thi công</span>
             </div>
-            <span className="font-semibold text-fg text-xs pl-1">{inProgress}</span>
+            <span className="font-semibold text-fg text-meta pl-1">{inProgress}</span>
           </div>
 
           <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="size-2 rounded-full bg-info shrink-0" />
-              <span className="text-fg-2 text-[12px] truncate">Nghiệm thu</span>
+              <span className="text-fg-2 text-meta truncate">Nghiệm thu</span>
             </div>
-            <span className="font-semibold text-fg text-xs pl-1">{awaitingAcceptance}</span>
+            <span className="font-semibold text-fg text-meta pl-1">{awaitingAcceptance}</span>
           </div>
 
           <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="size-2 rounded-full bg-ok shrink-0" />
-              <span className="text-fg-2 text-[12px] truncate">Hoàn thành</span>
+              <span className="text-fg-2 text-meta truncate">Hoàn thành</span>
             </div>
-            <span className="font-semibold text-fg text-xs pl-1">{completed}</span>
+            <span className="font-semibold text-fg text-meta pl-1">{completed}</span>
           </div>
         </div>
       </div>
@@ -166,10 +139,10 @@ export function AdminSystemPipelineCard({
       {/* Bảng con 2: Grid chỉ số nghiệp vụ sau bán & kho thiết bị */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Box Sau bán & Sự cố */}
-        <div className="p-3.5 rounded-control border border-line bg-surface-1 flex items-center justify-between shadow-xs">
+        <div className="p-3.5 rounded-control border border-line bg-canvas flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-meta font-medium text-fg-2 flex items-center gap-1.5">
-              <Icon name="handyman" className="text-primary text-[16px]" />
+              <Icon name="handyman" className="text-accent-fg text-[16px]" />
               Xử lý sự cố & Bảo hành
             </span>
             <div className="flex items-baseline gap-2">
@@ -178,17 +151,15 @@ export function AdminSystemPipelineCard({
             </div>
           </div>
           <div className="text-right">
-            <span className="text-[12px] font-semibold text-ok bg-ok-soft px-2.5 py-1 rounded-full border border-ok/20">
-              {resolutionRate}% giải quyết
-            </span>
+            <span className="tnum text-meta text-fg-2">{resolutionRate}% giải quyết</span>
           </div>
         </div>
 
         {/* Box Danh mục & Địa bàn */}
-        <div className="p-3.5 rounded-control border border-line bg-surface-1 flex items-center justify-between shadow-xs">
+        <div className="p-3.5 rounded-control border border-line bg-canvas flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-meta font-medium text-fg-2 flex items-center gap-1.5">
-              <Icon name="inventory_2" className="text-primary text-[16px]" />
+              <Icon name="inventory_2" className="text-accent-fg text-[16px]" />
               Danh mục thiết bị & Phủ sóng
             </span>
             <div className="flex items-baseline gap-2">
@@ -197,9 +168,7 @@ export function AdminSystemPipelineCard({
             </div>
           </div>
           <div className="text-right">
-            <span className="text-[12px] font-semibold text-fg bg-surface-3 px-2.5 py-1 rounded-full border border-line">
-              {totalZones} khu vực
-            </span>
+            <span className="tnum text-meta text-fg-2">{totalZones} khu vực</span>
           </div>
         </div>
       </div>

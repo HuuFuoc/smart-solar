@@ -1,3 +1,4 @@
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Link } from 'react-router'
 import { useAuth } from '@/context/AuthProvider'
 import { ROUTES } from '@/routes/paths'
@@ -14,7 +15,7 @@ export function CtaSection() {
     <section id={cta.id} aria-labelledby="cta-title" className="mt-24 bg-accent py-16 text-on-accent lg:mt-40 lg:py-24">
       <div className={cx(LANDING_CONTAINER, PAGE_GRID, 'gap-y-8')}>
         <Reveal className="col-span-4 lg:col-span-7">
-          <h2 id="cta-title" className="ld-h1">
+          <h2 id="cta-title" className="ld-h2">
             {cta.title}
           </h2>
           <p className="mt-4 max-w-xl ld-lede opacity-90">{cta.lede}</p>
@@ -25,8 +26,9 @@ export function CtaSection() {
         >
           <Link
             to={surveyPath(user)}
-            className="press inline-flex h-12 items-center justify-center rounded-control bg-on-accent px-6 ld-action whitespace-nowrap text-accent hover:bg-on-accent/90"
+            className="press inline-flex h-12 items-center justify-center gap-2 rounded-control bg-on-accent px-6 ld-action whitespace-nowrap text-accent hover:bg-on-accent/90"
           >
+            <Icon name="assignment" className="text-[20px]" />
             {cta.button}
           </Link>
           {!user && (
