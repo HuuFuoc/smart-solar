@@ -542,6 +542,10 @@ nghỉ cố định. Kỹ thuật viên nhận lịch xong thì khảo sát tạ
     (`DispatchRequestForm`), rồi đồng ý hoặc xin giờ khác cho đề xuất của nhân viên (`CustomerDispatchPanel`). Quản lý / quản
     trị xử lý ở menu "Điều phối" (`/manage|admin/dispatch`): phân công thẳng hoặc gửi đề xuất, chọn người ngoài khu vực phải
     ghi lý do. Hàng chờ tải theo từng trạng thái vì BE xếp hạn phản hồi sớm nhất trước và giữ cả yêu cầu đã xong.
+    Khối "Người phụ trách yêu cầu" (`SurveyStaffPanel`) của trang điều phối còn có "Đổi giờ khảo sát" (PUT
+    /admin/survey-requests/{id}/reschedule, quản lý + quản trị, không cần là kinh doanh phụ trách, cứu được lịch đã qua giờ
+    khi có lý do). Hộp đổi giờ (`RescheduleDialog.tsx`) dùng chung với "Đổi giờ" của kinh doanh, test ở
+    `tests/e2e/survey-reschedule.e2e.mjs`.
 - Kỹ thuật viên `/tech/jobs`: tab "Chờ nhận" (GET /technicians/me/open-appointments, lịch trong khu vực của mình, chưa có địa
   chỉ cụ thể / số khách) với nút "Nhận việc" (POST .../accept kèm `expectedRevision`; người khác nhận trước thì 409
   APPOINTMENT_ALREADY_TAKEN), tab "Đã nhận" và "Đã qua". Chi tiết `/tech/jobs/:id`: công trình, khách, số liệu khai, mô phỏng

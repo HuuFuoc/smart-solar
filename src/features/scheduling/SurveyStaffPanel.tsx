@@ -6,21 +6,28 @@ import { Field, Select, Textarea } from '@/components/common/ui/field'
 import { KeyValueList, Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
+import { RescheduleForm } from '@/features/scheduling/RescheduleDialog'
 import { TechnicianChoiceList } from '@/features/scheduling/TechnicianChoiceList'
 import {
   appointmentStatusMeta,
   formatAppointment,
+  formatTime,
   ineligibleLabel,
+  isAppointmentOverdue,
   schedulingErrorMessage,
 } from '@/features/scheduling/schedulingDisplay'
-import { useOverrideSurveyTechnicianMutation, useSetSurveySalesOwnerMutation } from '@/hooks/useAdminSurvey'
+import {
+  useOverrideSurveyTechnicianMutation,
+  useSetSurveySalesOwnerMutation,
+  useStaffRescheduleMutation,
+} from '@/hooks/useAdminSurvey'
 import { useAdminUsersQuery } from '@/hooks/useAdminUsers'
 import { useTechnicianAvailabilityQuery } from '@/hooks/useSurveyRequests'
 import { isApiError } from '@/services/api/errors'
 
-// Quản lý / quản trị can thiệp một yêu cầu khảo sát: phân công thẳng kỹ thuật viên cho lịch đang có (bỏ qua kinh doanh phụ
-// trách) và đổi kinh doanh phụ trách. Kỹ thuật viên chọn trong danh sách backend tính được cho đúng giờ hẹn; kinh doanh chọn
-// trong tài khoản kinh doanh đang hoạt động (API tài khoản chỉ cho quản trị, nên quản lý chưa đổi được kinh doanh)
+// Quản lý / quản trị can thiệp một yêu cầu khảo sát: phân công thẳng kỹ thuật viên cho lịch đang có, đổi giờ lịch đó (bỏ
+// qua kinh doanh phụ trách) và đổi kinh doanh phụ trách. Kỹ thuật viên chọn trong danh sách backend tính được cho đúng giờ hẹn;
+// kinh doanh chọn trong tài khoản kinh doanh đang hoạt động (API tài khoản chỉ cho quản trị, nên quản lý chưa đổi được kinh doanh)
 
 const REASON_MAX = 500
 const SALES_USERS = { role: 'SALES', status: 'ACTIVE', pageSize: 100, sort: 'name', direction: 'asc' } as const
@@ -191,6 +198,75 @@ function OverrideDialog({
   )
 }
 
+// Giờ hiện tại lấy từ cùng "lịch đang có" mà backend đổi; lịch đang diễn ra hoặc đã khảo sát thì backend từ chối nên chỉ báo
+function RescheduleSurveyDialog({
+  surveyRequestId,
+  open,
+  onOpenChange,
+}: {
+  surveyRequestId: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const availability = useTechnicianAvailabilityQuery(surveyRequestId, { enabled: open })
+  const reschedule = useStaffRescheduleMutation()
+  const [now] = useState(() => Date.now())
+  const a = availability.data
+  const noBooking = isApiError(availability.error) && availability.error.code === 'SURVEY_BOOKING_NOT_FOUND'
+  const target = a ? { startsAt: a.startsAt, endsAt: a.endsAt, status: a.appointmentStatus } : null
+  const done = target?.status === 'COMPLETED'
+  const running = target && new Date(target.startsAt).getTime() <= now && !isAppointmentOverdue(target, now)
+  const close = () => onOpenChange(false)
+
+  return (
+    <ModalDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      dismissible={!reschedule.isPending}
+      className="max-w-xl"
+      aria-label="Đổi giờ khảo sát"
+    >
+      <DialogTitle>Đổi giờ khảo sát</DialogTitle>
+      {a && target && !done && !running ? (
+        <RescheduleForm
+          key={a.appointmentId}
+          appointment={target}
+          pending={reschedule.isPending}
+          onSubmit={(body) => reschedule.mutateAsync({ surveyRequestId, body })}
+          onClose={close}
+        />
+      ) : (
+        <>
+          <div className="mt-4">
+            {availability.isPending ? (
+              <Skeleton className="h-24" />
+            ) : noBooking ? (
+              <Notice tone="info">Khách chưa đặt giờ khảo sát nên chưa có lịch để đổi.</Notice>
+            ) : availability.isError ? (
+              <ErrorState
+                message={schedulingErrorMessage(availability.error)}
+                onRetry={() => void availability.refetch()}
+              />
+            ) : done ? (
+              <Notice tone="info">Đã khảo sát xong nên không đổi giờ được.</Notice>
+            ) : a ? (
+              <Notice tone="info">
+                Buổi khảo sát đang diễn ra ({formatAppointment(a.startsAt, a.endsAt)}), đổi giờ được sau{' '}
+                {formatTime(a.endsAt)}.
+              </Notice>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button icon="close" variant="secondary" onClick={close}>
+              Đóng
+            </Button>
+          </DialogFooter>
+        </>
+      )}
+    </ModalDialog>
+  )
+}
+
 function SalesOwnerDialog({
   surveyRequestId,
   open,
@@ -290,16 +366,19 @@ export function SurveyStaffPanel({
   surveyRequestId: string
   canChangeSales: boolean
 }) {
-  const [dialog, setDialog] = useState<'technician' | 'sales' | null>(null)
+  const [dialog, setDialog] = useState<'technician' | 'reschedule' | 'sales' | null>(null)
   return (
     <Panel>
       <PanelHeader
         title="Người phụ trách yêu cầu"
-        description="Dùng khi cần giao thẳng lịch khảo sát cho kỹ thuật viên, hoặc đổi nhân viên kinh doanh chăm sóc khách."
+        description="Dùng khi cần giao thẳng hoặc đổi giờ lịch khảo sát, hoặc đổi nhân viên kinh doanh chăm sóc khách."
       />
       <PanelBody className="flex flex-wrap gap-3">
         <Button variant="soft" icon="person_add" onClick={() => setDialog('technician')}>
           Phân công kỹ thuật viên
+        </Button>
+        <Button variant="soft" icon="edit_calendar" onClick={() => setDialog('reschedule')}>
+          Đổi giờ khảo sát
         </Button>
         {canChangeSales && (
           <Button variant="soft" icon="swap_horiz" onClick={() => setDialog('sales')}>
@@ -311,6 +390,12 @@ export function SurveyStaffPanel({
         key={dialog === 'technician' ? 'tech-open' : 'tech'}
         surveyRequestId={surveyRequestId}
         open={dialog === 'technician'}
+        onOpenChange={(open) => !open && setDialog(null)}
+      />
+      <RescheduleSurveyDialog
+        key={dialog === 'reschedule' ? 'reschedule-open' : 'reschedule'}
+        surveyRequestId={surveyRequestId}
+        open={dialog === 'reschedule'}
         onOpenChange={(open) => !open && setDialog(null)}
       />
       {canChangeSales && (

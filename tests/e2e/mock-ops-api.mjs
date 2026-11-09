@@ -462,6 +462,27 @@ export function handleOps(state, method, url, bodyText) {
 
   // Yêu cầu khảo sát và báo giá
   if (method === 'GET' && path === `/survey-requests/${SR}`) return ok(state.survey)
+  // Đổi giờ khảo sát: lịch cũ được thay bằng lịch mới cùng kỹ thuật viên (backend chỉ giữ người cũ khi họ rảnh giờ mới)
+  if (method === 'PUT' && path === `/survey-requests/${SR}/reschedule`) {
+    const old = state.survey.appointment
+    if (!old) return fail(404, 'SURVEY_BOOKING_NOT_FOUND', 'There is no active appointment to reschedule.')
+    const endsAt = new Date(new Date(body.startsAt).getTime() + 90 * 60_000).toISOString()
+    const next = { ...old, appointmentId: `${old.appointmentId}-r`, startsAt: body.startsAt, endsAt, revision: 1 }
+    state.survey = { ...state.survey, appointment: next }
+    return ok({
+      appointmentId: next.appointmentId,
+      previousAppointmentId: old.appointmentId,
+      surveyRequestId: SR,
+      technicianUserId: next.assignedTechnicianUserId,
+      technicianName: next.assignedTechnicianName,
+      startsAt: next.startsAt,
+      endsAt,
+      appointmentStatus: next.status,
+      acceptanceStatus: 'CONFIRMED',
+      surveyRequestStatus: state.survey.status,
+      scheduledAt: next.startsAt,
+    })
+  }
   if (method === 'GET' && path === `/survey-requests/${SR}/onsite-survey`) return ok(onsiteReport())
   if (method === 'GET' && path === `/survey-requests/${SR}/quotations`) return ok(state.quotations)
   if (method === 'GET' && path === '/pre-surveys/ps-1/simulations')

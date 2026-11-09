@@ -343,6 +343,7 @@ export const ENDPOINTS = {
     assignTechnician: (appointmentId: string) =>
       `/admin/survey-appointments/${encode(appointmentId)}/assign-technician`,
     salesOwner: (surveyRequestId: string) => `/admin/survey-requests/${encode(surveyRequestId)}/sales-owner`,
+    reschedule: (surveyRequestId: string) => `/admin/survey-requests/${encode(surveyRequestId)}/reschedule`,
   },
   adminAfterSales: {
     packages: '/admin/after-sales/packages',
