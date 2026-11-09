@@ -1,5 +1,7 @@
+import { useMemo, useState } from 'react'
 import { Badge, type Tone } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
 import {
   formatAreaPair,
@@ -180,54 +182,263 @@ function byNextAction(a: MyRow, b: MyRow) {
   return new Date(b.row.assignedAt ?? 0).getTime() - new Date(a.row.assignedAt ?? 0).getTime()
 }
 
+type GroupKey = 'urgent' | 'unscheduled' | 'waitingTech' | 'scheduled' | 'done'
+
+const GROUP_CONFIGS: {
+  key: GroupKey
+  title: string
+  description: string
+  highlight?: boolean
+}[] = [
+  {
+    key: 'urgent',
+    title: 'Cần xử lý ngay',
+    description: 'Yêu cầu quá giờ chưa khảo sát hoặc cần bạn phân công kỹ thuật viên.',
+    highlight: true,
+  },
+  {
+    key: 'unscheduled',
+    title: 'Khách chưa đặt giờ',
+    description: 'Yêu cầu bạn đã nhận, đang chờ khách hàng chọn khung giờ khảo sát trên cổng.',
+  },
+  {
+    key: 'waitingTech',
+    title: 'Chờ kỹ thuật viên nhận',
+    description: 'Khách hàng đã đặt lịch khảo sát, đang chờ kỹ thuật viên tiếp nhận.',
+  },
+  {
+    key: 'scheduled',
+    title: 'Đã hẹn khảo sát',
+    description: 'Kỹ thuật viên đã nhận lịch, chuẩn bị tiến hành khảo sát công trình.',
+  },
+  {
+    key: 'done',
+    title: 'Đã hoàn thành & Đã đóng',
+    description: 'Các yêu cầu đã hoàn tất khảo sát hoặc đã kết thúc hồ sơ.',
+  },
+]
+
+function getGroupKey(state: RowState): GroupKey {
+  if (state.rank === 0) return 'urgent'
+  if (state.rank === 3) return 'unscheduled'
+  if (state.rank === 2) return 'waitingTech'
+  if (state.rank === 1) return 'scheduled'
+  return 'done'
+}
+
+/** Bảng con hiển thị một nhóm trạng thái với tiêu đề, số lượng và toggle thu gọn */
+function SurveyStatusTable({
+  title,
+  count,
+  description,
+  highlight,
+  items,
+  today,
+}: {
+  title: string
+  count: number
+  description?: string
+  highlight?: boolean
+  items: MyRow[]
+  today: string
+}) {
+  const [open, setOpen] = useState(true)
+
+  return (
+    <section
+      className={cx(
+        'rounded-xl border bg-canvas transition-all shadow-xs overflow-hidden',
+        highlight
+          ? 'border-danger/40 border-l-[4px] border-l-danger'
+          : 'border-line',
+      )}
+    >
+      {/* Tiêu đề bảng trạng thái */}
+      <div
+        className={cx(
+          'flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 sm:px-5 sm:py-3.5',
+          highlight ? 'bg-danger-soft/25' : 'bg-surface-2/40',
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className="group flex items-center gap-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
+          aria-expanded={open}
+        >
+          <h3 className="text-body font-bold text-fg flex items-center gap-2 group-hover:text-accent transition-colors">
+            <span>{title}</span>
+            <span
+              className={cx(
+                'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-2 text-[12px] font-bold',
+                highlight
+                  ? 'bg-danger text-on-danger'
+                  : 'bg-surface-3 text-fg',
+              )}
+            >
+              {count}
+            </span>
+          </h3>
+          <Icon
+            name={open ? 'expand_less' : 'expand_more'}
+            className="text-[20px] text-fg-3 transition-transform group-hover:text-fg"
+          />
+        </button>
+
+        {description && (
+          <p className="text-meta text-fg-3 sm:text-right">
+            {description}
+          </p>
+        )}
+      </div>
+
+      {/* Danh sách các dòng trong bảng */}
+      {open && (
+        <div className="p-3.5 sm:p-5 pt-2 sm:pt-2">
+          <ListHead
+            columns={COLUMNS}
+            labels={['Công trình', 'Khách hàng', 'Bạn nhận', 'Hẹn khảo sát', 'Tình hình', '']}
+          />
+          <ul className="divide-y divide-line">
+            {items.map(({ row: r, state }) => {
+              const technician = r.appointment?.technicianName
+              return (
+                <ListRow key={r.surveyRequestId} className="hover:bg-surface-2/40 transition-colors px-2 rounded-lg">
+                  <ListCells columns={COLUMNS}>
+                    <Property name={r.propertyName} row={r} />
+                    <ListCell label="Tình hình" wide className="lg:order-5">
+                      <Badge tone={state.tone}>{state.label}</Badge>
+                      {state.hint && <p className="mt-0.5 text-meta text-fg-2">{state.hint}</p>}
+                    </ListCell>
+                    <ListCell label="Khách hàng" className="lg:order-2">
+                      {r.customerName || '—'}
+                    </ListCell>
+                    <ListCell label="Bạn nhận" className="lg:order-3">
+                      {r.assignedAt ? <When iso={r.assignedAt} /> : '—'}
+                    </ListCell>
+                    <ListCell label="Hẹn khảo sát" className="lg:order-4">
+                      <span className={cx('block', !appointmentStart(r) && 'text-fg-2')}>
+                        {startsLabel(appointmentStart(r), today) ?? 'Chưa có'}
+                      </span>
+                      {technician && <span className="block text-meta text-fg-2">{technician}</span>}
+                    </ListCell>
+                    <ListCell wide className="lg:order-6 lg:justify-self-end">
+                      <ButtonLink
+                        icon="visibility"
+                        to={withId(ROUTES.ops.survey, r.surveyRequestId)}
+                        size="sm"
+                        variant="info"
+                      >
+                        Mở yêu cầu
+                      </ButtonLink>
+                    </ListCell>
+                  </ListCells>
+                </ListRow>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </section>
+  )
+}
+
 /** `needAssign`: id các yêu cầu có lịch quá hạn cần sales phân công */
 export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[]; needAssign: Set<string> }) {
   const today = todayVn()
-  const items = rows
-    .map((row) => ({ row, state: rowState(row, needAssign.has(row.surveyRequestId)) }))
-    .sort(byNextAction)
+  const [filterKey, setFilterKey] = useState<string>('all')
+
+  const items = useMemo(
+    () =>
+      rows
+        .map((row) => ({ row, state: rowState(row, needAssign.has(row.surveyRequestId)) }))
+        .sort(byNextAction),
+    [rows, needAssign],
+  )
+
+  const activeGroups = useMemo(() => {
+    const map: Record<GroupKey, MyRow[]> = {
+      urgent: [],
+      unscheduled: [],
+      waitingTech: [],
+      scheduled: [],
+      done: [],
+    }
+    for (const item of items) {
+      const key = getGroupKey(item.state)
+      map[key].push(item)
+    }
+    return GROUP_CONFIGS.map((config) => ({
+      ...config,
+      items: map[config.key],
+    })).filter((group) => group.items.length > 0)
+  }, [items])
+
+  const visibleGroups =
+    filterKey === 'all' ? activeGroups : activeGroups.filter((g) => g.key === filterKey)
+
   return (
-    <>
-      <ListHead columns={COLUMNS} labels={['Công trình', 'Khách hàng', 'Bạn nhận', 'Hẹn khảo sát', 'Tình hình', '']} />
-      <ul className="divide-y divide-line">
-        {items.map(({ row: r, state }) => {
-          const technician = r.appointment?.technicianName
-          return (
-            <ListRow key={r.surveyRequestId}>
-              <ListCells columns={COLUMNS}>
-                <Property name={r.propertyName} row={r} />
-                {/* Điện thoại theo thứ tự DOM: tình hình (việc phải làm) ngay dưới tên công trình; từ lg về cột 5 */}
-                <ListCell label="Tình hình" wide className="lg:order-5">
-                  <Badge tone={state.tone}>{state.label}</Badge>
-                  {state.hint && <p className="mt-0.5 text-meta text-fg-2">{state.hint}</p>}
-                </ListCell>
-                <ListCell label="Khách hàng" className="lg:order-2">
-                  {r.customerName || '—'}
-                </ListCell>
-                <ListCell label="Bạn nhận" className="lg:order-3">
-                  {r.assignedAt ? <When iso={r.assignedAt} /> : '—'}
-                </ListCell>
-                <ListCell label="Hẹn khảo sát" className="lg:order-4">
-                  <span className={cx('block', !appointmentStart(r) && 'text-fg-2')}>
-                    {startsLabel(appointmentStart(r), today) ?? 'Chưa có'}
-                  </span>
-                  {technician && <span className="block text-meta text-fg-2">{technician}</span>}
-                </ListCell>
-                <ListCell wide className="lg:order-6 lg:justify-self-end">
-                  <ButtonLink
-                    icon="visibility"
-                    to={withId(ROUTES.ops.survey, r.surveyRequestId)}
-                    size="sm"
-                    variant="info"
-                  >
-                    Mở yêu cầu
-                  </ButtonLink>
-                </ListCell>
-              </ListCells>
-            </ListRow>
-          )
-        })}
-      </ul>
-    </>
+    <div className="space-y-6">
+      {/* Bộ lọc nhanh theo nhóm trạng thái khi có từ 2 nhóm trạng thái trở lên */}
+      {activeGroups.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo bảng trạng thái">
+          <button
+            type="button"
+            onClick={() => setFilterKey('all')}
+            className={cx(
+              'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              filterKey === 'all'
+                ? 'bg-accent text-on-accent shadow-sm'
+                : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
+            )}
+          >
+            Tất cả ({items.length})
+          </button>
+          {activeGroups.map((group) => {
+            const isSelected = filterKey === group.key
+            return (
+              <button
+                key={group.key}
+                type="button"
+                onClick={() => setFilterKey(isSelected ? 'all' : group.key)}
+                className={cx(
+                  'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                  isSelected
+                    ? 'bg-accent text-on-accent shadow-sm'
+                    : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
+                )}
+              >
+                <span>{group.title}</span>
+                <span
+                  className={cx(
+                    'rounded-full px-1.5 py-0.2 text-[11px] font-bold',
+                    isSelected
+                      ? 'bg-white/20 text-white'
+                      : group.highlight
+                        ? 'bg-danger text-on-danger'
+                        : 'bg-surface-3 text-fg-2',
+                  )}
+                >
+                  {group.items.length}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Hiển thị các bảng danh sách theo từng trạng thái */}
+      {visibleGroups.map((group) => (
+        <SurveyStatusTable
+          key={group.key}
+          title={group.title}
+          count={group.items.length}
+          description={group.description}
+          highlight={group.highlight}
+          items={group.items}
+          today={today}
+        />
+      ))}
+    </div>
   )
 }
