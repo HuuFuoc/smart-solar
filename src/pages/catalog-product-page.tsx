@@ -7,6 +7,8 @@ import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { CustomerProductDetail } from '@/features/products/CustomerProductDetail'
+import { CustomerProductDetailSkeleton } from '@/features/products/CustomerProductDetailSkeleton'
 import { ProductGallery } from '@/features/products/ProductGallery'
 import {
   formatPower,
@@ -20,7 +22,7 @@ import { useProductQuery } from '@/hooks/useProducts'
 import { ROUTES } from '@/routes/paths'
 import { formatMoney } from '@/utils/format'
 
-// Chi tiết sản phẩm trong các portal. Đường quay lại danh mục nằm ở thanh định vị của shell
+// Chi tiết sản phẩm trong các portal quản trị / kỹ thuật (giữ nguyên bảng thông số chuẩn cho staff)
 function CatalogProductPage({ action }: { action?: ReactNode }) {
   const { id } = useParams()
   const query = useProductQuery(id)
@@ -85,17 +87,33 @@ function CatalogProductPage({ action }: { action?: ReactNode }) {
   )
 }
 
-/* Khách xem sản phẩm xong thì bước kế tiếp là gửi đánh giá sơ bộ cho công trình của mình. */
+/* Trang chi tiết sản phẩm tối ưu UI/UX cho Cổng khách hàng */
 export function CustomerCatalogProductPage() {
-  return (
-    <CatalogProductPage
-      action={
-        <ButtonLink icon="send" to={ROUTES.customer.assessment} variant="primary">
-          Gửi đánh giá sơ bộ
-        </ButtonLink>
-      }
-    />
-  )
+  const { id } = useParams()
+  const query = useProductQuery(id)
+  usePageCrumb(query.data?.name)
+
+  if (query.isPending) {
+    return <CustomerProductDetailSkeleton />
+  }
+
+  if (query.isError || !query.data) {
+    return (
+      <div className="rounded-container border border-dashed border-line-2 px-6 py-12 text-center">
+        <p className="text-body font-semibold text-fg">Không tìm thấy sản phẩm</p>
+        <p className="mt-1 text-meta text-fg-2">
+          {query.error?.message || 'Sản phẩm này có thể đã bị gỡ hoặc đường dẫn không chính xác.'}
+        </p>
+        <div className="mt-4 flex justify-center">
+          <ButtonLink to={ROUTES.customer.products} variant="secondary">
+            Quay lại danh sách sản phẩm
+          </ButtonLink>
+        </div>
+      </div>
+    )
+  }
+
+  return <CustomerProductDetail product={query.data} />
 }
 
 export function OpsCatalogProductPage() {
