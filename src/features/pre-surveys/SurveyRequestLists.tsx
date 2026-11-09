@@ -13,6 +13,7 @@ import {
   surveyStatusMeta,
 } from '@/features/pre-surveys/preSurveyDisplay'
 import {
+  addDays,
   appointmentStatusMeta,
   formatMoment,
   formatTime,
@@ -226,6 +227,29 @@ function getGroupKey(state: RowState): GroupKey {
   return 'done'
 }
 
+type DateFilter = 'all' | 'today' | 'yesterday' | 'day_before' | 'last_3_days' | 'last_7_days' | 'last_30_days'
+
+const DATE_OPTIONS: { value: DateFilter; label: string }[] = [
+  { value: 'all', label: 'Tất cả ngày' },
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'yesterday', label: 'Hôm qua' },
+  { value: 'day_before', label: 'Hôm kia' },
+  { value: 'last_3_days', label: '3 ngày gần đây' },
+  { value: 'last_7_days', label: '7 ngày gần đây' },
+  { value: 'last_30_days', label: '30 ngày gần đây' },
+]
+
+function matchesDate(itemDate: string, filter: DateFilter, today: string): boolean {
+  if (filter === 'all' || !itemDate) return true
+  if (filter === 'today') return itemDate === today
+  if (filter === 'yesterday') return itemDate === addDays(today, -1)
+  if (filter === 'day_before') return itemDate === addDays(today, -2)
+  if (filter === 'last_3_days') return itemDate >= addDays(today, -3) && itemDate <= today
+  if (filter === 'last_7_days') return itemDate >= addDays(today, -7) && itemDate <= today
+  if (filter === 'last_30_days') return itemDate >= addDays(today, -30) && itemDate <= today
+  return true
+}
+
 /** Bảng con hiển thị một nhóm trạng thái với tiêu đề, số lượng và toggle thu gọn */
 function SurveyStatusTable({
   title,
@@ -346,9 +370,10 @@ function SurveyStatusTable({
 /** `needAssign`: id các yêu cầu có lịch quá hạn cần sales phân công */
 export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[]; needAssign: Set<string> }) {
   const today = todayVn()
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all')
   const [filterKey, setFilterKey] = useState<string>('all')
 
-  const items = useMemo(
+  const allItems = useMemo(
     () =>
       rows
         .map((row) => ({ row, state: rowState(row, needAssign.has(row.surveyRequestId)) }))
@@ -356,6 +381,16 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
     [rows, needAssign],
   )
 
+  // Lọc theo mốc thời gian nhận yêu cầu
+  const dateFilteredItems = useMemo(() => {
+    if (dateFilter === 'all') return allItems
+    return allItems.filter(({ row }) => {
+      const itemDateIso = row.assignedAt || row.submittedAt
+      return matchesDate(vnDate(itemDateIso), dateFilter, today)
+    })
+  }, [allItems, dateFilter, today])
+
+  // Gom nhóm theo trạng thái từ danh sách đã lọc ngày
   const activeGroups = useMemo(() => {
     const map: Record<GroupKey, MyRow[]> = {
       urgent: [],
@@ -364,7 +399,7 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
       scheduled: [],
       done: [],
     }
-    for (const item of items) {
+    for (const item of dateFilteredItems) {
       const key = getGroupKey(item.state)
       map[key].push(item)
     }
@@ -372,73 +407,131 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
       ...config,
       items: map[config.key],
     })).filter((group) => group.items.length > 0)
-  }, [items])
+  }, [dateFilteredItems])
 
   const visibleGroups =
     filterKey === 'all' ? activeGroups : activeGroups.filter((g) => g.key === filterKey)
 
   return (
-    <div className="space-y-6">
-      {/* Bộ lọc nhanh theo nhóm trạng thái khi có từ 2 nhóm trạng thái trở lên */}
-      {activeGroups.length > 1 && (
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo bảng trạng thái">
-          <button
-            type="button"
-            onClick={() => setFilterKey('all')}
-            className={cx(
-              'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              filterKey === 'all'
-                ? 'bg-accent text-on-accent shadow-sm'
-                : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
-            )}
-          >
-            Tất cả ({items.length})
-          </button>
-          {activeGroups.map((group) => {
-            const isSelected = filterKey === group.key
-            return (
-              <button
-                key={group.key}
-                type="button"
-                onClick={() => setFilterKey(isSelected ? 'all' : group.key)}
-                className={cx(
-                  'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                  isSelected
-                    ? 'bg-accent text-on-accent shadow-sm'
-                    : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
-                )}
-              >
-                <span>{group.title}</span>
-                <span
+    <div className="space-y-5">
+      {/* Thanh công cụ lọc: Lọc theo thời gian & Lọc theo trạng thái */}
+      <div className="space-y-3">
+        {/* Bộ lọc mốc thời gian (Hôm nay, Hôm qua, Hôm kia, 3 ngày gần đây...) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-line bg-surface-2/40 p-2.5 sm:px-4 sm:py-2.5">
+          <div className="flex items-center gap-2 shrink-0">
+            <Icon name="calendar_today" className="text-[18px] text-fg-3" />
+            <span className="text-meta font-medium text-fg-2 whitespace-nowrap">Thời gian nhận:</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Lọc theo ngày nhận">
+            {DATE_OPTIONS.map((opt) => {
+              const isSelected = dateFilter === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setDateFilter(opt.value)
+                    setFilterKey('all')
+                  }}
                   className={cx(
-                    'rounded-full px-1.5 py-0.2 text-[11px] font-bold',
+                    'inline-flex items-center rounded-lg px-2.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                     isSelected
-                      ? 'bg-white/20 text-white'
-                      : group.highlight
-                        ? 'bg-danger text-on-danger'
-                        : 'bg-surface-3 text-fg-2',
+                      ? 'bg-accent text-on-accent shadow-xs'
+                      : 'border border-line bg-canvas text-fg-2 hover:bg-surface-2 hover:text-fg',
                   )}
                 >
-                  {group.items.length}
-                </span>
-              </button>
-            )
-          })}
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
-      )}
+
+        {/* Bộ lọc nhanh theo nhóm trạng thái khi có từ 2 nhóm trạng thái trở lên */}
+        {activeGroups.length > 1 && (
+          <div className="flex flex-wrap items-center gap-2 pt-0.5" role="group" aria-label="Lọc theo bảng trạng thái">
+            <button
+              type="button"
+              onClick={() => setFilterKey('all')}
+              className={cx(
+                'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                filterKey === 'all'
+                  ? 'bg-accent text-on-accent shadow-sm'
+                  : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
+              )}
+            >
+              Tất cả trạng thái ({dateFilteredItems.length})
+            </button>
+            {activeGroups.map((group) => {
+              const isSelected = filterKey === group.key
+              return (
+                <button
+                  key={group.key}
+                  type="button"
+                  onClick={() => setFilterKey(isSelected ? 'all' : group.key)}
+                  className={cx(
+                    'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                    isSelected
+                      ? 'bg-accent text-on-accent shadow-sm'
+                      : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
+                  )}
+                >
+                  <span>{group.title}</span>
+                  <span
+                    className={cx(
+                      'rounded-full px-1.5 py-0.2 text-[11px] font-bold',
+                      isSelected
+                        ? 'bg-white/20 text-white'
+                        : group.highlight
+                          ? 'bg-danger text-on-danger'
+                          : 'bg-surface-3 text-fg-2',
+                    )}
+                  >
+                    {group.items.length}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Hiển thị các bảng danh sách theo từng trạng thái */}
-      {visibleGroups.map((group) => (
-        <SurveyStatusTable
-          key={group.key}
-          title={group.title}
-          count={group.items.length}
-          description={group.description}
-          highlight={group.highlight}
-          items={group.items}
-          today={today}
-        />
-      ))}
+      {visibleGroups.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-line-2 p-8 text-center bg-canvas">
+          <Icon name="event_busy" className="text-3xl text-fg-3 opacity-40 mx-auto mb-2" />
+          <p className="text-body font-medium text-fg">Không có yêu cầu nào trong mốc thời gian này</p>
+          <p className="mt-1 text-meta text-fg-3">
+            Thử chọn mốc thời gian khác hoặc bấm xem tất cả ngày.
+          </p>
+          <div className="mt-3.5">
+            <button
+              type="button"
+              onClick={() => {
+                setDateFilter('all')
+                setFilterKey('all')
+              }}
+              className="inline-flex items-center gap-1 text-meta font-medium text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+            >
+              <Icon name="refresh" className="text-[16px]" />
+              <span>Xem tất cả ngày</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        visibleGroups.map((group) => (
+          <SurveyStatusTable
+            key={group.key}
+            title={group.title}
+            count={group.items.length}
+            description={group.description}
+            highlight={group.highlight}
+            items={group.items}
+            today={today}
+          />
+        ))
+      )}
     </div>
   )
 }
