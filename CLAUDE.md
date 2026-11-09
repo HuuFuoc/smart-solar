@@ -221,7 +221,8 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   service và hook import kiểu từ đây. Ngoại lệ: swagger của tag Customers, PreSurveys, SurveyRequests, PreSurveySurface,
   Simulations chỉ khai "200 OK" nên `customersRes.ts`, `preSurveysRes.ts`, `surveyRequestsRes.ts`, `preSurveySurfaceRes.ts`,
   `simulationsRes.ts` viết tay theo contract backend (đối chiếu response thật 09/10/2026; không có header tự sinh nên
-  `gen:api` không xoá); backend khai response thì `gen:api` ghi đè. Cùng lý do, luồng 1 (12/10/2026) viết tay
+  `gen:api` không xoá, cũng không ghi đè dù swagger đã khai response; muốn chuyển sang bản sinh thì xoá file rồi chạy lại).
+  Cùng lý do, luồng 1 (12/10/2026) viết tay
   `surveySlotsRes.ts`, `customerSurveyRequestsRes.ts`, `technicianAvailabilityRes.ts`, `technicianAppointmentsRes.ts`,
   `adminTechniciansRes.ts`, `adminUsersRes.ts` theo record C# của backend `main` (4d12e4d); request của các tag đó sinh
   bình thường. `administrativeUnitsRes.ts` (danh mục phường, xã) và `operationalZonesRes.ts` cũng viết tay theo record C#.
@@ -232,13 +233,18 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   `Modules.AfterSales`, `Modules.Payments.PaymentAttemptView`, `Modules.CustomerContracts.ContractView`). `filesRes.ts`
   (`UploadUrlView`, `FileView`) viết tay theo DLL của image đang chạy (dịch ngược bằng ilspycmd) vì code Files chưa lên git.
   `dispatchRes.ts` viết tay theo record C# của `Modules.Scheduling.Dispatch` nhánh `fix/business-logic-v2` (deddde8).
+- `docs/api/swagger.json` lấy bằng `npm run sync:api [url]` (mặc định `<API_PROXY_TARGET>/swagger/v1/swagger.json`) rồi
+  `npm run gen:api`. Backend đặt schemaId bằng tên đầy đủ (`SmartSolar.Api.Contracts.…`); script đổi về tên ngắn, giữ đúng
+  tên bản cũ đã đặt (`AfterSalesReasonRequest`, `OnSiteSurveyObstacleRequest`…), tên trùng ở hai namespace mà bản cũ chưa có
+  thì thêm tên module (`InstallationIssueQuotationRequest`). `gen:api` giữ mỗi schema ở file sinh lần trước để import không
+  đổi khi backend đổi thứ tự path. Các đoạn dưới (chép tay từng path) là cách làm trước khi có script.
 - Image backend hiện tại (nhánh `fix/business-rules-flow-1-2`) lỗi khi xuất swagger (trùng schemaId
   `AssignTechnicianRequest`), nên `docs/api/swagger.json` được bổ sung tay các hợp đồng mới theo record C#: `provinceCode`,
   `communeCode` của `CreatePropertySiteRequest`, `SelectSimulationRequest` (kèm 2 đường dẫn chọn / bỏ chọn mô phỏng), nhận /
   trả lịch của kỹ thuật viên, khu vực phục vụ. Khi backend sửa swagger thì xuất lại file này rồi chạy `gen:api`.
   Image 21/10/2026 xuất được swagger nhưng schemaId là tên đầy đủ (`SmartSolar.Api.Contracts.…`), `gen:api` không đọc được;
   các path lắp đặt (Customer / Manager / TechnicianInstallations) được chép từ `/swagger/v1/swagger.json` đang chạy và đổi
-  `$ref` về tên ngắn. Đừng thay cả file bằng bản xuất mới khi chưa sửa script. Cùng cách đó với 6 path của khách (gói, mua
+  `$ref` về tên ngắn. Cùng cách đó với 6 path của khách (gói, mua
   gói, gói đã mua, huỷ gói, trạng thái thanh toán after-sales, GET hợp đồng của khách) và 4 path của tag Files
   (`presigned-upload`, đăng ký, verify, GET); `ReasonRequest` của after-sales đặt tên
   `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt. Cùng cách đó (22/10/2026) với 9
@@ -854,7 +860,7 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 ## Auth API
 
 Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/api/swagger.json`
-(tải từ `http://localhost:8080/swagger/v1/swagger.json`).
+(tải bằng `npm run sync:api`).
 
 - **Base URL**: `VITE_API_BASE_URL` trong `.env.development` = `/api`. Dev đi qua
   `server.proxy` trong `vite.config.ts` (`/api` → `API_PROXY_TARGET`, mặc định
@@ -938,6 +944,8 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
 - `npm run build` – `tsc -b && vite build`; phải pass trước khi coi một màn là xong
 - `npm run typecheck` – `tsc -b` (nhanh hơn build, dùng khi lặp)
 - `npm run gen:api` – sinh lại `src/types/req` và `src/types/res` từ `docs/api/swagger.json`
+- `npm run sync:api [url]` – tải swagger của backend (mặc định theo `API_PROXY_TARGET`) về `docs/api/swagger.json`, rồi chạy
+  `gen:api`. Backend đã deploy của nhóm: đặt `API_PROXY_TARGET=http://160.187.1.242:8080` trong `.env.development.local`.
 - E2E trên backend thật của stack kiểm thử riêng (`tests/e2e/stack-<n>-*.live.e2e.mjs`, chạy theo thứ tự 1 → 8, giai đoạn 6
   sau giai đoạn 4 ít nhất 1 giờ): cần `AUDIT_STACK_API`, `AUDIT_ACCOUNTS_FILE`, `AUDIT_EVIDENCE_DIR`; không khai thì tự bỏ qua.
   Dựng stack và tài khoản: `local-test/` trong worktree backend. Cách chạy và kết quả: `docs/api/SmartSolar_Post_Audit_Remediation.md`

@@ -1,8 +1,20 @@
 /* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
 
+export type ConfirmSurveyVersionRequest = {
+  /** Format: int32 */
+  revision?: number
+  reason?: string | null
+}
+
 export type FileReferenceRequest = {
   /** Format: uuid */
   fileId?: string
+}
+
+export type InstallationIssueQuotationRequest = {
+  /** Format: int32 */
+  revision?: number
+  reviewNote?: string | null
 }
 
 export type InstallationQuotationLineRequest = {
@@ -17,6 +29,12 @@ export type InstallationQuotationLineRequest = {
   /** Format: double */
   unitPrice?: number | null
   description?: string | null
+}
+
+export type PricingApprovalRequest = {
+  /** Format: int32 */
+  revision?: number
+  reason?: string | null
 }
 
 export type QuotationHeaderRequest = {

@@ -5,6 +5,13 @@ export type ApiErrorBody = {
   code?: string | null
   message?: string | null
   details?: unknown
+  fieldErrors?: FieldError[] | null
+}
+
+export type FieldError = {
+  field?: string | null
+  code?: string | null
+  message?: string | null
 }
 
 /** Dạng chung của mọi wrapper *ApiResponse; client.ts mở wrapper và trả `data`. */

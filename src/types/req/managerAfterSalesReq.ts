@@ -82,3 +82,10 @@ export type StopWorkRequest = {
   /** Format: double */
   refundAmount?: number
 }
+
+export type WarrantyActivationRequest = {
+  activatedAt?: string | null
+  /** Format: uuid */
+  evidenceFileId?: string | null
+  reason?: string | null
+}

@@ -3,12 +3,12 @@ import type { CustomerType, InstallationSurfaceType } from '@/types/req/customer
 import type { CloseReasonCode, SurveyRequestStatus } from '@/types/res/surveyRequestsRes'
 
 // Enum của đánh giá sơ bộ và yêu cầu khảo sát, dùng chung cho mọi vai trò
-// Form gửi số (`value`), backend trả tên in hoa (`name`); tên lấy từ SmartSolar.Modules.PreSurvey.Enums
+// Ô chọn của form giữ số (`value`), request và response dùng tên in hoa (`name`) của SmartSolar.Modules.PreSurvey.Enums
 
 export const CUSTOMER_TYPES = [
   { value: 1, name: 'INDIVIDUAL', label: 'Cá nhân' },
   { value: 2, name: 'BUSINESS', label: 'Doanh nghiệp' },
-] as const satisfies readonly { value: CustomerType; name: string; label: string }[]
+] as const satisfies readonly { value: number; name: CustomerType; label: string }[]
 
 // `icon`: Material Symbols trên thẻ chọn bề mặt
 export const SURFACE_TYPES = [
@@ -18,8 +18,8 @@ export const SURFACE_TYPES = [
   { value: 4, name: 'FACADE', label: 'Mặt dựng', hint: 'Tường đứng hoặc mặt ngoài toà nhà', icon: 'domain' },
   { value: 5, name: 'OTHER', label: 'Khác', hint: 'Ghi rõ ở phần ghi chú', icon: 'more_horiz' },
 ] as const satisfies readonly {
-  value: InstallationSurfaceType
-  name: string
+  value: number
+  name: InstallationSurfaceType
   label: string
   hint: string
   icon: string

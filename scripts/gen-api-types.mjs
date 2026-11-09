@@ -2,6 +2,7 @@
 // File sinh ra luôn bị ghi đè, không sửa tay. File res chỉ chứa schema của `data` vì client.ts đã bỏ wrapper
 import fs from 'node:fs'
 import path from 'node:path'
+import * as prettier from 'prettier'
 
 const root = path.resolve(import.meta.dirname, '..')
 const swagger = JSON.parse(fs.readFileSync(path.join(root, 'docs/api/swagger.json'), 'utf8'))
@@ -18,11 +19,36 @@ const fileKey = (tag) => tag.charAt(0).toLowerCase() + tag.slice(1).replace(/[^A
 const owner = new Map() // schema thuộc file nào: 'req/authReq' | 'res/authRes' | 'res/apiRes'
 owner.set('ApiError', 'res/apiRes')
 
+const HEADER = '/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */\n'
+
+// File viết tay (không có HEADER) không bị ghi đè dù swagger đã khai response cho tag đó;
+// muốn chuyển sang bản sinh thì xoá file rồi chạy lại
+const handWritten = (file) => {
+  const full = path.join(outDir, `${file}.ts`)
+  return fs.existsSync(full) && !fs.readFileSync(full, 'utf8').startsWith(HEADER)
+}
+const kept = new Set()
+
+// Schema đã nằm ở file sinh lần trước thì giữ file đó, để import trong src/ không đổi khi backend đổi thứ tự path
+const previous = new Map()
+for (const dir of ['req', 'res']) {
+  const full = path.join(outDir, dir)
+  if (!fs.existsSync(full)) continue
+  for (const f of fs.readdirSync(full)) {
+    const text = fs.readFileSync(path.join(full, f), 'utf8')
+    if (!text.startsWith(HEADER)) continue
+    for (const m of text.matchAll(/^export type (\w+) =/gm)) previous.set(m[1], `${dir}/${f.replace(/\.ts$/, '')}`)
+  }
+}
+
 function claim(name, file) {
   if (owner.has(name) || !schemas[name]) return
-  owner.set(name, file)
-  for (const ref of refsOf(schemas[name])) claim(ref, file)
+  const target = previous.get(name) ?? file
+  if (handWritten(target)) return void kept.add(target)
+  owner.set(name, target)
+  for (const ref of refsOf(schemas[name])) claim(ref, target)
 }
+for (const ref of refsOf(schemas.ApiError)) claim(ref, 'res/apiRes')
 
 function refsOf(schema, acc = []) {
   if (!schema || typeof schema !== 'object') return acc
@@ -82,8 +108,6 @@ function objectType(schema, file, imports, indent) {
   return lines.length ? `{\n${lines.join('\n')}\n${indent}}` : 'Record<string, never>'
 }
 
-const HEADER = '/* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */\n'
-
 const files = new Map()
 for (const [name, file] of owner) (files.get(file) ?? files.set(file, []).get(file)).push(name)
 if (!files.has('res/apiRes')) files.set('res/apiRes', [])
@@ -126,6 +150,16 @@ for (const [file, names] of files) {
     )
     .join('\n')
   const text = HEADER + (importLines ? `${importLines}\n` : '') + '\n' + blocks.join('\n\n') + '\n'
-  fs.writeFileSync(path.join(outDir, `${file}.ts`), text)
+  // Qua prettier luôn để file sinh ra không làm `format:check` báo lỗi (vd. union chuỗi viết nháy kép)
+  const filepath = path.join(outDir, `${file}.ts`)
+  const options = (await prettier.resolveConfig(filepath)) ?? {}
+  fs.writeFileSync(filepath, await prettier.format(text, { ...options, filepath }))
   console.log(`src/types/${file}.ts: ${names.length} schema`)
 }
+if (kept.size)
+  console.log(
+    `Giữ file viết tay: ${[...kept]
+      .sort()
+      .map((f) => `src/types/${f}.ts`)
+      .join(', ')}`,
+  )
