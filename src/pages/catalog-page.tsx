@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { SearchInput, Select } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { ListPager } from '@/components/common/ui/pagination'
-import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
-import { CatalogTable } from '@/features/products/CatalogTable'
-import { CustomerProductEmptyState, CustomerProductGrid, CustomerProductGridSkeleton } from '@/features/products/CustomerProductGrid'
+import { ErrorState } from '@/components/common/ui/states'
+import {
+  CustomerProductEmptyState,
+  CustomerProductGrid,
+  CustomerProductGridSkeleton,
+} from '@/features/products/CustomerProductGrid'
 import { PRODUCT_SORT_OPTIONS } from '@/common/product'
 import { isProductActive, parseSort, productTypeLabel } from '@/features/products/productDisplay'
 import { useProductsQuery } from '@/hooks/useProducts'
@@ -12,12 +15,10 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { ROUTES, withId } from '@/routes/paths'
 import { cx } from '@/utils/cx'
 
-// Danh mục sản phẩm trong portal. Chỉ hiện sản phẩm đang bán (lọc ở client)
-const PAGE_SIZE = 10
-const CUSTOMER_PAGE_SIZE = 12
+// Danh mục sản phẩm trong các portal. Hiển thị dạng lưới card hiện đại cho mọi role
+const PAGE_SIZE = 12
 
 function CatalogPage({ detailPattern }: { detailPattern: string }) {
-  const isCustomer = detailPattern === ROUTES.customer.product
   const [search, setSearch] = useState('')
   const [selectedType, setSelectedType] = useState('')
   const [knownTypes, setKnownTypes] = useState<string[]>([])
@@ -25,13 +26,11 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebouncedValue(search.trim())
 
-  const pageSize = isCustomer ? CUSTOMER_PAGE_SIZE : PAGE_SIZE
-
   const query = useProductsQuery({
     Search: debouncedSearch,
     ProductType: selectedType || undefined,
     Page: page,
-    PageSize: pageSize,
+    PageSize: PAGE_SIZE,
     ...parseSort(sort),
   })
 
@@ -54,7 +53,7 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
     : activeProducts
 
   const pages = query.data?.totalPages ?? 0
-  const from = (page - 1) * pageSize + 1
+  const from = (page - 1) * PAGE_SIZE + 1
 
   const handleResetFilters = () => {
     setSearch('')
@@ -105,7 +104,7 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
       </div>
 
       {/* Chip lọc loại sản phẩm trích xuất từ dữ liệu */}
-      {isCustomer && knownTypes.length > 0 && (
+      {knownTypes.length > 0 && (
         <div className="mb-5 flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo loại sản phẩm">
           <button
             type="button"
@@ -147,45 +146,23 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
         </div>
       )}
 
-      {/* Nội dung danh sách sản phẩm */}
+      {/* Nội dung danh sách sản phẩm dạng lưới card responsive */}
       <section aria-live="polite" aria-busy={query.isFetching}>
         {query.isError ? (
           <ErrorState message={query.error.message} onRetry={() => query.refetch()} />
         ) : query.isPending ? (
-          isCustomer ? (
-            <CustomerProductGridSkeleton count={6} />
-          ) : (
-            <div aria-label="Đang tải" className="space-y-4">
-              {Array.from({ length: 5 }, (_, i) => (
-                <Skeleton key={i} className="h-14" />
-              ))}
-            </div>
-          )
+          <CustomerProductGridSkeleton count={6} />
         ) : products.length === 0 ? (
-          isCustomer ? (
-            <CustomerProductEmptyState
-              hasFilters={Boolean(search.trim() || selectedType)}
-              onReset={handleResetFilters}
-            />
-          ) : (
-            <EmptyState
-              title={debouncedSearch ? 'Không tìm thấy sản phẩm phù hợp' : 'Chưa có sản phẩm nào đang bán'}
-              description={debouncedSearch ? 'Thử từ khoá khác hoặc xoá ô tìm kiếm.' : undefined}
-            />
-          )
+          <CustomerProductEmptyState
+            hasFilters={Boolean(search.trim() || selectedType)}
+            onReset={handleResetFilters}
+          />
         ) : (
           <div className={cx(query.isFetching && 'opacity-70')}>
-            {isCustomer ? (
-              <CustomerProductGrid
-                products={products}
-                detailPath={(id) => withId(detailPattern, id)}
-              />
-            ) : (
-              <CatalogTable
-                products={products}
-                detailPath={(id) => withId(detailPattern, id)}
-              />
-            )}
+            <CustomerProductGrid
+              products={products}
+              detailPath={(id) => withId(detailPattern, id)}
+            />
           </div>
         )}
       </section>

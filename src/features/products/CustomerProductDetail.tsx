@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
-import { ButtonLink } from '@/components/common/ui/button'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { CustomerProductCard } from '@/features/products/CustomerProductCard'
 import { CustomerProductGallery } from '@/features/products/CustomerProductGallery'
@@ -25,7 +24,17 @@ interface SpecHighlight {
   value: string
 }
 
-export function CustomerProductDetail({ product }: { product: ProductResponse }) {
+export function CustomerProductDetail({
+  product,
+  listPath = ROUTES.customer.products,
+  detailPattern = ROUTES.customer.product,
+  action,
+}: {
+  product: ProductResponse
+  listPath?: string
+  detailPattern?: string
+  action?: ReactNode
+}) {
   const [activeTab, setActiveTab] = useState<'info' | 'specs'>('info')
 
   const brandModel = [product.brand?.trim(), product.model?.trim()].filter(Boolean).join(' · ')
@@ -99,11 +108,11 @@ export function CustomerProductDetail({ product }: { product: ProductResponse })
     .slice(0, 3)
 
   return (
-    <div className="relative pb-24 lg:pb-0">
+    <div className={cx('relative', action ? 'pb-24 lg:pb-0' : 'pb-8')}>
       {/* 1. Breadcrumb "Sản phẩm / [Tên]" */}
       <nav aria-label="Đường dẫn trang" className="mb-5 flex items-center gap-1.5 text-meta text-fg-3">
         <Link
-          to={ROUTES.customer.products}
+          to={listPath}
           className="inline-flex items-center gap-1 font-medium text-fg-2 hover:text-accent transition-colors"
         >
           <Icon name="arrow_back" className="text-[16px]" />
@@ -154,17 +163,8 @@ export function CustomerProductDetail({ product }: { product: ProductResponse })
             </p>
           </div>
 
-          {/* Nút CTA "Gửi đánh giá sơ bộ" cỡ lớn, full-width trong cột */}
-          <div>
-            <ButtonLink
-              to={ROUTES.customer.assessment}
-              variant="primary"
-              icon="send"
-              className="h-11 w-full justify-center rounded-lg text-body font-semibold shadow-sm"
-            >
-              Gửi đánh giá sơ bộ
-            </ButtonLink>
-          </div>
+          {/* Nút CTA (nếu có action truyền vào, ví dụ 'Gửi đánh giá sơ bộ' của khách hàng) */}
+          {action && <div>{action}</div>}
 
           {/* Hàng 3-4 ô spec highlight */}
           {highlights.length > 0 && (
@@ -248,7 +248,7 @@ export function CustomerProductDetail({ product }: { product: ProductResponse })
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-title font-bold text-fg">Sản phẩm tương tự</h2>
             <Link
-              to={ROUTES.customer.products}
+              to={listPath}
               className="text-meta font-medium text-accent hover:underline"
             >
               Xem tất cả
@@ -259,34 +259,28 @@ export function CustomerProductDetail({ product }: { product: ProductResponse })
               <CustomerProductCard
                 key={p.id}
                 product={p}
-                detailPath={(id) => withId(ROUTES.customer.product, id)}
+                detailPath={(id) => withId(detailPattern, id)}
               />
             ))}
           </div>
         </section>
       )}
 
-      {/* 4. Mobile Sticky Bottom Bar: ghim ở đáy kèm giá và nút CTA */}
-      <div className="fixed bottom-0 inset-x-0 z-30 flex items-center justify-between gap-3 border-t border-line bg-canvas/95 px-4 py-3 shadow-lg backdrop-blur lg:hidden">
-        <div className="min-w-0">
-          <p className="text-meta text-fg-3 truncate max-w-[160px]">{product.name}</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-title font-bold text-accent">
-              {formatMoney(product.unitPrice, product.currency)}
-            </span>
-            <span className="text-[12px] text-fg-3">/ {unit}</span>
+      {/* 4. Mobile Sticky Bottom Bar (khi có action như nút đánh giá của khách hàng) */}
+      {action && (
+        <div className="fixed bottom-0 inset-x-0 z-30 flex items-center justify-between gap-3 border-t border-line bg-canvas/95 px-4 py-3 shadow-lg backdrop-blur lg:hidden">
+          <div className="min-w-0">
+            <p className="text-meta text-fg-3 truncate max-w-[160px]">{product.name}</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-title font-bold text-accent">
+                {formatMoney(product.unitPrice, product.currency)}
+              </span>
+              <span className="text-[12px] text-fg-3">/ {unit}</span>
+            </div>
           </div>
+          <div className="shrink-0">{action}</div>
         </div>
-        <ButtonLink
-          to={ROUTES.customer.assessment}
-          variant="primary"
-          icon="send"
-          className="h-10 shrink-0 px-4 text-meta font-semibold"
-        >
-          Gửi đánh giá
-        </ButtonLink>
-      </div>
+      )}
     </div>
   )
 }
-
