@@ -7,54 +7,23 @@ interface RequestStatusBadgeProps {
   className?: string
 }
 
-const TONE_CONFIG: Record<Tone, { bg: string; text: string; border: string; icon: string }> = {
-  danger: {
-    bg: 'bg-danger-soft/80',
-    text: 'text-danger font-semibold',
-    border: 'border-danger/30',
-    icon: 'warning',
-  },
-  info: {
-    bg: 'bg-info-soft/80',
-    text: 'text-info font-semibold',
-    border: 'border-info/30',
-    icon: 'hourglass_top',
-  },
-  ok: {
-    bg: 'bg-ok-soft/80',
-    text: 'text-ok font-semibold',
-    border: 'border-ok/30',
-    icon: 'check_circle',
-  },
-  neutral: {
-    bg: 'bg-surface-2',
-    text: 'text-fg-2 font-medium',
-    border: 'border-line',
-    icon: 'schedule',
-  },
-  warn: {
-    bg: 'bg-warn-soft/80',
-    text: 'text-warn font-semibold',
-    border: 'border-warn/30',
-    icon: 'schedule',
-  },
-  accent: {
-    bg: 'bg-accent-soft/80',
-    text: 'text-accent-fg font-semibold',
-    border: 'border-accent-line/30',
-    icon: 'star',
-  },
+const TONE_MAP: Record<Tone, { bg: string; text: string; icon: string }> = {
+  info: { bg: 'bg-info-soft text-info', text: 'text-info', icon: 'hourglass_top' },
+  ok: { bg: 'bg-ok-soft text-ok', text: 'text-ok', icon: 'check_circle' },
+  danger: { bg: 'bg-danger-soft text-danger', text: 'text-danger', icon: 'warning' },
+  warn: { bg: 'bg-warn-soft text-warn', text: 'text-warn', icon: 'schedule' },
+  neutral: { bg: 'bg-surface-2 text-fg-3', text: 'text-fg-3', icon: 'schedule' },
+  accent: { bg: 'bg-accent-soft text-accent-fg', text: 'text-accent-fg', icon: 'star' },
 }
 
 export function RequestStatusBadge({ label, tone, className = '' }: RequestStatusBadgeProps) {
-  const cfg = TONE_CONFIG[tone] ?? TONE_CONFIG.neutral
+  const cfg = TONE_MAP[tone] ?? TONE_MAP.neutral
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs ${cfg.bg} ${cfg.border} ${cfg.text} ${className}`}
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${cfg.bg} ${className}`}
     >
-      <Icon name={cfg.icon} className="text-[14px]" />
+      <Icon name={cfg.icon} className="text-[13px]" />
       <span>{label}</span>
     </span>
   )
 }
-

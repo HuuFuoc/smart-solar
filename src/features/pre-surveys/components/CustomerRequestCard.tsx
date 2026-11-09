@@ -11,81 +11,68 @@ import type { CustomerDispatchView } from '@/types/res/dispatchRes'
 export interface CustomerRequestCardProps {
   request: CustomerSurveyRequestView
   dispatch?: CustomerDispatchView
+  showStatusBadge?: boolean
 }
 
-export function CustomerRequestCard({ request: r, dispatch: d }: CustomerRequestCardProps) {
+export function CustomerRequestCard({
+  request: r,
+  dispatch: d,
+  showStatusBadge = false,
+}: CustomerRequestCardProps) {
   const progress = customerRequestProgress(r, d)
   const a = r.appointment
   const live = d?.status === 'PROPOSAL_PENDING' ? d.liveProposal : null
   const isTodo = customerRequestTodo(r, d)
 
   return (
-    <article className="rounded-xl border border-line bg-surface-1 p-4 shadow-2xs transition-all hover:border-line-2 hover:shadow-xs">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <article className="rounded-lg border border-line/60 bg-surface-1 px-4 py-3 shadow-2xs transition-colors hover:bg-surface-2/40">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Bên trái: Tên đậm + dòng phụ xám nhỏ + lịch hẹn inline (nếu có) */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-title font-semibold text-fg">
+            <h3 className="text-[15px] font-semibold text-fg">
               {r.propertyName || 'Công trình chưa đặt tên'}
             </h3>
-            <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-micro font-medium text-fg-2">
-              #{shortCode(r.surveyRequestId)}
-            </span>
+            {showStatusBadge && <RequestStatusBadge label={progress.label} tone={progress.tone} />}
           </div>
-          <p className="mt-1 text-meta text-fg-3">
-            Đã gửi {formatRelative(r.submittedAt)}
+
+          <p className="mt-0.5 text-xs text-fg-3">
+            #{shortCode(r.surveyRequestId)} · Gửi {formatRelative(r.submittedAt)}
           </p>
 
-          {/* Khối hiển thị lịch hẹn khi đã có lịch */}
+          {/* Dòng lịch hẹn inline gọn gàng cho mục Đã có lịch */}
           {a && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-sm text-fg">
-              <div className="flex items-center gap-1.5">
-                <Icon name="event" className="text-accent text-[18px]" />
-                <span className="font-medium text-fg-2">Lịch hẹn:</span>
-                <span className="font-semibold text-fg">{formatAppointment(a.startsAt, a.endsAt)}</span>
-              </div>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-fg-2">
+              <Icon name="calendar_today" className="text-[14px] text-accent" />
+              <span className="font-medium text-fg">{formatAppointment(a.startsAt, a.endsAt)}</span>
               {a.assignedTechnicianName && (
-                <div className="flex items-center gap-1.5">
-                  <Icon name="person" className="text-fg-3 text-[18px]" />
-                  <span className="font-medium text-fg-2">Kỹ thuật viên:</span>
-                  <span className="font-semibold text-fg">{a.assignedTechnicianName}</span>
-                </div>
+                <span className="text-fg-3">
+                  · KTV: <strong className="font-medium text-fg">{a.assignedTechnicianName}</strong>
+                </span>
               )}
             </div>
           )}
 
-          {/* Khối thông báo đề xuất giờ từ điều phối viên */}
+          {/* Đề xuất giờ từ điều phối (nếu có) */}
           {live && (
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-fg">
-              <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
-                <Icon name="notification_important" className="text-[18px]" />
-                <span className="font-medium">Đề xuất giờ:</span>
-                <span className="font-semibold">{formatAppointment(live.startsAt, live.endsAt)}</span>
-              </div>
-              <span className="text-xs text-amber-700 dark:text-amber-400">
-                Xác nhận trước {formatMoment(live.expiresAt)}
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+              <Icon name="notification_important" className="text-[14px]" />
+              <span>
+                Đề xuất: <strong>{formatAppointment(live.startsAt, live.endsAt)}</strong> (trả lời trước {formatMoment(live.expiresAt)})
               </span>
             </div>
           )}
-
-          {/* Gợi ý khi chưa đặt lịch */}
-          {isTodo && !live && (
-            <p className="mt-2.5 flex items-center gap-1.5 text-meta font-medium text-amber-700 dark:text-amber-400">
-              <Icon name="info" className="text-[16px] shrink-0" />
-              <span>Vui lòng chọn khung giờ để kỹ thuật viên SmartSolar đến tận nơi đo đạc và tư vấn.</span>
-            </p>
-          )}
         </div>
 
-        {/* Khối trạng thái & nút hành động */}
-        <div className="flex flex-row items-center justify-between gap-3 border-t border-line/60 pt-3 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
-          <RequestStatusBadge label={progress.label} tone={progress.tone} />
+        {/* Bên phải: Đúng 1 nút hành động duy nhất */}
+        <div className="shrink-0 pt-2 sm:pt-0">
           <ButtonLink
-            icon={isTodo ? 'calendar_month' : 'visibility'}
+            icon={isTodo ? 'calendar_month' : undefined}
             to={withId(ROUTES.customer.request, r.surveyRequestId)}
             size="sm"
             variant={isTodo ? 'primary' : 'secondary'}
-            className="shrink-0"
-            aria-label={`${isTodo ? 'Đặt lịch' : 'Xem'} cho công trình ${r.propertyName || 'chưa đặt tên'}`}
+            className="h-9 w-full rounded-lg px-3.5 text-sm font-medium sm:w-auto"
+            aria-label={`${isTodo ? 'Đặt lịch' : 'Xem'} cho ${r.propertyName || 'công trình'}`}
           >
             {live ? 'Xem giờ đề xuất' : isTodo ? 'Đặt giờ khảo sát' : 'Xem yêu cầu'}
           </ButtonLink>
@@ -94,4 +81,3 @@ export function CustomerRequestCard({ request: r, dispatch: d }: CustomerRequest
     </article>
   )
 }
-
