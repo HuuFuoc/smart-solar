@@ -1,5 +1,5 @@
 // Luật dùng chung mọi cổng: chatbot (ChatController, ChatService) và tra địa chỉ cũ (AdministrativeUnitQueries) của backend
-// `main` (7c79fa8). Kết quả tra cứu là response THẬT của image c43e1cada345 (tests/e2e/fixtures/administrative-units.json).
+// `main` (7c79fa8). Kết quả tra cứu là response THẬT của image c43e1cada345 (tests/fixtures/administrative-units.json).
 // Chạy: npm test
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -19,7 +19,7 @@ import {
   verifiedChoice,
 } from '../src/features/pre-surveys/legacyLookup.ts'
 
-const fixture = JSON.parse(readFileSync(new URL('./e2e/fixtures/administrative-units.json', import.meta.url), 'utf8'))
+const fixture = JSON.parse(readFileSync(new URL('./fixtures/administrative-units.json', import.meta.url), 'utf8'))
 const S1 = '11111111-1111-4111-8111-111111111111'
 const S2 = '22222222-2222-4222-8222-222222222222'
 

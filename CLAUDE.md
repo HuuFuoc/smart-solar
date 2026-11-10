@@ -25,8 +25,8 @@ hai ăn chung một hệ token trong `src/styles/globals.css`:
   để ô nhập gắn `aria-describedby`; `optional` ghi "(không bắt buộc)" cạnh nhãn thay cho dòng gợi ý lặp dưới từng ô. Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
   không có trên git.
 - `src/components/common/stitch-ui` (file PascalCase, token `surface/on-surface/primary…`,
-  Material Symbols): trang công khai/xác thực, hộp thoại hết phiên, `/styleguide` (chỉ chạy ở dev) và các màn
-  mock đã ẩn của admin/kỹ thuật viên. Shell Stitch (`AppShell`, `Sidebar`, `TopHeader`) và `config/nav.ts` đã xoá.
+  Material Symbols): trang công khai/xác thực, hộp thoại hết phiên, `/styleguide` (chỉ chạy ở dev). Shell Stitch
+  (`AppShell`, `Sidebar`, `TopHeader`) và `config/nav.ts` đã xoá.
   (Hộp thoại đổi mật khẩu đã chuyển sang portal kit: `features/auth/ChangePasswordDialog.tsx`.)
 - Token của bộ Stitch nay chỉ là bí danh trỏ vào token của portal kit (màu nền/chữ/đường
   kẻ, bán kính, bóng, họ chữ, thang chữ). Sửa giá trị ở block portal kit là cả hai đổi theo;
@@ -117,7 +117,8 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
   và cả khoảng U+1EA0–1EF1 (ạ ả ấ ộ ợ ữ…), các chữ này rơi về font hệ thống (đo bằng trình duyệt 06/11/2026; người dùng
   giữ font này); trang công khai, xác thực và khung khách hàng dùng Be Vietnam Pro (`@fontsource/be-vietnam-pro`, nạp trong `PublicLayout`). Plus Jakarta Sans đã bỏ.
 - Icon: Material Symbols Outlined – link Google Fonts trong `index.html`; giữ đúng tên icon như trong file thiết kế (`grid_view`, `solar_power`, `manage_accounts`…)
-- State/data: màn đang hiện đều gọi API thật (auth, sản phẩm, đánh giá sơ bộ, yêu cầu khảo sát); mock trong `src/data/*.ts` chỉ còn phục vụ các màn đã ẩn (xem "Chỉ hiện màn có dữ liệu thật")
+- State/data: mọi màn gọi API thật. Không dùng mock (dữ liệu giả, màn giả, test với API giả) ở chỗ có thể có dữ liệu
+  động; người dùng chốt 10/11/2026, các màn mock và test API giả cũ đã xoá (xem "Chỉ hiện màn có dữ liệu thật")
 
 ## Nguồn thiết kế (KHÔNG sửa thư mục này)
 
@@ -164,8 +165,7 @@ src/
                                # + khung chờ + index/đường lạ chuyển về `start`; /field chuyển về /tech
     lazyPage.ts                # page(() => import('@/pages/…'), 'TênTrang'): khai báo ở đầu file route
                                # (const TênTrang = page(…)), route ghi `lazy: TênTrang`; giữ tách chunk mỗi trang
-    paths.ts                   # ROUTES (khoá camelCase, mỗi portal một nhóm, trang chủ portal là `home`; trong nhóm:
-                               # màn có route ở trên, màn mock đã ẩn dưới dòng "Màn mock đã ẩn"), withId, techTaskPath…
+    paths.ts                   # ROUTES (khoá camelCase, mỗi portal một nhóm, trang chủ portal là `home`), withId
     RequireRole.tsx            # route bảo vệ theo vai trò + AuthLoadingScreen
     notFound.ts                # ném Response 404 cho errorElement
   context/
@@ -184,8 +184,7 @@ src/
     dashboard/                 # component chỉ dùng ở màn tổng quan admin và kỹ thuật viên
     users/ roles/ products/    # component riêng của các màn admin
   pages/                       # màn gắn với route: admin/ tech/ customer/ ops/ field/ manage/ auth/ public/ + trang lẻ
-  data/                        # dữ liệu tĩnh cho UI: mock từng màn (surveys.ts, tasks.ts, session.ts…, customer.ts, manage.ts…)
-                               # và nội dung chữ (auth.ts, landing.ts)
+  data/                        # chỉ chữ tĩnh của giao diện (auth.ts, landing.ts, styleguide.ts), không có dữ liệu giả
   services/                    # API của mọi nghiệp vụ, mỗi file một nhóm: authService.ts, me.ts, productService.ts,
                                # preSurveyService.ts, bookingService.ts, adminUserService.ts…
     api/                       # client.ts (axios, mở wrapper, refresh), errors.ts (ApiError), tokens.ts
@@ -196,7 +195,7 @@ src/
                                # scheduling.ts, role.ts (USER_ROLES, ROLE_LABELS, ROLE_ALIASES). CHỈ hằng số, không hàm
   config/                      # portals.ts (menu của mọi portal), roles.ts (hàm theo vai trò), demoAccounts.ts
   hooks/                       # hook react-query của mọi nghiệp vụ (useAuthMutations, useProducts, usePreSurveys, useBooking,
-                               # useAdminUsers…) và hook giao diện: useMockQuery, useTheme, useElementWidth (bề rộng khung cho
+                               # useAdminUsers…) và hook giao diện: useTheme, useElementWidth (bề rộng khung cho
                                # SVG vẽ bằng pixel), useViewportHeight (chiều cao khung nhìn cho hình vẽ cao vừa màn hình)
   utils/                       # cn, cx, format, img, jwt
 public/placeholders/           # thay cho ảnh lh3.googleusercontent.com
@@ -262,14 +261,14 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
 - `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
   repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
   JWT; không đụng DB nào.
-- Nghiệp vụ chưa có endpoint đọc dữ liệu từ `data/*.ts` và bị ẩn khỏi menu/route (mục dưới). Khi backend có
-  endpoint: thêm `types/req|res/<nghiệp vụ>*.ts`, rồi `src/services/<tên>Service.ts` + `src/hooks/use<Tên>.ts`, bỏ file trong `data/`,
-  rồi mở lại route + mục menu.
+- Nghiệp vụ chưa có endpoint thì chưa có màn (không dựng màn bằng dữ liệu giả). Khi backend có endpoint: thêm
+  `types/req|res/<nghiệp vụ>*.ts`, rồi `src/services/<tên>Service.ts` + `src/hooks/use<Tên>.ts`, rồi thêm route + mục menu.
 
 ## Chỉ hiện màn có dữ liệu thật (05/10/2026)
 
-Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock giữ code trong `pages/<portal>/` nhưng không có route,
-đường dẫn cũ trong portal rơi vào route `*` và chuyển về trang chủ portal. Đang hiện:
+Menu và route chỉ có màn đổ dữ liệu thật từ backend. Các màn mock cũ (`/manage/*` tổng quan, `/field/*`, trang Stitch cũ của
+admin / kỹ thuật viên…) và dữ liệu giả trong `src/data/` đã xoá hẳn (10/11/2026); đường dẫn cũ trong portal rơi vào route `*`
+và chuyển về trang chủ portal. Đang hiện:
 
 - Trang đầu của portal (`start` trong `routes/protectedRoutes.tsx`): `/customer` → `/customer/dashboard`, `/ops` →
   `/ops/dashboard`, `/admin` → `/admin/dashboard`, `/tech` → `/tech/jobs`, `/manage` → `/manage/technicians`. Ba trang tổng
@@ -362,8 +361,8 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
 - Kỹ thuật viên `/tech/after-sales` + `/:id` (theo mã buổi hẹn): nhận / từ chối, bắt đầu (sớm nhất 2 giờ trước giờ hẹn, khoá
   nút và ghi rõ giờ), ảnh hiện trường (`uploadFile` mục đích `SERVICE_EVIDENCE`, gắn vào buổi hẹn; BE bắt ít nhất 1 ảnh trước
   báo cáo), báo cáo kiểm tra (không lỗi hoặc danh sách hạng mục), báo cáo sửa / bảo trì, khách vắng.
-  Từ 04/11/2026 (luật ở `features/after-sales/technicianVisitRules.ts`, test ở `tests/tech-portal-rules.test.mjs` và
-  `tests/e2e/tech-portal.e2e.mjs`; đối chiếu: `docs/api/tech-portal-verification.md`):
+  Từ 04/11/2026 (luật ở `features/after-sales/technicianVisitRules.ts`, test ở `tests/tech-portal-rules.test.mjs`; đối
+  chiếu: `docs/api/tech-portal-verification.md`):
   - Báo cáo kiểm tra có "Ở lại công trình để sửa luôn" → `stayOnSite: true` (chỉ khi có hạng mục; không lỗi thì luôn false vì BE
     từ chối). Buổi vẫn `IN_PROGRESS`, view có `waitingOnSite`: khối "Chờ tại công trình" (`OnSiteWaitPanel`, hỏi lại 20 giây / lần)
     thay form kiểm tra, ghi đang chờ gì theo `AfterSalesWorkflow.NextStatus` (view không có trạng thái yêu cầu).
@@ -544,8 +543,7 @@ nghỉ cố định. Kỹ thuật viên nhận lịch xong thì khảo sát tạ
     ghi lý do. Hàng chờ tải theo từng trạng thái vì BE xếp hạn phản hồi sớm nhất trước và giữ cả yêu cầu đã xong.
     Khối "Người phụ trách yêu cầu" (`SurveyStaffPanel`) của trang điều phối còn có "Đổi giờ khảo sát" (PUT
     /admin/survey-requests/{id}/reschedule, quản lý + quản trị, không cần là kinh doanh phụ trách, cứu được lịch đã qua giờ
-    khi có lý do). Hộp đổi giờ (`RescheduleDialog.tsx`) dùng chung với "Đổi giờ" của kinh doanh, test ở
-    `tests/e2e/survey-reschedule.e2e.mjs`.
+    khi có lý do). Hộp đổi giờ (`RescheduleDialog.tsx`) dùng chung với "Đổi giờ" của kinh doanh.
 - Kỹ thuật viên `/tech/jobs`: tab "Chờ nhận" (GET /technicians/me/open-appointments, lịch trong khu vực của mình, chưa có địa
   chỉ cụ thể / số khách) với nút "Nhận việc" (POST .../accept kèm `expectedRevision`; người khác nhận trước thì 409
   APPOINTMENT_ALREADY_TAKEN), tab "Đã nhận" và "Đã qua". Chi tiết `/tech/jobs/:id`: công trình, khách, số liệu khai, mô phỏng
@@ -926,7 +924,7 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
   là tiếng Anh, khi dựng thì dịch sang tiếng Việt; giữ nguyên tên riêng, mã SKU, mã phiếu,
   tên hãng và thuật ngữ đã quen dùng (inverter, kWh, MPPT, SKU…). Câu chữ viết ngắn, chủ động,
   không quảng cáo: tiêu đề là tên màn hình, mô tả chỉ thêm khi nói được điều gì mới.
-- Mỗi màn = 1 route + 1 file dữ liệu trong `src/data/`. Không hard-code dữ liệu trong JSX.
+- Mỗi màn = 1 route, dữ liệu lấy từ API thật. Không hard-code dữ liệu trong JSX, không dựng màn bằng dữ liệu giả.
 - Khi dựng xong một màn: chạy dev, chụp màn hình, đặt cạnh `screen.png`, liệt kê khác biệt (spacing, màu, font size, icon) rồi sửa. Chấp nhận sai lệch ≤ 4px.
 - Không cài thêm thư viện UI khác (MUI, Ant, Chakra…). Ngoại lệ đã chốt: `sonner` chỉ dùng cho toast;
   `three` + `@react-three/fiber` chỉ cho 3D: mô phỏng (05/10/2026) và tấm pin ở trang chủ (20/10/2026); không thêm drei, dùng
@@ -950,6 +948,8 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
 - `npm run gen:api` – sinh lại `src/types/req` và `src/types/res` từ `docs/api/swagger.json`
 - `npm run sync:api [url]` – tải swagger của backend (mặc định theo `API_PROXY_TARGET`) về `docs/api/swagger.json`, rồi chạy
   `gen:api`. Backend đã deploy của nhóm: đặt `API_PROXY_TARGET=http://160.187.1.242:8080` trong `.env.development.local`.
+- Không viết test với API giả (`page.route` trả dữ liệu dựng sẵn); test giao diện chạy với backend thật
+  (`tests/e2e/*.live.e2e.mjs`), luật thuần thì unit test ở `tests/*.test.mjs`.
 - E2E trên backend thật của stack kiểm thử riêng (`tests/e2e/stack-<n>-*.live.e2e.mjs`, chạy theo thứ tự 1 → 8, giai đoạn 6
   sau giai đoạn 4 ít nhất 1 giờ): cần `AUDIT_STACK_API`, `AUDIT_ACCOUNTS_FILE`, `AUDIT_EVIDENCE_DIR`; không khai thì tự bỏ qua.
   Dựng stack và tài khoản: `local-test/` trong worktree backend. Cách chạy và kết quả: `docs/api/SmartSolar_Post_Audit_Remediation.md`

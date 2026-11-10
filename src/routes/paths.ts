@@ -1,4 +1,4 @@
-// Mọi đường dẫn của app, mỗi portal một nhóm. Trong nhóm, màn mock đã ẩn nằm dưới dòng "Màn mock đã ẩn"
+// Mọi đường dẫn của app, mỗi portal một nhóm
 export const ROUTES = {
   // Công khai và xác thực
   home: '/',
@@ -45,12 +45,6 @@ export const ROUTES = {
     quotation: '/customer/quotations/:id',
     /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
     assistant: '/customer/assistant',
-    // Màn mock đã ẩn
-    estimate: '/customer/assessment/estimate',
-    consultations: '/customer/consultations',
-    consultation: '/customer/consultations/:id',
-    warranty: '/customer/warranty',
-    warrantyRequest: '/customer/warranty/:id',
   },
 
   ops: {
@@ -69,12 +63,6 @@ export const ROUTES = {
     product: '/ops/products/:id',
     /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
     assistant: '/ops/assistant',
-    // Màn mock đã ẩn
-    consultations: '/ops/consultations',
-    customers: '/ops/customers',
-    quotations: '/ops/quotations',
-    contracts: '/ops/contracts',
-    projects: '/ops/projects',
   },
 
   tech: {
@@ -95,13 +83,6 @@ export const ROUTES = {
     product: '/tech/products/:id',
     /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
     assistant: '/tech/assistant',
-    // Màn mock đã ẩn
-    tasks: '/tech/tasks',
-    surveys: '/tech/surveys',
-    maintenance: '/tech/maintenance',
-    warranty: '/tech/warranty',
-    alerts: '/tech/alerts',
-    settings: '/tech/settings',
   },
 
   manage: {
@@ -131,16 +112,6 @@ export const ROUTES = {
     packageCancellation: '/manage/package-cancellations/:id',
     /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
     assistant: '/manage/assistant',
-    // Màn mock đã ẩn
-    projects: '/manage/projects',
-    project: '/manage/projects/:id',
-    approvals: '/manage/approvals',
-    approval: '/manage/approvals/:id',
-    operations: '/manage/operations',
-    revenue: '/manage/revenue',
-    alerts: '/manage/alerts',
-    notifications: '/manage/notifications',
-    profile: '/manage/profile',
   },
 
   admin: {
@@ -178,44 +149,14 @@ export const ROUTES = {
     knowledgeDocument: '/admin/knowledge-base/:id',
     /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
     assistant: '/admin/assistant',
-    // Màn mock đã ẩn
-    roles: '/admin/roles',
-    services: '/admin/services',
-    categories: '/admin/categories',
-    techConfig: '/admin/config',
-    profile: '/admin/profile',
   },
 
   // Đường cũ của kỹ thuật viên, mọi đường chuyển về /tech
   field: {
     home: '/field',
-    // Màn mock đã ẩn
-    tasks: '/field/tasks',
-    surveys: '/field/surveys',
-    survey: '/field/surveys/:id',
-    installations: '/field/installations',
-    installation: '/field/installations/:id',
-    warranty: '/field/warranty',
-    schedule: '/field/schedule',
-    notifications: '/field/notifications',
-    profile: '/field/profile',
   },
 } as const
 
 export function withId(pattern: string, id: string) {
   return pattern.replace(':id', id)
 }
-
-// Đường dẫn chi tiết của các màn mock kỹ thuật viên đã ẩn
-
-/** /tech/tasks/:id */
-export const techTaskPath = (id: string) => `${ROUTES.tech.tasks}/${id}`
-
-/** Luồng khảo sát: /tech/surveys/:id, .../verify, .../photos */
-export const surveyPath = (id: string) => `${ROUTES.tech.surveys}/${id}`
-export const surveyVerifyPath = (id: string) => `${surveyPath(id)}/verify`
-export const surveyPhotosPath = (id: string) => `${surveyPath(id)}/photos`
-
-/** Bảo trì và bảo hành: /tech/maintenance/:id, /tech/warranty/:id */
-export const maintenancePath = (id: string) => `${ROUTES.tech.maintenance}/${id}`
-export const warrantyPath = (id: string) => `${ROUTES.tech.warranty}/${id}`
