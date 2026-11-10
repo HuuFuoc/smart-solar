@@ -116,7 +116,7 @@ export function AdminDashboardPage() {
       <div>
         <ErrorState
           title="Không thể tải dữ liệu trung tâm quản trị"
-          message="Đã có lỗi khi kết nối tới máy chủ backend. Vui lòng kiểm tra lại đường truyền mạng hoặc đăng nhập lại."
+          message="Kiểm tra kết nối mạng rồi thử lại."
           onRetry={handleRefreshAll}
         />
       </div>

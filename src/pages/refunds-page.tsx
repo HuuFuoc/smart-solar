@@ -221,10 +221,7 @@ function RefundsPage({ viewer }: { viewer: Viewer }) {
 
   return (
     <>
-      <PageHeader
-        title="Hoàn tiền"
-        description="Tiền được hoàn ngoài hệ thống (chuyển khoản…). Quản lý duyệt số tiền, quản trị ghi nhận khi đã chuyển xong."
-      />
+      <PageHeader title="Hoàn tiền" />
 
       {query.data && (
         <FilterChips

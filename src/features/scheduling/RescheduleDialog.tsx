@@ -76,8 +76,7 @@ export function RescheduleForm({
     <>
       <p className="mt-2 text-body text-fg-2">
         {overdue ? 'Lịch đã qua giờ mà chưa khảo sát' : 'Giờ hiện tại'}:{' '}
-        {formatAppointment(appointment.startsAt, appointment.endsAt)}. Kỹ thuật viên đang phụ trách giữ lịch nếu vẫn
-        rảnh giờ mới, không thì lịch quay về chờ người trong khu vực nhận.
+        {formatAppointment(appointment.startsAt, appointment.endsAt)}. Người đang nhận lịch giữ lịch nếu rảnh giờ mới.
       </p>
       <div className="mt-4 space-y-4">
         <div className="flex flex-wrap items-end gap-3">

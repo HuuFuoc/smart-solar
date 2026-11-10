@@ -115,9 +115,6 @@ function OverrideDialog({
       className="max-h-[calc(100dvh-2rem)] max-w-lg overflow-y-auto"
     >
       <DialogTitle>Phân công kỹ thuật viên</DialogTitle>
-      <p className="mt-1 text-body text-fg-2">
-        Giao thẳng lịch khảo sát cho một kỹ thuật viên, không cần kinh doanh phụ trách làm.
-      </p>
       <div className="mt-4 space-y-4">
         {availability.isPending ? (
           <Skeleton className="h-24" />
@@ -308,7 +305,6 @@ function SalesOwnerDialog({
       aria-label="Đổi kinh doanh phụ trách"
     >
       <DialogTitle>Đổi kinh doanh phụ trách</DialogTitle>
-      <p className="mt-1 text-body text-fg-2">Nhân viên được chọn chăm sóc khách và lập báo giá cho yêu cầu này.</p>
       <div className="mt-4 space-y-4">
         <Field
           label="Nhân viên kinh doanh"
@@ -369,10 +365,7 @@ export function SurveyStaffPanel({
   const [dialog, setDialog] = useState<'technician' | 'reschedule' | 'sales' | null>(null)
   return (
     <Panel>
-      <PanelHeader
-        title="Người phụ trách yêu cầu"
-        description="Dùng khi cần giao thẳng hoặc đổi giờ lịch khảo sát, hoặc đổi nhân viên kinh doanh chăm sóc khách."
-      />
+      <PanelHeader title="Người phụ trách yêu cầu" />
       <PanelBody className="flex flex-wrap gap-3">
         <Button variant="soft" icon="person_add" onClick={() => setDialog('technician')}>
           Phân công kỹ thuật viên

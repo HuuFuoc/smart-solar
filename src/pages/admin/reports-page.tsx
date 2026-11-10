@@ -135,7 +135,6 @@ export function AdminReportsPage() {
     <>
       <PageHeader
         title="Báo cáo sau bán"
-        description="Tiền thu qua PayOS theo thời điểm giao dịch, tiền hoàn theo ngày đã chuyển trả. Thực thu = tổng thu − đã hoàn."
         actions={
           <Button
             icon="download"
@@ -273,10 +272,7 @@ export function AdminReportsPage() {
               <span className="font-medium text-fg">{rangeLabel(view.compareFrom, view.compareTo)}</span>
             </p>
             <Panel>
-              <PanelHeader
-                title="Tiền"
-                description="Bộ lọc khu vực, loại dịch vụ, trạng thái áp cho các khoản liên quan."
-              />
+              <PanelHeader title="Tiền" />
               <StatRow framed className="lg:grid-cols-3 xl:grid-cols-6">
                 {money.map((m) => (
                   <Stat

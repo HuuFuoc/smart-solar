@@ -36,10 +36,7 @@ export function CustomerRequestsPage() {
     ({ r, d }) => !customerRequestTodo(r, d) && r.appointment?.acceptanceStatus === 'CONFIRMED',
   )
   const otherRows = rows.filter(
-    (row) =>
-      !toBookRows.includes(row) &&
-      !dispatchingRows.includes(row) &&
-      !confirmedRows.includes(row),
+    (row) => !toBookRows.includes(row) && !dispatchingRows.includes(row) && !confirmedRows.includes(row),
   )
 
   const toConfirmCount = rows.filter(({ d }) => d?.status === 'PROPOSAL_PENDING').length
@@ -61,9 +58,7 @@ export function CustomerRequestsPage() {
             <Badge tone="danger">{toConfirmCount} đề xuất giờ khảo sát chờ bạn xác nhận</Badge>
           ) : toBookCount > 0 ? (
             <Badge tone="danger">{toBookCount} yêu cầu chưa đặt giờ khảo sát</Badge>
-          ) : (
-            'Theo dõi tiến độ khảo sát thực tế và đặt lịch hẹn với kỹ thuật viên SmartSolar.'
-          )
+          ) : undefined
         }
         actions={
           <ButtonLink
@@ -123,18 +118,12 @@ export function CustomerRequestsPage() {
                   <CustomerRequestSection
                     title="Cần đặt giờ"
                     count={toBookRows.length}
-                    description="Chọn khung giờ thuận tiện để kỹ thuật viên đến đo đạc và tư vấn thực tế."
                     defaultOpen={true}
                     highlight={toBookRows.length > 0}
                     emptyMessage="Không có yêu cầu nào cần đặt giờ vào lúc này."
                   >
                     {toBookRows.map(({ r, d }) => (
-                      <CustomerRequestCard
-                        key={r.surveyRequestId}
-                        request={r}
-                        dispatch={d}
-                        showStatusBadge={false}
-                      />
+                      <CustomerRequestCard key={r.surveyRequestId} request={r} dispatch={d} showStatusBadge={false} />
                     ))}
                   </CustomerRequestSection>
                 )}
@@ -149,12 +138,7 @@ export function CustomerRequestsPage() {
                     emptyMessage="Hiện không có yêu cầu nào đang chờ điều phối."
                   >
                     {dispatchingRows.map(({ r, d }) => (
-                      <CustomerRequestCard
-                        key={r.surveyRequestId}
-                        request={r}
-                        dispatch={d}
-                        showStatusBadge={true}
-                      />
+                      <CustomerRequestCard key={r.surveyRequestId} request={r} dispatch={d} showStatusBadge={true} />
                     ))}
                   </CustomerRequestSection>
                 )}
@@ -169,30 +153,16 @@ export function CustomerRequestsPage() {
                     emptyMessage="Chưa có lịch hẹn nào được xác nhận."
                   >
                     {confirmedRows.map(({ r, d }) => (
-                      <CustomerRequestCard
-                        key={r.surveyRequestId}
-                        request={r}
-                        dispatch={d}
-                        showStatusBadge={false}
-                      />
+                      <CustomerRequestCard key={r.surveyRequestId} request={r} dispatch={d} showStatusBadge={false} />
                     ))}
                   </CustomerRequestSection>
                 )}
 
               {/* Nhóm 4: Lịch sử hoàn thành / Đã đóng */}
               {activeTab === 'all' && otherRows.length > 0 && (
-                <CustomerRequestSection
-                  title="Lịch sử yêu cầu"
-                  count={otherRows.length}
-                  defaultOpen={false}
-                >
+                <CustomerRequestSection title="Lịch sử yêu cầu" count={otherRows.length} defaultOpen={false}>
                   {otherRows.map(({ r, d }) => (
-                    <CustomerRequestCard
-                      key={r.surveyRequestId}
-                      request={r}
-                      dispatch={d}
-                      showStatusBadge={true}
-                    />
+                    <CustomerRequestCard key={r.surveyRequestId} request={r} dispatch={d} showStatusBadge={true} />
                   ))}
                 </CustomerRequestSection>
               )}

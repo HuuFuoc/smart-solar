@@ -131,8 +131,7 @@ function DecisionForm({ refund, onClose }: { refund: RefundView; onClose: () => 
       </div>
       {input.approve && (
         <Notice tone="neutral" className="mt-4">
-          Duyệt chưa phải đã hoàn. Quản trị chuyển tiền cho khách ngoài hệ thống rồi ghi nhận; tới lúc đó khoản này vẫn
-          là "Đã duyệt, chờ ghi nhận".
+          Duyệt chưa phải đã hoàn: khoản này ở "Đã duyệt, chờ ghi nhận" tới khi quản trị chuyển tiền và ghi nhận.
         </Notice>
       )}
       {error && (

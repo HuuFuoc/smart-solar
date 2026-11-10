@@ -21,7 +21,7 @@ const COPY = {
   },
   paid: {
     title: (name: string) => `Yêu cầu huỷ ${name}?`,
-    body: 'Gói đã thanh toán nhưng chưa hiệu lực. Quản lý xét yêu cầu; nếu đồng ý, số tiền hoàn do quản lý quyết định (tối đa bằng giá gói) và được chuyển trả ngoài hệ thống.',
+    body: 'Gói đã thanh toán nhưng chưa hiệu lực. Quản lý xét yêu cầu; nếu đồng ý, số tiền hoàn do quản lý quyết định (tối đa bằng giá gói) và được chuyển khoản trả lại.',
     submit: 'Gửi yêu cầu huỷ',
     variant: 'danger',
   },

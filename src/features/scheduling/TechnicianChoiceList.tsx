@@ -45,7 +45,7 @@ export function TechnicianChoiceList({
                 <span className="font-semibold text-fg">{t.fullName}</span>
                 {t.technicianUserId === currentAssigneeId && <Badge tone="info">Đang phụ trách</Badge>}
                 {t.isCapacityHolder && t.technicianUserId !== currentAssigneeId && (
-                  <Badge tone="accent">Hệ thống đang giữ chỗ</Badge>
+                  <Badge tone="accent">Đang giữ chỗ</Badge>
                 )}
               </span>
               <span className="block text-meta text-fg-2">{t.commitmentsThatDay} lịch khác trong ngày</span>

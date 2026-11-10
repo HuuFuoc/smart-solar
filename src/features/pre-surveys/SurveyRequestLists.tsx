@@ -200,7 +200,12 @@ function classifyThreeStatus(r: MySurveyRequestItem, mustAssign: boolean): { key
     if (mustAssign || r.appointment?.status === 'ESCALATED') {
       return {
         key: 'dispatching',
-        state: { rank: 0, label: 'Cần phân công', tone: 'danger', hint: 'Lịch quá hạn mà không kỹ thuật viên nào nhận.' },
+        state: {
+          rank: 0,
+          label: 'Cần phân công',
+          tone: 'danger',
+          hint: 'Lịch quá hạn mà không kỹ thuật viên nào nhận.',
+        },
       }
     }
     return {
@@ -233,27 +238,11 @@ function byNextAction(a: MyRow, b: MyRow) {
 const THREE_STATUS_TABLES: {
   key: ThreeStatusKey
   title: string
-  description: string
   tone: Tone
 }[] = [
-  {
-    key: 'unscheduled',
-    title: 'Khách chưa đặt giờ',
-    description: 'Yêu cầu bạn đã nhận, đang chờ khách hàng chọn khung giờ khảo sát trên cổng.',
-    tone: 'info',
-  },
-  {
-    key: 'dispatching',
-    title: 'Đang xếp kỹ thuật viên',
-    description: 'Khách hàng đã đặt lịch khảo sát, đang chờ kỹ thuật viên tiếp nhận.',
-    tone: 'warn',
-  },
-  {
-    key: 'confirmed',
-    title: 'Kỹ thuật viên đã nhận lịch',
-    description: 'Kỹ thuật viên đã nhận lịch và chuẩn bị tiến hành khảo sát công trình.',
-    tone: 'ok',
-  },
+  { key: 'unscheduled', title: 'Khách chưa đặt giờ', tone: 'info' },
+  { key: 'dispatching', title: 'Đang xếp kỹ thuật viên', tone: 'warn' },
+  { key: 'confirmed', title: 'Kỹ thuật viên đã nhận lịch', tone: 'ok' },
 ]
 
 type DateFilter = 'all' | 'today' | 'yesterday' | 'day_before' | 'last_3_days' | 'last_7_days' | 'last_30_days'
@@ -301,9 +290,7 @@ function SurveyStatusTable({
     <section
       className={cx(
         'rounded-xl border bg-canvas transition-all shadow-xs overflow-hidden',
-        highlight
-          ? 'border-danger/40 border-l-[4px] border-l-danger'
-          : 'border-line',
+        highlight ? 'border-danger/40 border-l-[4px] border-l-danger' : 'border-line',
       )}
     >
       {/* Tiêu đề bảng trạng thái */}
@@ -340,20 +327,14 @@ function SurveyStatusTable({
           />
         </button>
 
-        {description && (
-          <p className="text-meta text-fg-3 sm:text-right">
-            {description}
-          </p>
-        )}
+        {description && <p className="text-meta text-fg-3 sm:text-right">{description}</p>}
       </div>
 
       {/* Danh sách các dòng trong bảng */}
       {open && (
         <div className="p-3.5 sm:p-5 pt-2 sm:pt-2">
           {items.length === 0 ? (
-            <div className="py-6 text-center text-meta text-fg-3">
-              Chưa có yêu cầu nào ở trạng thái này
-            </div>
+            <div className="py-6 text-center text-meta text-fg-3">Chưa có yêu cầu nào ở trạng thái này</div>
           ) : (
             <>
               <ListHead
@@ -364,7 +345,10 @@ function SurveyStatusTable({
                 {items.map(({ row: r, state }) => {
                   const technician = r.appointment?.technicianName
                   return (
-                    <ListRow key={r.surveyRequestId} className="hover:bg-surface-2/40 transition-colors px-2 rounded-lg">
+                    <ListRow
+                      key={r.surveyRequestId}
+                      className="hover:bg-surface-2/40 transition-colors px-2 rounded-lg"
+                    >
                       <ListCells columns={COLUMNS}>
                         <Property name={r.propertyName} row={r} />
                         <ListCell label="Tình hình" wide className="lg:order-5">
@@ -454,8 +438,7 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
     })
   }, [dateFilteredItems])
 
-  const visibleTables =
-    filterKey === 'all' ? tables : tables.filter((t) => t.key === filterKey)
+  const visibleTables = filterKey === 'all' ? tables : tables.filter((t) => t.key === filterKey)
 
   return (
     <div className="space-y-5">
@@ -546,7 +529,6 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
           key={table.key}
           title={table.title}
           count={table.items.length}
-          description={table.description}
           highlight={table.highlight}
           items={table.items}
           today={today}

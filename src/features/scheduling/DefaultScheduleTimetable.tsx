@@ -12,7 +12,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
     <div className="overflow-hidden rounded-container border border-line bg-canvas">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/40 px-4 py-3">
         <div>
-          <h3 className="font-semibold text-fg">Thời khóa biểu giờ chuẩn của hệ thống</h3>
+          <h3 className="font-semibold text-fg">Giờ làm chung</h3>
           <p className="text-meta text-fg-2">Lịch làm việc mặc định được áp dụng cho toàn bộ đội ngũ kỹ thuật viên.</p>
         </div>
         <span className="rounded-full border border-line bg-canvas px-3 py-1 text-meta font-semibold text-fg">

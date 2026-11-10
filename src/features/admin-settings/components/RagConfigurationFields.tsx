@@ -89,7 +89,7 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
         <SettingFieldInput
           id="maxContextTokens"
           label="Tokens ngữ cảnh tối đa"
-          description="Tổng tokens tài liệu đối sánh được đưa vào prompt LLM."
+          description="Độ dài tài liệu tối đa đưa vào mỗi câu trả lời."
           value={form.maxContextTokens}
           unit="tokens"
           min={500}
@@ -101,7 +101,7 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
         <SettingFieldInput
           id="chunkCharacters"
           label="Kích thước đoạn văn bản"
-          description="Số ký tự tối đa của một đoạn tài liệu khi chia nhỏ đưa vào vector DB."
+          description="Số ký tự tối đa của một đoạn khi chia nhỏ tài liệu."
           value={form.chunkCharacters}
           unit="ký tự"
           min={400}

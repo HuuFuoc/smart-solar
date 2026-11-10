@@ -386,8 +386,7 @@ export function RagConfigurationTab() {
   const { data: modelCatalog } = useRagModelsQuery()
   const [activation, setActivation] = useState<RagActivationView | null>(null)
 
-  if (isLoading)
-    return <LoadingWaveDots text="Đang tải cấu hình AI" subtitle="Đang đồng bộ tham số mô hình từ hệ thống..." />
+  if (isLoading) return <LoadingWaveDots text="Đang tải cấu hình AI" />
 
   // Không tải được thì không hiện giá trị mặc định như thể là cấu hình thật
   if (isError || !configState) {

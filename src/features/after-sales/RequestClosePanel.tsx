@@ -140,7 +140,7 @@ function DuplicateDialog({
             {candidates.map((c) => (
               <option key={c.requestId} value={c.requestId}>
                 {c.requestNumber}: {requestKindLabel(c.kind)}, {requestStatusMeta(c.status, 'manager').label}
-                {flagged.has(c.requestId) ? ' (hệ thống cảnh báo có thể trùng)' : ''}
+                {flagged.has(c.requestId) ? ' (có thể trùng)' : ''}
               </option>
             ))}
           </Select>
@@ -275,8 +275,8 @@ function StopWorkDialog({ request, onClose }: { request: ServiceRequestView; onC
       </div>
       {refund !== null && refund > 0 && refund <= paid && (
         <Notice tone="neutral" className="mt-4">
-          Hệ thống ghi khoản hoàn {formatVnd(refund)} ở trạng thái đã duyệt. Tiền chưa được trả: quản trị chuyển cho
-          khách ngoài hệ thống rồi ghi nhận ở mục Hoàn tiền.
+          Khoản hoàn {formatVnd(refund)} được duyệt ngay, chưa phải đã trả: quản trị chuyển tiền cho khách rồi ghi nhận
+          ở mục Hoàn tiền.
         </Notice>
       )}
       <ErrorNotice message={error} />
@@ -324,7 +324,7 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
             body={
               blocker ??
               (request.possibleDuplicates.length > 0
-                ? 'Hệ thống thấy công trình còn yêu cầu báo lỗi khác đang mở. Chỉ đóng khi đã xem và chắc là cùng một sự cố.'
+                ? 'Công trình còn yêu cầu báo lỗi khác đang mở. Chỉ đóng khi chắc là cùng một sự cố.'
                 : 'Khách gửi lại cùng một sự cố của công trình.')
             }
             action={
@@ -353,7 +353,7 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
           {canMarkNotFulfilled(request) && (
             <ActionRow
               title="Không thực hiện được"
-              body={`Smart Solar không bố trí được kỹ thuật viên phù hợp, hoặc khách không nhận các giờ khác. ${paid > 0 ? `Hệ thống duyệt hoàn toàn bộ ${formatVnd(paid)} khách đã trả.` : 'Khách chưa trả tiền nên không có khoản hoàn.'}`}
+              body={`Smart Solar không bố trí được kỹ thuật viên phù hợp, hoặc khách không nhận các giờ khác. ${paid > 0 ? `Khách được hoàn toàn bộ ${formatVnd(paid)} đã trả.` : 'Khách chưa trả tiền nên không có khoản hoàn.'}`}
               action={
                 <Button icon="event_busy" size="sm" variant="danger" onClick={() => setOpen('not-fulfilled')}>
                   Không thực hiện được
@@ -387,8 +387,8 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
               <p>Yêu cầu bị huỷ, buổi hẹn và báo giá còn mở cũng bị huỷ. Không mở lại được.</p>
               {paid > 0 && (
                 <p className="mt-2">
-                  Hệ thống ghi khoản hoàn {formatVnd(paid)} (100 % số khách đã trả) ở trạng thái đã duyệt; quản trị
-                  chuyển tiền ngoài hệ thống rồi ghi nhận.
+                  Khoản hoàn {formatVnd(paid)} (toàn bộ số khách đã trả) được duyệt ngay; quản trị chuyển tiền rồi ghi
+                  nhận.
                 </p>
               )}
             </>

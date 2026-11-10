@@ -42,7 +42,6 @@ export function AdminKnowledgeDocumentsPage() {
     <>
       <PageHeader
         title="Kho tri thức AI"
-        description="Chatbot chỉ trả lời dựa trên phiên bản tài liệu đã nạp xong và được công bố."
         actions={
           !unavailable && (
             <Button variant="primary" icon="add" onClick={() => setAdding(true)}>

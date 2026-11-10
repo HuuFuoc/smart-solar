@@ -109,8 +109,7 @@ function CorrectionDialog({
     <>
       <DialogTitle>Sửa thông tin {assetTypeLabel(asset.assetType).toLowerCase()}</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Chỉ sửa thông tin ghi sai của thiết bị đang lắp. Ô không đổi giữ nguyên; hệ thống lưu giá trị cũ, giá trị mới và
-        lý do.
+        Chỉ sửa thông tin ghi sai. Ô không đổi giữ nguyên; giá trị cũ và lý do vẫn xem lại được.
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {field('manufacturer', true, asset.manufacturer)}
