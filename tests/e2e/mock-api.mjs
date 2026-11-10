@@ -239,6 +239,22 @@ function zoneDetail(state, zoneId) {
   }
 }
 
+const plus90 = (iso) => new Date(new Date(iso).getTime() + 90 * 60_000).toISOString()
+
+/** Điều phối còn mở (chưa xếp ai), khách xin các khung giờ `preferredWindows` */
+export function openDispatchDetail(preferredWindows) {
+  const d = dispatchDetail()
+  return {
+    ...d,
+    request: { ...d.request, status: 'OPEN' },
+    preferredWindows,
+    resolution: null,
+    resolvedAt: null,
+    resolvedByUserId: null,
+    appointmentId: null,
+  }
+}
+
 function dispatchDetail() {
   const sla = {
     reviewSlaMinutes: 240,
@@ -704,13 +720,36 @@ export function handle(state, method, url, bodyText) {
   }
 
   // F. Điều phối khảo sát
-  if (method === 'GET' && path === '/admin/dispatch-requests/disp-1') return ok(dispatchDetail())
+  if (method === 'GET' && path === '/admin/dispatch-requests/disp-1') return ok(state.dispatch ?? dispatchDetail())
+  if (method === 'GET' && path === '/admin/dispatch-requests/disp-1/candidates')
+    return ok({
+      dispatchRequestId: 'disp-1',
+      startsAt: q.startsAt,
+      endsAt: plus90(q.startsAt),
+      siteZone: null,
+      coverageStatus: 'ZONE_HAS_NO_TECHNICIAN',
+      candidates: [
+        {
+          technicianUserId: 't3',
+          fullName: 'Kỹ Thuật Ba',
+          crossZone: true,
+          isEligible: true,
+          reason: null,
+          requiresHoldRehoming: false,
+          zones: [{ zoneId: 'zone-2', code: 'KHU-Q3', name: 'Quận 3 cũ' }],
+          commitmentsThatDay: 0,
+          maxAppointmentsPerDay: 3,
+          workingIntervals: [],
+        },
+      ],
+      note: '',
+    })
   if (method === 'GET' && path === '/technicians/availability')
     return ok({
       surveyRequestId: q.surveyRequestId,
       appointmentId: 'appt-1',
-      startsAt: '2026-11-10T01:00:00Z',
-      endsAt: '2026-11-10T02:30:00Z',
+      startsAt: state.appointmentStartsAt ?? '2026-11-10T01:00:00Z',
+      endsAt: state.appointmentStartsAt ? plus90(state.appointmentStartsAt) : '2026-11-10T02:30:00Z',
       appointmentStatus: 'ASSIGNED',
       revision: state.appointmentRevision,
       zone: { zoneId: 'zone-1', code: 'KHU-Q1', name: 'Quận 1 cũ' },
@@ -761,6 +800,22 @@ export function handle(state, method, url, bodyText) {
     if (!USERS.some((x) => x.id === body.saleUserId && x.roles.includes('SALES')))
       return fail(422, 'SALES_USER_INVALID', 'invalid')
     return ok({ surveyRequestId: 'sr-1', saleUserId: body.saleUserId, previousSaleUserId: 's1', changed: true })
+  }
+  if (method === 'PUT' && path === '/admin/survey-requests/sr-1/reschedule') {
+    state.appointmentStartsAt = body.startsAt
+    return ok({
+      appointmentId: 'appt-2',
+      previousAppointmentId: 'appt-1',
+      surveyRequestId: 'sr-1',
+      technicianUserId: 't1',
+      technicianName: 'Kỹ Thuật Một',
+      startsAt: body.startsAt,
+      endsAt: plus90(body.startsAt),
+      appointmentStatus: 'ASSIGNED',
+      acceptanceStatus: 'CONFIRMED',
+      surveyRequestStatus: 'SCHEDULED',
+      scheduledAt: body.startsAt,
+    })
   }
 
   return fail(404, 'RESOURCE_NOT_FOUND', `mock: no handler for ${method} ${path}`)

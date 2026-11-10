@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { after, before, describe, test } from 'node:test'
 import { chromium } from 'playwright'
 import { createServer } from 'vite'
-import { createState, installMockApi } from './mock-api.mjs'
+import { createState, installMockApi, openDispatchDetail } from './mock-api.mjs'
 
 let server
 let browser
@@ -462,4 +462,62 @@ describe('F. điều phối khảo sát', () => {
     assert.equal(requestsTo(state, 'POST', '/admin/survey-appointments/appt-1/assign-technician').length, 1)
     await page.context().close()
   })
+
+  test('đổi giờ khảo sát: chưa đổi giờ thì khoá nút; gửi giờ mới tới API đổi giờ của quản trị', async () => {
+    const state = createState()
+    state.appointmentStartsAt = `${vnDay(3)}T09:00:00+07:00`
+    const page = await openAdmin(state, '/admin/dispatch/disp-1')
+    await page.getByRole('button', { name: 'Đổi giờ khảo sát' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Đổi giờ khảo sát' })
+    await dialog.getByText('Giờ mới giống giờ hiện tại.').waitFor()
+    assert.ok(await dialog.getByRole('button', { name: 'Đổi lịch' }).isDisabled())
+
+    await dialog.getByLabel('Giờ bắt đầu').selectOption('10:30')
+    await dialog.getByRole('button', { name: 'Đổi lịch' }).click()
+    await waitFor(() => lastTo(state, 'PUT', '/admin/survey-requests/sr-1/reschedule'), 'reschedule')
+    assert.deepEqual(lastTo(state, 'PUT', '/admin/survey-requests/sr-1/reschedule').body, {
+      startsAt: `${vnDay(3)}T10:30:00+07:00`,
+      reason: null,
+    })
+    await page.getByText(/Đã đổi lịch sang/).waitFor()
+    await page.context().close()
+  })
+
+  test('khung giờ khách xin đều đã qua: ghi "đã qua", chọn sẵn 8 giờ sáng mai, không hỏi kỹ thuật viên cho giờ đã qua', async () => {
+    const state = createState()
+    state.dispatch = openDispatchDetail([
+      { startsAt: `${vnDay(-2)}T13:00:00+07:00`, endsAt: `${vnDay(-2)}T17:00:00+07:00` },
+    ])
+    const page = await openAdmin(state, '/admin/dispatch/disp-1')
+    await page.getByText('Các khung giờ khách xin đều đã qua.', { exact: false }).waitFor()
+    await page.getByText('(đã qua)').waitFor()
+    await page.getByText('Kỹ Thuật Ba').waitFor()
+    assertOnlyQueried(state, `${vnDay(1)}T08:00:00+07:00`)
+    await page.context().close()
+  })
+
+  test('khung đầu đã qua, khung sau còn tới: chọn sẵn khung còn tới', async () => {
+    const state = createState()
+    state.dispatch = openDispatchDetail([
+      { startsAt: `${vnDay(-1)}T08:00:00+07:00`, endsAt: `${vnDay(-1)}T12:00:00+07:00` },
+      { startsAt: `${vnDay(2)}T13:00:00+07:00`, endsAt: `${vnDay(2)}T17:00:00+07:00` },
+    ])
+    const page = await openAdmin(state, '/admin/dispatch/disp-1')
+    await page.getByText('Kỹ Thuật Ba').waitFor()
+    assertOnlyQueried(state, `${vnDay(2)}T13:00:00+07:00`)
+    assert.equal(await page.getByText('Các khung giờ khách xin đều đã qua.', { exact: false }).count(), 0)
+    await page.context().close()
+  })
 })
+
+/** Ngày theo giờ Việt Nam, cách hôm nay `days` ngày (âm là đã qua) */
+function vnDay(days) {
+  return new Date(Date.now() + 7 * 3600_000 + days * 86_400_000).toISOString().slice(0, 10)
+}
+
+/** Đã hỏi kỹ thuật viên rảnh, và chỉ hỏi cho đúng giờ `startsAt` (không có lần nào cho giờ đã qua) */
+function assertOnlyQueried(state, startsAt) {
+  const asked = requestsTo(state, 'GET', '/admin/dispatch-requests/disp-1/candidates').map((r) => r.query.startsAt)
+  assert.ok(asked.length > 0, 'chưa hỏi kỹ thuật viên')
+  assert.deepEqual([...new Set(asked)], [startsAt])
+}
