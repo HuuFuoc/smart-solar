@@ -4,17 +4,18 @@ import type { NavItem } from '@/config/portals'
 
 // Mắt xích cuối của thanh định vị: tên trang chi tiết hoặc bước wizard
 // Lưu kèm pathname để không loé tên của trang trước khi chuyển trang
-export type PageCrumb = { pathname: string; label: string }
+export type PageCrumb = { pathname: string; label: string | null; hideBack?: boolean }
 
 export const PageCrumbContext = createContext<(crumb: PageCrumb | null) => void>(() => {})
 
-export function usePageCrumb(label: string | null | undefined) {
+export function usePageCrumb(label: string | null | undefined, options?: { hideBack?: boolean }) {
   const setCrumb = useContext(PageCrumbContext)
   const { pathname } = useLocation()
+  const hideBack = options?.hideBack ?? false
   useEffect(() => {
-    setCrumb(label ? { pathname, label } : null)
+    setCrumb(label || hideBack ? { pathname, label: label ?? null, hideBack } : null)
     return () => setCrumb(null)
-  }, [label, pathname, setCrumb])
+  }, [label, hideBack, pathname, setCrumb])
 }
 
 /** Mục menu đang mở: khớp `to` hoặc một trong `alsoActiveOn` */

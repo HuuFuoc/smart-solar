@@ -150,7 +150,7 @@ export function CustomerDispatchPanel({ dispatch: d }: { dispatch: CustomerDispa
   }
 
   return (
-    <Panel raised={Boolean(live)}>
+    <Panel raised>
       <PanelHeader
         title={live ? 'Smart Solar đề xuất giờ khảo sát' : 'Đang xếp kỹ thuật viên'}
         description={
@@ -212,7 +212,7 @@ export function CustomerDispatchPanel({ dispatch: d }: { dispatch: CustomerDispa
                 'Không chọn'
               ),
             },
-            { k: 'Ghi chú của bạn', v: d.customerNote || '—' },
+            ...(d.customerNote?.trim() ? [{ k: 'Ghi chú của bạn', v: d.customerNote.trim() }] : []),
             { k: 'Gửi lúc', v: formatMoment(d.createdAt) },
           ]}
         />
