@@ -1,6 +1,6 @@
 import type { Tone } from '@/components/common/ui/badge'
 import { QUOTATION_EVENT_TYPES, QUOTATION_LIMITS, QUOTATION_STATUSES } from '@/common/quotation'
-import { addDays, todayVn, vnDate } from '@/features/scheduling/schedulingDisplay'
+import { addDays, todayVn } from '@/features/scheduling/schedulingDisplay'
 import type { QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
 import { formatMoney } from '@/utils/format'
 import { readDecimal, readGroupedNumber } from '@/utils/number'
@@ -29,13 +29,7 @@ export const formatQuantity = (quantity: number) => quantityFormat.format(quanti
 const percentFormat = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 })
 export const formatPercent = (value: number) => `${percentFormat.format(value)}%`
 
-/** "22/10/2026" theo giờ Việt Nam */
-export function formatDateVn(iso: string | null | undefined) {
-  const day = iso ? vnDate(iso) : ''
-  if (!day) return '—'
-  const [y, m, d] = day.split('-')
-  return `${d}/${m}/${y}`
-}
+export { formatDateVn } from '@/features/scheduling/schedulingDisplay'
 
 /** "QT-20261022-ABC234, bản 2" */
 export const quotationTitle = (q: Pick<QuotationView, 'quoteNumber' | 'version'>) =>
