@@ -28,7 +28,7 @@ export function CustomerProductCard({
       className={cx(
         'group relative flex flex-col h-full rounded-xl border border-line bg-canvas overflow-hidden no-underline transition-all duration-200',
         'hover:-translate-y-1 hover:border-line-2 hover:shadow-md',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
       )}
     >
@@ -41,7 +41,7 @@ export function CustomerProductCard({
             alt={product.name ?? ''}
             loading="lazy"
             onError={() => setImgError(true)}
-            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"
+            className="max-h-full max-w-full rounded-lg object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"
           />
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-1.5 text-fg-3">
@@ -59,7 +59,7 @@ export function CustomerProductCard({
         </p>
 
         {/* Tên sản phẩm tối đa 2 dòng, đậm, không gạch chân */}
-        <h3 className="mt-1 line-clamp-2 text-body font-semibold text-fg transition-colors group-hover:text-accent">
+        <h3 className="mt-1 line-clamp-2 text-body font-semibold text-fg transition-colors group-hover:text-accent-fg">
           {product.name}
         </h3>
 
@@ -74,7 +74,7 @@ export function CustomerProductCard({
             )}
             {warranty && (
               <span className="inline-flex items-center gap-1 rounded-md bg-surface-2 px-2 py-0.5 text-meta font-medium text-fg-2">
-                <Icon name="verified_user" className="text-[14px] text-accent" />
+                <Icon name="verified_user" className="text-[14px] text-accent-fg" />
                 {warranty}
               </span>
             )}
@@ -91,7 +91,7 @@ export function CustomerProductCard({
 
         {/* Đơn giá cỡ chữ lớn nhất màu xanh thương hiệu */}
         <div className="mt-auto pt-3 border-t border-line/60 flex items-baseline gap-1">
-          <span className="text-title font-bold text-accent">
+          <span className="text-title font-bold text-accent-fg">
             {formatMoney(product.unitPrice, product.currency)}
           </span>
           <span className="text-meta text-fg-3">/ {unit}</span>

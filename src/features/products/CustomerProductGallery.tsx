@@ -46,7 +46,7 @@ export function CustomerProductGallery({ product }: { product: ProductResponse }
               alt={current.altText || product.name || 'Ảnh sản phẩm'}
               loading="lazy"
               onError={() => setImgError(true)}
-              className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"
+              className="max-h-full max-w-full rounded-lg object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"
             />
             {/* Nút gợi ý phóng to */}
             <span

@@ -113,7 +113,7 @@ export function CustomerProductDetail({
       <nav aria-label="Đường dẫn trang" className="mb-5 flex items-center gap-1.5 text-meta text-fg-3">
         <Link
           to={listPath}
-          className="inline-flex items-center gap-1 font-medium text-fg-2 hover:text-accent transition-colors"
+          className="inline-flex items-center gap-1 font-medium text-fg-2 hover:text-accent-fg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
         >
           <Icon name="arrow_back" className="text-[16px]" />
           <span>Sản phẩm</span>
@@ -151,7 +151,7 @@ export function CustomerProductDetail({
           {/* Khối giá cỡ lớn màu xanh thương hiệu */}
           <div className="rounded-xl border border-line bg-surface-2/40 p-4 sm:p-5">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-bold text-accent">
+              <span className="text-2xl sm:text-3xl font-bold text-accent-fg">
                 {formatMoney(product.unitPrice, product.currency)}
               </span>
               <span className="text-body text-fg-3 font-normal">
@@ -174,7 +174,7 @@ export function CustomerProductDetail({
                   key={i}
                   className="flex flex-col items-center justify-center rounded-xl border border-line bg-canvas p-3 sm:p-3.5 text-center shadow-xs"
                 >
-                  <Icon name={h.icon} className="text-xl text-accent mb-1" />
+                  <Icon name={h.icon} className="text-xl text-accent-fg mb-1" />
                   <span className="text-body font-bold text-fg truncate max-w-full">{h.value}</span>
                   <span className="text-[12px] text-fg-3 mt-0.5">{h.label}</span>
                 </div>
@@ -189,7 +189,7 @@ export function CustomerProductDetail({
                 type="button"
                 onClick={() => setActiveTab('info')}
                 className={cx(
-                  'rounded-lg px-3 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                  'rounded-lg px-3 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   activeTab === 'info'
                     ? 'bg-accent text-on-accent'
                     : 'text-fg-2 hover:bg-surface-2 hover:text-fg',
@@ -202,7 +202,7 @@ export function CustomerProductDetail({
                   type="button"
                   onClick={() => setActiveTab('specs')}
                   className={cx(
-                    'rounded-lg px-3 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                    'rounded-lg px-3 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     activeTab === 'specs'
                       ? 'bg-accent text-on-accent'
                       : 'text-fg-2 hover:bg-surface-2 hover:text-fg',
@@ -249,7 +249,7 @@ export function CustomerProductDetail({
             <h2 className="text-title font-bold text-fg">Sản phẩm tương tự</h2>
             <Link
               to={listPath}
-              className="text-meta font-medium text-accent hover:underline"
+              className="text-meta font-medium text-accent-fg hover:underline"
             >
               Xem tất cả
             </Link>
@@ -272,7 +272,7 @@ export function CustomerProductDetail({
           <div className="min-w-0">
             <p className="text-meta text-fg-3 truncate max-w-[160px]">{product.name}</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-title font-bold text-accent">
+              <span className="text-title font-bold text-accent-fg">
                 {formatMoney(product.unitPrice, product.currency)}
               </span>
               <span className="text-[12px] text-fg-3">/ {unit}</span>

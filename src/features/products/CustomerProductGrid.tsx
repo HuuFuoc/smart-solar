@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Button } from '@/components/common/ui/button'
 import { EmptyState, Skeleton } from '@/components/common/ui/states'
 import { CustomerProductCard } from '@/features/products/CustomerProductCard'
@@ -52,24 +53,32 @@ export function CustomerProductGridSkeleton({ count = 6 }: { count?: number }) {
 export function CustomerProductEmptyState({
   hasFilters,
   onReset,
+  emptyTitle = 'Chưa có sản phẩm nào đang bán',
+  emptyDescription = 'Hiện tại hệ thống chưa có sản phẩm nào trong danh mục.',
+  emptyAction,
 }: {
   hasFilters: boolean
   onReset?: () => void
+  emptyTitle?: string
+  emptyDescription?: string
+  emptyAction?: ReactNode
 }) {
   return (
     <EmptyState
-      title={hasFilters ? 'Không tìm thấy sản phẩm phù hợp' : 'Chưa có sản phẩm nào đang bán'}
+      title={hasFilters ? 'Không tìm thấy sản phẩm phù hợp' : emptyTitle}
       description={
         hasFilters
           ? 'Không có sản phẩm nào khớp với tìm kiếm hoặc bộ lọc hiện tại của bạn.'
-          : 'Hiện tại hệ thống chưa có sản phẩm nào trong danh mục.'
+          : emptyDescription
       }
       action={
         hasFilters && onReset ? (
           <Button variant="secondary" onClick={onReset} className="mt-2">
             Xóa bộ lọc
           </Button>
-        ) : undefined
+        ) : (
+          emptyAction
+        )
       }
     />
   )
