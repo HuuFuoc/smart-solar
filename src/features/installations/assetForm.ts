@@ -1,16 +1,22 @@
-import { ASSET_TYPES } from '@/common/installation'
+import { ASSET_TYPES } from '../../common/installation.ts'
+import { INVERTER_TYPE, SOLAR_PANEL_TYPE } from '../../common/product.ts'
 import type { AssetRequest } from '@/types/req/technicianInstallationsReq'
-import type { AssetView } from '@/types/res/customerInstallationsRes'
+import type { ProductResponse } from '@/types/res/adminProductsRes'
+import type { AssetView, EquipmentDifference } from '@/types/res/customerInstallationsRes'
 
-// Ô nhập thiết bị đã lắp. Luật kiểm tra bám RegisterAssetsAsync của backend: loại trong danh sách, hãng / model / serial
-// bắt buộc tối đa 100 ký tự, vị trí tối đa 50, bảo hành 0–600 tháng, 1–500 thiết bị mỗi lần,
-// serial không trùng trong cùng một hãng (không phân biệt hoa thường, kể cả thiết bị đã lưu)
+// Ô nhập thiết bị đã lắp. Luật kiểm tra bám RegisterAssetsAsync của backend: PANEL (SOLAR_PANEL) và INVERTER bắt buộc
+// gắn productId trong danh mục, loại khác chọn sản phẩm không phải dịch vụ hoặc nhập ngoài danh mục (không gửi bảo hành),
+// hãng / model / serial bắt buộc tối đa 100 ký tự, vị trí tối đa 50, serial không trùng trong cùng một hãng
+// (không phân biệt hoa thường, kể cả thiết bị đã lưu). Không import giá trị qua "@/" để chạy được bằng node --test.
 
 export const ASSET_LIMITS = { text: 100, position: 50, warrantyMonths: 600, perRequest: 500 } as const
+export const MANUAL_PRODUCT_VALUE = '__manual__'
+const SERVICE_PRODUCT_TYPES = new Set(['INSTALLATION_LABOR', 'TRANSPORT', 'OTHER_SERVICE'])
 
 export type AssetRow = {
   key: number
   assetType: string
+  productId: string | null
   manufacturer: string
   model: string
   serialNumber: string
@@ -19,23 +25,167 @@ export type AssetRow = {
   warrantyMonths: string
 }
 
-export type AssetField = Exclude<keyof AssetRow, 'key'>
+export type AssetField =
+  | 'assetType'
+  | 'productId'
+  | 'manufacturer'
+  | 'model'
+  | 'serialNumber'
+  | 'positionCode'
+  | 'warrantyMonths'
 export type AssetRowErrors = Partial<Record<AssetField, string>>
 
 let lastKey = 0
 
-/** Dòng mới chép loại, hãng, model, bảo hành của dòng trước vì một công trình thường lắp nhiều thiết bị giống nhau */
+export const requiresCatalogProduct = (assetType: string) => assetType === 'PANEL' || assetType === 'INVERTER'
+
+export function isServiceProductType(productType: string | null | undefined) {
+  return SERVICE_PRODUCT_TYPES.has((productType ?? '').trim().toUpperCase())
+}
+
+/** Khớp loại thiết bị đã lắp với `productType` trong danh mục (bám AssetMatchesProduct ở backend). */
+export function assetMatchesProductType(assetType: string, productType: string | null | undefined) {
+  const normalized = (productType ?? '').trim().toUpperCase()
+  if (!normalized) return false
+  if (assetType === 'PANEL') return normalized === SOLAR_PANEL_TYPE
+  if (assetType === 'INVERTER') return normalized === INVERTER_TYPE
+  return !isServiceProductType(normalized)
+}
+
+/** Lọc sản phẩm đang bán phù hợp với `assetType`, ưu tiên thiết bị có trong hợp đồng lên đầu. */
+export function filterProductsForAssetType(
+  products: readonly ProductResponse[],
+  assetType: string,
+  differences: readonly EquipmentDifference[] = [],
+) {
+  const contractedIds = new Set(differences.filter((d) => d.contractedQuantity > 0).map((d) => d.productId))
+  return products
+    .filter(
+      (p): p is ProductResponse & { id: string } =>
+        Boolean(p.id) &&
+        (!p.status || p.status.trim().toUpperCase() === 'ACTIVE') &&
+        assetMatchesProductType(assetType, p.productType),
+    )
+    .sort((a, b) => {
+      const rankDiff = (contractedIds.has(a.id) ? 0 : 1) - (contractedIds.has(b.id) ? 0 : 1)
+      if (rankDiff !== 0) return rankDiff
+      const aLabel = (a.name ?? a.model ?? a.brand ?? a.sku ?? '').trim()
+      const bLabel = (b.name ?? b.model ?? b.brand ?? b.sku ?? '').trim()
+      return aLabel.localeCompare(bLabel, 'vi')
+    })
+}
+
+export function productAssetMetadata(product: ProductResponse) {
+  return {
+    manufacturer: product.brand?.trim() || '',
+    model: product.model?.trim() || product.name?.trim() || product.sku?.trim() || '',
+    warrantyMonths: product.warrantyMonth != null ? String(product.warrantyMonth) : '',
+  }
+}
+
+function formatCompactPower(watt: number | null | undefined) {
+  if (watt == null || watt <= 0) return null
+  if (watt >= 1000) {
+    const kw = watt / 1000
+    return `${Number.isInteger(kw) ? kw : kw.toFixed(1)} kW`
+  }
+  return `${watt} W`
+}
+
+/** Nhãn hiển thị ngắn gọn trong danh sách chọn sản phẩm cho kỹ thuật viên. */
+export function formatProductOptionLabel(product: ProductResponse, difference?: EquipmentDifference) {
+  const name = product.name?.trim() || ''
+  const brand = product.brand?.trim() || ''
+  const model = product.model?.trim() || ''
+  const title = name || [brand, model].filter(Boolean).join(' ') || product.sku?.trim() || product.id || ''
+  const normalizedTitle = title.toLowerCase()
+
+  const parts = [title]
+  if (model && !normalizedTitle.includes(model.toLowerCase())) parts.push(model)
+  else if (!name && brand && !normalizedTitle.includes(brand.toLowerCase())) parts.unshift(brand)
+
+  const extras: string[] = []
+  if (brand && !normalizedTitle.includes(brand.toLowerCase())) extras.push(brand)
+  const power = formatCompactPower(product.ratedPowerW)
+  if (power) extras.push(power)
+  if (product.warrantyMonth != null) extras.push(`BH ${product.warrantyMonth}T`)
+
+  const prefix = difference && difference.contractedQuantity > 0 ? '[Hợp đồng] ' : ''
+  const main = parts.join(' · ')
+  return extras.length > 0 ? `${prefix}${main} (${extras.join(' · ')})` : `${prefix}${main}`
+}
+
+/** Dòng mới chép loại, sản phẩm, hãng, model, bảo hành của dòng trước vì thường lắp nhiều thiết bị giống nhau */
 export function newAssetRow(from?: AssetRow): AssetRow {
   lastKey += 1
   return {
     key: lastKey,
     assetType: from?.assetType ?? 'PANEL',
+    productId: from?.productId ?? null,
     manufacturer: from?.manufacturer ?? '',
     model: from?.model ?? '',
     serialNumber: '',
     positionCode: '',
     warrantyMonths: from?.warrantyMonths ?? '',
   }
+}
+
+export function selectAssetProduct(row: AssetRow, value: string, products: readonly ProductResponse[]): AssetRow {
+  const catalogOnly = requiresCatalogProduct(row.assetType)
+  if (value === MANUAL_PRODUCT_VALUE) {
+    if (catalogOnly) {
+      return { ...row, productId: null, manufacturer: '', model: '', warrantyMonths: '' }
+    }
+    if (!row.productId) return row
+    return { ...row, productId: null, manufacturer: '', model: '', warrantyMonths: '' }
+  }
+  if (!value) {
+    return {
+      ...row,
+      productId: null,
+      manufacturer: '',
+      model: '',
+      warrantyMonths: '',
+    }
+  }
+  const product = products.find((p) => p.id === value)
+  if (!product || !assetMatchesProductType(row.assetType, product.productType)) {
+    return { ...row, productId: null, manufacturer: '', model: '', warrantyMonths: '' }
+  }
+  return {
+    ...row,
+    productId: value,
+    ...productAssetMetadata(product),
+  }
+}
+
+export function changeAssetType(row: AssetRow, nextType: string, products: readonly ProductResponse[]): AssetRow {
+  if (nextType === row.assetType) return row
+  if (row.productId) {
+    const current = products.find((p) => p.id === row.productId)
+    if (current && assetMatchesProductType(nextType, current.productType)) {
+      return { ...row, assetType: nextType }
+    }
+    return {
+      ...row,
+      assetType: nextType,
+      productId: null,
+      manufacturer: '',
+      model: '',
+      warrantyMonths: '',
+    }
+  }
+  if (requiresCatalogProduct(nextType)) {
+    return {
+      ...row,
+      assetType: nextType,
+      productId: null,
+      manufacturer: '',
+      model: '',
+      warrantyMonths: '',
+    }
+  }
+  return { ...row, assetType: nextType, warrantyMonths: '' }
 }
 
 const serialKey = (manufacturer: string, serial: string) =>
@@ -54,11 +204,17 @@ export function validateAssetRows(rows: AssetRow[], saved: AssetView[]): AssetRo
   const firstRow = new Map<string, number>()
   return rows.map((row, i) => {
     const errors: AssetRowErrors = {}
+    const catalogRequired = requiresCatalogProduct(row.assetType)
     if (!(row.assetType in ASSET_TYPES)) errors.assetType = 'Chọn loại thiết bị.'
-    errors.manufacturer = required(row.manufacturer, 'Nhập hãng.')
-    errors.model = required(row.model, 'Nhập model.')
+    if (catalogRequired && !row.productId) {
+      errors.productId = row.assetType === 'PANEL' ? 'Chọn tấm pin trong danh mục.' : 'Chọn inverter trong danh mục.'
+    }
+    if (!catalogRequired || row.productId) {
+      errors.manufacturer = required(row.manufacturer, 'Nhập hãng.')
+      errors.model = required(row.model, 'Nhập model.')
+    }
     errors.serialNumber = required(row.serialNumber, 'Nhập số serial.')
-    if (!errors.serialNumber && !errors.manufacturer) {
+    if (!errors.serialNumber && row.manufacturer.trim()) {
       const key = serialKey(row.manufacturer, row.serialNumber)
       if (savedKeys.has(key)) errors.serialNumber = 'Serial này đã được ghi cho công trình.'
       else if (firstRow.has(key)) errors.serialNumber = `Trùng serial với dòng ${firstRow.get(key)! + 1}.`
@@ -67,8 +223,12 @@ export function validateAssetRows(rows: AssetRow[], saved: AssetView[]): AssetRo
     if (row.positionCode.trim().length > ASSET_LIMITS.position)
       errors.positionCode = `Tối đa ${ASSET_LIMITS.position} ký tự.`
     const warranty = row.warrantyMonths.trim()
-    if (warranty && !(/^\d+$/.test(warranty) && Number(warranty) <= ASSET_LIMITS.warrantyMonths))
-      errors.warrantyMonths = `Nhập số tháng từ 0 đến ${ASSET_LIMITS.warrantyMonths}.`
+    if (row.productId) {
+      if (warranty && !(/^\d+$/.test(warranty) && Number(warranty) <= ASSET_LIMITS.warrantyMonths))
+        errors.warrantyMonths = `Nhập số tháng từ 0 đến ${ASSET_LIMITS.warrantyMonths}.`
+    } else if (warranty) {
+      errors.warrantyMonths = 'Thiết bị ngoài danh mục không ghi thời hạn bảo hành.'
+    }
     for (const field of Object.keys(errors) as AssetField[]) if (!errors[field]) delete errors[field]
     return errors
   })
@@ -76,15 +236,14 @@ export function validateAssetRows(rows: AssetRow[], saved: AssetView[]): AssetRo
 
 export const hasErrors = (errors: AssetRowErrors[]) => errors.some((e) => Object.keys(e).length > 0)
 
-// Không có quy ước nối loại thiết bị với loại sản phẩm trong danh mục nên không gửi productId
 export function toAssetRequests(rows: AssetRow[]): AssetRequest[] {
   return rows.map((row) => ({
     assetType: row.assetType,
-    productId: null,
+    productId: row.productId,
     manufacturer: row.manufacturer.trim(),
     model: row.model.trim(),
     serialNumber: row.serialNumber.trim(),
     positionCode: row.positionCode.trim() || null,
-    warrantyMonths: row.warrantyMonths.trim() ? Number(row.warrantyMonths.trim()) : null,
+    warrantyMonths: row.productId && row.warrantyMonths.trim() ? Number(row.warrantyMonths.trim()) : null,
   }))
 }

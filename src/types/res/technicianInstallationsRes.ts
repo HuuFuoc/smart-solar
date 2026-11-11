@@ -1,7 +1,13 @@
 // Viết tay vì swagger của tag TechnicianInstallations chỉ khai "200 OK". Theo record C# InstallationTechnicianView,
 // InstallationSiteInfo của Modules.Installations (đối chiếu DLL của image backend đang chạy). Giờ trả về kèm +07:00.
 // Kỹ thuật viên không thấy checklist, nhật ký hay lịch sử phân công: chỉ có canStart / startBlockedReason
-import type { AcceptanceView, AssetView, EvidenceView, InstallationStatus } from '@/types/res/customerInstallationsRes'
+import type {
+  AcceptanceView,
+  AssetView,
+  EquipmentComparisonView,
+  EvidenceView,
+  InstallationStatus,
+} from '@/types/res/customerInstallationsRes'
 
 /** Phân công của chính kỹ thuật viên đang xem */
 export type TechnicianAssignmentStatus =
@@ -49,4 +55,5 @@ export type InstallationTechnicianView = {
   evidence: EvidenceView[]
   assets: AssetView[]
   acceptances: AcceptanceView[]
+  equipment?: EquipmentComparisonView | null
 }

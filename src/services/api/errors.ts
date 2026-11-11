@@ -170,6 +170,16 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh thi công của lượt này trước khi gửi báo cáo hoàn thành.',
   INSTALLATION_ASSETS_REQUIRED: 'Ghi tấm pin và inverter đã lắp trước khi gửi báo cáo hoàn thành.',
   INSTALLATION_DUPLICATE_SERIAL: 'Số serial này đã được ghi trên hệ thống (trùng hãng và serial). Kiểm tra lại.',
+  INSTALLATION_ASSET_PRODUCT_VALIDATION_FAILED:
+    'Thiết bị đã chọn không khớp với danh mục sản phẩm hoặc thời hạn bảo hành không hợp lệ. Chọn đúng sản phẩm trong danh sách.',
+  INSTALLATION_SUBSTITUTION_APPROVAL_REQUIRED:
+    'Thiết bị đã lắp khác với hợp đồng. Quản lý cần duyệt thay đổi thiết bị trước khi gửi báo cáo hoàn thành.',
+  INSTALLATION_SUBSTITUTION_CUSTOMER_APPROVAL_REQUIRED:
+    'Khách hàng chưa đồng ý thay đổi thiết bị nên chưa bàn giao được.',
+  INSTALLATION_NO_SUBSTITUTION: 'Thiết bị đã lắp khớp với hợp đồng nên không cần duyệt thay đổi.',
+  INSTALLATION_PREREQUISITE_MANDATORY: 'Hạng mục bắt buộc trước thi công không thể bỏ qua.',
+  INSTALLATION_PREREQUISITE_EXEMPTION_NOT_AUTHORIZED: 'Chưa có quy định cho phép miễn hạng mục bắt buộc này.',
+  INSTALLATION_EXEMPTION_EVIDENCE_REQUIRED: 'Cần đính kèm tài liệu chứng minh khi miễn hạng mục bắt buộc.',
   // Lắp đặt: quản lý
   INSTALLATION_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
   INSTALLATION_CONTRACT_NOT_PAID: 'Hợp đồng chưa được xác nhận thanh toán đủ nên chưa tạo được dự án thi công.',

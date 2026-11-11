@@ -266,7 +266,12 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
               />
               <PanelBody className="space-y-6">
                 {addingAssets && work && (
-                  <AssetEntry projectId={view.projectId} saved={view.assets} onClose={() => setAddingAssets(false)} />
+                  <AssetEntry
+                    projectId={view.projectId}
+                    saved={view.assets}
+                    equipment={view.equipment}
+                    onClose={() => setAddingAssets(false)}
+                  />
                 )}
                 {view.assets.length > 0 ? (
                   <AssetTable assets={view.assets} />
