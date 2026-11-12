@@ -1,13 +1,16 @@
 import { type ReactNode, useState } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Count } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
+import { FilterChips } from '@/components/common/ui/chips'
 import { SearchInput, Select } from '@/components/common/ui/field'
-import { cx } from '@/utils/cx'
 
 export type StatusGroupSummary<TGroup extends string> = {
   key: TGroup
   title: string
   count: number
+  /** Nhóm có việc người xem phải làm: số đếm đỏ */
+  attention?: boolean
 }
 
 type StatusTableSectionProps = {
@@ -19,7 +22,7 @@ type StatusTableSectionProps = {
   children: ReactNode
 }
 
-/** Khối bảng trạng thái có thể thu gọn, dùng đồng bộ giữa các trang theo dõi của khách hàng. */
+// Một nhóm trạng thái thu gọn được: tiêu đề nói nhóm chứa gì, số đỏ khi nhóm có việc phải làm
 export function StatusTableSection({
   title,
   count,
@@ -31,50 +34,23 @@ export function StatusTableSection({
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <section
-      className={cx(
-        'overflow-hidden rounded-container border bg-canvas transition-colors',
-        highlight ? 'border-accent-line/50 border-l-[3px] border-l-accent' : 'border-line',
-      )}
-    >
-      <div
-        className={cx(
-          'flex items-center justify-between gap-3 px-4 py-3 sm:px-5',
-          highlight ? 'bg-accent-soft/55' : 'bg-surface-2/60',
-        )}
-      >
+    <section className="overflow-hidden rounded-container border border-line bg-canvas">
+      <h2 className="bg-surface-2">
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
           aria-expanded={open}
-          className="group flex min-w-0 items-center gap-2.5 rounded-control py-0.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="press flex w-full items-center gap-2 px-4 py-2 text-left text-body font-semibold text-fg hover:bg-hover"
         >
-          <h2 className="flex items-center gap-2 text-body font-semibold text-fg transition-colors group-hover:text-accent-fg">
-            <span>{title}</span>
-            <span
-              className={cx(
-                'tnum inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[12px] font-semibold',
-                count === 0
-                  ? 'bg-surface-3 text-fg-2'
-                  : highlight
-                    ? 'bg-accent text-on-accent'
-                    : 'bg-surface-3 text-fg',
-              )}
-            >
-              {count}
-            </span>
-          </h2>
-          <Icon
-            name={open ? 'expand_less' : 'expand_more'}
-            className="text-[20px] text-fg-2 transition-transform group-hover:text-fg"
-            aria-hidden
-          />
+          {title}
+          <Count value={count} attention={highlight && count > 0} />
+          <Icon name={open ? 'expand_less' : 'expand_more'} className="ml-auto text-[20px] text-fg-2" aria-hidden />
         </button>
-      </div>
+      </h2>
 
       {open && (
-        <div className="p-4 pt-2 sm:px-5 sm:pb-4">
-          {count === 0 ? <p className="py-5 text-center text-meta text-fg-2">{emptyText}</p> : children}
+        <div className="border-t border-line px-4 pb-2">
+          {count === 0 ? <p className="py-3 text-meta text-fg-2">{emptyText}</p> : children}
         </div>
       )}
     </section>
@@ -100,7 +76,7 @@ type StatusTableFilterBarProps<TGroup extends string, TDate extends string> = {
   onReset: () => void
 }
 
-/** Thanh tìm kiếm, lọc theo ngày, đặt lại bộ lọc và tab chọn nhanh bảng trạng thái. */
+// Tìm, lọc theo ngày, rồi tab chọn nhóm trạng thái
 export function StatusTableFilterBar<TGroup extends string, TDate extends string>({
   searchName,
   searchLabel,
@@ -132,8 +108,7 @@ export function StatusTableFilterBar<TGroup extends string, TDate extends string
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </label>
-
-        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+        <div className="flex flex-wrap items-center gap-3 sm:shrink-0">
           <label className="w-full sm:w-44">
             <span className="sr-only">{dateLabel}</span>
             <Select
@@ -149,59 +124,23 @@ export function StatusTableFilterBar<TGroup extends string, TDate extends string
               ))}
             </Select>
           </label>
-
           {hasFilter && (
-            <Button size="md" variant="secondary" icon="close" onClick={onReset}>
+            <Button variant="secondary" icon="close" onClick={onReset}>
               Xoá lọc
             </Button>
           )}
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo bảng trạng thái">
-        <button
-          type="button"
-          onClick={() => onGroupChange('all')}
-          aria-pressed={activeGroup === 'all'}
-          className={cx(
-            'tnum inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-            activeGroup === 'all'
-              ? 'bg-accent text-on-accent'
-              : 'border border-line bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
-          )}
-        >
-          Tất cả ({totalCount})
-        </button>
-
-        {groups.map((g) => {
-          const selected = activeGroup === g.key
-          return (
-            <button
-              key={g.key}
-              type="button"
-              onClick={() => onGroupChange(selected ? 'all' : g.key)}
-              aria-pressed={selected}
-              className={cx(
-                'tnum inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                selected
-                  ? 'bg-accent text-on-accent'
-                  : 'border border-line bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
-              )}
-            >
-              <span>{g.title}</span>
-              <span
-                className={cx(
-                  'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[11px] font-semibold',
-                  selected ? 'bg-canvas/20 text-on-accent' : 'bg-surface-3 text-fg-2',
-                )}
-              >
-                {g.count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+      <FilterChips
+        label="Lọc theo trạng thái"
+        value={activeGroup}
+        onChange={onGroupChange}
+        chips={[
+          { value: 'all' as const, label: 'Tất cả', count: totalCount },
+          ...groups.map((g) => ({ value: g.key, label: g.title, count: g.count, attention: g.attention })),
+        ]}
+      />
     </div>
   )
 }
-

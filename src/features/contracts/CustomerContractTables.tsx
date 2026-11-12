@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { Tone } from '@/components/common/ui/badge'
+import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { normalizeSearch } from '@/components/common/ui/combobox'
 import { EmptyState } from '@/components/common/ui/states'
@@ -12,7 +12,6 @@ import {
   warrantyText,
 } from '@/features/contracts/contractDisplay'
 import { isCustomerTodo } from '@/features/contracts/customerContractRules'
-import { StatusBadge } from '@/features/pre-surveys/components/StatusBadge'
 import {
   DATE_FILTER_OPTIONS,
   type DateFilter,
@@ -44,30 +43,10 @@ const STATUS_GROUPS: { key: ContractGroupKey; title: string; emptyText: string }
   },
 ]
 
-const STATUS_BADGE_MAP: Record<string, { tone: Tone; icon: string }> = {
-  AWAITING_SIGNATURE: { tone: 'accent', icon: 'draw' },
-  SIGNATURE_REJECTED: { tone: 'warn', icon: 'edit_note' },
-  SIGNED: { tone: 'accent', icon: 'payments' },
-  UNDER_REVIEW: { tone: 'info', icon: 'hourglass_top' },
-  PAID: { tone: 'ok', icon: 'check_circle' },
-  SUPERSEDED: { tone: 'neutral', icon: 'description' },
-  DISCARDED: { tone: 'neutral', icon: 'cancel' },
-}
-
 function classifyContract(c: ContractView): ContractGroupKey {
   if (isCustomerTodo(c)) return 'todo'
   if (c.status === 'UNDER_REVIEW') return 'reviewing'
   return 'completed'
-}
-
-function statusBadgeConfig(c: ContractView): { label: string; tone: Tone; icon: string } {
-  const meta = contractStatusMeta(c.status, 'customer')
-  const visual = STATUS_BADGE_MAP[c.status]
-  return {
-    label: meta.label,
-    tone: visual?.tone ?? (meta.tone === 'info' ? 'neutral' : meta.tone),
-    icon: visual?.icon ?? 'description',
-  }
 }
 
 function contractMilestoneLabel(c: ContractView): string | null {
@@ -136,7 +115,9 @@ export function CustomerContractTables({
     }))
   }, [filtered])
 
-  const visibleTables = activeGroup === 'all' ? grouped : grouped.filter((g) => g.key === activeGroup)
+  // Tab Tất cả bỏ nhóm trống; chọn đúng một nhóm thì vẫn hiện để thấy câu "không có"
+  const visibleTables =
+    activeGroup === 'all' ? grouped.filter((g) => g.rows.length > 0) : grouped.filter((g) => g.key === activeGroup)
   const hasFilter = search.trim() !== '' || dateFilter !== 'all' || activeGroup !== 'all'
   const resetFilters = () => {
     setSearch('')
@@ -145,7 +126,7 @@ export function CustomerContractTables({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <StatusTableFilterBar
         searchName="contract-search"
         searchLabel="Tìm hợp đồng"
@@ -157,7 +138,7 @@ export function CustomerContractTables({
         dateOptions={DATE_FILTER_OPTIONS}
         defaultDateValue="all"
         onDateChange={setDateFilter}
-        groups={grouped.map((g) => ({ key: g.key, title: g.title, count: g.rows.length }))}
+        groups={grouped.map((g) => ({ key: g.key, title: g.title, count: g.rows.length, attention: g.highlight }))}
         totalCount={filtered.length}
         activeGroup={activeGroup}
         onGroupChange={setActiveGroup}
@@ -198,23 +179,23 @@ export function CustomerContractTables({
                 </thead>
                 <tbody>
                   {table.rows.map(({ contract: c, propertyName }) => {
-                    const badge = statusBadgeConfig(c)
+                    const status = contractStatusMeta(c.status, 'customer')
                     const milestone = contractMilestoneLabel(c)
                     return (
-                      <Tr key={c.contractId} className="transition-colors">
-                        <Td label="Công trình" className="py-3 font-semibold text-fg">
+                      <Tr key={c.contractId}>
+                        <Td label="Công trình" className="font-semibold text-fg">
                           {propertyName}
                         </Td>
-                        <Td label="Số hợp đồng" className="tnum py-3 text-fg-2">
+                        <Td label="Số hợp đồng" className="tnum text-fg-2">
                           {c.contractNumber}, {versionLabel(c).toLowerCase()}
                         </Td>
-                        <Td label="Ngày gửi ký" className="tnum py-3">
+                        <Td label="Ngày gửi ký" className="tnum">
                           <div className="min-w-0">
                             <span className="block text-fg">{formatDateVn(c.publishedAt ?? c.issuedAt)}</span>
                             {milestone && <span className="mt-0.5 block text-meta text-fg-2">{milestone}</span>}
                           </div>
                         </Td>
-                        <Td label="Tổng cộng" className="tnum py-3">
+                        <Td label="Tổng cộng" className="tnum">
                           <div className="min-w-0">
                             <span className="block font-semibold whitespace-nowrap text-fg">
                               {formatContractMoney(c)}
@@ -224,15 +205,15 @@ export function CustomerContractTables({
                             </span>
                           </div>
                         </Td>
-                        <Td label="Trạng thái" className="py-3">
-                          <StatusBadge label={badge.label} tone={badge.tone} icon={badge.icon} size="sm" />
+                        <Td label="Trạng thái">
+                          <Badge tone={status.tone}>{status.label}</Badge>
                         </Td>
-                        <Td className="py-3 whitespace-nowrap lg:text-right">
+                        <Td className="whitespace-nowrap lg:text-right">
                           <ButtonLink
                             icon="visibility"
                             to={withId(ROUTES.customer.contract, c.contractId)}
                             size="sm"
-                            variant="secondary"
+                            variant="info"
                           >
                             Xem hợp đồng
                           </ButtonLink>
@@ -249,4 +230,3 @@ export function CustomerContractTables({
     </div>
   )
 }
-

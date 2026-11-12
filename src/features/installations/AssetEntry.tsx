@@ -93,7 +93,11 @@ export function AssetEntry({
   const missingCatalog =
     !catalog.isPending &&
     !catalog.isError &&
-    rows.some((r) => requiresCatalogProduct(r.assetType) && filterProductsForAssetType(products, r.assetType, differences).length === 0)
+    rows.some(
+      (r) =>
+        requiresCatalogProduct(r.assetType) &&
+        filterProductsForAssetType(products, r.assetType, differences).length === 0,
+    )
 
   return (
     <form
@@ -105,13 +109,17 @@ export function AssetEntry({
       }}
     >
       <Notice tone="warn">
-        Thiết bị đã lưu không sửa hay xoá được trên hệ thống. Chọn đúng sản phẩm trong danh mục và kiểm tra số serial trước khi lưu.
+        Thiết bị đã lưu không sửa hay xoá được trên hệ thống. Chọn đúng sản phẩm trong danh mục và kiểm tra số serial
+        trước khi lưu.
       </Notice>
       {contractedMissing.length > 0 && (
         <Notice tone="info">
           Thiết bị theo hợp đồng cần ghi:{' '}
           {contractedMissing
-            .map((d) => `${d.name?.trim() || (d.productType === 'INVERTER' ? 'Inverter' : 'Tấm pin')} (${d.installedQuantity}/${d.contractedQuantity})`)
+            .map(
+              (d) =>
+                `${d.name?.trim() || (d.productType === 'INVERTER' ? 'Inverter' : 'Tấm pin')} (${d.installedQuantity}/${d.contractedQuantity})`,
+            )
             .join(', ')}
           .
         </Notice>
@@ -128,7 +136,8 @@ export function AssetEntry({
       )}
       {missingCatalog && (
         <Notice tone="warn">
-          Danh mục chưa có sản phẩm đang bán cho loại Tấm pin hoặc Inverter đã chọn. Liên hệ quản trị để bổ sung trước khi ghi thiết bị.
+          Danh mục chưa có sản phẩm đang bán cho loại Tấm pin hoặc Inverter đã chọn. Liên hệ quản trị để bổ sung trước
+          khi ghi thiết bị.
         </Notice>
       )}
       <div aria-hidden className={cx('hidden gap-x-3 border-b border-line pb-2 text-meta text-fg-2 xl:grid', COLUMNS)}>

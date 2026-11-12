@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react'
-import type { Tone } from '@/components/common/ui/badge'
+import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { normalizeSearch } from '@/components/common/ui/combobox'
 import { EmptyState } from '@/components/common/ui/states'
 import { StatusTableFilterBar, StatusTableSection } from '@/components/common/ui/status-tables'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
-import { StatusBadge } from '@/features/pre-surveys/components/StatusBadge'
 import { quotationStatusMeta, quotationTitle, formatQuotationMoney } from '@/features/quotations/quotationDisplay'
 import {
   DATE_FILTER_OPTIONS,
@@ -42,15 +41,6 @@ function classifyQuotation(q: QuotationView): QuotationGroupKey {
   if (q.status === 'ACCEPTED') return 'accepted'
   if (q.status === 'ISSUED' && !q.isExpired) return 'awaiting'
   return 'followup'
-}
-
-function statusBadgeConfig(q: QuotationView): { label: string; tone: Tone; icon: string } {
-  const meta = quotationStatusMeta(q, 'customer')
-  if (q.status === 'ACCEPTED') return { label: meta.label, tone: 'ok', icon: 'check_circle' }
-  if (q.status === 'ISSUED' && q.isExpired) return { label: meta.label, tone: 'warn', icon: 'event_busy' }
-  if (q.status === 'REVISION_REQUESTED') return { label: meta.label, tone: 'warn', icon: 'edit_note' }
-  if (q.status === 'ISSUED') return { label: meta.label, tone: 'accent', icon: 'schedule' }
-  return { label: meta.label, tone: meta.tone === 'info' ? 'neutral' : meta.tone, icon: 'description' }
 }
 
 type EnrichedQuotation = {
@@ -110,7 +100,9 @@ export function CustomerQuotationTables({
     }))
   }, [filtered])
 
-  const visibleTables = activeGroup === 'all' ? grouped : grouped.filter((g) => g.key === activeGroup)
+  // Tab Tất cả bỏ nhóm trống; chọn đúng một nhóm thì vẫn hiện để thấy câu "không có"
+  const visibleTables =
+    activeGroup === 'all' ? grouped.filter((g) => g.rows.length > 0) : grouped.filter((g) => g.key === activeGroup)
   const hasFilter = search.trim() !== '' || dateFilter !== 'all' || activeGroup !== 'all'
   const resetFilters = () => {
     setSearch('')
@@ -119,7 +111,7 @@ export function CustomerQuotationTables({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <StatusTableFilterBar
         searchName="quotation-search"
         searchLabel="Tìm báo giá"
@@ -131,7 +123,7 @@ export function CustomerQuotationTables({
         dateOptions={DATE_FILTER_OPTIONS}
         defaultDateValue="all"
         onDateChange={setDateFilter}
-        groups={grouped.map((g) => ({ key: g.key, title: g.title, count: g.rows.length }))}
+        groups={grouped.map((g) => ({ key: g.key, title: g.title, count: g.rows.length, attention: g.highlight }))}
         totalCount={filtered.length}
         activeGroup={activeGroup}
         onGroupChange={setActiveGroup}
@@ -172,16 +164,16 @@ export function CustomerQuotationTables({
                 </thead>
                 <tbody>
                   {table.rows.map(({ quotation: q, propertyName }) => {
-                    const badge = statusBadgeConfig(q)
+                    const status = quotationStatusMeta(q, 'customer')
                     return (
-                      <Tr key={q.quotationId} className="transition-colors">
-                        <Td label="Công trình" className="py-3 font-semibold text-fg">
+                      <Tr key={q.quotationId}>
+                        <Td label="Công trình" className="font-semibold text-fg">
                           {propertyName}
                         </Td>
-                        <Td label="Số báo giá" className="tnum py-3 text-fg-2">
+                        <Td label="Số báo giá" className="tnum text-fg-2">
                           {quotationTitle(q)}
                         </Td>
-                        <Td label="Ngày gửi" className="tnum py-3">
+                        <Td label="Ngày gửi" className="tnum">
                           <div className="min-w-0">
                             <span className="block text-fg">{formatDateVn(q.issuedAt)}</span>
                             {q.status === 'ISSUED' && q.validUntil && (
@@ -196,18 +188,18 @@ export function CustomerQuotationTables({
                             )}
                           </div>
                         </Td>
-                        <Td label="Tổng cộng" className="tnum py-3 font-semibold whitespace-nowrap text-fg">
+                        <Td label="Tổng cộng" className="tnum font-semibold whitespace-nowrap text-fg">
                           {formatQuotationMoney(q.totalAmount, q.currency)}
                         </Td>
-                        <Td label="Trạng thái" className="py-3">
-                          <StatusBadge label={badge.label} tone={badge.tone} icon={badge.icon} size="sm" />
+                        <Td label="Trạng thái">
+                          <Badge tone={status.tone}>{status.label}</Badge>
                         </Td>
-                        <Td className="py-3 whitespace-nowrap lg:text-right">
+                        <Td className="whitespace-nowrap lg:text-right">
                           <ButtonLink
                             icon="visibility"
                             to={withId(ROUTES.customer.quotation, q.quotationId)}
                             size="sm"
-                            variant="secondary"
+                            variant="info"
                           >
                             Xem báo giá
                           </ButtonLink>

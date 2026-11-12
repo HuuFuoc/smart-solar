@@ -1,4 +1,5 @@
 import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Badge } from '@/components/common/ui/badge'
 import { WEEK_DAYS } from '@/common/scheduling'
 import { calculateDayHours, toWeek } from '@/features/scheduling/workingScheduleRules'
 import type { WorkingScheduleView } from '@/types/res/adminTechniciansRes'
@@ -10,14 +11,11 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
 
   return (
     <div className="overflow-hidden rounded-container border border-line bg-canvas">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/40 px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2 px-4 py-2">
         <div>
           <h3 className="font-semibold text-fg">Giờ làm chung</h3>
-          <p className="text-meta text-fg-2">Lịch làm việc mặc định được áp dụng cho toàn bộ đội ngũ kỹ thuật viên.</p>
         </div>
-        <span className="rounded-full border border-line bg-canvas px-3 py-1 text-meta font-semibold text-fg">
-          Tổng thời lượng: <strong className="text-accent-fg">{totalWeekHours} giờ</strong> / tuần
-        </span>
+        <span className="tnum text-meta text-fg-2">Tổng {totalWeekHours} giờ / tuần</span>
       </div>
 
       <div className="overflow-x-auto">
@@ -49,17 +47,16 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
                         {periods.map((p, i) => (
                           <span
                             key={i}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-3 py-1 font-mono text-meta font-medium text-fg"
+                            className="tnum rounded-control border border-line bg-surface-2 px-2 py-0.5 text-meta text-fg"
                           >
-                            <Icon name="schedule" className="text-accent-fg text-[15px]" />
                             <span>
-                              {p.start} — {p.end}
+                              {p.start}–{p.end}
                             </span>
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-meta italic text-fg-3">Nghỉ làm việc</span>
+                      <span className="text-meta text-fg-2">Nghỉ</span>
                     )}
                   </td>
                   <td className="w-24 border-r border-line px-3 py-3 text-center tnum">
@@ -70,15 +67,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
                     )}
                   </td>
                   <td className="w-36 px-4 py-3 text-center whitespace-nowrap">
-                    {isWorking ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-ok/30 bg-ok-soft px-2.5 py-0.5 text-meta font-medium text-ok">
-                        Làm việc
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-line bg-surface-3 px-2.5 py-0.5 text-meta font-medium text-fg-2">
-                        Nghỉ
-                      </span>
-                    )}
+                    {isWorking ? <Badge tone="ok">Làm việc</Badge> : <Badge tone="neutral">Nghỉ</Badge>}
                   </td>
                 </tr>
               )

@@ -20,7 +20,6 @@ export function ProductDetailPage() {
       to={ROUTES.register}
       variant="primary"
       icon="assignment"
-      className="h-11 w-full justify-center rounded-lg text-body font-semibold shadow-sm"
     >
       Nhận khảo sát
     </ButtonLink>
@@ -29,7 +28,6 @@ export function ProductDetailPage() {
       to={ROUTES.customer.assessment}
       variant="primary"
       icon="send"
-      className="h-11 w-full justify-center rounded-lg text-body font-semibold shadow-sm"
     >
       Gửi đánh giá sơ bộ
     </ButtonLink>
@@ -54,6 +52,7 @@ export function ProductDetailPage() {
           listPath={ROUTES.products}
           detailPattern={ROUTES.product}
           action={action}
+          backLink
         />
       )}
     </div>

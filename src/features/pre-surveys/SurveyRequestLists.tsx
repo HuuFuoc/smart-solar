@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Badge, type Tone } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
-import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Field, Select } from '@/components/common/ui/field'
 import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
+import { StatusTableSection } from '@/components/common/ui/status-tables'
 import {
   formatAreaPair,
+  formatDateTime,
   formatRelative,
   isClosedRequest,
   isCompletedStatus,
@@ -14,8 +16,10 @@ import {
   surveyStatusMeta,
 } from '@/features/pre-surveys/preSurveyDisplay'
 import {
-  addDays,
   appointmentStatusMeta,
+  DATE_FILTER_OPTIONS,
+  type DateFilter,
+  matchesVnDate,
   formatMoment,
   formatTime,
   relativeDay,
@@ -54,12 +58,20 @@ function Property({
   )
 }
 
-/** "hôm kia" và giờ chính xác ngay dưới, không giấu giờ trong tooltip */
+/** "hôm kia" và giờ chính xác ngay dưới; quá 30 ngày thì formatRelative đã là giờ chính xác nên chỉ một dòng */
 function When({ iso }: { iso: string }) {
+  const relative = formatRelative(iso)
+  if (relative === formatDateTime(iso)) {
+    return (
+      <time dateTime={iso} className="tnum block">
+        {formatMoment(iso)}
+      </time>
+    )
+  }
   return (
     <>
       <time dateTime={iso} className="block">
-        {formatRelative(iso)}
+        {relative}
       </time>
       <span className="tnum block text-meta text-fg-2">{formatMoment(iso)}</span>
     </>
@@ -235,158 +247,55 @@ function byNextAction(a: MyRow, b: MyRow) {
   return new Date(b.row.assignedAt ?? 0).getTime() - new Date(a.row.assignedAt ?? 0).getTime()
 }
 
-const THREE_STATUS_TABLES: {
-  key: ThreeStatusKey
-  title: string
-  tone: Tone
-}[] = [
-  { key: 'unscheduled', title: 'Khách chưa đặt giờ', tone: 'info' },
-  { key: 'dispatching', title: 'Đang xếp kỹ thuật viên', tone: 'warn' },
-  { key: 'confirmed', title: 'Kỹ thuật viên đã nhận lịch', tone: 'ok' },
+const THREE_STATUS_TABLES: { key: ThreeStatusKey; title: string }[] = [
+  { key: 'unscheduled', title: 'Khách chưa đặt giờ' },
+  { key: 'dispatching', title: 'Đang xếp kỹ thuật viên' },
+  { key: 'confirmed', title: 'Kỹ thuật viên đã nhận lịch' },
 ]
 
-type DateFilter = 'all' | 'today' | 'yesterday' | 'day_before' | 'last_3_days' | 'last_7_days' | 'last_30_days'
-
-const DATE_OPTIONS: { value: DateFilter; label: string }[] = [
-  { value: 'all', label: 'Tất cả ngày' },
-  { value: 'today', label: 'Hôm nay' },
-  { value: 'yesterday', label: 'Hôm qua' },
-  { value: 'day_before', label: 'Hôm kia' },
-  { value: 'last_3_days', label: '3 ngày gần đây' },
-  { value: 'last_7_days', label: '7 ngày gần đây' },
-  { value: 'last_30_days', label: '30 ngày gần đây' },
-]
-
-function matchesDate(itemDate: string, filter: DateFilter, today: string): boolean {
-  if (filter === 'all' || !itemDate) return true
-  if (filter === 'today') return itemDate === today
-  if (filter === 'yesterday') return itemDate === addDays(today, -1)
-  if (filter === 'day_before') return itemDate === addDays(today, -2)
-  if (filter === 'last_3_days') return itemDate >= addDays(today, -3) && itemDate <= today
-  if (filter === 'last_7_days') return itemDate >= addDays(today, -7) && itemDate <= today
-  if (filter === 'last_30_days') return itemDate >= addDays(today, -30) && itemDate <= today
-  return true
-}
-
-/** Bảng con hiển thị một nhóm trạng thái với tiêu đề, số lượng và toggle thu gọn */
-function SurveyStatusTable({
-  title,
-  count,
-  description,
-  highlight,
-  items,
-  today,
-}: {
-  title: string
-  count: number
-  description?: string
-  highlight?: boolean
-  items: MyRow[]
-  today: string
-}) {
-  const [open, setOpen] = useState(true)
-
+function MyRequestRows({ items, today }: { items: MyRow[]; today: string }) {
   return (
-    <section
-      className={cx(
-        'rounded-xl border bg-canvas transition-all shadow-xs overflow-hidden',
-        highlight ? 'border-danger/40 border-l-[4px] border-l-danger' : 'border-line',
-      )}
-    >
-      {/* Tiêu đề bảng trạng thái */}
-      <div
-        className={cx(
-          'flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 sm:px-5 sm:py-3.5',
-          highlight ? 'bg-danger-soft/25' : 'bg-surface-2/40',
-        )}
-      >
-        <button
-          type="button"
-          onClick={() => setOpen((prev) => !prev)}
-          className="group flex items-center gap-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
-          aria-expanded={open}
-        >
-          <h3 className="text-body font-bold text-fg flex items-center gap-2 group-hover:text-accent transition-colors">
-            <span>{title}</span>
-            <span
-              className={cx(
-                'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-2 text-[12px] font-bold',
-                count === 0
-                  ? 'bg-surface-3 text-fg-3'
-                  : highlight
-                    ? 'bg-danger text-on-danger'
-                    : 'bg-surface-3 text-fg',
-              )}
-            >
-              {count}
-            </span>
-          </h3>
-          <Icon
-            name={open ? 'expand_less' : 'expand_more'}
-            className="text-[20px] text-fg-3 transition-transform group-hover:text-fg"
-          />
-        </button>
-
-        {description && <p className="text-meta text-fg-3 sm:text-right">{description}</p>}
-      </div>
-
-      {/* Danh sách các dòng trong bảng */}
-      {open && (
-        <div className="p-3.5 sm:p-5 pt-2 sm:pt-2">
-          {items.length === 0 ? (
-            <div className="py-6 text-center text-meta text-fg-3">Chưa có yêu cầu nào ở trạng thái này</div>
-          ) : (
-            <>
-              <ListHead
-                columns={COLUMNS}
-                labels={['Công trình', 'Khách hàng', 'Bạn nhận', 'Hẹn khảo sát', 'Tình hình', '']}
-              />
-              <ul className="divide-y divide-line">
-                {items.map(({ row: r, state }) => {
-                  const technician = r.appointment?.technicianName
-                  return (
-                    <ListRow
-                      key={r.surveyRequestId}
-                      className="hover:bg-surface-2/40 transition-colors px-2 rounded-lg"
-                    >
-                      <ListCells columns={COLUMNS}>
-                        <Property name={r.propertyName} row={r} />
-                        <ListCell label="Tình hình" wide className="lg:order-5">
-                          <Badge tone={state.tone}>{state.label}</Badge>
-                          {state.hint && <p className="mt-0.5 text-meta text-fg-2">{state.hint}</p>}
-                        </ListCell>
-                        <ListCell label="Khách hàng" className="lg:order-2">
-                          {r.customerName || '—'}
-                        </ListCell>
-                        <ListCell label="Bạn nhận" className="lg:order-3">
-                          {r.assignedAt ? <When iso={r.assignedAt} /> : '—'}
-                        </ListCell>
-                        <ListCell label="Hẹn khảo sát" className="lg:order-4">
-                          <span className={cx('block', !appointmentStart(r) && 'text-fg-2')}>
-                            {startsLabel(appointmentStart(r), today) ?? 'Chưa có'}
-                          </span>
-                          {technician && <span className="block text-meta text-fg-2">{technician}</span>}
-                        </ListCell>
-                        <ListCell wide className="lg:order-6 lg:justify-self-end">
-                          <ButtonLink
-                            icon="visibility"
-                            to={withId(ROUTES.ops.survey, r.surveyRequestId)}
-                            size="sm"
-                            variant="info"
-                          >
-                            Mở yêu cầu
-                          </ButtonLink>
-                        </ListCell>
-                      </ListCells>
-                    </ListRow>
-                  )
-                })}
-              </ul>
-            </>
-          )}
-        </div>
-      )}
-    </section>
+    <>
+      <ListHead columns={COLUMNS} labels={['Công trình', 'Khách hàng', 'Bạn nhận', 'Hẹn khảo sát', 'Tình hình', '']} />
+      <ul className="divide-y divide-line">
+        {items.map(({ row: r, state }) => {
+          const technician = r.appointment?.technicianName
+          return (
+            <ListRow key={r.surveyRequestId}>
+              <ListCells columns={COLUMNS}>
+                <Property name={r.propertyName} row={r} />
+                <ListCell label="Tình hình" wide className="lg:order-5">
+                  <Badge tone={state.tone}>{state.label}</Badge>
+                  {state.hint && <p className="mt-0.5 text-meta text-fg-2">{state.hint}</p>}
+                </ListCell>
+                <ListCell label="Khách hàng" className="lg:order-2">
+                  {r.customerName || '—'}
+                </ListCell>
+                <ListCell label="Bạn nhận" className="lg:order-3">
+                  {r.assignedAt ? <When iso={r.assignedAt} /> : '—'}
+                </ListCell>
+                <ListCell label="Hẹn khảo sát" className="lg:order-4">
+                  <span className={cx('block', !appointmentStart(r) && 'text-fg-2')}>
+                    {startsLabel(appointmentStart(r), today) ?? 'Chưa có'}
+                  </span>
+                  {technician && <span className="block text-meta text-fg-2">{technician}</span>}
+                </ListCell>
+                <ListCell wide className="lg:order-6 lg:justify-self-end">
+                  <ButtonLink
+                    icon="visibility"
+                    to={withId(ROUTES.ops.survey, r.surveyRequestId)}
+                    size="sm"
+                    variant="info"
+                  >
+                    Mở yêu cầu
+                  </ButtonLink>
+                </ListCell>
+              </ListCells>
+            </ListRow>
+          )
+        })}
+      </ul>
+    </>
   )
 }
 
@@ -394,145 +303,67 @@ function SurveyStatusTable({
 export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[]; needAssign: Set<string> }) {
   const today = todayVn()
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
-  const [filterKey, setFilterKey] = useState<string>('all')
+  const [groupFilter, setGroupFilter] = useState<'all' | ThreeStatusKey>('all')
 
-  const allItems = useMemo(
-    () =>
-      rows
-        .map((row) => {
-          const classified = classifyThreeStatus(row, needAssign.has(row.surveyRequestId))
-          return { row, state: classified.state, groupKey: classified.key }
-        })
-        .sort(byNextAction),
-    [rows, needAssign],
-  )
-
-  // Lọc theo mốc thời gian nhận yêu cầu
-  const dateFilteredItems = useMemo(() => {
-    if (dateFilter === 'all') return allItems
-    return allItems.filter(({ row }) => {
-      const itemDateIso = row.assignedAt || row.submittedAt
-      return matchesDate(vnDate(itemDateIso), dateFilter, today)
-    })
-  }, [allItems, dateFilter, today])
-
-  // Gom thành đúng 3 bảng trạng thái
   const tables = useMemo(() => {
-    const map: Record<ThreeStatusKey, MyRow[]> = {
-      unscheduled: [],
-      dispatching: [],
-      confirmed: [],
+    const map: Record<ThreeStatusKey, MyRow[]> = { unscheduled: [], dispatching: [], confirmed: [] }
+    for (const row of rows) {
+      if (!matchesVnDate(vnDate(row.assignedAt || row.submittedAt), dateFilter, today)) continue
+      const { key, state } = classifyThreeStatus(row, needAssign.has(row.surveyRequestId))
+      map[key].push({ row, state, groupKey: key })
     }
-    for (const item of dateFilteredItems) {
-      map[item.groupKey].push(item)
-    }
-
-    return THREE_STATUS_TABLES.map((config) => {
-      const items = map[config.key]
-      const hasUrgent = items.some((it) => it.state.rank === 0)
-      return {
-        ...config,
-        items,
-        highlight: config.key === 'dispatching' && hasUrgent,
-      }
+    return THREE_STATUS_TABLES.map((t) => {
+      const items = map[t.key].sort(byNextAction)
+      // Nhóm đang xếp có lịch quá giờ hoặc cần phân công thì số đếm đỏ
+      return { ...t, items, urgent: t.key === 'dispatching' && items.some((it) => it.state.rank === 0) }
     })
-  }, [dateFilteredItems])
+  }, [rows, needAssign, dateFilter, today])
 
-  const visibleTables = filterKey === 'all' ? tables : tables.filter((t) => t.key === filterKey)
+  const shown = groupFilter === 'all' ? tables : tables.filter((t) => t.key === groupFilter)
 
   return (
-    <div className="space-y-5">
-      {/* Thanh công cụ lọc: Lọc theo thời gian & Lọc theo trạng thái */}
-      <div className="space-y-3">
-        {/* Bộ lọc mốc thời gian (Hôm nay, Hôm qua, Hôm kia, 3 ngày gần đây...) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-line bg-surface-2/40 p-2.5 sm:px-4 sm:py-2.5">
-          <div className="flex items-center gap-2 shrink-0">
-            <Icon name="calendar_today" className="text-[18px] text-fg-3" />
-            <span className="text-meta font-medium text-fg-2 whitespace-nowrap">Thời gian nhận:</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Lọc theo ngày nhận">
-            {DATE_OPTIONS.map((opt) => {
-              const isSelected = dateFilter === opt.value
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => {
-                    setDateFilter(opt.value)
-                    setFilterKey('all')
-                  }}
-                  className={cx(
-                    'inline-flex items-center rounded-lg px-2.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                    isSelected
-                      ? 'bg-accent text-on-accent shadow-xs'
-                      : 'border border-line bg-canvas text-fg-2 hover:bg-surface-2 hover:text-fg',
-                  )}
-                >
-                  {opt.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* 3 tabs / pills chọn 3 bảng trạng thái */}
-        <div className="flex flex-wrap items-center gap-2 pt-0.5" role="group" aria-label="Lọc theo bảng trạng thái">
-          <button
-            type="button"
-            onClick={() => setFilterKey('all')}
-            className={cx(
-              'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              filterKey === 'all'
-                ? 'bg-accent text-on-accent shadow-sm'
-                : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
-            )}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end gap-3">
+        <Field label="Thời gian nhận" htmlFor="my-requests-date" className="w-full sm:w-52">
+          <Select
+            id="my-requests-date"
+            active={dateFilter !== 'all'}
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as DateFilter)}
           >
-            Tất cả ({dateFilteredItems.length})
-          </button>
-          {tables.map((table) => {
-            const isSelected = filterKey === table.key
-            return (
-              <button
-                key={table.key}
-                type="button"
-                onClick={() => setFilterKey(isSelected ? 'all' : table.key)}
-                className={cx(
-                  'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                  isSelected
-                    ? 'bg-accent text-on-accent shadow-sm'
-                    : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
-                )}
-              >
-                <span>{table.title}</span>
-                <span
-                  className={cx(
-                    'rounded-full px-1.5 py-0.2 text-[11px] font-bold',
-                    isSelected
-                      ? 'bg-white/20 text-white'
-                      : table.highlight
-                        ? 'bg-danger text-on-danger'
-                        : 'bg-surface-3 text-fg-2',
-                  )}
-                >
-                  {table.items.length}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+            {DATE_FILTER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Tình hình" htmlFor="my-requests-group" className="w-full sm:w-64">
+          <Select
+            id="my-requests-group"
+            active={groupFilter !== 'all'}
+            value={groupFilter}
+            onChange={(e) => setGroupFilter(e.target.value as 'all' | ThreeStatusKey)}
+          >
+            <option value="all">Mọi tình hình</option>
+            {tables.map((t) => (
+              <option key={t.key} value={t.key}>
+                {t.title} ({t.items.length})
+              </option>
+            ))}
+          </Select>
+        </Field>
       </div>
-
-      {/* Hiển thị chính xác 3 bảng danh sách theo 3 trạng thái */}
-      {visibleTables.map((table) => (
-        <SurveyStatusTable
-          key={table.key}
-          title={table.title}
-          count={table.items.length}
-          highlight={table.highlight}
-          items={table.items}
-          today={today}
-        />
+      {shown.map((t) => (
+        <StatusTableSection
+          key={t.key}
+          title={t.title}
+          count={t.items.length}
+          emptyText="Không có yêu cầu nào."
+          highlight={t.urgent}
+        >
+          <MyRequestRows items={t.items} today={today} />
+        </StatusTableSection>
       ))}
     </div>
   )

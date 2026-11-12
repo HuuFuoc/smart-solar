@@ -78,7 +78,7 @@ export function AdminRecentOperationsTable({
               : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
           )}
         >
-          <Icon name="engineering" className="text-[18px]" />
+          <Icon name="engineering" className="text-[20px]" />
           <span>Dự án thi công</span>
           <span className="tnum ml-1 text-meta text-fg-2">{projects.length}</span>
         </button>
@@ -93,7 +93,7 @@ export function AdminRecentOperationsTable({
               : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
           )}
         >
-          <Icon name="handyman" className="text-[18px]" />
+          <Icon name="handyman" className="text-[20px]" />
           <span>Sự cố & Bảo hành</span>
           <span className="tnum ml-1 text-meta text-fg-2">{serviceRequests.length}</span>
         </button>
@@ -108,7 +108,7 @@ export function AdminRecentOperationsTable({
               : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
           )}
         >
-          <Icon name="calendar_month" className="text-[18px]" />
+          <Icon name="calendar_month" className="text-[20px]" />
           <span>Hàng chờ điều phối kỹ thuật viên</span>
           <span className="tnum ml-1 text-meta text-fg-2">{dispatchItems.length}</span>
         </button>
@@ -119,7 +119,7 @@ export function AdminRecentOperationsTable({
         <div className="overflow-hidden rounded-control border border-line bg-canvas">
           {projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
-              <Icon name="assignment" className="text-[32px] text-fg-3 mb-2" />
+              <Icon name="assignment" className="text-[24px] text-fg-3 mb-2" />
               <p className="text-body font-medium text-fg">Chưa có dự án thi công nào</p>
               <p className="text-meta text-fg-2">Hệ thống sẽ cập nhật khi hợp đồng thanh toán được duyệt khởi tạo.</p>
             </div>
@@ -208,7 +208,7 @@ export function AdminRecentOperationsTable({
         <div className="overflow-hidden rounded-control border border-line bg-canvas">
           {serviceRequests.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
-              <Icon name="handyman" className="text-[32px] text-fg-3 mb-2" />
+              <Icon name="handyman" className="text-[24px] text-fg-3 mb-2" />
               <p className="text-body font-medium text-fg">Chưa có yêu cầu sự cố hoặc bảo hành</p>
               <p className="text-meta text-fg-2">Các yêu cầu phản hồi từ khách hàng sẽ hiển thị tại đây.</p>
             </div>
@@ -280,7 +280,7 @@ export function AdminRecentOperationsTable({
         <div className="overflow-hidden rounded-control border border-line bg-canvas">
           {dispatchItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
-              <Icon name="check_circle" className="text-[32px] text-ok mb-2" />
+              <Icon name="check_circle" className="text-[24px] text-ok mb-2" />
               <p className="text-body font-medium text-fg">Hàng chờ điều phối kỹ thuật viên hiện đang trống</p>
               <p className="text-meta text-fg-2">
                 Mọi lịch hẹn khảo sát đã được gán kỹ thuật viên hoặc chưa có yêu cầu mới.

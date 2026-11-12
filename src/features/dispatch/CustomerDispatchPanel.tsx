@@ -150,7 +150,7 @@ export function CustomerDispatchPanel({ dispatch: d }: { dispatch: CustomerDispa
   }
 
   return (
-    <Panel raised>
+    <Panel raised={Boolean(live)}>
       <PanelHeader
         title={live ? 'Smart Solar đề xuất giờ khảo sát' : 'Đang xếp kỹ thuật viên'}
         description={

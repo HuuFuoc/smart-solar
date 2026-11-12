@@ -153,7 +153,13 @@ export function AssetEntryRow({
           ))}
         </Select>
       </Cell>
-      <Cell row={row} field="productId" label="Sản phẩm có sẵn" error={errors.productId} className="col-span-2 xl:col-span-1">
+      <Cell
+        row={row}
+        field="productId"
+        label="Sản phẩm có sẵn"
+        error={errors.productId}
+        className="col-span-2 xl:col-span-1"
+      >
         <Select
           id={assetFieldId(row, 'productId')}
           value={row.productId ?? (catalogRequired ? '' : MANUAL_PRODUCT_VALUE)}
@@ -174,21 +180,39 @@ export function AssetEntryRow({
         </Select>
         {row.productId && (
           <p className="text-meta text-fg-2">
-            Hãng: {row.manufacturer || 'Chưa rõ'} · Model: {row.model || 'Chưa rõ'}
+            Hãng {row.manufacturer || 'chưa rõ'}, model {row.model || 'chưa rõ'}
           </p>
         )}
         {(needsBrand || needsModel) && (
           <div className="mt-1 grid grid-cols-2 gap-2">
             {needsBrand && (
-              <SubTextInput row={row} field="manufacturer" label="Hãng" errors={errors} onChange={(v) => onChangeRow((r) => ({ ...r, manufacturer: v }))} />
+              <SubTextInput
+                row={row}
+                field="manufacturer"
+                label="Hãng"
+                errors={errors}
+                onChange={(v) => onChangeRow((r) => ({ ...r, manufacturer: v }))}
+              />
             )}
             {needsModel && (
-              <SubTextInput row={row} field="model" label="Model" errors={errors} onChange={(v) => onChangeRow((r) => ({ ...r, model: v }))} />
+              <SubTextInput
+                row={row}
+                field="model"
+                label="Model"
+                errors={errors}
+                onChange={(v) => onChangeRow((r) => ({ ...r, model: v }))}
+              />
             )}
           </div>
         )}
       </Cell>
-      <Cell row={row} field="serialNumber" label="Số serial" error={errors.serialNumber} className="col-span-2 xl:col-span-1">
+      <Cell
+        row={row}
+        field="serialNumber"
+        label="Số serial"
+        error={errors.serialNumber}
+        className="col-span-2 xl:col-span-1"
+      >
         <Input
           id={assetFieldId(row, 'serialNumber')}
           value={row.serialNumber}
@@ -219,17 +243,26 @@ export function AssetEntryRow({
           placeholder={row.productId ? 'Theo danh mục' : 'Không áp dụng'}
           readOnly
           disabled
-          title={row.productId ? 'Thời hạn bảo hành lấy theo sản phẩm trong danh mục' : 'Thiết bị ngoài danh mục không ghi bảo hành'}
+          title={
+            row.productId
+              ? 'Thời hạn bảo hành lấy theo sản phẩm trong danh mục'
+              : 'Thiết bị ngoài danh mục không ghi bảo hành'
+          }
           className="tnum"
           {...ariaInvalid(row, 'warrantyMonths', errors)}
         />
       </Cell>
       <div className="col-span-2 flex justify-end xl:col-span-1 xl:pt-0.5">
         {canRemove && (
-          <IconButton icon="delete" label={`Bỏ thiết bị ${index + 1}`} tooltip="Bỏ dòng" variant="danger-quiet" onClick={onRemove} />
+          <IconButton
+            icon="delete"
+            label={`Bỏ thiết bị ${index + 1}`}
+            tooltip="Bỏ dòng"
+            variant="danger-quiet"
+            onClick={onRemove}
+          />
         )}
       </div>
     </li>
   )
 }
-

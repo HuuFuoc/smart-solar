@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Icon } from '@/components/common/stitch-ui/Icon'
+import { useState } from 'react'
+import { IconButton } from '@/components/common/ui/button'
+import { ModalDialog } from '@/components/common/ui/dialog'
 import { productImages } from '@/features/products/productDisplay'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
 import { cx } from '@/utils/cx'
@@ -7,66 +8,39 @@ import { cx } from '@/utils/cx'
 export function CustomerProductGallery({ product }: { product: ProductResponse }) {
   const images = productImages(product)
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null)
-  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [zoomed, setZoomed] = useState(false)
   const [imgError, setImgError] = useState(false)
 
   const current =
-    images.find((image) => image.url === selectedUrl) ??
-    images.find((image) => image.isPrimary) ??
-    images[0]
-
-  // Đóng lightbox bằng phím ESC
-  useEffect(() => {
-    if (!lightboxOpen) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLightboxOpen(false)
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [lightboxOpen])
+    images.find((image) => image.url === selectedUrl) ?? images.find((image) => image.isPrimary) ?? images[0]
+  const alt = current?.altText || product.name || 'Ảnh sản phẩm'
+  const canZoom = Boolean(current?.url && !imgError)
 
   return (
     <div className="space-y-3">
-      {/* Khung ảnh chính tỉ lệ 4:3, bo 12px, có padding, object-contain */}
-      <div
-        className={cx(
-          'group relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-line bg-surface-2 p-4 sm:p-6',
-          'flex items-center justify-center transition-colors',
-          current?.url && !imgError && 'cursor-zoom-in hover:border-line-2',
-        )}
-        onClick={() => {
-          if (current?.url && !imgError) setLightboxOpen(true)
-        }}
+      <button
+        type="button"
+        disabled={!canZoom}
+        aria-label={canZoom ? 'Xem ảnh lớn' : undefined}
+        onClick={() => setZoomed(true)}
+        className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-container border border-line bg-surface-2 p-4 enabled:cursor-zoom-in enabled:hover:border-line-2"
       >
-        {current?.url && !imgError ? (
-          <>
-            <img
-              key={current.url}
-              src={current.url}
-              alt={current.altText || product.name || 'Ảnh sản phẩm'}
-              loading="lazy"
-              onError={() => setImgError(true)}
-              className="max-h-full max-w-full rounded-lg object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"
-            />
-            {/* Nút gợi ý phóng to */}
-            <span
-              aria-hidden="true"
-              className="absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-lg bg-canvas/80 text-fg-2 opacity-0 shadow-sm backdrop-blur transition-opacity group-hover:opacity-100"
-            >
-              <Icon name="zoom_in" className="text-[18px]" />
-            </span>
-          </>
+        {canZoom ? (
+          <img
+            key={current!.url}
+            src={current!.url!}
+            alt={alt}
+            loading="lazy"
+            onError={() => setImgError(true)}
+            className="max-h-full max-w-full object-contain"
+          />
         ) : (
-          <div className="flex size-full flex-col items-center justify-center gap-1.5 text-fg-3">
-            <Icon name="solar_power" className="text-4xl opacity-35" />
-            <span className="text-meta">Chưa có ảnh</span>
-          </div>
+          <span className="text-meta text-fg-2">Chưa có ảnh</span>
         )}
-      </div>
+      </button>
 
-      {/* Dải thumbnail nếu có nhiều hơn 1 ảnh */}
       {images.length > 1 && (
-        <ul aria-label="Danh sách ảnh thu nhỏ" className="flex flex-wrap gap-2 pt-1">
+        <ul aria-label="Ảnh khác" className="flex flex-wrap gap-2">
           {images.map((image, i) => {
             const active = (image.url ?? '') === (current?.url ?? '')
             return (
@@ -80,8 +54,8 @@ export function CustomerProductGallery({ product }: { product: ProductResponse }
                     setImgError(false)
                   }}
                   className={cx(
-                    'press block size-16 sm:size-18 overflow-hidden rounded-lg border-2 bg-surface-2 p-1 transition-all',
-                    active ? 'border-accent ring-1 ring-accent' : 'border-line hover:border-line-2',
+                    'press block size-16 overflow-hidden rounded-control border bg-surface-2 p-1',
+                    active ? 'border-accent-line' : 'border-line hover:border-line-2',
                   )}
                 >
                   <img
@@ -100,32 +74,12 @@ export function CustomerProductGallery({ product }: { product: ProductResponse }
         </ul>
       )}
 
-      {/* Lightbox phóng to ảnh thuần React */}
-      {lightboxOpen && current?.url && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Xem ảnh phóng to"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-          onClick={() => setLightboxOpen(false)}
-        >
-          <button
-            type="button"
-            onClick={() => setLightboxOpen(false)}
-            className="absolute top-4 right-4 z-10 flex size-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            aria-label="Đóng ảnh phóng to"
-          >
-            <Icon name="close" className="text-[24px]" />
-          </button>
-          <img
-            src={current.url}
-            alt={current.altText || product.name || 'Ảnh phóng to'}
-            className="max-h-[88vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
+      <ModalDialog open={zoomed} onOpenChange={setZoomed} aria-label="Ảnh sản phẩm" className="max-w-5xl p-4">
+        <div className="mb-2 flex justify-end">
+          <IconButton icon="close" label="Đóng" onClick={() => setZoomed(false)} />
         </div>
-      )}
+        {current?.url && <img src={current.url} alt={alt} className="mx-auto max-h-[80vh] object-contain" />}
+      </ModalDialog>
     </div>
   )
 }
-

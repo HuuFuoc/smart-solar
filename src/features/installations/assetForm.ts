@@ -22,7 +22,8 @@ export type AssetRow = {
   warrantyMonths: string
 }
 
-export type AssetField = 'assetType' | 'productId' | 'manufacturer' | 'model' | 'serialNumber' | 'positionCode' | 'warrantyMonths'
+export type AssetField =
+  'assetType' | 'productId' | 'manufacturer' | 'model' | 'serialNumber' | 'positionCode' | 'warrantyMonths'
 export type AssetRowErrors = Partial<Record<AssetField, string>>
 export const assetFieldId = (row: Pick<AssetRow, 'key'>, field: AssetField) => `asset-${row.key}-${field}`
 
@@ -51,7 +52,9 @@ export function filterProductsForAssetType(
   return products
     .filter(
       (p): p is ProductResponse & { id: string } =>
-        Boolean(p.id) && (!p.status || p.status.trim().toUpperCase() === 'ACTIVE') && assetMatchesProductType(assetType, p.productType),
+        Boolean(p.id) &&
+        (!p.status || p.status.trim().toUpperCase() === 'ACTIVE') &&
+        assetMatchesProductType(assetType, p.productType),
     )
     .sort((a, b) => {
       const rankDiff = (contractedIds.has(a.id) ? 0 : 1) - (contractedIds.has(b.id) ? 0 : 1)
@@ -139,7 +142,9 @@ export function changeAssetType(row: AssetRow, nextType: string, products: reado
       ? { ...row, assetType: nextType }
       : clearProduct(row, nextType)
   }
-  return requiresCatalogProduct(nextType) ? clearProduct(row, nextType) : { ...row, assetType: nextType, warrantyMonths: '' }
+  return requiresCatalogProduct(nextType)
+    ? clearProduct(row, nextType)
+    : { ...row, assetType: nextType, warrantyMonths: '' }
 }
 
 const serialKey = (manufacturer: string, serial: string) =>
@@ -172,7 +177,8 @@ export function validateAssetRows(rows: AssetRow[], saved: AssetView[]): AssetRo
       else if (firstRow.has(key)) errors.serialNumber = `Trùng serial với dòng ${firstRow.get(key)! + 1}.`
       else firstRow.set(key, i)
     }
-    if (row.positionCode.trim().length > ASSET_LIMITS.position) errors.positionCode = `Tối đa ${ASSET_LIMITS.position} ký tự.`
+    if (row.positionCode.trim().length > ASSET_LIMITS.position)
+      errors.positionCode = `Tối đa ${ASSET_LIMITS.position} ký tự.`
     const warranty = row.warrantyMonths.trim()
     if (row.productId && warranty && !(/^\d+$/.test(warranty) && Number(warranty) <= ASSET_LIMITS.warrantyMonths))
       errors.warrantyMonths = `Nhập số tháng từ 0 đến ${ASSET_LIMITS.warrantyMonths}.`

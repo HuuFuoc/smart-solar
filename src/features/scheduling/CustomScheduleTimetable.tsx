@@ -136,12 +136,12 @@ export function CustomScheduleTimetable({ initial, technicianUserId, onSaved }: 
             Nghỉ T7 & CN
           </Button>
           <Button size="sm" variant="ghost" type="button" icon="clear_all" onClick={clearAllDays}>
-            Xóa ca
+            Xoá ca
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full border border-line bg-surface-2 px-3 py-1 text-meta font-semibold text-fg">
-            Tổng: <strong className="text-accent-fg">{totalWeekHours} giờ</strong> ({activeDaysCount} ngày làm việc)
+          <span className="tnum text-meta text-fg-2">
+            Tổng {totalWeekHours} giờ, {activeDaysCount} ngày làm việc
           </span>
         </div>
       </div>
@@ -180,7 +180,7 @@ export function CustomScheduleTimetable({ initial, technicianUserId, onSaved }: 
             </Button>
             {(issue || (failure !== null && conflicts.length === 0)) && (
               <span className="flex items-center gap-1.5 text-meta font-medium text-danger" role="alert">
-                <Icon name="error" className="shrink-0 text-[18px]" />
+                <Icon name="error" className="shrink-0 text-[20px]" />
                 {issue ?? errorMessage(failure)}
               </span>
             )}

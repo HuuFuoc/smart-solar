@@ -1,5 +1,6 @@
 import { useId, useState, type ReactNode } from 'react'
 import { PRODUCT_SORT_OPTIONS } from '@/common/product'
+import { FilterChips } from '@/components/common/ui/chips'
 import { SearchInput, Select } from '@/components/common/ui/field'
 import { ListPager } from '@/components/common/ui/pagination'
 import { ErrorState } from '@/components/common/ui/states'
@@ -53,9 +54,7 @@ export function ProductCatalogView({
   const [prevItems, setPrevItems] = useState(query.data?.items)
   if (query.data?.items !== prevItems) {
     setPrevItems(query.data?.items)
-    const types = (query.data?.items ?? [])
-      .map((p) => p.productType?.trim())
-      .filter((t): t is string => Boolean(t))
+    const types = (query.data?.items ?? []).map((p) => p.productType?.trim()).filter((t): t is string => Boolean(t))
     const merged = Array.from(new Set([...knownTypes, ...types]))
     if (merged.length > knownTypes.length) {
       setKnownTypes(merged)
@@ -78,7 +77,6 @@ export function ProductCatalogView({
 
   return (
     <div className={className}>
-      {/* Toolbar: Tìm kiếm (cao 40px, bo 8px) và Sắp xếp */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="flex-1">
           <span className="sr-only">Tìm sản phẩm</span>
@@ -90,12 +88,11 @@ export function ProductCatalogView({
               setSearch(e.target.value)
               setPage(1)
             }}
-            className="[&_input]:h-10 [&_input]:rounded-lg"
           />
         </label>
         <div className="flex items-center gap-2 sm:shrink-0">
-          <label htmlFor={sortId} className="text-meta font-medium text-fg-2 whitespace-nowrap">
-            Sắp xếp:
+          <label htmlFor={sortId} className="whitespace-nowrap text-fg-2">
+            Sắp xếp
           </label>
           <Select
             id={sortId}
@@ -105,7 +102,7 @@ export function ProductCatalogView({
               setSort(e.target.value as typeof sort)
               setPage(1)
             }}
-            className="h-10 rounded-lg sm:w-52"
+            className="sm:w-52"
           >
             {PRODUCT_SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -116,50 +113,22 @@ export function ProductCatalogView({
         </div>
       </div>
 
-      {/* Chip lọc loại sản phẩm trích xuất từ dữ liệu */}
       {knownTypes.length > 0 && (
-        <div className="mb-5 flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo loại sản phẩm">
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedType('')
-              setPage(1)
-            }}
-            className={cx(
-              'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              !selectedType
-                ? 'bg-accent text-on-accent shadow-sm'
-                : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
-            )}
-          >
-            Tất cả
-          </button>
-          {knownTypes.map((type) => {
-            const isSelected = selectedType.toUpperCase() === type.toUpperCase()
-            const label = productTypeLabel(type) ?? type
-            return (
-              <button
-                key={type}
-                type="button"
-                onClick={() => {
-                  setSelectedType(isSelected ? '' : type)
-                  setPage(1)
-                }}
-                className={cx(
-                  'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  isSelected
-                    ? 'bg-accent text-on-accent shadow-sm'
-                    : 'bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg',
-                )}
-              >
-                {label}
-              </button>
-            )
-          })}
-        </div>
+        <FilterChips
+          label="Lọc theo loại sản phẩm"
+          className="mb-4"
+          value={selectedType.toUpperCase()}
+          onChange={(type) => {
+            setSelectedType(type)
+            setPage(1)
+          }}
+          chips={[
+            { value: '', label: 'Tất cả' },
+            ...knownTypes.map((type) => ({ value: type.toUpperCase(), label: productTypeLabel(type) ?? type })),
+          ]}
+        />
       )}
 
-      {/* Nội dung danh sách sản phẩm dạng lưới card responsive */}
       <section aria-live="polite" aria-busy={query.isFetching}>
         {query.isError ? (
           renderError ? (
@@ -179,17 +148,15 @@ export function ProductCatalogView({
           />
         ) : (
           <div className={cx(query.isFetching && 'opacity-70')}>
-            <CustomerProductGrid
-              products={products}
-              detailPath={(id) => withId(detailPattern, id)}
-            />
+            <CustomerProductGrid products={products} detailPath={(id) => withId(detailPattern, id)} />
           </div>
         )}
       </section>
 
-      {/* Phân trang: ẩn thanh chuyển trang khi chỉ có 1 trang, chỉ hiển thị dòng đếm số lượng */}
-      {!query.isError && !query.isPending && products.length > 0 && (
-        pages > 1 ? (
+      {!query.isError &&
+        !query.isPending &&
+        products.length > 0 &&
+        (pages > 1 ? (
           <ListPager
             page={page}
             pages={pages}
@@ -200,14 +167,8 @@ export function ProductCatalogView({
             onChange={setPage}
           />
         ) : (
-          <div className="mt-6 flex items-center justify-between">
-            <p className="tnum text-meta text-fg-2">
-              Hiển thị {products.length} sản phẩm
-            </p>
-          </div>
-        )
-      )}
+          <p className="tnum mt-4 text-meta text-fg-2">{products.length} sản phẩm</p>
+        ))}
     </div>
   )
 }
-

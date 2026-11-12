@@ -5,17 +5,89 @@ import { FilterChips, type Chip } from '@/components/common/ui/chips'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState, Skeleton } from '@/components/common/ui/states'
-import { CustomerRequestCard } from '@/features/pre-surveys/components/CustomerRequestCard'
-import { CustomerRequestSection } from '@/features/pre-surveys/components/CustomerRequestSection'
-import { customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
+import { StatusTableSection } from '@/components/common/ui/status-tables'
+import { Table, Td, Th, Tr } from '@/components/common/ui/table'
+import { customerRequestProgress, customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
+import { formatRelative, shortCode } from '@/features/pre-surveys/preSurveyDisplay'
+import { formatAppointment, formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useMyDispatchesQuery } from '@/hooks/useDispatch'
-import { ROUTES } from '@/routes/paths'
+import { ROUTES, withId } from '@/routes/paths'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 import type { CustomerDispatchView } from '@/types/res/dispatchRes'
 
 type Row = { r: CustomerSurveyRequestView; d: CustomerDispatchView | undefined }
 type FilterTab = 'all' | 'to-book' | 'dispatching' | 'confirmed'
+
+// Nhóm chỉ có một tình hình (cần đặt giờ, đã có lịch) thì bỏ cột Tình hình vì tiêu đề nhóm đã nói
+function RequestTable({ rows, showStatus }: { rows: Row[]; showStatus: boolean }) {
+  return (
+    <Table stack>
+      <thead>
+        <tr>
+          <Th>Công trình</Th>
+          <Th>Gửi lúc</Th>
+          <Th>Lịch khảo sát</Th>
+          {showStatus && <Th>Tình hình</Th>}
+          <Th className="w-px">
+            <span className="sr-only">Thao tác</span>
+          </Th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(({ r, d }) => {
+          const a = r.appointment
+          const live = d?.status === 'PROPOSAL_PENDING' ? d.liveProposal : null
+          const todo = customerRequestTodo(r, d)
+          const progress = customerRequestProgress(r, d)
+          return (
+            <Tr key={r.surveyRequestId} className="*:align-middle">
+              <Td label="Công trình">
+                <p className="font-semibold">{r.propertyName || 'Công trình chưa đặt tên'}</p>
+                <p className="tnum text-meta text-fg-2">Mã {shortCode(r.surveyRequestId)}</p>
+              </Td>
+              <Td label="Gửi lúc" className="whitespace-nowrap">
+                {formatRelative(r.submittedAt)}
+              </Td>
+              <Td label="Lịch khảo sát">
+                {live ? (
+                  <>
+                    <p className="tnum">Đề xuất {formatAppointment(live.startsAt, live.endsAt)}</p>
+                    <p className="tnum text-meta text-fg-2">Trả lời trước {formatMoment(live.expiresAt)}</p>
+                  </>
+                ) : a ? (
+                  <>
+                    <p className="tnum">{formatAppointment(a.startsAt, a.endsAt)}</p>
+                    {a.assignedTechnicianName && (
+                      <p className="text-meta text-fg-2">Kỹ thuật viên {a.assignedTechnicianName}</p>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-fg-2">Chưa có</span>
+                )}
+              </Td>
+              {showStatus && (
+                <Td label="Tình hình">
+                  <Badge tone={progress.tone}>{progress.label}</Badge>
+                </Td>
+              )}
+              <Td className="whitespace-nowrap lg:text-right">
+                <ButtonLink
+                  to={withId(ROUTES.customer.request, r.surveyRequestId)}
+                  size="sm"
+                  variant={todo ? 'soft' : 'info'}
+                  icon={todo ? 'calendar_month' : 'visibility'}
+                >
+                  {live ? 'Xem giờ đề xuất' : todo ? 'Đặt giờ khảo sát' : 'Xem yêu cầu'}
+                </ButtonLink>
+              </Td>
+            </Tr>
+          )
+        })}
+      </tbody>
+    </Table>
+  )
+}
 
 export function CustomerRequestsPage() {
   const query = useMyRequestsQuery()
@@ -24,7 +96,6 @@ export function CustomerRequestsPage() {
 
   const rows: Row[] = pending ? [] : (query.data ?? []).map((r) => ({ r, d: dispatches.get(r.surveyRequestId) }))
 
-  // Phân loại 3 nhóm trạng thái chính
   const toBookRows = rows.filter(({ r, d }) => customerRequestTodo(r, d))
   const dispatchingRows = rows.filter(
     ({ r, d }) =>
@@ -44,10 +115,24 @@ export function CustomerRequestsPage() {
 
   const filterChips: Chip<FilterTab>[] = [
     { value: 'all', label: 'Tất cả', count: rows.length },
-    { value: 'to-book', label: 'Cần đặt giờ', count: toBookRows.length, attention: toBookRows.length > 0 },
-    { value: 'dispatching', label: 'Đang xếp KTV', count: dispatchingRows.length },
+    { value: 'to-book', label: 'Cần đặt giờ', count: toBookRows.length },
+    { value: 'dispatching', label: 'Đang xếp kỹ thuật viên', count: dispatchingRows.length },
     { value: 'confirmed', label: 'Đã có lịch', count: confirmedRows.length },
   ]
+
+  // Nhóm trống chỉ hiện khi đang lọc đúng nhóm đó. Việc cần làm đã báo đỏ ở menu và đầu trang nên số ở đây xám
+  const sections = [
+    {
+      key: 'to-book',
+      title: 'Cần đặt giờ',
+      rows: toBookRows,
+      single: true,
+      empty: 'Không có yêu cầu nào cần đặt giờ.',
+    },
+    { key: 'dispatching', title: 'Đang xếp kỹ thuật viên', rows: dispatchingRows, empty: 'Không có yêu cầu nào.' },
+    { key: 'confirmed', title: 'Đã có lịch khảo sát', rows: confirmedRows, single: true, empty: 'Chưa có lịch nào.' },
+    { key: 'other', title: 'Đã khảo sát, đã đóng', rows: otherRows, empty: '', closed: true },
+  ].filter((s) => (activeTab === 'all' ? s.rows.length > 0 : s.key === activeTab))
 
   return (
     <>
@@ -61,28 +146,11 @@ export function CustomerRequestsPage() {
           ) : undefined
         }
         actions={
-          <ButtonLink
-            to={ROUTES.customer.assessment}
-            variant="primary"
-            icon="add_location_alt"
-            className="hidden h-9 rounded-lg px-3.5 text-sm font-medium shadow-xs sm:inline-flex"
-          >
+          <ButtonLink to={ROUTES.customer.assessment} variant="primary" icon="add_location_alt">
             Đánh giá địa điểm khác
           </ButtonLink>
         }
       />
-
-      {/* Floating Action Button trên Mobile */}
-      <div className="fixed bottom-5 right-5 z-20 sm:hidden">
-        <ButtonLink
-          to={ROUTES.customer.assessment}
-          variant="primary"
-          icon="add_location_alt"
-          className="flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-semibold shadow-pop"
-        >
-          + Đánh giá mới
-        </ButtonLink>
-      </div>
 
       <QueryBoundary query={query}>
         {(requests) =>
@@ -90,12 +158,10 @@ export function CustomerRequestsPage() {
             <div className="space-y-4">
               <Skeleton className="h-10 w-72" />
               <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
             </div>
           ) : requests.length === 0 ? (
             <EmptyState
               title="Chưa có yêu cầu khảo sát"
-              description="Làm đánh giá sơ bộ cho địa điểm của bạn rồi gửi để đặt lịch khảo sát thực tế."
               action={
                 <ButtonLink icon="play_arrow" to={ROUTES.customer.assessment} variant="primary">
                   Bắt đầu đánh giá sơ bộ
@@ -103,69 +169,24 @@ export function CustomerRequestsPage() {
               }
             />
           ) : (
-            <div className="space-y-7">
-              {/* Bộ lọc theo trạng thái */}
+            <div className="space-y-4">
               <FilterChips
                 chips={filterChips}
                 value={activeTab}
                 onChange={setActiveTab}
                 label="Lọc theo trạng thái yêu cầu"
               />
-
-              {/* Nhóm 1: Cần đặt giờ (Đường kẻ trái 3px màu cam, tiêu đề ngắn, hướng dẫn 1 lần) */}
-              {(activeTab === 'all' || activeTab === 'to-book') &&
-                (toBookRows.length > 0 || activeTab === 'to-book') && (
-                  <CustomerRequestSection
-                    title="Cần đặt giờ"
-                    count={toBookRows.length}
-                    defaultOpen={true}
-                    highlight={toBookRows.length > 0}
-                    emptyMessage="Không có yêu cầu nào cần đặt giờ vào lúc này."
-                  >
-                    {toBookRows.map(({ r, d }) => (
-                      <CustomerRequestCard key={r.surveyRequestId} request={r} dispatch={d} showStatusBadge={false} />
-                    ))}
-                  </CustomerRequestSection>
-                )}
-
-              {/* Nhóm 2: Đang xếp kỹ thuật viên (Badge nhỏ xanh dương) */}
-              {(activeTab === 'all' || activeTab === 'dispatching') &&
-                (dispatchingRows.length > 0 || activeTab === 'dispatching') && (
-                  <CustomerRequestSection
-                    title="Đang xếp kỹ thuật viên"
-                    count={dispatchingRows.length}
-                    defaultOpen={dispatchingRows.length > 0}
-                    emptyMessage="Hiện không có yêu cầu nào đang chờ điều phối."
-                  >
-                    {dispatchingRows.map(({ r, d }) => (
-                      <CustomerRequestCard key={r.surveyRequestId} request={r} dispatch={d} showStatusBadge={true} />
-                    ))}
-                  </CustomerRequestSection>
-                )}
-
-              {/* Nhóm 3: Đã có lịch khảo sát (Dòng inline ngày giờ + KTV) */}
-              {(activeTab === 'all' || activeTab === 'confirmed') &&
-                (confirmedRows.length > 0 || activeTab === 'confirmed') && (
-                  <CustomerRequestSection
-                    title="Đã có lịch khảo sát"
-                    count={confirmedRows.length}
-                    defaultOpen={confirmedRows.length > 0}
-                    emptyMessage="Chưa có lịch hẹn nào được xác nhận."
-                  >
-                    {confirmedRows.map(({ r, d }) => (
-                      <CustomerRequestCard key={r.surveyRequestId} request={r} dispatch={d} showStatusBadge={false} />
-                    ))}
-                  </CustomerRequestSection>
-                )}
-
-              {/* Nhóm 4: Lịch sử hoàn thành / Đã đóng */}
-              {activeTab === 'all' && otherRows.length > 0 && (
-                <CustomerRequestSection title="Lịch sử yêu cầu" count={otherRows.length} defaultOpen={false}>
-                  {otherRows.map(({ r, d }) => (
-                    <CustomerRequestCard key={r.surveyRequestId} request={r} dispatch={d} showStatusBadge={true} />
-                  ))}
-                </CustomerRequestSection>
-              )}
+              {sections.map((s) => (
+                <StatusTableSection
+                  key={s.key}
+                  title={s.title}
+                  count={s.rows.length}
+                  emptyText={s.empty}
+                  defaultOpen={!s.closed}
+                >
+                  <RequestTable rows={s.rows} showStatus={!s.single} />
+                </StatusTableSection>
+              ))}
             </div>
           )
         }

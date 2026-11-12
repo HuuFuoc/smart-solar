@@ -81,11 +81,9 @@ export function CustomTimetableDayRow({ dayLabel, periods, onUpdate, onCopyAll }
             {periods.map((p, i) => (
               <div
                 key={i}
-                className="flex w-fit items-center gap-2 rounded-lg border border-line bg-surface-2/60 px-2.5 py-1.5 transition-colors hover:border-fg-3/40"
+                className="flex w-fit items-center gap-2 rounded-control border border-line bg-surface-2 px-2 py-1"
               >
-                <span className="shrink-0 rounded-control border border-line/60 bg-canvas px-1.5 py-0.5 text-meta font-semibold text-fg-2">
-                  Ca {i + 1}
-                </span>
+                <span className="shrink-0 text-meta text-fg-2">Ca {i + 1}</span>
                 <div className="flex items-center gap-1.5">
                   <input
                     type="time"
@@ -93,16 +91,16 @@ export function CustomTimetableDayRow({ dayLabel, periods, onUpdate, onCopyAll }
                     value={p.start}
                     onChange={(e) => handlePeriodChange(i, { start: e.target.value })}
                     aria-label={`${dayLabel}, Ca ${i + 1}, giờ bắt đầu`}
-                    className="h-8 w-32 rounded-md border border-line bg-canvas px-2 text-body font-semibold text-fg outline-none focus:border-accent"
+                    className="tnum h-8 w-32 rounded-control border border-line-2 bg-canvas px-2 text-body text-fg"
                   />
-                  <span className="text-fg-3 font-semibold text-meta">—</span>
+                  <span className="text-fg-2">–</span>
                   <input
                     type="time"
                     step={1800}
                     value={p.end}
                     onChange={(e) => handlePeriodChange(i, { end: e.target.value })}
                     aria-label={`${dayLabel}, Ca ${i + 1}, giờ kết thúc`}
-                    className="h-8 w-32 rounded-md border border-line bg-canvas px-2 text-body font-semibold text-fg outline-none focus:border-accent"
+                    className="tnum h-8 w-32 rounded-control border border-line-2 bg-canvas px-2 text-body text-fg"
                   />
                 </div>
                 <IconButton
