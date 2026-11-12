@@ -1,5 +1,7 @@
 # Smart Solar – Web Portal
 
+Đọc trước: @AGENTS.md (bản rút gọn quy tắc giao diện, `npm test` kiểm bằng `tests/ui-rules.test.mjs`).
+
 ## Git rules
 
 - Never add `Co-Authored-By` or any AI-attribution trailer to commits or PRs. Applies to every agent and contributor.

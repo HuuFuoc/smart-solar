@@ -72,7 +72,15 @@ const catalog = [panelA, panelB, inactivePanel, inverter, laborService]
 
 describe('lọc sản phẩm theo loại thiết bị đã lắp', () => {
   test('PANEL chỉ lấy SOLAR_PANEL đang bán và đưa sản phẩm theo hợp đồng lên đầu', () => {
-    const differences = [{ productId: panelB.id, productType: 'SOLAR_PANEL', name: panelB.name, contractedQuantity: 8, installedQuantity: 0 }]
+    const differences = [
+      {
+        productId: panelB.id,
+        productType: 'SOLAR_PANEL',
+        name: panelB.name,
+        contractedQuantity: 8,
+        installedQuantity: 0,
+      },
+    ]
     const list = filterProductsForAssetType(catalog, 'PANEL', differences)
     assert.deepEqual(
       list.map((p) => p.id),
@@ -157,9 +165,26 @@ describe('kiểm tra dữ liệu và đóng gói request đăng ký thiết bị
   test('chặn trùng serial cùng hãng (không phân biệt hoa thường) và bảo hành ở dòng ngoài danh mục', () => {
     const r1 = { ...selectAssetProduct(newAssetRow(), panelA.id, catalog), serialNumber: 'sn-001' }
     const r2 = { ...selectAssetProduct(newAssetRow(), panelA.id, catalog), serialNumber: 'SN-001' }
-    const saved = [{ assetId: 'a1', assetType: 'PANEL', productId: panelA.id, manufacturer: 'JA SOLAR', model: 'X', serialNumber: 'SN-OLD', positionCode: null, warrantyMonths: 144 }]
+    const saved = [
+      {
+        assetId: 'a1',
+        assetType: 'PANEL',
+        productId: panelA.id,
+        manufacturer: 'JA SOLAR',
+        model: 'X',
+        serialNumber: 'SN-OLD',
+        positionCode: null,
+        warrantyMonths: 144,
+      },
+    ]
     const r3 = { ...selectAssetProduct(newAssetRow(), panelA.id, catalog), serialNumber: 'sn-old' }
-    const manual = { ...changeAssetType(newAssetRow(), 'OTHER', catalog), manufacturer: 'ABC', model: 'M1', serialNumber: 'SN-M', warrantyMonths: '12' }
+    const manual = {
+      ...changeAssetType(newAssetRow(), 'OTHER', catalog),
+      manufacturer: 'ABC',
+      model: 'M1',
+      serialNumber: 'SN-M',
+      warrantyMonths: '12',
+    }
 
     const errors = validateAssetRows([r1, r2, r3, manual], saved)
     assert.equal(errors[0].serialNumber, undefined)
@@ -169,8 +194,18 @@ describe('kiểm tra dữ liệu và đóng gói request đăng ký thiết bị
   })
 
   test('toAssetRequests gửi kèm productId và warrantyMonths đúng chuẩn backend', () => {
-    const panelRow = { ...selectAssetProduct(newAssetRow(), panelA.id, catalog), serialNumber: ' SN-01 ', positionCode: ' R1-C1 ' }
-    const manualRow = { ...changeAssetType(newAssetRow(), 'METER', catalog), manufacturer: ' Schneider ', model: ' iEM3155 ', serialNumber: ' M-01 ', warrantyMonths: '24' }
+    const panelRow = {
+      ...selectAssetProduct(newAssetRow(), panelA.id, catalog),
+      serialNumber: ' SN-01 ',
+      positionCode: ' R1-C1 ',
+    }
+    const manualRow = {
+      ...changeAssetType(newAssetRow(), 'METER', catalog),
+      manufacturer: ' Schneider ',
+      model: ' iEM3155 ',
+      serialNumber: ' M-01 ',
+      warrantyMonths: '24',
+    }
     assert.deepEqual(toAssetRequests([panelRow, manualRow]), [
       {
         assetType: 'PANEL',
@@ -193,4 +228,3 @@ describe('kiểm tra dữ liệu và đóng gói request đăng ký thiết bị
     ])
   })
 })
-
