@@ -55,8 +55,7 @@ export function CustomerShell({
   const { user } = useAuth()
   const current = items.find((item) => isNavItemActive(item, pathname))
   const onItemPage = current ? isNavItemPage(current, pathname) : false
-  const activeCrumb = crumb?.pathname === pathname ? crumb : null
-  const crumbLabel = activeCrumb?.label ?? null
+  const crumbLabel = crumb?.pathname === pathname ? crumb.label : null
   const pastTitle = usePastPageTitle(pathname)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -222,8 +221,8 @@ export function CustomerShell({
 
         <PageCrumbContext value={setCrumb}>
           <main id="main" className="w-full p-4">
-            {/* Trang chi tiết: nút quay về mục đang chọn trên menu, ẩn khi trang tự hiển thị breadcrumb */}
-            {current && !onItemPage && !activeCrumb?.hideBack && (
+            {/* Trang chi tiết: nút quay về mục đang chọn trên menu, tên trang đã có ở tiêu đề ngay dưới */}
+            {current && !onItemPage && (
               <nav aria-label="Quay lại" className="mb-4">
                 <ButtonLink to={current.to} icon="arrow_back" size="sm">
                   {current.label}
