@@ -46,6 +46,8 @@ và không thêm file vào danh sách bỏ qua.
 - Câu tự sinh: mô tả dưới tiêu đề kiểu giải thích, "... sẽ hiện ở đây", "Bước 2/5 · ...". Chỉ giữ tên tính năng,
   số liệu thật và việc người xem cần làm.
 - Lặp một thông tin nhiều lần trên cùng màn (tiêu đề nhóm, nút lọc và từng dòng cùng ghi một trạng thái).
+- Tên nhóm không đúng với dòng bên trong. Mục đã huỷ, đã đóng, đã xong để nhóm riêng (thu gọn) ở cuối, không gộp vào
+  nhóm việc đang chờ như "Khách chưa đặt giờ".
 - Chữ kỹ thuật trên giao diện: backend, máy chủ, token, API, mã lỗi.
 
 ## Màu
@@ -53,6 +55,13 @@ và không thêm file vào danh sách bỏ qua.
 - `danger` (đỏ) chỉ cho việc cần xử lý, lỗi, thao tác phá huỷ. Mỗi sự việc báo đỏ một lần trên một màn.
 - `warn` lưu ý không gấp, `ok` đang chạy đúng, `info` đang xử lý và nút xem / mở, `neutral` đã xong.
 - Chữ link dùng `ui-link` hoặc `text-accent-fg`, không `text-accent`.
+
+## Dữ liệu
+
+- Lỗi API không bao giờ hiện thành "không có" hay danh sách rỗng, kể cả khi gộp nhiều query (`useQueries`): dòng nào lỗi
+  thì báo lỗi, không xếp dòng đó vào nhóm theo dữ liệu thiếu.
+- Tránh gọi API riêng cho từng dòng của danh sách: backend giới hạn số lần gọi mỗi phút (nhóm lịch 20 lần / phút / người),
+  mở lại trang vài lần là bị 429.
 
 ## Bố cục theo cổng
 
