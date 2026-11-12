@@ -87,8 +87,10 @@ describe('cổng kinh doanh với backend thật (chỉ đọc)', { skip }, () =
       if (list.status === 200 && (await open.count()) > 0) {
         await open.click()
         await page.waitForURL(/\/ops\/contracts\//)
-        await page.getByRole('heading', { name: /^Hợp đồng / }).waitFor()
+        // Địa chỉ đổi trước khi trang mới hiện, lúc đó tiêu đề khối "Hợp đồng <trạng thái>" của trang cũ cũng khớp
+        await page.getByRole('heading', { level: 1, name: /^Hợp đồng / }).waitFor()
         const id = page.url().split('/').pop()
+        await until(() => last('GET', `/contracts/${id}`), 'GET hợp đồng')
         assert.equal(last('GET', `/contracts/${id}`).status, 200)
       }
     },
