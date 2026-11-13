@@ -39,7 +39,11 @@ export function CustomerShell({
   children: ReactNode
 }) {
   const portal = PORTALS.customer
-  const items = portal.groups.flatMap((group) => group.items)
+  // "Thông báo" là chuông ở trên cùng, không nằm trong menu; vẫn giữ trong PORTALS để tiêu đề tab và số đếm đọc được
+  const items = portal.groups
+    .flatMap((group) => group.items)
+    .filter((item) => item.to !== ROUTES.customer.notifications)
+  const unread = badges?.[ROUTES.customer.notifications]?.value ?? 0
   // Điện thoại không thấy menu nên nút Menu mang tổng số việc đang chờ
   const waiting = Object.values(badges ?? {}).reduce((sum, c) => sum + (c?.attention ? (c.value ?? 0) : 0), 0)
   const { pathname } = useLocation()
@@ -53,7 +57,7 @@ export function CustomerShell({
   const compact = collapsed && desktop
   const [changingPassword, setChangingPassword] = useState(false)
   const { user } = useAuth()
-  const current = items.find((item) => isNavItemActive(item, pathname))
+  const current = portal.groups.flatMap((group) => group.items).find((item) => isNavItemActive(item, pathname))
   const onItemPage = current ? isNavItemPage(current, pathname) : false
   const crumbLabel = crumb?.pathname === pathname ? crumb.label : null
   const pastTitle = usePastPageTitle(pathname)
@@ -217,10 +221,12 @@ export function CustomerShell({
             <img src="/images/mark-96.png" width={24} height={24} alt="" className="size-6 shrink-0" />
             <span className="truncate">{pastTitle ? (current?.label ?? portal.name) : 'Smart Solar'}</span>
           </p>
+          <NotificationBell unread={unread} pathname={pathname} className="ml-auto inline-flex" />
         </header>
 
         <PageCrumbContext value={setCrumb}>
-          <main id="main" className="w-full p-4">
+          {/* Máy tính không có thanh trên: chuông ở góc phải, tiêu đề trang đứng đầu chừa chỗ cho nó */}
+          <main id="main" className="relative w-full p-4 lg:[&>[data-page-header]:first-child]:pr-16">
             {/* Trang chi tiết: nút quay về mục đang chọn trên menu, tên trang đã có ở tiêu đề ngay dưới */}
             {current && !onItemPage && (
               <nav aria-label="Quay lại" className="mb-4">
@@ -230,6 +236,12 @@ export function CustomerShell({
               </nav>
             )}
             {children}
+            {/* Đứng cuối để tiêu đề trang vẫn là phần tử đầu tiên của main */}
+            <NotificationBell
+              unread={unread}
+              pathname={pathname}
+              className="absolute top-4 right-4 hidden lg:inline-flex"
+            />
           </main>
         </PageCrumbContext>
       </div>
@@ -238,6 +250,31 @@ export function CustomerShell({
         <ChangePasswordDialog open={changingPassword} onOpenChange={setChangingPassword} />
       )}
     </div>
+  )
+}
+
+/** Chuông thông báo dẫn sang trang Thông báo. Số là thông báo mới kể từ lần mở trang đó; xám vì việc cần làm đã đỏ ở menu */
+function NotificationBell({ unread, pathname, className }: { unread: number; pathname: string; className: string }) {
+  const here = pathname === ROUTES.customer.notifications
+  return (
+    <WithTooltip label="Thông báo">
+      {(tip) => (
+        <Link
+          to={ROUTES.customer.notifications}
+          aria-label={unread ? `Thông báo, ${unread} mới` : 'Thông báo'}
+          aria-current={here ? 'page' : undefined}
+          className={cx(
+            'press h-11 shrink-0 items-center justify-center gap-1 rounded-control border px-3 text-fg lg:h-10',
+            here ? 'border-accent-line bg-accent-muted' : 'border-line-2 bg-canvas hover:bg-surface-2',
+            className,
+          )}
+          {...tip}
+        >
+          <Icon name="notifications" className={cx('text-[20px]', here && 'icon-fill')} />
+          {unread > 0 && <Count value={unread} />}
+        </Link>
+      )}
+    </WithTooltip>
   )
 }
 
