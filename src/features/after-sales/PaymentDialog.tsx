@@ -5,7 +5,7 @@ import { KeyValueList, Notice } from '@/components/common/ui/lists'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { isPayableAttempt, paymentStatusMeta } from '@/features/after-sales/afterSalesDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
-import { rememberCheckout } from '@/features/payments/payosReturn'
+import { isCheckoutUrl, rememberCheckout } from '@/features/payments/payosReturn'
 import { usePaymentQuery } from '@/hooks/useCustomerAfterSales'
 import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
@@ -58,15 +58,13 @@ function Payable({
         <Notice tone="warn">PayOS chưa trả link cho đơn này. Bấm Kiểm tra lại sau ít phút.</Notice>
       )}
       <div className="flex flex-wrap gap-3">
-        {attempt.checkoutUrl && (
+        {isCheckoutUrl(attempt.checkoutUrl) && (
           <a
             href={attempt.checkoutUrl}
-            target="_blank"
-            rel="noopener noreferrer"
             className={buttonClass('primary')}
             onClick={() => returnPath && rememberCheckout(attempt.orderCode, returnPath)}
           >
-            Mở trang thanh toán PayOS<span className="sr-only"> (mở tab mới)</span>
+            Mở trang thanh toán PayOS
           </a>
         )}
         <Button variant="secondary" icon="refresh" disabled={checking} onClick={onCheck}>

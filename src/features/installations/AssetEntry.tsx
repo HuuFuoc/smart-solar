@@ -6,6 +6,7 @@ import { Notice } from '@/components/common/ui/lists'
 import { AssetEntryRow } from '@/features/installations/AssetEntryRow'
 import {
   ASSET_LIMITS,
+  assetCount,
   assetFieldId,
   filterProductsForAssetType,
   hasErrors,
@@ -23,10 +24,18 @@ import { PRODUCT_PAGE_SIZE_MAX } from '@/services/productService'
 import type { AssetView, EquipmentComparisonView } from '@/types/res/customerInstallationsRes'
 import { cx } from '@/utils/cx'
 
-const COLUMNS = 'xl:grid-cols-[2rem_9rem_minmax(0,1.9fr)_minmax(0,1.1fr)_7rem_7.5rem_2.5rem]'
-const HEADERS = ['', 'Loại', 'Sản phẩm có sẵn', 'Số serial', 'Vị trí', 'Bảo hành (tháng)', '']
+const COLUMNS = 'xl:grid-cols-[2rem_9rem_minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,0.8fr)_7.5rem_2.5rem]'
+const HEADERS = [
+  '',
+  'Loại',
+  'Sản phẩm có sẵn',
+  'Số serial (mỗi dòng một số)',
+  'Vị trí lắp (không bắt buộc)',
+  'Bảo hành (tháng)',
+  '',
+]
 
-// Ghi thiết bị đã lắp, nhiều dòng một lần. Thiết bị đã lưu không sửa hay xoá được nên báo lỗi trước khi gửi
+// Ghi thiết bị đã lắp: mỗi dòng một sản phẩm kèm danh sách serial. Thiết bị đã lưu không sửa hay xoá được nên báo lỗi trước khi gửi
 export function AssetEntry({
   projectId,
   saved,
@@ -53,10 +62,11 @@ export function AssetEntry({
   const [error, setError] = useState<string | null>(null)
   const focusKey = useRef<number | null>(null)
   const errors = checked ? validateAssetRows(rows, saved) : rows.map(() => ({}))
+  const total = assetCount(rows)
 
   useEffect(() => {
     if (focusKey.current === null) return
-    document.getElementById(`asset-${focusKey.current}-serialNumber`)?.focus()
+    document.getElementById(assetFieldId({ key: focusKey.current }, 'assetType'))?.focus()
     focusKey.current = null
   }, [rows])
 
@@ -66,7 +76,7 @@ export function AssetEntry({
   }
 
   const addRow = () => {
-    const row = newAssetRow(rows.at(-1))
+    const row = newAssetRow()
     focusKey.current = row.key
     setRows((current) => [...current, row])
   }
@@ -81,9 +91,15 @@ export function AssetEntry({
       document.getElementById(assetFieldId(rows[i]!, field))?.focus()
       return
     }
+    if (total > ASSET_LIMITS.perRequest) {
+      setError(
+        `Mỗi lần lưu tối đa ${ASSET_LIMITS.perRequest} thiết bị. Đang có ${total}, lưu bớt rồi ghi tiếp phần còn lại.`,
+      )
+      return
+    }
     try {
       await register.mutateAsync({ id: projectId, assets: toAssetRequests(rows) })
-      toast.success(`Đã lưu ${rows.length} thiết bị.`)
+      toast.success(`Đã lưu ${total} thiết bị.`)
       onClose()
     } catch (e) {
       setError(errorMessage(e))
@@ -151,6 +167,7 @@ export function AssetEntry({
             key={row.key}
             row={row}
             index={i}
+            nextRowKey={rows[i + 1]?.key ?? null}
             canRemove={rows.length > 1}
             className={COLUMNS}
             errors={errors[i]!}
@@ -172,7 +189,7 @@ export function AssetEntry({
             Huỷ
           </Button>
           <Button icon="save" type="submit" size="sm" variant="soft" disabled={register.isPending}>
-            {register.isPending ? 'Đang lưu…' : `Lưu ${rows.length} thiết bị`}
+            {register.isPending ? 'Đang lưu…' : total > 0 ? `Lưu ${total} thiết bị` : 'Lưu thiết bị'}
           </Button>
         </span>
       </div>

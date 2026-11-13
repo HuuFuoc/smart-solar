@@ -105,13 +105,12 @@ export const TECHNICIAN_ASSIGNMENT_STATUSES: Record<string, string> = {
   CANCELLED: 'Đã huỷ',
 }
 
-// Vì sao kỹ thuật viên chưa bắt đầu lắp đặt được (startBlockedReason). Hạng mục bắt buộc do quản lý đánh dấu
-export const START_BLOCKED_REASONS: Record<string, string> = {
+// Vì sao kỹ thuật viên chưa bắt đầu lắp đặt được (startBlockedReason). null = không ghi lý do, chỉ khoá nút
+export const START_BLOCKED_REASONS: Record<string, string | null> = {
   INSTALLATION_ASSIGNMENT_NOT_ACCEPTED: 'Nhận việc trước rồi mới bắt đầu lắp đặt được.',
   INSTALLATION_TOO_EARLY_TO_START: 'Chưa tới ngày lắp đặt.',
   INSTALLATION_SCHEDULE_EXPIRED: 'Đã hết khung giờ lắp đặt. Báo quản lý xếp lại lịch trước khi bắt đầu.',
-  INSTALLATION_CHECKLIST_INCOMPLETE:
-    'Quản lý chưa hoàn tất các hạng mục bắt buộc trước lắp đặt (đấu nối EVN, PCCC, kết cấu mái).',
+  INSTALLATION_CHECKLIST_INCOMPLETE: null,
 }
 
 // Các khoá dưới đây chỉ quản lý / quản trị thấy (checklist, lịch sử phân công, nhật ký là dữ liệu nội bộ)

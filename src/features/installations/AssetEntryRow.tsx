@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import { ASSET_TYPES } from '@/common/installation'
 import { IconButton } from '@/components/common/ui/button'
-import { Input, Select } from '@/components/common/ui/field'
+import { Input, Select, Textarea } from '@/components/common/ui/field'
 import {
   ASSET_LIMITS,
   MANUAL_PRODUCT_VALUE,
@@ -9,6 +9,7 @@ import {
   changeAssetType,
   filterProductsForAssetType,
   formatProductOptionLabel,
+  parseSerials,
   requiresCatalogProduct,
   selectAssetProduct,
   type AssetField,
@@ -90,6 +91,13 @@ function SubTextInput({
   )
 }
 
+// Enter ở ô vị trí chuyển sang ô serial dòng dưới, không gửi form: thiết bị đã lưu không sửa được
+const enterMovesTo = (nextId: string | null) => (e: KeyboardEvent<HTMLInputElement>) => {
+  if (e.key !== 'Enter' || e.nativeEvent.isComposing) return
+  e.preventDefault()
+  if (nextId) document.getElementById(nextId)?.focus()
+}
+
 function emptyOptionText(assetType: string, isPending: boolean, hasOptions: boolean) {
   if (isPending) return 'Đang tải danh sách sản phẩm…'
   if (assetType === 'PANEL') return hasOptions ? 'Chọn tấm pin có sẵn…' : 'Chưa có tấm pin nào trong danh mục'
@@ -99,6 +107,7 @@ function emptyOptionText(assetType: string, isPending: boolean, hasOptions: bool
 export function AssetEntryRow({
   row,
   index,
+  nextRowKey,
   canRemove,
   className,
   errors,
@@ -111,6 +120,7 @@ export function AssetEntryRow({
 }: {
   row: AssetRow
   index: number
+  nextRowKey: number | null
   canRemove: boolean
   className?: string
   errors: AssetRowErrors
@@ -126,6 +136,10 @@ export function AssetEntryRow({
   const manualMode = !catalogRequired && !row.productId
   const needsBrand = manualMode || (Boolean(row.productId) && !row.manufacturer.trim())
   const needsModel = manualMode || (Boolean(row.productId) && !row.model.trim())
+  const serialCount = parseSerials(row.serials).length
+  const contract = row.productId ? diffByProduct.get(row.productId) : undefined
+  const remaining = contract ? Math.max(contract.contractedQuantity - contract.installedQuantity, 0) : null
+  const serialLines = row.serials.split('\n').length
 
   return (
     <li
@@ -208,30 +222,36 @@ export function AssetEntryRow({
       </Cell>
       <Cell
         row={row}
-        field="serialNumber"
-        label="Số serial"
-        error={errors.serialNumber}
+        field="serials"
+        label="Số serial (mỗi dòng một số)"
+        error={errors.serials}
         className="col-span-2 xl:col-span-1"
       >
-        <Input
-          id={assetFieldId(row, 'serialNumber')}
-          value={row.serialNumber}
-          maxLength={ASSET_LIMITS.text}
+        <Textarea
+          id={assetFieldId(row, 'serials')}
+          value={row.serials}
+          rows={Math.min(Math.max(serialLines, 2), 8)}
           autoComplete="off"
           spellCheck={false}
           aria-required
           className="tnum"
-          onChange={(e) => onChangeRow((r) => ({ ...r, serialNumber: e.target.value }))}
-          {...ariaInvalid(row, 'serialNumber', errors)}
+          onChange={(e) => onChangeRow((r) => ({ ...r, serials: e.target.value }))}
+          {...ariaInvalid(row, 'serials', errors)}
         />
+        {(serialCount > 0 || remaining !== null) && (
+          <p className="tnum text-meta text-fg-2">
+            Đã nhập {serialCount}
+            {remaining !== null && `, hợp đồng còn ${remaining}`}
+          </p>
+        )}
       </Cell>
-      <Cell row={row} field="positionCode" label="Vị trí (không bắt buộc)" error={errors.positionCode}>
+      <Cell row={row} field="positionCode" label="Vị trí lắp (không bắt buộc)" error={errors.positionCode}>
         <Input
           id={assetFieldId(row, 'positionCode')}
           value={row.positionCode}
           maxLength={ASSET_LIMITS.position}
           autoComplete="off"
-          placeholder="R1-C1"
+          onKeyDown={enterMovesTo(nextRowKey === null ? null : assetFieldId({ key: nextRowKey }, 'serials'))}
           onChange={(e) => onChangeRow((r) => ({ ...r, positionCode: e.target.value }))}
           {...ariaInvalid(row, 'positionCode', errors)}
         />

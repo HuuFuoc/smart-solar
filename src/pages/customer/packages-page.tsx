@@ -16,6 +16,7 @@ import { PreferredTimeDialog } from '@/features/after-sales/PreferredTimeDialog'
 import { PurchaseDialog } from '@/features/after-sales/PurchaseDialog'
 import { SubscriptionList } from '@/features/after-sales/SubscriptionList'
 import { PAYOS_RETURN_PARAM } from '@/features/payments/payosReturn'
+import { useCheckoutRedirect } from '@/hooks/useCheckoutRedirect'
 import { usePackagesQuery, useSubscriptionsQuery } from '@/hooks/useCustomerAfterSales'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useBookMaintenanceMutation } from '@/hooks/useCustomerServiceRequests'
@@ -65,6 +66,7 @@ export function CustomerPackagesPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const [buying, setBuying] = useState<PackageView | null>(null)
+  const redirect = useCheckoutRedirect()
   // PayOS chuyển về kèm ?thanh-toan= thì mở lại đúng link đó; trạng thái vẫn hỏi hệ thống
   const [payingAttemptId, setPayingAttemptId] = useState<string | null>(() => params.get(PAYMENT_PARAM))
   const [booking, setBooking] = useState<{ entitlement: EntitlementView; subscription: SubscriptionView } | null>(null)
@@ -120,9 +122,11 @@ export function CustomerPackagesPage() {
       <PurchaseDialog
         pkg={buying}
         onClose={() => setBuying(null)}
-        onPurchased={(attemptId) => {
+        onPurchased={(attempt) => {
           setBuying(null)
-          setPayingAttemptId(attemptId)
+          // Sang ngay trang PayOS trong tab này; PayOS chưa trả link thì mở hộp thanh toán để khách kiểm tra lại
+          const back = `${ROUTES.customer.packages}?${PAYMENT_PARAM}=${attempt.paymentAttemptId}`
+          if (!redirect.go(attempt, back)) setPayingAttemptId(attempt.paymentAttemptId)
         }}
       />
       <PaymentDialog

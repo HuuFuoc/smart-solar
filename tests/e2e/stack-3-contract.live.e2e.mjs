@@ -347,29 +347,29 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
   test('C03/C04/C05: tạo link, huỷ link, tạo link mới, trả tiền trên trang PayOS giả lập → backend xác nhận PAID', async () => {
     const page = await as('CUSTOMER', `/customer/contracts/${state.contractId}`)
     const pay = page.locator('#contract-payment')
+    const contractUrl = url(`/customer/contracts/${state.contractId}`)
+    const onPayos = (u) => !u.pathname.startsWith('/customer/')
     let t = mark()
-    await pay.getByRole('button', { name: 'Tạo link thanh toán' }).click()
+    // Có link là trang chuyển ngay sang PayOS (giả lập) trong cùng tab; mở lại trang hợp đồng để huỷ link vừa tạo
+    await pay.getByRole('button', { name: 'Thanh toán qua PayOS' }).click()
     await expectCall('C03', t)
+    await page.waitForURL(onPayos, { timeout: 30_000 })
+    await page.goto(contractUrl, { waitUntil: 'domcontentloaded' })
     await pay.getByText('Mã đơn PayOS').waitFor()
     await expectCall('C04', t)
     t = mark()
     await pay.getByRole('button', { name: 'Huỷ link' }).click()
     await page.getByRole('dialog', { name: 'Huỷ link thanh toán?' }).getByRole('button', { name: 'Huỷ link' }).click()
     await expectCall('C05', t)
-    await pay.getByRole('button', { name: 'Tạo link thanh toán' }).click()
-    await pay.getByText('Mã đơn PayOS').waitFor()
-    const [checkout] = await Promise.all([
-      page.waitForEvent('popup'),
-      pay.getByRole('link', { name: /Mở trang thanh toán PayOS/ }).click(),
-    ])
     // Trang PayOS giả chuyển về Payments__ReturnUrl của stack (cổng dev 3000); E2E chạy Vite ở cổng khác nên mở cùng query tại đây
-    const back = checkout.waitForRequest((r) => r.url().includes('/payments/return'), { timeout: 30_000 })
-    await checkout.getByRole('button', { name: /Đã chuyển khoản/ }).click()
+    const back = page.waitForRequest((r) => r.url().includes('/payments/return'), { timeout: 60_000 })
+    await pay.getByRole('button', { name: 'Thanh toán qua PayOS' }).click()
+    await page.waitForURL(onPayos, { timeout: 30_000 })
+    await page.getByRole('button', { name: /Đã chuyển khoản/ }).click()
     const returned = new URL((await back).url())
     assert.ok(returned.searchParams.get('orderCode'), 'PayOS trả orderCode')
-    const landing = await page.context().newPage()
-    await landing.goto(url(`/payments/return${returned.search}`), { waitUntil: 'domcontentloaded' })
-    await landing.waitForURL(/\/customer\/contracts\//, { timeout: 60_000 })
+    await page.goto(url(`/payments/return${returned.search}`), { waitUntil: 'domcontentloaded' })
+    await page.waitForURL(/\/customer\/contracts\//, { timeout: 60_000 })
     await until(
       async () => (await S.must('CUSTOMER', 'GET', `/customers/me/contracts/${state.contractId}`)).status === 'PAID',
       'PAID',

@@ -11,7 +11,7 @@ import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage, isApiError } from '@/services/api/errors'
-import type { PackageView } from '@/types/res/customerAfterSalesRes'
+import type { PackageView, PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
 
 // Backend ghi đơn mua (chờ thanh toán) trước khi gọi PayOS, nên khi PayOS không tạo được link thì đơn vẫn nằm ở danh sách
@@ -22,8 +22,8 @@ function contractLabel({ contract, includeContract }: PurchasableContract) {
 }
 
 /**
- * Mua một gói (thiên tai hoặc bảo trì) cho một hợp đồng. Chỉ gửi khi khách bấm xác nhận; thành công thì trả id link thanh toán cho trang
- * mở hộp thoại thanh toán. Không tự đánh dấu đã mua: gói chỉ được ghi nhận khi PayOS xác nhận đã nhận tiền
+ * Mua một gói (thiên tai hoặc bảo trì) cho một hợp đồng. Chỉ gửi khi khách bấm xác nhận; thành công thì trả link thanh toán cho trang
+ * chuyển sang PayOS. Không tự đánh dấu đã mua: gói chỉ được ghi nhận khi PayOS xác nhận đã nhận tiền
  */
 export function PurchaseDialog({
   pkg,
@@ -33,7 +33,7 @@ export function PurchaseDialog({
   /** null: hộp thoại đóng */
   pkg: PackageView | null
   onClose: () => void
-  onPurchased: (attemptId: string) => void
+  onPurchased: (checkout: PaymentAttemptView) => void
 }) {
   const [contractId, setContractId] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -70,7 +70,7 @@ export function PurchaseDialog({
         includeContract: selected.includeContract,
       })
       setContractId('')
-      onPurchased(view.checkout.paymentAttemptId)
+      onPurchased(view.checkout)
     } catch (e) {
       const linkFailed = isApiError(e) && e.code !== null && LINK_FAILED.has(e.code)
       if (isApiError(e) && e.code === 'PAYMENT_CHECKOUT_IN_PROGRESS' && selected.includeContract) {

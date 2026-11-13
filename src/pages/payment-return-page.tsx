@@ -6,7 +6,7 @@ import { ROUTES } from '@/routes/paths'
 // trang đó hỏi hệ thống trạng thái thật. Không biết trang nào thì về danh sách hợp đồng
 export function PaymentReturnPage() {
   const { pathname, search } = useLocation()
-  const outcome = pathname === ROUTES.paymentCancel ? 'cancel' : 'return'
+  const outcome = pathname === ROUTES.paymentCancel || pathname === ROUTES.payosCancel ? 'cancel' : 'return'
   const orderCode = new URLSearchParams(search).get('orderCode')
   const target = returnPathFor(orderCode, outcome) ?? `${ROUTES.customer.contracts}?${PAYOS_RETURN_PARAM}=${outcome}`
   return <Navigate to={target} replace />

@@ -9,7 +9,8 @@ import { isPayableAttempt, paymentStatusMeta } from '@/features/after-sales/afte
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { QuotationDetail } from '@/features/after-sales/ServiceRequestParts'
 import { formatVnd } from '@/features/after-sales/serviceDisplay'
-import { rememberCheckout } from '@/features/payments/payosReturn'
+import { isCheckoutUrl, rememberCheckout } from '@/features/payments/payosReturn'
+import { useCheckoutRedirect } from '@/hooks/useCheckoutRedirect'
 import {
   useAcceptQuotationMutation,
   useCheckoutQuotationMutation,
@@ -30,7 +31,8 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
   const { pathname } = useLocation()
   const [rejecting, setRejecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const busy = accept.isPending || checkout.isPending
+  const redirect = useCheckoutRedirect()
+  const busy = accept.isPending || checkout.isPending || redirect.leaving
   const attempt = payment.data
   // Link còn trả được thì mở lại link đó; hết hạn hoặc chưa có thì tạo link mới
   const payable = attempt && isPayableAttempt(attempt.status) ? attempt : null
@@ -40,6 +42,17 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
     try {
       await action()
       toast.success(done)
+    } catch (e) {
+      setError(errorMessage(e))
+    }
+  }
+
+  // Tạo link xong là sang ngay trang PayOS trong tab này; PayOS chưa trả link thì ở lại, trạng thái link hiện bên dưới
+  async function pay() {
+    setError(null)
+    try {
+      const created = await checkout.mutateAsync(quotation.quotationId)
+      if (!redirect.go(created, pathname)) toast.success('Đã tạo link thanh toán PayOS.')
     } catch (e) {
       setError(errorMessage(e))
     }
@@ -81,26 +94,17 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
               </p>
             )}
             <div className="flex flex-wrap gap-3">
-              {payable?.checkoutUrl ? (
+              {payable && isCheckoutUrl(payable.checkoutUrl) ? (
                 <a
                   href={payable.checkoutUrl}
-                  target="_blank"
-                  rel="noreferrer"
                   className={buttonClass('primary')}
                   onClick={() => rememberCheckout(payable.orderCode, pathname)}
                 >
                   Mở trang thanh toán PayOS
                 </a>
               ) : (
-                <Button
-                  icon="payments"
-                  variant="primary"
-                  disabled={busy}
-                  onClick={() =>
-                    void run(() => checkout.mutateAsync(quotation.quotationId), 'Đã tạo link thanh toán PayOS.')
-                  }
-                >
-                  {checkout.isPending ? 'Đang tạo link…' : 'Thanh toán qua PayOS'}
+                <Button icon="payments" variant="primary" disabled={busy} onClick={() => void pay()}>
+                  {checkout.isPending || redirect.leaving ? 'Đang mở PayOS…' : 'Thanh toán qua PayOS'}
                 </Button>
               )}
               {payable && (
