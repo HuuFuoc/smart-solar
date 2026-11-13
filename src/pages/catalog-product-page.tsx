@@ -42,12 +42,7 @@ function CatalogProductDetailPage({
   }
 
   return (
-    <CustomerProductDetail
-      product={query.data}
-      listPath={listPath}
-      detailPattern={detailPattern}
-      action={action}
-    />
+    <CustomerProductDetail product={query.data} listPath={listPath} detailPattern={detailPattern} action={action} />
   )
 }
 
@@ -73,30 +68,15 @@ export function CustomerCatalogProductPage() {
 
 /* 2. Cổng vận hành (Ops) */
 export function OpsCatalogProductPage() {
-  return (
-    <CatalogProductDetailPage
-      listPath={ROUTES.ops.products}
-      detailPattern={ROUTES.ops.product}
-    />
-  )
+  return <CatalogProductDetailPage listPath={ROUTES.ops.products} detailPattern={ROUTES.ops.product} />
 }
 
 /* 3. Cổng kỹ thuật (Tech) */
 export function TechCatalogProductPage() {
-  return (
-    <CatalogProductDetailPage
-      listPath={ROUTES.tech.products}
-      detailPattern={ROUTES.tech.product}
-    />
-  )
+  return <CatalogProductDetailPage listPath={ROUTES.tech.products} detailPattern={ROUTES.tech.product} />
 }
 
 /* 4. Cổng quản lý (Manage) */
 export function ManageCatalogProductPage() {
-  return (
-    <CatalogProductDetailPage
-      listPath={ROUTES.manage.products}
-      detailPattern={ROUTES.manage.product}
-    />
-  )
+  return <CatalogProductDetailPage listPath={ROUTES.manage.products} detailPattern={ROUTES.manage.product} />
 }

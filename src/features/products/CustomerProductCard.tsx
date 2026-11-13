@@ -54,9 +54,7 @@ export function CustomerProductCard({
       {/* Nội dung chi tiết */}
       <div className="flex flex-1 flex-col p-4">
         {/* Hãng · Model */}
-        <p className="text-meta text-fg-3 truncate">
-          {brandModel || '—'}
-        </p>
+        <p className="text-meta text-fg-3 truncate">{brandModel || '—'}</p>
 
         {/* Tên sản phẩm tối đa 2 dòng, đậm, không gạch chân */}
         <h3 className="mt-1 line-clamp-2 text-body font-semibold text-fg transition-colors group-hover:text-accent">
@@ -91,13 +89,10 @@ export function CustomerProductCard({
 
         {/* Đơn giá cỡ chữ lớn nhất màu xanh thương hiệu */}
         <div className="mt-auto pt-3 border-t border-line/60 flex items-baseline gap-1">
-          <span className="text-title font-bold text-accent">
-            {formatMoney(product.unitPrice, product.currency)}
-          </span>
+          <span className="text-title font-bold text-accent">{formatMoney(product.unitPrice, product.currency)}</span>
           <span className="text-meta text-fg-3">/ {unit}</span>
         </div>
       </div>
     </Link>
   )
 }
-

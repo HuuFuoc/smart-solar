@@ -37,9 +37,7 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
   // Cập nhật danh sách loại sản phẩm thực tế từ dữ liệu tải về
   useEffect(() => {
     if (query.data?.items) {
-      const types = query.data.items
-        .map((p) => p.productType?.trim())
-        .filter((t): t is string => Boolean(t))
+      const types = query.data.items.map((p) => p.productType?.trim()).filter((t): t is string => Boolean(t))
       if (types.length > 0) {
         setKnownTypes((prev) => Array.from(new Set([...prev, ...types])))
       }
@@ -153,23 +151,19 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
         ) : query.isPending ? (
           <CustomerProductGridSkeleton count={6} />
         ) : products.length === 0 ? (
-          <CustomerProductEmptyState
-            hasFilters={Boolean(search.trim() || selectedType)}
-            onReset={handleResetFilters}
-          />
+          <CustomerProductEmptyState hasFilters={Boolean(search.trim() || selectedType)} onReset={handleResetFilters} />
         ) : (
           <div className={cx(query.isFetching && 'opacity-70')}>
-            <CustomerProductGrid
-              products={products}
-              detailPath={(id) => withId(detailPattern, id)}
-            />
+            <CustomerProductGrid products={products} detailPath={(id) => withId(detailPattern, id)} />
           </div>
         )}
       </section>
 
       {/* Phân trang: ẩn thanh chuyển trang khi chỉ có 1 trang, chỉ hiển thị dòng đếm số lượng */}
-      {!query.isError && !query.isPending && products.length > 0 && (
-        pages > 1 ? (
+      {!query.isError &&
+        !query.isPending &&
+        products.length > 0 &&
+        (pages > 1 ? (
           <ListPager
             page={page}
             pages={pages}
@@ -181,12 +175,9 @@ function CatalogPage({ detailPattern }: { detailPattern: string }) {
           />
         ) : (
           <div className="mt-6 flex items-center justify-between">
-            <p className="tnum text-meta text-fg-2">
-              Hiển thị {products.length} sản phẩm
-            </p>
+            <p className="tnum text-meta text-fg-2">Hiển thị {products.length} sản phẩm</p>
           </div>
-        )
-      )}
+        ))}
     </>
   )
 }

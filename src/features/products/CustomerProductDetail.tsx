@@ -40,8 +40,9 @@ export function CustomerProductDetail({
   const brandModel = [product.brand?.trim(), product.model?.trim()].filter(Boolean).join(' · ')
   const typeLabel = productTypeLabel(product.productType)
   const categoryLabel = product.category?.trim()
-  const isDuplicateCategory =
-    Boolean(categoryLabel && typeLabel && categoryLabel.toLowerCase() === typeLabel.toLowerCase())
+  const isDuplicateCategory = Boolean(
+    categoryLabel && typeLabel && categoryLabel.toLowerCase() === typeLabel.toLowerCase(),
+  )
   const unit = product.unit?.trim() || 'tấm'
 
   // Thu thập thông số kỹ thuật chi tiết
@@ -136,16 +137,10 @@ export function CustomerProductDetail({
           {/* Tên & Hãng Model */}
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-meta font-medium text-fg-3">
-                {brandModel || '—'}
-              </p>
-              {!isProductActive(product.status) && (
-                <Badge tone="warn">Đã ngừng bán</Badge>
-              )}
+              <p className="text-meta font-medium text-fg-3">{brandModel || '—'}</p>
+              {!isProductActive(product.status) && <Badge tone="warn">Đã ngừng bán</Badge>}
             </div>
-            <h1 className="mt-1.5 text-title sm:text-2xl font-bold text-fg leading-snug">
-              {product.name}
-            </h1>
+            <h1 className="mt-1.5 text-title sm:text-2xl font-bold text-fg leading-snug">{product.name}</h1>
           </div>
 
           {/* Khối giá cỡ lớn màu xanh thương hiệu */}
@@ -154,9 +149,7 @@ export function CustomerProductDetail({
               <span className="text-2xl sm:text-3xl font-bold text-accent">
                 {formatMoney(product.unitPrice, product.currency)}
               </span>
-              <span className="text-body text-fg-3 font-normal">
-                / {unit}
-              </span>
+              <span className="text-body text-fg-3 font-normal">/ {unit}</span>
             </div>
             <p className="mt-1.5 text-meta text-fg-3">
               Giá tham khảo thiết bị, chưa bao gồm thuế VAT và chi phí thi công lắp đặt thực tế.
@@ -168,7 +161,12 @@ export function CustomerProductDetail({
 
           {/* Hàng 3-4 ô spec highlight */}
           {highlights.length > 0 && (
-            <div className={cx('grid gap-3', highlights.length === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3')}>
+            <div
+              className={cx(
+                'grid gap-3',
+                highlights.length === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3',
+              )}
+            >
               {highlights.map((h, i) => (
                 <div
                   key={i}
@@ -190,9 +188,7 @@ export function CustomerProductDetail({
                 onClick={() => setActiveTab('info')}
                 className={cx(
                   'rounded-lg px-3 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                  activeTab === 'info'
-                    ? 'bg-accent text-on-accent'
-                    : 'text-fg-2 hover:bg-surface-2 hover:text-fg',
+                  activeTab === 'info' ? 'bg-accent text-on-accent' : 'text-fg-2 hover:bg-surface-2 hover:text-fg',
                 )}
               >
                 Thông tin chung ({basicFacts.length})
@@ -203,9 +199,7 @@ export function CustomerProductDetail({
                   onClick={() => setActiveTab('specs')}
                   className={cx(
                     'rounded-lg px-3 py-1.5 text-meta font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                    activeTab === 'specs'
-                      ? 'bg-accent text-on-accent'
-                      : 'text-fg-2 hover:bg-surface-2 hover:text-fg',
+                    activeTab === 'specs' ? 'bg-accent text-on-accent' : 'text-fg-2 hover:bg-surface-2 hover:text-fg',
                   )}
                 >
                   Thông số kỹ thuật ({specs.length})
@@ -215,27 +209,27 @@ export function CustomerProductDetail({
 
             <div className="overflow-hidden rounded-xl border border-line bg-canvas">
               <div className="divide-y divide-line">
-                {activeTab === 'info' ? (
-                  basicFacts.map((row, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between gap-4 px-4 py-2.5 text-body odd:bg-surface-2/40"
-                    >
-                      <span className="text-meta sm:text-body text-fg-3 shrink-0">{row.k}</span>
-                      <span className="text-meta sm:text-body font-medium text-fg text-right">{row.v}</span>
-                    </div>
-                  ))
-                ) : (
-                  specs.map((row, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between gap-4 px-4 py-2.5 text-body odd:bg-surface-2/40"
-                    >
-                      <span className="text-meta sm:text-body text-fg-3 shrink-0">{row.label || `Thông số ${idx + 1}`}</span>
-                      <span className="text-meta sm:text-body font-medium text-fg text-right">{row.value}</span>
-                    </div>
-                  ))
-                )}
+                {activeTab === 'info'
+                  ? basicFacts.map((row, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between gap-4 px-4 py-2.5 text-body odd:bg-surface-2/40"
+                      >
+                        <span className="text-meta sm:text-body text-fg-3 shrink-0">{row.k}</span>
+                        <span className="text-meta sm:text-body font-medium text-fg text-right">{row.v}</span>
+                      </div>
+                    ))
+                  : specs.map((row, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between gap-4 px-4 py-2.5 text-body odd:bg-surface-2/40"
+                      >
+                        <span className="text-meta sm:text-body text-fg-3 shrink-0">
+                          {row.label || `Thông số ${idx + 1}`}
+                        </span>
+                        <span className="text-meta sm:text-body font-medium text-fg text-right">{row.value}</span>
+                      </div>
+                    ))}
               </div>
             </div>
           </div>
@@ -247,20 +241,13 @@ export function CustomerProductDetail({
         <section className="mt-14 pt-8 border-t border-line">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-title font-bold text-fg">Sản phẩm tương tự</h2>
-            <Link
-              to={listPath}
-              className="text-meta font-medium text-accent hover:underline"
-            >
+            <Link to={listPath} className="text-meta font-medium text-accent hover:underline">
               Xem tất cả
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {relatedProducts.map((p) => (
-              <CustomerProductCard
-                key={p.id}
-                product={p}
-                detailPath={(id) => withId(detailPattern, id)}
-              />
+              <CustomerProductCard key={p.id} product={p} detailPath={(id) => withId(detailPattern, id)} />
             ))}
           </div>
         </section>

@@ -49,13 +49,7 @@ export function CustomerProductGridSkeleton({ count = 6 }: { count?: number }) {
   )
 }
 
-export function CustomerProductEmptyState({
-  hasFilters,
-  onReset,
-}: {
-  hasFilters: boolean
-  onReset?: () => void
-}) {
+export function CustomerProductEmptyState({ hasFilters, onReset }: { hasFilters: boolean; onReset?: () => void }) {
   return (
     <EmptyState
       title={hasFilters ? 'Không tìm thấy sản phẩm phù hợp' : 'Chưa có sản phẩm nào đang bán'}
@@ -74,4 +68,3 @@ export function CustomerProductEmptyState({
     />
   )
 }
-

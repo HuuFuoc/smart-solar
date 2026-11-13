@@ -14,11 +14,7 @@ export interface CustomerRequestCardProps {
   showStatusBadge?: boolean
 }
 
-export function CustomerRequestCard({
-  request: r,
-  dispatch: d,
-  showStatusBadge = false,
-}: CustomerRequestCardProps) {
+export function CustomerRequestCard({ request: r, dispatch: d, showStatusBadge = false }: CustomerRequestCardProps) {
   const progress = customerRequestProgress(r, d)
   const a = r.appointment
   const live = d?.status === 'PROPOSAL_PENDING' ? d.liveProposal : null
@@ -30,9 +26,7 @@ export function CustomerRequestCard({
         {/* Bên trái: Tên đậm + dòng phụ xám nhỏ + lịch hẹn inline (nếu có) */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-[15px] font-semibold text-fg">
-              {r.propertyName || 'Công trình chưa đặt tên'}
-            </h3>
+            <h3 className="text-[15px] font-semibold text-fg">{r.propertyName || 'Công trình chưa đặt tên'}</h3>
             {showStatusBadge && <RequestStatusBadge label={progress.label} tone={progress.tone} />}
           </div>
 
@@ -58,7 +52,8 @@ export function CustomerRequestCard({
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
               <Icon name="notification_important" className="text-[14px]" />
               <span>
-                Đề xuất: <strong>{formatAppointment(live.startsAt, live.endsAt)}</strong> (trả lời trước {formatMoment(live.expiresAt)})
+                Đề xuất: <strong>{formatAppointment(live.startsAt, live.endsAt)}</strong> (trả lời trước{' '}
+                {formatMoment(live.expiresAt)})
               </span>
             </div>
           )}

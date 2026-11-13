@@ -38,9 +38,7 @@ export function CustomerRequestSection({
           aria-expanded={open}
           className="group flex items-center gap-2 text-left focus:outline-none"
         >
-          <h2 className="text-base font-semibold text-fg transition-colors group-hover:text-accent">
-            {title}
-          </h2>
+          <h2 className="text-base font-semibold text-fg transition-colors group-hover:text-accent">{title}</h2>
           <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-2 px-1.5 text-xs font-semibold text-fg-2">
             {count}
           </span>
@@ -57,11 +55,7 @@ export function CustomerRequestSection({
       {/* Danh sách các card */}
       {open && (
         <div className="space-y-2 pt-1">
-          {count === 0 && emptyMessage ? (
-            <p className="py-2 text-meta italic text-fg-3">{emptyMessage}</p>
-          ) : (
-            children
-          )}
+          {count === 0 && emptyMessage ? <p className="py-2 text-meta italic text-fg-3">{emptyMessage}</p> : children}
         </div>
       )}
     </section>

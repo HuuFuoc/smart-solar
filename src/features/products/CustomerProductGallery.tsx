@@ -11,9 +11,7 @@ export function CustomerProductGallery({ product }: { product: ProductResponse }
   const [imgError, setImgError] = useState(false)
 
   const current =
-    images.find((image) => image.url === selectedUrl) ??
-    images.find((image) => image.isPrimary) ??
-    images[0]
+    images.find((image) => image.url === selectedUrl) ?? images.find((image) => image.isPrimary) ?? images[0]
 
   // Đóng lightbox bằng phím ESC
   useEffect(() => {
@@ -128,4 +126,3 @@ export function CustomerProductGallery({ product }: { product: ProductResponse }
     </div>
   )
 }
-
