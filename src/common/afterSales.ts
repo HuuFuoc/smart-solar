@@ -318,6 +318,22 @@ export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
   PACKAGE_ACTIVE: 'Gói dịch vụ bắt đầu hiệu lực',
   PACKAGE_EXPIRING: 'Gói dịch vụ sắp hết hạn',
   MAINTENANCE_DUE: 'Tới tháng bảo trì, mời bạn đặt lịch',
+  // Trước khi lắp đặt (CustomerNotificationTypes): không có requestId / subscriptionId, trang thông báo dẫn theo loại
+  SURVEY_APPOINTMENT_BOOKED: 'Đã đặt lịch khảo sát',
+  SURVEY_APPOINTMENT_CONFIRMED: 'Đã có kỹ thuật viên nhận lịch khảo sát',
+  SURVEY_APPOINTMENT_RESCHEDULED: 'Lịch khảo sát đã được đổi giờ',
+  SURVEY_TECHNICIAN_RELEASED: 'Kỹ thuật viên trả lại lịch khảo sát, đang tìm người khác',
+  SURVEY_APPOINTMENT_CANCELLED: 'Lịch khảo sát đã bị huỷ',
+  INSTALLATION_QUOTATION_ISSUED: 'Có báo giá lắp đặt chờ bạn trả lời',
+  CONTRACT_AWAITING_SIGNATURE: 'Hợp đồng đã sẵn sàng, mời bạn ký',
+  CONTRACT_SIGNED: 'Bản ký hợp đồng đã được duyệt, mời bạn thanh toán',
+  CONTRACT_SIGNATURE_REJECTED: 'Bản ký hợp đồng chưa được duyệt, mời bạn ký lại',
+  INSTALLATION_SCHEDULED: 'Công trình đã có lịch lắp đặt',
+  INSTALLATION_STARTED: 'Kỹ thuật viên đã bắt đầu lắp đặt',
+  INSTALLATION_ACCEPTANCE_REQUIRED: 'Lắp đặt xong, mời bạn nghiệm thu',
+  INSTALLATION_REWORK_REQUIRED: 'Công trình được làm lại theo yêu cầu',
+  INSTALLATION_CANCELLED: 'Công trình lắp đặt đã bị huỷ',
+  EQUIPMENT_SUBSTITUTION_APPROVAL_REQUIRED: 'Có đề xuất đổi thiết bị chờ bạn đồng ý',
 }
 
 /** Thứ tự các chỉ số tiền trên báo cáo: các nguồn thu, tổng, hoàn, thực thu */

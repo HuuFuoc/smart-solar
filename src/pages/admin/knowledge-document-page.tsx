@@ -5,7 +5,7 @@ import { KNOWLEDGE_CATEGORIES } from '@/common/knowledge'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
-import { Field, Input, Select } from '@/components/common/ui/field'
+import { Field, Input, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelHeader } from '@/components/common/ui/panel'
@@ -23,7 +23,13 @@ import {
   versionStatusMeta,
 } from '@/features/knowledge/knowledgeDisplay'
 import {
+  AUDIENCE_REASON_MAX,
+  KNOWLEDGE_AUDIENCES,
   KNOWLEDGE_LIMITS,
+  audienceMeta,
+  audienceOf,
+  audienceReasonError,
+  canChangeAudience,
   canPublishVersion,
   canReindexVersion,
   canRetryJob,
@@ -41,6 +47,7 @@ import {
   usePublishKnowledgeVersionMutation,
   useReindexKnowledgeVersionMutation,
   useRetryKnowledgeJobMutation,
+  useSetKnowledgeAudienceMutation,
   useUnpublishKnowledgeMutation,
   useUpdateKnowledgeMetadataMutation,
 } from '@/hooks/useKnowledgeDocuments'
@@ -153,6 +160,97 @@ function MetadataDialog({
   )
 }
 
+// Ai được chatbot truy hồi tài liệu. Backend mặc định INTERNAL khi đăng ký: khách hàng chỉ nhận câu trả lời từ tài liệu CUSTOMER
+function AudienceDialog({
+  document: d,
+  open,
+  onOpenChange,
+}: {
+  document: KnowledgeDocumentView
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const change = useSetKnowledgeAudienceMutation()
+  const current = audienceOf(d)
+  const [audience, setAudience] = useState(current === 'CUSTOMER' ? 'INTERNAL' : 'CUSTOMER')
+  const [reason, setReason] = useState('')
+  const [revision] = useState(d.revision)
+  const [checked, setChecked] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const reasonError = checked ? audienceReasonError(reason) : undefined
+
+  async function submit() {
+    if (change.isPending) return
+    setChecked(true)
+    setError(null)
+    if (audienceReasonError(reason)) return
+    try {
+      await change.mutateAsync({ id: d.documentId, revision, audience, reason: reason.trim() })
+      toast.success(`Đã đổi đối tượng đọc: ${audienceMeta(audience).label}. Chatbot áp dụng ngay.`)
+      onOpenChange(false)
+    } catch (e) {
+      if (isApiError(e) && (e.code === 'RAG_STALE_REVISION' || e.code === 'RAG_DOCUMENT_AUDIENCE_UNCHANGED')) {
+        toast.error(errorMessage(e))
+        onOpenChange(false)
+        return
+      }
+      setError(rateLimitedMessage(e))
+    }
+  }
+
+  return (
+    <ModalDialog open={open} onOpenChange={onOpenChange} dismissible={!change.isPending} aria-label="Đổi đối tượng đọc">
+      <form
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault()
+          void submit()
+        }}
+      >
+        <DialogTitle>Đổi đối tượng đọc</DialogTitle>
+        <div className="mt-4 space-y-4">
+          <Notice tone="info">
+            Hiện tại: {audienceMeta(current).label}. Chỉ tài liệu &quot;{KNOWLEDGE_AUDIENCES.CUSTOMER.label}&quot; được
+            dùng khi khách hàng hỏi chatbot; nhân viên đọc được mọi tài liệu đang công bố.
+          </Notice>
+          <Field label="Đối tượng đọc" required htmlFor="kb-audience">
+            <Select id="kb-audience" value={audience} onChange={(e) => setAudience(e.target.value)}>
+              {Object.entries(KNOWLEDGE_AUDIENCES).map(([value, meta]) => (
+                <option key={value} value={value}>
+                  {meta.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Lý do" required htmlFor="kb-audience-reason" error={reasonError}>
+            <Textarea
+              id="kb-audience-reason"
+              value={reason}
+              maxLength={AUDIENCE_REASON_MAX}
+              aria-required
+              aria-invalid={reasonError ? true : undefined}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </Field>
+          {error && (
+            <div role="alert">
+              <Notice tone="danger">{error}</Notice>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button icon="close" variant="secondary" disabled={change.isPending} onClick={() => onOpenChange(false)}>
+            Huỷ
+          </Button>
+          <Button icon="save" type="submit" variant="primary" disabled={change.isPending}>
+            {change.isPending ? 'Đang lưu…' : 'Lưu'}
+          </Button>
+        </DialogFooter>
+      </form>
+    </ModalDialog>
+  )
+}
+
 function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
   const navigate = useNavigate()
   const publish = usePublishKnowledgeVersionMutation()
@@ -162,11 +260,13 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
   const retry = useRetryKnowledgeJobMutation()
   const [editing, setEditing] = useState(false)
   const [adding, setAdding] = useState(false)
+  const [changingAudience, setChangingAudience] = useState(false)
   const [confirm, setConfirm] = useState<Confirm | null>(null)
   const [busyKey, setBusyKey] = useState<string | null>(null)
   // Nạp lại và chạy lại chung giới hạn 3 lần / 10 phút: bị 429 thì khoá cả hai tới hết Retry-After
   const cooldown = useRetryCountdown(() => {})
   const status = documentStatusMeta(d.status)
+  const audience = audienceMeta(audienceOf(d))
   const archived = isArchived(d)
   const versions = [...(d.versions ?? [])].sort((a, b) => b.versionNumber - a.versionNumber)
   const jobs = [...(d.jobs ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -223,6 +323,7 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
         meta={
           <>
             <Badge tone={status.tone}>{status.label}</Badge>
+            <Badge tone={audience.tone}>{audience.label}</Badge>
             <span>{categoryLabel(d.category)}</span>
           </>
         }
@@ -234,6 +335,11 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
               <Button variant="soft" icon="edit" onClick={() => setEditing(true)}>
                 Sửa thông tin
               </Button>
+              {canChangeAudience(d) && (
+                <Button variant="soft" icon="group" onClick={() => setChangingAudience(true)}>
+                  Đổi đối tượng đọc
+                </Button>
+              )}
               <Button variant="soft" icon="upload_file" onClick={() => setAdding(true)}>
                 Thêm phiên bản
               </Button>
@@ -253,6 +359,12 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
       {needsPolling(d) && (
         <Notice tone="info" className="mb-6">
           Đang có lượt nạp chạy nền. Trang tự cập nhật 15 giây một lần; phiên bản nạp xong mới công bố được.
+        </Notice>
+      )}
+      {d.legacyAudienceTag && (
+        <Notice tone="warn" className="mb-6">
+          Tài liệu còn thẻ cũ &quot;audience:customer&quot;. Thẻ này không còn cho khách hàng đọc: nếu khách hàng cần
+          đọc, đổi đối tượng đọc.
         </Notice>
       )}
       {archived && (
@@ -443,6 +555,12 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
         document={d}
         open={editing}
         onOpenChange={setEditing}
+      />
+      <AudienceDialog
+        key={changingAudience ? `audience-${d.revision}` : 'closed'}
+        document={d}
+        open={changingAudience}
+        onOpenChange={setChangingAudience}
       />
       <KnowledgeUploadDialog open={adding} document={d} onOpenChange={setAdding} />
       <ModalDialog

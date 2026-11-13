@@ -148,6 +148,18 @@ export function useNotificationsQuery({ enabled = true }: { enabled?: boolean } 
   })
 }
 
+/** Đánh dấu một thông báo đã đọc. Ghi `readAt` backend trả về vào danh sách đang có để số chưa đọc giảm ngay */
+export function useMarkNotificationReadMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<NotificationView, ApiError, string>({
+    mutationFn: afterSalesService.markNotificationRead,
+    onSuccess: (view) =>
+      queryClient.setQueryData<NotificationView[]>(customerServiceKeys.notifications(), (list) =>
+        list?.map((n) => (n.notificationId === view.notificationId ? { ...n, readAt: view.readAt } : n)),
+      ),
+  })
+}
+
 /** Đặt một lượt bảo trì của gói. Lượt chỉ thành "đã đặt" theo backend nên tải lại cả gói đã mua */
 export function useBookMaintenanceMutation() {
   const queryClient = useQueryClient()

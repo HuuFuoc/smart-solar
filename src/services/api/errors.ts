@@ -220,6 +220,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   AFTER_SALES_INVALID_STATE: 'Trạng thái đã thay đổi nên không làm được thao tác này. Tải lại để xem trạng thái mới.',
   AFTER_SALES_STALE_REVISION: 'Dữ liệu vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
   AFTER_SALES_REASON_REQUIRED: 'Ghi lý do.',
+  NOTIFICATION_NOT_FOUND: 'Không tìm thấy thông báo này.',
   SERVICE_PACKAGE_NOT_FOUND: 'Không tìm thấy gói này. Danh sách gói đã được tải lại.',
   SERVICE_PACKAGE_INACTIVE: 'Gói này đã ngừng bán. Danh sách gói đã được tải lại.',
   SERVICE_SUBSCRIPTION_NOT_FOUND: 'Không tìm thấy gói đã mua.',
@@ -287,6 +288,24 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác hoặc ghi dòng tự ghi.',
   QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này.',
   QUOTATION_CANNOT_REVISE: 'Không lập bản sửa được vì khách vừa đồng ý hoặc báo giá vừa thay đổi. Đã tải lại.',
+  QUOTATION_SALES_OWNER_REQUIRED:
+    'Yêu cầu này chưa có nhân viên kinh doanh phụ trách. Nhận yêu cầu trước rồi lập báo giá.',
+  QUOTATION_SURVEY_CHANGED:
+    'Biên bản khảo sát vừa được bổ sung sau khi lập báo giá này. Xem lại dòng hàng theo biên bản mới rồi xác nhận, hoặc lập bản sửa.',
+  QUOTATION_PRICING_REVIEW_REQUIRED:
+    'Báo giá còn điểm cần xử lý về giá. Sửa các điểm bắt buộc, hoặc ghi lý do chấp nhận các điểm còn lại rồi gửi lại.',
+  QUOTATION_PRICING_APPROVAL_REQUIRED:
+    'Báo giá có giảm giá hoặc đơn giá thấp hơn giá danh mục. Xin quản lý duyệt bộ giá này trước khi gửi khách.',
+  QUOTATION_PRICING_APPROVAL_PENDING: 'Bộ giá này đang chờ quản lý duyệt.',
+  QUOTATION_PRICING_APPROVAL_NOT_REQUIRED: 'Báo giá đúng giá danh mục và không giảm giá, không cần quản lý duyệt.',
+  QUOTATION_PRICING_APPROVAL_NOT_PENDING:
+    'Bộ giá này không còn chờ duyệt (đã có quyết định, hoặc kinh doanh vừa sửa giá). Đã tải lại.',
+  QUOTATION_SELF_APPROVAL_NOT_ALLOWED: 'Bạn là người lập báo giá này nên không tự duyệt giá được.',
+  QUOTATION_PRICE_MISSING: 'Sản phẩm này chưa có giá trong danh mục. Nhập đơn giá cho dòng này.',
+  QUOTATION_BOM_MISMATCH:
+    'Dòng thiết bị chưa khớp bảng vật tư của biên bản khảo sát. Sửa số lượng theo biên bản, hoặc nhờ kỹ thuật viên bổ sung biên bản.',
+  QUOTATION_SURVEY_NOT_FEASIBLE: 'Kỹ thuật viên kết luận công trình không lắp được nên không lập báo giá lắp đặt.',
+  QUOTATION_REQUEST_CLOSED: 'Yêu cầu khảo sát đã đóng hoặc khách đã rút nên không làm báo giá được nữa.',
   // Hợp đồng lắp đặt (phía nhân viên)
   CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng, hoặc bạn không phụ trách yêu cầu khảo sát này.',
   CONTRACT_QUOTATION_NOT_ACCEPTED: 'Chỉ lập được hợp đồng từ báo giá khách đã đồng ý.',
@@ -341,6 +360,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   RAG_JOB_NOT_FOUND: 'Không tìm thấy lượt nạp này.',
   RAG_INVALID_STATE: 'Tài liệu vừa đổi trạng thái nên không làm được thao tác này. Đã tải lại để xem trạng thái mới.',
   RAG_STALE_REVISION: 'Tài liệu vừa được sửa ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
+  RAG_DOCUMENT_AUDIENCE_UNCHANGED: 'Tài liệu đã có đối tượng đọc này. Đã tải lại.',
   RAG_SERVICE_UNAVAILABLE: 'Dịch vụ chatbot tạm thời không phản hồi. Thử lại sau ít phút.',
   RAG_SESSION_NOT_FOUND: 'Không tìm thấy cuộc trò chuyện này. Mở cuộc trò chuyện mới để hỏi tiếp.',
   RAG_MESSAGE_TOO_LONG: 'Câu hỏi phải có từ 1 đến 8.000 ký tự.',

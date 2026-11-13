@@ -139,6 +139,8 @@ export const ENDPOINTS = {
     reconsideration: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}/reconsideration`,
     reportFault: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}/report-fault`,
     notifications: '/customers/me/after-sales/notifications',
+    notificationRead: (notificationId: string) =>
+      `/customers/me/after-sales/notifications/${encode(notificationId)}/read`,
   },
 
   // Kinh doanh
@@ -175,6 +177,13 @@ export const ENDPOINTS = {
     issue: (quotationId: string) => `/quotations/${encode(quotationId)}/issue`,
     revisions: (quotationId: string) => `/quotations/${encode(quotationId)}/revisions`,
     document: (quotationId: string) => `/quotations/${encode(quotationId)}/document`,
+    pricingApprovalRequest: (quotationId: string) => `/quotations/${encode(quotationId)}/pricing-approval-request`,
+    confirmSurveyVersion: (quotationId: string) => `/quotations/${encode(quotationId)}/confirm-survey-version`,
+  },
+  // Duyệt giá báo giá lắp đặt (tag ManagerQuotationApprovals): chỉ vai trò Manager
+  managerQuotationApprovals: {
+    pending: '/manager/quotations/pricing-approvals',
+    decide: (quotationId: string) => `/manager/quotations/${encode(quotationId)}/pricing-approval`,
   },
   // Hợp đồng lắp đặt phía nhân viên (tag SalesContracts) và trạng thái thanh toán của hợp đồng (tag StaffPayments)
   contracts: {
@@ -370,6 +379,7 @@ export const ENDPOINTS = {
     retryJob: (documentId: string, jobId: string) =>
       `/admin/knowledge-documents/${encode(documentId)}/jobs/${encode(jobId)}/retry`,
     archive: (documentId: string) => `/admin/knowledge-documents/${encode(documentId)}/archive`,
+    audience: (documentId: string) => `/admin/knowledge-documents/${encode(documentId)}/audience`,
   },
   adminSystemSettings: {
     scheduling: '/admin/system-settings/scheduling',

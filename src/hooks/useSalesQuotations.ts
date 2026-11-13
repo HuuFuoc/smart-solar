@@ -75,8 +75,25 @@ export function useRemoveQuotationLineMutation() {
 
 /** Gửi bản nháp cho khách */
 export function useSendQuotationMutation() {
-  return useQuotationWrite(({ quotationId, revision }: { quotationId: string; revision: number }) =>
-    quotationService.issueQuotation(quotationId, revision),
+  return useQuotationWrite(
+    ({ quotationId, revision, reviewNote }: { quotationId: string; revision: number; reviewNote: string | null }) =>
+      quotationService.issueQuotation(quotationId, { revision, reviewNote }),
+  )
+}
+
+/** Xin quản lý duyệt bộ giá hiện tại */
+export function useRequestPricingApprovalMutation() {
+  return useQuotationWrite(
+    ({ quotationId, revision, reason }: { quotationId: string; revision: number; reason: string }) =>
+      quotationService.requestPricingApproval(quotationId, { revision, reason }),
+  )
+}
+
+/** Xác nhận bản nháp theo biên bản khảo sát mới */
+export function useConfirmSurveyVersionMutation() {
+  return useQuotationWrite(
+    ({ quotationId, revision, reason }: { quotationId: string; revision: number; reason: string }) =>
+      quotationService.confirmSurveyVersion(quotationId, { revision, reason }),
   )
 }
 

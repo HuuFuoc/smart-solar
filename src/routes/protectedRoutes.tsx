@@ -91,6 +91,8 @@ const ManagePackageCancellationPage = page(
   () => import('@/pages/package-cancellations-page'),
   'ManagePackageCancellationPage',
 )
+const ManagePricingApprovalsPage = page(() => import('@/pages/pricing-approvals-page'), 'ManagePricingApprovalsPage')
+const ManagePricingApprovalPage = page(() => import('@/pages/pricing-approvals-page'), 'ManagePricingApprovalPage')
 
 const AdminDashboardPage = page(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage')
 const AdminUsersPage = page(() => import('@/pages/admin/users-page'), 'AdminUsersPage')
@@ -246,6 +248,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.refunds, lazy: ManageRefundsPage },
       { path: manage.packageCancellations, lazy: ManagePackageCancellationsPage },
       { path: manage.packageCancellation, lazy: ManagePackageCancellationPage },
+      { path: manage.pricingApprovals, lazy: ManagePricingApprovalsPage },
+      { path: manage.pricingApproval, lazy: ManagePricingApprovalPage },
       { path: manage.dispatch, lazy: ManageDispatchRequestsPage },
       { path: manage.dispatchRequest, lazy: ManageDispatchRequestPage },
       { path: manage.technicians, lazy: ManageTechniciansPage },

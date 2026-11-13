@@ -7,6 +7,8 @@ import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState } from '@/components/common/ui/states'
+import { PricingReviewNotice, SurveyChangedNotice } from '@/features/quotations/DraftChecks'
+import { SalesPricingApproval } from '@/features/quotations/PricingApproval'
 import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
 import { QuotationDocument } from '@/features/quotations/QuotationDocument'
 import { QuotationHeaderDialog } from '@/features/quotations/QuotationHeaderDialog'
@@ -17,11 +19,13 @@ import {
   defaultValidUntil,
   formatDateVn,
   formatQuotationMoney,
+  hasIssueHolds,
   isLive,
   quotationStatusMeta,
   quotationTitle,
   sendBlockers,
 } from '@/features/quotations/quotationDisplay'
+import { canReviseQuotation } from '@/features/quotations/quotationRules'
 import { SendQuotationDialog } from '@/features/quotations/SendQuotationDialog'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
@@ -131,7 +135,7 @@ function QuotationWork({ list }: { list: QuotationView[] }) {
   const live = current.status === 'DRAFT' ? (sorted.find(isLive) ?? null) : null
   const older = sorted.filter((q) => q.quotationId !== current.quotationId)
   const status = quotationStatusMeta(current, 'sales')
-  const canRevise = current.status === 'ISSUED' || current.status === 'REVISION_REQUESTED'
+  const canRevise = canReviseQuotation(current)
 
   async function startRevision() {
     setError(null)
@@ -193,6 +197,14 @@ function QuotationWork({ list }: { list: QuotationView[] }) {
 
 /** Một câu cho biết bản đã gửi đang ở đâu */
 function IssuedSummary({ quotation: q }: { quotation: QuotationView }) {
+  if (q.surveyChanged && (q.status === 'ISSUED' || q.status === 'ACCEPTED'))
+    return (
+      <Notice tone="warn" title="Biên bản khảo sát đã bổ sung sau khi gửi bản này">
+        {q.status === 'ISSUED'
+          ? 'Khách chưa đồng ý được báo giá này. Lập bản sửa theo biên bản mới rồi gửi lại.'
+          : 'Chưa lập được hợp đồng từ báo giá này. Lập bản sửa theo biên bản mới rồi gửi lại cho khách.'}
+      </Notice>
+    )
   if (q.status === 'ACCEPTED')
     return (
       <Notice tone="ok" title={`Khách đồng ý lúc ${formatMoment(q.acceptedAt)}`}>
@@ -205,10 +217,18 @@ function IssuedSummary({ quotation: q }: { quotation: QuotationView }) {
         <span className="whitespace-pre-line">{q.revisionReason || 'Khách không ghi lý do.'}</span>
       </Notice>
     )
+  if (q.status === 'REJECTED')
+    return <Notice title="Khách từ chối báo giá này">Lập bản sửa nếu khách cần một báo giá khác.</Notice>
+  if (q.status === 'CANCELLED')
+    return (
+      <Notice title={`Báo giá đã huỷ lúc ${formatMoment(q.closedAt)}`}>
+        Yêu cầu khảo sát đã đóng hoặc khách đã rút nên báo giá không còn hiệu lực.
+      </Notice>
+    )
   if (q.status === 'ISSUED')
     return (
       <p className="tnum text-body text-fg-2">
-        Gửi khách lúc {formatMoment(q.issuedAt)}.{' '}
+        {q.origin === 'AUTOMATIC' ? 'Hệ thống tự lập và gửi khách' : 'Gửi khách'} lúc {formatMoment(q.issuedAt)}.{' '}
         {q.isExpired
           ? `Đã hết hạn ngày ${formatDateVn(q.validUntil)} mà khách chưa trả lời; lập bản sửa với hạn mới.`
           : `Hiệu lực đến hết ngày ${formatDateVn(q.validUntil)}.`}
@@ -226,6 +246,7 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
   const [editingHeader, setEditingHeader] = useState(false)
   const [sending, setSending] = useState(false)
   const blockers = sendBlockers(draft)
+  const held = hasIssueHolds(draft)
   const full = draft.lines.length >= QUOTATION_LIMITS.maxLines
 
   async function removeLine(line: QuotationLineView) {
@@ -275,6 +296,8 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
           Khách vẫn đang có bản {live.version}. Khi bạn gửi bản này, bản {live.version} hết hiệu lực.
         </Notice>
       )}
+      <SurveyChangedNotice draft={draft} />
+      <PricingReviewNotice draft={draft} />
 
       <div className="flex flex-wrap gap-3">
         <Button icon="add" variant="soft" disabled={full} onClick={() => setLineDialog(null)}>
@@ -326,6 +349,8 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
         <QuotationTotals quotation={draft} />
       </div>
 
+      <SalesPricingApproval draft={draft} />
+
       <div className="space-y-3 border-t border-line pt-4">
         {blockers.length > 0 && (
           <div className="text-body text-fg-2">
@@ -337,7 +362,10 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
             </ul>
           </div>
         )}
-        <Button icon="send" variant="primary" disabled={blockers.length > 0} onClick={() => setSending(true)}>
+        {blockers.length === 0 && held && (
+          <p className="text-body text-fg-2">Xử lý các mục phía trên rồi mới gửi được cho khách.</p>
+        )}
+        <Button icon="send" variant="primary" disabled={blockers.length > 0 || held} onClick={() => setSending(true)}>
           Gửi cho khách ({formatQuotationMoney(draft.totalAmount, draft.currency)})
         </Button>
       </div>

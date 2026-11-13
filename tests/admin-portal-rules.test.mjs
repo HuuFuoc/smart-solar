@@ -20,6 +20,10 @@ import {
   canUnpublish,
   needsPolling,
   parseTags,
+  audienceMeta,
+  audienceOf,
+  audienceReasonError,
+  canChangeAudience,
   tagsError,
   titleError,
   titleFromFileName,
@@ -223,6 +227,28 @@ describe('kho tri thức', () => {
       needsPolling(doc('PUBLISHED', [version('v1', 'PUBLISHED')], [{ versionId: 'v1', status: 'COMPLETED' }])),
       false,
     )
+  })
+})
+
+describe('đối tượng đọc của tài liệu', () => {
+  test('thiếu trường (image API cũ) là INTERNAL như mặc định backend', () => {
+    assert.equal(audienceOf({}), 'INTERNAL')
+    assert.equal(audienceOf({ audience: 'CUSTOMER' }), 'CUSTOMER')
+  })
+  test('nhãn và mã lạ', () => {
+    assert.equal(audienceMeta('CUSTOMER').label, 'Khách hàng đọc được')
+    assert.equal(audienceMeta('INTERNAL').label, 'Chỉ nhân viên')
+    assert.deepEqual(audienceMeta('PARTNER'), { label: 'PARTNER', tone: 'neutral' })
+  })
+  test('lý do bắt buộc, tối đa 1000 ký tự', () => {
+    assert.ok(audienceReasonError('   '))
+    assert.ok(audienceReasonError('x'.repeat(1001)))
+    assert.equal(audienceReasonError('  Khách hàng cần đọc chính sách bảo hành  '), undefined)
+  })
+  test('tài liệu lưu trữ không đổi được', () => {
+    assert.equal(canChangeAudience({ status: 'ARCHIVED' }), false)
+    assert.equal(canChangeAudience({ status: 'REGISTERED' }), true)
+    assert.equal(canChangeAudience({ status: 'PUBLISHED' }), true)
   })
 })
 

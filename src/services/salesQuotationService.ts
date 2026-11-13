@@ -1,6 +1,9 @@
 import type {
+  ConfirmSurveyVersionRequest,
   FileReferenceRequest,
+  InstallationIssueQuotationRequest,
   InstallationQuotationLineRequest,
+  PricingApprovalRequest,
   QuotationHeaderRequest,
   QuotationLineUpdateRequest,
 } from '@/types/req/salesQuotationsReq'
@@ -46,9 +49,22 @@ export function removeLine(quotationId: string, lineId: string, revision: number
   return del<QuotationView>(api.line(quotationId, lineId), { params: { revision } })
 }
 
-/** Gửi khách: cần ít nhất một dòng, tổng lớn hơn 0 và hạn hiệu lực còn ở tương lai. Đã gửi thì không sửa được */
-export function issueQuotation(quotationId: string, revision: number) {
-  return post<QuotationView>(api.issue(quotationId), { revision })
+/**
+ * Gửi khách: cần ít nhất một dòng, tổng lớn hơn 0, hạn hiệu lực còn ở tương lai, dòng thiết bị khớp biên bản khảo sát và bộ giá
+ * đã được quản lý duyệt nếu có giảm giá. `reviewNote` bắt buộc khi bản nháp tự lập còn vấn đề giá chấp nhận được
+ */
+export function issueQuotation(quotationId: string, body: InstallationIssueQuotationRequest) {
+  return post<QuotationView>(api.issue(quotationId), body)
+}
+
+/** Xin quản lý duyệt đúng bộ giá hiện tại (giảm giá, đơn giá dưới giá danh mục, giá 0); sửa giá sau đó phải xin lại */
+export function requestPricingApproval(quotationId: string, body: PricingApprovalRequest) {
+  return post<QuotationView>(api.pricingApprovalRequest(quotationId), body)
+}
+
+/** Bản nháp lập theo biên bản cũ: xác nhận đã xem lại dòng hàng theo biên bản mới (lý do bắt buộc) */
+export function confirmSurveyVersion(quotationId: string, body: ConfirmSurveyVersionRequest) {
+  return post<QuotationView>(api.confirmSurveyVersion(quotationId), body)
 }
 
 /** Bản nháp mới chép từ bản đã gửi hoặc bản khách yêu cầu sửa; bản cũ chỉ bị thay khi gửi bản mới */

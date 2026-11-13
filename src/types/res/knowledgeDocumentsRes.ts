@@ -1,6 +1,6 @@
 // Viết tay vì swagger của tag AdminKnowledgeDocuments chỉ khai "200 OK". Theo KnowledgeDocumentHandlers.cs của backend `main`
-// (7c79fa8), cùng bản với image smartsolar-api build 21/10/2026. Chưa có trường đối tượng đọc (audience): migration
-// KnowledgeDocumentAudience chỉ có ở image 31/10, chưa đọc được hợp đồng
+// (66cb7af), kể cả đối tượng đọc (`audience`, `legacyAudienceTag`) theo bản vá FE backend gửi kèm
+// (guides/fe-knowledge-audience.patch)
 
 /** Một phiên bản (một tệp) của tài liệu. `status`: VersionStatuses của backend */
 export type KnowledgeVersionView = {
@@ -57,6 +57,13 @@ export type KnowledgeDocumentView = {
   createdAt: string
   updatedAt: string
   revision: number
+  /**
+   * Ai được chatbot truy hồi tài liệu: INTERNAL (chỉ nhân viên, mặc định khi đăng ký) | CUSTOMER. Image API trước 31/10 không có
+   * trường này: coi như INTERNAL
+   */
+  audience?: string
+  /** Còn thẻ tạm `audience:customer` từ trước khi có trường audience: thẻ không cấp quyền gì, cần quản trị xem lại */
+  legacyAudienceTag?: boolean
   versions: KnowledgeVersionView[] | null
   jobs: IngestionJobView[] | null
 }

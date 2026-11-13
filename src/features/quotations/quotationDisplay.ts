@@ -1,7 +1,15 @@
 import type { Tone } from '@/components/common/ui/badge'
-import { QUOTATION_EVENT_TYPES, QUOTATION_LIMITS, QUOTATION_STATUSES } from '@/common/quotation'
+import {
+  PRICE_ADJUSTMENT_KINDS,
+  PRICING_APPROVAL_STATUSES,
+  PRICING_ISSUES,
+  QUOTATION_EVENT_TYPES,
+  QUOTATION_LIMITS,
+  QUOTATION_STATUSES,
+} from '@/common/quotation'
+import { approvalBlocksIssue, blockingPricingIssues, surveyChangedDraft } from '@/features/quotations/quotationRules'
 import { addDays, todayVn } from '@/features/scheduling/schedulingDisplay'
-import type { QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
+import type { PricingIssue, QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
 import { formatMoney } from '@/utils/format'
 import { readDecimal, readGroupedNumber } from '@/utils/number'
 
@@ -76,6 +84,25 @@ export function sendBlockers(q: QuotationView, now = Date.now()) {
   else if (new Date(q.validUntil).getTime() <= now) reasons.push('Hạn hiệu lực đã qua, đặt hạn mới.')
   return reasons
 }
+
+/**
+ * Các điều kiện gửi khác của backend, mỗi điều kiện có khối riêng (kèm thao tác) phía trên nút Gửi nên không ghi lại trong
+ * `sendBlockers`: biên bản khảo sát đổi, vấn đề giá phải sửa, bộ giá chưa được quản lý duyệt
+ */
+export const hasIssueHolds = (q: QuotationView) =>
+  surveyChangedDraft(q) || blockingPricingIssues(q).length > 0 || approvalBlocksIssue(q)
+
+/** Nhãn trạng thái duyệt giá theo người xem */
+export function pricingApprovalMeta(status: string, viewer: 'sales' | 'manager'): { label: string; tone: Tone } {
+  const meta = PRICING_APPROVAL_STATUSES[status]
+  return meta ? { label: meta[viewer], tone: meta.tone } : { label: status, tone: 'neutral' }
+}
+
+export const priceAdjustmentLabel = (kind: string) => PRICE_ADJUSTMENT_KINDS[kind] ?? kind
+
+/** Mã lạ in câu gốc của backend */
+export const pricingIssueLabel = (issue: Pick<PricingIssue, 'code' | 'message'>) =>
+  PRICING_ISSUES[issue.code]?.label ?? issue.message ?? issue.code
 
 // Hạn hiệu lực: chọn ngày, gửi cuối ngày đó theo giờ Việt Nam
 const VALID_UNTIL_TIME = 'T23:59:59+07:00'

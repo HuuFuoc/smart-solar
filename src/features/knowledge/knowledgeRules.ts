@@ -73,3 +73,23 @@ export function needsPolling(d: KnowledgeDocumentView) {
     d.status === 'PROCESSING'
   )
 }
+
+/** Đối tượng đọc (ai được chatbot truy hồi), theo KnowledgeAudiences của backend */
+export const KNOWLEDGE_AUDIENCES = {
+  INTERNAL: { label: 'Chỉ nhân viên', tone: 'neutral' },
+  CUSTOMER: { label: 'Khách hàng đọc được', tone: 'ok' },
+} as const
+export const AUDIENCE_REASON_MAX = 1000
+
+/** Thiếu trường (image API cũ) là INTERNAL, như mặc định của backend */
+export const audienceOf = (d: Pick<KnowledgeDocumentView, 'audience'>) => d.audience ?? 'INTERNAL'
+export const audienceMeta = (code: string) =>
+  KNOWLEDGE_AUDIENCES[code as keyof typeof KNOWLEDGE_AUDIENCES] ?? { label: code, tone: 'neutral' as const }
+export const canChangeAudience = (d: Pick<KnowledgeDocumentView, 'status'>) => !isArchived(d)
+
+export function audienceReasonError(reason: string) {
+  const text = reason.trim()
+  if (!text) return 'Nhập lý do đổi đối tượng đọc.'
+  if (text.length > AUDIENCE_REASON_MAX) return `Lý do tối đa ${AUDIENCE_REASON_MAX} ký tự.`
+  return undefined
+}

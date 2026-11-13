@@ -33,6 +33,7 @@ import { useStaffOnSiteSurveyQuery } from '@/hooks/useOnSiteSurvey'
 import { useQuotationsQuery } from '@/hooks/useSalesQuotations'
 import { OnSiteSurveyResultPanel } from '@/features/onsite-survey/OnSiteSurveyResultPanel'
 import { currentQuotation, formatDateVn, quotationStatusMeta } from '@/features/quotations/quotationDisplay'
+import { pricingApprovalStatus } from '@/features/quotations/quotationRules'
 import { SalesQuotationPanel } from '@/features/quotations/SalesQuotationPanel'
 import { SalesContractPanel } from '@/features/contracts/SalesContractPanel'
 import { contractNextStep, contractStatusLabel } from '@/features/contracts/contractDisplay'
@@ -107,6 +108,18 @@ function quotationNextStep(quotations: QuotationView[]): TrackerNext {
       tone: 'danger',
       title: 'Cần bạn lập báo giá',
       body: 'Khảo sát tại công trình đã xong. Lập báo giá ở khối Báo giá bên dưới.',
+    }
+  if (q.status === 'DRAFT' && pricingApprovalStatus(q) === 'PENDING')
+    return {
+      tone: 'info',
+      title: 'Chờ quản lý duyệt giá',
+      body: 'Báo giá có giảm giá hoặc đơn giá thấp hơn giá danh mục. Quản lý duyệt xong thì bạn gửi được cho khách.',
+    }
+  if (q.status === 'DRAFT' && pricingApprovalStatus(q) === 'REJECTED')
+    return {
+      tone: 'danger',
+      title: 'Quản lý không duyệt bộ giá này',
+      body: 'Xem lý do ở mục Duyệt giá, sửa giá hoặc xin duyệt lại.',
     }
   if (q.status === 'DRAFT')
     return {

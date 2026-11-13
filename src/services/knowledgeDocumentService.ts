@@ -4,6 +4,7 @@ import type {
   PublishKnowledgeVersionRequest,
   RegisterKnowledgeDocumentRequest,
   ReindexKnowledgeVersionRequest,
+  SetKnowledgeAudienceRequest,
   UpdateKnowledgeMetadataRequest,
 } from '@/types/req/adminKnowledgeDocumentsReq'
 import type { KnowledgeDocumentView } from '@/types/res/knowledgeDocumentsRes'
@@ -62,4 +63,9 @@ export function retryKnowledgeJob(documentId: string, jobId: string) {
 /** Xoá mềm: gỡ công bố ngay, dữ liệu đã nạp được xoá bằng một lượt chạy nền */
 export function archiveKnowledgeDocument(documentId: string, body: KnowledgeRevisionRequest) {
   return post<KnowledgeDocumentView>(api.archive(documentId), body)
+}
+
+/** Đổi ai được chatbot truy hồi tài liệu (INTERNAL | CUSTOMER), có lý do; có hiệu lực ngay. 409 RAG_DOCUMENT_AUDIENCE_UNCHANGED khi không đổi */
+export function setKnowledgeAudience(documentId: string, body: SetKnowledgeAudienceRequest) {
+  return put<KnowledgeDocumentView>(api.audience(documentId), body)
 }

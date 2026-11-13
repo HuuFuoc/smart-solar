@@ -387,8 +387,11 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
   bảo trì (backend bỏ qua `note` nên không có ô ghi chú; khoá khi buổi hẹn còn dưới 24 giờ theo giờ máy, backend vẫn kiểm);
   khối "Hỗ trợ thiên tai" + "Xin xét lại" chỉ khi `claim.canRequestReconsideration` (ghi chú bắt buộc ≤ 1000, ≤ 10 ảnh
   `SERVICE_EVIDENCE`); "Phát hiện khi bảo trì" → báo lỗi thành yêu cầu FAULT có `originRequestId` (trang yêu cầu đó dẫn về yêu cầu
-  bảo trì gốc); `/customer/notifications` dịch theo `type` (`CUSTOMER_NOTIFICATION_TYPES`), số cạnh menu xám, đếm thông báo mới
-  kể từ lần xem trên trình duyệt (backend chưa có lệnh đánh dấu đã đọc).
+  bảo trì gốc); `/customer/notifications` dịch theo `type` (`CUSTOMER_NOTIFICATION_TYPES`, kể cả 15 loại trước lắp đặt: khảo sát,
+  báo giá, hợp đồng, lắp đặt; các loại này không có `requestId` / `subscriptionId` nên nút dẫn tới mục theo loại; `message` của
+  BE là tiếng Anh, không hiện), 10 dòng / trang. Đã đọc lưu trên server (`readAt`, POST `…/notifications/{id}/read`, backend
+  `main` 66cb7af): đánh dấu khi khách bấm nút xem hoặc "Đã đọc", không tự đánh dấu cả trang vì lệnh ghi chung hạn mức 20 lần /
+  phút; số xám cạnh menu = số chưa đọc.
 - Chưa làm: thay thiết bị trong báo cáo.
 - Chữ trên giao diện không nhắc tới backend, máy chủ, token, kho lưu trữ hay mã lỗi; lỗi BE luôn qua bảng `errors.ts`.
 
@@ -611,8 +614,25 @@ bản nháp thay tệp được, bản đã gửi chỉ gắn khi chưa có tệ
   trống đơn giá là lấy giá danh mục; tự ghi = tên, đơn vị, đơn giá; đã thêm chỉ sửa số lượng, đơn giá, mô tả), xoá dòng có
   "Hoàn tác" (thêm lại vào cuối), "Chi phí, điều khoản" (`QuotationHeaderDialog`, PUT ghi đè cả phần đầu; hạn hiệu lực là cuối
   ngày theo giờ Việt Nam, tối đa 89 ngày tới vì BE tính 90 ngày từ lúc lưu), "Gửi cho khách" (hỏi xác nhận; khoá khi chưa có
-  dòng, tổng ≤ 0 hoặc hạn đã qua). Bản đã gửi / khách yêu cầu sửa: "Lập bản sửa" chép thành bản nháp mới. Khối Tình hình có
-  thêm bước "Báo giá" và việc tiếp theo theo trạng thái báo giá (đỏ khi kinh doanh phải lập, gửi, sửa).
+  dòng, tổng ≤ 0 hoặc hạn đã qua). Bản đã gửi / khách yêu cầu sửa / khách từ chối (bản đã đồng ý chỉ khi biên bản khảo sát đổi
+  sau đó): "Lập bản sửa" chép thành bản nháp mới. Khối Tình hình có thêm bước "Báo giá" và việc tiếp theo theo trạng thái báo
+  giá (đỏ khi kinh doanh phải lập, gửi, sửa; xanh dương khi chờ quản lý duyệt giá).
+- Điều kiện gửi khách mới của backend `main` 66cb7af (luật ở `quotationRules.ts`, test `tests/quotation-rules.test.mjs`), mỗi
+  điều kiện một khối có thao tác ngay trên nút Gửi (`hasIssueHolds`), không lặp trong danh sách lý do chặn:
+  - Duyệt giá (`PricingApproval.tsx`, `pricingApproval` của view): giảm giá, đơn giá dưới giá danh mục hoặc giá 0 cần quản lý
+    duyệt đúng bộ giá đó (`fingerprint`); sửa bất kỳ số nào sau đó là phải xin lại. Kinh doanh "Xin duyệt giá" (POST
+    `…/pricing-approval-request`, lý do ≤ 1000). Quản lý xét ở menu "Duyệt giá" (`/manage/pricing-approvals(/:id)`,
+    `pages/pricing-approvals-page.tsx`; GET `/manager/quotations/pricing-approvals`, POST `/manager/quotations/{id}/pricing-approval`
+    `{ revision, approve, reason }`, lý do bắt buộc cả hai trường hợp). Chỉ vai trò Manager quyết định (quản trị không), kinh
+    doanh phụ trách không tự duyệt. Số đỏ cạnh menu = số báo giá chờ duyệt.
+  - Biên bản khảo sát bổ sung sau khi lập bản nháp (`surveyChanged`): "Xác nhận theo biên bản mới" (POST
+    `…/confirm-survey-version`, lý do ≤ 1000), dòng thiết bị phải khớp bảng vật tư của biên bản (`QUOTATION_BOM_MISMATCH`, hộp
+    gửi liệt kê dòng lệch từ `details.mismatches`).
+  - Bản nháp hệ thống tự lập (`origin = AUTOMATIC`, backend tự lập và có khi tự gửi khi biên bản hoàn thành): `pricingReview`
+    liệt kê điểm phải sửa (thiếu giá, thiếu tấm pin / inverter / nhân công, tổng sai) và điểm gửi được nếu ghi lý do; còn điểm
+    sau thì hộp gửi bắt buộc `reviewNote` (≤ 1000).
+    Chưa làm: "Lập lại tự động" (POST `…/quotations/generate`), hàng `GET /quotations/pending-review`, khách từ chối báo giá
+    (POST `/customers/me/quotations/{id}/reject`).
 - Khách: menu "Báo giá" (`/customer/quotations`, mỗi công trình một dòng là bản mới nhất, tên công trình lấy từ yêu cầu khảo sát)
   và `/customer/quotations/:id` (theo mã từng bản): "Đồng ý báo giá" (hỏi xác nhận, không đổi lại được) và "Yêu cầu sửa" (lý do
   bắt buộc ≤ 2000) chỉ khi `canAccept` (ISSUED và chưa hết hạn); bản cũ dẫn sang bản mới. Trang yêu cầu khảo sát của khách có
@@ -858,7 +878,7 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 | `/customer/*`                          | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Báo giá (đồng ý / yêu cầu sửa), Hợp đồng (ký, PayOS), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói, đặt lượt bảo trì), Thông báo, Sản phẩm – bọc `<RequireRole role="customer">` |
 | `/ops/*`                               | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá, hợp đồng), Bảo hành / việc nhắc khách – bọc `<RequireRole role="sales">`                                                                                     |
 | `/field/*`                             | —                | chuyển về `/tech`                                                                                                                                                                                                          |
-| `/manage/*`                            | `ManageLayout`   | Thi công (dự án, phân công, checklist), Bảo hành (quyết định, kết thúc yêu cầu, sửa thiết bị), Việc của kinh doanh (xem), Hoàn tiền (xét), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                    |
+| `/manage/*`                            | `ManageLayout`   | Thi công (dự án, phân công, checklist), Duyệt giá báo giá, Bảo hành (quyết định, kết thúc yêu cầu, sửa thiết bị), Việc của kinh doanh (xem), Hoàn tiền (xét), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">` |
 | `/styleguide`                          | –                | `StyleguidePage`                                                                                                                                                                                                           |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.
