@@ -38,6 +38,14 @@ export function useAcceptMyQuotationMutation() {
   })
 }
 
+export function useRejectMyQuotationMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<QuotationView, ApiError, { quotationId: string; reason: string | null }>({
+    mutationFn: ({ quotationId, reason }) => quotationService.rejectQuotation(quotationId, reason),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: customerQuotationKeys.all }),
+  })
+}
+
 export function useRequestQuotationRevisionMutation() {
   const queryClient = useQueryClient()
   return useMutation<QuotationView, ApiError, { quotationId: string; reason: string }>({

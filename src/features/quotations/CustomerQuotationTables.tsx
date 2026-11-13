@@ -17,9 +17,9 @@ import {
 import { ROUTES, withId } from '@/routes/paths'
 import type { QuotationView } from '@/types/res/quotationsRes'
 
-type QuotationGroupKey = 'awaiting' | 'followup' | 'accepted'
+type QuotationGroupKey = 'awaiting' | 'followup' | 'accepted' | 'closed'
 
-const STATUS_GROUPS: { key: QuotationGroupKey; title: string; emptyText: string }[] = [
+const STATUS_GROUPS: { key: QuotationGroupKey; title: string; emptyText: string; collapsed?: boolean }[] = [
   {
     key: 'awaiting',
     title: 'Chờ bạn trả lời',
@@ -27,20 +27,27 @@ const STATUS_GROUPS: { key: QuotationGroupKey; title: string; emptyText: string 
   },
   {
     key: 'followup',
-    title: 'Đã yêu cầu sửa / Hết hạn',
-    emptyText: 'Không có báo giá nào ở trạng thái này.',
+    title: 'Chờ Smart Solar gửi bản mới',
+    emptyText: 'Không có báo giá nào đang chờ bản mới.',
   },
   {
     key: 'accepted',
     title: 'Đã đồng ý',
     emptyText: 'Chưa có báo giá nào đã đồng ý.',
   },
+  {
+    key: 'closed',
+    title: 'Đã từ chối, đã đóng',
+    emptyText: 'Không có báo giá nào đã từ chối hoặc đã đóng.',
+    collapsed: true,
+  },
 ]
 
+// Chờ bản mới: bạn đã yêu cầu sửa, báo giá hết hạn, hoặc kết quả khảo sát đổi sau khi gửi
 function classifyQuotation(q: QuotationView): QuotationGroupKey {
   if (q.status === 'ACCEPTED') return 'accepted'
-  if (q.status === 'ISSUED' && !q.isExpired) return 'awaiting'
-  return 'followup'
+  if (q.status === 'REJECTED' || q.status === 'CANCELLED') return 'closed'
+  return q.canAccept ? 'awaiting' : 'followup'
 }
 
 type EnrichedQuotation = {
@@ -89,6 +96,7 @@ export function CustomerQuotationTables({
       awaiting: [],
       followup: [],
       accepted: [],
+      closed: [],
     }
     for (const item of filtered) {
       map[item.group].push(item)
@@ -150,6 +158,7 @@ export function CustomerQuotationTables({
               count={table.rows.length}
               emptyText={table.emptyText}
               highlight={table.highlight}
+              defaultOpen={!table.collapsed}
             >
               <Table stack>
                 <thead>
@@ -184,6 +193,11 @@ export function CustomerQuotationTables({
                             {q.status === 'ACCEPTED' && q.acceptedAt && (
                               <span className="mt-0.5 block text-meta text-fg-2">
                                 Đồng ý {formatDateVn(q.acceptedAt)}
+                              </span>
+                            )}
+                            {q.status === 'REJECTED' && q.closedAt && (
+                              <span className="mt-0.5 block text-meta text-fg-2">
+                                Từ chối {formatDateVn(q.closedAt)}
                               </span>
                             )}
                           </div>

@@ -108,6 +108,27 @@ function quotationNextStep(quotations: QuotationView[]): TrackerNext {
       title: 'Cần bạn lập báo giá',
       body: 'Khảo sát tại công trình đã xong. Lập báo giá ở khối Báo giá bên dưới.',
     }
+  if (q.surveyChanged)
+    return {
+      tone: 'danger',
+      title: 'Biên bản khảo sát đã được bổ sung sau khi lập báo giá',
+      body:
+        q.status === 'DRAFT'
+          ? 'Chỉnh dòng hàng rồi xác nhận theo biên bản mới ở khối Báo giá.'
+          : 'Lập bản sửa theo biên bản mới ở khối Báo giá.',
+    }
+  if (q.status === 'DRAFT' && q.pricingApproval?.status === 'PENDING')
+    return {
+      tone: 'info',
+      title: 'Chờ quản lý duyệt giá',
+      body: 'Bản nháp có giá thấp hơn danh mục. Quản lý duyệt xong thì gửi cho khách.',
+    }
+  if (q.status === 'REJECTED')
+    return {
+      tone: 'danger',
+      title: 'Khách từ chối báo giá',
+      body: 'Xem lý do ở khối Báo giá rồi lập bản sửa, hoặc đóng yêu cầu.',
+    }
   if (q.status === 'DRAFT')
     return {
       tone: 'danger',
@@ -162,7 +183,9 @@ function nextStep(
   const a = r.appointment
   if (r.status === 'CLOSED') return { tone: 'neutral', title: 'Yêu cầu đã đóng' }
   if (r.status === 'CANCELLED') return { tone: 'neutral', title: 'Khách đã rút yêu cầu' }
-  if (quotations && acceptedQuotation(quotations) && contracts) return contractStep(contracts)
+  // Biên bản khảo sát đổi sau khi khách đồng ý thì bản đó không lập hợp đồng được: quay lại việc của báo giá
+  const accepted = quotations && acceptedQuotation(quotations)
+  if (accepted && !accepted.surveyChanged && contracts) return contractStep(contracts)
   if (r.status === 'COMPLETED' && quotations) return quotationNextStep(quotations)
   if (r.status === 'COMPLETED')
     return {

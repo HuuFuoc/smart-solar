@@ -1,35 +1,49 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { QUOTATION_LIMITS } from '@/common/quotation'
+import { PRICING_APPROVAL_STATUSES, QUOTATION_LIMITS } from '@/common/quotation'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState } from '@/components/common/ui/states'
+import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
 import { QuotationDocument } from '@/features/quotations/QuotationDocument'
 import { QuotationHeaderDialog } from '@/features/quotations/QuotationHeaderDialog'
 import { QuotationLineDialog } from '@/features/quotations/QuotationLineDialog'
 import {
+  adjustmentText,
+  automaticOutcomeText,
   byVersionDesc,
   currentQuotation,
   defaultValidUntil,
   formatDateVn,
   formatQuotationMoney,
   isLive,
+  pricingIssueText,
+  quotationErrorMessage,
   quotationStatusMeta,
   quotationTitle,
   sendBlockers,
 } from '@/features/quotations/quotationDisplay'
+import {
+  REVIEW_REASON_MAX,
+  canConfirmSurveyVersion,
+  canRequestPricingApproval,
+  canReviseQuotation,
+} from '@/features/quotations/quotationRules'
 import { SendQuotationDialog } from '@/features/quotations/SendQuotationDialog'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
   salesQuotationKeys,
   useAddQuotationLineMutation,
+  useConfirmSurveyVersionMutation,
   useCreateQuotationMutation,
+  useGenerateQuotationMutation,
   useQuotationsQuery,
   useRemoveQuotationLineMutation,
+  useRequestPricingApprovalMutation,
   useReviseQuotationMutation,
 } from '@/hooks/useSalesQuotations'
 import { errorMessage } from '@/services/api/errors'
@@ -69,10 +83,29 @@ export function SalesQuotationPanel({ surveyRequestId, enabled, feasibility }: P
 
 function FirstQuotation({ surveyRequestId, feasibility }: Omit<Props, 'enabled'>) {
   const create = useCreateQuotationMutation()
+  const generate = useGenerateQuotationMutation()
   const [error, setError] = useState<string | null>(null)
+  // Kết quả tạo từ biên bản mà không ra báo giá nào, vd. biên bản chưa có danh sách thiết bị
+  const [note, setNote] = useState<string | null>(null)
+  const busy = create.isPending || generate.isPending
+
+  async function fromSurvey() {
+    setError(null)
+    setNote(null)
+    try {
+      const result = await generate.mutateAsync(surveyRequestId)
+      const text = automaticOutcomeText(result.outcome)
+      if (!result.quotation) setNote(text)
+      else if (result.outcome === 'AUTO_ISSUED') toast.success(text)
+      else toast(text)
+    } catch (e) {
+      setError(errorMessage(e))
+    }
+  }
 
   async function start() {
     setError(null)
+    setNote(null)
     try {
       // Chi phí để 0, thuế mặc định của hệ thống, hạn 30 ngày; sửa tiếp ở bản nháp
       await create.mutateAsync({
@@ -98,20 +131,27 @@ function FirstQuotation({ surveyRequestId, feasibility }: Omit<Props, 'enabled'>
     <Panel>
       <PanelHeader title="Báo giá" />
       <PanelBody className="space-y-4">
-        {feasibility === 'NOT_FEASIBLE' && (
-          <Notice tone="warn" title="Kỹ thuật viên ghi công trình không lắp được">
-            Xem lý do ở kết quả khảo sát và trao đổi với khách trước khi lập báo giá.
+        {feasibility === 'NOT_FEASIBLE' ? (
+          <Notice tone="warn" title="Kỹ thuật viên kết luận công trình không lắp được">
+            Không lập báo giá cho công trình này. Kết luận chưa đúng thì nhờ kỹ thuật viên bổ sung biên bản khảo sát.
           </Notice>
+        ) : (
+          <EmptyState
+            title="Chưa có báo giá"
+            description="Tạo từ biên bản khảo sát lấy thiết bị và giá danh mục. Lập báo giá để tự thêm từng dòng."
+            action={
+              <div className="flex flex-wrap justify-center gap-3">
+                <Button icon="calculate" variant="soft" disabled={busy} onClick={() => void fromSurvey()}>
+                  {generate.isPending ? 'Đang tạo…' : 'Tạo từ biên bản khảo sát'}
+                </Button>
+                <Button icon="add" variant="soft" disabled={busy} onClick={() => void start()}>
+                  {create.isPending ? 'Đang lập…' : 'Lập báo giá'}
+                </Button>
+              </div>
+            }
+          />
         )}
-        <EmptyState
-          title="Chưa có báo giá"
-          description="Lập báo giá theo số đo của kỹ thuật viên."
-          action={
-            <Button icon="add" variant="soft" disabled={create.isPending} onClick={() => void start()}>
-              {create.isPending ? 'Đang lập…' : 'Lập báo giá'}
-            </Button>
-          }
-        />
+        {note && <Notice tone="warn">{note}</Notice>}
         {error && (
           <div role="alert">
             <Notice tone="danger">{error}</Notice>
@@ -131,7 +171,7 @@ function QuotationWork({ list }: { list: QuotationView[] }) {
   const live = current.status === 'DRAFT' ? (sorted.find(isLive) ?? null) : null
   const older = sorted.filter((q) => q.quotationId !== current.quotationId)
   const status = quotationStatusMeta(current, 'sales')
-  const canRevise = current.status === 'ISSUED' || current.status === 'REVISION_REQUESTED'
+  const canRevise = canReviseQuotation(current)
 
   async function startRevision() {
     setError(null)
@@ -176,6 +216,12 @@ function QuotationWork({ list }: { list: QuotationView[] }) {
           <DraftEditor draft={current} live={live} />
         ) : (
           <>
+            {current.surveyChanged && (
+              <Notice tone="warn" title="Biên bản khảo sát đã được bổ sung sau khi lập bản này">
+                Khách không đồng ý được và không lập hợp đồng được từ bản này nữa. Lập bản sửa, chỉnh dòng hàng theo
+                biên bản mới rồi gửi lại.
+              </Notice>
+            )}
             <IssuedSummary quotation={current} />
             <QuotationLines quotation={current} showCatalogPrice />
             <div className="flex justify-end">
@@ -205,6 +251,18 @@ function IssuedSummary({ quotation: q }: { quotation: QuotationView }) {
         <span className="whitespace-pre-line">{q.revisionReason || 'Khách không ghi lý do.'}</span>
       </Notice>
     )
+  if (q.status === 'REJECTED')
+    return (
+      <Notice title={`Khách từ chối lúc ${formatMoment(q.closedAt)}`}>
+        <span className="whitespace-pre-line">{q.closeReason || 'Khách không ghi lý do.'}</span>
+      </Notice>
+    )
+  if (q.status === 'CANCELLED')
+    return (
+      <p className="tnum text-body text-fg-2">
+        Báo giá đóng lúc {formatMoment(q.closedAt)} vì yêu cầu khảo sát đã đóng hoặc khách đã rút.
+      </p>
+    )
   if (q.status === 'ISSUED')
     return (
       <p className="tnum text-body text-fg-2">
@@ -217,10 +275,66 @@ function IssuedSummary({ quotation: q }: { quotation: QuotationView }) {
   return null
 }
 
+/** Vấn đề về giá còn lại của bản nháp tạo tự động từ biên bản khảo sát */
+function PricingIssues({ draft }: { draft: QuotationView }) {
+  const issues = draft.pricingReview?.outstanding ?? []
+  if (issues.length === 0) return null
+  return (
+    <Notice tone="warn" title={`Bản tạo từ biên bản khảo sát còn ${issues.length} vấn đề về giá`}>
+      <ul className="list-disc pl-5">
+        {issues.map((issue, i) => (
+          <li key={i}>{pricingIssueText(issue, draft.pricingBasis)}</li>
+        ))}
+      </ul>
+    </Notice>
+  )
+}
+
+/** Giá thấp hơn danh mục: các chỗ giảm, lời xin duyệt và trả lời của quản lý */
+function PricingApproval({ draft, onRequest }: { draft: QuotationView; onRequest: () => void }) {
+  const approval = draft.pricingApproval
+  const meta = approval && PRICING_APPROVAL_STATUSES[approval.status]
+  if (!approval || !meta) return null
+  return (
+    <Notice tone={meta.tone} title={meta.label}>
+      <ul className="list-disc pl-5">
+        {approval.adjustments.map((a, i) => (
+          <li key={i} className="tnum">
+            {adjustmentText(a, draft)}
+          </li>
+        ))}
+      </ul>
+      {approval.request && (
+        <p className="mt-2 whitespace-pre-line">
+          Xin duyệt lúc <span className="tnum">{formatMoment(approval.request.at)}</span>: {approval.request.reason}
+        </p>
+      )}
+      {approval.decision && (
+        <p className="mt-2 whitespace-pre-line">
+          Quản lý trả lời lúc <span className="tnum">{formatMoment(approval.decision.at)}</span>:{' '}
+          {approval.decision.reason}
+        </p>
+      )}
+      {approval.status !== 'REQUIRED' && <p className="mt-2">Sửa giá thì phải xin duyệt lại.</p>}
+      {canRequestPricingApproval(draft) && (
+        <span className="mt-3 flex">
+          <Button size="sm" icon="approval" variant="soft" onClick={onRequest}>
+            {approval.status === 'REJECTED' ? 'Xin duyệt lại' : 'Xin duyệt giá'}
+          </Button>
+        </span>
+      )}
+    </Notice>
+  )
+}
+
 function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationView | null }) {
   const queryClient = useQueryClient()
   const add = useAddQuotationLineMutation()
   const remove = useRemoveQuotationLineMutation()
+  const confirmVersion = useConfirmSurveyVersionMutation()
+  const requestApproval = useRequestPricingApprovalMutation()
+  const [confirming, setConfirming] = useState(false)
+  const [requesting, setRequesting] = useState(false)
   // undefined: đóng; null: thêm dòng; dòng: sửa dòng đó
   const [lineDialog, setLineDialog] = useState<QuotationLineView | null | undefined>(undefined)
   const [editingHeader, setEditingHeader] = useState(false)
@@ -275,6 +389,21 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
           Khách vẫn đang có bản {live.version}. Khi bạn gửi bản này, bản {live.version} hết hiệu lực.
         </Notice>
       )}
+      {canConfirmSurveyVersion(draft) && (
+        <Notice
+          tone="warn"
+          title={`Biên bản khảo sát đã được bổ sung (bản ${draft.onSiteSurveyVersion} lên bản ${draft.currentSurveyVersion})`}
+        >
+          Chỉnh dòng hàng theo biên bản mới rồi xác nhận. Chưa xác nhận thì chưa gửi khách được.
+          <span className="mt-3 flex">
+            <Button size="sm" icon="fact_check" variant="soft" onClick={() => setConfirming(true)}>
+              Xác nhận theo biên bản mới
+            </Button>
+          </span>
+        </Notice>
+      )}
+      <PricingIssues draft={draft} />
+      <PricingApproval draft={draft} onRequest={() => setRequesting(true)} />
 
       <div className="flex flex-wrap gap-3">
         <Button icon="add" variant="soft" disabled={full} onClick={() => setLineDialog(null)}>
@@ -350,6 +479,37 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
       />
       <QuotationHeaderDialog open={editingHeader} quotation={draft} onClose={() => setEditingHeader(false)} />
       <SendQuotationDialog open={sending} quotation={draft} replacing={live} onClose={() => setSending(false)} />
+      <ReasonDialog
+        open={confirming}
+        title="Xác nhận theo biên bản khảo sát mới?"
+        description="Dòng thiết bị phải khớp danh sách thiết bị của biên bản mới. Ghi bạn đã xem lại và chỉnh những gì."
+        label="Nội dung đã xem lại"
+        maxLength={REVIEW_REASON_MAX}
+        submitLabel="Xác nhận"
+        icon="fact_check"
+        onSubmit={async (reason) => {
+          try {
+            await confirmVersion.mutateAsync({ quotationId: draft.quotationId, revision: draft.revision, reason })
+          } catch (e) {
+            throw new Error(quotationErrorMessage(e))
+          }
+          toast.success('Đã xác nhận bản nháp theo biên bản khảo sát mới.')
+        }}
+        onClose={() => setConfirming(false)}
+      />
+      <ReasonDialog
+        open={requesting}
+        title="Xin quản lý duyệt giá?"
+        description="Quản lý duyệt đúng bộ giá đang có. Sửa giá sau khi xin thì phải xin lại."
+        label="Lý do giảm giá"
+        maxLength={REVIEW_REASON_MAX}
+        submitLabel="Gửi xin duyệt"
+        onSubmit={async (reason) => {
+          await requestApproval.mutateAsync({ quotationId: draft.quotationId, revision: draft.revision, reason })
+          toast.success('Đã gửi xin duyệt giá. Quản lý duyệt xong thì gửi cho khách được.')
+        }}
+        onClose={() => setRequesting(false)}
+      />
     </div>
   )
 }

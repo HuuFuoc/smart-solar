@@ -177,6 +177,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_SUBSTITUTION_CUSTOMER_APPROVAL_REQUIRED:
     'Khách hàng chưa đồng ý thay đổi thiết bị nên chưa bàn giao được.',
   INSTALLATION_NO_SUBSTITUTION: 'Thiết bị đã lắp khớp với hợp đồng nên không cần duyệt thay đổi.',
+  RAG_DOCUMENT_AUDIENCE_UNCHANGED: 'Tài liệu đã ở đúng đối tượng này.',
   INSTALLATION_PREREQUISITE_MANDATORY: 'Hạng mục bắt buộc trước thi công không thể bỏ qua.',
   INSTALLATION_PREREQUISITE_EXEMPTION_NOT_AUTHORIZED: 'Chưa có quy định cho phép miễn hạng mục bắt buộc này.',
   INSTALLATION_EXEMPTION_EVIDENCE_REQUIRED: 'Cần đính kèm tài liệu chứng minh khi miễn hạng mục bắt buộc.',
@@ -287,6 +288,22 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác hoặc ghi dòng tự ghi.',
   QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này.',
   QUOTATION_CANNOT_REVISE: 'Không lập bản sửa được vì khách vừa đồng ý hoặc báo giá vừa thay đổi. Đã tải lại.',
+  QUOTATION_SALES_OWNER_REQUIRED: 'Yêu cầu chưa có nhân viên kinh doanh phụ trách nên chưa lập báo giá được.',
+  QUOTATION_SURVEY_CHANGED:
+    'Biên bản khảo sát được bổ sung sau khi lập báo giá này nên báo giá không dùng tiếp được. Đã tải lại.',
+  QUOTATION_SURVEY_NOT_FEASIBLE: 'Kỹ thuật viên kết luận công trình không lắp được nên không lập báo giá.',
+  QUOTATION_REQUEST_CLOSED: 'Yêu cầu khảo sát đã đóng hoặc khách đã rút nên không làm tiếp báo giá được.',
+  QUOTATION_PRICE_MISSING: 'Sản phẩm này chưa có giá trong danh mục. Nhập đơn giá cho dòng.',
+  QUOTATION_BOM_MISMATCH:
+    'Dòng thiết bị chưa khớp danh sách thiết bị của biên bản khảo sát. Sửa số lượng cho khớp hoặc nhờ kỹ thuật viên bổ sung biên bản.',
+  QUOTATION_PRICING_REVIEW_REQUIRED:
+    'Bản tự động còn vấn đề về giá. Xử lý các vấn đề phải sửa, phần còn lại ghi lý do vẫn gửi.',
+  QUOTATION_PRICING_APPROVAL_REQUIRED: 'Báo giá có giá thấp hơn danh mục. Quản lý duyệt giá xong mới gửi khách được.',
+  QUOTATION_PRICING_APPROVAL_PENDING: 'Bộ giá này đang chờ quản lý duyệt.',
+  QUOTATION_PRICING_APPROVAL_NOT_REQUIRED: 'Báo giá dùng giá danh mục và không giảm giá nên không cần duyệt giá.',
+  QUOTATION_PRICING_APPROVAL_NOT_PENDING:
+    'Không còn yêu cầu duyệt giá nào chờ cho bộ giá này (đã quyết định hoặc giá vừa đổi). Đã tải lại.',
+  QUOTATION_SELF_APPROVAL_NOT_ALLOWED: 'Bạn là người lập báo giá này nên không tự duyệt giá được.',
   // Hợp đồng lắp đặt (phía nhân viên)
   CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng, hoặc bạn không phụ trách yêu cầu khảo sát này.',
   CONTRACT_QUOTATION_NOT_ACCEPTED: 'Chỉ lập được hợp đồng từ báo giá khách đã đồng ý.',
@@ -309,6 +326,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   CONTRACT_DRAFT_DISCARDED:
     'Bản nháp hợp đồng của báo giá này đã bị huỷ nên không lập hợp đồng mới từ báo giá đó được.',
   CONTRACT_TERMS_REQUIRED: 'Ghi điều khoản hợp đồng trước khi phát hành.',
+  CONTRACT_NOT_DISCARDABLE:
+    'Chỉ huỷ được bản nháp đầu tiên chưa phát hành. Hợp đồng đã phát hành hoặc phụ lục nháp thì không huỷ được.',
+  CONTRACT_DISCARD_REASON_REQUIRED: 'Ghi lý do huỷ bản nháp, tối đa 1000 ký tự.',
   // Thanh toán PayOS
   PAYMENT_CHECKOUT_IN_PROGRESS:
     'Đang có một lần thanh toán chưa xong cho gói cùng loại hoặc cho hợp đồng này. Thanh toán hoặc huỷ đơn đó trước.',

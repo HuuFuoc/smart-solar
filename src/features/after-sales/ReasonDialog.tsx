@@ -5,8 +5,8 @@ import { Field, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { errorMessage } from '@/services/api/errors'
 
-// Hộp thoại hỏi một lý do / ghi chú bắt buộc rồi gửi. Dùng cho huỷ, từ chối, không đồng ý, khách vắng; báo giá lắp đặt
-// dùng cho khách yêu cầu sửa. Backend sau bán hàng cắt lý do dài hơn 1000 ký tự nên mặc định chặn ở ô nhập
+// Hộp thoại hỏi một lý do / ghi chú rồi gửi. Dùng cho huỷ, từ chối, không đồng ý, khách vắng; báo giá lắp đặt dùng cho
+// khách yêu cầu sửa, từ chối. Backend sau bán hàng cắt lý do dài hơn 1000 ký tự nên mặc định chặn ở ô nhập
 
 const MAX = 1000
 
@@ -17,6 +17,8 @@ type Props = {
   label?: string
   /** Số ký tự tối đa backend nhận */
   maxLength?: number
+  /** Để trống vẫn gửi được (gửi chuỗi rỗng) */
+  optional?: boolean
   submitLabel: string
   variant?: ComponentProps<typeof Button>['variant']
   /** Icon của nút gửi, mặc định là gửi */
@@ -45,6 +47,7 @@ function ReasonForm({
   description,
   label = 'Lý do',
   maxLength = MAX,
+  optional = false,
   submitLabel,
   variant = 'primary',
   icon = 'send',
@@ -57,7 +60,7 @@ function ReasonForm({
   const [error, setError] = useState<string | null>(null)
 
   async function submit() {
-    if (!text.trim()) return setError(`Ghi ${label.toLowerCase()}.`)
+    if (!optional && !text.trim()) return setError(`Ghi ${label.toLowerCase()}.`)
     setError(null)
     setPending(true)
     try {
@@ -74,12 +77,12 @@ function ReasonForm({
     <>
       <DialogTitle>{title}</DialogTitle>
       {description && <div className="mt-2 text-body text-fg-2">{description}</div>}
-      <Field label={label} htmlFor="reason-dialog-text" required className="mt-4">
+      <Field label={label} htmlFor="reason-dialog-text" required={!optional} optional={optional} className="mt-4">
         <Textarea
           id="reason-dialog-text"
           rows={3}
           maxLength={maxLength}
-          aria-required
+          aria-required={!optional}
           value={text}
           onChange={(e) => setText(e.target.value)}
         />

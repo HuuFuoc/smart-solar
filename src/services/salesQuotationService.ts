@@ -1,10 +1,13 @@
 import type {
+  ConfirmSurveyVersionRequest,
   FileReferenceRequest,
+  InstallationIssueQuotationRequest,
   InstallationQuotationLineRequest,
+  PricingApprovalRequest,
   QuotationHeaderRequest,
   QuotationLineUpdateRequest,
 } from '@/types/req/salesQuotationsReq'
-import type { QuotationView } from '@/types/res/quotationsRes'
+import type { AutomaticQuotationResult, QuotationView } from '@/types/res/quotationsRes'
 import { del, get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
@@ -46,9 +49,36 @@ export function removeLine(quotationId: string, lineId: string, revision: number
   return del<QuotationView>(api.line(quotationId, lineId), { params: { revision } })
 }
 
-/** Gửi khách: cần ít nhất một dòng, tổng lớn hơn 0 và hạn hiệu lực còn ở tương lai. Đã gửi thì không sửa được */
-export function issueQuotation(quotationId: string, revision: number) {
-  return post<QuotationView>(api.issue(quotationId), { revision })
+/**
+ * Gửi khách: cần ít nhất một dòng, tổng lớn hơn 0, hạn hiệu lực còn ở tương lai, dòng thiết bị khớp biên bản khảo sát và giá
+ * thấp hơn danh mục đã được quản lý duyệt. `reviewNote`: lý do vẫn gửi khi bản tự động còn vấn đề về giá chấp nhận được.
+ * Đã gửi thì không sửa được
+ */
+export function issueQuotation(quotationId: string, body: InstallationIssueQuotationRequest) {
+  return post<QuotationView>(api.issue(quotationId), body)
+}
+
+/**
+ * Chạy lại bước tạo báo giá tự động từ danh sách thiết bị của biên bản khảo sát (bình thường backend đã chạy khi kỹ thuật
+ * viên hoàn thành khảo sát). Gọi lại nhiều lần vẫn ra cùng kết quả
+ */
+export function generateQuotation(surveyRequestId: string) {
+  return post<AutomaticQuotationResult>(api.generate(surveyRequestId))
+}
+
+/** Báo giá của mình cần xem lại: bản nháp tự động còn vấn đề về giá và bản có biên bản khảo sát đổi sau khi lập, cũ trước */
+export function listPendingReview() {
+  return get<QuotationView[]>(api.pendingReview)
+}
+
+/** Bản nháp lập theo biên bản cũ: sau khi xem lại dòng hàng, ghi nhận theo biên bản hiện tại. Lý do bắt buộc, tối đa 1000 ký tự */
+export function confirmSurveyVersion(quotationId: string, body: ConfirmSurveyVersionRequest) {
+  return post<QuotationView>(api.confirmSurveyVersion(quotationId), body)
+}
+
+/** Xin quản lý duyệt đúng bộ giá đang có (giảm giá, đơn giá thấp hơn danh mục, giá 0). Sửa giá sau đó thì phải xin lại */
+export function requestPricingApproval(quotationId: string, body: PricingApprovalRequest) {
+  return post<QuotationView>(api.pricingApprovalRequest(quotationId), body)
 }
 
 /** Bản nháp mới chép từ bản đã gửi hoặc bản khách yêu cầu sửa; bản cũ chỉ bị thay khi gửi bản mới */

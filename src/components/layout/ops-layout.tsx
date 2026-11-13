@@ -6,6 +6,7 @@ import { PORTALS } from '@/config/portals'
 import { useAuth } from '@/context/AuthProvider'
 import { useNavAlert } from '@/hooks/useNavAlert'
 import { useMyTasksQuery, useOpenTasksQuery } from '@/hooks/useSalesAfterSales'
+import { usePendingReviewQuotationsQuery } from '@/hooks/useSalesQuotations'
 import {
   useEscalatedAppointmentsQuery,
   useMySurveyRequestsQuery,
@@ -15,7 +16,7 @@ import { ROUTES } from '@/routes/paths'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 import type { MySurveyRequestItem } from '@/types/res/surveyRequestsRes'
 
-// Số đỏ trên menu: yêu cầu chưa ai nhận, lịch của mình cần phân công, việc sau bán chờ nhận (báo giá, nhắc khách),
+// Số đỏ trên menu: yêu cầu chưa ai nhận, lịch của mình cần phân công, báo giá lắp đặt cần xem lại, việc sau bán chờ nhận,
 // và yêu cầu / việc của mình vừa đổi trạng thái mà chưa xem. Không có gì đỏ thì "Của tôi" hiện tổng số (xám)
 const surveyAlert = {
   key: (r: MySurveyRequestItem) => r.surveyRequestId,
@@ -41,12 +42,14 @@ export function OpsLayout({ children }: { children?: ReactNode }) {
       (escalated?.some((item) => item.ownedByMe && item.surveyRequestId === r.surveyRequestId) ?? false),
   })
   const tasksAlert = useNavAlert(ROUTES.ops.afterSales, myTasks, taskAlert)
+  const quotesToReview = usePendingReviewQuotationsQuery({ enabled }).data?.length ?? 0
+  const mineTodo = mineAlert + quotesToReview
   return (
     <AppShell
       portal={PORTALS.ops}
       badges={{
         [ROUTES.ops.surveys]: { value: pending, attention: true },
-        [ROUTES.ops.surveysMine]: { value: mineAlert || mine?.length, attention: mineAlert > 0 },
+        [ROUTES.ops.surveysMine]: { value: mineTodo || mine?.length, attention: mineTodo > 0 },
         [ROUTES.ops.afterSales]: { value: openTasks + tasksAlert, attention: true },
       }}
       collapsedHint={

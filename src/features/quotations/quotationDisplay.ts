@@ -1,7 +1,20 @@
 import type { Tone } from '@/components/common/ui/badge'
-import { QUOTATION_EVENT_TYPES, QUOTATION_LIMITS, QUOTATION_STATUSES } from '@/common/quotation'
+import {
+  AUTOMATIC_QUOTATION_OUTCOMES,
+  QUOTATION_EVENT_TYPES,
+  QUOTATION_LIMITS,
+  QUOTATION_STATUSES,
+} from '@/common/quotation'
+import { bomMismatchText, pricingBlockers } from '@/features/quotations/quotationRules'
 import { addDays, todayVn } from '@/features/scheduling/schedulingDisplay'
-import type { QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
+import { errorMessage, isApiError } from '@/services/api/errors'
+import type {
+  PriceAdjustment,
+  PricingBasis,
+  PricingIssue,
+  QuotationLineView,
+  QuotationView,
+} from '@/types/res/quotationsRes'
 import { formatMoney } from '@/utils/format'
 import { readDecimal, readGroupedNumber } from '@/utils/number'
 
@@ -9,11 +22,15 @@ import { readDecimal, readGroupedNumber } from '@/utils/number'
 
 export type QuotationViewer = 'sales' | 'customer'
 
-/** Báo giá chờ trả lời mà đã quá hạn thì ghi "Hết hạn" thay cho trạng thái */
+/** Báo giá chờ trả lời mà biên bản khảo sát đã đổi hoặc đã quá hạn thì ghi điều đó thay cho trạng thái */
 export function quotationStatusMeta(
-  q: Pick<QuotationView, 'status' | 'isExpired'>,
+  q: Pick<QuotationView, 'status' | 'isExpired' | 'surveyChanged'>,
   viewer: QuotationViewer,
 ): { label: string; tone: Tone } {
+  if (q.status === 'ISSUED' && q.surveyChanged)
+    return viewer === 'sales'
+      ? { label: 'Biên bản khảo sát đã đổi', tone: 'warn' }
+      : { label: 'Đang được cập nhật', tone: 'info' }
   if (q.status === 'ISSUED' && q.isExpired) return { label: 'Hết hạn', tone: 'warn' }
   const meta = QUOTATION_STATUSES[q.status]
   return meta ? { label: meta[viewer], tone: meta.tone } : { label: q.status, tone: 'neutral' }
@@ -74,7 +91,54 @@ export function sendBlockers(q: QuotationView, now = Date.now()) {
   else if (q.totalAmount <= 0) reasons.push('Tổng tiền phải lớn hơn 0.')
   if (!q.validUntil) reasons.push('Đặt hạn hiệu lực của báo giá.')
   else if (new Date(q.validUntil).getTime() <= now) reasons.push('Hạn hiệu lực đã qua, đặt hạn mới.')
-  return reasons
+  return [...reasons, ...pricingBlockers(q)]
+}
+
+/** Một chỗ giá thấp hơn danh mục, viết thành câu cho kinh doanh và quản lý */
+export function adjustmentText(a: PriceAdjustment, q: Pick<QuotationView, 'lines' | 'currency'>) {
+  const money = (amount: number | null) => formatQuotationMoney(amount ?? 0, q.currency)
+  if (a.kind === 'DISCOUNT') return `Giảm giá ${money(a.amount)} trên cả báo giá`
+  const line = q.lines.find((l) => l.lineNumber === a.lineNumber)
+  const name = `Dòng ${a.lineNumber}${line ? `, ${line.name}` : ''}`
+  if (a.kind === 'ZERO_PRICE') return `${name}: đơn giá 0`
+  return `${name}: đơn giá ${money(a.unitPrice)}, danh mục ${money(a.catalogUnitPrice)}, giảm ${money(a.amount)}`
+}
+
+/** Vấn đề về giá của bản tự động theo lời cho kinh doanh. Tên sản phẩm lấy từ danh sách thiết bị của biên bản khảo sát */
+export function pricingIssueText(issue: PricingIssue, basis: PricingBasis | null) {
+  const item = basis && [...basis.materials, ...basis.services].find((i) => i.productId === issue.productId)
+  const name = item?.name || item?.sku || 'Một sản phẩm'
+  switch (issue.code) {
+    case 'PRODUCT_UNAVAILABLE':
+      return `${name} không còn trong danh mục đang bán.`
+    case 'WRONG_ITEM_KIND':
+      return `${name} bị ghi nhầm nhóm thiết bị và dịch vụ trong biên bản khảo sát.`
+    case 'CURRENCY_NOT_SUPPORTED':
+      return `${name} không bán bằng VND.`
+    case 'PRICE_MISSING':
+      return `${name} chưa có giá danh mục: nhập đơn giá cho dòng này.`
+    case 'MISSING_SOLAR_PANEL':
+      return 'Chưa có dòng tấm pin.'
+    case 'MISSING_INVERTER':
+      return 'Chưa có dòng inverter.'
+    case 'LABOR_NOT_SPECIFIED':
+      return 'Chưa có chi phí nhân công lắp đặt: nhập ở Chi phí, điều khoản.'
+    case 'CONDITIONS_REQUIRE_REVIEW':
+      return 'Kỹ thuật viên ghi lắp được kèm điều kiện: xem lại giá cho các điều kiện đó.'
+    case 'INVALID_TOTAL':
+      return 'Tổng tiền phải lớn hơn 0.'
+    default:
+      return 'Có vấn đề về giá cần kiểm tra lại.'
+  }
+}
+
+export const automaticOutcomeText = (outcome: string) =>
+  AUTOMATIC_QUOTATION_OUTCOMES[outcome] ?? 'Chưa tạo được báo giá. Thử lại sau ít phút.'
+
+/** Câu lỗi của lệnh báo giá; dòng thiết bị lệch biên bản khảo sát thì ghi rõ lệch ở sản phẩm nào */
+export function quotationErrorMessage(error: unknown) {
+  const mismatch = isApiError(error) && error.code === 'QUOTATION_BOM_MISMATCH' ? bomMismatchText(error.details) : null
+  return mismatch ? `${errorMessage(error)} ${mismatch}.` : errorMessage(error)
 }
 
 // Hạn hiệu lực: chọn ngày, gửi cuối ngày đó theo giờ Việt Nam

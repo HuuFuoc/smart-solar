@@ -6,7 +6,7 @@ import type {
   QuotationHeaderRequest,
   QuotationLineUpdateRequest,
 } from '@/types/req/salesQuotationsReq'
-import type { QuotationView } from '@/types/res/quotationsRes'
+import type { AutomaticQuotationResult, QuotationView } from '@/types/res/quotationsRes'
 
 // Báo giá lắp đặt của kinh doanh. Lệnh ghi thành công thì thay ngay bản đó trong danh sách; xong (kể cả lỗi 409 vì
 // người khác vừa sửa) thì tải lại danh sách để luôn sửa trên revision mới nhất
@@ -14,6 +14,7 @@ import type { QuotationView } from '@/types/res/quotationsRes'
 export const salesQuotationKeys = {
   all: ['sales-quotations'] as const,
   list: (surveyRequestId: string) => [...salesQuotationKeys.all, 'list', surveyRequestId] as const,
+  pendingReview: () => [...salesQuotationKeys.all, 'pending-review'] as const,
 }
 
 export function useQuotationsQuery(
@@ -24,6 +25,16 @@ export function useQuotationsQuery(
     queryKey: salesQuotationKeys.list(surveyRequestId ?? ''),
     queryFn: () => quotationService.listForSurveyRequest(surveyRequestId!),
     enabled: enabled && Boolean(surveyRequestId),
+  })
+}
+
+/** Báo giá của mình cần xem lại; tự tải lại để số đỏ trên menu cập nhật. `enabled`: menu chỉ gọi khi đã chắc là kinh doanh */
+export function usePendingReviewQuotationsQuery({ enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery<QuotationView[], ApiError>({
+    queryKey: salesQuotationKeys.pendingReview(),
+    queryFn: quotationService.listPendingReview,
+    refetchInterval: 60_000,
+    enabled,
   })
 }
 
@@ -73,10 +84,34 @@ export function useRemoveQuotationLineMutation() {
   )
 }
 
-/** Gửi bản nháp cho khách */
+/** Gửi bản nháp cho khách; `reviewNote` chỉ cần khi bản tự động còn vấn đề về giá chấp nhận được */
 export function useSendQuotationMutation() {
-  return useQuotationWrite(({ quotationId, revision }: { quotationId: string; revision: number }) =>
-    quotationService.issueQuotation(quotationId, revision),
+  return useQuotationWrite(
+    ({ quotationId, revision, reviewNote }: { quotationId: string; revision: number; reviewNote?: string }) =>
+      quotationService.issueQuotation(quotationId, { revision, reviewNote }),
+  )
+}
+
+/** Tạo báo giá tự động từ biên bản khảo sát; kết quả nào cũng tải lại danh sách báo giá của yêu cầu */
+export function useGenerateQuotationMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<AutomaticQuotationResult, ApiError, string>({
+    mutationFn: quotationService.generateQuotation,
+    onSettled: () => queryClient.invalidateQueries({ queryKey: salesQuotationKeys.all }),
+  })
+}
+
+type ReasonVars = { quotationId: string; revision: number; reason: string }
+
+export function useConfirmSurveyVersionMutation() {
+  return useQuotationWrite(({ quotationId, revision, reason }: ReasonVars) =>
+    quotationService.confirmSurveyVersion(quotationId, { revision, reason }),
+  )
+}
+
+export function useRequestPricingApprovalMutation() {
+  return useQuotationWrite(({ quotationId, revision, reason }: ReasonVars) =>
+    quotationService.requestPricingApproval(quotationId, { revision, reason }),
   )
 }
 

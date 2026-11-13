@@ -92,6 +92,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
             alsoActiveOn: [ROUTES.manage.contract],
           },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.manage.afterSales, icon: 'build' },
+          { label: 'Duyệt giá báo giá', to: ROUTES.manage.pricingApprovals, icon: 'price_check' },
           { label: 'Việc của kinh doanh', to: ROUTES.manage.salesTasks, icon: 'assignment' },
           { label: 'Hoàn tiền', to: ROUTES.manage.refunds, icon: 'currency_exchange' },
           {
