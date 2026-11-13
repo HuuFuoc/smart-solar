@@ -62,44 +62,51 @@ function JobTable<T extends { appointmentId: string; startsAt: string }>({
   row: (job: T) => ReactNode
 }) {
   return (
-    <Table stack>
-      <thead>
-        <tr>
-          {labels.map((label) => (
-            <Th key={label}>{label}</Th>
-          ))}
-          <Th className="w-px">
-            <span className="sr-only">Thao tác</span>
-          </Th>
-        </tr>
-      </thead>
-      {byDay(rows).map(([day, items]) => (
-        <tbody key={day}>
-          <tr className="bg-surface-2 max-lg:py-2!">
-            <th
-              colSpan={labels.length + 1}
-              scope="rowgroup"
-              className="border-b border-line px-3 py-2 text-left font-semibold max-lg:block max-lg:border-0 max-lg:py-0"
-            >
-              {relativeDay(day, today)}
-              {/* "Hôm nay" / "Ngày mai" kèm thứ, ngày; ngày khác thì relativeDay đã là thứ, ngày */}
-              {relativeDay(day, today) !== formatDay(day) && (
-                <span className="font-normal text-fg-2">, {formatDay(day)}</span>
-              )}
-            </th>
+    <div className="overflow-hidden rounded-container border border-line bg-canvas">
+      <Table stack>
+        <thead>
+          <tr className="border-b border-line bg-surface-2">
+            {labels.map((label) => (
+              <Th key={label} className="px-4! py-3 font-semibold whitespace-nowrap lg:border-r lg:border-line">
+                {label}
+              </Th>
+            ))}
+            <Th className="w-px px-4! py-3 text-right whitespace-nowrap">
+              <span className="sr-only">Thao tác</span>
+            </Th>
           </tr>
-          {items.map((job) => (
-            <Fragment key={job.appointmentId}>{row(job)}</Fragment>
-          ))}
-        </tbody>
-      ))}
-    </Table>
+        </thead>
+        {byDay(rows).map(([day, items]) => (
+          <tbody key={day} className="divide-y divide-line">
+            <tr className="bg-surface-2 max-lg:py-2!">
+              <th
+                colSpan={labels.length + 1}
+                scope="rowgroup"
+                className="border-b border-line px-4 py-2.5 text-left font-semibold max-lg:block max-lg:border-0 max-lg:py-0"
+              >
+                {relativeDay(day, today)}
+                {/* "Hôm nay" / "Ngày mai" kèm thứ, ngày; ngày khác thì relativeDay đã là thứ, ngày */}
+                {relativeDay(day, today) !== formatDay(day) && (
+                  <span className="font-normal text-fg-2">, {formatDay(day)}</span>
+                )}
+              </th>
+            </tr>
+            {items.map((job) => (
+              <Fragment key={job.appointmentId}>{row(job)}</Fragment>
+            ))}
+          </tbody>
+        ))}
+      </Table>
+    </div>
   )
 }
 
 function JobTime({ job }: { job: { startsAt: string; endsAt: string } }) {
   return (
-    <Td label="Giờ" className="tnum font-semibold whitespace-nowrap">
+    <Td
+      label="Giờ"
+      className="px-4! py-3.5 align-middle tnum font-semibold whitespace-nowrap lg:border-r lg:border-line"
+    >
       {formatTimeRange(job.startsAt, job.endsAt)}
     </Td>
   )
@@ -107,11 +114,11 @@ function JobTime({ job }: { job: { startsAt: string; endsAt: string } }) {
 
 function JobPlace({ name, area, to }: { name: string; area: (string | null)[]; to: string }) {
   return (
-    <Td label="Công trình">
+    <Td label="Công trình" className="px-4! py-3.5 align-middle lg:border-r lg:border-line">
       <Link to={to} className="ui-link font-semibold">
         {name}
       </Link>
-      <p className="text-meta text-fg-2">{area.filter(Boolean).join(', ')}</p>
+      <p className="mt-0.5 text-meta text-fg-2">{area.filter(Boolean).join(', ')}</p>
     </Td>
   )
 }
@@ -134,21 +141,23 @@ function OpenJobRow({ job }: { job: OpenAppointmentView }) {
   }
 
   return (
-    <Tr className="*:align-middle">
+    <Tr>
       <JobTime job={job} />
       <JobPlace
         name={job.propertyName}
         area={[job.ward, job.province]}
         to={withId(ROUTES.tech.openJob, job.appointmentId)}
       />
-      <Td label="Khu vực">{job.zone?.name ?? '—'}</Td>
-      <Td label="Mặt lắp">
+      <Td label="Khu vực" className="px-4! py-3.5 align-middle whitespace-nowrap lg:border-r lg:border-line">
+        {job.zone?.name ?? '—'}
+      </Td>
+      <Td label="Mặt lắp" className="px-4! py-3.5 align-middle lg:border-r lg:border-line">
         {surfaceTypeLabel(job.installationSurfaceType)}, dùng được {formatArea(job.usableAreaM2)}
       </Td>
-      <Td label="Hạn nhận" className="tnum whitespace-nowrap">
+      <Td label="Hạn nhận" className="px-4! py-3.5 align-middle tnum whitespace-nowrap lg:border-r lg:border-line">
         {formatMoment(job.acceptanceDeadlineAt)}
       </Td>
-      <Td className="text-right whitespace-nowrap">
+      <Td className="px-4! py-3.5 align-middle text-right whitespace-nowrap">
         {job.canAccept ? (
           <Button size="sm" variant="soft" icon="task_alt" disabled={accept.isPending} onClick={() => void onAccept()}>
             {accept.isPending ? 'Đang nhận…' : 'Nhận việc'}
@@ -165,21 +174,23 @@ function MyJobRow({ job, past }: { job: TechnicianAppointmentListItem; past: boo
   const status = appointmentStatusMeta(job.status, 'technician')
   const to = withId(ROUTES.tech.job, job.appointmentId)
   return (
-    <Tr className="*:align-middle">
+    <Tr>
       <JobTime job={job} />
       <JobPlace name={job.propertyName} area={[job.communeName ?? job.ward ?? job.district, job.province]} to={to} />
-      <Td label="Cách nhận">{assignmentSourceLabel(job.assignmentSource, 'technician')}</Td>
-      <Td label="Nhận lúc" className="tnum whitespace-nowrap">
+      <Td label="Cách nhận" className="px-4! py-3.5 align-middle whitespace-nowrap lg:border-r lg:border-line">
+        {assignmentSourceLabel(job.assignmentSource, 'technician')}
+      </Td>
+      <Td label="Nhận lúc" className="px-4! py-3.5 align-middle tnum whitespace-nowrap lg:border-r lg:border-line">
         {formatMoment(job.assignedAt)}
       </Td>
-      <Td label="Tình hình">
+      <Td label="Tình hình" className="px-4! py-3.5 align-middle whitespace-nowrap lg:border-r lg:border-line">
         {job.isOverdue ? (
           <Badge tone="danger">Quá giờ, chưa khảo sát</Badge>
         ) : (
           <Badge tone={past ? 'neutral' : status.tone}>{status.label}</Badge>
         )}
       </Td>
-      <Td className="text-right whitespace-nowrap">
+      <Td className="px-4! py-3.5 align-middle text-right whitespace-nowrap">
         <ButtonLink icon="visibility" to={to} size="sm" variant="info">
           Xem chi tiết
         </ButtonLink>

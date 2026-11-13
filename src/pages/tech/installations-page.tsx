@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
-import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
+import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { matchesInstallation } from '@/features/installations/installationFilter'
 import {
   installationTab,
@@ -17,10 +17,6 @@ import { TechJobFilterBar } from '@/features/scheduling/TechJobFilterBar'
 import { useMyInstallationsQuery } from '@/hooks/useTechnicianInstallations'
 import { ROUTES, withId } from '@/routes/paths'
 import type { InstallationTechnicianView } from '@/types/res/technicianInstallationsRes'
-
-/** Các tab dùng chung một bộ cột để chuyển tab không bị nhảy cột */
-const COLUMNS = 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.2fr)_9rem]'
-const LABELS = ['Thời gian', 'Công trình', 'Khu vực', 'Tình hình', '']
 
 const EMPTY: Record<InstallationTab, { title: string; description?: string }> = {
   pending: {
@@ -45,28 +41,31 @@ function InstallationRow({ view, tab }: { view: InstallationTechnicianView; tab:
   // Việc chờ trả lời đã báo đỏ ở menu và đầu trang nên dòng chỉ ghi chữ
   const tone = tab === 'pending' ? 'info' : status.tone
   return (
-    <ListRow>
-      <ListCells columns={COLUMNS}>
-        <ListCell label="Thời gian" wide>
-          <span className="tnum font-semibold">{windowText(view)}</span>
-        </ListCell>
-        <ListCell wide>
-          <h3 className="font-semibold">{site?.propertyName ?? 'Công trình lắp đặt'}</h3>
-          <p className="mt-0.5 text-meta text-fg-2">
-            {[site?.ward, site?.district, site?.province].filter(Boolean).join(', ') || '—'}
-          </p>
-        </ListCell>
-        <ListCell label="Khu vực">{view.zoneName ?? '—'}</ListCell>
-        <ListCell label="Tình hình">
-          <Badge tone={tone}>{status.label}</Badge>
-        </ListCell>
-        <ListCell wide className="lg:justify-self-end">
-          <ButtonLink to={withId(ROUTES.tech.installation, view.projectId)} size="sm" variant="info" icon="visibility">
-            {tab === 'pending' ? 'Xem và trả lời' : 'Xem chi tiết'}
-          </ButtonLink>
-        </ListCell>
-      </ListCells>
-    </ListRow>
+    <Tr>
+      <Td
+        label="Thời gian"
+        className="px-4! py-3.5 align-middle tnum font-semibold whitespace-nowrap lg:border-r lg:border-line"
+      >
+        {windowText(view)}
+      </Td>
+      <Td label="Công trình" className="px-4! py-3.5 align-middle lg:border-r lg:border-line">
+        <h3 className="font-semibold text-fg">{site?.propertyName ?? 'Công trình lắp đặt'}</h3>
+        <p className="mt-0.5 text-meta text-fg-2">
+          {[site?.ward, site?.district, site?.province].filter(Boolean).join(', ') || '—'}
+        </p>
+      </Td>
+      <Td label="Khu vực" className="px-4! py-3.5 align-middle whitespace-nowrap lg:border-r lg:border-line">
+        {view.zoneName ?? '—'}
+      </Td>
+      <Td label="Tình hình" className="px-4! py-3.5 align-middle whitespace-nowrap lg:border-r lg:border-line">
+        <Badge tone={tone}>{status.label}</Badge>
+      </Td>
+      <Td className="px-4! py-3.5 align-middle text-right whitespace-nowrap">
+        <ButtonLink to={withId(ROUTES.tech.installation, view.projectId)} size="sm" variant="info" icon="visibility">
+          {tab === 'pending' ? 'Xem và trả lời' : 'Xem chi tiết'}
+        </ButtonLink>
+      </Td>
+    </Tr>
   )
 }
 
@@ -145,13 +144,25 @@ export function TechInstallationsPage() {
               description={hasFilter ? 'Thử đổi từ khoá, ngày hoặc giờ tìm kiếm.' : EMPTY[tab].description}
             />
           ) : (
-            <div>
-              <ListHead columns={COLUMNS} labels={LABELS} />
-              <ul className="divide-y divide-line">
-                {shown.map((view) => (
-                  <InstallationRow key={view.projectId} view={view} tab={tab} />
-                ))}
-              </ul>
+            <div className="overflow-hidden rounded-container border border-line bg-canvas">
+              <Table stack>
+                <thead>
+                  <tr className="border-b border-line bg-surface-2">
+                    <Th className="px-4! py-3 font-semibold whitespace-nowrap lg:border-r lg:border-line">Thời gian</Th>
+                    <Th className="px-4! py-3 font-semibold lg:border-r lg:border-line">Công trình</Th>
+                    <Th className="px-4! py-3 font-semibold whitespace-nowrap lg:border-r lg:border-line">Khu vực</Th>
+                    <Th className="px-4! py-3 font-semibold whitespace-nowrap lg:border-r lg:border-line">Tình hình</Th>
+                    <Th className="w-px px-4! py-3 text-right whitespace-nowrap">
+                      <span className="sr-only">Thao tác</span>
+                    </Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {shown.map((view) => (
+                    <InstallationRow key={view.projectId} view={view} tab={tab} />
+                  ))}
+                </tbody>
+              </Table>
             </div>
           )
         }
