@@ -33,7 +33,6 @@ import { useStaffOnSiteSurveyQuery } from '@/hooks/useOnSiteSurvey'
 import { useQuotationsQuery } from '@/hooks/useSalesQuotations'
 import { OnSiteSurveyResultPanel } from '@/features/onsite-survey/OnSiteSurveyResultPanel'
 import { currentQuotation, formatDateVn, quotationStatusMeta } from '@/features/quotations/quotationDisplay'
-import { pricingApprovalStatus } from '@/features/quotations/quotationRules'
 import { SalesQuotationPanel } from '@/features/quotations/SalesQuotationPanel'
 import { SalesContractPanel } from '@/features/contracts/SalesContractPanel'
 import { contractNextStep, contractStatusLabel } from '@/features/contracts/contractDisplay'
@@ -109,17 +108,26 @@ function quotationNextStep(quotations: QuotationView[]): TrackerNext {
       title: 'Cần bạn lập báo giá',
       body: 'Khảo sát tại công trình đã xong. Lập báo giá ở khối Báo giá bên dưới.',
     }
-  if (q.status === 'DRAFT' && pricingApprovalStatus(q) === 'PENDING')
+  if (q.surveyChanged)
+    return {
+      tone: 'danger',
+      title: 'Biên bản khảo sát đã được bổ sung sau khi lập báo giá',
+      body:
+        q.status === 'DRAFT'
+          ? 'Chỉnh dòng hàng rồi xác nhận theo biên bản mới ở khối Báo giá.'
+          : 'Lập bản sửa theo biên bản mới ở khối Báo giá.',
+    }
+  if (q.status === 'DRAFT' && q.pricingApproval?.status === 'PENDING')
     return {
       tone: 'info',
       title: 'Chờ quản lý duyệt giá',
-      body: 'Báo giá có giảm giá hoặc đơn giá thấp hơn giá danh mục. Quản lý duyệt xong thì bạn gửi được cho khách.',
+      body: 'Bản nháp có giá thấp hơn danh mục. Quản lý duyệt xong thì gửi cho khách.',
     }
-  if (q.status === 'DRAFT' && pricingApprovalStatus(q) === 'REJECTED')
+  if (q.status === 'REJECTED')
     return {
       tone: 'danger',
-      title: 'Quản lý không duyệt bộ giá này',
-      body: 'Xem lý do ở mục Duyệt giá, sửa giá hoặc xin duyệt lại.',
+      title: 'Khách từ chối báo giá',
+      body: 'Xem lý do ở khối Báo giá rồi lập bản sửa, hoặc đóng yêu cầu.',
     }
   if (q.status === 'DRAFT')
     return {
@@ -175,7 +183,9 @@ function nextStep(
   const a = r.appointment
   if (r.status === 'CLOSED') return { tone: 'neutral', title: 'Yêu cầu đã đóng' }
   if (r.status === 'CANCELLED') return { tone: 'neutral', title: 'Khách đã rút yêu cầu' }
-  if (quotations && acceptedQuotation(quotations) && contracts) return contractStep(contracts)
+  // Biên bản khảo sát đổi sau khi khách đồng ý thì bản đó không lập hợp đồng được: quay lại việc của báo giá
+  const accepted = quotations && acceptedQuotation(quotations)
+  if (accepted && !accepted.surveyChanged && contracts) return contractStep(contracts)
   if (r.status === 'COMPLETED' && quotations) return quotationNextStep(quotations)
   if (r.status === 'COMPLETED')
     return {

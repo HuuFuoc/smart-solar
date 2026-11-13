@@ -19,11 +19,13 @@ import {
   quotationStatusMeta,
   quotationTitle,
 } from '@/features/quotations/quotationDisplay'
+import { canRejectQuotation } from '@/features/quotations/quotationRules'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import {
   useMyQuotationQuery,
   useMyQuotationsQuery,
+  useRejectMyQuotationMutation,
   useRequestQuotationRevisionMutation,
 } from '@/hooks/useCustomerQuotations'
 import { ROUTES, withId } from '@/routes/paths'
@@ -33,6 +35,8 @@ import type { QuotationView } from '@/types/res/quotationsRes'
 function describe(q: QuotationView) {
   if (q.canAccept)
     return `Xem các hạng mục bên dưới rồi đồng ý hoặc yêu cầu sửa trước hết ngày ${formatDateVn(q.validUntil)}.`
+  if (q.status === 'ISSUED' && q.surveyChanged)
+    return 'Kết quả khảo sát vừa được bổ sung nên nhân viên kinh doanh đang cập nhật báo giá và sẽ gửi bản mới.'
   if (q.status === 'ISSUED')
     return `Báo giá đã hết hạn ngày ${formatDateVn(q.validUntil)}. Liên hệ nhân viên kinh doanh để nhận bản mới.`
   if (q.status === 'ACCEPTED')
@@ -40,10 +44,12 @@ function describe(q: QuotationView) {
   if (q.status === 'REVISION_REQUESTED')
     return 'Nhân viên kinh doanh đang sửa báo giá theo yêu cầu của bạn và sẽ gửi bản mới.'
   if (q.status === 'SUPERSEDED') return 'Bản này đã được thay bằng bản mới.'
+  if (q.status === 'REJECTED') return `Bạn đã từ chối báo giá này lúc ${formatMoment(q.closedAt)}.`
+  if (q.status === 'CANCELLED') return 'Báo giá đã đóng cùng yêu cầu khảo sát.'
   return undefined
 }
 
-// Chi tiết một bản báo giá lắp đặt của khách: đồng ý hoặc yêu cầu sửa khi còn hiệu lực
+// Chi tiết một bản báo giá lắp đặt của khách: đồng ý hoặc yêu cầu sửa khi còn hiệu lực, từ chối khi còn chờ trả lời
 export function CustomerQuotationPage() {
   const { id } = useParams()
   const query = useMyQuotationQuery(id)
@@ -51,8 +57,10 @@ export function CustomerQuotationPage() {
   const all = useMyQuotationsQuery()
   const requests = useMyRequestsQuery()
   const askRevision = useRequestQuotationRevisionMutation()
+  const reject = useRejectMyQuotationMutation()
   const [accepting, setAccepting] = useState(false)
   const [revising, setRevising] = useState(false)
+  const [rejecting, setRejecting] = useState(false)
   usePageCrumb(query.data ? quotationTitle(query.data) : null)
 
   return (
@@ -75,13 +83,20 @@ export function CustomerQuotationPage() {
               title={propertyName || 'Báo giá lắp đặt'}
               description={describe(q)}
               actions={
-                q.canAccept ? (
+                canRejectQuotation(q) ? (
                   <>
-                    <Button icon="check_circle" variant="primary" onClick={() => setAccepting(true)}>
-                      Đồng ý báo giá
-                    </Button>
-                    <Button icon="edit_note" variant="soft" onClick={() => setRevising(true)}>
-                      Yêu cầu sửa
+                    {q.canAccept && (
+                      <>
+                        <Button icon="check_circle" variant="primary" onClick={() => setAccepting(true)}>
+                          Đồng ý báo giá
+                        </Button>
+                        <Button icon="edit_note" variant="soft" onClick={() => setRevising(true)}>
+                          Yêu cầu sửa
+                        </Button>
+                      </>
+                    )}
+                    <Button icon="block" variant="danger" onClick={() => setRejecting(true)}>
+                      Từ chối
                     </Button>
                   </>
                 ) : undefined
@@ -109,6 +124,11 @@ export function CustomerQuotationPage() {
                 {q.status === 'REVISION_REQUESTED' && q.revisionReason && (
                   <Notice title="Điều bạn yêu cầu sửa">
                     <span className="whitespace-pre-line">{q.revisionReason}</span>
+                  </Notice>
+                )}
+                {q.status === 'REJECTED' && q.closeReason && (
+                  <Notice title="Lý do bạn từ chối">
+                    <span className="whitespace-pre-line">{q.closeReason}</span>
                   </Notice>
                 )}
                 <Panel>
@@ -196,6 +216,21 @@ export function CustomerQuotationPage() {
                 toast.success('Đã gửi yêu cầu sửa. Nhân viên kinh doanh sẽ gửi bản mới.')
               }}
               onClose={() => setRevising(false)}
+            />
+            <ReasonDialog
+              open={rejecting}
+              optional
+              title="Từ chối báo giá?"
+              description="Từ chối rồi thì không đổi lại được. Yêu cầu khảo sát vẫn mở để nhân viên kinh doanh gửi bản khác. Chỉ muốn đổi hạng mục hay giá thì chọn Yêu cầu sửa."
+              maxLength={QUOTATION_LIMITS.reasonLength}
+              submitLabel="Từ chối báo giá"
+              variant="danger-solid"
+              icon="block"
+              onSubmit={async (reason) => {
+                await reject.mutateAsync({ quotationId: q.quotationId, reason: reason || null })
+                toast.success('Đã từ chối báo giá.')
+              }}
+              onClose={() => setRejecting(false)}
             />
           </>
         )

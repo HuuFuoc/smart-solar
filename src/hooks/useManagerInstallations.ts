@@ -3,6 +3,7 @@ import * as installationService from '@/services/managerInstallationService'
 import { technicianAdminKeys } from '@/hooks/useTechnicianAdmin'
 import type { ApiError } from '@/services/api/errors'
 import type { AssignInstallationTechnicianRequest, ChecklistRequest } from '@/types/req/managerInstallationsReq'
+import type { EnergyMonitoringView } from '@/types/res/customerInstallationsRes'
 import type {
   HandoverView,
   InstallationCandidateView,
@@ -28,6 +29,7 @@ export const managerInstallationKeys = {
   evidenceUrl: (id: string, evidenceId: string) =>
     [...managerInstallationKeys.all, 'evidence-url', id, evidenceId] as const,
   handover: (id: string) => [...managerInstallationKeys.all, 'handover', id] as const,
+  energy: (id: string) => [...managerInstallationKeys.all, 'energy', id] as const,
 }
 
 const QUEUE_REFRESH_MS = 60_000
@@ -109,6 +111,14 @@ export function useHandoverQuery(id: string, { enabled = true }: QueueOptions = 
   })
 }
 
+export function useEnergyMonitoringQuery(id: string) {
+  return useQuery<EnergyMonitoringView, ApiError>({
+    queryKey: managerInstallationKeys.energy(id),
+    queryFn: () => installationService.getEnergyMonitoring(id),
+    enabled: Boolean(id),
+  })
+}
+
 // Thao tác ghi trả về chi tiết mới nhất: đặt ngay vào cache rồi làm mới mọi danh sách liên quan.
 // Phân công / huỷ đổi cả lịch của kỹ thuật viên nên làm mới luôn dữ liệu kỹ thuật viên
 function useAfterWrite(id: string, { touchesSchedule = false } = {}) {
@@ -150,6 +160,13 @@ export function useCancelProjectMutation(id: string) {
   return useMutation<InstallationStaffView, ApiError, { reason: string; expectedRevision: number }>({
     mutationFn: (body) => installationService.cancelProject(id, body),
     ...useAfterWrite(id, { touchesSchedule: true }),
+  })
+}
+
+export function useApproveSubstitutionMutation(id: string) {
+  return useMutation<InstallationStaffView, ApiError, { reason: string; expectedRevision: number }>({
+    mutationFn: (body) => installationService.approveSubstitution(id, body),
+    ...useAfterWrite(id),
   })
 }
 

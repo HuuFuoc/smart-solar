@@ -616,23 +616,17 @@ bản nháp thay tệp được, bản đã gửi chỉ gắn khi chưa có tệ
   ngày theo giờ Việt Nam, tối đa 89 ngày tới vì BE tính 90 ngày từ lúc lưu), "Gửi cho khách" (hỏi xác nhận; khoá khi chưa có
   dòng, tổng ≤ 0 hoặc hạn đã qua). Bản đã gửi / khách yêu cầu sửa / khách từ chối (bản đã đồng ý chỉ khi biên bản khảo sát đổi
   sau đó): "Lập bản sửa" chép thành bản nháp mới. Khối Tình hình có thêm bước "Báo giá" và việc tiếp theo theo trạng thái báo
-  giá (đỏ khi kinh doanh phải lập, gửi, sửa; xanh dương khi chờ quản lý duyệt giá).
-- Điều kiện gửi khách mới của backend `main` 66cb7af (luật ở `quotationRules.ts`, test `tests/quotation-rules.test.mjs`), mỗi
-  điều kiện một khối có thao tác ngay trên nút Gửi (`hasIssueHolds`), không lặp trong danh sách lý do chặn:
-  - Duyệt giá (`PricingApproval.tsx`, `pricingApproval` của view): giảm giá, đơn giá dưới giá danh mục hoặc giá 0 cần quản lý
-    duyệt đúng bộ giá đó (`fingerprint`); sửa bất kỳ số nào sau đó là phải xin lại. Kinh doanh "Xin duyệt giá" (POST
-    `…/pricing-approval-request`, lý do ≤ 1000). Quản lý xét ở menu "Duyệt giá" (`/manage/pricing-approvals(/:id)`,
-    `pages/pricing-approvals-page.tsx`; GET `/manager/quotations/pricing-approvals`, POST `/manager/quotations/{id}/pricing-approval`
-    `{ revision, approve, reason }`, lý do bắt buộc cả hai trường hợp). Chỉ vai trò Manager quyết định (quản trị không), kinh
-    doanh phụ trách không tự duyệt. Số đỏ cạnh menu = số báo giá chờ duyệt.
-  - Biên bản khảo sát bổ sung sau khi lập bản nháp (`surveyChanged`): "Xác nhận theo biên bản mới" (POST
-    `…/confirm-survey-version`, lý do ≤ 1000), dòng thiết bị phải khớp bảng vật tư của biên bản (`QUOTATION_BOM_MISMATCH`, hộp
-    gửi liệt kê dòng lệch từ `details.mismatches`).
-  - Bản nháp hệ thống tự lập (`origin = AUTOMATIC`, backend tự lập và có khi tự gửi khi biên bản hoàn thành): `pricingReview`
-    liệt kê điểm phải sửa (thiếu giá, thiếu tấm pin / inverter / nhân công, tổng sai) và điểm gửi được nếu ghi lý do; còn điểm
-    sau thì hộp gửi bắt buộc `reviewNote` (≤ 1000).
-    Chưa làm: "Lập lại tự động" (POST `…/quotations/generate`), hàng `GET /quotations/pending-review`, khách từ chối báo giá
-    (POST `/customers/me/quotations/{id}/reject`).
+  giá (đỏ khi kinh doanh phải lập, gửi, sửa).
+- Báo giá theo backend v2 (luật ở `quotationRules.ts`, test trong `tests/ops-contract-rules.test.mjs`; lý do ≤ 1000 =
+  `REVIEW_REASON_MAX`): "Tạo từ biên bản khảo sát" (POST `…/quotations/generate`, backend tự lập từ bảng vật tư, có khi tự gửi
+  khách); báo giá cần xem lại (`GET /quotations/pending-review`: bản tự lập còn vấn đề giá, bản có biên bản đổi) hiện thành khối
+  `PendingReviewQuotations` ở "Của tôi" + số đỏ ở menu. Gửi khách bị chặn tới khi: xác nhận theo biên bản mới nếu biên bản đổi
+  (`surveyChanged`, POST `…/confirm-survey-version`); sửa các vấn đề giá bắt buộc, phần còn lại ghi `reviewNote`; dòng thiết bị
+  khớp biên bản (`QUOTATION_BOM_MISMATCH`, `bomMismatchText`); quản lý duyệt bộ giá có giảm giá / đơn giá dưới danh mục / giá 0
+  (`pricingApproval`, kinh doanh POST `…/pricing-approval-request`; sửa số nào sau khi duyệt là phải xin lại).
+- Quản lý: menu "Duyệt giá báo giá" (`/manage/pricing-approvals`, `pages/pricing-approvals-page.tsx`, hook
+  `useManagerQuotations.ts`; GET `/manager/quotations/pricing-approvals`, POST `…/{id}/pricing-approval`
+  `{ revision, approve, reason }`). Chỉ vai trò Manager quyết định, kinh doanh phụ trách không tự duyệt; số đỏ = số chờ duyệt.
 - Khách: menu "Báo giá" (`/customer/quotations`, mỗi công trình một dòng là bản mới nhất, tên công trình lấy từ yêu cầu khảo sát)
   và `/customer/quotations/:id` (theo mã từng bản): "Đồng ý báo giá" (hỏi xác nhận, không đổi lại được) và "Yêu cầu sửa" (lý do
   bắt buộc ≤ 2000) chỉ khi `canAccept` (ISSUED và chưa hết hạn); bản cũ dẫn sang bản mới. Trang yêu cầu khảo sát của khách có
@@ -665,7 +659,7 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
   sách đó dẫn về trang hợp đồng.
 - Mọi lệnh ghi gửi `revision` đang hiện; 409 thì báo lỗi, tải lại, không tự gửi lại. 429 báo số giây theo Retry-After (10 lệnh
   ghi / phút). Yêu cầu khảo sát đã có hợp đồng còn hiệu lực thì ẩn "Đóng yêu cầu" (backend 31/10 từ chối).
-- Chưa làm: huỷ bản nháp hợp đồng (`POST /contracts/{id}/discard`, chỉ có ở backend 31/10).
+- Huỷ bản nháp đầu tiên chưa phát hành (`POST /contracts/{id}/discard`, lý do bắt buộc ≤ 1000): nút "Huỷ bản nháp" ở khối Bản nháp; báo giá đó không lập hợp đồng mới được nữa.
 
 **Hợp đồng và thanh toán, phía khách** (03/11/2026; `/customer/contracts(/:id)`, menu "Hợp đồng"; backend `main` 7c79fa8:
 `CustomerContractsController`, `ContractHandlers.SubmitSignedDocumentAsync`, `CustomerPaymentsController`, `PaymentService`).

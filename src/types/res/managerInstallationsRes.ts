@@ -1,6 +1,7 @@
 // Viết tay vì swagger không có schema response (tag ManagerInstallations)
 // Theo record C# của backend: Modules/Installations/InstallationViews.cs, InstallationContracts.cs, InstallationEvidenceHandlers.cs
 // Giờ là chuỗi ISO kèm "+07:00", ngày (DateOnly) là "YYYY-MM-DD"
+import type { EquipmentComparisonView } from '@/types/res/customerInstallationsRes'
 
 /** InstallationStatuses */
 export type InstallationStatus =
@@ -176,6 +177,8 @@ export type InstallationStaffView = {
   acceptances: AcceptanceView[]
   checklist: ChecklistItemView[]
   events: InstallationEventView[]
+  /** Thiết bị đã lắp so với hợp đồng; null với dự án cũ */
+  equipment: EquipmentComparisonView | null
 }
 
 /** Thành viên khu vực đứng trước, người ngoài khu vực sau với `crossZone` = true */

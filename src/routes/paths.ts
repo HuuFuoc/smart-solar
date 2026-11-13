@@ -110,9 +110,8 @@ export const ROUTES = {
     /** Gói khách xin huỷ trước khi bắt đầu kỳ: hàng chờ → chi tiết → duyệt / từ chối */
     packageCancellations: '/manage/package-cancellations',
     packageCancellation: '/manage/package-cancellations/:id',
-    /** Báo giá lắp đặt có giảm giá / đơn giá dưới giá danh mục chờ quản lý duyệt: hàng chờ → một báo giá */
+    /** Báo giá có giá thấp hơn danh mục chờ quản lý duyệt */
     pricingApprovals: '/manage/pricing-approvals',
-    pricingApproval: '/manage/pricing-approvals/:id',
     /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
     assistant: '/manage/assistant',
   },

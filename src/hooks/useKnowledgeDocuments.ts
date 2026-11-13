@@ -94,15 +94,15 @@ export function useRetryKnowledgeJobMutation() {
   )
 }
 
-export function useArchiveKnowledgeMutation() {
-  return useDocumentMutation(({ id, revision }: { id: string; revision: number }) =>
-    knowledgeService.archiveKnowledgeDocument(id, { revision }),
-  )
-}
-
 export function useSetKnowledgeAudienceMutation() {
   return useDocumentMutation(
     ({ id, revision, audience, reason }: { id: string; revision: number; audience: string; reason: string }) =>
       knowledgeService.setKnowledgeAudience(id, { revision, audience, reason }),
+  )
+}
+
+export function useArchiveKnowledgeMutation() {
+  return useDocumentMutation(({ id, revision }: { id: string; revision: number }) =>
+    knowledgeService.archiveKnowledgeDocument(id, { revision }),
   )
 }

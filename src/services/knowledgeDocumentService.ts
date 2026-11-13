@@ -60,12 +60,12 @@ export function retryKnowledgeJob(documentId: string, jobId: string) {
   return post<KnowledgeDocumentView>(api.retryJob(documentId, jobId))
 }
 
+/** Đổi ai được chatbot trả lời bằng tài liệu này; lý do bắt buộc, tối đa 1000 ký tự. Có hiệu lực ngay, kể cả lịch sử trò chuyện */
+export function setKnowledgeAudience(documentId: string, body: SetKnowledgeAudienceRequest) {
+  return put<KnowledgeDocumentView>(api.audience(documentId), body)
+}
+
 /** Xoá mềm: gỡ công bố ngay, dữ liệu đã nạp được xoá bằng một lượt chạy nền */
 export function archiveKnowledgeDocument(documentId: string, body: KnowledgeRevisionRequest) {
   return post<KnowledgeDocumentView>(api.archive(documentId), body)
-}
-
-/** Đổi ai được chatbot truy hồi tài liệu (INTERNAL | CUSTOMER), có lý do; có hiệu lực ngay. 409 RAG_DOCUMENT_AUDIENCE_UNCHANGED khi không đổi */
-export function setKnowledgeAudience(documentId: string, body: SetKnowledgeAudienceRequest) {
-  return put<KnowledgeDocumentView>(api.audience(documentId), body)
 }

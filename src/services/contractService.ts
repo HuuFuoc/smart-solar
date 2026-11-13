@@ -1,6 +1,7 @@
 import type {
   ContractReviewRequest,
   ContractTermsRequest,
+  DiscardContractRequest,
   OfficialDocumentRequest,
 } from '@/types/req/salesContractsReq'
 import type { RevisionRequest } from '@/types/req/salesQuotationsReq'
@@ -54,6 +55,14 @@ export function attachOfficialDocument(contractId: string, body: OfficialDocumen
 /** Gửi khách ký: cần đã gắn PDF chính thức */
 export function publishContract(contractId: string, body: RevisionRequest) {
   return post<ContractView>(api.publish(contractId), body)
+}
+
+/**
+ * Huỷ bản nháp đầu tiên chưa phát hành (lý do bắt buộc, tối đa 1000 ký tự) để đóng được yêu cầu khảo sát. Báo giá đó không
+ * lập hợp đồng mới được nữa; phụ lục nháp và hợp đồng đã phát hành không huỷ được
+ */
+export function discardContract(contractId: string, body: DiscardContractRequest) {
+  return post<ContractView>(api.discard(contractId), body)
 }
 
 /** Duyệt bản khách đã ký: APPROVE thành ĐÃ KÝ, REJECT (bắt buộc lý do) thành BẢN KÝ BỊ TỪ CHỐI */

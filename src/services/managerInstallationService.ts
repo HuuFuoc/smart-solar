@@ -3,7 +3,9 @@ import type {
   CancelInstallationRequest,
   ChecklistRequest,
   ReturnToReworkRequest,
+  SubstitutionApprovalRequest,
 } from '@/types/req/managerInstallationsReq'
+import type { EnergyMonitoringView } from '@/types/res/customerInstallationsRes'
 import type {
   HandoverView,
   InstallationCandidateView,
@@ -77,4 +79,17 @@ export function getEvidenceUrl(projectId: string, evidenceId: string, dispositio
 /** Chỉ có khi dự án đã hoàn thành (khách đã nghiệm thu) */
 export function getHandover(projectId: string) {
   return get<HandoverView>(api.handover(projectId))
+}
+
+/**
+ * Chỉ quản lý (quản trị không có quyền): duyệt tấm pin, inverter đã lắp khác hợp đồng, lý do bắt buộc tối đa 400 ký tự. Khách
+ * còn phải đồng ý trước khi nghiệm thu. Kỹ thuật viên ghi thêm thiết bị sau đó thì phải duyệt lại
+ */
+export function approveSubstitution(projectId: string, body: SubstitutionApprovalRequest) {
+  return post<InstallationStaffView>(api.approveSubstitution(projectId), body)
+}
+
+/** Sản lượng dự kiến theo mô phỏng đã chọn, không phải số đo */
+export function getEnergyMonitoring(projectId: string) {
+  return get<EnergyMonitoringView>(api.energyMonitoring(projectId))
 }

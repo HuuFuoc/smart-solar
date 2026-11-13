@@ -9,6 +9,7 @@ import {
   canAmend,
   canAttachOfficialDocument,
   canCreateContract,
+  canDiscard,
   canEditDraft,
   canPublish,
   canReview,
@@ -34,7 +35,16 @@ import {
   isFollowUpTask,
   taskNoteText,
 } from '../src/features/after-sales/salesTaskRules.ts'
-import { canAttachQuotationDocument } from '../src/features/quotations/quotationRules.ts'
+import {
+  bomMismatchText,
+  canAttachQuotationDocument,
+  canConfirmSurveyVersion,
+  canRejectQuotation,
+  canRequestPricingApproval,
+  canReviseQuotation,
+  pricingBlockers,
+  reviewReasonError,
+} from '../src/features/quotations/quotationRules.ts'
 
 const quotation = (status, extra = {}) => ({ quotationId: 'q-1', status, documentFileId: null, ...extra })
 
@@ -269,5 +279,75 @@ describe('PDF báo giá', () => {
     assert.equal(canAttachQuotationDocument(quotation('ISSUED')), true)
     assert.equal(canAttachQuotationDocument(quotation('ISSUED', { documentFileId: 'f' })), false)
     assert.equal(canAttachQuotationDocument(quotation('ACCEPTED')), false)
+  })
+})
+
+describe('Báo giá theo backend v2', () => {
+  const draft = (extra = {}) =>
+    quotation('DRAFT', { surveyChanged: false, pricingReview: null, pricingApproval: null, ...extra })
+  const approval = (status) => ({ status, adjustments: [], fingerprint: 'fp', request: null, decision: null })
+
+  test('lập bản sửa: bản đã gửi, khách yêu cầu sửa, khách từ chối, bản đã đồng ý mà biên bản đổi', () => {
+    assert.equal(canReviseQuotation(quotation('ISSUED', { surveyChanged: false })), true)
+    assert.equal(canReviseQuotation(quotation('REVISION_REQUESTED', { surveyChanged: false })), true)
+    assert.equal(canReviseQuotation(quotation('REJECTED', { surveyChanged: false })), true)
+    assert.equal(canReviseQuotation(quotation('ACCEPTED', { surveyChanged: false })), false)
+    assert.equal(canReviseQuotation(quotation('ACCEPTED', { surveyChanged: true })), true)
+    assert.equal(canReviseQuotation(quotation('CANCELLED', { surveyChanged: false })), false)
+  })
+
+  test('khách chỉ từ chối được bản đang chờ trả lời', () => {
+    assert.equal(canRejectQuotation(quotation('ISSUED')), true)
+    assert.equal(canRejectQuotation(quotation('ACCEPTED')), false)
+  })
+
+  test('xác nhận theo biên bản mới chỉ với bản nháp lập theo biên bản cũ', () => {
+    assert.equal(canConfirmSurveyVersion(draft({ surveyChanged: true })), true)
+    assert.equal(canConfirmSurveyVersion(draft()), false)
+    assert.equal(canConfirmSurveyVersion(quotation('ISSUED', { surveyChanged: true })), false)
+  })
+
+  test('xin duyệt giá khi bộ giá cần duyệt hoặc quản lý đã không duyệt', () => {
+    assert.equal(canRequestPricingApproval(draft({ pricingApproval: approval('REQUIRED') })), true)
+    assert.equal(canRequestPricingApproval(draft({ pricingApproval: approval('REJECTED') })), true)
+    assert.equal(canRequestPricingApproval(draft({ pricingApproval: approval('PENDING') })), false)
+    assert.equal(canRequestPricingApproval(draft({ pricingApproval: approval('NOT_REQUIRED') })), false)
+  })
+
+  test('lý do chưa gửi khách được: biên bản đổi, vấn đề giá phải sửa, chờ duyệt giá', () => {
+    assert.deepEqual(pricingBlockers(draft()), [])
+    const outstanding = [{ code: 'PRICE_MISSING' }, { code: 'CONDITIONS_REQUIRE_REVIEW' }]
+    const reasons = pricingBlockers(
+      draft({
+        surveyChanged: true,
+        pricingReview: { outstanding, noteRequired: true },
+        pricingApproval: approval('PENDING'),
+      }),
+    )
+    assert.equal(reasons.length, 3)
+    assert.match(reasons[1], /^Còn 1 vấn đề/)
+  })
+
+  test('lý do bắt buộc, tối đa 1000 ký tự', () => {
+    assert.equal(reviewReasonError('  '), 'Ghi lý do.')
+    assert.equal(reviewReasonError('x'.repeat(1001)), 'Lý do tối đa 1000 ký tự.')
+    assert.equal(reviewReasonError('Khách lấy số lượng lớn'), null)
+  })
+
+  test('dòng thiết bị lệch biên bản khảo sát được ghi theo mã sản phẩm', () => {
+    assert.equal(
+      bomMismatchText({ mismatches: [{ sku: 'PV-550', surveyQuantity: 20, quotedQuantity: 18 }] }),
+      'PV-550: biên bản 20, báo giá 18',
+    )
+    assert.equal(bomMismatchText({}), null)
+    assert.equal(bomMismatchText(null), null)
+  })
+})
+
+describe('Huỷ bản nháp hợp đồng', () => {
+  test('chỉ bản nháp đầu tiên, không phải phụ lục nháp', () => {
+    assert.equal(canDiscard({ status: 'DRAFT', previousContractId: null }), true)
+    assert.equal(canDiscard({ status: 'DRAFT', previousContractId: 'c-1' }), false)
+    assert.equal(canDiscard({ status: 'ISSUED', previousContractId: null }), false)
   })
 })

@@ -101,6 +101,37 @@ export type InstallationCustomerView = {
   evidence: EvidenceView[]
   assets: AssetView[]
   acceptances: AcceptanceView[]
+  /** Thiết bị đã lắp so với hợp đồng; null với dự án cũ */
+  equipment: EquipmentComparisonView | null
+}
+
+/** Sản lượng dự kiến theo mô phỏng khách chọn trước khi lắp, không phải số đo */
+export type SimulatedProductionView = {
+  simulationId: string
+  selectedAt: string
+  algorithmVersion: string
+  energyStatus: string
+  panelCount: number
+  installedCapacityKwp: number
+  annualEnergyKwh: number | null
+  specificYieldKwhPerKwpYear: number | null
+}
+
+/**
+ * GET .../energy-monitoring (khách: công trình của mình; quản lý, quản trị: mọi công trình). Hệ thống chưa nối đồng hồ hay
+ * inverter nên `dataSource` luôn SIMULATED, `measuredDataAvailable` false; `simulated` null khi không có mô phỏng đã chọn
+ */
+export type EnergyMonitoringView = {
+  projectId: string
+  projectStatus: string
+  handoverAt: string | null
+  dataSource: string
+  measuredDataAvailable: boolean
+  status: string
+  simulated: SimulatedProductionView | null
+  alerts: string[]
+  alertsStatus: string
+  notice: string
 }
 
 /** GET .../evidence. downloadable=false: tệp không còn VERIFIED, không được xin URL (contentType, sizeBytes, sha256 null) */

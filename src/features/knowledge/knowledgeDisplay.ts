@@ -1,4 +1,5 @@
 import {
+  KNOWLEDGE_AUDIENCES,
   KNOWLEDGE_CATEGORIES,
   KNOWLEDGE_DOCUMENT_STATUSES,
   KNOWLEDGE_JOB_KINDS,
@@ -12,6 +13,7 @@ import type { Tone } from '@/components/common/ui/badge'
 const fallback = (code: string): { label: string; tone: Tone } => ({ label: code, tone: 'neutral' })
 
 export const categoryLabel = (code: string) => KNOWLEDGE_CATEGORIES[code] ?? code
+export const audienceLabel = (code: string) => KNOWLEDGE_AUDIENCES[code] ?? code
 export const documentStatusMeta = (code: string) => KNOWLEDGE_DOCUMENT_STATUSES[code] ?? fallback(code)
 export const versionStatusMeta = (code: string) => KNOWLEDGE_VERSION_STATUSES[code] ?? fallback(code)
 export const jobStatusMeta = (code: string) => KNOWLEDGE_JOB_STATUSES[code] ?? fallback(code)

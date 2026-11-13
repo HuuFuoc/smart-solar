@@ -12,7 +12,11 @@ import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { ProjectAfterSalesPanel } from '@/features/after-sales/ProjectAfterSalesPanel'
+import { toast } from 'sonner'
+import { Notice } from '@/components/common/ui/lists'
 import { AcceptanceDialog } from '@/features/installations/AcceptanceDialog'
+import { EnergyEstimatePanel } from '@/features/installations/EnergyEstimatePanel'
+import { EquipmentDifferences } from '@/features/installations/EquipmentDifferences'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
 import {
   acceptanceDecisionMeta,
@@ -28,11 +32,14 @@ import {
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment, vnDate } from '@/features/scheduling/schedulingDisplay'
 import {
+  useApproveSubstitutionMutation,
+  useEnergyMonitoringQuery,
   useEvidenceUrlFetcher,
   useHandoverQuery,
   useInstallationEvidenceQuery,
   useMyInstallationQuery,
 } from '@/hooks/useCustomerInstallations'
+import { errorMessage } from '@/services/api/errors'
 import { useWarrantyQuery } from '@/hooks/useCustomerServiceRequests'
 import type {
   AcceptanceView,
@@ -89,6 +96,13 @@ function lastRework(p: InstallationCustomerView) {
 // Đỏ khi khách phải làm, xanh dương khi chờ người khác, xanh lá khi đã ổn
 function nextStep(p: InstallationCustomerView): TrackerNext {
   const range = formatInstallationWindow(p.scheduledStartsAt, p.scheduledEndsAt)
+  if (awaitsCustomerDecision(p) && p.equipment?.status === 'CUSTOMER_APPROVAL_REQUIRED')
+    return {
+      tone: 'danger',
+      title: 'Thiết bị đã lắp khác hợp đồng, cần bạn xem và đồng ý',
+      body: 'Đồng ý thay thiết bị rồi nghiệm thu, hoặc yêu cầu sửa lại nếu không đồng ý.',
+      action: { label: 'Xem thiết bị', icon: 'fact_check', target: 'acceptance' },
+    }
   if (awaitsCustomerDecision(p))
     return {
       tone: 'danger',
@@ -149,7 +163,55 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
   }
 }
 
-function AcceptancePanel({ pending, onDecide }: { pending: AcceptanceView; onDecide: (c: AcceptanceChoice) => void }) {
+/** Thiết bị lắp khác hợp đồng: khách đồng ý khi quản lý đã duyệt; chưa đồng ý thì chưa nghiệm thu được */
+function SubstitutionNotice({ project: p }: { project: InstallationCustomerView }) {
+  const approve = useApproveSubstitutionMutation()
+  const equipment = p.equipment
+  if (equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED')
+    return (
+      <Notice tone="info" title="Thiết bị đã lắp khác hợp đồng">
+        Smart Solar đang xem lại thay đổi này. Xong bạn mới nghiệm thu được.
+      </Notice>
+    )
+  if (equipment?.status !== 'CUSTOMER_APPROVAL_REQUIRED') return null
+  return (
+    <div className="space-y-3">
+      <Notice tone="warn" title="Thiết bị đã lắp khác hợp đồng">
+        {equipment.managerApproval?.reason && (
+          <span className="whitespace-pre-line">Smart Solar giải thích: {equipment.managerApproval.reason}</span>
+        )}
+      </Notice>
+      <EquipmentDifferences items={equipment.differences} />
+      <Button
+        icon="check_circle"
+        variant="soft"
+        disabled={approve.isPending}
+        onClick={() =>
+          approve
+            .mutateAsync(p.projectId)
+            .then(() => toast.success('Đã đồng ý thay thiết bị. Bạn nghiệm thu được rồi.'))
+            .catch((e: unknown) => toast.error(errorMessage(e)))
+        }
+      >
+        {approve.isPending ? 'Đang gửi…' : 'Đồng ý thay thiết bị'}
+      </Button>
+    </div>
+  )
+}
+
+function AcceptancePanel({
+  project,
+  pending,
+  onDecide,
+}: {
+  project: InstallationCustomerView
+  pending: AcceptanceView
+  onDecide: (c: AcceptanceChoice) => void
+}) {
+  // Backend chặn nghiệm thu khi thiết bị khác hợp đồng chưa được quản lý duyệt và khách đồng ý
+  const blocked =
+    project.equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED' ||
+    project.equipment?.status === 'CUSTOMER_APPROVAL_REQUIRED'
   return (
     <Panel>
       <PanelHeader
@@ -158,9 +220,15 @@ function AcceptancePanel({ pending, onDecide }: { pending: AcceptanceView; onDec
       />
       <PanelBody className="space-y-4">
         <p className="max-w-[72ch] text-body whitespace-pre-line text-fg">{pending.completionReport}</p>
+        <SubstitutionNotice project={project} />
         <p className="text-body text-fg-2">Xem ảnh thi công và thiết bị đã lắp bên dưới trước khi quyết định.</p>
         <div className="flex flex-wrap gap-3">
-          <Button icon="check_circle" variant="primary" onClick={() => onDecide(ACCEPTANCE_CHOICES.accept)}>
+          <Button
+            icon="check_circle"
+            variant="primary"
+            disabled={blocked}
+            onClick={() => onDecide(ACCEPTANCE_CHOICES.accept)}
+          >
             Nghiệm thu
           </Button>
           <Button icon="replay" variant="secondary" onClick={() => onDecide(ACCEPTANCE_CHOICES.requestRework)}>
@@ -346,6 +414,7 @@ function AcceptanceHistory({ acceptances }: { acceptances: AcceptanceView[] }) {
 export function CustomerProjectPage() {
   const { id } = useParams()
   const query = useMyInstallationQuery(id)
+  const energy = useEnergyMonitoringQuery(id ?? '')
   // Giữ cả số lần trong state: tải lại sau lỗi có thể làm mất lần đang chờ khi hộp thoại còn mở
   const [dialog, setDialog] = useState<{ choice: AcceptanceChoice; round: number } | null>(null)
   usePageCrumb(query.data ? `Công trình ${shortCode(query.data.projectId)}` : null)
@@ -382,6 +451,7 @@ export function CustomerProjectPage() {
                   {pending && (
                     <div id="acceptance" className="scroll-mt-6">
                       <AcceptancePanel
+                        project={p}
                         pending={pending}
                         onDecide={(choice) => setDialog({ choice, round: pending.round })}
                       />
@@ -402,6 +472,7 @@ export function CustomerProjectPage() {
 
                 <PanelAside aria-label="Lịch lắp đặt và các lần nghiệm thu">
                   <SchedulePanel p={p} />
+                  {p.status !== 'CANCELLED' && <EnergyEstimatePanel query={energy} />}
                   {p.acceptances.length > 0 && (
                     <Panel>
                       <PanelHeader title="Các lần nghiệm thu" />

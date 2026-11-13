@@ -8,12 +8,14 @@ import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/u
 import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { useAuth } from '@/context/AuthProvider'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { AssignmentPanel } from '@/features/installation-projects/AssignmentPanel'
 import { CancelProjectDialog } from '@/features/installation-projects/CancelProjectDialog'
 import { ChecklistPanel } from '@/features/installation-projects/ChecklistPanel'
 import { CompletionPanel } from '@/features/installation-projects/CompletionPanel'
+import { EquipmentPanel } from '@/features/installation-projects/EquipmentPanel'
 import { EventLog } from '@/features/installation-projects/EventLog'
 import { EvidencePanel } from '@/features/installation-projects/EvidencePanel'
 import { AssetsPanel, HandoverPanel } from '@/features/installation-projects/HandoverPanel'
@@ -26,8 +28,9 @@ import {
   scheduleExpired,
   siteMapUrl,
 } from '@/features/installation-projects/projectDisplay'
+import { EnergyEstimatePanel } from '@/features/installations/EnergyEstimatePanel'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
-import { useInstallationProjectQuery } from '@/hooks/useManagerInstallations'
+import { useEnergyMonitoringQuery, useInstallationProjectQuery } from '@/hooks/useManagerInstallations'
 import type { InstallationStaffView } from '@/types/res/managerInstallationsRes'
 
 const projectTitle = (p: InstallationStaffView) => p.site?.propertyName || `Dự án ${shortCode(p.projectId)}`
@@ -85,8 +88,8 @@ function trackerSteps(p: InstallationStaffView): TrackerStep[] {
   ]
 }
 
-// Việc tiếp theo và ai làm. Đỏ chỉ khi quản lý phải làm
-function nextStep(p: InstallationStaffView): TrackerNext {
+// Việc tiếp theo và ai làm. Đỏ chỉ khi quản lý phải làm; quản trị không duyệt được thay thiết bị
+function nextStep(p: InstallationStaffView, isManager: boolean): TrackerNext {
   const name = p.responsibleTechnician?.fullName || 'Kỹ thuật viên'
   const when = formatInterval(p.scheduledStartsAt, p.scheduledEndsAt)
   const blocking = blockingChecklist(p.checklist)
@@ -100,6 +103,21 @@ function nextStep(p: InstallationStaffView): TrackerNext {
     }
   if (p.status === 'COMPLETED')
     return { tone: 'neutral', title: 'Khách đã nghiệm thu, dự án đã bàn giao', body: formatMoment(p.handoverAt) }
+  if (p.equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED')
+    return isManager
+      ? {
+          tone: 'danger',
+          title: 'Thiết bị đã lắp khác hợp đồng, cần bạn duyệt',
+          body: 'Xem chênh lệch ở khối Thiết bị khác hợp đồng rồi duyệt kèm lý do.',
+          action: { label: 'Xem thiết bị', icon: 'fact_check', target: 'equipment' },
+        }
+      : { tone: 'info', title: 'Thiết bị đã lắp khác hợp đồng, chờ quản lý duyệt' }
+  if (p.equipment?.status === 'CUSTOMER_APPROVAL_REQUIRED' && p.status === 'PENDING_CUSTOMER_ACCEPTANCE')
+    return {
+      tone: 'info',
+      title: 'Chờ khách đồng ý thay thiết bị rồi nghiệm thu',
+      body: 'Khách không phản hồi thì gọi khách.',
+    }
   if (p.status === 'PENDING_ASSIGNMENT')
     return {
       tone: 'danger',
@@ -212,6 +230,8 @@ function SiteAside({ project }: { project: InstallationStaffView }) {
 function InstallationProjectPage() {
   const { id } = useParams()
   const query = useInstallationProjectQuery(id)
+  const energy = useEnergyMonitoringQuery(id ?? '')
+  const isManager = useAuth().user?.role === 'manager'
   const [cancelling, setCancelling] = useState(false)
   usePageCrumb(query.data ? projectTitle(query.data) : null)
 
@@ -256,7 +276,7 @@ function InstallationProjectPage() {
               }
             />
 
-            <ProgressTracker steps={trackerSteps(p)} next={nextStep(p)} />
+            <ProgressTracker steps={trackerSteps(p)} next={nextStep(p, isManager)} />
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
@@ -266,6 +286,9 @@ function InstallationProjectPage() {
                 <div id="checklist" className="scroll-mt-6">
                   <ChecklistPanel project={p} />
                 </div>
+                <div id="equipment" className="scroll-mt-6">
+                  <EquipmentPanel project={p} canApprove={isManager} />
+                </div>
                 <CompletionPanel project={p} />
               </div>
               <SiteAside project={p} />
@@ -273,6 +296,7 @@ function InstallationProjectPage() {
 
             <div className="mt-6 space-y-4 border-t border-line pt-4">
               {completed ? <HandoverPanel projectId={p.projectId} /> : <AssetsPanel assets={p.assets} />}
+              <EnergyEstimatePanel query={energy} />
               <EvidencePanel projectId={p.projectId} currentRound={p.currentRound} />
               <EventLog events={p.events} />
             </div>

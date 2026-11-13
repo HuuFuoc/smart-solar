@@ -90,6 +90,10 @@ export const ENDPOINTS = {
       `/customers/me/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
     acceptance: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/acceptance`,
     handover: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/handover`,
+    approveSubstitution: (projectId: string) =>
+      `/customers/me/installation-projects/${encode(projectId)}/equipment-substitution/approve`,
+    energyMonitoring: (projectId: string) =>
+      `/customers/me/installation-projects/${encode(projectId)}/energy-monitoring`,
   },
   customerContracts: {
     base: '/customers/me/contracts',
@@ -109,6 +113,7 @@ export const ENDPOINTS = {
     base: '/customers/me/quotations',
     byId: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}`,
     accept: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/accept`,
+    reject: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/reject`,
     revisionRequest: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/revision-request`,
   },
   customerAfterSales: {
@@ -177,13 +182,15 @@ export const ENDPOINTS = {
     issue: (quotationId: string) => `/quotations/${encode(quotationId)}/issue`,
     revisions: (quotationId: string) => `/quotations/${encode(quotationId)}/revisions`,
     document: (quotationId: string) => `/quotations/${encode(quotationId)}/document`,
-    pricingApprovalRequest: (quotationId: string) => `/quotations/${encode(quotationId)}/pricing-approval-request`,
+    generate: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/quotations/generate`,
+    pendingReview: '/quotations/pending-review',
     confirmSurveyVersion: (quotationId: string) => `/quotations/${encode(quotationId)}/confirm-survey-version`,
+    pricingApprovalRequest: (quotationId: string) => `/quotations/${encode(quotationId)}/pricing-approval-request`,
   },
-  // Duyệt giá báo giá lắp đặt (tag ManagerQuotationApprovals): chỉ vai trò Manager
-  managerQuotationApprovals: {
-    pending: '/manager/quotations/pricing-approvals',
-    decide: (quotationId: string) => `/manager/quotations/${encode(quotationId)}/pricing-approval`,
+  // Duyệt giá báo giá, chỉ quản lý
+  managerQuotations: {
+    pricingApprovals: '/manager/quotations/pricing-approvals',
+    pricingApproval: (quotationId: string) => `/manager/quotations/${encode(quotationId)}/pricing-approval`,
   },
   // Hợp đồng lắp đặt phía nhân viên (tag SalesContracts) và trạng thái thanh toán của hợp đồng (tag StaffPayments)
   contracts: {
@@ -196,6 +203,7 @@ export const ENDPOINTS = {
     submissionUrl: (contractId: string, submissionId: string) =>
       `/contracts/${encode(contractId)}/submissions/${encode(submissionId)}/url`,
     publish: (contractId: string) => `/contracts/${encode(contractId)}/publish`,
+    discard: (contractId: string) => `/contracts/${encode(contractId)}/discard`,
     review: (contractId: string) => `/contracts/${encode(contractId)}/review`,
     amendments: (contractId: string) => `/contracts/${encode(contractId)}/amendments`,
     payments: (contractId: string) => `/contracts/${encode(contractId)}/payments`,
@@ -279,6 +287,9 @@ export const ENDPOINTS = {
     evidenceUrl: (projectId: string, evidenceId: string) =>
       `/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
     handover: (projectId: string) => `/installation-projects/${encode(projectId)}/handover`,
+    approveSubstitution: (projectId: string) =>
+      `/installation-projects/${encode(projectId)}/equipment-substitution/approve`,
+    energyMonitoring: (projectId: string) => `/installation-projects/${encode(projectId)}/energy-monitoring`,
   },
   // Bảo hành, sửa chữa, bảo trì (quản lý và quản trị)
   managerAfterSales: {

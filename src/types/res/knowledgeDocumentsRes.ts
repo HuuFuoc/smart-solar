@@ -1,6 +1,5 @@
 // Viết tay vì swagger của tag AdminKnowledgeDocuments chỉ khai "200 OK". Theo KnowledgeDocumentHandlers.cs của backend `main`
-// (66cb7af), kể cả đối tượng đọc (`audience`, `legacyAudienceTag`) theo bản vá FE backend gửi kèm
-// (guides/fe-knowledge-audience.patch)
+// (58f9635)
 
 /** Một phiên bản (một tệp) của tài liệu. `status`: VersionStatuses của backend */
 export type KnowledgeVersionView = {
@@ -57,13 +56,10 @@ export type KnowledgeDocumentView = {
   createdAt: string
   updatedAt: string
   revision: number
-  /**
-   * Ai được chatbot truy hồi tài liệu: INTERNAL (chỉ nhân viên, mặc định khi đăng ký) | CUSTOMER. Image API trước 31/10 không có
-   * trường này: coi như INTERNAL
-   */
-  audience?: string
-  /** Còn thẻ tạm `audience:customer` từ trước khi có trường audience: thẻ không cấp quyền gì, cần quản trị xem lại */
-  legacyAudienceTag?: boolean
   versions: KnowledgeVersionView[] | null
   jobs: IngestionJobView[] | null
+  /** Ai được chatbot trả lời bằng tài liệu này: INTERNAL chỉ nhân viên (mặc định), CUSTOMER cả khách hàng */
+  audience: 'INTERNAL' | 'CUSTOMER' | (string & {})
+  /** Tài liệu còn thẻ "audience:customer" của cách phân loại cũ: thẻ không có tác dụng, quản trị xem lại đối tượng đọc */
+  legacyAudienceTag: boolean
 }

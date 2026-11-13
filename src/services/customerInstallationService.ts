@@ -1,5 +1,6 @@
 import type { AcceptanceDecisionRequest } from '@/types/req/customerInstallationsReq'
 import type {
+  EnergyMonitoringView,
   EvidenceDisposition,
   HandoverView,
   InstallationCustomerView,
@@ -40,6 +41,16 @@ export function getEvidenceUrl(projectId: string, evidenceId: string, dispositio
  */
 export function decideAcceptance(projectId: string, body: AcceptanceDecisionRequest) {
   return post<InstallationCustomerView>(ENDPOINTS.customerInstallations.acceptance(projectId), body)
+}
+
+/** Đồng ý thay thiết bị quản lý đã duyệt, khi công trình chờ nghiệm thu; xong mới nghiệm thu được */
+export function approveSubstitution(projectId: string) {
+  return post<InstallationCustomerView>(ENDPOINTS.customerInstallations.approveSubstitution(projectId))
+}
+
+/** Sản lượng dự kiến theo mô phỏng đã chọn, không phải số đo */
+export function getEnergyMonitoring(projectId: string) {
+  return get<EnergyMonitoringView>(ENDPOINTS.customerInstallations.energyMonitoring(projectId))
 }
 
 /** GET .../handover, chỉ khi dự án COMPLETED (trước đó 409 INSTALLATION_NOT_HANDED_OVER) */
