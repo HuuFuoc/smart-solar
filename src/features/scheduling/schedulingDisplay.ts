@@ -8,9 +8,9 @@ import {
   TECHNICIAN_APPOINTMENT_LABELS,
   WEEK_DAYS,
   type AppointmentViewer,
-} from '@/common/scheduling'
+} from '../../common/scheduling.ts'
 import type { Tone } from '@/components/common/ui/badge'
-import { errorMessage, isApiError } from '@/services/api/errors'
+import { errorMessage, isApiError } from '../../services/api/errors.ts'
 import type { ConflictingAppointmentView } from '@/types/res/adminTechniciansRes'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 

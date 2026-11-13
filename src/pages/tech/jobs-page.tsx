@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode, useState } from 'react'
+import { Fragment, type ReactNode, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
@@ -20,6 +20,8 @@ import {
   todayVn,
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
+import { TechJobFilterBar } from '@/features/scheduling/TechJobFilterBar'
+import { matchesJob } from '@/features/scheduling/techJobFilter'
 import {
   useAcceptAppointmentMutation,
   useMyAppointmentsQuery,
@@ -192,15 +194,45 @@ export function TechJobsPage() {
   const open = useOpenAppointmentsQuery()
   const mine = useMyAppointmentsQuery()
   const [picked, setPicked] = useState<Tab | null>(null)
+  const [search, setSearch] = useState('')
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
   const [now] = useState(() => Date.now())
   const today = todayVn()
-  const openRows = [...(open.data ?? [])].sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-  const rows = mine.data ?? []
-  const upcoming = rows.filter((r) => isActive(r, now)).sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-  const past = rows.filter((r) => !isActive(r, now)).sort((a, b) => b.startsAt.localeCompare(a.startsAt))
+
+  const openRows = useMemo(
+    () => [...(open.data ?? [])].sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
+    [open.data],
+  )
+  const rows = mine.data
+  const upcoming = useMemo(
+    () => (rows ?? []).filter((r) => isActive(r, now)).sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
+    [rows, now],
+  )
+  const past = useMemo(
+    () => (rows ?? []).filter((r) => !isActive(r, now)).sort((a, b) => b.startsAt.localeCompare(a.startsAt)),
+    [rows, now],
+  )
+
+  const filteredOpen = useMemo(
+    () => openRows.filter((j) => matchesJob(j, search, date, time)),
+    [openRows, search, date, time],
+  )
+  const filteredUpcoming = useMemo(
+    () => upcoming.filter((j) => matchesJob(j, search, date, time)),
+    [upcoming, search, date, time],
+  )
+  const filteredPast = useMemo(() => past.filter((j) => matchesJob(j, search, date, time)), [past, search, date, time])
+
   const canTake = openRows.filter((r) => r.canAccept).length
-  // Mở sẵn tab "Chờ nhận" khi có lịch nhận được
   const tab: Tab = picked ?? (canTake > 0 ? 'open' : 'upcoming')
+  const hasFilter = search.trim() !== '' || date !== '' || time !== ''
+
+  const resetFilters = () => {
+    setSearch('')
+    setDate('')
+    setTime('')
+  }
 
   return (
     <>
@@ -215,36 +247,67 @@ export function TechJobsPage() {
           </ButtonLink>
         }
       />
-      <FilterChips
-        label="Lọc lịch"
-        className="mb-4"
-        value={tab}
-        onChange={setPicked}
-        chips={[
-          { value: 'open', label: 'Chờ nhận', count: openRows.length },
-          { value: 'upcoming', label: 'Đã nhận', count: upcoming.length },
-          { value: 'past', label: 'Đã qua', count: past.length },
-        ]}
-      />
+      <div className="mb-4 space-y-3">
+        <TechJobFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          date={date}
+          onDateChange={setDate}
+          time={time}
+          onTimeChange={setTime}
+          hasFilter={hasFilter}
+          onReset={resetFilters}
+        />
+        <FilterChips
+          label="Lọc lịch"
+          value={tab}
+          onChange={setPicked}
+          chips={[
+            { value: 'open', label: 'Chờ nhận', count: filteredOpen.length },
+            { value: 'upcoming', label: 'Đã nhận', count: filteredUpcoming.length },
+            { value: 'past', label: 'Đã qua', count: filteredPast.length },
+          ]}
+        />
+      </div>
       {tab === 'open' ? (
         <QueryBoundary query={open}>
           {() =>
-            openRows.length === 0 ? (
-              <EmptyState title="Không có lịch nào đang chờ" />
+            filteredOpen.length === 0 ? (
+              <EmptyState
+                title={hasFilter ? 'Không tìm thấy lịch chờ nhận phù hợp' : 'Không có lịch nào đang chờ'}
+                description={hasFilter ? 'Thử đổi từ khoá, ngày hoặc giờ tìm kiếm.' : undefined}
+              />
             ) : (
-              <JobTable labels={OPEN_LABELS} rows={openRows} today={today} row={(job) => <OpenJobRow job={job} />} />
+              <JobTable
+                labels={OPEN_LABELS}
+                rows={filteredOpen}
+                today={today}
+                row={(job) => <OpenJobRow job={job} />}
+              />
             )
           }
         </QueryBoundary>
       ) : (
         <QueryBoundary query={mine}>
           {() => {
-            const shown = tab === 'upcoming' ? upcoming : past
+            const shown = tab === 'upcoming' ? filteredUpcoming : filteredPast
             if (shown.length === 0)
               return (
                 <EmptyState
-                  title={tab === 'upcoming' ? 'Chưa có lịch nào cần làm' : 'Chưa có lịch nào đã qua'}
-                  description={tab === 'upcoming' ? 'Nhận lịch ở tab "Chờ nhận" thì lịch hiện ở đây.' : undefined}
+                  title={
+                    hasFilter
+                      ? 'Không tìm thấy lịch phù hợp'
+                      : tab === 'upcoming'
+                        ? 'Chưa có lịch nào cần làm'
+                        : 'Chưa có lịch nào đã qua'
+                  }
+                  description={
+                    hasFilter
+                      ? 'Thử đổi từ khoá, ngày hoặc giờ tìm kiếm.'
+                      : tab === 'upcoming'
+                        ? 'Nhận lịch ở tab "Chờ nhận" thì lịch hiện ở đây.'
+                        : undefined
+                  }
                 />
               )
             return (
