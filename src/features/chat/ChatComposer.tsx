@@ -5,8 +5,8 @@ import { messageCounter } from '@/features/chat/chatDisplay'
 import { chatMessageProblem } from '@/features/chat/chatRules'
 import { cx } from '@/utils/cx'
 
-// Ô hỏi, dính đáy màn hình. Enter gửi, Shift + Enter xuống dòng (bỏ qua khi bộ gõ đang ghép chữ). Đang gửi thì khoá ô và nút,
-// nội dung vẫn giữ: chỉ xoá khi backend đã trả lời; lỗi thì giữ để gửi lại
+// Ô hỏi, dính đáy màn hình. Enter gửi, Shift + Enter xuống dòng (bỏ qua khi bộ gõ đang ghép chữ).
+// Đang gửi thì khoá ô và nút, nội dung vẫn giữ: chỉ xoá khi backend đã trả lời; lỗi thì giữ để gửi lại.
 
 export function ChatComposer({
   value,
@@ -41,7 +41,7 @@ export function ChatComposer({
     <form
       onSubmit={submit}
       data-sticky-bottom
-      className="sticky bottom-0 z-10 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur md:px-6"
+      className="sticky bottom-0 z-10 border-t border-line bg-canvas/95 p-4 backdrop-blur md:p-5"
     >
       <label htmlFor="chat-message" className="sr-only">
         Câu hỏi cho trợ lý
@@ -62,13 +62,13 @@ export function ChatComposer({
           placeholder="Hỏi về sản phẩm, lắp đặt, bảo hành, bảo trì…"
           aria-invalid={Boolean(error) || counter?.over || undefined}
           aria-describedby="chat-message-msg"
-          className="max-h-60 min-h-11 flex-1 resize-y"
+          className="max-h-56 min-h-11 flex-1 resize-y rounded-control border-line bg-canvas focus:border-accent"
         />
-        <Button type="submit" variant="primary" icon="send" disabled={blocked || invalid}>
+        <Button type="submit" variant="primary" icon="send" disabled={blocked || invalid} className="shrink-0 px-5">
           {label}
         </Button>
       </div>
-      <div id="chat-message-msg" className="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+      <div id="chat-message-msg" className="mt-2.5 flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
         {error ? (
           <p role="alert" className="text-meta text-danger">
             {error}
