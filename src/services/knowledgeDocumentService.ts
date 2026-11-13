@@ -4,6 +4,7 @@ import type {
   PublishKnowledgeVersionRequest,
   RegisterKnowledgeDocumentRequest,
   ReindexKnowledgeVersionRequest,
+  SetKnowledgeAudienceRequest,
   UpdateKnowledgeMetadataRequest,
 } from '@/types/req/adminKnowledgeDocumentsReq'
 import type { KnowledgeDocumentView } from '@/types/res/knowledgeDocumentsRes'
@@ -57,6 +58,11 @@ export function reindexKnowledgeVersion(documentId: string, body: ReindexKnowled
 /** 202, không có body. Chỉ lượt nạp FAILED */
 export function retryKnowledgeJob(documentId: string, jobId: string) {
   return post<KnowledgeDocumentView>(api.retryJob(documentId, jobId))
+}
+
+/** Đổi ai được chatbot trả lời bằng tài liệu này; lý do bắt buộc, tối đa 1000 ký tự. Có hiệu lực ngay, kể cả lịch sử trò chuyện */
+export function setKnowledgeAudience(documentId: string, body: SetKnowledgeAudienceRequest) {
+  return put<KnowledgeDocumentView>(api.audience(documentId), body)
 }
 
 /** Xoá mềm: gỡ công bố ngay, dữ liệu đã nạp được xoá bằng một lượt chạy nền */

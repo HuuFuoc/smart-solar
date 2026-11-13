@@ -13,6 +13,12 @@ export const KNOWLEDGE_CATEGORIES: Record<string, string> = {
   OTHER: 'Khác',
 }
 
+/** KnowledgeAudiences: ai được chatbot trả lời bằng tài liệu */
+export const KNOWLEDGE_AUDIENCES: Record<string, string> = {
+  INTERNAL: 'Chỉ nhân viên',
+  CUSTOMER: 'Khách hàng và nhân viên',
+}
+
 /** DocumentStatuses */
 export const KNOWLEDGE_DOCUMENT_STATUSES: Record<string, { label: string; tone: Tone }> = {
   REGISTERED: { label: 'Chờ nạp', tone: 'info' },

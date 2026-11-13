@@ -13,9 +13,11 @@ import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { UnavailableState } from '@/components/common/ui/states'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { KnowledgeUploadDialog } from '@/features/knowledge/KnowledgeUploadDialog'
 import {
   KNOWLEDGE_UNAVAILABLE,
+  audienceLabel,
   categoryLabel,
   documentStatusMeta,
   jobKindLabel,
@@ -41,6 +43,7 @@ import {
   usePublishKnowledgeVersionMutation,
   useReindexKnowledgeVersionMutation,
   useRetryKnowledgeJobMutation,
+  useSetKnowledgeAudienceMutation,
   useUnpublishKnowledgeMutation,
   useUpdateKnowledgeMetadataMutation,
 } from '@/hooks/useKnowledgeDocuments'
@@ -160,7 +163,10 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
   const archive = useArchiveKnowledgeMutation()
   const reindex = useReindexKnowledgeVersionMutation()
   const retry = useRetryKnowledgeJobMutation()
+  const setAudience = useSetKnowledgeAudienceMutation()
   const [editing, setEditing] = useState(false)
+  const [changingAudience, setChangingAudience] = useState(false)
+  const nextAudience = d.audience === 'CUSTOMER' ? 'INTERNAL' : 'CUSTOMER'
   const [adding, setAdding] = useState(false)
   const [confirm, setConfirm] = useState<Confirm | null>(null)
   const [busyKey, setBusyKey] = useState<string | null>(null)
@@ -224,6 +230,7 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
           <>
             <Badge tone={status.tone}>{status.label}</Badge>
             <span>{categoryLabel(d.category)}</span>
+            <span>Đọc: {audienceLabel(d.audience)}</span>
           </>
         }
         title={d.title}
@@ -236,6 +243,9 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
               </Button>
               <Button variant="soft" icon="upload_file" onClick={() => setAdding(true)}>
                 Thêm phiên bản
+              </Button>
+              <Button variant="soft" icon="group" onClick={() => setChangingAudience(true)}>
+                Đổi đối tượng đọc
               </Button>
               {canUnpublish(d) && (
                 <Button variant="warn" icon="unpublished" onClick={() => setConfirm({ kind: 'unpublish' })}>
@@ -253,6 +263,12 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
       {needsPolling(d) && (
         <Notice tone="info" className="mb-6">
           Đang có lượt nạp chạy nền. Trang tự cập nhật 15 giây một lần; phiên bản nạp xong mới công bố được.
+        </Notice>
+      )}
+      {d.legacyAudienceTag && !archived && (
+        <Notice tone="warn" className="mb-6">
+          Tài liệu còn thẻ audience:customer của cách phân loại cũ. Thẻ này không còn tác dụng: kiểm tra đối tượng đọc
+          và đổi nếu khách hàng cần đọc.
         </Notice>
       )}
       {archived && (
@@ -445,6 +461,22 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
         onOpenChange={setEditing}
       />
       <KnowledgeUploadDialog open={adding} document={d} onOpenChange={setAdding} />
+      <ReasonDialog
+        open={changingAudience}
+        title={`Đổi sang: ${audienceLabel(nextAudience)}?`}
+        description={
+          nextAudience === 'CUSTOMER'
+            ? 'Chatbot dùng tài liệu này để trả lời cả khách hàng, có hiệu lực ngay.'
+            : 'Khách hàng thôi đọc được tài liệu này ngay, kể cả trong câu trả lời cũ.'
+        }
+        submitLabel="Đổi đối tượng đọc"
+        icon="group"
+        onSubmit={async (reason) => {
+          await setAudience.mutateAsync({ id: d.documentId, revision: d.revision, audience: nextAudience, reason })
+          toast.success(`Đã đổi đối tượng đọc: ${audienceLabel(nextAudience)}.`)
+        }}
+        onClose={() => setChangingAudience(false)}
+      />
       <ModalDialog
         open={confirm !== null}
         onOpenChange={(open) => !open && setConfirm(null)}
