@@ -10,6 +10,7 @@ import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { customerRequestProgress, customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
 import { formatRelative, shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatAppointment, formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useMyDispatchesQuery } from '@/hooks/useDispatch'
 import { ROUTES, withId } from '@/routes/paths'
@@ -51,17 +52,25 @@ function RequestTable({ rows, showStatus }: { rows: Row[]; showStatus: boolean }
               </Td>
               <Td label="Lịch khảo sát">
                 {live ? (
-                  <>
-                    <p className="tnum">Đề xuất {formatAppointment(live.startsAt, live.endsAt)}</p>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <WeekdayBadge date={live.startsAt} format="short" withBar />
+                      <span className="tnum font-medium text-fg">
+                        Đề xuất {formatAppointment(live.startsAt, live.endsAt)}
+                      </span>
+                    </div>
                     <p className="tnum text-meta text-fg-2">Trả lời trước {formatMoment(live.expiresAt)}</p>
-                  </>
+                  </div>
                 ) : a ? (
-                  <>
-                    <p className="tnum">{formatAppointment(a.startsAt, a.endsAt)}</p>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <WeekdayBadge date={a.startsAt} format="short" withBar />
+                      <span className="tnum font-medium text-fg">{formatAppointment(a.startsAt, a.endsAt)}</span>
+                    </div>
                     {a.assignedTechnicianName && (
                       <p className="text-meta text-fg-2">Kỹ thuật viên {a.assignedTechnicianName}</p>
                     )}
-                  </>
+                  </div>
                 ) : (
                   <span className="text-fg-2">Chưa có</span>
                 )}

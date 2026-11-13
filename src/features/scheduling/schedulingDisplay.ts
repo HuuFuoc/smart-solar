@@ -37,6 +37,35 @@ const timeFormat = new Intl.DateTimeFormat('vi-VN', {
 const WEEKDAYS = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
 const WEEKDAYS_SHORT = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 
+export type WeekdayStyle = {
+  weekday: number
+  shortLabel: string
+  name: string
+  row: string
+  bar: string
+}
+
+export const DAY_STYLES: Record<number, WeekdayStyle> = {
+  1: { weekday: 1, shortLabel: 'T2', name: 'Thứ Hai', row: 'day-header-mon', bar: 'day-bar-mon' },
+  2: { weekday: 2, shortLabel: 'T3', name: 'Thứ Ba', row: 'day-header-tue', bar: 'day-bar-tue' },
+  3: { weekday: 3, shortLabel: 'T4', name: 'Thứ Tư', row: 'day-header-wed', bar: 'day-bar-wed' },
+  4: { weekday: 4, shortLabel: 'T5', name: 'Thứ Năm', row: 'day-header-thu', bar: 'day-bar-thu' },
+  5: { weekday: 5, shortLabel: 'T6', name: 'Thứ Sáu', row: 'day-header-fri', bar: 'day-bar-fri' },
+  6: { weekday: 6, shortLabel: 'T7', name: 'Thứ Bảy', row: 'day-header-sat', bar: 'day-bar-sat' },
+  0: { weekday: 0, shortLabel: 'CN', name: 'Chủ Nhật', row: 'day-header-sun', bar: 'day-bar-sun' },
+}
+
+/** Danh sách 7 ngày từ Thứ Hai đến Chủ Nhật cho bộ chọn hoặc bảng lịch tuần */
+export const WEEK_DAYS_IN_ORDER: readonly WeekdayStyle[] = [
+  DAY_STYLES[1]!,
+  DAY_STYLES[2]!,
+  DAY_STYLES[3]!,
+  DAY_STYLES[4]!,
+  DAY_STYLES[5]!,
+  DAY_STYLES[6]!,
+  DAY_STYLES[0]!,
+]
+
 function toDate(value: string | Date) {
   const date = typeof value === 'string' ? new Date(value) : value
   return Number.isNaN(date.getTime()) ? null : date
@@ -50,6 +79,20 @@ export function vnDate(value: string | Date) {
 
 export function todayVn(now: Date = new Date()) {
   return dayKeyFormat.format(now)
+}
+
+/** Trả về thứ trong tuần (0: Chủ Nhật, 1..6: Thứ Hai..Thứ Bảy) của chuỗi ngày hoặc ISO */
+export function weekdayOf(dateOrIso: string | Date): number {
+  if (!dateOrIso) return 1
+  const dayStr = typeof dateOrIso === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateOrIso) ? dateOrIso : vnDate(dateOrIso)
+  if (!dayStr) return 1
+  const d = new Date(`${dayStr}T12:00:00Z`)
+  return Number.isNaN(d.getTime()) ? 1 : d.getUTCDay()
+}
+
+export function weekdayStyle(dateOrIso: string | Date): WeekdayStyle {
+  const w = weekdayOf(dateOrIso)
+  return DAY_STYLES[w] ?? DAY_STYLES[1]!
 }
 
 /** Cộng ngày trên chuỗi ngày; tính ở 12:00 UTC nên không lệch ngày vì múi giờ. */

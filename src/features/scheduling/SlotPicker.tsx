@@ -6,6 +6,7 @@ import { SiteLocationDialog } from '@/features/pre-surveys/SiteLocationDialog'
 import { addMonths, monthCells, monthLabel, monthOf } from '@/features/scheduling/calendarMonth'
 import {
   BOOKING_HORIZON_DAYS,
+  WEEK_DAYS_IN_ORDER,
   addDays,
   coverageText,
   formatDay,
@@ -13,6 +14,7 @@ import {
   formatTimeRange,
   todayVn,
 } from '@/features/scheduling/schedulingDisplay'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useSurveySlotsQuery } from '@/hooks/useBooking'
 import { errorMessage } from '@/services/api/errors'
 import type { SurveySlot } from '@/types/res/surveySlotsRes'
@@ -20,8 +22,6 @@ import { cx } from '@/utils/cx'
 
 // Chọn giờ khảo sát: lịch tháng (đặt được trong 30 ngày tới) rồi các giờ trống backend trả cho ngày đó
 // Không tự đoán giờ trống. Khách chỉ chọn giờ, rồi kỹ thuật viên trong khu vực của công trình tự nhận lịch
-
-const WEEK_HEADER = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
 
 const choice = cx(
   'press flex cursor-pointer items-center justify-center rounded-control border text-body',
@@ -74,9 +74,14 @@ function MonthCalendar({ value, onChange, today }: { value: string; onChange: (d
           onClick={() => setMonth(addMonths(month, 1))}
         />
       </div>
-      <div aria-hidden className="mb-1 grid grid-cols-7 gap-1 text-center text-meta text-fg-3">
-        {WEEK_HEADER.map((d) => (
-          <span key={d}>{d}</span>
+      <div aria-hidden className="mb-1.5 grid grid-cols-7 gap-1 text-center text-meta">
+        {WEEK_DAYS_IN_ORDER.map((d) => (
+          <span
+            key={d.shortLabel}
+            className={cx('rounded-control border py-1 text-center font-semibold select-none', d.row)}
+          >
+            {d.shortLabel}
+          </span>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
@@ -195,7 +200,10 @@ export function SlotPicker({
         />
 
         <fieldset className="min-w-0" aria-busy={slots.isFetching}>
-          <legend className="mb-3 text-body font-medium text-fg">Giờ trống ngày {formatDay(date)}</legend>
+          <legend className="mb-3 flex flex-wrap items-center gap-2 text-body font-medium text-fg">
+            <span>Giờ trống</span>
+            <WeekdayBadge date={date} format="full" withBar />
+          </legend>
           {slots.isPending ? (
             <div
               aria-label="Đang tải giờ trống"

@@ -11,6 +11,7 @@ import { DayNav, ScheduleDay } from '@/features/scheduling/ScheduleDay'
 import { TechnicianProfileForm } from '@/features/scheduling/TechnicianProfileForm'
 import { TechnicianZonesForm } from '@/features/scheduling/TechnicianZonesForm'
 import { UnavailablePeriods } from '@/features/scheduling/UnavailablePeriods'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { WorkingScheduleEditor } from '@/features/scheduling/WorkingScheduleEditor'
 import { formatDay, technicianReadiness, todayVn } from '@/features/scheduling/schedulingDisplay'
 import { useTechnicianScheduleQuery, useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
@@ -40,7 +41,10 @@ function DaySchedule({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-title font-semibold">{formatDay(date, { year: true })}</h2>
+        <div className="flex items-center gap-2">
+          <WeekdayBadge date={date} format="name" withBar />
+          <h2 className="text-title font-semibold">{formatDay(date, { year: true })}</h2>
+        </div>
         <DayNav date={date} onChange={onDateChange} />
       </div>
       <ScheduleDay date={date} query={query} viewer="staff" />

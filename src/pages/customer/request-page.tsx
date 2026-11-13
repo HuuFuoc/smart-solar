@@ -28,6 +28,7 @@ import {
   isClosedCustomerRequest,
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useMyRequestQuery } from '@/hooks/useBooking'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyDispatchQuery } from '@/hooks/useDispatch'
@@ -121,7 +122,10 @@ function AppointmentPanel({
       />
       <PanelBody className="space-y-4">
         <div>
-          <p className="text-title font-semibold text-fg">{formatDay(vnDate(a.startsAt), { year: true })}</p>
+          <div className="mb-1 flex items-center gap-2">
+            <WeekdayBadge date={a.startsAt} format="name" withBar />
+            <p className="text-title font-semibold text-fg">{formatDay(vnDate(a.startsAt), { year: true })}</p>
+          </div>
           <p className="tnum text-figure font-semibold text-fg">{formatTimeRange(a.startsAt, a.endsAt)}</p>
         </div>
         <KeyValueList
@@ -146,7 +150,10 @@ function History({ items }: { items: CustomerSurveyRequestDetailView['history'] 
     <ul className="divide-y divide-line">
       {items.map((h) => (
         <li key={h.appointmentId} className="py-2 first:pt-0 last:pb-0">
-          <p className="text-body text-fg">{formatAppointment(h.startsAt, h.endsAt)}</p>
+          <div className="mb-0.5 flex flex-wrap items-center gap-2">
+            <WeekdayBadge date={h.startsAt} format="short" withBar />
+            <p className="text-body text-fg">{formatAppointment(h.startsAt, h.endsAt)}</p>
+          </div>
           <p className="text-meta text-fg-2">
             {historyStatusLabel(h.status)}, đặt lúc {formatDateTime(h.bookedAt)}
           </p>

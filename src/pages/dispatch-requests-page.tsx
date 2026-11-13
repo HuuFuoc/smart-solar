@@ -8,6 +8,7 @@ import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
 import { dispatchReasonLabel, dispatchStatusMeta } from '@/features/dispatch/dispatchDisplay'
 import { formatAppointment, formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useDispatchQueueQuery } from '@/hooks/useDispatch'
 import { ROUTES, withId } from '@/routes/paths'
 import type { DispatchQueueItemView } from '@/types/res/dispatchRes'
@@ -53,7 +54,20 @@ function DispatchRow({ row: r, detailPattern }: { row: DispatchQueueItemView; de
         <ListCell label="Lý do">{dispatchReasonLabel(r.reason)}</ListCell>
         <ListCell label="Tình hình">
           <Badge tone={status.tone}>{status.label}</Badge>
-          {text && <p className="mt-1 text-meta text-fg-2">{text}</p>}
+          {r.status === 'PROPOSAL_PENDING' && r.liveProposal ? (
+            <div className="mt-1 space-y-0.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <WeekdayBadge date={r.liveProposal.startsAt} format="short" withBar />
+                <span className="text-meta text-fg-2">
+                  Đề xuất {formatAppointment(r.liveProposal.startsAt, r.liveProposal.endsAt)},{' '}
+                  {r.liveProposal.technicianName}
+                </span>
+              </div>
+              <p className="text-meta text-fg-2">Khách trả lời trước {formatMoment(r.liveProposal.expiresAt)}.</p>
+            </div>
+          ) : (
+            text && <p className="mt-1 text-meta text-fg-2">{text}</p>
+          )}
         </ListCell>
         <ListCell wide className="lg:justify-self-end">
           <ButtonLink icon="visibility" to={withId(detailPattern, r.dispatchRequestId)} size="sm" variant="info">

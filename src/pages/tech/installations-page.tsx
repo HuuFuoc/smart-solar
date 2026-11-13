@@ -14,6 +14,7 @@ import {
   type InstallationTab,
 } from '@/features/installations/technicianInstallationDisplay'
 import { TechJobFilterBar } from '@/features/scheduling/TechJobFilterBar'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useMyInstallationsQuery } from '@/hooks/useTechnicianInstallations'
 import { ROUTES, withId } from '@/routes/paths'
 import type { InstallationTechnicianView } from '@/types/res/technicianInstallationsRes'
@@ -46,7 +47,10 @@ function InstallationRow({ view, tab }: { view: InstallationTechnicianView; tab:
         label="Thời gian"
         className="px-4! py-3.5 align-middle tnum font-semibold whitespace-nowrap lg:border-r lg:border-line"
       >
-        {windowText(view)}
+        <div className="flex items-center gap-2">
+          <WeekdayBadge date={view.startsAt} format="short" withBar />
+          <span>{windowText(view)}</span>
+        </div>
       </Td>
       <Td label="Công trình" className="px-4! py-3.5 align-middle lg:border-r lg:border-line">
         <h3 className="font-semibold text-fg">{site?.propertyName ?? 'Công trình lắp đặt'}</h3>

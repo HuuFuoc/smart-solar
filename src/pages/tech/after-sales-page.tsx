@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/common/ui/states'
 import { technicianVisitMeta, visitTab, type VisitTab } from '@/features/after-sales/technicianVisitDisplay'
 import { visitPurposeLabel } from '@/features/after-sales/serviceDisplay'
 import { formatAppointment } from '@/features/scheduling/schedulingDisplay'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useMyVisitsQuery } from '@/hooks/useTechnicianAfterSales'
 import { ROUTES, withId } from '@/routes/paths'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
@@ -34,7 +35,10 @@ function VisitRow({ visit, tab }: { visit: TechnicianVisitView; tab: VisitTab })
     <ListRow>
       <ListCells columns={COLUMNS}>
         <ListCell label="Thời gian" wide>
-          <span className="tnum font-semibold">{formatAppointment(visit.startsAt, visit.endsAt)}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <WeekdayBadge date={visit.startsAt} format="short" withBar />
+            <span className="tnum font-semibold">{formatAppointment(visit.startsAt, visit.endsAt)}</span>
+          </div>
         </ListCell>
         <ListCell wide>
           <p className="font-semibold">

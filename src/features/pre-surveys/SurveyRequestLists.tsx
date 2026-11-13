@@ -26,6 +26,7 @@ import {
   todayVn,
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { ROUTES, withId } from '@/routes/paths'
 import { HCM_PROVINCE } from '@/services/administrativeUnitService'
 import type {
@@ -33,7 +34,6 @@ import type {
   PendingSurveyRequestItem,
   SurveyRequestAppointmentItem,
 } from '@/types/res/surveyRequestsRes'
-import { cx } from '@/utils/cx'
 
 // Hàng chờ yêu cầu khảo sát của sales: mỗi yêu cầu một dòng, thông tin trải ngang theo cột
 
@@ -98,10 +98,13 @@ function PendingAppointment({
 }) {
   if (!appointment) return <span className="text-fg-2">Khách chưa đặt giờ</span>
   return (
-    <>
-      <span className="block">{startsLabel(appointment.startsAt, today)}</span>
+    <div className="space-y-0.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <WeekdayBadge date={appointment.startsAt} format="short" withBar />
+        <span className="font-medium text-fg">{startsLabel(appointment.startsAt, today)}</span>
+      </div>
       <span className="block text-meta text-fg-2">{appointmentStatusMeta(appointment.status, 'sales').label}</span>
-    </>
+    </div>
   )
 }
 
@@ -275,10 +278,17 @@ function MyRequestRows({ items, today }: { items: MyRow[]; today: string }) {
                   {r.assignedAt ? <When iso={r.assignedAt} /> : '—'}
                 </ListCell>
                 <ListCell label="Hẹn khảo sát" className="lg:order-4">
-                  <span className={cx('block', !appointmentStart(r) && 'text-fg-2')}>
-                    {startsLabel(appointmentStart(r), today) ?? 'Chưa có'}
-                  </span>
-                  {technician && <span className="block text-meta text-fg-2">{technician}</span>}
+                  {appointmentStart(r) ? (
+                    <div className="space-y-0.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <WeekdayBadge date={appointmentStart(r)!} format="short" withBar />
+                        <span className="font-medium text-fg">{startsLabel(appointmentStart(r), today)}</span>
+                      </div>
+                      {technician && <span className="block text-meta text-fg-2">{technician}</span>}
+                    </div>
+                  ) : (
+                    <span className="block text-fg-2">Chưa có</span>
+                  )}
                 </ListCell>
                 <ListCell wide className="lg:order-6 lg:justify-self-end">
                   <ButtonLink

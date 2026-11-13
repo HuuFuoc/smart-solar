@@ -19,6 +19,7 @@ import {
   relativeDay,
   todayVn,
   vnDate,
+  weekdayStyle,
 } from '@/features/scheduling/schedulingDisplay'
 import { TechJobFilterBar } from '@/features/scheduling/TechJobFilterBar'
 import { matchesJob } from '@/features/scheduling/techJobFilter'
@@ -50,21 +51,6 @@ function byDay<T extends { startsAt: string }>(rows: T[]) {
 const OPEN_LABELS = ['Giờ', 'Công trình', 'Khu vực', 'Mặt lắp', 'Hạn nhận']
 const MINE_LABELS = ['Giờ', 'Công trình', 'Cách nhận', 'Nhận lúc', 'Tình hình']
 
-const DAY_STYLES: Record<number, { row: string; bar: string }> = {
-  1: { row: 'day-header-mon', bar: 'day-bar-mon' }, // Thứ Hai
-  2: { row: 'day-header-tue', bar: 'day-bar-tue' }, // Thứ Ba
-  3: { row: 'day-header-wed', bar: 'day-bar-wed' }, // Thứ Tư
-  4: { row: 'day-header-thu', bar: 'day-bar-thu' }, // Thứ Năm
-  5: { row: 'day-header-fri', bar: 'day-bar-fri' }, // Thứ Sáu
-  6: { row: 'day-header-sat', bar: 'day-bar-sat' }, // Thứ Bảy
-  0: { row: 'day-header-sun', bar: 'day-bar-sun' }, // Chủ Nhật
-}
-
-function weekdayOf(date: string): number {
-  const d = new Date(`${date}T12:00:00Z`)
-  return Number.isNaN(d.getTime()) ? 1 : d.getUTCDay()
-}
-
 // Mỗi ngày là một nhóm dòng mở đầu bằng dải ngày. Dưới lg mỗi dòng xếp thành khối nhãn / giá trị
 function JobTable<T extends { appointmentId: string; startsAt: string }>({
   labels,
@@ -93,8 +79,7 @@ function JobTable<T extends { appointmentId: string; startsAt: string }>({
           </tr>
         </thead>
         {byDay(rows).map(([day, items]) => {
-          const weekday = weekdayOf(day)
-          const style = DAY_STYLES[weekday] ?? DAY_STYLES[1]!
+          const style = weekdayStyle(day)
           return (
             <tbody key={day} className="divide-y divide-line">
               <tr className={cx(style.row, 'max-lg:py-2!')}>

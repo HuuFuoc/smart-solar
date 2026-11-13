@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { DayNav, ScheduleDay } from '@/features/scheduling/ScheduleDay'
 import { formatDay, todayVn } from '@/features/scheduling/schedulingDisplay'
+import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useMyScheduleQuery } from '@/hooks/useTechnicianJobs'
 import { ROUTES, withId } from '@/routes/paths'
 
@@ -19,7 +20,12 @@ export function TechSchedulePage() {
     <>
       <PageHeader
         title="Lịch làm việc"
-        description={formatDay(date, { year: true })}
+        description={
+          <span className="flex items-center gap-2">
+            <WeekdayBadge date={date} format="name" withBar />
+            <span>{formatDay(date, { year: true })}</span>
+          </span>
+        }
         actions={<DayNav date={date} onChange={(next) => setParams({ [DATE_PARAM]: next })} />}
       />
       <ScheduleDay date={date} query={query} viewer="technician" linkFor={(id) => withId(ROUTES.tech.job, id)} />
