@@ -67,6 +67,42 @@
   --chart-1: oklch(55% 0.11 160);
   /* Lớp phủ sau dialog / drawer, luôn làm tối trang */
   --scrim: oklch(20% 0.012 130 / 0.4);
+
+  /* 7 màu phân biệt từ Thứ 2 đến Chủ nhật */
+  --day-mon-bg: oklch(95% 0.04 245);
+  --day-mon-border: oklch(88% 0.06 245);
+  --day-mon-fg: oklch(30% 0.1 245);
+  --day-mon-bar: oklch(50% 0.15 245);
+
+  --day-tue-bg: oklch(95% 0.04 150);
+  --day-tue-border: oklch(88% 0.06 150);
+  --day-tue-fg: oklch(30% 0.1 150);
+  --day-tue-bar: oklch(48% 0.14 150);
+
+  --day-wed-bg: oklch(95.5% 0.045 85);
+  --day-wed-border: oklch(88% 0.07 85);
+  --day-wed-fg: oklch(32% 0.11 75);
+  --day-wed-bar: oklch(54% 0.14 85);
+
+  --day-thu-bg: oklch(95% 0.04 195);
+  --day-thu-border: oklch(88% 0.06 195);
+  --day-thu-fg: oklch(30% 0.1 195);
+  --day-thu-bar: oklch(48% 0.13 195);
+
+  --day-fri-bg: oklch(95% 0.04 300);
+  --day-fri-border: oklch(88% 0.06 300);
+  --day-fri-fg: oklch(30% 0.1 300);
+  --day-fri-bar: oklch(50% 0.14 300);
+
+  --day-sat-bg: oklch(95% 0.04 15);
+  --day-sat-border: oklch(88% 0.06 15);
+  --day-sat-fg: oklch(32% 0.1 15);
+  --day-sat-bar: oklch(52% 0.15 15);
+
+  --day-sun-bg: oklch(95% 0.045 45);
+  --day-sun-border: oklch(88% 0.07 45);
+  --day-sun-fg: oklch(32% 0.11 45);
+  --day-sun-bar: oklch(52% 0.15 45);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -111,6 +147,41 @@
     --pv-frame: oklch(72% 0.012 250);
     --chart-1: oklch(60% 0.11 160);
     --scrim: oklch(0% 0 0 / 0.6);
+
+    --day-mon-bg: oklch(24% 0.045 245);
+    --day-mon-border: oklch(34% 0.07 245);
+    --day-mon-fg: oklch(92% 0.05 245);
+    --day-mon-bar: oklch(65% 0.14 245);
+
+    --day-tue-bg: oklch(24% 0.045 150);
+    --day-tue-border: oklch(34% 0.07 150);
+    --day-tue-fg: oklch(92% 0.05 150);
+    --day-tue-bar: oklch(65% 0.14 150);
+
+    --day-wed-bg: oklch(25% 0.045 85);
+    --day-wed-border: oklch(35% 0.07 85);
+    --day-wed-fg: oklch(92% 0.06 85);
+    --day-wed-bar: oklch(68% 0.13 85);
+
+    --day-thu-bg: oklch(24% 0.045 195);
+    --day-thu-border: oklch(34% 0.07 195);
+    --day-thu-fg: oklch(92% 0.05 195);
+    --day-thu-bar: oklch(65% 0.13 195);
+
+    --day-fri-bg: oklch(24% 0.045 300);
+    --day-fri-border: oklch(34% 0.07 300);
+    --day-fri-fg: oklch(92% 0.05 300);
+    --day-fri-bar: oklch(65% 0.14 300);
+
+    --day-sat-bg: oklch(24% 0.045 15);
+    --day-sat-border: oklch(34% 0.07 15);
+    --day-sat-fg: oklch(92% 0.05 15);
+    --day-sat-bar: oklch(65% 0.14 15);
+
+    --day-sun-bg: oklch(25% 0.045 45);
+    --day-sun-border: oklch(35% 0.07 45);
+    --day-sun-fg: oklch(92% 0.06 45);
+    --day-sun-bar: oklch(68% 0.14 45);
   }
 }
 
@@ -155,6 +226,41 @@
   --pv-frame: oklch(72% 0.012 250);
   --chart-1: oklch(60% 0.11 160);
   --scrim: oklch(0% 0 0 / 0.6);
+
+  --day-mon-bg: oklch(24% 0.045 245);
+  --day-mon-border: oklch(34% 0.07 245);
+  --day-mon-fg: oklch(92% 0.05 245);
+  --day-mon-bar: oklch(65% 0.14 245);
+
+  --day-tue-bg: oklch(24% 0.045 150);
+  --day-tue-border: oklch(34% 0.07 150);
+  --day-tue-fg: oklch(92% 0.05 150);
+  --day-tue-bar: oklch(65% 0.14 150);
+
+  --day-wed-bg: oklch(25% 0.045 85);
+  --day-wed-border: oklch(35% 0.07 85);
+  --day-wed-fg: oklch(92% 0.06 85);
+  --day-wed-bar: oklch(68% 0.13 85);
+
+  --day-thu-bg: oklch(24% 0.045 195);
+  --day-thu-border: oklch(34% 0.07 195);
+  --day-thu-fg: oklch(92% 0.05 195);
+  --day-thu-bar: oklch(65% 0.13 195);
+
+  --day-fri-bg: oklch(24% 0.045 300);
+  --day-fri-border: oklch(34% 0.07 300);
+  --day-fri-fg: oklch(92% 0.05 300);
+  --day-fri-bar: oklch(65% 0.14 300);
+
+  --day-sat-bg: oklch(24% 0.045 15);
+  --day-sat-border: oklch(34% 0.07 15);
+  --day-sat-fg: oklch(92% 0.05 15);
+  --day-sat-bar: oklch(65% 0.14 15);
+
+  --day-sun-bg: oklch(25% 0.045 45);
+  --day-sun-border: oklch(35% 0.07 45);
+  --day-sun-fg: oklch(92% 0.06 45);
+  --day-sun-bar: oklch(68% 0.14 45);
 }
 
 @theme inline {
@@ -669,4 +775,63 @@
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
+}
+
+/* Các class phân biệt 7 màu theo thứ trong tuần */
+.day-header-mon {
+  background-color: var(--day-mon-bg);
+  color: var(--day-mon-fg);
+  border-color: var(--day-mon-border);
+}
+.day-header-tue {
+  background-color: var(--day-tue-bg);
+  color: var(--day-tue-fg);
+  border-color: var(--day-tue-border);
+}
+.day-header-wed {
+  background-color: var(--day-wed-bg);
+  color: var(--day-wed-fg);
+  border-color: var(--day-wed-border);
+}
+.day-header-thu {
+  background-color: var(--day-thu-bg);
+  color: var(--day-thu-fg);
+  border-color: var(--day-thu-border);
+}
+.day-header-fri {
+  background-color: var(--day-fri-bg);
+  color: var(--day-fri-fg);
+  border-color: var(--day-fri-border);
+}
+.day-header-sat {
+  background-color: var(--day-sat-bg);
+  color: var(--day-sat-fg);
+  border-color: var(--day-sat-border);
+}
+.day-header-sun {
+  background-color: var(--day-sun-bg);
+  color: var(--day-sun-fg);
+  border-color: var(--day-sun-border);
+}
+
+.day-bar-mon {
+  background-color: var(--day-mon-bar);
+}
+.day-bar-tue {
+  background-color: var(--day-tue-bar);
+}
+.day-bar-wed {
+  background-color: var(--day-wed-bar);
+}
+.day-bar-thu {
+  background-color: var(--day-thu-bar);
+}
+.day-bar-fri {
+  background-color: var(--day-fri-bar);
+}
+.day-bar-sat {
+  background-color: var(--day-sat-bar);
+}
+.day-bar-sun {
+  background-color: var(--day-sun-bar);
 }
