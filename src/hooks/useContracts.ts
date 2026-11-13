@@ -102,6 +102,13 @@ export function usePublishContractMutation() {
   )
 }
 
+export function useDiscardContractMutation() {
+  return useContractWrite(
+    ({ contractId, revision, reason }: { contractId: string; revision: number; reason: string }) =>
+      contractService.discardContract(contractId, { revision, reason }),
+  )
+}
+
 export function useReviewContractMutation() {
   return useContractWrite(({ contractId, body }: { contractId: string; body: ContractReviewRequest }) =>
     contractService.reviewSignature(contractId, body),

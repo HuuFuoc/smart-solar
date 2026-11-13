@@ -645,7 +645,7 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
   sách đó dẫn về trang hợp đồng.
 - Mọi lệnh ghi gửi `revision` đang hiện; 409 thì báo lỗi, tải lại, không tự gửi lại. 429 báo số giây theo Retry-After (10 lệnh
   ghi / phút). Yêu cầu khảo sát đã có hợp đồng còn hiệu lực thì ẩn "Đóng yêu cầu" (backend 31/10 từ chối).
-- Chưa làm: huỷ bản nháp hợp đồng (`POST /contracts/{id}/discard`, chỉ có ở backend 31/10).
+- Huỷ bản nháp đầu tiên chưa phát hành (`POST /contracts/{id}/discard`, lý do bắt buộc ≤ 1000): nút "Huỷ bản nháp" ở khối Bản nháp; báo giá đó không lập hợp đồng mới được nữa.
 
 **Hợp đồng và thanh toán, phía khách** (03/11/2026; `/customer/contracts(/:id)`, menu "Hợp đồng"; backend `main` 7c79fa8:
 `CustomerContractsController`, `ContractHandlers.SubmitSignedDocumentAsync`, `CustomerPaymentsController`, `PaymentService`).

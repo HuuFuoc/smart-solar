@@ -47,6 +47,10 @@ export function canCreateContract(quotation: QuotationView | null, contracts: Co
 
 export const canEditDraft = (c: Pick<ContractView, 'status'>) => c.status === 'DRAFT'
 
+/** Chỉ huỷ được bản nháp đầu tiên của báo giá, không phải phụ lục nháp (backend: CONTRACT_NOT_DISCARDABLE) */
+export const canDiscard = (c: Pick<ContractView, 'status' | 'previousContractId'>) =>
+  c.status === 'DRAFT' && c.previousContractId === null
+
 /** Lý do chưa phát hành được bản nháp (backend: CONTRACT_WARRANTY_REQUIRED) */
 export function issueBlockers(c: Pick<ContractView, 'status' | 'warrantyMonths'>): string[] {
   if (c.status !== 'DRAFT') return []

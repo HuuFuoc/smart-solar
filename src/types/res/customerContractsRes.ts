@@ -68,6 +68,8 @@ export type ContractView = {
   events: ContractEventView[] | null
   /** Số tháng bảo hành lắp đặt; null với hợp đồng cũ */
   warrantyMonths: number | null
+  /** Chỉ nhân viên thấy, khi bản nháp đã bị kinh doanh huỷ (DISCARDED) */
+  discard?: { discardedAt: string; discardedByUserId: string; reason: string } | null
 }
 
 /**

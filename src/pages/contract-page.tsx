@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
+import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
@@ -14,7 +15,9 @@ import { ContractEventLog } from '@/features/contracts/ContractEventLog'
 import { ContractPaymentPanel } from '@/features/contracts/ContractPaymentPanel'
 import { ContractTermsDialog } from '@/features/contracts/ContractTermsDialog'
 import { ContractVersionList } from '@/features/contracts/ContractVersionList'
+import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import {
+  contractErrorMessage,
   contractNextStep,
   contractStatusMeta,
   contractTitle,
@@ -27,6 +30,7 @@ import {
   amendBlocker,
   canAmend,
   canAttachOfficialDocument,
+  canDiscard,
   canEditDraft,
   canPublish,
   issueBlockers,
@@ -43,6 +47,7 @@ import { ContractDocumentButtons } from '@/features/contracts/ContractDocumentBu
 import {
   useContractDocumentUrlMutation,
   useContractQuery,
+  useDiscardContractMutation,
   useIssueContractMutation,
   usePublishContractMutation,
   useSurveyRequestContractsQuery,
@@ -55,7 +60,7 @@ import type { ContractView } from '@/types/res/customerContractsRes'
 // kinh doanh phụ trách soạn, phát hành, gắn PDF, gửi ký, duyệt bản ký, lập phụ lục; quản lý duyệt bản ký; quản trị chỉ xem.
 // Nút chỉ hiện ở trạng thái backend nhận lệnh đó; backend vẫn kiểm lại và trả lỗi thì hiện lỗi
 
-type Dialog = 'issue' | 'publish' | 'document' | null
+type Dialog = 'issue' | 'publish' | 'document' | 'discard' | null
 
 const DETAIL_PATTERNS: Record<ContractViewer, string> = {
   sales: ROUTES.ops.contract,
@@ -72,6 +77,7 @@ const INSTALLATIONS: Partial<Record<ContractViewer, string>> = {
 function SalesActions({ contract: c }: { contract: ContractView }) {
   const issue = useIssueContractMutation()
   const publish = usePublishContractMutation()
+  const discard = useDiscardContractMutation()
   const [dialog, setDialog] = useState<Dialog>(null)
   const [editing, setEditing] = useState(false)
   const blockers = issueBlockers(c)
@@ -105,6 +111,11 @@ function SalesActions({ contract: c }: { contract: ContractView }) {
               >
                 Phát hành
               </Button>
+              {canDiscard(c) && (
+                <Button icon="delete" variant="danger" onClick={() => setDialog('discard')}>
+                  Huỷ bản nháp
+                </Button>
+              )}
             </div>
           </>
         )}
@@ -142,6 +153,24 @@ function SalesActions({ contract: c }: { contract: ContractView }) {
 
       {editing && <ContractTermsDialog target={{ mode: 'edit', contract: c }} onClose={() => setEditing(false)} />}
       {dialog === 'document' && <OfficialDocumentDialog contract={c} onClose={() => setDialog(null)} />}
+      <ReasonDialog
+        open={dialog === 'discard'}
+        title="Huỷ bản nháp hợp đồng?"
+        description="Bản nháp giữ lại với trạng thái đã huỷ. Báo giá này không lập hợp đồng mới được nữa; huỷ để đóng yêu cầu khảo sát."
+        label="Lý do huỷ"
+        submitLabel="Huỷ bản nháp"
+        variant="danger-solid"
+        icon="delete"
+        onSubmit={async (reason) => {
+          try {
+            await discard.mutateAsync({ contractId: c.contractId, revision: c.revision, reason })
+          } catch (e) {
+            throw new Error(contractErrorMessage(e))
+          }
+          toast.success('Đã huỷ bản nháp hợp đồng.')
+        }}
+        onClose={() => setDialog(null)}
+      />
       {dialog === 'issue' && (
         <ContractConfirmDialog
           title="Phát hành hợp đồng?"
@@ -228,6 +257,11 @@ function ContentPanel({ contract: c }: { contract: ContractView }) {
           <h3 className="text-body font-medium text-fg">Điều khoản</h3>
           <p className="mt-1 text-body whitespace-pre-line text-fg-2">{c.terms || 'Chưa có điều khoản.'}</p>
         </section>
+        {c.discard && (
+          <Notice title={`Bản nháp đã huỷ lúc ${formatMoment(c.discard.discardedAt)}`}>
+            <span className="whitespace-pre-line">{c.discard.reason}</span>
+          </Notice>
+        )}
         {c.rejectionReason && c.status === 'SIGNATURE_REJECTED' && (
           <Notice title="Lý do từ chối bản ký gần nhất">
             <span className="whitespace-pre-line">{c.rejectionReason}</span>
