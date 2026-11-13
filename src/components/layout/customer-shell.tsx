@@ -253,7 +253,7 @@ export function CustomerShell({
   )
 }
 
-/** Chuông thông báo dẫn sang trang Thông báo. Số là thông báo mới kể từ lần mở trang đó; xám vì việc cần làm đã đỏ ở menu */
+/** Chuông thông báo dẫn sang trang Thông báo. Số là thông báo chưa đọc; xám vì việc cần làm đã đỏ ở menu */
 function NotificationBell({ unread, pathname, className }: { unread: number; pathname: string; className: string }) {
   const here = pathname === ROUTES.customer.notifications
   return (
