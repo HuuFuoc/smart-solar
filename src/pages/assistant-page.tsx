@@ -54,7 +54,10 @@ export function AssistantPage() {
 
   function openNew() {
     setParams({})
+    setDraft('')
     setFailure(null)
+    attemptRef.current = null
+    void sessions.refetch()
   }
 
   function send(customText?: string) {
@@ -105,12 +108,7 @@ export function AssistantPage() {
       <PageHeader
         title="Trợ lý"
         actions={
-          <Button
-            variant="soft"
-            icon="add"
-            disabled={ask.isPending || (sessionId === null && !badSessionParam)}
-            onClick={openNew}
-          >
+          <Button variant="soft" icon="add" disabled={ask.isPending} onClick={openNew}>
             Cuộc trò chuyện mới
           </Button>
         }

@@ -69,13 +69,36 @@ export function useAskChatMutation() {
     mutationFn: (body) => chatService.askChat(body),
     onSuccess: (answer) => {
       if (!userKey) return
-      queryClient.setQueryData<ChatSessionDetailView>(chatKeys.session(userKey, answer.sessionId), (detail) =>
-        detail ? mergeExchange(detail, answer) : detail,
-      )
+      queryClient.setQueryData<ChatSessionDetailView>(chatKeys.session(userKey, answer.sessionId), (detail) => {
+        if (detail) return mergeExchange(detail, answer)
+        const title =
+          answer.question.content.length <= 80 ? answer.question.content : answer.question.content.slice(0, 80) + '…'
+        return {
+          session: {
+            sessionId: answer.sessionId,
+            title,
+            createdAt: answer.question.createdAt,
+            updatedAt: answer.answer.createdAt,
+          },
+          messages: [answer.question, answer.answer],
+        }
+      })
       queryClient.setQueryData<Record<string, string>>(chatKeys.notices(userKey), (map) => ({
         ...map,
         [answer.answer.messageId]: answer.notice,
       }))
+      queryClient.setQueryData<ChatSessionView[]>(chatKeys.sessions(userKey), (old) => {
+        const title =
+          answer.question.content.length <= 80 ? answer.question.content : answer.question.content.slice(0, 80) + '…'
+        const newSessionItem: ChatSessionView = {
+          sessionId: answer.sessionId,
+          title,
+          createdAt: answer.question.createdAt,
+          updatedAt: answer.answer.createdAt,
+        }
+        const existing = old ?? []
+        return [newSessionItem, ...existing.filter((s) => s.sessionId !== answer.sessionId)]
+      })
       void queryClient.invalidateQueries({ queryKey: chatKeys.session(userKey, answer.sessionId) })
     },
     // Lỗi mạng / hết giờ chờ: backend có thể đã lưu câu hỏi và mở phiên mới, nên tải lại danh sách để thấy
