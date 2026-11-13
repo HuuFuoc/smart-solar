@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
@@ -6,12 +6,14 @@ import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/l
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
+import { matchesInstallation } from '@/features/installations/installationFilter'
 import {
   installationTab,
   technicianStatusMeta,
   windowText,
   type InstallationTab,
 } from '@/features/installations/technicianInstallationDisplay'
+import { TechJobFilterBar } from '@/features/scheduling/TechJobFilterBar'
 import { useMyInstallationsQuery } from '@/hooks/useTechnicianInstallations'
 import { ROUTES, withId } from '@/routes/paths'
 import type { InstallationTechnicianView } from '@/types/res/technicianInstallationsRes'
@@ -29,9 +31,13 @@ const EMPTY: Record<InstallationTab, { title: string; description?: string }> = 
   done: { title: 'Chưa có công trình nào đã nghiệm thu' },
 }
 
-const byStart = (a: InstallationTechnicianView, b: InstallationTechnicianView) => a.startsAt.localeCompare(b.startsAt)
+/** Mới nhất lên đầu: ngày bắt đầu thi công giảm dần */
+const byStartDesc = (a: InstallationTechnicianView, b: InstallationTechnicianView) =>
+  b.startsAt.localeCompare(a.startsAt)
+
+/** Nghiệm thu mới nhất lên đầu: hoàn thành / kết thúc giảm dần */
 const byCompletedDesc = (a: InstallationTechnicianView, b: InstallationTechnicianView) =>
-  (b.completedAt ?? b.endsAt).localeCompare(a.completedAt ?? a.endsAt)
+  (b.completedAt ?? b.endsAt ?? b.startsAt).localeCompare(a.completedAt ?? a.endsAt ?? a.startsAt)
 
 function InstallationRow({ view, tab }: { view: InstallationTechnicianView; tab: InstallationTab }) {
   const status = technicianStatusMeta(view)
@@ -68,16 +74,40 @@ function InstallationRow({ view, tab }: { view: InstallationTechnicianView; tab:
 export function TechInstallationsPage() {
   const query = useMyInstallationsQuery()
   const [picked, setPicked] = useState<InstallationTab | null>(null)
-  const rows = query.data ?? []
-  const groups: Record<InstallationTab, InstallationTechnicianView[]> = {
-    pending: rows.filter((v) => installationTab(v) === 'pending').sort(byStart),
-    active: rows.filter((v) => installationTab(v) === 'active').sort(byStart),
-    done: rows.filter((v) => installationTab(v) === 'done').sort(byCompletedDesc),
-  }
-  const waiting = groups.pending.length
+  const [search, setSearch] = useState('')
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
+  const rows = query.data
+
+  const groups = useMemo<Record<InstallationTab, InstallationTechnicianView[]>>(() => {
+    const list = rows ?? []
+    return {
+      pending: list.filter((v) => installationTab(v) === 'pending').sort(byStartDesc),
+      active: list.filter((v) => installationTab(v) === 'active').sort(byStartDesc),
+      done: list.filter((v) => installationTab(v) === 'done').sort(byCompletedDesc),
+    }
+  }, [rows])
+
+  const filtered = useMemo<Record<InstallationTab, InstallationTechnicianView[]>>(
+    () => ({
+      pending: groups.pending.filter((v) => matchesInstallation(v, search, date, time)),
+      active: groups.active.filter((v) => matchesInstallation(v, search, date, time)),
+      done: groups.done.filter((v) => matchesInstallation(v, search, date, time)),
+    }),
+    [groups, search, date, time],
+  )
+
+  const waiting = filtered.pending.length
   // Mở sẵn tab "Chờ bạn nhận" khi có việc mới giao
-  const tab: InstallationTab = picked ?? (waiting > 0 ? 'pending' : 'active')
-  const shown = groups[tab]
+  const tab: InstallationTab = picked ?? (groups.pending.length > 0 ? 'pending' : 'active')
+  const shown = filtered[tab]
+  const hasFilter = search.trim() !== '' || date !== '' || time !== ''
+
+  const resetFilters = () => {
+    setSearch('')
+    setDate('')
+    setTime('')
+  }
 
   return (
     <>
@@ -85,21 +115,35 @@ export function TechInstallationsPage() {
         title="Lắp đặt"
         description={waiting > 0 ? <Badge tone="danger">{waiting} công trình chờ bạn nhận việc</Badge> : undefined}
       />
-      <FilterChips
-        label="Lọc công trình"
-        className="mb-6"
-        value={tab}
-        onChange={setPicked}
-        chips={[
-          { value: 'pending', label: 'Chờ bạn nhận', count: waiting },
-          { value: 'active', label: 'Đang làm', count: groups.active.length },
-          { value: 'done', label: 'Đã nghiệm thu', count: groups.done.length },
-        ]}
-      />
+      <div className="mb-6 space-y-3">
+        <TechJobFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          date={date}
+          onDateChange={setDate}
+          time={time}
+          onTimeChange={setTime}
+          hasFilter={hasFilter}
+          onReset={resetFilters}
+        />
+        <FilterChips
+          label="Lọc công trình"
+          value={tab}
+          onChange={setPicked}
+          chips={[
+            { value: 'pending', label: 'Chờ bạn nhận', count: filtered.pending.length },
+            { value: 'active', label: 'Đang làm', count: filtered.active.length },
+            { value: 'done', label: 'Đã nghiệm thu', count: filtered.done.length },
+          ]}
+        />
+      </div>
       <QueryBoundary query={query}>
         {() =>
           shown.length === 0 ? (
-            <EmptyState {...EMPTY[tab]} />
+            <EmptyState
+              title={hasFilter ? 'Không tìm thấy công trình phù hợp' : EMPTY[tab].title}
+              description={hasFilter ? 'Thử đổi từ khoá, ngày hoặc giờ tìm kiếm.' : EMPTY[tab].description}
+            />
           ) : (
             <div>
               <ListHead columns={COLUMNS} labels={LABELS} />
