@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink, buttonClass } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
@@ -18,13 +17,14 @@ import {
   secondsLeft,
 } from '@/features/contracts/customerContractRules'
 import { Facts } from '@/features/pre-surveys/Facts'
-import { rememberCheckout } from '@/features/payments/payosReturn'
+import { isCheckoutUrl, rememberCheckout } from '@/features/payments/payosReturn'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
   useCancelContractPaymentMutation,
   useContractPaymentsQuery,
   useCreateContractPaymentMutation,
 } from '@/hooks/useCustomerContracts'
+import { useCheckoutRedirect } from '@/hooks/useCheckoutRedirect'
 import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage, isApiError, isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
@@ -119,15 +119,13 @@ function LiveLink({
         <Notice tone="warn">PayOS chưa trả link cho lần thanh toán này. Bấm Kiểm tra lại sau ít phút.</Notice>
       )}
       <div className="flex flex-wrap gap-3">
-        {attempt.checkoutUrl && (
+        {isCheckoutUrl(attempt.checkoutUrl) && (
           <a
             href={attempt.checkoutUrl}
-            target="_blank"
-            rel="noopener noreferrer"
             className={buttonClass('primary')}
             onClick={() => rememberCheckout(attempt.orderCode, contractPath)}
           >
-            Mở trang thanh toán PayOS<span className="sr-only"> (mở tab mới)</span>
+            Mở trang thanh toán PayOS
           </a>
         )}
         <Button variant="secondary" icon="refresh" disabled={checking} onClick={onCheck}>
@@ -156,6 +154,7 @@ export function CustomerContractPayment({
   const create = useCreateContractPaymentMutation()
   const cancel = useCancelContractPaymentMutation()
   const [createError, setCreateError] = useState<string | null>(null)
+  const checkout = useCheckoutRedirect()
   const [confirmCancel, setConfirmCancel] = useState(false)
   const contractPath = withId(ROUTES.customer.contract, contract.contractId)
   const view = query.data
@@ -163,12 +162,12 @@ export function CustomerContractPayment({
   const paid = view?.contractStatus === 'PAID' || contract.status === 'PAID'
   const attention = view ? attemptsNeedingStaff(view.attempts) : []
 
+  // Có link là sang ngay trang PayOS trong tab này; PayOS chưa trả link thì ở lại, khối dưới hiện trạng thái để kiểm tra lại
   async function createLink() {
     setCreateError(null)
     try {
       const attempt = await create.mutateAsync(contract.contractId)
-      rememberCheckout(attempt.orderCode, contractPath)
-      toast.success('Đã có link thanh toán. Bấm Mở trang thanh toán PayOS để trả tiền.')
+      if (!checkout.go(attempt, contractPath)) rememberCheckout(attempt.orderCode, contractPath)
     } catch (e) {
       setCreateError(customerContractError(e))
     }
@@ -267,10 +266,10 @@ export function CustomerContractPayment({
                 <Button
                   icon="payments"
                   variant="primary"
-                  disabled={!canCreatePayment(view) || create.isPending}
+                  disabled={!canCreatePayment(view) || create.isPending || checkout.leaving}
                   onClick={() => void createLink()}
                 >
-                  {create.isPending ? 'Đang tạo link…' : 'Tạo link thanh toán'}
+                  {create.isPending || checkout.leaving ? 'Đang mở PayOS…' : 'Thanh toán qua PayOS'}
                 </Button>
                 {createError && (
                   <div role="alert">

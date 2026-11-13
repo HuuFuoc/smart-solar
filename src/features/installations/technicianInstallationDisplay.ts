@@ -52,7 +52,7 @@ export const hasPanelAndInverter = (v: View) =>
 
 export function startBlockedText(code: string | null | undefined) {
   if (!code) return null
-  return START_BLOCKED_REASONS[code] ?? `Chưa bắt đầu lắp đặt được (${code}).`
+  return code in START_BLOCKED_REASONS ? START_BLOCKED_REASONS[code] : `Chưa bắt đầu lắp đặt được (${code}).`
 }
 
 /** Lần sửa lại gần nhất: lý do và ai yêu cầu */

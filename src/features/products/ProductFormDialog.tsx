@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useId, useState } from 'react'
-import { useFieldArray, useForm, type Path } from 'react-hook-form'
+import { Controller, useFieldArray, useForm, type Path } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/common/ui/button'
@@ -8,13 +8,7 @@ import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/d
 import { Field, Input, Select } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { useCreateProductMutation, useUpdateProductMutation } from '@/hooks/useProducts'
-import {
-  INVERTER_PHASES,
-  INVERTER_SPEC_FIELDS,
-  PRODUCT_TYPES,
-  SOLAR_PANEL_TYPE,
-  type InverterNumberKey,
-} from '@/common/product'
+import { INVERTER_PHASES, INVERTER_SPEC_FIELDS, PRODUCT_TYPES, type InverterNumberKey } from '@/common/product'
 import { isInverterType, isSolarPanelType, specEntries } from '@/features/products/productDisplay'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { UpdateProductRequest } from '@/types/req/adminProductsReq'
@@ -47,6 +41,9 @@ function inverterNumber(key: InverterNumberKey) {
 }
 
 const INVERTER_KEYS = new Set<string>([...INVERTER_SPEC_FIELDS.map((f) => f.key), 'phase'])
+
+// Giá trị của lựa chọn "Loại khác" trong ô chọn loại, không bao giờ gửi lên
+const OTHER_TYPE = '__other__'
 
 /** Link ảnh như backend nhận: https tuyệt đối, tối đa 1000 ký tự */
 function isImageUrl(value: string) {
@@ -302,6 +299,7 @@ function ProductForm({
     defaultValues: product ? valuesFromProduct(product) : emptyValues,
   })
   const spec = useFieldArray({ control, name: 'spec' })
+  const [customType, setCustomType] = useState(false)
 
   // Đang lưu thì không cho đóng dialog
   useEffect(() => {
@@ -351,10 +349,12 @@ function ProductForm({
   // Sản phẩm loại khác mà spec có sẵn thông số inverter thì vẫn hiện để không bị ẩn mất
   const showInverter = isInverterType(watch('productType')) || Object.values(watch('inverter')).some(Boolean)
   const invalid = (name: keyof ProductFormValues) => (errors[name] ? true : undefined)
-  const typeSuggestions = [
+  // Loại đã dùng ở sản phẩm khác và loại của sản phẩm đang sửa cũng là lựa chọn, để sửa không làm mất loại cũ
+  const currentType = product?.productType ?? ''
+  const typeOptions = [
     ...PRODUCT_TYPES,
-    ...(suggestions?.productTypes ?? [])
-      .filter((value) => !PRODUCT_TYPES.some((t) => t.value === value))
+    ...[...new Set([...(suggestions?.productTypes ?? []), currentType])]
+      .filter((value) => value.trim() && !PRODUCT_TYPES.some((t) => t.value === value))
       .map((value) => ({ value, label: value })),
   ]
 
@@ -384,12 +384,45 @@ function ProductForm({
           <Input id={f('brand')} aria-required aria-invalid={invalid('brand')} {...register('brand')} />
         </Field>
         <Field label="Loại sản phẩm" required htmlFor={f('productType')} error={errors.productType?.message}>
-          <Input
-            id={f('productType')}
-            list={f('types')}
-            aria-required
-            aria-invalid={invalid('productType')}
-            {...register('productType')}
+          <Controller
+            control={control}
+            name="productType"
+            render={({ field }) => (
+              <>
+                <Select
+                  id={f('productType')}
+                  name={field.name}
+                  value={customType ? OTHER_TYPE : field.value}
+                  aria-required
+                  aria-invalid={invalid('productType')}
+                  onBlur={field.onBlur}
+                  onChange={(e) => {
+                    const other = e.target.value === OTHER_TYPE
+                    setCustomType(other)
+                    field.onChange(other ? '' : e.target.value)
+                  }}
+                >
+                  <option value="">Chọn loại sản phẩm</option>
+                  {typeOptions.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                  <option value={OTHER_TYPE}>Loại khác (tự ghi)</option>
+                </Select>
+                {customType && (
+                  <Input
+                    aria-label="Tên loại sản phẩm"
+                    className="mt-2"
+                    autoFocus
+                    value={field.value}
+                    aria-invalid={invalid('productType')}
+                    onBlur={field.onBlur}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                )}
+              </>
+            )}
           />
         </Field>
         <Field label="Nhóm hàng" htmlFor={f('category')} error={errors.category?.message}>
@@ -440,9 +473,7 @@ function ProductForm({
             <span className="text-body font-semibold sm:col-span-3">
               Công suất và kích thước
               <span className="block text-meta font-normal text-fg-2">
-                {isPanel
-                  ? 'Bắt buộc với tấm pin, dùng cho mô phỏng bố trí.'
-                  : `Bắt buộc khi loại là ${SOLAR_PANEL_TYPE}.`}
+                {isPanel ? 'Bắt buộc với tấm pin, dùng cho mô phỏng bố trí.' : 'Chỉ bắt buộc với tấm pin.'}
               </span>
             </span>
           </legend>
@@ -578,11 +609,6 @@ function ProductForm({
         </Button>
       </fieldset>
 
-      <datalist id={f('types')}>
-        {typeSuggestions.map((type) => (
-          <option key={type.value} value={type.value} label={type.label} />
-        ))}
-      </datalist>
       <datalist id={f('categories')}>
         {suggestions?.categories.map((value) => (
           <option key={value} value={value} />

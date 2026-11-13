@@ -675,8 +675,12 @@ Kiểm tra và các chỗ còn chặn: `docs/api/customer-portal-verification.md
   lần khi có link chờ và tab đang hiện; đếm ngược theo giờ máy chỉ để hiện, hết giờ thì hỏi lại. Link mua gói kèm hợp đồng (tổng >
   tiền hợp đồng) không huỷ ở đây mà dẫn sang Gói dịch vụ; mua gói gộp hợp đồng khi hợp đồng đang có link riêng thì
   `PurchaseDialog` dẫn sang trang hợp đồng. Không có mã QR vẽ trên trang (trang PayOS có).
-- PayOS chuyển về `/payments/return` | `/payments/cancel` (ReturnUrl / CancelUrl của backend): `features/payments/payosReturn.ts`
-  nhớ orderCode → trang đã mở link (localStorage, một ngày) rồi đưa khách về đó kèm `?payos=`; không đọc kết quả từ địa chỉ.
+- PayOS chuyển về `/payments/return` | `/payments/cancel`, hoặc `/return` | `/cancel` (ReturnUrl / CancelUrl của backend đã
+  deploy): `features/payments/payosReturn.ts` nhớ orderCode → trang đã mở link (localStorage, một ngày) rồi đưa khách về đó kèm
+  `?payos=`; không đọc kết quả từ địa chỉ.
+- Trang PayOS mở trong tab đang dùng, không mở tab mới (người dùng 13/11/2026): bấm "Thanh toán qua PayOS" (hợp đồng, báo giá sửa
+  chữa) hoặc mua gói xong là `useCheckoutRedirect` nhớ trang quay về rồi chuyển luôn sang PayOS; nút "Mở trang thanh toán PayOS"
+  của link còn chờ cũng mở cùng tab. Chỉ mở link `https:`; PayOS chưa trả link thì ở lại trang và hiện trạng thái.
 - Trang yêu cầu khảo sát và báo giá đã đồng ý có khối dẫn sang hợp đồng (`ContractLinkPanel`).
 
 **Địa điểm cũ thiếu mã phường, xã** (PUT `/customers/me/sites/{id}/administrative-location`, chỉ đổi mã, không đổi toạ độ):
@@ -717,9 +721,12 @@ theo đội / ca / mốc (`InstallationTaskPage`, `InstallationChecklistPage`, `
   ≤ 500) gửi `expectedRevision` = `revision` đang xem; quá khung giờ được giao thì không nhận được. Bắt đầu chỉ khi `canStart`
   (lý do chặn `startBlockedReason`: chưa tới ngày, hết khung giờ, quản lý chưa xong hạng mục bắt buộc); checklist chỉ quản lý
   sửa được (`PUT …/checklist` chỉ cho Manager/Admin), kỹ thuật viên không thấy.
-- Thiết bị (`AssetEntry.tsx`, luật ở `assetForm.ts` bám `RegisterAssetsAsync`): nhiều dòng một lần, dòng mới chép loại / hãng /
-  model / bảo hành của dòng trước; đã lưu thì không sửa / xoá được nên báo trùng serial (cùng hãng) trước khi gửi. `productId` gửi
-  null vì loại sản phẩm là chữ tự do, chưa có quy ước nối với loại thiết bị.
+- Thiết bị (`AssetEntry.tsx`, luật ở `assetForm.ts` bám `RegisterAssetsAsync`): backend cần mỗi thiết bị một serial và số đã ghi
+  khớp hợp đồng theo từng sản phẩm, nên mỗi dòng là một sản phẩm + ô serial nhiều dòng (mỗi dòng một số; dán cột Excel hoặc quét
+  mã vạch liên tục, `parseSerials` tách cả tab / phẩy / chấm phẩy), gửi thành từng thiết bị dùng chung sản phẩm và vị trí lắp; dưới
+  ô ghi "Đã nhập N, hợp đồng còn M". Tối đa 500 thiết bị mỗi lần lưu (giới hạn của backend). "Thêm dòng" luôn thêm dòng trống; Enter
+  ở ô vị trí chuyển ô, không gửi form. Đã lưu thì không sửa / xoá được nên báo serial trùng (cùng hãng: trong ô, với dòng trên, với
+  thiết bị đã lưu) trước khi gửi.
 - Báo cáo hoàn thành (≤ 8000 ký tự, hỏi xác nhận) cần ít nhất một ảnh của lượt hiện tại (khoá nút) và mặc định tấm pin + inverter
   (cấu hình được ở backend nên chỉ nhắc). Gửi xong công trình chờ khách nghiệm thu; kỹ thuật viên không tự đánh dấu hoàn tất.
 - Ảnh lắp đặt (`EvidenceUpload.tsx`, khi `canWork`): chọn nhiều ảnh, mỗi ảnh một ô chú thích (≤ 300 ký tự), "Tải lên N ảnh"
@@ -855,25 +862,25 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 
 ## Bảng route
 
-| Route                                  | Layout           | Trang                                                                                                                                                                                                                      |
-| -------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                                    | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                                                                                                           |
-| `/login`                               | `AuthLayout`     | `LoginPage`                                                                                                                                                                                                                |
-| `/register`                            | `AuthLayout`     | `RegisterPage`                                                                                                                                                                                                             |
-| `/forgot-password`                     | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                                                                                                       |
-| `/reset-password`                      | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                                                                                                        |
-| `/verify-email`                        | `AuthLayout`     | `VerifyEmailPage`                                                                                                                                                                                                          |
-| `/403`                                 | `AuthLayout`     | `ForbiddenPage`                                                                                                                                                                                                            |
-| `/coming-soon`                         | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                                                                                              |
-| `/products`, `/products/:id`           | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                                                                                                     |
-| `/payments/return`, `/payments/cancel` | –                | PayOS chuyển về; chuyển ngay tới trang đã mở link thanh toán (`PaymentReturnPage`)                                                                                                                                         |
-| `/admin/*`                             | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ, Việc của kinh doanh (giao việc), Hoàn tiền (xét, ghi nhận) – bọc `<RequireRole role="admin">`                                                                   |
-| `/tech/*`                              | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                                                                     |
-| `/customer/*`                          | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Báo giá (đồng ý / yêu cầu sửa), Hợp đồng (ký, PayOS), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói, đặt lượt bảo trì), Thông báo, Sản phẩm – bọc `<RequireRole role="customer">` |
-| `/ops/*`                               | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá, hợp đồng), Bảo hành / việc nhắc khách – bọc `<RequireRole role="sales">`                                                                                     |
-| `/field/*`                             | —                | chuyển về `/tech`                                                                                                                                                                                                          |
-| `/manage/*`                            | `ManageLayout`   | Thi công (dự án, phân công, checklist), Duyệt giá báo giá, Bảo hành (quyết định, kết thúc yêu cầu, sửa thiết bị), Việc của kinh doanh (xem), Hoàn tiền (xét), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">` |
-| `/styleguide`                          | –                | `StyleguidePage`                                                                                                                                                                                                           |
+| Route                                                        | Layout           | Trang                                                                                                                                                                                                                      |
+| ------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                                                                                                           |
+| `/login`                                                     | `AuthLayout`     | `LoginPage`                                                                                                                                                                                                                |
+| `/register`                                                  | `AuthLayout`     | `RegisterPage`                                                                                                                                                                                                             |
+| `/forgot-password`                                           | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                                                                                                       |
+| `/reset-password`                                            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                                                                                                        |
+| `/verify-email`                                              | `AuthLayout`     | `VerifyEmailPage`                                                                                                                                                                                                          |
+| `/403`                                                       | `AuthLayout`     | `ForbiddenPage`                                                                                                                                                                                                            |
+| `/coming-soon`                                               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                                                                                              |
+| `/products`, `/products/:id`                                 | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                                                                                                     |
+| `/payments/return`, `/payments/cancel`, `/return`, `/cancel` | –                | PayOS chuyển về; chuyển ngay tới trang đã mở link thanh toán (`PaymentReturnPage`)                                                                                                                                         |
+| `/admin/*`                                                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ, Việc của kinh doanh (giao việc), Hoàn tiền (xét, ghi nhận) – bọc `<RequireRole role="admin">`                                                                   |
+| `/tech/*`                                                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                                                                     |
+| `/customer/*`                                                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Báo giá (đồng ý / yêu cầu sửa), Hợp đồng (ký, PayOS), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói, đặt lượt bảo trì), Thông báo, Sản phẩm – bọc `<RequireRole role="customer">` |
+| `/ops/*`                                                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá, hợp đồng), Bảo hành / việc nhắc khách – bọc `<RequireRole role="sales">`                                                                                     |
+| `/field/*`                                                   | —                | chuyển về `/tech`                                                                                                                                                                                                          |
+| `/manage/*`                                                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Duyệt giá báo giá, Bảo hành (quyết định, kết thúc yêu cầu, sửa thiết bị), Việc của kinh doanh (xem), Hoàn tiền (xét), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">` |
+| `/styleguide`                                                | –                | `StyleguidePage`                                                                                                                                                                                                           |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.
 

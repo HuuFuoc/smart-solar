@@ -49,6 +49,8 @@ export const publicRoutes: RouteObject[] = [
   // Không có giao diện riêng: chuyển ngay về trang đã mở link, trang đó cần đăng nhập
   { path: ROUTES.paymentReturn, lazy: PaymentReturnPage },
   { path: ROUTES.paymentCancel, lazy: PaymentReturnPage },
+  { path: ROUTES.payosReturn, lazy: PaymentReturnPage },
+  { path: ROUTES.payosCancel, lazy: PaymentReturnPage },
   // Trang mẫu component chỉ có ở dev
   ...(import.meta.env.DEV ? [{ path: ROUTES.styleguide, lazy: StyleguidePage }] : []),
 ]

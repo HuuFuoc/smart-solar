@@ -28,7 +28,7 @@ export function StartInstallation({ view }: { view: InstallationTechnicianView }
     <div className="space-y-3">
       <p className="text-body text-fg-2">
         Bạn đã nhận lắp đặt <span className="tnum text-fg">{windowText(view)}</span>.
-        {blocked ? ` ${blocked}` : ' Tới công trình thì bấm bắt đầu.'}
+        {view.canStart ? ' Tới công trình thì bấm bắt đầu.' : blocked && ` ${blocked}`}
       </p>
       <span className="flex flex-wrap items-center gap-3">
         <Button

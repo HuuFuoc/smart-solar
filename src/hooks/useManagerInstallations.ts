@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { type Query, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as installationService from '@/services/managerInstallationService'
 import { technicianAdminKeys } from '@/hooks/useTechnicianAdmin'
 import type { ApiError } from '@/services/api/errors'
@@ -119,17 +119,37 @@ export function useEnergyMonitoringQuery(id: string) {
   })
 }
 
-// Thao tác ghi trả về chi tiết mới nhất: đặt ngay vào cache rồi làm mới mọi danh sách liên quan.
-// Phân công / huỷ đổi cả lịch của kỹ thuật viên nên làm mới luôn dữ liệu kỹ thuật viên
+// Phần dữ liệu chỉ tải khi người dùng bấm: danh sách ứng viên (giới hạn 15 lần / phút) và link ảnh. Sau thao tác ghi chỉ đánh
+// dấu cũ, lần bấm sau mới tải lại
+const ON_DEMAND = new Set(['candidates', 'evidence-url'])
+
+// Thao tác ghi trả về chi tiết mới nhất: đặt ngay vào cache, danh sách / số trên menu / lịch kỹ thuật viên tải lại phía sau,
+// nút không chờ các lần tải đó. Lỗi (thường là 409) thì chờ tải lại dự án để lần gửi sau dùng revision mới
 function useAfterWrite(id: string, { touchesSchedule = false } = {}) {
   const queryClient = useQueryClient()
+  const detailKey = managerInstallationKeys.detail(id)
+  const onDemand = (q: Query) => ON_DEMAND.has(String(q.queryKey[1]))
+  const refreshRest = () => {
+    void queryClient.invalidateQueries({
+      queryKey: managerInstallationKeys.all,
+      predicate: (q) => !onDemand(q) && !(q.queryKey[1] === 'detail' && q.queryKey[2] === id),
+    })
+    void queryClient.invalidateQueries({
+      queryKey: managerInstallationKeys.all,
+      predicate: onDemand,
+      refetchType: 'none',
+    })
+    if (touchesSchedule) void queryClient.invalidateQueries({ queryKey: technicianAdminKeys.all })
+  }
   return {
-    onSuccess: (view: InstallationStaffView) => queryClient.setQueryData(managerInstallationKeys.detail(id), view),
-    onSettled: () =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: managerInstallationKeys.all }),
-        touchesSchedule && queryClient.invalidateQueries({ queryKey: technicianAdminKeys.all }),
-      ]),
+    onSuccess: (view: InstallationStaffView) => {
+      queryClient.setQueryData(detailKey, view)
+      refreshRest()
+    },
+    onError: () => {
+      refreshRest()
+      return queryClient.invalidateQueries({ queryKey: detailKey })
+    },
   }
 }
 

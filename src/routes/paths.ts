@@ -15,6 +15,9 @@ export const ROUTES = {
   /** ReturnUrl / CancelUrl của PayOS do backend cấu hình; chỉ chuyển khách về trang đã mở link thanh toán */
   paymentReturn: '/payments/return',
   paymentCancel: '/payments/cancel',
+  /** Cùng vai trò như hai đường trên: backend đã deploy đặt ReturnUrl / CancelUrl là /return, /cancel */
+  payosReturn: '/return',
+  payosCancel: '/cancel',
   /** Chỉ có ở dev */
   styleguide: '/styleguide',
 
