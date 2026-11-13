@@ -51,6 +51,36 @@ export type AssetView = {
   warrantyMonths: number | null
 }
 
+/** Chênh lệch giữa thiết bị trong hợp đồng và thiết bị đã lắp (EquipmentDifference) */
+export type EquipmentDifference = {
+  productId: string
+  productType: string
+  name: string | null
+  contractedQuantity: number
+  installedQuantity: number
+}
+
+export type InstallationApprovalStep = {
+  actorUserId: string | null
+  reason: string | null
+  at: string
+}
+
+export type EquipmentComparisonView = {
+  status:
+    | 'MATCHES'
+    | 'NOT_COMPARABLE'
+    | 'SUBSTITUTION_APPROVAL_REQUIRED'
+    | 'CUSTOMER_APPROVAL_REQUIRED'
+    | 'SUBSTITUTION_APPROVED'
+    | 'NOT_CHECKED_AT_HANDOVER'
+    | (string & {})
+  differences: EquipmentDifference[]
+  fingerprint: string
+  managerApproval: InstallationApprovalStep | null
+  customerApproval: InstallationApprovalStep | null
+}
+
 /** GET /api/customers/me/installation-projects(/{projectId}) và kết quả của POST .../acceptance */
 export type InstallationCustomerView = {
   projectId: string

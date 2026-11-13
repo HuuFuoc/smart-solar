@@ -1,87 +1,67 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { ASSET_TYPES } from '@/common/installation'
 import { Icon } from '@/components/common/stitch-ui/Icon'
-import { Button, IconButton } from '@/components/common/ui/button'
-import { Input, Select } from '@/components/common/ui/field'
+import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
+import { AssetEntryRow } from '@/features/installations/AssetEntryRow'
 import {
   ASSET_LIMITS,
+  assetFieldId,
+  filterProductsForAssetType,
   hasErrors,
   newAssetRow,
+  requiresCatalogProduct,
   toAssetRequests,
   validateAssetRows,
   type AssetField,
   type AssetRow,
-  type AssetRowErrors,
 } from '@/features/installations/assetForm'
+import { useProductsQuery } from '@/hooks/useProducts'
 import { useRegisterAssetsMutation } from '@/hooks/useTechnicianInstallations'
 import { errorMessage } from '@/services/api/errors'
-import type { AssetView } from '@/types/res/customerInstallationsRes'
+import { PRODUCT_PAGE_SIZE_MAX } from '@/services/productService'
+import type { AssetView, EquipmentComparisonView } from '@/types/res/customerInstallationsRes'
 import { cx } from '@/utils/cx'
 
-// Từ xl mỗi thiết bị là một hàng thẳng cột với dòng tiêu đề; màn hẹp hơn thì mỗi thiết bị một khối có nhãn
-const COLUMNS = 'xl:grid-cols-[2rem_9rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_7rem_7rem_2.5rem]'
-const HEADERS = ['', 'Loại', 'Hãng', 'Model', 'Số serial', 'Vị trí', 'Bảo hành (tháng)', '']
-
-const fieldId = (row: AssetRow, field: AssetField) => `asset-${row.key}-${field}`
-
-function Cell({
-  row,
-  field,
-  label,
-  error,
-  className,
-  children,
-}: {
-  row: AssetRow
-  field: AssetField
-  label: string
-  error?: string
-  className?: string
-  children: ReactNode
-}) {
-  return (
-    <div className={cx('flex min-w-0 flex-col gap-1', className)}>
-      <label htmlFor={fieldId(row, field)} className="text-meta text-fg-2 xl:sr-only">
-        {label}
-      </label>
-      {children}
-      {error && (
-        <p id={`${fieldId(row, field)}-error`} className="text-meta text-danger" role="alert">
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
+const COLUMNS = 'xl:grid-cols-[2rem_9rem_minmax(0,1.9fr)_minmax(0,1.1fr)_7rem_7.5rem_2.5rem]'
+const HEADERS = ['', 'Loại', 'Sản phẩm có sẵn', 'Số serial', 'Vị trí', 'Bảo hành (tháng)', '']
 
 // Ghi thiết bị đã lắp, nhiều dòng một lần. Thiết bị đã lưu không sửa hay xoá được nên báo lỗi trước khi gửi
 export function AssetEntry({
   projectId,
   saved,
+  equipment,
   onClose,
 }: {
   projectId: string
   saved: AssetView[]
+  equipment?: EquipmentComparisonView | null
   onClose: () => void
 }) {
   const register = useRegisterAssetsMutation()
+  const catalog = useProductsQuery({ PageSize: PRODUCT_PAGE_SIZE_MAX, SortBy: 'name', SortDirection: 'asc' })
+  const products = useMemo(() => catalog.data?.items ?? [], [catalog.data])
+  const differences = useMemo(() => equipment?.differences ?? [], [equipment])
+  const diffByProduct = useMemo(() => new Map(differences.map((d) => [d.productId, d])), [differences])
+  const contractedMissing = useMemo(
+    () => differences.filter((d) => d.contractedQuantity > d.installedQuantity),
+    [differences],
+  )
+
   const [rows, setRows] = useState<AssetRow[]>(() => [newAssetRow()])
   const [checked, setChecked] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const focusKey = useRef<number | null>(null)
-  const errors: AssetRowErrors[] = checked ? validateAssetRows(rows, saved) : rows.map(() => ({}))
+  const errors = checked ? validateAssetRows(rows, saved) : rows.map(() => ({}))
 
-  // Dòng vừa thêm đã chép loại / hãng / model, nên đưa con trỏ vào ô serial
   useEffect(() => {
     if (focusKey.current === null) return
     document.getElementById(`asset-${focusKey.current}-serialNumber`)?.focus()
     focusKey.current = null
   }, [rows])
 
-  const update = (key: number, field: AssetField, value: string) => {
-    setRows((current) => current.map((r) => (r.key === key ? { ...r, [field]: value } : r)))
+  const updateRow = (key: number, transform: (row: AssetRow) => AssetRow) => {
+    setRows((current) => current.map((r) => (r.key === key ? transform(r) : r)))
     setError(null)
   }
 
@@ -91,8 +71,6 @@ export function AssetEntry({
     setRows((current) => [...current, row])
   }
 
-  const removeRow = (key: number) => setRows((current) => current.filter((r) => r.key !== key))
-
   async function submit() {
     if (register.isPending) return
     setChecked(true)
@@ -100,7 +78,7 @@ export function AssetEntry({
     if (hasErrors(found)) {
       const i = found.findIndex((e) => Object.keys(e).length > 0)
       const field = Object.keys(found[i]!)[0] as AssetField
-      document.getElementById(fieldId(rows[i]!, field))?.focus()
+      document.getElementById(assetFieldId(rows[i]!, field))?.focus()
       return
     }
     try {
@@ -112,12 +90,14 @@ export function AssetEntry({
     }
   }
 
-  const invalid = (row: AssetRow, field: AssetField, i: number) => {
-    const message = errors[i]?.[field]
-    return message
-      ? { 'aria-invalid': true as const, 'aria-describedby': `${fieldId(row, field)}-error` }
-      : { 'aria-invalid': undefined }
-  }
+  const missingCatalog =
+    !catalog.isPending &&
+    !catalog.isError &&
+    rows.some(
+      (r) =>
+        requiresCatalogProduct(r.assetType) &&
+        filterProductsForAssetType(products, r.assetType, differences).length === 0,
+    )
 
   return (
     <form
@@ -129,8 +109,37 @@ export function AssetEntry({
       }}
     >
       <Notice tone="warn">
-        Thiết bị đã lưu không sửa hay xoá được trên hệ thống. Kiểm tra số serial trước khi lưu.
+        Thiết bị đã lưu không sửa hay xoá được trên hệ thống. Chọn đúng sản phẩm trong danh mục và kiểm tra số serial
+        trước khi lưu.
       </Notice>
+      {contractedMissing.length > 0 && (
+        <Notice tone="info">
+          Thiết bị theo hợp đồng cần ghi:{' '}
+          {contractedMissing
+            .map(
+              (d) =>
+                `${d.name?.trim() || (d.productType === 'INVERTER' ? 'Inverter' : 'Tấm pin')} (${d.installedQuantity}/${d.contractedQuantity})`,
+            )
+            .join(', ')}
+          .
+        </Notice>
+      )}
+      {catalog.isError && (
+        <Notice tone="warn">
+          <span className="flex flex-wrap items-center gap-2">
+            <span>Không tải được danh mục sản phẩm ({catalog.error?.message}).</span>
+            <button type="button" className="ui-link font-medium" onClick={() => void catalog.refetch()}>
+              Thử lại
+            </button>
+          </span>
+        </Notice>
+      )}
+      {missingCatalog && (
+        <Notice tone="warn">
+          Danh mục chưa có sản phẩm đang bán cho loại Tấm pin hoặc Inverter đã chọn. Liên hệ quản trị để bổ sung trước
+          khi ghi thiết bị.
+        </Notice>
+      )}
       <div aria-hidden className={cx('hidden gap-x-3 border-b border-line pb-2 text-meta text-fg-2 xl:grid', COLUMNS)}>
         {HEADERS.map((h, i) => (
           <span key={i}>{h}</span>
@@ -138,112 +147,20 @@ export function AssetEntry({
       </div>
       <ol className="space-y-4 xl:space-y-3">
         {rows.map((row, i) => (
-          <li
+          <AssetEntryRow
             key={row.key}
-            aria-label={`Thiết bị ${i + 1}`}
-            className={cx(
-              'grid grid-cols-2 gap-x-3 gap-y-3 max-xl:rounded-container max-xl:border max-xl:border-line max-xl:p-4 xl:items-start',
-              COLUMNS,
-            )}
-          >
-            <span className="tnum col-span-2 text-body font-semibold xl:col-span-1 xl:pt-2.5 xl:font-normal xl:text-fg-2">
-              <span className="xl:hidden">Thiết bị </span>
-              {i + 1}
-            </span>
-            <Cell row={row} field="assetType" label="Loại" error={errors[i]?.assetType}>
-              <Select
-                id={fieldId(row, 'assetType')}
-                value={row.assetType}
-                onChange={(e) => update(row.key, 'assetType', e.target.value)}
-                {...invalid(row, 'assetType', i)}
-              >
-                {Object.entries(ASSET_TYPES).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-            </Cell>
-            <Cell row={row} field="manufacturer" label="Hãng" error={errors[i]?.manufacturer}>
-              <Input
-                id={fieldId(row, 'manufacturer')}
-                value={row.manufacturer}
-                maxLength={ASSET_LIMITS.text}
-                autoComplete="off"
-                aria-required
-                onChange={(e) => update(row.key, 'manufacturer', e.target.value)}
-                {...invalid(row, 'manufacturer', i)}
-              />
-            </Cell>
-            <Cell row={row} field="model" label="Model" error={errors[i]?.model}>
-              <Input
-                id={fieldId(row, 'model')}
-                value={row.model}
-                maxLength={ASSET_LIMITS.text}
-                autoComplete="off"
-                aria-required
-                onChange={(e) => update(row.key, 'model', e.target.value)}
-                {...invalid(row, 'model', i)}
-              />
-            </Cell>
-            <Cell
-              row={row}
-              field="serialNumber"
-              label="Số serial"
-              error={errors[i]?.serialNumber}
-              className="col-span-2 xl:col-span-1"
-            >
-              <Input
-                id={fieldId(row, 'serialNumber')}
-                value={row.serialNumber}
-                maxLength={ASSET_LIMITS.text}
-                autoComplete="off"
-                spellCheck={false}
-                aria-required
-                className="tnum"
-                onChange={(e) => update(row.key, 'serialNumber', e.target.value)}
-                {...invalid(row, 'serialNumber', i)}
-              />
-            </Cell>
-            <Cell row={row} field="positionCode" label="Vị trí (không bắt buộc)" error={errors[i]?.positionCode}>
-              <Input
-                id={fieldId(row, 'positionCode')}
-                value={row.positionCode}
-                maxLength={ASSET_LIMITS.position}
-                autoComplete="off"
-                placeholder="R1-C1"
-                onChange={(e) => update(row.key, 'positionCode', e.target.value)}
-                {...invalid(row, 'positionCode', i)}
-              />
-            </Cell>
-            <Cell
-              row={row}
-              field="warrantyMonths"
-              label="Bảo hành, tháng (không bắt buộc)"
-              error={errors[i]?.warrantyMonths}
-            >
-              <Input
-                id={fieldId(row, 'warrantyMonths')}
-                value={row.warrantyMonths}
-                inputMode="numeric"
-                autoComplete="off"
-                className="tnum"
-                onChange={(e) => update(row.key, 'warrantyMonths', e.target.value)}
-                {...invalid(row, 'warrantyMonths', i)}
-              />
-            </Cell>
-            <div className="col-span-2 flex justify-end xl:col-span-1 xl:pt-0.5">
-              {rows.length > 1 && (
-                <IconButton
-                  icon="delete"
-                  label={`Bỏ thiết bị ${i + 1}`}
-                  tooltip="Bỏ dòng"
-                  variant="danger-quiet"
-                  onClick={() => removeRow(row.key)}
-                />
-              )}
-            </div>
-          </li>
+            row={row}
+            index={i}
+            canRemove={rows.length > 1}
+            className={COLUMNS}
+            errors={errors[i]!}
+            products={products}
+            differences={differences}
+            diffByProduct={diffByProduct}
+            catalogPending={catalog.isPending}
+            onChangeRow={(fn) => updateRow(row.key, fn)}
+            onRemove={() => setRows((current) => current.filter((r) => r.key !== row.key))}
+          />
         ))}
       </ol>
       <div className="flex flex-wrap items-center gap-3">

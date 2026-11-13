@@ -1,5 +1,7 @@
 # Smart Solar – Web Portal
 
+Đọc trước: @AGENTS.md (bản rút gọn quy tắc giao diện, `npm test` kiểm bằng `tests/ui-rules.test.mjs`).
+
 ## Git rules
 
 - Never add `Co-Authored-By` or any AI-attribution trailer to commits or PRs. Applies to every agent and contributor.
@@ -635,7 +637,9 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
   (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. "Xem" / "Tải về" PDF chính thức và từng bản ký
   (`ContractDocumentButtons`): xin link ký sẵn đúng lúc bấm (`GET /contracts/{id}/official-document/url`,
   `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Các API link này thuộc
-  bản vá backend chưa merge (quyền: quản lý / quản trị, hoặc kinh doanh phụ trách).
+  bản vá backend chưa merge (quyền: quản lý / quản trị, hoặc kinh doanh phụ trách). Backend đã deploy (160.187.1.242) chưa
+  có các API này (404) nên khách không tải được PDF trên web; thử luồng ký thì đưa khách đúng tệp PDF đã gắn, vì hộp ký so
+  SHA-256 của tệp khách đang giữ.
 - Thanh toán (`ContractPaymentPanel`, `GET /contracts/{id}/payments`, cả 3 cổng): chỉ đọc, hỏi lại 30 giây / lần khi SIGNED;
   REVIEW_REQUIRED / REFUND_REQUIRED tô đỏ. PAID: quản lý / quản trị có nút sang "Hợp đồng chờ tạo dự án"; số hợp đồng ở danh
   sách đó dẫn về trang hợp đồng.
@@ -950,6 +954,11 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
   `gen:api`. Backend đã deploy của nhóm: đặt `API_PROXY_TARGET=http://160.187.1.242:8080` trong `.env.development.local`.
 - Không viết test với API giả (`page.route` trả dữ liệu dựng sẵn); test giao diện chạy với backend thật
   (`tests/e2e/*.live.e2e.mjs`), luật thuần thì unit test ở `tests/*.test.mjs`.
+- E2E với backend đã deploy của nhóm: `API_BASE=http://160.187.1.242:8080 API_PROXY_TARGET=http://160.187.1.242:8080`, tài
+  khoản qua `E2E_<ADMIN|CUSTOMER|SALES|TECH|MANAGER>_EMAIL` / `_PASSWORD`, `E2E_SURVEY_REQUEST_ID` là yêu cầu đã có hợp đồng,
+  rồi `npm run test:e2e`. Mỗi file đăng nhập một lần; server cho 10 lần đăng nhập / 10 phút mỗi IP. Bấm link chuyển trang xong
+  thì chờ `heading` level 1 của trang mới: React Router đổi địa chỉ trước khi vẽ trang mới, tiêu đề trang cũ còn trong DOM vài
+  chục ms và có thể khớp nhầm.
 - E2E trên backend thật của stack kiểm thử riêng (`tests/e2e/stack-<n>-*.live.e2e.mjs`, chạy theo thứ tự 1 → 8, giai đoạn 6
   sau giai đoạn 4 ít nhất 1 giờ): cần `AUDIT_STACK_API`, `AUDIT_ACCOUNTS_FILE`, `AUDIT_EVIDENCE_DIR`; không khai thì tự bỏ qua.
   Dựng stack và tài khoản: `local-test/` trong worktree backend. Cách chạy và kết quả: `docs/api/SmartSolar_Post_Audit_Remediation.md`

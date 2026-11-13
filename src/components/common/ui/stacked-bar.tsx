@@ -20,7 +20,7 @@ export function StackedBar({ parts }: { parts: StackedPart[] }) {
           <div key={p.key} className="flex items-baseline gap-2">
             <span
               aria-hidden
-              className="mt-1.5 size-2 shrink-0 self-start rounded-sm"
+              className="mt-1.5 size-2 shrink-0 self-start rounded-full"
               style={{ backgroundColor: p.color }}
             />
             <dt className="min-w-0 text-fg-2">{p.label}</dt>

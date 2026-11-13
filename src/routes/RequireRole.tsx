@@ -26,7 +26,7 @@ export function RequireRole({ role, children }: RequireRoleProps) {
 export function AuthLoadingScreen() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-space-sm bg-surface">
-      <span className="material-symbols animate-spin text-[32px] text-accent-fg">progress_activity</span>
+      <span className="material-symbols animate-spin text-[24px] text-accent-fg">progress_activity</span>
       <p className="text-body-md text-on-surface-variant">Đang khôi phục phiên đăng nhập…</p>
     </div>
   )
