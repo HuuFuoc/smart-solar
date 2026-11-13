@@ -33,16 +33,14 @@ export function SunTimeSlider({ value, onChange, shade }: Props) {
   const id = useId()
   const note = shadeText(shade)
   return (
-    <div className="absolute inset-x-3 bottom-3 rounded-xl border border-line/60 bg-canvas/90 px-3.5 py-2.5 shadow-lg backdrop-blur-md">
+    <div className="absolute inset-x-3 bottom-3 rounded-container border border-line bg-canvas px-3 py-2 shadow-pop">
       <div className="flex items-center gap-3">
-        {/* Nhãn giờ nắng với độ rộng cố định */}
         <label htmlFor={id} className="flex shrink-0 items-center gap-1.5 text-meta font-semibold text-fg min-w-[75px]">
           <Icon name="sunny" className="text-[20px] text-warn" />
           <span className="sr-only">Giờ nắng hôm nay:</span>
-          <span className="tnum font-mono">{formatHour(value)}</span>
+          <span className="tnum">{formatHour(value)}</span>
         </label>
 
-        {/* Thanh trượt: chiếm toàn bộ không gian còn lại, không bị co giật theo độ dài văn bản */}
         <div className="flex flex-1 items-center min-w-[120px]">
           <input
             id={id}

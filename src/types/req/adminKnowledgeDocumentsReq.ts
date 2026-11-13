@@ -30,6 +30,13 @@ export type ReindexKnowledgeVersionRequest = {
   versionId?: string
 }
 
+export type SetKnowledgeAudienceRequest = {
+  /** Format: int32 */
+  revision?: number
+  audience?: string | null
+  reason?: string | null
+}
+
 export type UpdateKnowledgeMetadataRequest = {
   /** Format: int32 */
   revision?: number

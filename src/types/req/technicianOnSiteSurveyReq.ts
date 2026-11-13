@@ -1,5 +1,18 @@
 /* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
 
+export type BillOfMaterialsItemRequest = {
+  /** Format: uuid */
+  productId?: string
+  /** Format: double */
+  quantity?: number
+}
+
+export type BillOfMaterialsRequest = {
+  materials?: BillOfMaterialsItemRequest[] | null
+  serviceItems?: BillOfMaterialsItemRequest[] | null
+  installationNotes?: string | null
+}
+
 export type OnSiteSurveyAmendmentRequest = {
   /** Format: int32 */
   revision?: number
@@ -51,6 +64,7 @@ export type OnSiteSurveyRequest = {
   measuredLongitude?: number | null
   notes?: string | null
   obstacles?: OnSiteSurveyObstacleRequest[] | null
+  billOfMaterials?: BillOfMaterialsRequest
 }
 
 export type OnSiteSurveyRevisionRequest = {

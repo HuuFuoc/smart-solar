@@ -5,29 +5,25 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
-import { DateField, Field, Textarea, TimeSelect } from '@/components/common/ui/field'
+import { Field, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelFooter, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { formatDateTime, isClosedRequest } from '@/features/pre-surveys/preSurveyDisplay'
+import { RescheduleDialog } from '@/features/scheduling/RescheduleDialog'
 import { TechnicianChoiceList } from '@/features/scheduling/TechnicianChoiceList'
 import {
-  BOOKING_HORIZON_DAYS,
-  addDays,
   appointmentStatusMeta,
   assignmentSourceLabel,
   formatAppointment,
   formatDay,
   formatMoment,
-  formatTime,
   formatTimeRange,
   ineligibleLabel,
   isAppointmentOverdue,
   schedulingErrorMessage,
-  todayVn,
   vnDate,
-  vnTimestamp,
 } from '@/features/scheduling/schedulingDisplay'
 import {
   useAssignTechnicianMutation,
@@ -338,114 +334,6 @@ function ReassignDialog({
   )
 }
 
-// Đổi giờ: người đã xác nhận giữ lịch nếu vẫn rảnh giờ mới, không thì lịch quay về chờ kỹ thuật viên nhận
-function RescheduleDialog({
-  request,
-  appointment,
-  open,
-  onOpenChange,
-}: {
-  request: SurveyRequestDetail
-  appointment: SurveyAppointmentSummary
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const today = todayVn()
-  const [overdue] = useState(() => isAppointmentOverdue(appointment))
-  // Lịch quá giờ thì giờ cũ đã qua, mở sẵn hôm nay
-  const [date, setDate] = useState(() => (overdue ? today : vnDate(appointment.startsAt)))
-  const [time, setTime] = useState(() => formatTime(appointment.startsAt))
-  const [reason, setReason] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const reschedule = useSalesRescheduleMutation()
-  const startsAt = vnTimestamp(date, time)
-  const unchanged = new Date(startsAt).getTime() === new Date(appointment.startsAt).getTime()
-
-  async function submit() {
-    if (overdue && !reason.trim()) {
-      setError('Lịch đã qua giờ: ghi lý do đổi giờ.')
-      return
-    }
-    setError(null)
-    try {
-      const result = await reschedule.mutateAsync({
-        id: request.surveyRequestId,
-        body: { startsAt, reason: reason.trim() || null },
-      })
-      const who = result.technicianName ? `, ${result.technicianName} phụ trách` : ', chờ kỹ thuật viên nhận'
-      toast.success(`Đã đổi lịch sang ${formatAppointment(result.startsAt, result.endsAt)}${who}.`)
-      onOpenChange(false)
-    } catch (e) {
-      setError(schedulingErrorMessage(e))
-    }
-  }
-
-  return (
-    <ModalDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      dismissible={!reschedule.isPending}
-      className="max-w-xl"
-      aria-label="Đổi giờ khảo sát"
-    >
-      <DialogTitle>Đổi giờ khảo sát</DialogTitle>
-      <p className="mt-2 text-body text-fg-2">
-        {overdue ? 'Lịch đã qua giờ mà chưa khảo sát' : 'Giờ hiện tại'}:{' '}
-        {formatAppointment(appointment.startsAt, appointment.endsAt)}. Kỹ thuật viên đang phụ trách giữ lịch nếu vẫn
-        rảnh giờ mới, không thì lịch quay về chờ người trong khu vực nhận.
-      </p>
-      <div className="mt-4 space-y-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <Field label="Ngày" htmlFor="reschedule-date" className="w-full sm:w-48">
-            <DateField
-              id="reschedule-date"
-              min={today}
-              max={addDays(today, BOOKING_HORIZON_DAYS - 1)}
-              value={date}
-              onChange={(value) => value && setDate(value)}
-            />
-          </Field>
-          <Field label="Giờ bắt đầu" htmlFor="reschedule-time" className="w-full sm:w-36">
-            <TimeSelect id="reschedule-time" from="07:00" to="17:00" value={time} onChange={setTime} />
-          </Field>
-        </div>
-        <p className="text-meta text-fg-2">{formatDay(date)}, mỗi lần khảo sát 90 phút.</p>
-        <Field
-          label="Lý do đổi giờ"
-          htmlFor="reschedule-reason"
-          required={overdue}
-          hint={overdue ? 'Bắt buộc vì lịch đã qua giờ, tối đa 500 ký tự.' : 'Không bắt buộc, tối đa 500 ký tự.'}
-        >
-          <Textarea
-            id="reschedule-reason"
-            rows={2}
-            maxLength={500}
-            value={reason}
-            onChange={(e) => {
-              setReason(e.target.value)
-              setError(null)
-            }}
-          />
-        </Field>
-      </div>
-      <DialogFooter className="items-center">
-        <ErrorLine message={error ?? (unchanged ? 'Giờ mới giống giờ hiện tại.' : null)} />
-        <Button icon="close" variant="secondary" disabled={reschedule.isPending} onClick={() => onOpenChange(false)}>
-          Huỷ
-        </Button>
-        <Button
-          icon="edit_calendar"
-          variant="primary"
-          disabled={unchanged || reschedule.isPending}
-          onClick={() => void submit()}
-        >
-          {reschedule.isPending ? 'Đang đổi…' : 'Đổi lịch'}
-        </Button>
-      </DialogFooter>
-    </ModalDialog>
-  )
-}
-
 function ScheduleTime({ appointment }: { appointment: SurveyAppointmentSummary }) {
   return (
     <div>
@@ -540,6 +428,7 @@ function ScheduledPanel({
 
 export function SalesSchedulePanel({ request }: { request: SurveyRequestDetail }) {
   const a = request.appointment
+  const reschedule = useSalesRescheduleMutation()
   const [dialog, setDialog] = useState<'reassign' | 'reschedule' | null>(null)
   // Đổi key mỗi lần mở để form bắt đầu lại từ lịch hiện tại
   const [session, setSession] = useState(0)
@@ -586,8 +475,9 @@ export function SalesSchedulePanel({ request }: { request: SurveyRequestDetail }
         key={`reschedule-${session}`}
         open={dialog === 'reschedule'}
         onOpenChange={close}
-        request={request}
         appointment={a}
+        pending={reschedule.isPending}
+        onSubmit={(body) => reschedule.mutateAsync({ id: request.surveyRequestId, body })}
       />
     </>
   )

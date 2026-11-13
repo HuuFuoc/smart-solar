@@ -82,7 +82,7 @@ export function SchedulingAuditTable() {
               setSelectedKey(e.target.value)
               setPage(1)
             }}
-            className="w-80 rounded-control border border-line bg-surface-1 px-3 py-1.5 text-body text-fg-1 outline-none focus:border-accent"
+            className="w-80 rounded-control border border-line bg-canvas px-3 py-1.5 text-body text-fg-1 outline-none focus:border-accent"
           >
             <option value="">
               -- Tất cả cài đặt ({SETTING_GROUPS.reduce((acc, g) => acc + g.items.length, 0)}) --
@@ -108,10 +108,10 @@ export function SchedulingAuditTable() {
           <button
             type="button"
             onClick={toggleSort}
-            className="flex items-center gap-1.5 rounded-control border border-line bg-surface-1 px-3 py-1.5 text-meta font-medium text-fg-1 transition-colors hover:border-accent"
+            className="flex items-center gap-1.5 rounded-control border border-line bg-canvas px-3 py-1.5 text-meta font-medium text-fg-1 transition-colors hover:border-accent"
           >
             <span>Sắp xếp thời gian:</span>
-            <span className="font-semibold text-accent">
+            <span className="font-semibold text-accent-fg">
               {sortOrder === 'desc' ? 'Mới nhất trước ↓' : 'Cũ nhất trước ↑'}
             </span>
           </button>
@@ -119,27 +119,27 @@ export function SchedulingAuditTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-container border border-line bg-surface-1 shadow-sm">
+      <div className="overflow-x-auto rounded-control border border-line bg-canvas">
         <table className="w-full text-left text-body">
           <thead className="border-b border-line bg-canvas text-meta font-medium text-fg-3">
             <tr>
-              <th className="border-r border-line px-4 py-3">
+              <th className="px-4 py-3">
                 <button
                   type="button"
                   onClick={toggleSort}
-                  className="inline-flex items-center gap-1 font-semibold text-fg-1 hover:text-accent"
+                  className="inline-flex items-center gap-1 font-semibold text-fg-1 hover:text-accent-fg"
                 >
                   <span>Thời gian</span>
-                  <span className="text-accent">{sortOrder === 'desc' ? '↓' : '↑'}</span>
+                  <span className="text-accent-fg">{sortOrder === 'desc' ? '↓' : '↑'}</span>
                 </button>
               </th>
-              <th className="border-r border-line px-4 py-3">Cài đặt được thay đổi</th>
-              <th className="border-r border-line px-4 py-3">Giá trị (Cũ → Mới)</th>
-              <th className="border-r border-line px-4 py-3">Đơn vị</th>
+              <th className="px-4 py-3">Cài đặt được thay đổi</th>
+              <th className="px-4 py-3">Giá trị (Cũ → Mới)</th>
+              <th className="px-4 py-3">Đơn vị</th>
               <th className="px-4 py-3">Lý do điều chỉnh (Reason)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-line/70 text-meta">
+          <tbody className="divide-y divide-line text-meta">
             {isLoading ? (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-fg-3">
@@ -154,20 +154,20 @@ export function SchedulingAuditTable() {
               </tr>
             ) : (
               sortedItems.map((r) => (
-                <tr key={r.id} className="hover:bg-surface-2/60 transition-colors">
-                  <td className="border-r border-line whitespace-nowrap px-4 py-3 text-fg-2">
+                <tr key={r.id} className="hover:bg-canvas/50">
+                  <td className="whitespace-nowrap px-4 py-3 text-fg-2">
                     {new Date(r.changedAt).toLocaleString('vi-VN')}
                   </td>
-                  <td className="border-r border-line px-4 py-3">
-                    <div className="font-semibold text-fg-1">{KEY_LABEL_MAP.get(r.key) || r.key}</div>
-                    <div className="font-mono text-xs text-fg-3">{r.key}</div>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-fg-1">{KEY_LABEL_MAP.get(r.key) || r.key}</div>
+                    <div className="font-mono text-meta text-fg-3">{r.key}</div>
                   </td>
-                  <td className="border-r border-line whitespace-nowrap px-4 py-3">
-                    <span className="text-rose-600 dark:text-rose-400 line-through">{r.oldValue}</span>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <span className="text-err line-through">{r.oldValue}</span>
                     <span className="mx-2 text-fg-3">→</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{r.newValue}</span>
+                    <span className="font-semibold text-ok">{r.newValue}</span>
                   </td>
-                  <td className="border-r border-line px-4 py-3">
+                  <td className="px-4 py-3">
                     <Badge tone="neutral">{r.unit}</Badge>
                   </td>
                   <td className="max-w-md px-4 py-3 text-fg-1">

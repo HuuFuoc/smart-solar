@@ -97,7 +97,7 @@ export function BookingPanel({
         <Field
           label="Ghi chú cho kỹ thuật viên"
           htmlFor="booking-note"
-          hint="Không bắt buộc. Ví dụ: gọi trước khi đến, lối lên mái, giờ ra vào nhà xưởng."
+          hint="Không bắt buộc. Ví dụ: gọi trước khi đến, lối lên mái, có người ở nhà sau 17:00."
         >
           <Textarea
             id="booking-note"

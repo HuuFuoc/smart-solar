@@ -115,9 +115,9 @@ export function RegisterPage() {
             type="button"
             aria-label="Đóng thông báo lỗi"
             onClick={() => setFormError(null)}
-            className="p-1 text-on-error-container/70 transition-colors hover:text-on-error-container"
+            className="press -my-2 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-control text-on-error-container/70 transition-colors hover:text-on-error-container"
           >
-            <Icon name="close" className="text-[18px]" />
+            <Icon name="close" className="text-[20px]" />
           </button>
         </div>
       )}

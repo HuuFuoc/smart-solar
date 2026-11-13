@@ -34,3 +34,9 @@ export type ReturnToReworkRequest = {
   /** Format: int32 */
   expectedRevision?: number | null
 }
+
+export type SubstitutionApprovalRequest = {
+  reason?: string | null
+  /** Format: int32 */
+  expectedRevision?: number | null
+}

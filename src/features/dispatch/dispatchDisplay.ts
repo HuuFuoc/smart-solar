@@ -75,6 +75,11 @@ export function formatWindow(w: PreferredWindowView) {
   return `${formatDay(vnDate(w.startsAt))}, ${formatTimeRange(w.startsAt, w.endsAt)}`
 }
 
+/** Khung giờ khách xin đã tới giờ bắt đầu: backend không nhận lịch cho giờ đã qua */
+export function windowPassed(w: PreferredWindowView, now: number) {
+  return new Date(w.startsAt).getTime() <= now
+}
+
 /** Một dòng khung giờ trên form của khách */
 export type WindowDraft = { key: number; date: string; session: DispatchSession }
 

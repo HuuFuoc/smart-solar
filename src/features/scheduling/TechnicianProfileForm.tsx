@@ -51,7 +51,7 @@ export function TechnicianProfileForm({ technician }: { technician: TechnicianPr
     <form noValidate onSubmit={submit} className="max-w-2xl space-y-6">
       <Checkbox
         label="Nhận lịch khảo sát"
-        description="Tắt thì hệ thống không xếp lịch mới cho người này. Còn lịch sắp tới thì phải chuyển cho người khác trước."
+        description="Tắt thì người này không được xếp lịch mới. Lịch sắp tới phải chuyển cho người khác trước."
         checked={isSchedulingActive}
         onChange={(e) => {
           setIsSchedulingActive(e.target.checked)

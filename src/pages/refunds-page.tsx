@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
-import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
@@ -42,44 +42,6 @@ const GROUP_LABELS: Record<Group, string> = {
   refunded: 'Đã hoàn',
   rejected: 'Không hoàn',
   all: 'Tất cả',
-}
-
-const STATUS_BADGE_CONFIG: Record<
-  string,
-  { label: string; bg: string; text: string; border: string; dot: string; icon: string }
-> = {
-  APPROVED: {
-    label: 'Chờ ghi nhận',
-    bg: 'bg-amber-500/15',
-    text: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-500/30',
-    dot: 'bg-amber-500',
-    icon: 'hourglass_empty',
-  },
-  PENDING_APPROVAL: {
-    label: 'Chờ quản lý duyệt',
-    bg: 'bg-blue-500/15',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-500/30',
-    dot: 'bg-blue-500',
-    icon: 'pending',
-  },
-  REFUNDED: {
-    label: 'Đã hoàn tiền',
-    bg: 'bg-emerald-500/15',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-500/30',
-    dot: 'bg-emerald-500',
-    icon: 'check_circle',
-  },
-  REJECTED: {
-    label: 'Từ chối hoàn',
-    bg: 'bg-slate-500/15',
-    text: 'text-slate-600 dark:text-slate-300',
-    border: 'border-slate-500/30',
-    dot: 'bg-slate-400',
-    icon: 'cancel',
-  },
 }
 
 const vnd = (amount: number | null) => formatMoney(amount, 'VND')
@@ -259,10 +221,7 @@ function RefundsPage({ viewer }: { viewer: Viewer }) {
 
   return (
     <>
-      <PageHeader
-        title="Hoàn tiền"
-        description="Tiền được hoàn ngoài hệ thống (chuyển khoản…). Quản lý duyệt số tiền, quản trị ghi nhận khi đã chuyển xong."
-      />
+      <PageHeader title="Hoàn tiền" />
 
       {query.data && (
         <FilterChips
@@ -278,28 +237,14 @@ function RefundsPage({ viewer }: { viewer: Viewer }) {
         />
       )}
 
-      {/* Thanh chú thích trạng thái & tổng hợp */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-1 px-4 py-2.5 text-meta shadow-sm">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="font-medium text-fg-2">Chú thích trạng thái:</span>
-          {Object.entries(STATUS_BADGE_CONFIG).map(([key, cfg]) => (
-            <div key={key} className="flex items-center gap-1.5">
-              <span className={`inline-block h-2 w-2 rounded-full ${cfg.dot}`} />
-              <span className="text-fg-2">{refundStatusMeta(key).label}</span>
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-4 text-fg-3">
-          <span>
-            Hiển thị: <strong className="text-fg-1 font-semibold">{items.length}</strong> khoản
+      {group === 'approved' && items.length > 0 && (
+        <p className="mb-4 text-body text-fg-2">
+          Tổng chờ ghi nhận:{' '}
+          <span className="tnum font-semibold text-fg">
+            {vnd(items.reduce((sum, r) => sum + (r.approvedAmount ?? 0), 0))}
           </span>
-          {group === 'approved' && items.length > 0 && (
-            <span className="text-amber-600 dark:text-amber-400 font-medium">
-              Cần ghi nhận: {vnd(items.reduce((sum, r) => sum + (r.approvedAmount ?? 0), 0))}
-            </span>
-          )}
-        </div>
-      </div>
+        </p>
+      )}
 
       <section aria-label={GROUP_LABELS[group]} aria-busy={query.isFetching}>
         {query.isPending ? (
@@ -336,32 +281,24 @@ function RefundsPage({ viewer }: { viewer: Viewer }) {
             }
           />
         ) : (
-          <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+          <div>
             <Table stack>
               <thead>
                 <tr>
-                  <Th className="border-r border-line">Khoản hoàn tiền</Th>
-                  <Th className="border-r border-line text-right">Số tiền</Th>
-                  <Th className="border-r border-line">Trạng thái</Th>
-                  <Th className="border-r border-line">Thời gian & Tham chiếu</Th>
+                  <Th>Khoản hoàn tiền</Th>
+                  <Th className="text-right">Số tiền</Th>
+                  <Th>Trạng thái</Th>
+                  <Th>Thời gian & Tham chiếu</Th>
                   <Th className="text-right">
-                    <span>Thao tác</span>
+                    <span className="sr-only">Thao tác</span>
                   </Th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line/70">
+              <tbody>
                 {items.map((r) => {
-                  const cfg = STATUS_BADGE_CONFIG[r.status] ?? {
-                    label: refundStatusMeta(r.status).label,
-                    bg: 'bg-surface-2',
-                    text: 'text-fg-2',
-                    border: 'border-line',
-                    dot: 'bg-fg-3',
-                    icon: 'help_outline',
-                  }
                   return (
-                    <Tr key={r.refundId} className="hover:bg-surface-2/60 transition-colors">
-                      <Td label="Khoản" className="border-r border-line">
+                    <Tr key={r.refundId}>
+                      <Td label="Khoản">
                         <p className="font-semibold text-fg">
                           {r.requestId ? (
                             <Link to={withId(REQUEST_PATTERN[viewer], r.requestId)} className="ui-link font-medium">
@@ -380,7 +317,7 @@ function RefundsPage({ viewer }: { viewer: Viewer }) {
                           </p>
                         )}
                       </Td>
-                      <Td label="Số tiền" className="border-r border-line tnum text-right whitespace-nowrap">
+                      <Td label="Số tiền" className="tnum text-right whitespace-nowrap">
                         <span className="font-semibold text-fg">
                           {r.approvedAmount != null ? vnd(r.approvedAmount) : vnd(r.originalAmount)}
                         </span>
@@ -388,15 +325,10 @@ function RefundsPage({ viewer }: { viewer: Viewer }) {
                           <p className="text-meta text-fg-3 line-through">Gốc {vnd(r.originalAmount)}</p>
                         )}
                       </Td>
-                      <Td label="Trạng thái" className="border-r border-line whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-meta font-medium border ${cfg.bg} ${cfg.text} ${cfg.border}`}
-                        >
-                          <Icon name={cfg.icon} className="text-[16px]" aria-hidden />
-                          <span>{refundStatusMeta(r.status).label}</span>
-                        </span>
+                      <Td label="Trạng thái" className="whitespace-nowrap">
+                        <Badge tone={refundStatusMeta(r.status).tone}>{refundStatusMeta(r.status).label}</Badge>
                       </Td>
-                      <Td label="Thời gian" className="border-r border-line tnum text-meta whitespace-nowrap text-fg-2">
+                      <Td label="Thời gian" className="tnum text-meta whitespace-nowrap text-fg-2">
                         {r.refundedAt ? (
                           <>
                             <div className="font-medium text-fg">Hoàn lúc {formatMoment(r.refundedAt)}</div>
@@ -425,14 +357,6 @@ function RefundsPage({ viewer }: { viewer: Viewer }) {
                 })}
               </tbody>
             </Table>
-            <div className="border-t border-line bg-surface-2/40 px-4 py-2 text-meta text-fg-3 flex items-center justify-between">
-              <span>
-                Đang hiển thị {items.length} trên tổng {all.length} khoản hoàn tiền
-              </span>
-              <span className="tnum">
-                {viewer === 'admin' ? 'Cổng quản trị SmartSolar' : 'Cổng quản lý SmartSolar'}
-              </span>
-            </div>
           </div>
         )}
       </section>

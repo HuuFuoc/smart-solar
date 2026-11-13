@@ -1,5 +1,3 @@
-import { Icon } from '@/components/common/stitch-ui/Icon'
-
 type SalesPipelineFunnelProps = {
   total: number
   pending: number
@@ -14,11 +12,10 @@ export function SalesPipelineFunnel({ total, pending, scheduled, completed }: Sa
   const completedPct = total > 0 ? Math.round((completed / safeTotal) * 100) : 0
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-3 sm:p-4 shadow-sm">
+    <div className="rounded-container border border-line bg-surface-2 p-3 sm:p-4">
       {/* Header dòng đơn: Tiêu đề + Legend ngắn gọn */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
-          <Icon name="timeline" className="text-[18px] text-fg-2" />
           <span className="text-body font-semibold text-fg">Tiến độ quy trình</span>
           <span className="text-meta text-fg-3">({total} hồ sơ)</span>
         </div>
@@ -27,7 +24,7 @@ export function SalesPipelineFunnel({ total, pending, scheduled, completed }: Sa
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-meta">
           <div className="flex items-center gap-1.5">
             <span className="size-2 shrink-0 rounded-full bg-warn" aria-hidden />
-            <span className="text-fg-2">Chờ KTV:</span>
+            <span className="text-fg-2">Chờ kỹ thuật viên:</span>
             <span className="tnum font-medium text-fg">
               {pending} <span className="text-fg-3">({pendingPct}%)</span>
             </span>
@@ -57,25 +54,13 @@ export function SalesPipelineFunnel({ total, pending, scheduled, completed }: Sa
         aria-label="Tiến độ hồ sơ khảo sát"
       >
         {pendingPct > 0 && (
-          <div
-            className="h-full bg-warn transition-all duration-300"
-            style={{ width: `${pendingPct}%` }}
-            title={`Chờ KTV: ${pending} (${pendingPct}%)`}
-          />
+          <div className="h-full bg-warn transition-all duration-300" style={{ width: `${pendingPct}%` }} />
         )}
         {scheduledPct > 0 && (
-          <div
-            className="h-full bg-info transition-all duration-300"
-            style={{ width: `${scheduledPct}%` }}
-            title={`Đã có lịch: ${scheduled} (${scheduledPct}%)`}
-          />
+          <div className="h-full bg-info transition-all duration-300" style={{ width: `${scheduledPct}%` }} />
         )}
         {completedPct > 0 && (
-          <div
-            className="h-full bg-ok transition-all duration-300"
-            style={{ width: `${completedPct}%` }}
-            title={`Sẵn sàng báo giá: ${completed} (${completedPct}%)`}
-          />
+          <div className="h-full bg-ok transition-all duration-300" style={{ width: `${completedPct}%` }} />
         )}
       </div>
     </div>

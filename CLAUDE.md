@@ -1,5 +1,7 @@
 # Smart Solar – Web Portal
 
+Đọc trước: @AGENTS.md (bản rút gọn quy tắc giao diện, `npm test` kiểm bằng `tests/ui-rules.test.mjs`).
+
 ## Git rules
 
 - Never add `Co-Authored-By` or any AI-attribution trailer to commits or PRs. Applies to every agent and contributor.
@@ -22,11 +24,11 @@ hai ăn chung một hệ token trong `src/styles/globals.css`:
   bước (vòng số + đường nối, bước xong có ✓ + tóm tắt và bấm được để quay lại; điện thoại là khối gọn "Bước 3/5: …" + thanh
   tiến độ + "Tiếp theo: …"; `WizardProgress` là riêng thanh tiến độ + "Tiếp theo" khi tên bước đã nằm ở tiêu đề ngay trên),
   khác `Stepper` (dải tiến độ hành trình, chỉ để xem). `Field` có `htmlFor` thì dòng gợi ý / lỗi có id `fieldMessageId(htmlFor)`
-  để ô nhập gắn `aria-describedby`. Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
+  để ô nhập gắn `aria-describedby`; `optional` ghi "(không bắt buộc)" cạnh nhãn thay cho dòng gợi ý lặp dưới từng ô. Nhật ký audit `UI_AUDIT.md` chỉ giữ ở máy,
   không có trên git.
 - `src/components/common/stitch-ui` (file PascalCase, token `surface/on-surface/primary…`,
-  Material Symbols): trang công khai/xác thực, hộp thoại hết phiên, `/styleguide` (chỉ chạy ở dev) và các màn
-  mock đã ẩn của admin/kỹ thuật viên. Shell Stitch (`AppShell`, `Sidebar`, `TopHeader`) và `config/nav.ts` đã xoá.
+  Material Symbols): trang công khai/xác thực, hộp thoại hết phiên, `/styleguide` (chỉ chạy ở dev). Shell Stitch
+  (`AppShell`, `Sidebar`, `TopHeader`) và `config/nav.ts` đã xoá.
   (Hộp thoại đổi mật khẩu đã chuyển sang portal kit: `features/auth/ChangePasswordDialog.tsx`.)
 - Token của bộ Stitch nay chỉ là bí danh trỏ vào token của portal kit (màu nền/chữ/đường
   kẻ, bán kính, bóng, họ chữ, thang chữ). Sửa giá trị ở block portal kit là cả hai đổi theo;
@@ -58,7 +60,8 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
      ở lề; "Chưa hẹn" ở đầu trang chi tiết thì dòng thời gian chỉ ghi chữ. Khối đỏ đặc (số đếm, nút xoá đặc) dùng
      `danger-fill` + `on-danger`; chữ đỏ dùng `danger`.
    - `warn` (vàng): lưu ý không đòi làm ngay (dữ liệu chưa làm mới được, không vẽ được 3D, sản phẩm đã ngừng bán).
-   - `ok` đang hoạt động / đúng tiến độ; `info` đang xử lý, thông tin cần đọc; `neutral` đã xong / không hoạt động.
+   - `ok` đang hoạt động / đúng tiến độ; `info` đang xử lý, thông tin cần đọc, và là màu nút xem / mở / xử lý (quy tắc 9);
+     `neutral` đã xong / không hoạt động. `warn` cũng là màu nút tạm dừng / việc cần chú ý (quy tắc 9).
    - Màu vật thể / dữ liệu (09/10/2026): `pv-glass` + `pv-frame` vẽ tấm pin trên mặt bằng 2D (màu vật liệu, không mang nghĩa
      trạng thái; 3D dùng hex cùng tông vì three.js không đọc token); `chart-1` là cột biểu đồ một chuỗi (đo bằng validator của
      skill dataviz ≥ 3:1 trên canvas ở cả hai chế độ). Chữ trên biểu đồ vẫn dùng token chữ (`fg-2`, `fg-3`), không dùng màu cột.
@@ -81,11 +84,9 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
 6. **Không có chrome trang trí**: nhãn IN HOA giãn chữ, chip "badge" không mang thông tin,
    ô icon trang trí cạnh tiêu đề, mũi tên "→" dán sau nhãn link, dấu "•" nối chuỗi meta,
    chấm nhấp nháy `animate-pulse`. Chuyển động chỉ dùng cho trạng thái tải và phản hồi thao tác (hover, nhấn).
-   Icon (Material Symbols qua `Icon` trong `components/common/stitch-ui/Icon.tsx`, dùng cho cả hai bộ) chỉ khi nó nói
-   thêm điều chữ chưa nói hoặc giúp nhận ra nhanh: mục menu, hàng tài khoản; nút tạo (+), sửa, xoá, gọi, email, bản đồ,
-   lưu nháp, xoá bộ lọc, hiện mật khẩu, thử lại; `Notice` loại ok/warn/danger, toast. KHÔNG icon
-   cho nút điều hướng bước (Tiếp tục, Quay lại), nút gửi form, nút hành động chính của dòng, `Notice` loại
-   neutral/info, từng dòng chữ hay từng nhãn. Cỡ 16/20/24px (`text-[20px]`); đang chọn dùng bản tô đặc `icon-fill`.
+   Icon (Material Symbols qua `Icon` trong `components/common/stitch-ui/Icon.tsx`, dùng cho cả hai bộ): mọi nút (quy tắc
+   9), mục menu, hàng tài khoản, `Notice` loại ok/warn/danger, toast. KHÔNG icon cho `Notice` loại neutral/info, từng
+   dòng chữ hay từng nhãn. Cỡ 16/20/24px (`text-[20px]`); đang chọn dùng bản tô đặc `icon-fill`.
    Icon nằm trong ô 1em và chỉ hiện khi font đã tải (`html.icons-ready`, gắn ở `main.tsx`), nên mạng chậm không lộ chữ
    tên icon.
 7. **Khoảng cách** theo thang 4/8/12/16/24/32/48/64 (`space-*` của bộ Stitch đã theo thang này).
@@ -95,12 +96,13 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
    (xanh dương) xem, mở chi tiết, xử lý; `warn` tạm dừng, việc cần chú ý (Ngừng bán, Khách vắng, Trả lại việc);
    `danger` từ chối, huỷ, xoá, báo lỗi; `secondary` đóng hộp thoại, thử lại, tải về; `danger-solid` xác nhận xoá.
    Icon Material Symbols qua prop `icon` (vd. visibility, edit, add, send, save, close, block, report, refresh).
-10. **Thứ bậc thao tác** (`Button`): `primary` nút đặc, một nút mỗi màn; `soft` hành động chính của từng dòng / khối
-    (Nhận yêu cầu, Mở yêu cầu, Mở bán lại), nền xanh nhạt + viền; `secondary` nút trắng có viền; `ghost` thao tác kín
-    đáo (`bleed={false}` khi nằm trong cụm nút); `danger` viền đỏ cho phá huỷ hoàn tác được trong hộp thoại (Ngừng bán);
-    `danger-quiet` nút xoá lặp lại trên từng dòng (xám khi nghỉ, đỏ khi rê / focus, đứng sau vạch ngăn) để cột thao tác
-    không thành dải đỏ; `danger-solid` nút đặc đỏ chỉ để xác nhận việc không hoàn tác (Xoá). Cùng một thao tác dùng cùng
-    một kiểu ở mọi màn (vd. "Sửa" luôn là `secondary` sm có icon). Nút chỉ có icon dùng `IconButton` (`label` = aria-label,
+10. **Thứ bậc thao tác** (`Button`, loại việc theo quy tắc 9): `primary` nút đặc, một nút mỗi màn – nút trên từng dòng
+    của danh sách không bao giờ đặc; trên dòng / khối: nhận việc, thêm, sửa, đổi = `soft` (nền xanh nhạt + viền); xem,
+    mở, xử lý = `info`; `secondary` nút trắng có viền cho đóng, thử lại, tải về; `ghost` thao tác kín đáo
+    (`bleed={false}` khi nằm trong cụm nút); `warn` cho tạm dừng hoàn tác được (Ngừng bán); `danger` viền đỏ cho từ chối,
+    huỷ, xoá; `danger-quiet` nút xoá lặp lại trên từng dòng (xám khi nghỉ, đỏ khi rê / focus, đứng sau vạch ngăn) để cột
+    thao tác không thành dải đỏ; `danger-solid` nút đặc đỏ chỉ để xác nhận việc không hoàn tác (Xoá). Cùng một thao tác
+    dùng cùng một kiểu ở mọi màn (vd. "Sửa" luôn là `soft` sm có icon `edit`). Nút chỉ có icon dùng `IconButton` (`label` = aria-label,
     `tooltip` = chữ ngắn khi label dài); tooltip thật dùng `WithTooltip` (`ui/tooltip.tsx`: hiện cả khi focus bàn phím,
     vẽ ra body nên khung cuộn không cắt, tự né mép màn hình), không dùng `title`.
     Link trong nội dung dùng utility `ui-link` (màu thương hiệu + gạch chân). Chọn một trong vài lựa chọn ngang hàng
@@ -113,13 +115,17 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
 - Vite + React + TypeScript, react-router (giữ nguyên như package.json hiện tại – KHÔNG chuyển sang Next.js)
 - Tailwind CSS v4 qua `@tailwindcss/vite` (`@theme` trong `src/styles/globals.css`)
 - shadcn/ui cho primitives (dialog, dropdown, tabs, checkbox…) – restyle theo token bên dưới
-- Font: portal dùng Schibsted Grotesk (`globals.css`, thiếu dấu tiếng Việt U+1EA0–1EF1 – xem `docs/design/landing-brief.md`); trang công khai dùng Be Vietnam Pro (`@fontsource/be-vietnam-pro`, nạp trong `PublicLayout`). Plus Jakarta Sans đã bỏ.
+- Font: portal nhân viên dùng Schibsted Grotesk (`globals.css`); tệp font thiếu glyph ơ / ư (U+01A0, U+01A1, U+01AF, U+01B0)
+  và cả khoảng U+1EA0–1EF1 (ạ ả ấ ộ ợ ữ…), các chữ này rơi về font hệ thống (đo bằng trình duyệt 06/11/2026; người dùng
+  giữ font này); trang công khai, xác thực và khung khách hàng dùng Be Vietnam Pro (`@fontsource/be-vietnam-pro`, nạp trong `PublicLayout`). Plus Jakarta Sans đã bỏ.
 - Icon: Material Symbols Outlined – link Google Fonts trong `index.html`; giữ đúng tên icon như trong file thiết kế (`grid_view`, `solar_power`, `manage_accounts`…)
-- State/data: màn đang hiện đều gọi API thật (auth, sản phẩm, đánh giá sơ bộ, yêu cầu khảo sát); mock trong `src/data/*.ts` chỉ còn phục vụ các màn đã ẩn (xem "Chỉ hiện màn có dữ liệu thật")
+- State/data: mọi màn gọi API thật. Không dùng mock (dữ liệu giả, màn giả, test với API giả) ở chỗ có thể có dữ liệu
+  động; người dùng chốt 10/11/2026, các màn mock và test API giả cũ đã xoá (xem "Chỉ hiện màn có dữ liệu thật")
 
 ## Nguồn thiết kế (KHÔNG sửa thư mục này)
 
-`design/stitch/stitch_smart_solar_customer_portal/` là bản export từ Google Stitch. Mỗi màn hình có:
+`design/stitch/stitch_smart_solar_customer_portal/` là bản export từ Google Stitch, chỉ có ở máy người dựng (`/design` nằm
+trong `.gitignore`, không có trên git). Không có thư mục này thì bỏ qua mục này và mục "Biến thể đã chốt". Mỗi màn hình có:
 
 - `design/stitch/stitch_smart_solar_customer_portal/<screen>/code.html` – markup tham chiếu (Tailwind CDN)
 - `design/stitch/stitch_smart_solar_customer_portal/<screen>/screen.png` – ảnh kết quả mong đợi. LUÔN mở ảnh này để đối chiếu, không chỉ đọc HTML.
@@ -134,9 +140,9 @@ nhưng GIÁ TRỊ token nay lấy theo hệ chung ở trên. Những chỗ cố 
 | ------------- | -------------------------------------------------- | ------------------------------------------------------ |
 | Màu nền / chữ | `surface=#f8f9ff`, `on-surface=#0d1c2e` (ngả xanh) | trỏ vào `--canvas`, `--fg` của portal kit (trung tính) |
 | Màu nhấn      | `primary=#004328`, `primary-container=#0d5c3a`     | cả hai trỏ vào `--accent`                              |
-| Bán kính      | `rounded-lg/xl/2xl` (8–16px)                       | ánh xạ về 3px / 6px                                    |
+| Bán kính      | `rounded-lg/xl/2xl` (8–16px)                       | mọi `rounded-*` ánh xạ về 6px                          |
 | Bóng          | 3 cấp elevation                                    | chỉ một bóng cho lớp nổi, thẻ tĩnh không bóng          |
-| Badge         | pill `rounded-full` tô nền theo trạng thái         | chữ không nền, chỉ trạng thái cần chú ý mới có màu     |
+| Badge         | pill `rounded-full` tô nền theo trạng thái         | chữ không nền, màu theo vai trò (quy tắc 5)            |
 
 1. Dùng đúng tên token Tailwind như file gốc: `bg-surface`, `bg-surface-container-lowest`,
    `text-on-surface-variant`, `bg-primary-container text-on-primary`, `text-headline-md`,
@@ -161,8 +167,7 @@ src/
                                # + khung chờ + index/đường lạ chuyển về `start`; /field chuyển về /tech
     lazyPage.ts                # page(() => import('@/pages/…'), 'TênTrang'): khai báo ở đầu file route
                                # (const TênTrang = page(…)), route ghi `lazy: TênTrang`; giữ tách chunk mỗi trang
-    paths.ts                   # ROUTES (khoá camelCase, mỗi portal một nhóm, trang chủ portal là `home`; trong nhóm:
-                               # màn có route ở trên, màn mock đã ẩn dưới dòng "Màn mock đã ẩn"), withId, techTaskPath…
+    paths.ts                   # ROUTES (khoá camelCase, mỗi portal một nhóm, trang chủ portal là `home`), withId
     RequireRole.tsx            # route bảo vệ theo vai trò + AuthLoadingScreen
     notFound.ts                # ném Response 404 cho errorElement
   context/
@@ -181,8 +186,7 @@ src/
     dashboard/                 # component chỉ dùng ở màn tổng quan admin và kỹ thuật viên
     users/ roles/ products/    # component riêng của các màn admin
   pages/                       # màn gắn với route: admin/ tech/ customer/ ops/ field/ manage/ auth/ public/ + trang lẻ
-  data/                        # dữ liệu tĩnh cho UI: mock từng màn (surveys.ts, tasks.ts, session.ts…, customer.ts, manage.ts…)
-                               # và nội dung chữ (auth.ts, landing.ts)
+  data/                        # chỉ chữ tĩnh của giao diện (auth.ts, landing.ts, styleguide.ts), không có dữ liệu giả
   services/                    # API của mọi nghiệp vụ, mỗi file một nhóm: authService.ts, me.ts, productService.ts,
                                # preSurveyService.ts, bookingService.ts, adminUserService.ts…
     api/                       # client.ts (axios, mở wrapper, refresh), errors.ts (ApiError), tokens.ts
@@ -193,7 +197,7 @@ src/
                                # scheduling.ts, role.ts (USER_ROLES, ROLE_LABELS, ROLE_ALIASES). CHỈ hằng số, không hàm
   config/                      # portals.ts (menu của mọi portal), roles.ts (hàm theo vai trò), demoAccounts.ts
   hooks/                       # hook react-query của mọi nghiệp vụ (useAuthMutations, useProducts, usePreSurveys, useBooking,
-                               # useAdminUsers…) và hook giao diện: useMockQuery, useTheme, useElementWidth (bề rộng khung cho
+                               # useAdminUsers…) và hook giao diện: useTheme, useElementWidth (bề rộng khung cho
                                # SVG vẽ bằng pixel), useViewportHeight (chiều cao khung nhìn cho hình vẽ cao vừa màn hình)
   utils/                       # cn, cx, format, img, jwt
 public/placeholders/           # thay cho ảnh lh3.googleusercontent.com
@@ -218,7 +222,8 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   service và hook import kiểu từ đây. Ngoại lệ: swagger của tag Customers, PreSurveys, SurveyRequests, PreSurveySurface,
   Simulations chỉ khai "200 OK" nên `customersRes.ts`, `preSurveysRes.ts`, `surveyRequestsRes.ts`, `preSurveySurfaceRes.ts`,
   `simulationsRes.ts` viết tay theo contract backend (đối chiếu response thật 09/10/2026; không có header tự sinh nên
-  `gen:api` không xoá); backend khai response thì `gen:api` ghi đè. Cùng lý do, luồng 1 (12/10/2026) viết tay
+  `gen:api` không xoá, cũng không ghi đè dù swagger đã khai response; muốn chuyển sang bản sinh thì xoá file rồi chạy lại).
+  Cùng lý do, luồng 1 (12/10/2026) viết tay
   `surveySlotsRes.ts`, `customerSurveyRequestsRes.ts`, `technicianAvailabilityRes.ts`, `technicianAppointmentsRes.ts`,
   `adminTechniciansRes.ts`, `adminUsersRes.ts` theo record C# của backend `main` (4d12e4d); request của các tag đó sinh
   bình thường. `administrativeUnitsRes.ts` (danh mục phường, xã) và `operationalZonesRes.ts` cũng viết tay theo record C#.
@@ -229,13 +234,18 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
   `Modules.AfterSales`, `Modules.Payments.PaymentAttemptView`, `Modules.CustomerContracts.ContractView`). `filesRes.ts`
   (`UploadUrlView`, `FileView`) viết tay theo DLL của image đang chạy (dịch ngược bằng ilspycmd) vì code Files chưa lên git.
   `dispatchRes.ts` viết tay theo record C# của `Modules.Scheduling.Dispatch` nhánh `fix/business-logic-v2` (deddde8).
+- `docs/api/swagger.json` lấy bằng `npm run sync:api [url]` (mặc định `<API_PROXY_TARGET>/swagger/v1/swagger.json`) rồi
+  `npm run gen:api`. Backend đặt schemaId bằng tên đầy đủ (`SmartSolar.Api.Contracts.…`); script đổi về tên ngắn, giữ đúng
+  tên bản cũ đã đặt (`AfterSalesReasonRequest`, `OnSiteSurveyObstacleRequest`…), tên trùng ở hai namespace mà bản cũ chưa có
+  thì thêm tên module (`InstallationIssueQuotationRequest`). `gen:api` giữ mỗi schema ở file sinh lần trước để import không
+  đổi khi backend đổi thứ tự path. Các đoạn dưới (chép tay từng path) là cách làm trước khi có script.
 - Image backend hiện tại (nhánh `fix/business-rules-flow-1-2`) lỗi khi xuất swagger (trùng schemaId
   `AssignTechnicianRequest`), nên `docs/api/swagger.json` được bổ sung tay các hợp đồng mới theo record C#: `provinceCode`,
   `communeCode` của `CreatePropertySiteRequest`, `SelectSimulationRequest` (kèm 2 đường dẫn chọn / bỏ chọn mô phỏng), nhận /
   trả lịch của kỹ thuật viên, khu vực phục vụ. Khi backend sửa swagger thì xuất lại file này rồi chạy `gen:api`.
   Image 21/10/2026 xuất được swagger nhưng schemaId là tên đầy đủ (`SmartSolar.Api.Contracts.…`), `gen:api` không đọc được;
   các path lắp đặt (Customer / Manager / TechnicianInstallations) được chép từ `/swagger/v1/swagger.json` đang chạy và đổi
-  `$ref` về tên ngắn. Đừng thay cả file bằng bản xuất mới khi chưa sửa script. Cùng cách đó với 6 path của khách (gói, mua
+  `$ref` về tên ngắn. Cùng cách đó với 6 path của khách (gói, mua
   gói, gói đã mua, huỷ gói, trạng thái thanh toán after-sales, GET hợp đồng của khách) và 4 path của tag Files
   (`presigned-upload`, đăng ký, verify, GET); `ReasonRequest` của after-sales đặt tên
   `AfterSalesReasonRequest` vì backend có một `ReasonRequest` khác cùng tên ở luồng lắp đặt. Cùng cách đó (22/10/2026) với 9
@@ -253,16 +263,19 @@ Quy tắc đặt file (tái cấu trúc 29/09/2026):
 - `docs/api/swagger.json` lấy từ backend `main` 4d12e4d khi không có backend chạy: `dotnet build` bản `git archive` của
   repo backend rồi `swagger tofile` (Swashbuckle.AspNetCore.Cli 6.6.2) với biến môi trường giả cho chuỗi kết nối và khoá
   JWT; không đụng DB nào.
-- Nghiệp vụ chưa có endpoint đọc dữ liệu từ `data/*.ts` và bị ẩn khỏi menu/route (mục dưới). Khi backend có
-  endpoint: thêm `types/req|res/<nghiệp vụ>*.ts`, rồi `src/services/<tên>Service.ts` + `src/hooks/use<Tên>.ts`, bỏ file trong `data/`,
-  rồi mở lại route + mục menu.
+- Nghiệp vụ chưa có endpoint thì chưa có màn (không dựng màn bằng dữ liệu giả). Khi backend có endpoint: thêm
+  `types/req|res/<nghiệp vụ>*.ts`, rồi `src/services/<tên>Service.ts` + `src/hooks/use<Tên>.ts`, rồi thêm route + mục menu.
 
 ## Chỉ hiện màn có dữ liệu thật (05/10/2026)
 
-Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock giữ code trong `pages/<portal>/` nhưng không có route,
-đường dẫn cũ trong portal rơi vào route `*` và chuyển về trang chủ portal. Đang hiện:
+Menu và route chỉ có màn đổ dữ liệu thật từ backend. Các màn mock cũ (`/manage/*` tổng quan, `/field/*`, trang Stitch cũ của
+admin / kỹ thuật viên…) và dữ liệu giả trong `src/data/` đã xoá hẳn (10/11/2026); đường dẫn cũ trong portal rơi vào route `*`
+và chuyển về trang chủ portal. Đang hiện:
 
-- `/customer` → `/customer/assessment`: đánh giá sơ bộ 5 bước (hồ sơ → địa điểm → mặt lắp → mô phỏng → xem lại và gửi),
+- Trang đầu của portal (`start` trong `routes/protectedRoutes.tsx`): `/customer` → `/customer/dashboard`, `/ops` →
+  `/ops/dashboard`, `/admin` → `/admin/dashboard`, `/tech` → `/tech/jobs`, `/manage` → `/manage/technicians`. Ba trang tổng
+  quan dùng portal kit như mọi màn khác: không chip / ô icon trang trí, không trạng thái mà backend không trả.
+- `/customer/assessment`: đánh giá sơ bộ 5 bước (hồ sơ → địa điểm → mặt lắp → mô phỏng → xem lại và gửi),
   `features/pre-surveys`. Các bước (người dùng 10/10/2026 chọn): `WizardSteps` có tóm tắt từng bước đã xong và bấm để quay
   lại (trừ hồ sơ – không sửa được); nút chính ghi tên bước sau ("Tiếp tục: Mặt lắp"); đổi bước do khách bấm thì cuộn về đầu
   trang và focus tiêu đề "Bước N/5 <tên bước>" của khung bước.
@@ -274,7 +287,7 @@ Menu và route chỉ có màn đổ dữ liệu thật từ backend; màn mock g
   chính chung một hàng (dùng `order`). Địa điểm: ô bắt buộc có `*` + dòng "Ô có dấu * là bắt buộc."; nhóm "Địa chỉ công trình"
   theo thứ tự tỉnh (chỉ đọc) → phường, xã → số nhà; bề mặt lắp là thẻ chọn (radio ẩn, cả thẻ bấm được, phím mũi tên chuyển,
   đang chọn có viền + nền xanh nhạt + dấu tích; icon ở `icon` của `SURFACE_TYPES`).
-- `/ops` → `/ops/surveys` + `/ops/surveys/:id`: yêu cầu khảo sát chờ nhận / của tôi / chi tiết (kèm mô phỏng khách đã chọn).
+- `/ops/surveys` + `/ops/surveys/:id`: yêu cầu khảo sát chờ nhận / của tôi / chi tiết (kèm mô phỏng khách đã chọn).
 - `/customer/products(/:id)`, `/ops/products(/:id)`: catalog sản phẩm (GET /api/products) bản portal kit, `pages/catalog-page.tsx`.
 - `/customer/projects(/:id)` (menu "Lắp đặt", 21/10/2026): công trình lắp đặt của khách, tag CustomerInstallations (tài liệu
   BE `guides/installation-workflow-api-integration.md`). View của khách không có tên / địa chỉ công trình nên tiêu đề là
@@ -350,8 +363,8 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
 - Kỹ thuật viên `/tech/after-sales` + `/:id` (theo mã buổi hẹn): nhận / từ chối, bắt đầu (sớm nhất 2 giờ trước giờ hẹn, khoá
   nút và ghi rõ giờ), ảnh hiện trường (`uploadFile` mục đích `SERVICE_EVIDENCE`, gắn vào buổi hẹn; BE bắt ít nhất 1 ảnh trước
   báo cáo), báo cáo kiểm tra (không lỗi hoặc danh sách hạng mục), báo cáo sửa / bảo trì, khách vắng.
-  Từ 04/11/2026 (luật ở `features/after-sales/technicianVisitRules.ts`, test ở `tests/tech-portal-rules.test.mjs` và
-  `tests/e2e/tech-portal.e2e.mjs`; đối chiếu: `docs/api/tech-portal-verification.md`):
+  Từ 04/11/2026 (luật ở `features/after-sales/technicianVisitRules.ts`, test ở `tests/tech-portal-rules.test.mjs`; đối
+  chiếu: `docs/api/tech-portal-verification.md`):
   - Báo cáo kiểm tra có "Ở lại công trình để sửa luôn" → `stayOnSite: true` (chỉ khi có hạng mục; không lỗi thì luôn false vì BE
     từ chối). Buổi vẫn `IN_PROGRESS`, view có `waitingOnSite`: khối "Chờ tại công trình" (`OnSiteWaitPanel`, hỏi lại 20 giây / lần)
     thay form kiểm tra, ghi đang chờ gì theo `AfterSalesWorkflow.NextStatus` (view không có trạng thái yêu cầu).
@@ -471,7 +484,7 @@ nhập làm nguồn chính + kéo thả vật cản.
     chú thích (`caption`) nằm ngay dưới hình. Khung 3D 4:3, khung rộng từ 60rem (container query) thì cao vừa khung nhìn.
   - Trang chi tiết của sales và kỹ thuật viên: lịch + số liệu khách khai chiếm 2/3 cạnh cột thông tin khách, mô phỏng nằm
     dưới cùng và trải hết chiều ngang (người dùng thấy cột phải trống suốt chiều dài mô phỏng là phí chỗ).
-- `/admin` → `/admin/products(/:id)`: quản lý sản phẩm (`pages/admin/products-page.tsx`, `product-page.tsx`, bộ portal
+- `/admin/products(/:id)`: quản lý sản phẩm (`pages/admin/products-page.tsx`, `product-page.tsx`, bộ portal
   kit; tấm pin thiếu công suất/kích thước được tô cảnh báo vì mô phỏng không dùng được). Danh sách đọc
   GET /api/admin/products (lọc `status` ACTIVE / INACTIVE / ALL, mặc định ALL) và chi tiết GET /api/admin/products/{id}
   nên thấy cả sản phẩm ngừng bán (GET /api/products công khai chỉ trả sản phẩm đang bán). Mọi API `/api/admin/products…`,
@@ -530,6 +543,9 @@ nghỉ cố định. Kỹ thuật viên nhận lịch xong thì khảo sát tạ
     (`DispatchRequestForm`), rồi đồng ý hoặc xin giờ khác cho đề xuất của nhân viên (`CustomerDispatchPanel`). Quản lý / quản
     trị xử lý ở menu "Điều phối" (`/manage|admin/dispatch`): phân công thẳng hoặc gửi đề xuất, chọn người ngoài khu vực phải
     ghi lý do. Hàng chờ tải theo từng trạng thái vì BE xếp hạn phản hồi sớm nhất trước và giữ cả yêu cầu đã xong.
+    Khối "Người phụ trách yêu cầu" (`SurveyStaffPanel`) của trang điều phối còn có "Đổi giờ khảo sát" (PUT
+    /admin/survey-requests/{id}/reschedule, quản lý + quản trị, không cần là kinh doanh phụ trách, cứu được lịch đã qua giờ
+    khi có lý do). Hộp đổi giờ (`RescheduleDialog.tsx`) dùng chung với "Đổi giờ" của kinh doanh.
 - Kỹ thuật viên `/tech/jobs`: tab "Chờ nhận" (GET /technicians/me/open-appointments, lịch trong khu vực của mình, chưa có địa
   chỉ cụ thể / số khách) với nút "Nhận việc" (POST .../accept kèm `expectedRevision`; người khác nhận trước thì 409
   APPOINTMENT_ALREADY_TAKEN), tab "Đã nhận" và "Đã qua". Chi tiết `/tech/jobs/:id`: công trình, khách, số liệu khai, mô phỏng
@@ -621,7 +637,9 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
   (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. "Xem" / "Tải về" PDF chính thức và từng bản ký
   (`ContractDocumentButtons`): xin link ký sẵn đúng lúc bấm (`GET /contracts/{id}/official-document/url`,
   `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Các API link này thuộc
-  bản vá backend chưa merge (quyền: quản lý / quản trị, hoặc kinh doanh phụ trách).
+  bản vá backend chưa merge (quyền: quản lý / quản trị, hoặc kinh doanh phụ trách). Backend đã deploy (160.187.1.242) chưa
+  có các API này (404) nên khách không tải được PDF trên web; thử luồng ký thì đưa khách đúng tệp PDF đã gắn, vì hộp ký so
+  SHA-256 của tệp khách đang giữ.
 - Thanh toán (`ContractPaymentPanel`, `GET /contracts/{id}/payments`, cả 3 cổng): chỉ đọc, hỏi lại 30 giây / lần khi SIGNED;
   REVIEW_REQUIRED / REFUND_REQUIRED tô đỏ. PAID: quản lý / quản trị có nút sang "Hợp đồng chờ tạo dự án"; số hợp đồng ở danh
   sách đó dẫn về trang hợp đồng.
@@ -771,13 +789,8 @@ vai trò (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm tầng T�
 
 Mật độ (gọn thêm 03/11/2026, cho cả khung nhân viên và khung khách hàng): lề nội dung 16px (`p-4`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; tiêu đề trang → nội dung 16px (`PageHeader` `mb-4`); giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; ô bảng `py-2`, `ListRow` `py-3`, Panel có khung `p-4`. Danh sách của khách luôn có dòng "Hiển thị x–y trên N" + thanh trang, 10 dòng/trang (`PagedList` khi API trả cả danh sách, `ListPager` khi API phân trang; `components/common/ui/pagination.tsx`). Thêm màn mới thì theo đúng các bậc này, đừng quay lại 24px hay 48px.
 
-Menu Admin (subtitle "Quản trị hệ thống"): Tổng quan, Người dùng, Vai trò & quyền, Sản phẩm,
-Danh mục dịch vụ, Nhóm hàng, Kho tri thức AI, Cấu hình kỹ thuật, Báo cáo, Cài đặt hệ thống.
-
-Menu Kỹ thuật viên (subtitle "Kỹ thuật hiện trường"): Tổng quan, Việc của tôi (badge số),
-Khảo sát, Lắp đặt, Bảo hành & bảo trì, Lịch làm việc; cuối sidebar là khối user (tên, chức danh)
-
-- Cảnh báo + Tài khoản + Đổi mật khẩu + Đăng xuất.
+Menu của từng portal nằm ở `config/portals.ts` và chỉ có màn có dữ liệu thật (mục "Chỉ hiện màn có dữ liệu thật").
+Tên mục dài thì xuống dòng trong rail, không cắt bằng "…".
 
 ## Màn công khai & xác thực
 
@@ -820,11 +833,9 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
     Chuyển động chỉ transform/opacity, không thư viện: `ld-rise` (chữ, nút hero), khối nội dung bọc `<Reveal>`
     (IntersectionObserver, hiện một lần khi cuộn tới). `prefers-reduced-motion` tắt hết và hiện nội dung ngay. Favicon sinh từ
     `public/images/Logo.png` (`public/favicon-32/48.png`, `apple-touch-icon.png`).
-- `AuthLayout` – theo `auth_portal`: lưới 12 cột, panel `primary-container` bên trái
-  (`lg:col-span-5`: tiêu đề "Chuyển dịch Năng lượng Xanh cho Ngôi nhà Việt", ảnh nhà, 2 ô số liệu
-  1.240 kWh / ~3,85 Tr ₫), `<Outlet/>` trong card trắng bên phải (`lg:col-span-7`), footer chỉ còn
-  dòng bản quyền. Dưới `lg` ẩn panel trái. Các chip trang trí (chip "nền tảng", chip vai trò,
-  chip bảo mật) và hai vệt blur đã bỏ theo quy tắc giao diện chung.
+- `AuthLayout`: lưới 12 cột, bên trái (`lg:col-span-5`) chỉ là một ảnh (`authImages` ở `data/auth.ts`: ảnh đăng nhập, ảnh
+  đăng ký; ảnh đăng nhập có sẵn chữ nên `/403` dùng ảnh đăng ký), bên phải (`lg:col-span-7`) header logo + "Về trang chủ",
+  `<Outlet/>`, footer dòng bản quyền. Dưới `lg` ảnh thấp lại nằm trên form. Không có ô số liệu (không bịa số).
 - BỎ thanh tab "Auth Hub" trong `auth_portal/code.html`: đó chỉ là tab demo của Stitch để xem 5 view trong 1 file. Header của `AuthLayout` chỉ giữ logo + link về trang chủ; mỗi view là một route riêng.
 - Khối "Phiên làm việc hiện tại" (IP, JWT, thời gian còn lại) trong view "Trạng thái phiên" chỉ để demo – KHÔNG dựng.
 
@@ -855,7 +866,7 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 ## Auth API
 
 Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/api/swagger.json`
-(tải từ `http://localhost:8080/swagger/v1/swagger.json`).
+(tải bằng `npm run sync:api`).
 
 - **Base URL**: `VITE_API_BASE_URL` trong `.env.development` = `/api`. Dev đi qua
   `server.proxy` trong `vite.config.ts` (`/api` → `API_PROXY_TARGET`, mặc định
@@ -917,12 +928,16 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
   là tiếng Anh, khi dựng thì dịch sang tiếng Việt; giữ nguyên tên riêng, mã SKU, mã phiếu,
   tên hãng và thuật ngữ đã quen dùng (inverter, kWh, MPPT, SKU…). Câu chữ viết ngắn, chủ động,
   không quảng cáo: tiêu đề là tên màn hình, mô tả chỉ thêm khi nói được điều gì mới.
-- Mỗi màn = 1 route + 1 file dữ liệu trong `src/data/`. Không hard-code dữ liệu trong JSX.
+- Mỗi màn = 1 route, dữ liệu lấy từ API thật. Không hard-code dữ liệu trong JSX, không dựng màn bằng dữ liệu giả.
 - Khi dựng xong một màn: chạy dev, chụp màn hình, đặt cạnh `screen.png`, liệt kê khác biệt (spacing, màu, font size, icon) rồi sửa. Chấp nhận sai lệch ≤ 4px.
 - Không cài thêm thư viện UI khác (MUI, Ant, Chakra…). Ngoại lệ đã chốt: `sonner` chỉ dùng cho toast;
   `three` + `@react-three/fiber` chỉ cho 3D: mô phỏng (05/10/2026) và tấm pin ở trang chủ (20/10/2026); không thêm drei, dùng
   module trong `three/examples/jsm`.
 - Không sửa bất kỳ file nào trong `design/stitch/stitch_smart_solar_customer_portal/`.
+- Skill `design-taste-frontend` (taste-skill) viết cho website công ty: chỉ lấy phần copy (tiêu đề gọi tên thứ, nút = động
+  từ + tân ngữ, một dữ kiện thật ở màn đầu), một hệ nút / thẻ / link, thẳng mép, và script kiểm tra cho `/`, `/products`.
+  Không theo phần trái các quy tắc trên: starter / palette của skill, card loop, ảnh kho, bỏ 3D, ngưỡng 7:1, ép mỗi section
+  đúng một màn hình ở portal. Hover nâng thẻ 2px chỉ cho thẻ có link ở `/products` (phản hồi thao tác).
 
 ## Lệnh
 
@@ -935,6 +950,15 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
 - `npm run build` – `tsc -b && vite build`; phải pass trước khi coi một màn là xong
 - `npm run typecheck` – `tsc -b` (nhanh hơn build, dùng khi lặp)
 - `npm run gen:api` – sinh lại `src/types/req` và `src/types/res` từ `docs/api/swagger.json`
+- `npm run sync:api [url]` – tải swagger của backend (mặc định theo `API_PROXY_TARGET`) về `docs/api/swagger.json`, rồi chạy
+  `gen:api`. Backend đã deploy của nhóm: đặt `API_PROXY_TARGET=http://160.187.1.242:8080` trong `.env.development.local`.
+- Không viết test với API giả (`page.route` trả dữ liệu dựng sẵn); test giao diện chạy với backend thật
+  (`tests/e2e/*.live.e2e.mjs`), luật thuần thì unit test ở `tests/*.test.mjs`.
+- E2E với backend đã deploy của nhóm: `API_BASE=http://160.187.1.242:8080 API_PROXY_TARGET=http://160.187.1.242:8080`, tài
+  khoản qua `E2E_<ADMIN|CUSTOMER|SALES|TECH|MANAGER>_EMAIL` / `_PASSWORD`, `E2E_SURVEY_REQUEST_ID` là yêu cầu đã có hợp đồng,
+  rồi `npm run test:e2e`. Mỗi file đăng nhập một lần; server cho 10 lần đăng nhập / 10 phút mỗi IP. Bấm link chuyển trang xong
+  thì chờ `heading` level 1 của trang mới: React Router đổi địa chỉ trước khi vẽ trang mới, tiêu đề trang cũ còn trong DOM vài
+  chục ms và có thể khớp nhầm.
 - E2E trên backend thật của stack kiểm thử riêng (`tests/e2e/stack-<n>-*.live.e2e.mjs`, chạy theo thứ tự 1 → 8, giai đoạn 6
   sau giai đoạn 4 ít nhất 1 giờ): cần `AUDIT_STACK_API`, `AUDIT_ACCOUNTS_FILE`, `AUDIT_EVIDENCE_DIR`; không khai thì tự bỏ qua.
   Dựng stack và tài khoản: `local-test/` trong worktree backend. Cách chạy và kết quả: `docs/api/SmartSolar_Post_Audit_Remediation.md`

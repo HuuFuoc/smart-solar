@@ -9,13 +9,13 @@ import { PageHeader } from '@/components/common/ui/page-header'
 import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
-import { Stat, StatRow } from '@/components/common/ui/stat'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { Facts } from '@/features/pre-surveys/Facts'
 import {
   addressMapUrl,
   directionLabel,
   formatAddress,
+  formatAreaPair,
   formatDateTime,
   shortCode,
   surfaceTypeLabel,
@@ -286,27 +286,28 @@ export function TechJobPage() {
                 <Panel>
                   <PanelHeader title="Số liệu khách khai" />
                   <PanelBody>
-                    <StatRow className="lg:grid-cols-5">
-                      <Stat
-                        label="Mặt lắp (rộng × dài)"
-                        value={s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)}`}
-                        unit="m"
-                      />
-                      <Stat label="Dùng được / tổng" value={`${n(s.usableAreaM2)} / ${n(s.totalAreaM2)}`} unit="m²" />
-                      <Stat label="Độ dốc" value={n(s.surfaceTiltDegree)} unit="độ" />
-                      <Stat
-                        label="Hướng mái"
-                        value={n(s.surfaceAzimuthDegree)}
-                        unit={
-                          s.surfaceAzimuthDegree == null ? undefined : `độ, ${directionLabel(s.surfaceAzimuthDegree)}`
-                        }
-                      />
-                      <Stat
-                        label="Vật cản"
-                        value={s.obstacleCount > 0 ? s.obstacleCount : s.hasObstruction ? 'Có' : 'Không'}
-                        unit={s.obstacleCount > 0 ? 'vật cản' : undefined}
-                      />
-                    </StatRow>
+                    {/* Số khách tự khai chỉ để đối chiếu: cùng cỡ chữ với biên bản đo thực tế, không to hơn */}
+                    <Facts
+                      items={[
+                        {
+                          k: 'Mặt lắp (rộng × dài)',
+                          v: s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)} m`,
+                        },
+                        { k: 'Dùng được / tổng', v: formatAreaPair(s.usableAreaM2, s.totalAreaM2) },
+                        { k: 'Độ dốc', v: s.surfaceTiltDegree == null ? '—' : `${n(s.surfaceTiltDegree)} độ` },
+                        {
+                          k: 'Hướng mái',
+                          v:
+                            s.surfaceAzimuthDegree == null
+                              ? '—'
+                              : `${n(s.surfaceAzimuthDegree)} độ, ${directionLabel(s.surfaceAzimuthDegree)}`,
+                        },
+                        {
+                          k: 'Vật cản',
+                          v: s.obstacleCount > 0 ? `${s.obstacleCount} vật cản` : s.hasObstruction ? 'Có' : 'Không',
+                        },
+                      ]}
+                    />
                   </PanelBody>
                 </Panel>
               </div>

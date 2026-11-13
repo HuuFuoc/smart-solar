@@ -50,13 +50,7 @@ export function ManagePackageCancellationsPage() {
     <>
       <PageHeader
         title="Huỷ gói"
-        description={
-          items.length > 0 ? (
-            <Badge tone="danger">{items.length} gói chờ xét huỷ</Badge>
-          ) : (
-            'Gói khách đã trả tiền và xin huỷ trước khi bắt đầu kỳ.'
-          )
-        }
+        description={items.length > 0 ? <Badge tone="danger">{items.length} gói chờ xét huỷ</Badge> : undefined}
       />
       <section aria-label="Gói chờ xét huỷ" aria-busy={query.isFetching}>
         {query.isPending ? (
@@ -229,8 +223,8 @@ function DecisionPanel({ item }: { item: ManagerSubscriptionView }) {
           )}
           {input.approve && (
             <Notice tone="neutral">
-              Duyệt chưa phải đã hoàn tiền. Gói bị huỷ ngay; quản trị chuyển tiền cho khách ngoài hệ thống rồi ghi nhận
-              ở mục Hoàn tiền.
+              Duyệt chưa phải đã hoàn tiền. Gói bị huỷ ngay; quản trị chuyển tiền cho khách rồi ghi nhận ở mục Hoàn
+              tiền.
             </Notice>
           )}
           {error && (

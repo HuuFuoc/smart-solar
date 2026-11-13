@@ -48,7 +48,7 @@ export function SchedulingPolicyTab({ settings, isSaving, onSave }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-surface-1 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-canvas p-4">
         <h3 className="text-body font-semibold text-fg-1">Chính sách thời gian Lịch hẹn & Khảo sát</h3>
         {hasChanges && (
           <div className="flex items-center gap-2">
@@ -65,8 +65,8 @@ export function SchedulingPolicyTab({ settings, isSaving, onSave }: Props) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <SettingFieldInput
           id="acceptanceWindowMinutes"
-          label="Thời gian chờ KTV nhận lịch"
-          description="Thời gian tối đa KTV tự nhận lịch trước khi chuyển tiếp cho quản lý."
+          label="Thời gian chờ kỹ thuật viên nhận lịch"
+          description="Thời gian tối đa kỹ thuật viên tự nhận lịch trước khi chuyển tiếp cho quản lý."
           value={getValue('scheduling.acceptanceWindowMinutes')}
           unit="MINUTES"
           min={5}
@@ -78,7 +78,7 @@ export function SchedulingPolicyTab({ settings, isSaving, onSave }: Props) {
         <SettingFieldInput
           id="acceptanceMinimumLeadMinutes"
           label="Khoảng đệm tối thiểu nhận lịch"
-          description="KTV phải nhận lịch trước thời điểm bắt đầu tối thiểu chừng này phút."
+          description="Kỹ thuật viên phải nhận lịch trước thời điểm bắt đầu tối thiểu chừng này phút."
           value={getValue('scheduling.acceptanceMinimumLeadMinutes')}
           unit="MINUTES"
           min={0}
@@ -89,8 +89,8 @@ export function SchedulingPolicyTab({ settings, isSaving, onSave }: Props) {
         />
         <SettingFieldInput
           id="acceptanceReminderLeadMinutes"
-          label="Thời điểm nhắc KTV nhận lịch"
-          description="Nhắc nhở KTV trước hạn chót (0 = tắt nhắc nhở)."
+          label="Thời điểm nhắc kỹ thuật viên nhận lịch"
+          description="Nhắc nhở kỹ thuật viên trước hạn chót (0 = tắt nhắc nhở)."
           value={getValue('scheduling.acceptanceReminderLeadMinutes')}
           unit="MINUTES"
           min={0}
@@ -138,7 +138,7 @@ export function SchedulingPolicyTab({ settings, isSaving, onSave }: Props) {
         <SettingFieldInput
           id="bufferBetweenAppointmentsMinutes"
           label="Khoảng nghỉ tối thiểu giữa 2 lịch"
-          description="Khoảng nghỉ cố định tối thiểu giữa 2 cam kết công việc của cùng 1 KTV."
+          description="Khoảng nghỉ cố định tối thiểu giữa 2 cam kết công việc của cùng 1 kỹ thuật viên."
           value={getValue('scheduling.bufferBetweenAppointmentsMinutes')}
           unit="MINUTES"
           min={0}
@@ -150,7 +150,7 @@ export function SchedulingPolicyTab({ settings, isSaving, onSave }: Props) {
         <SettingFieldInput
           id="onSiteSurveyEarlyStartMinutes"
           label="Bắt đầu khảo sát sớm tối đa"
-          description="Thời gian tối đa KTV được phép bắt đầu khảo sát trước giờ hẹn."
+          description="Thời gian tối đa kỹ thuật viên được phép bắt đầu khảo sát trước giờ hẹn."
           value={getValue('onsiteSurvey.earlyStartMinutes')}
           unit="MINUTES"
           min={0}

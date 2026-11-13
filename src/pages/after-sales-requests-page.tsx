@@ -48,45 +48,15 @@ function AfterSalesRequestsPage({ detailPattern }: { detailPattern: string }) {
       />
       <FilterChips
         label="Lọc yêu cầu"
-        className="mb-4"
+        className="mb-6"
         value={tab}
         onChange={setPicked}
         chips={[
-          { value: 'todo', label: 'Chờ bạn xử lý', count: groups.todo.length },
+          { value: 'todo', label: 'Chờ bạn', count: groups.todo.length },
           { value: 'open', label: 'Đang làm', count: groups.open.length },
           { value: 'closed', label: 'Đã đóng', count: groups.closed.length },
         ]}
       />
-
-      {/* Thanh chú thích trạng thái & tổng hợp */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-1 px-4 py-2.5 text-meta shadow-sm">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="font-medium text-fg-2">Chú thích trạng thái:</span>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-rose-500" />
-            <span className="text-fg-2">Cần xử lý gấp</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
-            <span className="text-fg-2">Đang xử lý / Khảo sát</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-fg-2">Đã hoàn thành</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 text-fg-3">
-          <span>
-            Hiển thị: <strong className="text-fg-1">{groups[tab].length}</strong> yêu cầu
-          </span>
-          {groups.todo.length > 0 && (
-            <span className="text-rose-600 dark:text-rose-400 font-medium">
-              {groups.todo.length} chờ tiếp nhận
-            </span>
-          )}
-        </div>
-      </div>
-
       <QueryBoundary query={query}>
         {() =>
           groups[tab].length === 0 ? (

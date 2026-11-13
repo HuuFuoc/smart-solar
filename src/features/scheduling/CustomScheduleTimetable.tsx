@@ -23,11 +23,7 @@ interface CustomScheduleTimetableProps {
   onSaved: () => void
 }
 
-export function CustomScheduleTimetable({
-  initial,
-  technicianUserId,
-  onSaved,
-}: CustomScheduleTimetableProps) {
+export function CustomScheduleTimetable({ initial, technicianUserId, onSaved }: CustomScheduleTimetableProps) {
   const [week, setWeek] = useState<Week>(initial)
   const [issue, setIssue] = useState<string | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
@@ -97,7 +93,9 @@ export function CustomScheduleTimetable({
       updated[d.value] = periodsToCopy.map((p) => ({ ...p }))
     }
     setWeek(updated)
-    toast.success(`Đã sao chép ca làm việc của ${WEEK_DAYS.find((d) => d.value === sourceDay)?.label} cho toàn bộ tuần.`)
+    toast.success(
+      `Đã sao chép ca làm việc của ${WEEK_DAYS.find((d) => d.value === sourceDay)?.label} cho toàn bộ tuần.`,
+    )
   }
 
   async function submit() {
@@ -125,7 +123,7 @@ export function CustomScheduleTimetable({
   return (
     <div className="space-y-4">
       {/* Thanh công cụ mẫu lịch nhanh */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-1 p-3.5 shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-canvas p-3.5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-meta font-medium text-fg-2">Mẫu lịch nhanh:</span>
           <Button size="sm" variant="soft" type="button" icon="work" onClick={applyStandardWeek}>
@@ -138,18 +136,18 @@ export function CustomScheduleTimetable({
             Nghỉ T7 & CN
           </Button>
           <Button size="sm" variant="ghost" type="button" icon="clear_all" onClick={clearAllDays}>
-            Xóa ca
+            Xoá ca
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full border border-line bg-surface-2 px-3 py-1 text-meta font-semibold text-fg">
-            Tổng: <strong className="text-accent">{totalWeekHours} giờ</strong> ({activeDaysCount} ngày làm việc)
+          <span className="tnum text-meta text-fg-2">
+            Tổng {totalWeekHours} giờ, {activeDaysCount} ngày làm việc
           </span>
         </div>
       </div>
 
       {/* Bảng Thời khóa biểu tuần cố định cột */}
-      <div className="overflow-hidden rounded-container border border-line bg-surface-1 shadow-sm">
+      <div className="overflow-hidden rounded-container border border-line bg-canvas">
         <div className="overflow-x-auto">
           <table className="w-full table-fixed border-collapse text-body">
             <thead>
@@ -182,14 +180,12 @@ export function CustomScheduleTimetable({
             </Button>
             {(issue || (failure !== null && conflicts.length === 0)) && (
               <span className="flex items-center gap-1.5 text-meta font-medium text-danger" role="alert">
-                <Icon name="error" className="shrink-0 text-[18px]" />
+                <Icon name="error" className="shrink-0 text-[20px]" />
                 {issue ?? errorMessage(failure)}
               </span>
             )}
           </div>
-          <span className="text-meta text-fg-3">
-            Lịch làm việc riêng có hiệu lực ngay sau khi lưu thành công
-          </span>
+          <span className="text-meta text-fg-3">Lịch làm việc riêng có hiệu lực ngay sau khi lưu thành công</span>
         </div>
       </div>
 

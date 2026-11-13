@@ -32,6 +32,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
       {
         items: [
           { label: 'Tổng quan', to: ROUTES.customer.dashboard, icon: 'dashboard', end: true },
+          { label: 'Sản phẩm', to: ROUTES.customer.products, icon: 'solar_power' },
           { label: 'Đánh giá sơ bộ', to: ROUTES.customer.assessment, icon: 'fact_check' },
           { label: 'Yêu cầu khảo sát', to: ROUTES.customer.requests, icon: 'event_available' },
           { label: 'Báo giá', to: ROUTES.customer.quotations, icon: 'request_quote' },
@@ -40,7 +41,6 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Bảo hành, sửa chữa', to: ROUTES.customer.afterSales, icon: 'build' },
           { label: 'Gói dịch vụ', to: ROUTES.customer.packages, icon: 'shield' },
           { label: 'Thông báo', to: ROUTES.customer.notifications, icon: 'notifications' },
-          { label: 'Sản phẩm', to: ROUTES.customer.products, icon: 'solar_power' },
           { label: 'Trợ lý', to: ROUTES.customer.assistant, icon: 'smart_toy' },
         ],
       },

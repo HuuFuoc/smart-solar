@@ -170,6 +170,16 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh thi công của lượt này trước khi gửi báo cáo hoàn thành.',
   INSTALLATION_ASSETS_REQUIRED: 'Ghi tấm pin và inverter đã lắp trước khi gửi báo cáo hoàn thành.',
   INSTALLATION_DUPLICATE_SERIAL: 'Số serial này đã được ghi trên hệ thống (trùng hãng và serial). Kiểm tra lại.',
+  INSTALLATION_ASSET_PRODUCT_VALIDATION_FAILED:
+    'Thiết bị đã chọn không khớp với danh mục sản phẩm hoặc thời hạn bảo hành không hợp lệ. Chọn đúng sản phẩm trong danh sách.',
+  INSTALLATION_SUBSTITUTION_APPROVAL_REQUIRED:
+    'Thiết bị đã lắp khác với hợp đồng. Quản lý cần duyệt thay đổi thiết bị trước khi gửi báo cáo hoàn thành.',
+  INSTALLATION_SUBSTITUTION_CUSTOMER_APPROVAL_REQUIRED:
+    'Khách hàng chưa đồng ý thay đổi thiết bị nên chưa bàn giao được.',
+  INSTALLATION_NO_SUBSTITUTION: 'Thiết bị đã lắp khớp với hợp đồng nên không cần duyệt thay đổi.',
+  INSTALLATION_PREREQUISITE_MANDATORY: 'Hạng mục bắt buộc trước thi công không thể bỏ qua.',
+  INSTALLATION_PREREQUISITE_EXEMPTION_NOT_AUTHORIZED: 'Chưa có quy định cho phép miễn hạng mục bắt buộc này.',
+  INSTALLATION_EXEMPTION_EVIDENCE_REQUIRED: 'Cần đính kèm tài liệu chứng minh khi miễn hạng mục bắt buộc.',
   // Lắp đặt: quản lý
   INSTALLATION_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
   INSTALLATION_CONTRACT_NOT_PAID: 'Hợp đồng chưa được xác nhận thanh toán đủ nên chưa tạo được dự án thi công.',
@@ -361,7 +371,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   ADMIN_RECOVERY_NOT_ALLOWED: 'Tài khoản đang tạm khoá hoặc bị vô hiệu: kích hoạt lại trước khi gửi link.',
   // Mã chung
   AUTH_FORBIDDEN: 'Tài khoản của bạn không có quyền xem nội dung này.',
-  RESOURCE_NOT_FOUND: 'Không tìm thấy dữ liệu yêu cầu. Kiểm tra lại đường dẫn.',
+  RESOURCE_NOT_FOUND: 'Nội dung có thể đã bị xoá, hoặc đường dẫn không đúng.',
   REQUEST_NOT_ACCEPTABLE: 'Hệ thống không hỗ trợ thao tác này.',
 }
 
@@ -377,7 +387,7 @@ const STATUS_MESSAGES: Record<number, string> = {
   // Đăng nhập sai luôn có mã AUTH_INVALID_CREDENTIALS; 401 không mã chỉ còn là phiên hết hạn.
   401: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
   403: 'Bạn không có quyền thực hiện thao tác này.',
-  404: 'Không tìm thấy dữ liệu yêu cầu.',
+  404: 'Nội dung có thể đã bị xoá, hoặc đường dẫn không đúng.',
   409: 'Dữ liệu đã tồn tại trên hệ thống.',
   422: 'Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại.',
   429: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.',

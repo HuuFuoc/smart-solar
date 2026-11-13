@@ -21,6 +21,7 @@ import {
   formatWindow,
   isActiveDispatch,
   proposalStatusMeta,
+  windowPassed,
 } from '@/features/dispatch/dispatchDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { SurveyStaffPanel } from '@/features/scheduling/SurveyStaffPanel'
@@ -32,7 +33,6 @@ import {
   formatMoment,
   formatTime,
   ineligibleLabel,
-  initialBookingDate,
   schedulingErrorMessage,
   todayVn,
   vnDate,
@@ -200,12 +200,17 @@ function CandidateOption({
 // Chọn giờ rồi chọn người: thành viên khu vực trước, người khu khác sau (phải cho phép kèm lý do)
 function AssignPanel({ dispatch: d }: { dispatch: DispatchStaffView }) {
   const id = d.request.dispatchRequestId
-  const first = d.preferredWindows[0]
   const today = todayVn()
-  const [date, setDate] = useState(() => (first ? vnDate(first.startsAt) : initialBookingDate()))
-  const [time, setTime] = useState(() => (first ? formatTime(first.startsAt) : '08:00'))
+  const [now] = useState(() => Date.now())
+  // Khách chờ lâu thì khung giờ đã qua: chọn sẵn khung còn tới, hết khung thì 8 giờ sáng mai
+  const upcoming = d.preferredWindows.find((w) => !windowPassed(w, now))
+  const allPassed = d.preferredWindows.length > 0 && !upcoming
+  const [date, setDate] = useState(() => (upcoming ? vnDate(upcoming.startsAt) : addDays(today, 1)))
+  const [time, setTime] = useState(() => (upcoming ? formatTime(upcoming.startsAt) : '08:00'))
   const startsAt = vnTimestamp(date, time)
-  const candidates = useDispatchCandidatesQuery(id, startsAt)
+  // Giờ đã qua thì backend luôn từ chối: không hỏi, báo ngay
+  const past = new Date(startsAt).getTime() <= now
+  const candidates = useDispatchCandidatesQuery(id, past ? null : startsAt)
   const [picked, setPicked] = useState<string | null>(null)
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -252,6 +257,9 @@ function AssignPanel({ dispatch: d }: { dispatch: DispatchStaffView }) {
     <Panel id="dispatch-assign" className="scroll-mt-6" raised>
       <PanelHeader title="Xếp kỹ thuật viên" />
       <PanelBody className="space-y-4">
+        {allPassed && (
+          <Notice tone="info">Các khung giờ khách xin đều đã qua. Chọn giờ mới rồi gửi đề xuất cho khách.</Notice>
+        )}
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Ngày" htmlFor="dispatch-assign-date" className="w-full sm:w-48">
             <DateField
@@ -279,7 +287,9 @@ function AssignPanel({ dispatch: d }: { dispatch: DispatchStaffView }) {
             />
           </Field>
         </div>
-        {candidates.isPending ? (
+        {past ? (
+          <Notice tone="info">Giờ này đã qua. Chọn ngày hoặc giờ muộn hơn.</Notice>
+        ) : candidates.isPending ? (
           <div aria-label="Đang tìm kỹ thuật viên" className="space-y-2">
             <Skeleton className="h-14" />
             <Skeleton className="h-14" />
@@ -475,6 +485,7 @@ function DispatchRequestPage() {
   const isAdmin = useAuth().user?.role === 'admin'
   const [resolving, setResolving] = useState<'unserviceable' | 'close' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [now] = useState(() => Date.now())
   const openResolve = (which: 'unserviceable' | 'close') => {
     setError(null)
     setResolving(which)
@@ -549,7 +560,10 @@ function DispatchRequestPage() {
                         v: d.preferredWindows.length ? (
                           <ul className="space-y-0.5">
                             {d.preferredWindows.map((w) => (
-                              <li key={w.startsAt}>{formatWindow(w)}</li>
+                              <li key={w.startsAt}>
+                                {formatWindow(w)}
+                                {windowPassed(w, now) && <span className="text-fg-3"> (đã qua)</span>}
+                              </li>
                             ))}
                           </ul>
                         ) : (

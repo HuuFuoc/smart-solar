@@ -8,12 +8,7 @@ interface CustomTimetableDayRowProps {
   onCopyAll: () => void
 }
 
-export function CustomTimetableDayRow({
-  dayLabel,
-  periods,
-  onUpdate,
-  onCopyAll,
-}: CustomTimetableDayRowProps) {
+export function CustomTimetableDayRow({ dayLabel, periods, onUpdate, onCopyAll }: CustomTimetableDayRowProps) {
   const isWorking = periods.length > 0
   const dayHours = calculateDayHours(periods)
 
@@ -54,18 +49,17 @@ export function CustomTimetableDayRow({
               type="checkbox"
               checked={isWorking}
               onChange={(e) => handleToggle(e.target.checked)}
-              className="h-4 w-4 rounded border-fg-3 text-accent focus:ring-accent"
+              className="h-4 w-4 rounded-control border-fg-3 text-accent-fg focus:ring-accent"
             />
             <span className="font-semibold text-fg">{dayLabel}</span>
           </label>
           <div>
             {isWorking ? (
-              <span className="inline-flex items-center gap-1 rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-micro font-medium text-emerald-600 dark:text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="inline-flex items-center gap-1 rounded-control border border-ok/30 bg-ok-soft px-2 py-0.5 text-meta font-medium text-ok">
                 {periods.length} ca làm
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded border border-slate-500/30 bg-slate-500/15 px-2 py-0.5 text-micro font-medium text-slate-500 dark:text-slate-400">
+              <span className="inline-flex items-center gap-1 rounded-control border border-line bg-surface-3 px-2 py-0.5 text-meta font-medium text-fg-2">
                 Nghỉ
               </span>
             )}
@@ -87,11 +81,9 @@ export function CustomTimetableDayRow({
             {periods.map((p, i) => (
               <div
                 key={i}
-                className="flex w-fit items-center gap-2 rounded-lg border border-line bg-surface-2/60 px-2.5 py-1.5 shadow-2xs transition-colors hover:border-fg-3/40"
+                className="flex w-fit items-center gap-2 rounded-control border border-line bg-surface-2 px-2 py-1"
               >
-                <span className="shrink-0 rounded border border-line/60 bg-surface-1 px-1.5 py-0.5 text-micro font-semibold text-fg-2">
-                  Ca {i + 1}
-                </span>
+                <span className="shrink-0 text-meta text-fg-2">Ca {i + 1}</span>
                 <div className="flex items-center gap-1.5">
                   <input
                     type="time"
@@ -99,16 +91,16 @@ export function CustomTimetableDayRow({
                     value={p.start}
                     onChange={(e) => handlePeriodChange(i, { start: e.target.value })}
                     aria-label={`${dayLabel}, Ca ${i + 1}, giờ bắt đầu`}
-                    className="h-8 w-32 rounded-md border border-line bg-surface-1 px-2 text-sm font-semibold tracking-wide text-fg outline-none focus:border-accent"
+                    className="tnum h-8 w-32 rounded-control border border-line-2 bg-canvas px-2 text-body text-fg"
                   />
-                  <span className="text-fg-3 font-semibold text-xs">—</span>
+                  <span className="text-fg-2">–</span>
                   <input
                     type="time"
                     step={1800}
                     value={p.end}
                     onChange={(e) => handlePeriodChange(i, { end: e.target.value })}
                     aria-label={`${dayLabel}, Ca ${i + 1}, giờ kết thúc`}
-                    className="h-8 w-32 rounded-md border border-line bg-surface-1 px-2 text-sm font-semibold tracking-wide text-fg outline-none focus:border-accent"
+                    className="tnum h-8 w-32 rounded-control border border-line-2 bg-canvas px-2 text-body text-fg"
                   />
                 </div>
                 <IconButton
@@ -146,7 +138,7 @@ export function CustomTimetableDayRow({
               size="sm"
               variant="ghost"
               icon="content_copy"
-              className="text-xs px-2"
+              className="text-meta px-2"
               title="Sao chép ca ngày này cho các ngày khác"
               onClick={onCopyAll}
             >
@@ -162,13 +154,7 @@ export function CustomTimetableDayRow({
           </div>
         ) : (
           <div className="flex items-center justify-end">
-            <Button
-              size="sm"
-              variant="ghost"
-              icon="add"
-              className="text-xs px-2"
-              onClick={() => handleToggle(true)}
-            >
+            <Button size="sm" variant="ghost" icon="add" className="text-meta px-2" onClick={() => handleToggle(true)}>
               Bật ca
             </Button>
           </div>

@@ -116,10 +116,7 @@ export function ZoneCommunesEditor({
 
   return (
     <Panel>
-      <PanelHeader
-        title={`Phường, xã (${draft.length})`}
-        description="Mỗi phường, xã chỉ thuộc một khu đang hoạt động. Khách ở phường, xã chưa thuộc khu nào không tự đặt giờ khảo sát được."
-      />
+      <PanelHeader title={`Phường, xã (${draft.length})`} />
       <PanelBody className="space-y-4">
         {canEdit && (
           <Field

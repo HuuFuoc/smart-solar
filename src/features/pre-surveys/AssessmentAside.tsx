@@ -42,8 +42,8 @@ export function AssessmentAside({ runs, viewingRunId, onViewRun, preSurveyId, su
       </Notice>
       {preSurveyId && !submitted && (
         <Notice tone="ok">
-          Bản nháp <span className="tnum font-medium text-fg">{shortCode(preSurveyId)}</span> đã lưu trên hệ thống. Phần
-          đang nhập dở được giữ trên máy này, rời trang hay tải lại vẫn còn.
+          Bản nháp <span className="tnum font-medium text-fg">{shortCode(preSurveyId)}</span> đã lưu. Phần đang nhập dở
+          vẫn còn khi bạn rời trang hay tải lại.
         </Notice>
       )}
     </>

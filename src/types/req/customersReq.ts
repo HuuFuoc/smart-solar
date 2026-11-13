@@ -24,6 +24,6 @@ export type CreatePropertySiteRequest = {
   communeCode?: string | null
 }
 
-export type CustomerType = 1 | 2
+export type CustomerType = 'INDIVIDUAL' | 'BUSINESS'
 
-export type InstallationSurfaceType = 1 | 2 | 3 | 4 | 5
+export type InstallationSurfaceType = 'ROOFTOP' | 'GROUND' | 'CARPORT' | 'FACADE' | 'OTHER'

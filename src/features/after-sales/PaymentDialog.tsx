@@ -14,11 +14,7 @@ import { formatMoney } from '@/utils/format'
 function Outcome({ attempt }: { attempt: PaymentAttemptView }) {
   switch (attempt.status) {
     case 'PAID':
-      return (
-        <Notice tone="ok">
-          PayOS đã xác nhận nhận tiền. Trạng thái gói ở mục Gói của bạn đã được tải lại theo hệ thống.
-        </Notice>
-      )
+      return <Notice tone="ok">PayOS đã xác nhận nhận tiền. Gói của bạn đã cập nhật.</Notice>
     case 'FAILED':
       return (
         <Notice tone="danger">

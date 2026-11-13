@@ -3,10 +3,7 @@ type Props = {
   subtitle?: string
 }
 
-export function LoadingWaveDots({
-  text = 'Đang tải cấu hình AI',
-  subtitle = 'Đang đồng bộ dữ liệu từ hệ thống...',
-}: Props) {
+export function LoadingWaveDots({ text = 'Đang tải cấu hình AI', subtitle }: Props) {
   return (
     <div className="flex flex-col items-center justify-center py-12">
       <div className="flex items-center gap-1.5 text-body font-medium text-fg-2">

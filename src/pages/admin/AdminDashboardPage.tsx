@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ErrorState } from '@/components/common/ui/states'
 import { AdminActionAlertsCard } from '@/features/admin-dashboard/components/AdminActionAlertsCard'
 import { AdminDashboardHeader } from '@/features/admin-dashboard/components/AdminDashboardHeader'
@@ -53,10 +52,7 @@ export function AdminDashboardPage() {
     techniciansQuery.isLoading
 
   const isError =
-    readyContractsQuery.isError &&
-    projectsQuery.isError &&
-    serviceRequestsQuery.isError &&
-    techniciansQuery.isError
+    readyContractsQuery.isError && projectsQuery.isError && serviceRequestsQuery.isError && techniciansQuery.isError
 
   // Hàm làm mới toàn bộ dữ liệu thực tế từ server
   const handleRefreshAll = async () => {
@@ -92,13 +88,9 @@ export function AdminDashboardPage() {
   const warrantyOptions = warrantyOptionsQuery.data ?? []
 
   // Tính toán chỉ số nghiệp vụ chuẩn xác từ dữ liệu thực tế
-  const inProgressProjects = projects.filter(
-    (p) => p.status === 'IN_PROGRESS' || p.status === 'SCHEDULED',
-  ).length
+  const inProgressProjects = projects.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'SCHEDULED').length
   const readyContractsCount = readyContracts.length
-  const openDispatchCount = dispatchItems.filter(
-    (d) => d.status === 'OPEN' || d.status === 'PROPOSAL_PENDING',
-  ).length
+  const openDispatchCount = dispatchItems.filter((d) => d.status === 'OPEN' || d.status === 'PROPOSAL_PENDING').length
   const pendingServicesCount = serviceRequests.filter(
     (s) => s.status !== 'COMPLETED' && s.status !== 'CANCELLED',
   ).length
@@ -108,9 +100,7 @@ export function AdminDashboardPage() {
 
   const readyTechnicians = technicians.filter((t) => t.readyForScheduling).length
   const missingBaseTechCount = technicians.filter((t) => t.zones.length === 0).length
-  const refundsToRecordCount = refunds.filter(
-    (r) => r.status === 'APPROVED' && !r.refundedAt,
-  ).length
+  const refundsToRecordCount = refunds.filter((r) => r.status === 'APPROVED' && !r.refundedAt).length
   const warrantyGap = Boolean(installationWarrantyGap(warrantyOptions))
 
   // Đếm tổng số vấn đề cần xử lý
@@ -123,10 +113,10 @@ export function AdminDashboardPage() {
 
   if (isError) {
     return (
-      <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+      <div>
         <ErrorState
           title="Không thể tải dữ liệu trung tâm quản trị"
-          message="Đã có lỗi khi kết nối tới máy chủ backend. Vui lòng kiểm tra lại đường truyền mạng hoặc đăng nhập lại."
+          message="Kiểm tra kết nối mạng rồi thử lại."
           onRetry={handleRefreshAll}
         />
       </div>
@@ -134,15 +124,9 @@ export function AdminDashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="space-y-6">
       {/* 1. Header & Live Actions trong khung container ngăn cách */}
-      <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm">
-        <AdminDashboardHeader
-          onRefresh={handleRefreshAll}
-          isRefreshing={isRefreshing}
-          criticalCount={criticalCount}
-        />
-      </div>
+      <AdminDashboardHeader onRefresh={handleRefreshAll} isRefreshing={isRefreshing} criticalCount={criticalCount} />
 
       {/* 2. Top KPI Cards: Trích xuất trực tiếp từ API thực */}
       <AdminDashboardStats
@@ -189,96 +173,49 @@ export function AdminDashboardPage() {
             warrantyGap={warrantyGap}
           />
 
-          {/* Bảng quản trị & Cấu hình hệ thống */}
-          <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 shadow-sm space-y-3.5">
-            <div className="flex items-center justify-between border-b border-line pb-2.5">
-              <h3 className="text-body font-semibold text-fg flex items-center gap-2">
-                <Icon name="tune" className="text-primary text-[18px]" />
-                Cấu hình & Danh mục quản trị
-              </h3>
-            </div>
-
-            {/* Các ô bảng con ngăn cách thông tin */}
-            <div className="grid grid-cols-2 gap-2 text-meta">
-              <Link
-                to={ROUTES.admin.packages}
-                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-control bg-primary/10 text-primary">
-                    <Icon name="inventory" className="text-[17px]" />
-                  </div>
-                  <p className="font-semibold text-fg text-xs">Gói dịch vụ</p>
-                </div>
-                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Gói bảo dưỡng, thiên tai</p>
-              </Link>
-
-              <Link
-                to={ROUTES.admin.warrantyOptions}
-                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-control bg-ok-soft text-ok">
-                    <Icon name="verified_user" className="text-[17px]" />
-                  </div>
-                  <p className="font-semibold text-fg text-xs">Hạn bảo hành</p>
-                </div>
-                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Lắp đặt & Sửa chữa</p>
-              </Link>
-
-              <Link
-                to={ROUTES.admin.zones}
-                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-control bg-info-soft text-info">
-                    <Icon name="map" className="text-[17px]" />
-                  </div>
-                  <p className="font-semibold text-fg text-xs">Khu vực ({zones.length})</p>
-                </div>
-                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Địa bàn & Phường xã</p>
-              </Link>
-
-              <Link
-                to={ROUTES.admin.products}
-                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-control bg-accent-soft text-accent-fg">
-                    <Icon name="solar_power" className="text-[17px]" />
-                  </div>
-                  <p className="font-semibold text-fg text-xs">Sản phẩm ({totalProducts})</p>
-                </div>
-                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Pin, biến tần, vật tư</p>
-              </Link>
-
-              <Link
-                to={ROUTES.admin.refunds}
-                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-control bg-warn-soft text-warn">
-                    <Icon name="currency_exchange" className="text-[17px]" />
-                  </div>
-                  <p className="font-semibold text-fg text-xs">Hoàn tiền</p>
-                </div>
-                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Ghi nhận thanh toán</p>
-              </Link>
-
-              <Link
-                to={ROUTES.admin.reports}
-                className="group flex flex-col justify-between rounded-control border border-line bg-surface-1 p-2.5 hover:border-line-2 hover:bg-surface-3 transition-colors shadow-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-control bg-surface-3 text-fg-2">
-                    <Icon name="bar_chart" className="text-[17px]" />
-                  </div>
-                  <p className="font-semibold text-fg text-xs">Báo cáo</p>
-                </div>
-                <p className="text-[11px] text-fg-muted mt-2 pt-1.5 border-t border-line/50">Doanh thu & Sản lượng</p>
-              </Link>
-            </div>
-          </div>
+          <section aria-labelledby="admin-catalogs" className="rounded-container bg-surface-2 p-4">
+            <h2 id="admin-catalogs" className="mb-3 text-title font-semibold">
+              Danh mục quản trị
+            </h2>
+            <ul className="divide-y divide-line">
+              <li className="py-2 first:pt-0 last:pb-0">
+                <Link to={ROUTES.admin.packages} className="ui-link font-medium">
+                  Gói dịch vụ
+                </Link>
+                <p className="text-meta text-fg-2">Gói bảo dưỡng, thiên tai</p>
+              </li>
+              <li className="py-2 first:pt-0 last:pb-0">
+                <Link to={ROUTES.admin.warrantyOptions} className="ui-link font-medium">
+                  Hạn bảo hành
+                </Link>
+                <p className="text-meta text-fg-2">Lắp đặt, Sửa chữa</p>
+              </li>
+              <li className="py-2 first:pt-0 last:pb-0">
+                <Link to={ROUTES.admin.zones} className="ui-link font-medium">
+                  Khu vực ({zones.length})
+                </Link>
+                <p className="text-meta text-fg-2">Địa bàn, Phường xã</p>
+              </li>
+              <li className="py-2 first:pt-0 last:pb-0">
+                <Link to={ROUTES.admin.products} className="ui-link font-medium">
+                  Sản phẩm ({totalProducts})
+                </Link>
+                <p className="text-meta text-fg-2">Pin, biến tần, vật tư</p>
+              </li>
+              <li className="py-2 first:pt-0 last:pb-0">
+                <Link to={ROUTES.admin.refunds} className="ui-link font-medium">
+                  Hoàn tiền
+                </Link>
+                <p className="text-meta text-fg-2">Ghi nhận thanh toán</p>
+              </li>
+              <li className="py-2 first:pt-0 last:pb-0">
+                <Link to={ROUTES.admin.reports} className="ui-link font-medium">
+                  Báo cáo
+                </Link>
+                <p className="text-meta text-fg-2">Doanh thu, Sản lượng</p>
+              </li>
+            </ul>
+          </section>
         </div>
       </div>
     </div>

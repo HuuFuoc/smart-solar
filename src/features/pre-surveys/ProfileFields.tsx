@@ -31,7 +31,7 @@ export function ProfileFields({ value, errors, onChange }: Props) {
 
       {isBusiness && (
         <>
-          <Field label="Tên doanh nghiệp" htmlFor="companyName" hint="Không bắt buộc." error={errors.companyName}>
+          <Field label="Tên doanh nghiệp" htmlFor="companyName" optional error={errors.companyName}>
             <Input
               id="companyName"
               autoComplete="organization"
@@ -40,7 +40,7 @@ export function ProfileFields({ value, errors, onChange }: Props) {
               aria-invalid={Boolean(errors.companyName)}
             />
           </Field>
-          <Field label="Mã số thuế" htmlFor="taxCode" hint="Không bắt buộc." error={errors.taxCode}>
+          <Field label="Mã số thuế" htmlFor="taxCode" optional error={errors.taxCode}>
             <Input
               id="taxCode"
               inputMode="numeric"
@@ -52,7 +52,7 @@ export function ProfileFields({ value, errors, onChange }: Props) {
         </>
       )}
 
-      <Field label="Ghi chú" htmlFor="profileNote" hint="Không bắt buộc." className="sm:col-span-2" error={errors.note}>
+      <Field label="Ghi chú" htmlFor="profileNote" optional className="sm:col-span-2" error={errors.note}>
         <Textarea id="profileNote" rows={3} value={value.note} onChange={(e) => onChange({ note: e.target.value })} />
       </Field>
     </div>

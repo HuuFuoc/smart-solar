@@ -143,7 +143,6 @@ export function OfficialDocumentDialog({ contract, onClose }: { contract: Contra
           disabled={busy}
           onChange={(e) => setConfirmed(e.target.checked)}
           label={`PDF này được tạo từ ${contractTitle(snapshot)}, mã nội dung ${shortHash(snapshot.canonicalHash)}`}
-          description="Hệ thống từ chối nếu hợp đồng đã đổi sang phiên bản khác kể từ lúc mở hộp thoại."
         />
       </div>
 

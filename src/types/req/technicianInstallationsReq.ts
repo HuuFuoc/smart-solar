@@ -38,3 +38,9 @@ export type EvidenceRequest = {
   fileId?: string
   caption?: string | null
 }
+
+export type InstallationEvidenceRequest = {
+  /** Format: uuid */
+  fileId?: string
+  caption?: string | null
+}

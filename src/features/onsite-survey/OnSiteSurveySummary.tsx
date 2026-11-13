@@ -18,6 +18,15 @@ const t = (value: string | null | undefined) => (value && value.trim() ? value :
 // Kết quả khảo sát tại công trình, chỉ đọc: kỹ thuật viên xem lại sau khi hoàn thành, kinh doanh xem để báo giá
 export function OnSiteSurveySummary({ survey }: { survey: OnSiteSurveyView }) {
   const d = survey.data
+  const notes = [
+    { k: 'Tủ điện', v: d.electricalCabinetNotes },
+    { k: 'Đấu nối điện', v: d.electricalConnectionNotes },
+    { k: 'Vị trí đặt inverter', v: d.proposedInverterLocation },
+    { k: 'Bố trí tấm pin', v: d.proposedPanelLayoutNotes },
+    { k: 'Ghi chú', v: d.notes },
+  ]
+  const written = notes.filter((x) => t(x.v) !== '—').map((x) => ({ k: x.k, v: x.v! }))
+  const blank = notes.filter((x) => t(x.v) === '—').map((x) => x.k.toLowerCase())
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -49,17 +58,9 @@ export function OnSiteSurveySummary({ survey }: { survey: OnSiteSurveyView }) {
         ]}
       />
 
-      <Facts
-        column
-        items={[
-          { k: 'Tủ điện', v: t(d.electricalCabinetNotes) },
-          { k: 'Đấu nối điện', v: t(d.electricalConnectionNotes) },
-          { k: 'Vị trí đặt inverter', v: t(d.proposedInverterLocation) },
-          { k: 'Bố trí tấm pin', v: t(d.proposedPanelLayoutNotes) },
-          { k: 'Ghi chú', v: t(d.notes) },
-        ]}
-        className="[&_dd]:whitespace-pre-line"
-      />
+      {/* Ghi chú tự do: chỉ in ô có nội dung, ô bỏ trống gom một dòng thay vì một cột toàn "—" */}
+      {written.length > 0 && <Facts column items={written} className="[&_dd]:whitespace-pre-line" />}
+      {blank.length > 0 && <p className="text-meta text-fg-2">Chưa ghi: {blank.join(', ')}.</p>}
 
       <div>
         <h4 className="mb-2 text-body font-medium text-fg">Vật cản ({survey.obstacles.length})</h4>

@@ -807,15 +807,18 @@ function AssessmentWizard({ onReopen }: { onReopen: () => void }) {
   // Điện thoại (order): Lưu nháp và lỗi ở trên, "Quay lại" và nút chính chung một hàng cuối
   const stepActions = (
     <div className="flex flex-wrap items-center gap-3">
-      <Button
-        icon="arrow_back"
-        variant="secondary"
-        className="order-3 sm:order-none"
-        onClick={() => goToStep(Math.max(firstStep, step - 1))}
-        disabled={step <= firstStep || busy || submitted}
-      >
-        Quay lại
-      </Button>
+      {/* Bước đầu không có chỗ để quay về nên không bày nút */}
+      {step > firstStep && (
+        <Button
+          icon="arrow_back"
+          variant="secondary"
+          className="order-3 sm:order-none"
+          onClick={() => goToStep(step - 1)}
+          disabled={busy || submitted}
+        >
+          Quay lại
+        </Button>
+      )}
       {step === STEP.SURFACE && (
         <div className="order-1 flex w-full flex-wrap items-center gap-x-3 gap-y-1 sm:order-none sm:w-auto">
           <Button variant="secondary" icon="save" onClick={saveSurfaceAsDraft} disabled={busy}>

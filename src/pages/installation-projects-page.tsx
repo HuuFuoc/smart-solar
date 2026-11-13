@@ -22,15 +22,6 @@ import { ROUTES } from '@/routes/paths'
 
 type Tab = 'du-an' | 'hop-dong'
 
-const STATUS_LEGEND = [
-  { label: 'Chờ xếp KTV', dot: 'bg-rose-500' },
-  { label: 'Chờ KTV nhận', dot: 'bg-amber-500' },
-  { label: 'Đã lên lịch', dot: 'bg-teal-500' },
-  { label: 'Đang lắp đặt', dot: 'bg-blue-500' },
-  { label: 'Chờ nghiệm thu', dot: 'bg-purple-500' },
-  { label: 'Hoàn thành', dot: 'bg-emerald-500' },
-]
-
 function InstallationProjectsPage({
   detailPattern,
   contractPattern,
@@ -88,6 +79,7 @@ function InstallationProjectsPage({
         className="mb-4"
         value={tab}
         onChange={setTab}
+        // Số trên tab để xám vì số đỏ đã có ở menu và đầu trang
         chips={[
           { value: 'du-an', label: 'Dự án', count: status ? undefined : projects.data?.length },
           { value: 'hop-dong', label: 'Hợp đồng chờ tạo dự án', count: ready.data?.length },
@@ -106,43 +98,24 @@ function InstallationProjectsPage({
         </QueryBoundary>
       ) : (
         <>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <FilterBar className="mb-0 flex-1">
-              <label className="w-full sm:w-72">
-                <span className="sr-only">Lọc theo trạng thái</span>
-                <Select active={status !== undefined} value={status ?? ''} onChange={(e) => setStatus(e.target.value)}>
-                  <option value="">Tất cả trạng thái</option>
-                  {INSTALLATION_STATUS_ORDER.map((value) => (
-                    <option key={value} value={value}>
-                      {projectStatusMeta(value).label}
-                    </option>
-                  ))}
-                </Select>
-              </label>
-              {status && (
-                <Button variant="ghost" bleed={false} icon="filter_alt_off" onClick={() => setStatus('')}>
-                  Xoá bộ lọc
-                </Button>
-              )}
-            </FilterBar>
-          </div>
-
-          {/* Thanh chú thích tiến trình */}
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-surface-1 px-4 py-2 text-meta shadow-sm">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-medium text-fg-2">Tiến trình thi công:</span>
-              {STATUS_LEGEND.map((item) => (
-                <div key={item.label} className="flex items-center gap-1.5">
-                  <span className={`inline-block h-2 w-2 rounded-full ${item.dot}`} />
-                  <span className="text-fg-2">{item.label}</span>
-                </div>
-              ))}
-            </div>
-            <span className="text-fg-3">
-              Tổng số dự án: <strong className="text-fg-1">{projects.data?.length ?? 0}</strong>
-            </span>
-          </div>
-
+          <FilterBar>
+            <label className="w-full sm:w-72">
+              <span className="sr-only">Lọc theo trạng thái</span>
+              <Select active={status !== undefined} value={status ?? ''} onChange={(e) => setStatus(e.target.value)}>
+                <option value="">Tất cả trạng thái</option>
+                {INSTALLATION_STATUS_ORDER.map((value) => (
+                  <option key={value} value={value}>
+                    {projectStatusMeta(value).label}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            {status && (
+              <Button variant="ghost" bleed={false} icon="filter_alt_off" onClick={() => setStatus('')}>
+                Xoá bộ lọc
+              </Button>
+            )}
+          </FilterBar>
           <QueryBoundary query={projects}>
             {(rows) =>
               rows.length > 0 ? (
@@ -155,6 +128,7 @@ function InstallationProjectsPage({
               ) : (
                 <EmptyState
                   title="Chưa có dự án thi công nào"
+
                   action={
                     readyCount > 0 ? (
                       <Button icon="visibility" size="sm" variant="info" onClick={() => setTab('hop-dong')}>

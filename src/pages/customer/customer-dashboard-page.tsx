@@ -1,192 +1,205 @@
 import { useMemo } from 'react'
-import { ErrorState, PageSkeleton } from '@/components/common/ui/states'
-import { ActiveProjectCard } from '@/features/customer-dashboard/components/ActiveProjectCard'
-import { CustomerServicesWidget } from '@/features/customer-dashboard/components/CustomerServicesWidget'
-import { DashboardEmptyState } from '@/features/customer-dashboard/components/DashboardEmptyState'
-import { DashboardHeader } from '@/features/customer-dashboard/components/DashboardHeader'
-import { DashboardStats } from '@/features/customer-dashboard/components/DashboardStats'
+import { ButtonLink } from '@/components/common/ui/button'
+import { PageHeader } from '@/components/common/ui/page-header'
+import { Panel } from '@/components/common/ui/panel'
+import { Stat, StatRow } from '@/components/common/ui/stat'
+import { EmptyState, ErrorState, PageSkeleton } from '@/components/common/ui/states'
+import { Stepper, type Step } from '@/components/common/ui/stepper'
+import { CUSTOMER_INSTALLATION_LABELS, INSTALLATION_STATUS_LABELS } from '@/common/installation'
 import {
-  ProjectLifecycleStepper,
-  type ProjectStage,
-} from '@/features/customer-dashboard/components/ProjectLifecycleStepper'
-import { UpcomingAppointmentsCard } from '@/features/customer-dashboard/components/UpcomingAppointmentsCard'
+  CustomerProjectPanel,
+  ServicesSummary,
+  UpcomingAppointments,
+} from '@/features/customer-dashboard/CustomerOverviewPanels'
+import { CustomerTodoList } from '@/features/customer-dashboard/CustomerTodoList'
+import { customerTodos } from '@/features/customer-dashboard/customerTodos'
 import { isUpcomingAppointment } from '@/features/customer-dashboard/services/dashboardChartService'
+import { latestPerRequest } from '@/features/quotations/quotationDisplay'
+import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useSubscriptionsQuery } from '@/hooks/useCustomerAfterSales'
+import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
 import { useMyQuotationsQuery } from '@/hooks/useCustomerQuotations'
 import { useMyServiceRequestsQuery } from '@/hooks/useCustomerServiceRequests'
+import { useMyDispatchesQuery } from '@/hooks/useDispatch'
+import { ROUTES } from '@/routes/paths'
 
-function getProgressPercent(status: string): number {
-  switch (status) {
-    case 'PENDING_ASSIGNMENT':
-      return 15
-    case 'PENDING_TECHNICIAN_ACCEPTANCE':
-      return 25
-    case 'SCHEDULED':
-      return 40
-    case 'IN_PROGRESS':
-      return 65
-    case 'PENDING_CUSTOMER_ACCEPTANCE':
-      return 90
-    case 'REWORK_REQUIRED':
-      return 75
-    case 'COMPLETED':
-      return 100
-    case 'CANCELLED':
-      return 0
-    default:
-      return 10
-  }
-}
+// Các chặng của một công trình, theo thứ tự khách đi qua
+const STAGES = [
+  { id: 'ASSESSMENT', label: 'Đánh giá sơ bộ', meta: 'Khai mái nhà, xem mô phỏng' },
+  { id: 'SURVEY', label: 'Khảo sát tại nhà', meta: 'Kỹ thuật viên đo đạc' },
+  { id: 'QUOTATION', label: 'Báo giá, hợp đồng', meta: 'Đồng ý báo giá, ký hợp đồng' },
+  { id: 'INSTALLATION', label: 'Lắp đặt', meta: 'Thi công, nghiệm thu' },
+  { id: 'HANDOVER', label: 'Bàn giao, bảo hành', meta: 'Bảo hành, bảo trì' },
+] as const
+type StageId = (typeof STAGES)[number]['id']
 
+const isOpenProject = (status: string) => status !== 'COMPLETED' && status !== 'CANCELLED'
+
+// /customer/dashboard: việc đang chờ khách lên đầu, rồi số liệu, chặng hiện tại, công trình, lịch hẹn, gói dịch vụ.
+// Dữ liệu lấy từ các query mà khung khách hàng đã gọi cho số trên menu, nên không thêm lời gọi API
 export function CustomerDashboardPage() {
-  const {
-    data: installations = [],
-    isLoading: loadingInstallations,
-    isError: errorInstallations,
-    refetch: refetchInstallations,
-  } = useMyInstallationsQuery()
+  const installationsQuery = useMyInstallationsQuery()
+  const requestsQuery = useMyRequestsQuery()
+  const servicesQuery = useMyServiceRequestsQuery()
+  const quotationsQuery = useMyQuotationsQuery()
+  const subscriptionsQuery = useSubscriptionsQuery()
+  const contractsQuery = useMyContractsQuery()
+  const { dispatches } = useMyDispatchesQuery(requestsQuery.data)
 
-  const {
-    data: surveyRequests = [],
-    isLoading: loadingRequests,
-    isError: errorRequests,
-    refetch: refetchRequests,
-  } = useMyRequestsQuery()
+  const installations = useMemo(() => installationsQuery.data ?? [], [installationsQuery.data])
+  const surveyRequests = useMemo(() => requestsQuery.data ?? [], [requestsQuery.data])
+  const serviceRequests = useMemo(() => servicesQuery.data ?? [], [servicesQuery.data])
+  const quotations = useMemo(() => quotationsQuery.data ?? [], [quotationsQuery.data])
+  const subscriptions = useMemo(() => subscriptionsQuery.data ?? [], [subscriptionsQuery.data])
+  const contracts = useMemo(() => contractsQuery.data ?? [], [contractsQuery.data])
 
-  const {
-    data: serviceRequests = [],
-    isLoading: loadingServices,
-    isError: errorServices,
-    refetch: refetchServices,
-  } = useMyServiceRequestsQuery()
-
-  const {
-    data: quotations = [],
-    isLoading: loadingQuotations,
-    refetch: refetchQuotations,
-  } = useMyQuotationsQuery()
-
-  const {
-    data: subscriptions = [],
-    isLoading: loadingSubscriptions,
-    refetch: refetchSubscriptions,
-  } = useSubscriptionsQuery()
-
-  const isLoading =
-    loadingInstallations && loadingRequests && loadingServices && loadingQuotations && loadingSubscriptions
-  const isAllError = errorInstallations && errorRequests && errorServices
-
-  const handleRefreshAll = () => {
-    refetchInstallations()
-    refetchRequests()
-    refetchServices()
-    refetchQuotations()
-    refetchSubscriptions()
-  }
-
-  // Dự án lắp đặt đang chạy
-  const activeProject =
-    installations.find((p) => p.status !== 'COMPLETED' && p.status !== 'CANCELLED') || installations[0]
-
-  const activeProjectsCount = installations.filter((p) => p.status !== 'COMPLETED' && p.status !== 'CANCELLED').length
-  const activeProgressPct = activeProject ? getProgressPercent(activeProject.status) : null
-
-  // Lịch hẹn khảo sát / thi công sắp tới
-  const upcomingAppointments = useMemo(
+  const todos = useMemo(
     () =>
-      surveyRequests
-        .filter((r) => isUpcomingAppointment(r))
-        .sort((a, b) => a.appointment!.startsAt.localeCompare(b.appointment!.startsAt)),
-    [surveyRequests],
+      customerTodos({
+        requests: surveyRequests,
+        dispatches,
+        quotations: latestPerRequest(quotations),
+        contracts,
+        installations,
+        serviceRequests,
+        subscriptions,
+      }),
+    [surveyRequests, dispatches, quotations, contracts, installations, serviceRequests, subscriptions],
   )
-  const upcomingAppointmentsCount = upcomingAppointments.length
-  const nearestAppointmentTime = upcomingAppointments[0]?.appointment?.startsAt || null
 
-  const completedProjectsCount = installations.filter((p) => p.status === 'COMPLETED').length
-  const pendingServicesCount = serviceRequests.filter(
+  const activeProject = installations.find((p) => isOpenProject(p.status))
+  const activeProjects = installations.filter((p) => isOpenProject(p.status)).length
+  const completedProjects = installations.filter((p) => p.status === 'COMPLETED').length
+  const openServices = serviceRequests.filter(
     (s) => s.status !== 'COMPLETED' && s.status !== 'CANCELLED' && s.status !== 'CLOSED_DUPLICATE',
   ).length
+  const upcoming = surveyRequests
+    .filter((r) => isUpcomingAppointment(r))
+    .sort((a, b) => a.appointment!.startsAt.localeCompare(b.appointment!.startsAt))
 
-  const activeAssetsCount = useMemo(
-    () => installations.reduce((sum, p) => sum + (p.assets?.length || 0), 0),
-    [installations],
+  const stage: StageId =
+    completedProjects > 0
+      ? 'HANDOVER'
+      : activeProjects > 0
+        ? 'INSTALLATION'
+        : quotations.length > 0 || surveyRequests.some((r) => r.status === 'COMPLETED')
+          ? 'QUOTATION'
+          : surveyRequests.length > 0
+            ? 'SURVEY'
+            : 'ASSESSMENT'
+  const stageIndex = STAGES.findIndex((s) => s.id === stage)
+  const steps: Step[] = STAGES.map((s, i) => ({
+    label: s.label,
+    meta: s.meta,
+    state: i < stageIndex ? 'done' : i === stageIndex ? 'active' : 'upcoming',
+  }))
+
+  const loading = [installationsQuery, requestsQuery, servicesQuery, quotationsQuery, subscriptionsQuery].every(
+    (q) => q.isPending,
   )
-
+  const allFailed = [installationsQuery, requestsQuery, servicesQuery].every((q) => q.isError)
   const hasAnyData =
     installations.length > 0 || surveyRequests.length > 0 || serviceRequests.length > 0 || quotations.length > 0
 
-  // Xác định giai đoạn vòng đời dự án (Project Lifecycle Stepper)
-  const currentStage: ProjectStage = useMemo(() => {
-    if (completedProjectsCount > 0) return 'HANDOVER'
-    if (activeProjectsCount > 0) return 'INSTALLATION'
-    if (quotations.length > 0) return 'QUOTATION'
-    if (surveyRequests.some((r) => r.status === 'COMPLETED')) return 'QUOTATION'
-    if (surveyRequests.length > 0) return 'SURVEY'
-    return 'ASSESSMENT'
-  }, [completedProjectsCount, activeProjectsCount, quotations.length, surveyRequests])
-
-  if (isLoading) {
-    return <PageSkeleton />
-  }
-
-  if (isAllError) {
+  if (loading) return <PageSkeleton />
+  if (allFailed)
     return (
       <ErrorState
-        title="Không thể tải dữ liệu bảng điều khiển"
-        message="Hệ thống đang gặp sự cố. Vui lòng thử lại sau ít phút."
-        onRetry={handleRefreshAll}
+        title="Không tải được trang tổng quan."
+        onRetry={() => {
+          void installationsQuery.refetch()
+          void requestsQuery.refetch()
+          void servicesQuery.refetch()
+          void quotationsQuery.refetch()
+          void subscriptionsQuery.refetch()
+        }}
       />
     )
-  }
 
   return (
-    <div className="space-y-5">
-      {/* Header & Quick Action Buttons */}
-      <DashboardHeader />
-
-      {/* Hàng 1 - Thẻ chỉ số tổng quan (4 Stat Cards) */}
-      <DashboardStats
-        activeProjects={activeProjectsCount}
-        activeProgressPct={activeProgressPct}
-        upcomingAppointments={upcomingAppointmentsCount}
-        nearestAppointmentTime={nearestAppointmentTime}
-        completedProjects={completedProjectsCount}
-        pendingServices={pendingServicesCount}
+    <>
+      <PageHeader
+        title="Tổng quan"
+        description={todos.length > 0 ? `${todos.length} việc đang chờ bạn.` : 'Không có việc nào đang chờ bạn.'}
+        actions={
+          <>
+            <ButtonLink to={ROUTES.customer.assessment} variant="primary" icon="roofing">
+              Đánh giá sơ bộ mới
+            </ButtonLink>
+            <ButtonLink to={ROUTES.customer.requests} variant="soft" icon="calendar_month">
+              Đặt giờ khảo sát
+            </ButtonLink>
+            <ButtonLink to={ROUTES.customer.afterSales} variant="danger" icon="report">
+              Báo lỗi
+            </ButtonLink>
+          </>
+        }
       />
 
-      {/* Trạng thái rỗng: khi khách chưa có bất kỳ dự án hay yêu cầu nào */}
       {!hasAnyData ? (
-        <DashboardEmptyState />
+        <EmptyState
+          title="Bắt đầu với đánh giá sơ bộ"
+          description="Khai thông tin mái nhà để xem ước tính số tấm pin và sản lượng, rồi chọn giờ để kỹ thuật viên đến khảo sát."
+          action={
+            <ButtonLink to={ROUTES.customer.products} variant="secondary" icon="solar_power">
+              Xem sản phẩm
+            </ButtonLink>
+          }
+        />
       ) : (
-        <>
-          {/* Hàng 2 - Hành trình dự án (Project Stepper 5 bước) */}
-          <ProjectLifecycleStepper
-            currentStage={currentStage}
-            stageDetail={activeProject ? `Dự án #${activeProject.projectId.slice(0, 8).toUpperCase()}` : null}
-          />
+        <div className="space-y-6">
+          {todos.length > 0 && (
+            <Panel raised aria-labelledby="todo-title">
+              <h2 id="todo-title" className="mb-3 text-title font-semibold">
+                Việc cần làm
+              </h2>
+              <CustomerTodoList items={todos} />
+            </Panel>
+          )}
 
-          {/* Hàng 3 - Phân 2 cột nội dung: Cột chính (65%) & Cột phụ (35%) */}
-          <div className="grid gap-6 items-start lg:grid-cols-12">
-            {/* Cột chính (65% ~ 8/12 cột): Danh sách công trình / hồ sơ thi công chi tiết */}
-            <div className="space-y-4 lg:col-span-8">
-              <ActiveProjectCard installations={installations} surveyRequests={surveyRequests} />
+          <StatRow framed>
+            <Stat
+              label="Công trình đang lắp đặt"
+              value={activeProjects}
+              note={
+                activeProject
+                  ? (CUSTOMER_INSTALLATION_LABELS[activeProject.status] ??
+                    INSTALLATION_STATUS_LABELS[activeProject.status] ??
+                    activeProject.status)
+                  : undefined
+              }
+            />
+            <Stat
+              label="Lịch hẹn sắp tới"
+              value={upcoming.length}
+              note={upcoming[0]?.appointment ? formatMoment(upcoming[0].appointment.startsAt) : undefined}
+            />
+            <Stat label="Hệ thống đã bàn giao" value={completedProjects} />
+            <Stat label="Yêu cầu bảo hành đang mở" value={openServices} />
+          </StatRow>
+
+          <section aria-labelledby="stage-title">
+            <h2 id="stage-title" className="mb-3 text-title font-semibold">
+              Tiến trình
+            </h2>
+            <Stepper steps={steps} />
+          </section>
+
+          <div className="grid items-start gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <CustomerProjectPanel installations={installations} surveyRequests={surveyRequests} />
             </div>
-
-            {/* Cột phụ (35% ~ 4/12 cột): Lịch hẹn sắp tới (timeline mini) + Widget dịch vụ & bảo trì */}
-            <div className="space-y-4 lg:col-span-4">
-              <UpcomingAppointmentsCard requests={surveyRequests} />
-
-              <CustomerServicesWidget
-                subscriptions={subscriptions}
-                serviceRequests={serviceRequests}
-                activeAssetsCount={activeAssetsCount}
-              />
+            <div className="space-y-6 rounded-container bg-surface-2 p-4">
+              <UpcomingAppointments requests={surveyRequests} />
+              <div className="border-t border-line pt-4">
+                <ServicesSummary subscriptions={subscriptions} serviceRequests={serviceRequests} />
+              </div>
             </div>
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   )
 }

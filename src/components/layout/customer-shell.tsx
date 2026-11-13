@@ -125,7 +125,7 @@ export function CustomerShell({
         aria-label="Điều hướng cổng khách hàng"
         className={cx(
           'fixed inset-y-0 left-0 z-40 flex flex-col border-r border-line bg-rail duration-200 motion-reduce:transition-none',
-          compact ? 'w-16' : 'w-72 lg:w-52',
+          compact ? 'w-16' : 'w-72 lg:w-60',
           // Khi đóng thì ẩn hẳn (invisible) để link bên trong không nhận Tab
           drawerOpen
             ? 'visible translate-x-0 transition-[translate]'
@@ -192,7 +192,7 @@ export function CustomerShell({
       </aside>
 
       {/* Drawer đang mở thì phần còn lại không nhận focus hay thao tác */}
-      <div inert={drawerOpen || undefined} className={compact ? 'lg:pl-16' : 'lg:pl-52'}>
+      <div inert={drawerOpen || undefined} className={compact ? 'lg:pl-16' : 'lg:pl-60'}>
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-line bg-canvas px-4 md:px-6 lg:hidden">
           <button
             ref={menuButtonRef}
@@ -351,7 +351,7 @@ function SidebarLink({
         name={item.icon}
         className={cx('shrink-0 text-[20px]', active ? 'icon-fill text-accent-fg' : 'text-fg-3 group-hover:text-fg-2')}
       />
-      <span className="min-w-0 flex-1 leading-snug">{item.label}</span>
+      <span className="min-w-0 flex-1 leading-snug text-balance">{item.label}</span>
       {count?.value ? <Count value={count.value} attention={count.attention} className="-ml-1" /> : null}
     </Link>
   )

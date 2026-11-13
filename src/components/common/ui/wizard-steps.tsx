@@ -33,9 +33,10 @@ export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; 
               >
                 {step.state === 'done' ? <Icon name="check" className="text-[20px]" /> : i + 1}
               </span>
+              {/* Nhãn 13px: thanh các bước là điều hướng phụ, tên bước đầy đủ đã ở tiêu đề khung bước */}
               <span
                 className={cx(
-                  'mt-1.5 block text-body text-balance',
+                  'mt-1.5 block text-meta text-balance',
                   step.state === 'active' && 'font-semibold text-fg',
                   step.state === 'done' && 'text-fg',
                   step.state === 'upcoming' && 'text-fg-3',
@@ -62,7 +63,7 @@ export function WizardSteps({ steps, label, className }: { steps: WizardStep[]; 
             <li
               key={step.label}
               aria-current={step.state === 'active' ? 'step' : undefined}
-              className="relative min-w-0 flex-1 px-2 text-center"
+              className="relative min-w-0 flex-1 px-1 text-center"
             >
               {i < steps.length - 1 && (
                 // Đường nối từ mép vòng này sang mép vòng sau (tâm vòng ở giữa cột, vòng rộng 1,75rem).

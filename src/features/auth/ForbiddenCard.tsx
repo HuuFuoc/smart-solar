@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
+import { Button } from '@/components/common/ui/button'
 import { ROUTES } from '@/routes/paths'
 import { useAuth } from '@/context/AuthProvider'
 import { ROLE_LABELS, type UserRole } from '@/common/role'
@@ -23,35 +23,24 @@ export function ForbiddenCard() {
   }
 
   return (
-    <div className="flex items-start gap-space-sm rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-error-container text-error">
-        <Icon name="gpp_bad" className="text-[24px]" />
+    <div className="rounded-container border border-line bg-surface-container-lowest p-space-md">
+      <div className="flex flex-wrap items-center gap-2">
+        <h1 className="text-headline-md text-on-surface">{forbiddenContent.title}</h1>
+        {requiredRole && (
+          <Badge tone="danger">
+            {forbiddenContent.requiredPrefix}
+            {ROLE_LABELS[requiredRole]}
+          </Badge>
+        )}
       </div>
-      <div className="flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-headline-md text-on-surface">{forbiddenContent.title}</h1>
-          {requiredRole && (
-            <Badge tone="danger">
-              {forbiddenContent.requiredPrefix}
-              {ROLE_LABELS[requiredRole]}
-            </Badge>
-          )}
-        </div>
-        <p className="mt-1 text-body-md text-on-surface-variant">
-          {forbiddenContent.descriptionBefore}
-          <span className="text-on-surface">{currentRoleLabel}</span>
-          {forbiddenContent.descriptionAfter}
-        </p>
-        <div className="mt-space-sm flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => void switchAccount()}
-            className="rounded-lg bg-surface-container px-3 py-1.5 text-label-sm text-on-surface transition-colors hover:bg-surface-container-high"
-          >
-            {forbiddenContent.switchAccount}
-          </button>
-        </div>
-      </div>
+      <p className="mt-1 text-body-md text-on-surface-variant">
+        {forbiddenContent.descriptionBefore}
+        <span className="text-on-surface">{currentRoleLabel}</span>
+        {forbiddenContent.descriptionAfter}
+      </p>
+      <Button icon="switch_account" variant="secondary" className="mt-space-sm" onClick={() => void switchAccount()}>
+        {forbiddenContent.switchAccount}
+      </Button>
     </div>
   )
 }

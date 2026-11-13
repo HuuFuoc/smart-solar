@@ -364,10 +364,7 @@ function DocumentView({ document: d }: { document: KnowledgeDocumentView }) {
         </Panel>
 
         <Panel>
-          <PanelHeader
-            title={`Lượt nạp (${jobs.length})`}
-            description="Việc chạy nền: nạp tài liệu vào chatbot, hoặc xoá dữ liệu đã nạp khi lưu trữ."
-          />
+          <PanelHeader title={`Lượt nạp (${jobs.length})`} />
           {jobs.length === 0 ? (
             <p className="text-body text-fg-2">Chưa có lượt nạp nào.</p>
           ) : (

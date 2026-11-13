@@ -136,7 +136,7 @@ export function ResetPasswordPage() {
         >
           <Icon
             name={submitting ? 'progress_activity' : 'lock_reset'}
-            className={submitting ? 'animate-spin text-[18px]' : 'text-[18px]'}
+            className={submitting ? 'animate-spin text-[20px]' : 'text-[20px]'}
           />
           {submitting ? resetContent.submitting : resetContent.submit}
         </button>

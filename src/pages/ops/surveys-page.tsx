@@ -54,7 +54,8 @@ export function OpsSurveysPage() {
         title="Yêu cầu khảo sát"
         description={
           overdue || unscheduled ? (
-            <span className="flex flex-wrap gap-2">
+            // Hai việc khác nhau (hàng chờ chung, yêu cầu của bạn) nên mỗi việc một dòng
+            <span className="flex flex-col gap-0.5">
               {overdue > 0 && <Badge tone="danger">{overdue} yêu cầu chờ hơn 1 ngày chưa ai nhận</Badge>}
               {unscheduled > 0 && (
                 <Badge tone="danger">{unscheduled} yêu cầu của bạn cần phân công kỹ thuật viên</Badge>

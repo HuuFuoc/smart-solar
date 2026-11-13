@@ -63,11 +63,21 @@ export function siteToForm(site: CreatePropertySiteRequest): SiteForm {
     ward: site.ward ?? '',
     communeCode: site.communeCode ?? '',
     streetLine: site.streetLine ?? '',
-    installationSurfaceType: String(site.installationSurfaceType ?? 1),
+    installationSurfaceType: surfaceFormValue(site.installationSurfaceType),
     surfaceMaterial: site.surfaceMaterial ?? '',
     note: site.note ?? '',
   }
 }
+
+// Bản nháp cũ trên máy còn lưu số (1..5), bản mới lưu tên (ROOFTOP...)
+function surfaceFormValue(value: unknown) {
+  const text = String(value ?? '').toUpperCase()
+  const known = SURFACE_TYPES.find((type) => type.name === text || String(type.value) === text)
+  return String(known?.value ?? 1)
+}
+
+const surfaceName = (formValue: string) =>
+  SURFACE_TYPES.find((type) => String(type.value) === formValue)?.name ?? 'ROOFTOP'
 
 /**
  * Địa điểm trong danh sách của khách thành đúng dạng đã lưu khi tạo, để chọn lại địa điểm cũ
@@ -85,7 +95,7 @@ export function siteRequestFromList(item: CustomerSiteListItem): CreatePropertyS
     streetLine: item.streetLine,
     latitude: item.latitude,
     longitude: item.longitude,
-    installationSurfaceType: surface?.value ?? 1,
+    installationSurfaceType: surface?.name ?? 'ROOFTOP',
     surfaceMaterial: item.surfaceMaterial,
     note: null,
   }
@@ -113,7 +123,7 @@ export const profileSchema = z
   .transform((form): CreateCustomerProfileRequest => {
     const isBusiness = form.customerType === '2'
     return {
-      customerType: isBusiness ? 2 : 1,
+      customerType: isBusiness ? 'BUSINESS' : 'INDIVIDUAL',
       companyName: isBusiness ? textOrNull(form.companyName) : null,
       taxCode: textOrNull(form.taxCode),
       note: textOrNull(form.note),
@@ -151,9 +161,7 @@ export const siteSchema = z
       streetLine: textOrNull(form.streetLine),
       latitude: center?.latitude ?? null,
       longitude: center?.longitude ?? null,
-      installationSurfaceType: Number(
-        form.installationSurfaceType,
-      ) as CreatePropertySiteRequest['installationSurfaceType'],
+      installationSurfaceType: surfaceName(form.installationSurfaceType),
       surfaceMaterial: textOrNull(form.surfaceMaterial),
       note: textOrNull(form.note),
     }

@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import { Fragment, type ReactNode, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
-import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
+import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { formatArea, surfaceTypeLabel } from '@/features/pre-surveys/preSurveyDisplay'
 import {
   appointmentStatusMeta,
@@ -44,43 +44,73 @@ function byDay<T extends { startsAt: string }>(rows: T[]) {
   return [...groups]
 }
 
-function DayHeading({ day, today }: { day: string; today: string }) {
+const OPEN_LABELS = ['Giờ', 'Công trình', 'Khu vực', 'Mặt lắp', 'Hạn nhận']
+const MINE_LABELS = ['Giờ', 'Công trình', 'Cách nhận', 'Nhận lúc', 'Tình hình']
+
+// Mỗi ngày là một nhóm dòng mở đầu bằng dải ngày. Dưới lg mỗi dòng xếp thành khối nhãn / giá trị
+function JobTable<T extends { appointmentId: string; startsAt: string }>({
+  labels,
+  rows,
+  today,
+  row,
+}: {
+  labels: string[]
+  rows: T[]
+  today: string
+  row: (job: T) => ReactNode
+}) {
   return (
-    <h2 id={`day-${day}`} className="text-title font-semibold">
-      {relativeDay(day, today)}
-      {/* "Hôm nay" / "Ngày mai" kèm thứ, ngày; ngày khác thì relativeDay đã là thứ, ngày */}
-      {relativeDay(day, today) !== formatDay(day) && <span className="font-normal text-fg-2">, {formatDay(day)}</span>}
-    </h2>
+    <Table stack>
+      <thead>
+        <tr>
+          {labels.map((label) => (
+            <Th key={label}>{label}</Th>
+          ))}
+          <Th className="w-px">
+            <span className="sr-only">Thao tác</span>
+          </Th>
+        </tr>
+      </thead>
+      {byDay(rows).map(([day, items]) => (
+        <tbody key={day}>
+          <tr className="bg-surface-2 max-lg:py-2!">
+            <th
+              colSpan={labels.length + 1}
+              scope="rowgroup"
+              className="border-b border-line px-3 py-2 text-left font-semibold max-lg:block max-lg:border-0 max-lg:py-0"
+            >
+              {relativeDay(day, today)}
+              {/* "Hôm nay" / "Ngày mai" kèm thứ, ngày; ngày khác thì relativeDay đã là thứ, ngày */}
+              {relativeDay(day, today) !== formatDay(day) && (
+                <span className="font-normal text-fg-2">, {formatDay(day)}</span>
+              )}
+            </th>
+          </tr>
+          {items.map((job) => (
+            <Fragment key={job.appointmentId}>{row(job)}</Fragment>
+          ))}
+        </tbody>
+      ))}
+    </Table>
   )
 }
-
-/** Các tab dùng chung một bộ cột để chuyển tab không bị nhảy cột */
-const COLUMNS = 'lg:grid-cols-[7rem_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1.2fr)_9rem]'
-const OPEN_LABELS = ['Giờ', 'Công trình', 'Khu vực', 'Mặt lắp', 'Hạn nhận', '']
-const MINE_LABELS = ['Giờ', 'Công trình', 'Cách nhận', 'Nhận lúc', 'Tình hình', '']
 
 function JobTime({ job }: { job: { startsAt: string; endsAt: string } }) {
   return (
-    <ListCell label="Giờ" wide>
-      <span className="tnum text-title font-semibold">{formatTimeRange(job.startsAt, job.endsAt)}</span>
-    </ListCell>
+    <Td label="Giờ" className="tnum font-semibold whitespace-nowrap">
+      {formatTimeRange(job.startsAt, job.endsAt)}
+    </Td>
   )
 }
 
-function JobPlace({ name, area, to }: { name: string; area: (string | null)[]; to?: string }) {
+function JobPlace({ name, area, to }: { name: string; area: (string | null)[]; to: string }) {
   return (
-    <ListCell wide>
-      <h3 className="font-semibold">
-        {to ? (
-          <Link to={to} className="ui-link">
-            {name}
-          </Link>
-        ) : (
-          name
-        )}
-      </h3>
-      <p className="mt-0.5 text-meta text-fg-2">{area.filter(Boolean).join(', ')}</p>
-    </ListCell>
+    <Td label="Công trình">
+      <Link to={to} className="ui-link font-semibold">
+        {name}
+      </Link>
+      <p className="text-meta text-fg-2">{area.filter(Boolean).join(', ')}</p>
+    </Td>
   )
 }
 
@@ -102,66 +132,57 @@ function OpenJobRow({ job }: { job: OpenAppointmentView }) {
   }
 
   return (
-    <ListRow>
-      <ListCells columns={COLUMNS}>
-        <JobTime job={job} />
-        <JobPlace
-          name={job.propertyName}
-          area={[job.ward, job.province]}
-          to={withId(ROUTES.tech.openJob, job.appointmentId)}
-        />
-        <ListCell label="Khu vực">{job.zone?.name ?? '—'}</ListCell>
-        <ListCell label="Mặt lắp">
-          {surfaceTypeLabel(job.installationSurfaceType)}, dùng được {formatArea(job.usableAreaM2)}
-        </ListCell>
-        <ListCell label="Hạn nhận">
-          <span className="tnum">{formatMoment(job.acceptanceDeadlineAt)}</span>
-        </ListCell>
-        <ListCell wide className="lg:justify-self-end">
-          {job.canAccept ? (
-            <Button
-              size="sm"
-              variant="primary"
-              icon="task_alt"
-              disabled={accept.isPending}
-              onClick={() => void onAccept()}
-            >
-              {accept.isPending ? 'Đang nhận…' : 'Nhận việc'}
-            </Button>
-          ) : (
-            <p className="text-meta text-fg-2">Không nhận được: {ineligibleLabel(job.reason) ?? 'bận'}</p>
-          )}
-        </ListCell>
-      </ListCells>
-    </ListRow>
+    <Tr className="*:align-middle">
+      <JobTime job={job} />
+      <JobPlace
+        name={job.propertyName}
+        area={[job.ward, job.province]}
+        to={withId(ROUTES.tech.openJob, job.appointmentId)}
+      />
+      <Td label="Khu vực">{job.zone?.name ?? '—'}</Td>
+      <Td label="Mặt lắp">
+        {surfaceTypeLabel(job.installationSurfaceType)}, dùng được {formatArea(job.usableAreaM2)}
+      </Td>
+      <Td label="Hạn nhận" className="tnum whitespace-nowrap">
+        {formatMoment(job.acceptanceDeadlineAt)}
+      </Td>
+      <Td className="text-right whitespace-nowrap">
+        {job.canAccept ? (
+          <Button size="sm" variant="soft" icon="task_alt" disabled={accept.isPending} onClick={() => void onAccept()}>
+            {accept.isPending ? 'Đang nhận…' : 'Nhận việc'}
+          </Button>
+        ) : (
+          <span className="text-meta text-fg-2">Không nhận được: {ineligibleLabel(job.reason) ?? 'bận'}</span>
+        )}
+      </Td>
+    </Tr>
   )
 }
 
 function MyJobRow({ job, past }: { job: TechnicianAppointmentListItem; past: boolean }) {
   const status = appointmentStatusMeta(job.status, 'technician')
+  const to = withId(ROUTES.tech.job, job.appointmentId)
   return (
-    <ListRow>
-      <ListCells columns={COLUMNS}>
-        <JobTime job={job} />
-        <JobPlace name={job.propertyName} area={[job.communeName ?? job.ward ?? job.district, job.province]} />
-        <ListCell label="Cách nhận">{assignmentSourceLabel(job.assignmentSource, 'technician')}</ListCell>
-        <ListCell label="Nhận lúc">
-          <span className="tnum">{formatMoment(job.assignedAt)}</span>
-        </ListCell>
-        <ListCell label="Tình hình">
-          {job.isOverdue ? (
-            <Badge tone="danger">Quá giờ, chưa khảo sát</Badge>
-          ) : (
-            <Badge tone={past ? 'neutral' : status.tone}>{status.label}</Badge>
-          )}
-        </ListCell>
-        <ListCell wide className="lg:justify-self-end">
-          <ButtonLink icon="visibility" to={withId(ROUTES.tech.job, job.appointmentId)} size="sm" variant="info">
-            Xem chi tiết
-          </ButtonLink>
-        </ListCell>
-      </ListCells>
-    </ListRow>
+    <Tr className="*:align-middle">
+      <JobTime job={job} />
+      <JobPlace name={job.propertyName} area={[job.communeName ?? job.ward ?? job.district, job.province]} to={to} />
+      <Td label="Cách nhận">{assignmentSourceLabel(job.assignmentSource, 'technician')}</Td>
+      <Td label="Nhận lúc" className="tnum whitespace-nowrap">
+        {formatMoment(job.assignedAt)}
+      </Td>
+      <Td label="Tình hình">
+        {job.isOverdue ? (
+          <Badge tone="danger">Quá giờ, chưa khảo sát</Badge>
+        ) : (
+          <Badge tone={past ? 'neutral' : status.tone}>{status.label}</Badge>
+        )}
+      </Td>
+      <Td className="text-right whitespace-nowrap">
+        <ButtonLink icon="visibility" to={to} size="sm" variant="info">
+          Xem chi tiết
+        </ButtonLink>
+      </Td>
+    </Tr>
   )
 }
 
@@ -196,7 +217,7 @@ export function TechJobsPage() {
       />
       <FilterChips
         label="Lọc lịch"
-        className="mb-6"
+        className="mb-4"
         value={tab}
         onChange={setPicked}
         chips={[
@@ -211,19 +232,7 @@ export function TechJobsPage() {
             openRows.length === 0 ? (
               <EmptyState title="Không có lịch nào đang chờ" />
             ) : (
-              <div className="space-y-6">
-                <ListHead columns={COLUMNS} labels={OPEN_LABELS} />
-                {byDay(openRows).map(([day, items]) => (
-                  <section key={day} aria-labelledby={`day-${day}`}>
-                    <DayHeading day={day} today={today} />
-                    <ul className="mt-2 divide-y divide-line">
-                      {items.map((job) => (
-                        <OpenJobRow key={job.appointmentId} job={job} />
-                      ))}
-                    </ul>
-                  </section>
-                ))}
-              </div>
+              <JobTable labels={OPEN_LABELS} rows={openRows} today={today} row={(job) => <OpenJobRow job={job} />} />
             )
           }
         </QueryBoundary>
@@ -239,19 +248,12 @@ export function TechJobsPage() {
                 />
               )
             return (
-              <div className="space-y-6">
-                <ListHead columns={COLUMNS} labels={MINE_LABELS} />
-                {byDay(shown).map(([day, items]) => (
-                  <section key={day} aria-labelledby={`day-${day}`}>
-                    <DayHeading day={day} today={today} />
-                    <ul className="mt-2 divide-y divide-line">
-                      {items.map((job) => (
-                        <MyJobRow key={job.appointmentId} job={job} past={tab === 'past'} />
-                      ))}
-                    </ul>
-                  </section>
-                ))}
-              </div>
+              <JobTable
+                labels={MINE_LABELS}
+                rows={shown}
+                today={today}
+                row={(job) => <MyJobRow job={job} past={tab === 'past'} />}
+              />
             )
           }}
         </QueryBoundary>

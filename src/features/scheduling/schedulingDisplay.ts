@@ -59,6 +59,38 @@ export function addDays(date: string, days: number) {
   return d.toISOString().slice(0, 10)
 }
 
+export type DateFilter = 'all' | 'today' | 'yesterday' | 'day_before' | 'last_3_days' | 'last_7_days' | 'last_30_days'
+
+export const DATE_FILTER_OPTIONS: readonly { value: DateFilter; label: string }[] = [
+  { value: 'all', label: 'Tất cả ngày' },
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'yesterday', label: 'Hôm qua' },
+  { value: 'day_before', label: 'Hôm kia' },
+  { value: 'last_3_days', label: '3 ngày gần đây' },
+  { value: 'last_7_days', label: '7 ngày gần đây' },
+  { value: 'last_30_days', label: '30 ngày gần đây' },
+]
+
+/** Kiểm tra chuỗi ngày YYYY-MM-DD có khớp bộ lọc thời gian so với `today` không. */
+export function matchesVnDate(itemDate: string, filter: DateFilter, today: string): boolean {
+  if (filter === 'all' || !itemDate) return true
+  if (filter === 'today') return itemDate === today
+  if (filter === 'yesterday') return itemDate === addDays(today, -1)
+  if (filter === 'day_before') return itemDate === addDays(today, -2)
+  if (filter === 'last_3_days') return itemDate >= addDays(today, -3) && itemDate <= today
+  if (filter === 'last_7_days') return itemDate >= addDays(today, -7) && itemDate <= today
+  if (filter === 'last_30_days') return itemDate >= addDays(today, -30) && itemDate <= today
+  return true
+}
+
+/** "22/10/2026" theo giờ Việt Nam. */
+export function formatDateVn(iso: string | null | undefined) {
+  const day = iso ? vnDate(iso) : ''
+  if (!day) return '—'
+  const [y, m, d] = day.split('-')
+  return `${d}/${m}/${y}`
+}
+
 function parts(date: string) {
   const d = new Date(`${date}T12:00:00Z`)
   return { weekday: d.getUTCDay(), day: d.getUTCDate(), month: d.getUTCMonth() + 1, year: d.getUTCFullYear() }

@@ -33,7 +33,7 @@ export const heroImages = {
 export const hero = {
   // U+00A0 giữ cụm từ trên một dòng khi xuống hàng
   title: 'Giải pháp điện mặt trời cho ngôi nhà của bạn',
-  lede: 'Khảo sát nhu cầu, tư vấn lắp đặt và quản lý bảo hành, bảo trì trên cùng một nền tảng.',
+  lede: 'Khảo sát, tư vấn lắp đặt và quản lý bảo hành, bảo trì cho nhà ở tại TP.HCM, trên cùng một nền tảng.',
   cta: 'Đăng ký khảo sát',
   secondary: 'Khám phá giải pháp',
 }

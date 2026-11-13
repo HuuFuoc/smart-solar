@@ -1,0 +1,45 @@
+# Kiểm tra mỗi lần push lên main và mỗi pull request.
+# Deploy do Vercel Git integration lo (push main = production, nhánh khác / PR = preview),
+# workflow này chỉ chặn code hỏng: bật "Require status checks" cho job `check` ở branch protection của main.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Cài dependencies
+        run: npm ci
+
+      - name: Định dạng (Prettier)
+        run: npm run format:check
+
+      - name: Lint (oxlint)
+        run: npm run lint
+
+      - name: Unit test
+        run: npm test
+
+      # tsc -b rồi vite build. Không khai VITE_API_BASE_URL thì app gọi /api, khớp rewrite trong vercel.json.
+      - name: Typecheck + build
+        run: npm run build

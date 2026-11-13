@@ -80,7 +80,7 @@ export function ForgotPasswordPage() {
           >
             <Icon
               name={submitting ? 'progress_activity' : 'send'}
-              className={submitting ? 'animate-spin text-[18px]' : 'text-[18px]'}
+              className={submitting ? 'animate-spin text-[20px]' : 'text-[20px]'}
             />
             {submitting ? forgotContent.submitting : forgotContent.submit}
           </button>

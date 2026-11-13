@@ -15,6 +15,12 @@ export type ContractTermsRequest = {
   warrantyMonths?: number | null
 }
 
+export type DiscardContractRequest = {
+  /** Format: int32 */
+  revision?: number | null
+  reason?: string | null
+}
+
 export type OfficialDocumentRequest = {
   /** Format: int32 */
   revision?: number
