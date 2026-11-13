@@ -144,6 +144,8 @@ export const ENDPOINTS = {
     reconsideration: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}/reconsideration`,
     reportFault: (requestId: string) => `/customers/me/after-sales/requests/${encode(requestId)}/report-fault`,
     notifications: '/customers/me/after-sales/notifications',
+    notificationRead: (notificationId: string) =>
+      `/customers/me/after-sales/notifications/${encode(notificationId)}/read`,
   },
 
   // Kinh doanh

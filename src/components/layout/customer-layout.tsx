@@ -17,7 +17,7 @@ import { useMyServiceRequestsQuery, useNotificationsQuery } from '@/hooks/useCus
 import { useMyDispatchesQuery } from '@/hooks/useDispatch'
 import { useNavAlert } from '@/hooks/useNavAlert'
 import { ROUTES } from '@/routes/paths'
-import type { NotificationView, ServiceRequestSummary, SubscriptionView } from '@/types/res/customerAfterSalesRes'
+import type { ServiceRequestSummary, SubscriptionView } from '@/types/res/customerAfterSalesRes'
 import type { ContractView } from '@/types/res/customerContractsRes'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
@@ -58,11 +58,6 @@ const contractAlert = {
   sig: (c: ContractView) => c.status,
   todo: isCustomerTodo,
 }
-// Thông báo mới kể từ lần xem trước trên trình duyệt này (backend chưa có lệnh đánh dấu đã đọc)
-const notificationAlert = {
-  key: (n: NotificationView) => n.notificationId,
-  sig: () => '',
-}
 const subscriptionAlert = {
   key: (s: SubscriptionView) => s.subscriptionId,
   sig: (s: SubscriptionView) => s.status,
@@ -90,11 +85,8 @@ export function CustomerLayout({ children }: { children?: ReactNode }) {
   const services = useNavAlert(ROUTES.customer.afterSales, useMyServiceRequestsQuery({ enabled }).data, serviceAlert)
   const packages = useNavAlert(ROUTES.customer.packages, useSubscriptionsQuery({ enabled }).data, subscriptionAlert)
   const contracts = useNavAlert(ROUTES.customer.contracts, useMyContractsQuery({ enabled }).data, contractAlert)
-  const notifications = useNavAlert(
-    ROUTES.customer.notifications,
-    useNotificationsQuery({ enabled }).data,
-    notificationAlert,
-  )
+  // Số chưa đọc theo `readAt` lưu trên server, không theo dấu "đã xem" trên trình duyệt
+  const notifications = useNotificationsQuery({ enabled }).data?.filter((n) => !n.readAt).length
   return (
     <CustomerShell
       badges={{

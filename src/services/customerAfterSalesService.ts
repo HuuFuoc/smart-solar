@@ -145,3 +145,8 @@ export function reportFaultFromMaintenance(requestId: string, body: FaultFromMai
 export function listNotifications() {
   return get<NotificationView[]>(api.notifications)
 }
+
+/** Đánh dấu đã đọc (lưu `readAt` trên server nên mọi máy cùng thấy); gọi lại lần nữa giữ giờ đọc đầu tiên */
+export function markNotificationRead(notificationId: string) {
+  return post<NotificationView>(api.notificationRead(notificationId))
+}

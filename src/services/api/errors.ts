@@ -221,6 +221,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   AFTER_SALES_INVALID_STATE: 'Trạng thái đã thay đổi nên không làm được thao tác này. Tải lại để xem trạng thái mới.',
   AFTER_SALES_STALE_REVISION: 'Dữ liệu vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
   AFTER_SALES_REASON_REQUIRED: 'Ghi lý do.',
+  NOTIFICATION_NOT_FOUND: 'Không tìm thấy thông báo này.',
   SERVICE_PACKAGE_NOT_FOUND: 'Không tìm thấy gói này. Danh sách gói đã được tải lại.',
   SERVICE_PACKAGE_INACTIVE: 'Gói này đã ngừng bán. Danh sách gói đã được tải lại.',
   SERVICE_SUBSCRIPTION_NOT_FOUND: 'Không tìm thấy gói đã mua.',
