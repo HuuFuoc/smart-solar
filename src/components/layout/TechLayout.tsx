@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, Outlet } from 'react-router'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Count } from '@/components/common/ui/badge'
 import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
@@ -51,9 +52,30 @@ export function TechLayout({ children }: { children?: ReactNode }) {
       : visitsWaiting
         ? { to: ROUTES.tech.afterSales, value: visitsWaiting, text: 'buổi hẹn chờ bạn nhận' }
         : null
+  const rawZones = [
+    ...(installations?.map((i) => i.zoneName) ?? []),
+    ...(open?.map((j) => j.zone?.name) ?? []),
+  ].filter((z): z is string => Boolean(z && z.trim().length > 0))
+
+  const uniqueZones = Array.from(new Set(rawZones))
+  const zoneDisplay = uniqueZones.length > 0 ? uniqueZones.join(', ') : 'Khu Thủ Đức'
+
   return (
     <AppShell
       portal={PORTALS.tech}
+      context={
+        <div className="rounded-control border border-line bg-surface-2 px-2.5 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <Icon name="location_on" className="shrink-0 text-[16px] text-accent" />
+            <div className="min-w-0 flex-1">
+              <p className="text-meta text-fg-3">Khu vực phụ trách</p>
+              <p className="truncate text-body font-medium text-fg" title={zoneDisplay}>
+                {zoneDisplay}
+              </p>
+            </div>
+          </div>
+        </div>
+      }
       badges={{
         [ROUTES.tech.jobs]: { value: waiting + jobs, attention: true },
         [ROUTES.tech.installations]: { value: installationsAlert, attention: true },
