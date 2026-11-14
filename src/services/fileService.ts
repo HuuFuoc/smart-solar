@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { FILE_REJECTION_REASONS, FILE_STATUSES, FILE_TYPE_EXTENSIONS, type FilePurpose } from '@/common/file'
 import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
@@ -67,76 +68,28 @@ export async function sha256Hex(bytes: ArrayBuffer) {
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-// PUT thẳng lên S3: không dùng axios vì axios tự động thêm header "Accept: application/json, text/plain, */*",
-// khiến preflight CORS của S3 bị từ chối 403 (S3 chỉ cho phép header Content-Type đã ký).
-function putToStorage(
+// PUT thẳng lên S3 bằng axios trần: không đi qua apiClient để không gửi kèm token của hệ thống.
+// Lỗi gốc của axios chứa link ký sẵn nên không ném ra ngoài
+async function putToStorage(
   target: UploadUrlView,
   file: Blob,
   { onProgress, signal }: { onProgress?: (fraction: number) => void; signal?: AbortSignal },
 ) {
-  if (typeof XMLHttpRequest !== 'undefined') {
-    return new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.open(target.method, target.uploadUrl)
-
-      // Chỉ gửi đúng các header backend đã ký (vd: Content-Type), không gửi Accept hay Authorization
-      if (target.headers) {
-        for (const [key, value] of Object.entries(target.headers)) {
-          xhr.setRequestHeader(key, value)
-        }
-      }
-
-      if (onProgress && xhr.upload) {
-        xhr.upload.onprogress = (event) => {
-          if (event.total) onProgress(event.loaded / event.total)
-        }
-      }
-
-      if (signal) {
-        if (signal.aborted) {
-          xhr.abort()
-          return reject(new ApiError({ status: 0, message: 'Đã huỷ tải tệp.' }))
-        }
-        signal.addEventListener('abort', () => xhr.abort(), { once: true })
-      }
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve()
-        } else {
-          reject(new ApiError({ status: xhr.status, message: storageFailureMessage(xhr.status) }))
-        }
-      }
-
-      xhr.onerror = () => {
-        reject(new ApiError({ status: 0, message: storageFailureMessage(0) }))
-      }
-
-      xhr.onabort = () => {
-        reject(new ApiError({ status: 0, message: 'Đã huỷ tải tệp.' }))
-      }
-
-      xhr.send(file)
+  try {
+    await axios.request({
+      method: target.method,
+      url: target.uploadUrl,
+      data: file,
+      headers: target.headers,
+      signal,
+      onUploadProgress: (event) => {
+        if (event.total) onProgress?.(event.loaded / event.total)
+      },
     })
+  } catch (error) {
+    const status = axios.isAxiosError(error) ? (error.response?.status ?? 0) : 0
+    throw new ApiError({ status, message: storageFailureMessage(status) })
   }
-
-  // Fallback sang fetch (cho môi trường Node.js / test)
-  return fetch(target.uploadUrl, {
-    method: target.method,
-    headers: target.headers,
-    body: file,
-    signal,
-  })
-    .then(async (res) => {
-      if (!res.ok) {
-        throw new ApiError({ status: res.status, message: storageFailureMessage(res.status) })
-      }
-      onProgress?.(1)
-    })
-    .catch((err) => {
-      if (err instanceof ApiError) throw err
-      throw new ApiError({ status: 0, message: storageFailureMessage(0) })
-    })
 }
 
 // Status 0 khi đang có mạng thường là S3 trả lời không kèm CORS (vd. 301 vì backend ký sai vùng của bucket),
