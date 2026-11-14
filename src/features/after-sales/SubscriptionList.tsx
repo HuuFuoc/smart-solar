@@ -133,6 +133,7 @@ export function SubscriptionList({
   return (
     <ul className="space-y-3">
       {[...items].sort(bySubscriptionRank).map((s) => {
+        const isMaint = isMaintenance(s.kind)
         const status = subscriptionStatusMeta(s.status)
         const mode = cancelMode(s.status)
         const term = termText(s)
@@ -144,8 +145,8 @@ export function SubscriptionList({
           >
             <div className="grid gap-x-6 gap-y-3 lg:grid-cols-[auto_minmax(0,1.2fr)_minmax(0,1.8fr)_auto] lg:items-center">
               {/* Left Icon Box */}
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-container border border-accent-line/30 bg-accent-soft text-accent-fg">
-                <Icon name="bolt" className="text-[20px]" />
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-container border border-accent-line/30 bg-accent-soft text-primary">
+                <Icon name={isMaint ? 'build' : 'verified_user'} className="text-[20px] text-primary" />
               </div>
 
               {/* Col 1: Package Title and Contract / Price info */}
