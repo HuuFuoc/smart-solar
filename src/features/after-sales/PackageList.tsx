@@ -10,7 +10,6 @@ import {
   visitMonthsLabel,
 } from '@/features/after-sales/afterSalesDisplay'
 import type { PackageView } from '@/types/res/customerAfterSalesRes'
-import { cx } from '@/utils/cx'
 import { formatMoney } from '@/utils/format'
 
 const vnd = (amount: number | null) => <span className="tnum">{formatMoney(amount, 'VND')}</span>
@@ -51,16 +50,8 @@ function PackageCard({ pkg: p, onBuy }: { pkg: PackageView; onBuy: (pkg: Package
       <div className="flex flex-wrap items-start justify-between gap-4">
         {/* Header Left: Icon Box + Title/Subtitle */}
         <div className="flex items-start gap-4 min-w-0">
-          <div
-            className={cx(
-              'flex h-12 w-12 shrink-0 items-center justify-center rounded-container',
-              isMaint ? 'bg-accent-soft text-primary border border-accent-line/30' : 'bg-primary text-primary-fg',
-            )}
-          >
-            <Icon
-              name={isMaint ? 'build' : 'verified_user'}
-              className={cx('text-[24px]', isMaint ? 'text-primary' : 'text-primary-fg')}
-            />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-container border border-accent-line/30 bg-accent-soft text-primary">
+            <Icon name={isMaint ? 'build' : 'verified_user'} className="text-[24px] text-primary" />
           </div>
           <div className="min-w-0">
             <h3 className="text-title font-bold text-fg">{kindTitle}</h3>
