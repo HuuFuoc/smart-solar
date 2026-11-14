@@ -12,6 +12,7 @@ import { ChatThread } from '@/features/chat/ChatThread'
 import { CHAT_UNAVAILABLE, CHAT_UNAVAILABLE_ADMIN, chatSendError } from '@/features/chat/chatDisplay'
 import { chatMessageProblem, isSessionId, nextAttempt, type ChatAttempt } from '@/features/chat/chatRules'
 import { useAskChatMutation, useChatNotices, useChatSessionQuery, useChatSessionsQuery } from '@/hooks/useChat'
+import { useFillViewport } from '@/hooks/useFillViewport'
 import { useLatest } from '@/hooks/useLatest'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useRetryCountdown } from '@/hooks/useRetryCountdown'
@@ -36,6 +37,8 @@ export function AssistantPage() {
   const notices = useChatNotices()
   const ask = useAskChatMutation()
   const isDesktop = useMediaQuery('(min-width: 1024px)')
+  // Khung chat cao tới đáy màn hình (16px = lề dưới của <main>): danh sách và tin nhắn tự cuộn, ô hỏi luôn thấy
+  const [fillRef, fillHeight] = useFillViewport(16)
   usePageCrumb(detail.data?.session.title ?? null)
 
   const [draft, setDraft] = useState('')
@@ -113,31 +116,38 @@ export function AssistantPage() {
           </Button>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+      <div
+        ref={fillRef}
+        style={{ height: fillHeight }}
+        className="grid min-h-96 grid-rows-[auto_minmax(0,1fr)] gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]"
+      >
         {isDesktop ? (
           <aside aria-label="Các cuộc trò chuyện">
-            <div className="flex h-full min-h-[580px] flex-col rounded-container border border-line bg-canvas p-3">
+            <div className="flex h-full flex-col rounded-container border border-line bg-canvas p-3">
               <div className="mb-2 px-3 pt-2">
                 <h2 className="text-meta font-semibold text-fg-2">Lịch sử trò chuyện</h2>
               </div>
-              <div className="flex-1 overflow-y-auto">{list}</div>
+              <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-thin">{list}</div>
             </div>
           </aside>
         ) : (
-          <details className="group rounded-container border border-line bg-canvas px-3 py-2">
+          // key: chọn cuộc trò chuyện khác thì danh sách gập lại, khung chat bên dưới đủ chỗ
+          <details key={sessionId ?? 'new'} className="group rounded-container border border-line bg-canvas px-3 py-2">
             <summary className="tap flex min-h-11 cursor-pointer items-center justify-between gap-3 text-body font-medium text-fg">
               Cuộc trò chuyện trước{sessions.data ? ` (${sessions.data.length})` : ''}
               <Icon name="expand_more" className="text-[20px] text-fg-2 transition-transform group-open:rotate-180" />
             </summary>
-            <div className="mt-2 border-t border-line pt-2">{list}</div>
+            <div className="mt-2 max-h-[40dvh] overflow-y-auto overscroll-contain border-t border-line pt-2 scrollbar-thin">
+              {list}
+            </div>
           </details>
         )}
 
         <section
           aria-label="Cuộc trò chuyện"
-          className="flex min-h-[580px] min-w-0 flex-col overflow-hidden rounded-container border border-line bg-canvas"
+          className="flex min-w-0 flex-col overflow-hidden rounded-container border border-line bg-canvas"
         >
-          <div className="flex-1 overflow-y-auto px-4 py-6 md:px-6">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 scrollbar-thin md:px-6">
             <ChatThread
               sessionId={sessionId}
               badSessionParam={badSessionParam}
