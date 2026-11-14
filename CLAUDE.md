@@ -318,9 +318,9 @@ và chuyển về trang chủ portal. Đang hiện:
   - Thanh toán (`PaymentDialog.tsx`): GET .../after-sales/payments/{attemptId} (dùng chung cho mọi checkout after-sales của
     khách, BE đối soát với PayOS khi link còn PENDING / PROCESSING), hỏi lại mỗi 10 giây khi link còn chờ (giới hạn 30 lần /
     phút). Link hết chờ thì tải lại gói đã mua và hợp đồng. Không tin trang PayOS chuyển về; `qrCode` là chuỗi VietQR, không vẽ.
-  - Huỷ (`CancelSubscriptionDialog.tsx`, lý do bắt buộc, BE giữ 500 ký tự): `AWAITING_PAYMENT` / `CHECKOUT_EXPIRED` huỷ ngay
-    (link chung bị huỷ, gói khác cùng link thành `CHECKOUT_EXPIRED`); `PAID` thành `CANCELLATION_REQUESTED` chờ quản lý, hoàn
-    tiền thủ công; `ACTIVE` không huỷ trên mạng. Toast theo trạng thái BE trả về.
+  - Huỷ (`CancelSubscriptionDialog.tsx`, lý do bắt buộc, BE giữ 500 ký tự): chỉ đơn chưa trả tiền (`AWAITING_PAYMENT` /
+    `CHECKOUT_EXPIRED`) huỷ ngay (link chung bị huỷ, gói khác cùng link thành `CHECKOUT_EXPIRED`). Gói đã trả tiền (`PAID`) và
+    `ACTIVE` không huỷ trên mạng: huỷ gói đã trả là xin hoàn tiền, nhóm không làm hoàn tiền. Toast theo trạng thái BE trả về.
   - Kỳ bắt đầu khi đã thanh toán VÀ công trình đã bàn giao (mốc muộn hơn); ngày bắt đầu bảo vệ (`coverageStartsAt`) do BE ghi
     sau thời gian chờ (cài đặt `afterSales.disasterWaitingDays`, khách không đọc được) nên FE chỉ in ngày BE trả.
 
@@ -343,8 +343,8 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
     trên báo giá, FE không tính. Xét bảo hành chọn được "Gói bảo vệ thiên tai" khi claim đã `APPROVED`.
   - "Kết thúc yêu cầu" (`RequestClosePanel`): đóng vì trùng (chọn yêu cầu gốc cùng công trình từ danh sách, xem lại trước khi
     đóng; `possibleDuplicates` chỉ để cảnh báo; khoá khi đã có báo giá đã trả), dừng việc (chỉ việc đã bắt đầu như
-    `CancelAsync` của khách định nghĩa; số hoàn nguyên ≤ số khách đã trả, lý do bắt buộc), không thực hiện được (chỉ bảo trì lẻ
-    chưa làm; BE huỷ yêu cầu và duyệt hoàn 100 %). Khoản hoàn sinh ra là "đã duyệt", chưa phải "đã hoàn".
+    `CancelAsync` của khách định nghĩa; chỉ hỏi lý do, luôn gửi `refundAmount` 0), không thực hiện được (chỉ bảo trì lẻ chưa
+    làm; BE huỷ yêu cầu). Xét huỷ việc đã trả tiền không hỏi chi phí giữ lại (gửi `nonRecoverableAmount` 0).
   - Sửa thiết bị (`AssetCorrectionPanel`, PUT .../assets/{id}): chỉ gửi ô đã đổi, lý do bắt buộc; hãng / model / serial không
     xoá được (BE giữ giá trị cũ khi bỏ trống). Chi tiết công trình không trả `specifications` nên ô thông số chỉ ghi mới.
   - Lỗi `AFTER_SALES_INVALID_STATE` dịch theo câu gốc của BE (`managerActionError` ở `managerAfterSalesDisplay.ts`).
@@ -353,13 +353,9 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
   lấy từ `GET /manager/after-sales/sales-assignees` (MANAGER + ADMIN, chỉ mã + họ tên kinh doanh đang hoạt động), không dùng
   `GET /admin/users`. API này chỉ có trong bản vá backend chưa merge (`smart-solar-backend-test`, nhánh
   `test/post-audit-remediation`); backend chưa vá thì hộp "Giao việc" báo lỗi. Không đếm hạn xử lý ở FE.
-- Hoàn tiền `/manage/refunds`, `/admin/refunds` (`pages/refunds-page.tsx`): khoản `PENDING_APPROVAL` có "Xét hoàn tiền" (duyệt
-  số ≤ số gốc / không hoàn, cả hai vai trò); khoản `APPROVED` chỉ quản trị "Ghi nhận đã hoàn". Khoản do huỷ gói, dừng việc,
-  không thực hiện được đã được duyệt sẵn nên không xét lần hai. Lý do tiếng Anh của BE dịch ở `refundReasonText`.
-- Xét huỷ gói đã trả tiền `/manage/package-cancellations(/:id)` (menu "Huỷ gói", `pages/package-cancellations-page.tsx`, luật
-  `packageCancellationErrors/Body`): hàng chờ `GET /manager/after-sales/subscriptions` (mặc định `CANCELLATION_REQUESTED`) và chi
-  tiết `GET …/subscriptions/{id}` thuộc bản vá backend chưa merge (như `sales-assignees`). Đồng ý gửi số hoàn ≤ giá, không ghi
-  chú; từ chối không gửi số tiền, gói về PAID. Duyệt tạo khoản hoàn "đã duyệt", quản trị ghi nhận ở Hoàn tiền.
+- Nhóm không làm hoàn tiền (người dùng chốt 13/11/2026): web không có màn Hoàn tiền (duyệt / ghi nhận khoản hoàn) và Huỷ gói
+  (xét huỷ gói đã trả tiền); báo cáo sau bán bỏ "Đã hoàn" và "Thực thu" (`DASHBOARD_HIDDEN_KEYS`). Đừng thêm lại. Nhãn trạng thái
+  thanh toán `REFUND_REQUIRED` (khách trả hai lần) vẫn giữ vì là trạng thái BE trả về.
 - Kỹ thuật viên `/tech/after-sales` + `/:id` (theo mã buổi hẹn): nhận / từ chối, bắt đầu (sớm nhất 2 giờ trước giờ hẹn, khoá
   nút và ghi rõ giờ), ảnh hiện trường (`uploadFile` mục đích `SERVICE_EVIDENCE`, gắn vào buổi hẹn; BE bắt ít nhất 1 ảnh trước
   báo cáo), báo cáo kiểm tra (không lỗi hoặc danh sách hạng mục), báo cáo sửa / bảo trì, khách vắng.
@@ -524,6 +520,8 @@ nhập làm nguồn chính + kéo thả vật cản.
     "Đã đạt" cần tài liệu `PROJECT_DOCUMENT` đã xác minh (PDF / JPEG / PNG ≤ 20 MB): chọn tệp trong hộp thoại thì tải lên lúc Lưu
     (lưu lỗi thì lần sau dùng lại tệp đã tải), không chọn thì giữ tài liệu đang gắn; tên tài liệu đang gắn đọc qua GET
     /api/files/{id}. Huỷ (trước khi thi công) và trả về làm lại (chỉ khi chờ khách nghiệm thu) bắt buộc lý do ≤ 500 ký tự.
+  - Thiết bị khác hợp đồng (`EquipmentPanel`, `equipmentComparable`): chỉ xét khi đã bắt đầu lắp (đang lắp, sửa lại, chờ
+    nghiệm thu, đã bàn giao). Trước đó số đã lắp là 0 nên backend vẫn trả `SUBSTITUTION_APPROVAL_REQUIRED`, giao diện bỏ qua.
   - Mọi mutation gửi revision đang hiện, không cập nhật lạc quan; 409 thì báo lỗi, dữ liệu tự tải lại, người dùng tự gửi lại.
     Link ảnh: xin khi mở khung xem (`gcTime: 0`), tải về qua mutation, ảnh lỗi xin lại một lần.
 
@@ -644,7 +642,8 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
   đồng" và danh sách phiên bản), khối Tình hình thêm bước "Hợp đồng"; trang `/ops/contracts/:id` (menu "Của tôi"; backend không
   có danh sách mọi hợp đồng nên không có mục menu riêng). Thời hạn bảo hành chọn từ
   `GET /sales/after-sales/warranty-options?kind=INSTALLATION` (API của kinh doanh, chỉ tuỳ chọn đang bật; "mặc định" gửi null
-  để backend tự lấy); thiếu thời hạn thì khoá "Phát hành". PDF chính thức tạo ngoài hệ thống, ghi mã nội dung lên PDF; `OfficialDocumentDialog` tải lên
+  để backend tự lấy); thiếu điều khoản hoặc thời hạn thì khoá "Phát hành" và ghi lý do (`issueBlockers`, backend
+  `CONTRACT_TERMS_REQUIRED` / `CONTRACT_WARRANTY_REQUIRED`). PDF chính thức tạo ngoài hệ thống, ghi mã nội dung lên PDF; `OfficialDocumentDialog` tải lên
   `CONTRACT_DOCUMENT` rồi gửi `revision` + `canonicalHash` của phiên bản lúc mở hộp thoại (người dùng tick xác nhận), không
   tự tính hash.
 - Duyệt bản ký (`SignaturePanel`): kinh doanh phụ trách và quản lý (`/manage/contracts/:id`); quản trị
@@ -659,7 +658,8 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
   sách đó dẫn về trang hợp đồng.
 - Mọi lệnh ghi gửi `revision` đang hiện; 409 thì báo lỗi, tải lại, không tự gửi lại. 429 báo số giây theo Retry-After (10 lệnh
   ghi / phút). Yêu cầu khảo sát đã có hợp đồng còn hiệu lực thì ẩn "Đóng yêu cầu" (backend 31/10 từ chối).
-- Huỷ bản nháp đầu tiên chưa phát hành (`POST /contracts/{id}/discard`, lý do bắt buộc ≤ 1000): nút "Huỷ bản nháp" ở khối Bản nháp; báo giá đó không lập hợp đồng mới được nữa.
+- Huỷ bản nháp đầu tiên chưa phát hành (`POST /contracts/{id}/discard`, lý do bắt buộc ≤ 1000): nút "Huỷ bản nháp" ở khối Bản nháp; báo giá đó không lập hợp đồng mới được nữa, nên Tình hình của yêu cầu
+  nhắc đóng yêu cầu (trừ khi biên bản đổi thì lập bản sửa báo giá).
 
 **Hợp đồng và thanh toán, phía khách** (03/11/2026; `/customer/contracts(/:id)`, menu "Hợp đồng"; backend `main` 7c79fa8:
 `CustomerContractsController`, `ContractHandlers.SubmitSignedDocumentAsync`, `CustomerPaymentsController`, `PaymentService`).
@@ -728,7 +728,9 @@ theo đội / ca / mốc (`InstallationTaskPage`, `InstallationChecklistPage`, `
   ở ô vị trí chuyển ô, không gửi form. Đã lưu thì không sửa / xoá được nên báo serial trùng (cùng hãng: trong ô, với dòng trên, với
   thiết bị đã lưu) trước khi gửi.
 - Báo cáo hoàn thành (≤ 8000 ký tự, hỏi xác nhận) cần ít nhất một ảnh của lượt hiện tại (khoá nút) và mặc định tấm pin + inverter
-  (cấu hình được ở backend nên chỉ nhắc). Gửi xong công trình chờ khách nghiệm thu; kỹ thuật viên không tự đánh dấu hoàn tất.
+  (cấu hình được ở backend nên chỉ nhắc). Thiết bị lắp khác hợp đồng mà quản lý chưa duyệt (`awaitsSubstitutionApproval`)
+  thì khoá nút và Tình hình ghi "chờ quản lý duyệt". Gửi xong công trình chờ khách nghiệm thu; kỹ thuật viên không tự đánh dấu
+  hoàn tất.
 - Ảnh lắp đặt (`EvidenceUpload.tsx`, khi `canWork`): chọn nhiều ảnh, mỗi ảnh một ô chú thích (≤ 300 ký tự), "Tải lên N ảnh"
   chạy hàng đợi `useUploadQueue` (mục "Tải tệp lên kho S3" dưới): tải `INSTALLATION_EVIDENCE` rồi gắn vào lượt hiện tại bằng
   `POST …/evidence` (`fileId`, `caption`). Ảnh tải xong mà gắn lỗi thì "thử lại" chỉ gắn. Xem ảnh: `GET …/evidence` rồi xin URL
@@ -778,6 +780,8 @@ thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
     `inert`, Esc / bấm nền / chọn trang thì đóng và trả focus về nút Menu. Đóng / mở drawer suy ra từ đường dẫn lúc mở, không
     đặt state trong effect. `<main>` rộng hết, lề 16px như khung nhân viên để ActionBar và Table lấn mép
     đúng; trang con có nút viền "← <mục>" về mục đang chọn trên menu (tên trang đã ở tiêu đề). Control bên trong vẫn là portal kit.
+    Chuông thông báo (không có trong menu): dưới lg ở cuối thanh trên, từ lg nằm tuyệt đối ở góc phải `<main>` (phần tử cuối của
+    main); `PageHeader` đứng đầu main được chừa `lg:pr-28` để chuông có số 2 chữ số không đè nút. Số = thông báo chưa đọc (`readAt`).
 
 Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 16px. Đầu rail là biểu tượng
 thương hiệu (`public/images/mark-96.png`, nền trong suốt) + "Smart Solar" + tên portal (ngắt dòng cân bằng `text-balance`); mỗi mục
@@ -808,7 +812,7 @@ vai trò (chỉ đọc), Đổi mật khẩu, Giao diện (mở thêm tầng T�
   KHÔNG copy rail vào từng page; layout còn được vẽ làm khung chờ (`hydrateFallbackElement`) TRƯỚC `RequireRole` nên
   query trong layout phải chờ `useAuth().user` đúng vai trò mới gọi API.
 
-Mật độ (gọn thêm 03/11/2026, cho cả khung nhân viên và khung khách hàng): lề nội dung 16px (`p-4`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; tiêu đề trang → nội dung 16px (`PageHeader` `mb-4`); giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; ô bảng `py-2`, `ListRow` `py-3`, Panel có khung `p-4`. Danh sách của khách luôn có dòng "Hiển thị x–y trên N" + thanh trang, 10 dòng/trang (`PagedList` khi API trả cả danh sách, `ListPager` khi API phân trang; `components/common/ui/pagination.tsx`). Thêm màn mới thì theo đúng các bậc này, đừng quay lại 24px hay 48px.
+Mật độ (gọn thêm 03/11/2026, cho cả khung nhân viên và khung khách hàng): lề nội dung 16px (`p-4`), không giới hạn bề rộng `<main>`; rail portal kit `w-52`; tiêu đề trang → nội dung 16px (`PageHeader` `mb-4`); giữa cột/khối 24px (`gap-6`); giữa các Panel 16px + đường kẻ; ô bảng `py-2`, `ListRow` `py-3`, Panel có khung `p-4`. Danh sách của khách (báo giá, hợp đồng, yêu cầu): số trên tab và tiêu đề nhóm là xám vì số đỏ đã ở menu; nhóm chỉ một trạng thái thì ẩn cột Trạng thái. Danh sách của khách luôn có dòng "Hiển thị x–y trên N" + thanh trang, 10 dòng/trang (`PagedList` khi API trả cả danh sách, `ListPager` khi API phân trang; `components/common/ui/pagination.tsx`). Thêm màn mới thì theo đúng các bậc này, đừng quay lại 24px hay 48px.
 
 Menu của từng portal nằm ở `config/portals.ts` và chỉ có màn có dữ liệu thật (mục "Chỉ hiện màn có dữ liệu thật").
 Tên mục dài thì xuống dòng trong rail, không cắt bằng "…".
@@ -874,12 +878,12 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 | `/coming-soon`                                               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                                                                                              |
 | `/products`, `/products/:id`                                 | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                                                                                                     |
 | `/payments/return`, `/payments/cancel`, `/return`, `/cancel` | –                | PayOS chuyển về; chuyển ngay tới trang đã mở link thanh toán (`PaymentReturnPage`)                                                                                                                                         |
-| `/admin/*`                                                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ, Việc của kinh doanh (giao việc), Hoàn tiền (xét, ghi nhận) – bọc `<RequireRole role="admin">`                                                                   |
+| `/admin/*`                                                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ, Việc của kinh doanh (giao việc) – bọc `<RequireRole role="admin">`                                                                                              |
 | `/tech/*`                                                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                                                                     |
 | `/customer/*`                                                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Báo giá (đồng ý / yêu cầu sửa), Hợp đồng (ký, PayOS), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói, đặt lượt bảo trì), Thông báo, Sản phẩm – bọc `<RequireRole role="customer">` |
 | `/ops/*`                                                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá, hợp đồng), Bảo hành / việc nhắc khách – bọc `<RequireRole role="sales">`                                                                                     |
 | `/field/*`                                                   | —                | chuyển về `/tech`                                                                                                                                                                                                          |
-| `/manage/*`                                                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Duyệt giá báo giá, Bảo hành (quyết định, kết thúc yêu cầu, sửa thiết bị), Việc của kinh doanh (xem), Hoàn tiền (xét), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">` |
+| `/manage/*`                                                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Duyệt giá báo giá, Bảo hành (quyết định, kết thúc yêu cầu, sửa thiết bị), Việc của kinh doanh (xem), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                  |
 | `/styleguide`                                                | –                | `StyleguidePage`                                                                                                                                                                                                           |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.

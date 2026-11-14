@@ -62,6 +62,7 @@ và không thêm file vào danh sách bỏ qua.
   thì báo lỗi, không xếp dòng đó vào nhóm theo dữ liệu thiếu.
 - Tránh gọi API riêng cho từng dòng của danh sách: backend giới hạn số lần gọi mỗi phút (nhóm lịch 20 lần / phút / người),
   mở lại trang vài lần là bị 429.
+- Nhóm không làm hoàn tiền: không thêm màn, nút, ô số tiền hay số đỏ về hoàn tiền; lệnh backend có trường số hoàn thì gửi 0.
 
 ## Bố cục theo cổng
 
