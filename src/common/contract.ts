@@ -76,6 +76,10 @@ export const PAYMENT_EVENT_SOURCES: Record<string, string> = {
 }
 
 /** Giới hạn của backend (cột trong DB, Trim của ContractHandlers) */
+// Backend `main` chưa có API link xem / tải PDF hợp đồng và bản ký (`…/official-document/url`, `…/submissions/{id}/url`):
+// ẩn nút Xem / Tải về, kinh doanh tự gửi PDF cho khách. Có API thì bật lại
+export const CONTRACT_DOCUMENT_LINKS = false
+
 export const CONTRACT_LIMITS = {
   /** Điều khoản dài hơn bị backend cắt */
   termsLength: 8000,

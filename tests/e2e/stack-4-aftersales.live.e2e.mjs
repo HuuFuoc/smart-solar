@@ -207,7 +207,7 @@ describe('4. Sau bán', { skip }, () => {
     assert.equal(again.error?.code, 'AFTER_SALES_INVALID_STATE')
   })
 
-  test('M07 + M08 + S12 + T04: khách trả tiền → việc báo giá; quản lý giao bằng danh sách kinh doanh → kinh doanh bắt đầu; kỹ thuật viên kết thúc buổi chờ', async () => {
+  test('M07 + M08 + S12 + T04: khách trả tiền → việc báo giá; quản trị giao bằng danh sách tài khoản kinh doanh → kinh doanh bắt đầu; kỹ thuật viên kết thúc buổi chờ', async () => {
     const fault = await F.reportFault(state.projectId, `Tấm pin nứt kính do va đập (${tag})`, {
       suspectedAssetId: state.panelAssetId,
     })
@@ -217,13 +217,17 @@ describe('4. Sau bán', { skip }, () => {
     const decided = await F.decideCoverage(fault.requestId, 'CHARGEABLE')
     assert.equal(decided.status, 'AWAITING_QUOTATION')
 
+    // Quản lý chỉ xem hàng việc: backend không có danh sách kinh doanh cho quản lý
     const manager = await as('MANAGER', '/manage/sales-tasks')
+    await manager.locator('section li', { hasText: short(fault.requestId) }).waitFor()
+    assert.equal(await manager.getByRole('button', { name: 'Giao việc' }).count(), 0)
+    const admin = await as('ADMIN', '/admin/sales-tasks')
     let t = mark()
     await expectCall('M07', t)
-    await sawPath('GET', /^\/api\/manager\/after-sales\/sales-assignees$/, t)
-    const row = manager.locator('section li', { hasText: short(fault.requestId) })
+    await sawPath('GET', /^\/api\/admin\/users$/, t)
+    const row = admin.locator('section li', { hasText: short(fault.requestId) })
     await row.getByRole('button', { name: 'Giao việc' }).click()
-    const dialog = manager.getByRole('dialog', { name: 'Giao việc' })
+    const dialog = admin.getByRole('dialog', { name: 'Giao việc' })
     await dialog.locator('#assign-sales').selectOption(await S.userId('SALES'))
     t = mark()
     await dialog.getByRole('button', { name: 'Giao việc' }).click()

@@ -13,8 +13,8 @@ import { isApiError } from '@/services/api/errors'
 import type { SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
-// Giao việc chưa ai nhận, hoặc giao lại việc đã có người giữ (bắt buộc lý do). Người nhận chọn trong danh sách kinh doanh đang
-// hoạt động của GET /manager/after-sales/sales-assignees (quản lý và quản trị cùng đọc được). Lưu ý `salesUserId` của lệnh
+// Giao việc chưa ai nhận, hoặc giao lại việc đã có người giữ (bắt buộc lý do). Người nhận chọn trong danh sách tài khoản kinh
+// doanh đang hoạt động (GET /admin/users, chỉ quản trị). Lưu ý `salesUserId` của lệnh
 // này khác `saleUserId` của lệnh đổi kinh doanh phụ trách yêu cầu khảo sát
 
 type SalesUsers = {

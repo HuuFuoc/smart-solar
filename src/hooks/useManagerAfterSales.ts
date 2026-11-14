@@ -112,7 +112,10 @@ export function useCorrectAssetMutation() {
   })
 }
 
-/** Người nhận việc chọn được (kinh doanh đang hoạt động); dùng chung cổng quản lý và quản trị */
+/**
+ * Người nhận việc chọn được (kinh doanh đang hoạt động). Backend chỉ có danh sách tài khoản cho quản trị, nên cổng quản lý
+ * không tải (và không giao việc được)
+ */
 export function useSalesAssigneesQuery({ enabled = true }: Options = {}) {
   return useQuery<SalesAssigneeView[], ApiError>({
     queryKey: managerAfterSalesKeys.salesAssignees(),

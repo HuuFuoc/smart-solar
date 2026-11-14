@@ -5,6 +5,7 @@ import {
   CONTRACT_STATUSES,
   PAYMENT_EVENT_SOURCES,
   PAYMENT_EVENT_TYPES,
+  CONTRACT_DOCUMENT_LINKS,
   SIGNATURE_OUTCOMES,
   STAFF_PAYMENT_ATTEMPT_STATUSES,
 } from '@/common/contract'
@@ -136,7 +137,9 @@ export function contractNextStep(c: ContractView, viewer: ContractViewer): Track
         ? {
             tone: 'danger',
             title: 'Đã gắn PDF, chưa gửi khách ký',
-            body: 'Gửi khách ký để khách tải PDF, ký tay và gửi lại bản ký.',
+            body: CONTRACT_DOCUMENT_LINKS
+              ? 'Gửi khách ký để khách tải PDF, ký tay và gửi lại bản ký.'
+              : 'Gửi khách ký, rồi gửi đúng tệp PDF đã gắn cho khách để khách ký tay và gửi lại bản ký.',
             action: { label: 'Gửi khách ký', icon: 'send', target: 'contract-actions' },
           }
         : { tone: 'info', title: 'Kinh doanh chưa gửi hợp đồng cho khách ký' }

@@ -28,9 +28,8 @@ import { errorMessage, isFeatureUnavailable, pendingMigrationsOf } from '@/servi
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
 // Hàng việc sau bán của kinh doanh nhìn từ quản lý / quản trị: báo giá sửa chữa, báo giá bảo trì lẻ, nhắc khách đặt lịch bảo
-// trì của gói, nhắc khách nghiệm thu. Kinh doanh tự nhận việc; quản lý giao việc chưa ai nhận hoặc giao lại kèm lý do. Không
-// có hạn xử lý của nhân viên: FE không đếm giờ. Việc nhắc bảo trì quá hạn do backend tự đóng (số ngày là cài đặt).
-// Người nhận chọn trong danh sách kinh doanh đang hoạt động mà cả quản lý và quản trị đọc được (GET .../sales-assignees)
+// trì của gói, nhắc khách nghiệm thu. Kinh doanh tự nhận việc; quản trị giao việc chưa ai nhận hoặc giao lại kèm lý do, quản lý
+// chỉ xem. Không có hạn xử lý của nhân viên: FE không đếm giờ. Việc nhắc bảo trì quá hạn do backend tự đóng (số ngày là cài đặt)
 
 type Viewer = 'manager' | 'admin'
 
@@ -119,7 +118,9 @@ function SalesTasksPage({ viewer }: { viewer: Viewer }) {
   const param = taskStatusParam(status)
   const filtered = useSalesTasksQuery(param, { enabled: param !== undefined })
   const query = param === undefined ? all : filtered
-  const sales = useSalesAssigneesQuery()
+  // Chỉ quản trị đọc được danh sách tài khoản kinh doanh nên chỉ quản trị giao việc
+  const canAssign = viewer === 'admin'
+  const sales = useSalesAssigneesQuery({ enabled: canAssign })
   const salesUsers = sales.data
   const nameOf = (id: string | null) => (id ? salesUsers?.find((u) => u.userId === id)?.fullName || null : null)
 
@@ -224,7 +225,7 @@ function SalesTasksPage({ viewer }: { viewer: Viewer }) {
                   task={t}
                   viewer={viewer}
                   ownerName={nameOf(t.assignedSalesUserId)}
-                  onAssign={setAssigning}
+                  onAssign={canAssign ? setAssigning : null}
                 />
               ))}
             </ul>

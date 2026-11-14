@@ -308,7 +308,6 @@ export const ENDPOINTS = {
       `/manager/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
     asset: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}`,
     warrantyActivation: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}/warranty-activation`,
-    salesAssignees: '/manager/after-sales/sales-assignees',
     tasks: '/manager/after-sales/tasks',
     assignTask: (taskId: string) => `/manager/after-sales/tasks/${encode(taskId)}/assign`,
   },

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CONTRACT_DOCUMENT_LINKS } from '@/common/contract'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
@@ -57,8 +58,9 @@ export function CustomerSignPanel({ contract: c }: { contract: ContractView }) {
         {c.officialDocument && <ContractDocumentButtons name="PDF chính thức" request={request()} />}
         {canSign && (
           <Notice>
-            Tải PDF chính thức, in và ký tay, rồi quét thành PDF để gửi lại. Mã nội dung in trên PDF phải trùng mã ở
-            đây; khi gửi bản ký, bạn kiểm tra được tệp PDF đang giữ có đúng bản chính thức không.
+            {CONTRACT_DOCUMENT_LINKS ? 'Tải PDF chính thức' : 'Nhận PDF chính thức từ nhân viên kinh doanh'}, in và ký
+            tay, rồi quét thành PDF để gửi lại. Mã nội dung in trên PDF phải trùng mã ở đây; khi gửi bản ký, bạn kiểm
+            tra được tệp PDF đang giữ có đúng bản chính thức không.
           </Notice>
         )}
         {c.status === 'UNDER_REVIEW' && (

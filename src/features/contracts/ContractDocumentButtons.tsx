@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CONTRACT_DOCUMENT_LINKS } from '@/common/contract'
 import { Button } from '@/components/common/ui/button'
 import { contractErrorMessage } from '@/features/contracts/contractDisplay'
 import type { DocumentDisposition } from '@/services/contractService'
@@ -7,14 +8,16 @@ import type { ContractDocumentUrlView } from '@/types/res/customerContractsRes'
 // Xem / tải một tài liệu hợp đồng (PDF chính thức, bản khách đã ký) bằng link ký sẵn xin đúng lúc bấm. Link hết hạn sau vài
 // phút nên không giữ lại, không đưa vào cache hay log, và không bao giờ tự ghép từ mã tệp
 
-export function ContractDocumentButtons({
-  name,
-  request,
-}: {
+type Props = {
   /** Tên tài liệu cho nhãn đọc bằng trình đọc màn hình, vd. "PDF chính thức" */
   name: string
   request: (disposition: DocumentDisposition) => Promise<ContractDocumentUrlView>
-}) {
+}
+
+export const ContractDocumentButtons = (props: Props) =>
+  CONTRACT_DOCUMENT_LINKS ? <DocumentButtons {...props} /> : null
+
+function DocumentButtons({ name, request }: Props) {
   const [busy, setBusy] = useState<DocumentDisposition | null>(null)
   const [error, setError] = useState<string | null>(null)
 

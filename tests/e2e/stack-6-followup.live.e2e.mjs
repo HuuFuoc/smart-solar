@@ -28,19 +28,18 @@ describe('6. Việc nhắc khách của kinh doanh', { skip }, () => {
     )
     assert.equal(task.status, 'OPEN')
 
-    const manager = await as('MANAGER', '/manage/sales-tasks')
-    const row = manager
+    const admin = await as('ADMIN', '/admin/sales-tasks')
+    const row = admin
       .locator('section li', { hasText: 'Nhắc khách đặt lịch bảo trì' })
-      .filter({ has: manager.getByRole('button', { name: 'Giao việc' }) })
+      .filter({ has: admin.getByRole('button', { name: 'Giao việc' }) })
     await row.first().getByRole('button', { name: 'Giao việc' }).click()
-    const assign = manager.getByRole('dialog', { name: 'Giao việc' })
+    const assign = admin.getByRole('dialog', { name: 'Giao việc' })
     await assign.locator('#assign-sales').selectOption(await S.userId('SALES'))
     let t = mark()
     await assign.getByRole('button', { name: 'Giao việc' }).click()
     await expectCall('M08', t)
 
-    // Hồi quy cổng quản trị: giao lại cùng lệnh M08, danh sách kinh doanh lấy từ cùng API; thiếu lý do bị chặn ở giao diện
-    const admin = await as('ADMIN', '/admin/sales-tasks')
+    // Giao lại cùng lệnh M08; thiếu lý do bị chặn ở giao diện
     const held = admin
       .locator('section li', { hasText: 'Nhắc khách đặt lịch bảo trì' })
       .filter({ has: admin.getByRole('button', { name: 'Giao lại' }) })

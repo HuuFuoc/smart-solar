@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
+import { CONTRACT_DOCUMENT_LINKS } from '@/common/contract'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
@@ -200,7 +201,11 @@ function SalesActions({ contract: c }: { contract: ContractView }) {
           run={() => publish.mutateAsync({ contractId: c.contractId, revision: c.revision })}
           onClose={() => setDialog(null)}
         >
-          <p>Khách thấy hợp đồng trên cổng khách hàng, tải PDF chính thức, in, ký tay rồi gửi lại bản ký.</p>
+          <p>
+            {CONTRACT_DOCUMENT_LINKS
+              ? 'Khách thấy hợp đồng trên cổng khách hàng, tải PDF chính thức, in, ký tay rồi gửi lại bản ký.'
+              : 'Khách thấy hợp đồng trên cổng khách hàng. Gửi đúng tệp PDF đã gắn cho khách để khách in, ký tay rồi gửi lại bản ký.'}
+          </p>
           <p>Sau khi gửi, PDF chính thức không thay được; muốn đổi nội dung phải lập phụ lục.</p>
         </ContractConfirmDialog>
       )}

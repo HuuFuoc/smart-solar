@@ -20,6 +20,7 @@ import type { SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 import { get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
+import { listUsers } from '@/services/adminUserService'
 
 // Yêu cầu bảo hành, sửa chữa, bảo trì phía quản lý và quản trị (backend cho MANAGER, ADMIN)
 
@@ -87,9 +88,11 @@ export function correctAsset(assetId: string, body: AssetCorrectionRequest) {
   return put<InstalledAssetView>(api.asset(assetId), body)
 }
 
-/** Tài khoản kinh doanh đang hoạt động để giao việc (quản lý và quản trị; không cần API tài khoản của quản trị) */
-export function listSalesAssignees() {
-  return get<SalesAssigneeView[]>(api.salesAssignees)
+/** Tài khoản kinh doanh đang hoạt động để giao việc, đọc từ GET /admin/users (chỉ quản trị gọi được) */
+// shortcut: một trang 100 tài khoản kinh doanh; nhiều hơn thì cần ô tìm theo tên
+export async function listSalesAssignees(): Promise<SalesAssigneeView[]> {
+  const page = await listUsers({ role: 'SALES', status: 'ACTIVE', pageSize: 100, sort: 'name', direction: 'asc' })
+  return page.items.map((u) => ({ userId: u.id, fullName: u.fullName }))
 }
 
 /** Hàng việc của kinh doanh; không truyền `status` là mọi trạng thái */
