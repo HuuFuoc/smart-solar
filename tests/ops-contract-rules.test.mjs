@@ -37,6 +37,7 @@ import {
 } from '../src/features/after-sales/salesTaskRules.ts'
 import {
   bomMismatchText,
+  bomLineFixes,
   canAttachQuotationDocument,
   canConfirmSurveyVersion,
   canRejectQuotation,
@@ -344,6 +345,48 @@ describe('Báo giá theo backend v2', () => {
     )
     assert.equal(bomMismatchText({}), null)
     assert.equal(bomMismatchText(null), null)
+  })
+})
+
+describe('Sửa dòng báo giá theo bảng vật tư của biên bản (BomMismatchesAsync)', () => {
+  const types = { pv: 'SOLAR_PANEL', smaInv: 'INVERTER', huaweiInv: 'inverter ', rail: 'MOUNTING' }
+  const typeOf = (id) => types[id]
+  const line = (lineId, productId, quantity, name = lineId) => ({ lineId, productId, name, quantity })
+
+  test('bảng vật tư rỗng hoặc chưa có thì backend không so', () => {
+    assert.deepEqual(bomLineFixes([line('l1', 'smaInv', 1)], null, typeOf), [])
+    assert.deepEqual(bomLineFixes([line('l1', 'smaInv', 1)], [], typeOf), [])
+  })
+
+  test('đã khớp thì không sửa gì, kể cả hai dòng cùng sản phẩm cộng đủ số lượng', () => {
+    const materials = [{ productId: 'pv', quantity: 15 }]
+    assert.deepEqual(bomLineFixes([line('l1', 'pv', 10), line('l2', 'pv', 5)], materials, typeOf), [])
+  })
+
+  test('inverter khác biên bản: bỏ dòng đang có, thêm inverter của biên bản; dòng tự ghi giữ nguyên', () => {
+    const lines = [line('l1', 'pv', 15), line('l2', null, 1, 'nhân công lắp'), line('l3', 'smaInv', 1, 'SMA STP 50-41')]
+    const materials = [
+      { productId: 'pv', quantity: 15 },
+      { productId: 'huaweiInv', quantity: 1 },
+    ]
+    assert.deepEqual(bomLineFixes(lines, materials, typeOf), [
+      { kind: 'remove', lineId: 'l3', name: 'SMA STP 50-41', quoted: 1 },
+      { kind: 'add', productId: 'huaweiInv', quantity: 1 },
+    ])
+  })
+
+  test('số lượng lệch thì sửa dòng đầu, các dòng trùng sản phẩm bỏ trước', () => {
+    const materials = [{ productId: 'pv', quantity: 20 }]
+    assert.deepEqual(bomLineFixes([line('l1', 'pv', 10), line('l2', 'pv', 4)], materials, typeOf), [
+      { kind: 'remove', lineId: 'l2', name: 'l2', quoted: 4 },
+      { kind: 'update', lineId: 'l1', name: 'l1', quoted: 14, quantity: 20 },
+    ])
+  })
+
+  test('ngoài bảng chỉ bỏ tấm pin, inverter; loại khác và sản phẩm không rõ loại thì để backend xét', () => {
+    const materials = [{ productId: 'pv', quantity: 15 }]
+    const lines = [line('l1', 'pv', 15), line('l2', 'rail', 6), line('l3', 'unknown', 1), line('l4', 'huaweiInv', 1)]
+    assert.deepEqual(bomLineFixes(lines, materials, typeOf), [{ kind: 'remove', lineId: 'l4', name: 'l4', quoted: 1 }])
   })
 })
 

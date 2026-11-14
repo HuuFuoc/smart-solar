@@ -5,7 +5,7 @@ import {
   QUOTATION_LIMITS,
   QUOTATION_STATUSES,
 } from '@/common/quotation'
-import { bomMismatchText, pricingBlockers } from '@/features/quotations/quotationRules'
+import { bomMismatchText, pricingBlockers, type BomLineFix } from '@/features/quotations/quotationRules'
 import { addDays, todayVn } from '@/features/scheduling/schedulingDisplay'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type {
@@ -121,12 +121,13 @@ export function pricingIssueText(issue: PricingIssue, basis: PricingBasis | null
       return `${name} không bán bằng VND.`
     case 'PRICE_MISSING':
       return `${name} chưa có giá danh mục: nhập đơn giá cho dòng này.`
+    // Tấm pin, inverter phải có trong biên bản khảo sát: tự thêm dòng thì lệch biên bản, không gửi được
     case 'MISSING_SOLAR_PANEL':
-      return 'Chưa có dòng tấm pin.'
+      return 'Chưa có dòng tấm pin. Nhờ kỹ thuật viên thêm tấm pin vào biên bản khảo sát, rồi sửa dòng theo biên bản.'
     case 'MISSING_INVERTER':
-      return 'Chưa có dòng inverter.'
+      return 'Chưa có dòng inverter. Nhờ kỹ thuật viên thêm inverter vào biên bản khảo sát, rồi sửa dòng theo biên bản.'
     case 'LABOR_NOT_SPECIFIED':
-      return 'Chưa có chi phí nhân công lắp đặt: nhập ở Chi phí, điều khoản.'
+      return 'Chưa có chi phí nhân công lắp đặt: bấm "Chi phí, điều khoản" rồi nhập ô "Nhân công lắp đặt".'
     case 'CONDITIONS_REQUIRE_REVIEW':
       return 'Kỹ thuật viên ghi lắp được kèm điều kiện: xem lại giá cho các điều kiện đó.'
     case 'INVALID_TOTAL':
@@ -139,8 +140,20 @@ export function pricingIssueText(issue: PricingIssue, basis: PricingBasis | null
 export const automaticOutcomeText = (outcome: string) =>
   AUTOMATIC_QUOTATION_OUTCOMES[outcome] ?? 'Chưa tạo được báo giá. Thử lại sau ít phút.'
 
+/** Một lệnh sửa dòng cho khớp biên bản khảo sát, viết thành câu; tên sản phẩm cần thêm lấy từ danh mục */
+export function bomFixText(fix: BomLineFix, productName: (productId: string) => string | undefined) {
+  if (fix.kind === 'add')
+    return `${productName(fix.productId) ?? 'Một sản phẩm trong biên bản'}: biên bản ${formatQuantity(fix.quantity)}, báo giá chưa có. Thêm dòng theo giá danh mục.`
+  if (fix.kind === 'update')
+    return `${fix.name}: biên bản ${formatQuantity(fix.quantity)}, báo giá ${formatQuantity(fix.quoted)}. Sửa số lượng.`
+  return `${fix.name}: không có trong biên bản. Bỏ dòng.`
+}
+
 /** Câu lỗi của lệnh báo giá; dòng thiết bị lệch biên bản khảo sát thì ghi rõ lệch ở sản phẩm nào */
 export function quotationErrorMessage(error: unknown) {
+  // Câu chung của mã này viết cho khách (bản đã gửi không đồng ý được nữa); bản nháp của kinh doanh vẫn dùng tiếp được
+  if (isApiError(error) && error.code === 'QUOTATION_SURVEY_CHANGED')
+    return 'Biên bản khảo sát vừa được bổ sung: sửa dòng theo biên bản và xác nhận theo biên bản mới rồi mới gửi khách được.'
   const mismatch = isApiError(error) && error.code === 'QUOTATION_BOM_MISMATCH' ? bomMismatchText(error.details) : null
   return mismatch ? `${errorMessage(error)} ${mismatch}.` : errorMessage(error)
 }

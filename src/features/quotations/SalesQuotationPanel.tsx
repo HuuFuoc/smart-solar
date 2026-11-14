@@ -15,6 +15,7 @@ import { QuotationLineDialog } from '@/features/quotations/QuotationLineDialog'
 import {
   adjustmentText,
   automaticOutcomeText,
+  bomFixText,
   byVersionDesc,
   currentQuotation,
   defaultValidUntil,
@@ -29,15 +30,19 @@ import {
 } from '@/features/quotations/quotationDisplay'
 import {
   REVIEW_REASON_MAX,
+  bomLineFixes,
   canConfirmSurveyVersion,
   canRequestPricingApproval,
   canReviseQuotation,
 } from '@/features/quotations/quotationRules'
 import { SendQuotationDialog } from '@/features/quotations/SendQuotationDialog'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { useStaffOnSiteSurveyQuery } from '@/hooks/useOnSiteSurvey'
+import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import {
   salesQuotationKeys,
   useAddQuotationLineMutation,
+  useApplyBomFixesMutation,
   useConfirmSurveyVersionMutation,
   useCreateQuotationMutation,
   useGenerateQuotationMutation,
@@ -340,8 +345,37 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
   const [lineDialog, setLineDialog] = useState<QuotationLineView | null | undefined>(undefined)
   const [editingHeader, setEditingHeader] = useState(false)
   const [sending, setSending] = useState(false)
-  const blockers = sendBlockers(draft)
   const full = draft.lines.length >= QUOTATION_LIMITS.maxLines
+
+  // Tấm pin, inverter phải khớp bảng vật tư của biên bản (cùng query với khối kết quả khảo sát trên trang)
+  const survey = useStaffOnSiteSurveyQuery(draft.surveyRequestId)
+  const catalog = useCatalogPickerQuery()
+  const applyBom = useApplyBomFixesMutation()
+  const product = (id: string) => catalog.data?.items?.find((p) => p.id === id)
+  const typeOf = (id: string) => product(id)?.productType
+  const bomKnown = survey.isSuccess && catalog.isSuccess
+  const bomFixes = bomKnown ? bomLineFixes(draft.lines, survey.data?.data.billOfMaterials?.materials, typeOf) : []
+  const surveyChanged = canConfirmSurveyVersion(draft)
+  const blockers = [
+    ...sendBlockers(draft),
+    ...(bomFixes.length > 0 && !surveyChanged ? ['Dòng thiết bị chưa khớp biên bản khảo sát.'] : []),
+  ]
+
+  async function fixLines() {
+    try {
+      // Đọc lại biên bản ngay trước khi sửa để không sửa theo bảng vật tư cũ
+      const fresh = await survey.refetch()
+      if (fresh.isError) throw fresh.error
+      const fixes = bomLineFixes(draft.lines, fresh.data?.data.billOfMaterials?.materials, typeOf)
+      if (fixes.length > 0) await applyBom.mutateAsync({ quotation: draft, fixes })
+      toast.success(
+        fixes.length > 0 ? 'Đã sửa dòng thiết bị theo biên bản khảo sát.' : 'Dòng thiết bị đã khớp biên bản.',
+      )
+      if (surveyChanged) setConfirming(true)
+    } catch (e) {
+      toast.error(quotationErrorMessage(e))
+    }
+  }
 
   async function removeLine(line: QuotationLineView) {
     try {
@@ -390,17 +424,48 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
           Khách vẫn đang có bản {live.version}. Khi bạn gửi bản này, bản {live.version} hết hiệu lực.
         </Notice>
       )}
-      {canConfirmSurveyVersion(draft) && (
+      {(surveyChanged || bomFixes.length > 0) && (
         <Notice
           tone="warn"
-          title={`Biên bản khảo sát đã được bổ sung (bản ${draft.onSiteSurveyVersion} lên bản ${draft.currentSurveyVersion})`}
+          title={
+            surveyChanged
+              ? `Biên bản khảo sát đã được bổ sung (bản ${draft.onSiteSurveyVersion} lên bản ${draft.currentSurveyVersion})`
+              : 'Dòng thiết bị chưa khớp biên bản khảo sát'
+          }
         >
-          Chỉnh dòng hàng theo biên bản mới rồi xác nhận. Chưa xác nhận thì chưa gửi khách được.
-          <span className="mt-3 flex">
-            <Button size="sm" icon="fact_check" variant="soft" onClick={() => setConfirming(true)}>
-              Xác nhận theo biên bản mới
-            </Button>
-          </span>
+          {bomFixes.length > 0 ? (
+            <>
+              <ul className="list-disc pl-5">
+                {bomFixes.map((fix, i) => (
+                  <li key={i} className="tnum">
+                    {bomFixText(fix, (id) => product(id)?.name ?? undefined)}
+                  </li>
+                ))}
+              </ul>
+              <span className="mt-3 flex">
+                <Button
+                  size="sm"
+                  icon="sync"
+                  variant="soft"
+                  disabled={applyBom.isPending}
+                  onClick={() => void fixLines()}
+                >
+                  {applyBom.isPending ? 'Đang sửa dòng…' : 'Sửa dòng theo biên bản'}
+                </Button>
+              </span>
+            </>
+          ) : (
+            <>
+              {bomKnown
+                ? 'Dòng thiết bị đã khớp biên bản mới. Xác nhận để gửi được cho khách.'
+                : 'Chỉnh dòng hàng theo biên bản mới rồi xác nhận. Chưa xác nhận thì chưa gửi khách được.'}
+              <span className="mt-3 flex">
+                <Button size="sm" icon="fact_check" variant="soft" onClick={() => setConfirming(true)}>
+                  Xác nhận theo biên bản mới
+                </Button>
+              </span>
+            </>
+          )}
         </Notice>
       )}
       <PricingIssues draft={draft} />
@@ -479,7 +544,13 @@ function DraftEditor({ draft, live }: { draft: QuotationView; live: QuotationVie
         onClose={() => setLineDialog(undefined)}
       />
       <QuotationHeaderDialog open={editingHeader} quotation={draft} onClose={() => setEditingHeader(false)} />
-      <SendQuotationDialog open={sending} quotation={draft} replacing={live} onClose={() => setSending(false)} />
+      <SendQuotationDialog
+        open={sending}
+        quotation={draft}
+        replacing={live}
+        blocked={blockers.length > 0}
+        onClose={() => setSending(false)}
+      />
       <ReasonDialog
         open={confirming}
         title="Xác nhận theo biên bản khảo sát mới?"

@@ -1,4 +1,4 @@
-import type { PricingIssue, QuotationView } from '@/types/res/quotationsRes'
+import type { PricingIssue, QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
 
 // Luật báo giá lắp đặt bám QuotationHandlers của backend (IssueAsync, CreateRevisionAsync, ConfirmSurveyVersionAsync,
 // RequestPricingApprovalAsync, RejectAsync, AttachDocumentAsync). Chỉ để bật / tắt nút; backend vẫn kiểm lại.
@@ -67,6 +67,48 @@ export function reviewReasonError(text: string) {
   if (!text.trim()) return 'Ghi lý do.'
   if (text.trim().length > REVIEW_REASON_MAX) return `Lý do tối đa ${REVIEW_REASON_MAX} ký tự.`
   return null
+}
+
+/** Một lệnh sửa dòng hàng cho khớp bảng vật tư của biên bản khảo sát; `quoted` là tổng số lượng báo giá đang có */
+export type BomLineFix =
+  | { kind: 'add'; productId: string; quantity: number }
+  | { kind: 'update'; lineId: string; name: string; quoted: number; quantity: number }
+  | { kind: 'remove'; lineId: string; name: string; quoted: number }
+
+// Ngoài bảng vật tư, backend chỉ chặn tấm pin và inverter; loại khác vẫn báo giá được
+const BOM_ONLY_TYPES = ['SOLAR_PANEL', 'INVERTER']
+
+/**
+ * Các lệnh để dòng hàng khớp bảng vật tư, bám BomMismatchesAsync: mỗi vật tư có đúng số lượng (gộp các dòng cùng sản phẩm),
+ * tấm pin / inverter ngoài bảng phải bỏ; bảng chưa có vật tư thì backend không so. Bỏ dòng đứng trước để không chạm trần số
+ * dòng. `typeOf` lấy loại theo danh mục đang bán: sản phẩm ngừng bán không biết loại thì để backend báo khi gửi.
+ */
+export function bomLineFixes(
+  lines: Pick<QuotationLineView, 'lineId' | 'productId' | 'name' | 'quantity'>[],
+  materials: { productId: string; quantity: number }[] | null | undefined,
+  typeOf: (productId: string) => string | null | undefined,
+): BomLineFix[] {
+  if (!materials?.length) return []
+  const surveyed = new Map<string, number>()
+  for (const m of materials) surveyed.set(m.productId, (surveyed.get(m.productId) ?? 0) + m.quantity)
+  const quoted = new Map<string, typeof lines>()
+  for (const l of lines) if (l.productId) quoted.set(l.productId, [...(quoted.get(l.productId) ?? []), l])
+
+  const fixes: BomLineFix[] = []
+  for (const [productId, own] of quoted) {
+    if (surveyed.has(productId) || !BOM_ONLY_TYPES.includes(typeOf(productId)?.trim().toUpperCase() ?? '')) continue
+    for (const l of own) fixes.push({ kind: 'remove', lineId: l.lineId, name: l.name, quoted: l.quantity })
+  }
+  for (const [productId, quantity] of surveyed) {
+    const [first, ...rest] = quoted.get(productId) ?? []
+    const total = [first, ...rest].reduce((sum, l) => sum + (l?.quantity ?? 0), 0)
+    if (!first) fixes.push({ kind: 'add', productId, quantity })
+    else if (Math.abs(total - quantity) > 1e-9) {
+      for (const l of rest) fixes.push({ kind: 'remove', lineId: l.lineId, name: l.name, quoted: l.quantity })
+      fixes.push({ kind: 'update', lineId: first.lineId, name: first.name, quoted: total, quantity })
+    }
+  }
+  return fixes.sort((a, b) => Number(b.kind === 'remove') - Number(a.kind === 'remove'))
 }
 
 /**

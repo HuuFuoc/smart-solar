@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { BomLineFix } from '@/features/quotations/quotationRules'
 import * as quotationService from '@/services/salesQuotationService'
 import type { ApiError } from '@/services/api/errors'
 import type {
@@ -75,6 +76,33 @@ export function useUpdateQuotationLineMutation() {
     ({ quotationId, lineId, body }: { quotationId: string; lineId: string; body: QuotationLineUpdateRequest }) =>
       quotationService.updateLine(quotationId, lineId, body),
   )
+}
+
+/** Sửa dòng hàng cho khớp bảng vật tư của biên bản: chạy lần lượt, lệnh sau dùng revision mà lệnh trước trả về */
+export function useApplyBomFixesMutation() {
+  return useQuotationWrite(async ({ quotation, fixes }: { quotation: QuotationView; fixes: BomLineFix[] }) => {
+    let view = quotation
+    for (const fix of fixes) {
+      const revision = view.revision
+      if (fix.kind === 'remove') view = await quotationService.removeLine(view.quotationId, fix.lineId, revision)
+      // Đơn giá, mô tả để null là giữ nguyên; dòng mới để trống đơn giá là lấy giá danh mục
+      else if (fix.kind === 'update')
+        view = await quotationService.updateLine(view.quotationId, fix.lineId, {
+          revision,
+          quantity: fix.quantity,
+          unitPrice: null,
+          description: null,
+        })
+      else
+        view = await quotationService.addLine(view.quotationId, {
+          revision,
+          productId: fix.productId,
+          quantity: fix.quantity,
+          unitPrice: null,
+        })
+    }
+    return view
+  })
 }
 
 export function useRemoveQuotationLineMutation() {

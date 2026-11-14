@@ -16,10 +16,12 @@ type Props = {
   quotation: QuotationView
   /** Bản đang gửi khách sẽ bị thay */
   replacing: QuotationView | null
+  /** Bản nháp vừa tải lại có điều kiện chưa đạt (vd. biên bản vừa được bổ sung): khoá nút gửi, lỗi vẫn hiện */
+  blocked: boolean
   onClose: () => void
 }
 
-export function SendQuotationDialog({ open, quotation: q, replacing, onClose }: Props) {
+export function SendQuotationDialog({ open, quotation: q, replacing, blocked, onClose }: Props) {
   const send = useSendQuotationMutation()
   const [error, setError] = useState<string | null>(null)
   // Bản tạo từ biên bản khảo sát còn vấn đề về giá chấp nhận được: phải ghi lý do vẫn gửi
@@ -90,7 +92,7 @@ export function SendQuotationDialog({ open, quotation: q, replacing, onClose }: 
         <Button icon="close" variant="secondary" disabled={send.isPending} onClick={close}>
           Đóng
         </Button>
-        <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
+        <Button icon="send" variant="primary" disabled={send.isPending || blocked} onClick={() => void submit()}>
           {send.isPending ? 'Đang gửi…' : 'Gửi cho khách'}
         </Button>
       </DialogFooter>
