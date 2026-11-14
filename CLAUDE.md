@@ -333,6 +333,10 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
   trước 7 ngày, BE tính đủ 7 × 24 giờ nên mở từ ngày thứ 8), `/customer/after-sales` + `/:id`: xác nhận giờ hẹn khác giờ đã
   chọn, duyệt / từ chối báo giá, thanh toán PayOS (`useQuotationPaymentQuery` hỏi lại link 10 giây một lần), nghiệm thu
   (không đạt thì bắt buộc lý do), huỷ khi chưa bắt đầu làm.
+  Báo lỗi (`ReportFaultDialog`) hỏi "Lỗi do thiên tai" + "Xảy ra lúc" chỉ khi công trình có kỳ gói thiên tai `ACTIVE`
+  (`activeDisasterTerm`), vì không có kỳ đó BE luôn ghi claim `NOT_ELIGIBLE`; chỉ liệt các loại gói bảo vệ. Lúc xảy ra bắt
+  buộc, không sau lúc gửi và không trước mốc "Bảo vệ từ" (`incidentTimeError`): trước mốc đó BE vẫn nhận nhưng chắc chắn
+  ghi `NOT_ELIGIBLE` kèm lý do tiếng Anh, trang yêu cầu sẽ in nguyên câu đó.
 - Quản lý + quản trị (trang dùng chung `pages/after-sales-request(s)-page.tsx`): xếp / đổi buổi hẹn (loại buổi theo
   `visitToSchedule`, gửi `expectedRevision`; kỹ thuật viên ngoài khu vực của công trình thì bắt lý do, khu vực lấy từ dự án
   thi công), quyết định ai chịu chi phí từng hạng mục, xét khi khách không đồng ý kết quả, xét yêu cầu huỷ việc đã trả tiền.
@@ -340,7 +344,8 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
   `tests/manager-portal-rules.test.mjs`; đối chiếu và phần còn chặn: `docs/api/manager-after-sales-verification.md`):
   - Hỗ trợ của gói thiên tai (`ClaimDecisionPanel`): duyệt / từ chối khi claim `SUBMITTED` hoặc `RECONSIDERATION_REQUESTED`,
     từ chối bắt buộc lý do. Chỉ hiện số liệu BE trả (tỷ lệ, hạn mức mỗi sự cố, đã giữ, đã chi); số tiền gói hỗ trợ do BE tính
-    trên báo giá, FE không tính. Xét bảo hành chọn được "Gói bảo vệ thiên tai" khi claim đã `APPROVED`.
+    trên báo giá, FE không tính. Xét bảo hành chọn được "Gói bảo vệ thiên tai" khi claim đã `APPROVED`; câu nhắc chọn gói chỉ
+    hiện khi yêu cầu còn mở và còn hạng mục chưa xét (`coverageDecisionAhead`).
   - "Kết thúc yêu cầu" (`RequestClosePanel`): đóng vì trùng (chọn yêu cầu gốc cùng công trình từ danh sách, xem lại trước khi
     đóng; `possibleDuplicates` chỉ để cảnh báo; khoá khi đã có báo giá đã trả), dừng việc (chỉ việc đã bắt đầu như
     `CancelAsync` của khách định nghĩa; chỉ hỏi lý do, luôn gửi `refundAmount` 0), không thực hiện được (chỉ bảo trì lẻ chưa

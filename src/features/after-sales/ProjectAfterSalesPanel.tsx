@@ -128,6 +128,7 @@ export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
         open={dialog === 'fault'}
         projectId={projectId}
         assets={warranty.data?.assets ?? []}
+        subscriptions={warranty.data?.subscriptions ?? []}
         onClose={() => setDialog(null)}
       />
       <MaintenanceDialog open={dialog === 'maintenance'} projectId={projectId} onClose={() => setDialog(null)} />

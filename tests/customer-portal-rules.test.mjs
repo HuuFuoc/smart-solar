@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import {
+  activeDisasterTerm,
   BOOKING_LEAD_DAYS,
   bookingDays,
   canReportFaultFromMaintenance,
@@ -11,6 +12,7 @@ import {
   entitlementDeadline,
   entitlementOf,
   faultDescriptionError,
+  incidentTimeError,
   isBookable,
   maintenanceFinding,
   preferredStartProblem,
@@ -450,5 +452,34 @@ describe('Báo lỗi từ một lần bảo trì', () => {
     assert.ok(faultDescriptionError('', null))
     assert.ok(faultDescriptionError('abc', null))
     assert.equal(faultDescriptionError('Đèn báo đỏ', null), null)
+  })
+})
+
+describe('báo lỗi do thiên tai', () => {
+  const term = (kind, status) => ({ kind, status })
+
+  test('chỉ hỏi thiên tai khi có kỳ gói bảo vệ thiên tai đang hiệu lực', () => {
+    const active = term('DISASTER_PROTECTION', 'ACTIVE')
+    assert.equal(
+      activeDisasterTerm([term('MAINTENANCE', 'ACTIVE'), term('DISASTER_PROTECTION', 'PAID'), active]),
+      active,
+    )
+    // Kỳ đã hết hoặc đang chờ huỷ: backend không tính là gói bảo vệ lúc gửi
+    assert.equal(activeDisasterTerm([term('DISASTER_PROTECTION', 'EXPIRED')]), undefined)
+    assert.equal(activeDisasterTerm([term('DISASTER_PROTECTION', 'CANCELLATION_REQUESTED')]), undefined)
+    assert.equal(activeDisasterTerm([]), undefined)
+  })
+
+  test('lúc xảy ra bắt buộc, không sau lúc gửi và không trước mốc bảo vệ', () => {
+    const now = Date.parse('2026-11-14T10:00:00+07:00')
+    const coverage = '2026-11-07T09:12:00+07:00'
+    assert.ok(incidentTimeError('', coverage, now))
+    assert.ok(incidentTimeError('2026-11-14T10:30:00+07:00', coverage, now))
+    assert.equal(incidentTimeError('2026-11-14T10:00:00+07:00', coverage, now), null)
+    assert.equal(incidentTimeError('2026-11-10T22:00:00+07:00', coverage, now), null)
+    // Trong thời gian chờ: backend chắc chắn ghi NOT_ELIGIBLE
+    assert.ok(incidentTimeError('2026-11-07T09:00:00+07:00', coverage, now))
+    assert.equal(incidentTimeError('2026-11-07T09:30:00+07:00', coverage, now), null)
+    assert.equal(incidentTimeError('2026-11-01T09:00:00+07:00', null, now), null)
   })
 })

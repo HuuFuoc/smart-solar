@@ -166,3 +166,25 @@ export function faultDescriptionError(text: string, finding: string | null) {
   if (length > FAULT_DESCRIPTION_MAX) return `Mô tả tối đa ${FAULT_DESCRIPTION_MAX} ký tự.`
   return null
 }
+
+// ---------- Báo lỗi do thiên tai (CreateFaultAsync) ----------
+
+/**
+ * Kỳ gói bảo vệ thiên tai đang hiệu lực của công trình, mỗi lúc chỉ có một. Không có kỳ này thì backend luôn ghi yêu cầu hỗ trợ
+ * là NOT_ELIGIBLE (kỳ đã hết trước lúc gửi cũng vậy), nên form báo lỗi chỉ hỏi thiên tai khi có
+ */
+export const activeDisasterTerm = <T extends Pick<SubscriptionView, 'kind' | 'status'>>(subscriptions: T[]) =>
+  subscriptions.find((s) => s.kind === 'DISASTER_PROTECTION' && s.status === 'ACTIVE')
+
+/**
+ * Lúc xảy ra sự cố: bắt buộc khi chọn thiên tai, không được sau lúc gửi. Trước mốc bảo vệ của kỳ đang hiệu lực thì backend vẫn
+ * nhận nhưng chắc chắn ghi NOT_ELIGIBLE (thời gian chờ, hoặc kỳ trước đã hết lúc gửi) kèm lý do tiếng Anh, nên chặn ở đây
+ */
+export function incidentTimeError(at: string, coverageStartsAt: string | null, now = Date.now()) {
+  const ms = at ? Date.parse(at) : Number.NaN
+  if (Number.isNaN(ms)) return 'Chọn ngày và giờ xảy ra sự cố.'
+  if (ms > now) return 'Lúc này chưa tới; chọn lúc sự cố đã xảy ra.'
+  if (coverageStartsAt && ms < Date.parse(coverageStartsAt))
+    return 'Gói chưa bảo vệ vào lúc này. Chọn "Không" ở ô thiên tai để báo lỗi thường.'
+  return null
+}

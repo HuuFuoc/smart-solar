@@ -44,6 +44,10 @@ export function claimReasonError(approve: boolean, reason: string) {
 /** Hạng mục chỉ chọn "Gói bảo vệ thiên tai" khi hỗ trợ đã được duyệt */
 export const disasterCoverageAllowed = (r: ClaimHolder) => r.claim?.status === 'APPROVED'
 
+/** Còn việc xét bảo hành: yêu cầu đang mở, chưa có hạng mục (chưa kiểm tra) hoặc còn hạng mục chưa xét */
+export const coverageDecisionAhead = (r: Pick<ServiceRequestView, 'status' | 'items'>) =>
+  !isFinal(r.status) && (r.items.length === 0 || r.items.some((i) => i.coverage === 'PENDING'))
+
 // ---------------------------------------------------------------- đóng vì trùng
 
 type Quoted = Pick<ServiceRequestView, 'quotations'>

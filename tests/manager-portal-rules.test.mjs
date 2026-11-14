@@ -14,6 +14,7 @@ import {
   canStopWork,
   changedAssetFields,
   claimReasonError,
+  coverageDecisionAhead,
   disasterCoverageAllowed,
   duplicateBlocker,
   duplicateCandidates,
@@ -54,6 +55,16 @@ describe('hỗ trợ của gói thiên tai (claim-decision)', () => {
     assert.equal(claimReasonError(true, ''), undefined)
     assert.equal(claimReasonError(false, 'Ảnh không cho thấy hư hại do bão'), undefined)
     assert.match(claimReasonError(true, 'x'.repeat(1001)), /1000/)
+  })
+  test('chỉ nhắc chọn "gói thiên tai" khi còn việc xét bảo hành trên yêu cầu đang mở', () => {
+    const item = (coverage) => ({ coverage })
+    assert.equal(coverageDecisionAhead(request({ items: [] })), true)
+    assert.equal(coverageDecisionAhead(request({ status: 'AWAITING_DECISION', items: [item('PENDING')] })), true)
+    assert.equal(
+      coverageDecisionAhead(request({ status: 'READY_FOR_WORK', items: [item('DISASTER_PROTECTION')] })),
+      false,
+    )
+    assert.equal(coverageDecisionAhead(request({ status: 'COMPLETED', items: [] })), false)
   })
   test('hạng mục chỉ chọn "gói thiên tai" sau khi hỗ trợ được duyệt', () => {
     assert.equal(disasterCoverageAllowed(claim('APPROVED')), true)

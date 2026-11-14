@@ -11,7 +11,12 @@ import {
   disasterTypeLabel,
   managerActionError,
 } from '@/features/after-sales/managerAfterSalesDisplay'
-import { CLAIM_REASON_MAX, canDecideClaim, claimReasonError } from '@/features/after-sales/managerAfterSalesRules'
+import {
+  CLAIM_REASON_MAX,
+  canDecideClaim,
+  claimReasonError,
+  coverageDecisionAhead,
+} from '@/features/after-sales/managerAfterSalesRules'
 import { formatVnd } from '@/features/after-sales/serviceDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useDecideClaimMutation } from '@/hooks/useManagerAfterSales'
@@ -117,7 +122,7 @@ export function ClaimDecisionPanel({ request }: { request: ServiceRequestView })
             được.
           </Notice>
         )}
-        {claim.status === 'APPROVED' && (
+        {claim.status === 'APPROVED' && coverageDecisionAhead(request) && (
           <Notice tone="neutral">
             Xét bảo hành các hạng mục bị thiên tai làm hỏng là "Gói bảo vệ thiên tai". Số tiền gói hỗ trợ hiện trên báo
             giá của kinh doanh.

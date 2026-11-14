@@ -299,7 +299,7 @@ function ClaimPanel({ request: r, onReconsider }: { request: ServiceRequestView;
   const status = CUSTOMER_CLAIM_STATUSES[claim.status] ?? { label: claim.status, tone: 'neutral' as const }
   const items: KV[] = [
     { k: 'Thiên tai', v: DISASTER_TYPES[claim.disasterType] ?? claim.disasterType },
-    { k: 'Ngày xảy ra', v: formatMoment(claim.incidentOccurredAt) },
+    { k: 'Xảy ra lúc', v: formatMoment(claim.incidentOccurredAt) },
     { k: 'Kết quả', v: <Badge tone={status.tone}>{status.label}</Badge> },
   ]
   if (claim.decisionReason) items.push({ k: 'Lý do', v: claim.decisionReason })
