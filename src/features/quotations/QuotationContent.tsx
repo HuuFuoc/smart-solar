@@ -5,6 +5,7 @@ import {
   formatQuantity,
   formatQuotationMoney,
   isRepriced,
+  lineDescription,
   lineIdentity,
 } from '@/features/quotations/quotationDisplay'
 import type { QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
@@ -50,7 +51,9 @@ export function QuotationLines({
               <Td label="Hạng mục">
                 <p className="font-medium text-fg">{line.name}</p>
                 {identity && <p className="text-meta text-fg-2">{identity}</p>}
-                {line.description && <p className="mt-1 text-meta whitespace-pre-line text-fg-2">{line.description}</p>}
+                {lineDescription(line) && (
+                  <p className="mt-1 text-meta whitespace-pre-line text-fg-2">{lineDescription(line)}</p>
+                )}
               </Td>
               <Td label="Số lượng" className="tnum whitespace-nowrap lg:text-right">
                 {formatQuantity(line.quantity)} {line.unit}

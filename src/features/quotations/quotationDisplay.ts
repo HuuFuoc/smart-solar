@@ -52,6 +52,10 @@ export { formatDateVn } from '@/features/scheduling/schedulingDisplay'
 export const quotationTitle = (q: Pick<QuotationView, 'quoteNumber' | 'version'>) =>
   `${q.quoteNumber}, bản ${q.version}`
 
+/** Mô tả dòng để hiện; báo giá tự lập ghi mã "MATERIAL" vào mô tả dòng thiết bị, không phải chữ cho người đọc */
+export const lineDescription = (line: { description: string | null }) =>
+  line.description && line.description.trim().toUpperCase() !== 'MATERIAL' ? line.description : null
+
 /** "Huawei, SUN2000-5KTL, mã INV-5K": phần nhận dạng sản phẩm dưới tên dòng */
 export function lineIdentity(line: Pick<QuotationLineView, 'brand' | 'model' | 'sku'>) {
   return [line.brand, line.model, line.sku && `mã ${line.sku}`].filter(Boolean).join(', ')

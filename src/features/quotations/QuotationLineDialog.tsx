@@ -13,6 +13,7 @@ import {
   formatQuotationMoney,
   isMoney,
   isQuantity,
+  lineDescription,
   lineIdentity,
   moneyText,
   readMoney,
@@ -82,7 +83,7 @@ function LineForm({
   const [unit, setUnit] = useState('')
   const [quantity, setQuantity] = useState(line ? String(line.quantity).replace('.', ',') : '1')
   const [unitPrice, setUnitPrice] = useState(line ? moneyText(line.unitPrice) : '')
-  const [description, setDescription] = useState(line?.description ?? '')
+  const [description, setDescription] = useState((line && lineDescription(line)) ?? '')
   const [errors, setErrors] = useState<Errors>({})
   const [error, setError] = useState<string | null>(null)
   const money = (amount: number) => formatQuotationMoney(amount, quotation.currency)
@@ -282,7 +283,7 @@ function LineForm({
           label="Mô tả thêm"
           htmlFor="quotation-line-description"
           hint={
-            editing && line.description
+            editing && lineDescription(line)
               ? 'Khách thấy mô tả này. Để trống thì giữ mô tả cũ.'
               : 'Không bắt buộc. Khách thấy mô tả này trong báo giá.'
           }
