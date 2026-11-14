@@ -55,7 +55,7 @@ export function CustomerAfterSalesPage() {
           return (
             <>
               {/* Header trang với icon cờ lê, tiêu đề và nút đồng bộ */}
-              <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-4 lg:pr-20">
                 <div className="flex items-start gap-3">
                   <div className="mt-1 flex shrink-0 text-primary">
                     <Icon name="build" className="text-[24px]" />
@@ -69,7 +69,7 @@ export function CustomerAfterSalesPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Button
                     variant="secondary"
                     icon="sync"
@@ -80,6 +80,7 @@ export function CustomerAfterSalesPage() {
                   >
                     {syncing ? 'Đang đồng bộ...' : 'Đồng bộ tiến độ'}
                   </Button>
+                  <span className="hidden h-5 border-l border-line lg:inline-block" aria-hidden />
                 </div>
               </div>
 

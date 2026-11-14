@@ -34,7 +34,7 @@ export function CustomerProjectsPage() {
           return (
             <>
               {/* Header trang với icon cờ lê, tiêu đề và mô tả */}
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 lg:pr-20">
                 <div className="mt-1 flex shrink-0 text-primary">
                   <Icon name="build" className="text-[24px]" />
                 </div>
