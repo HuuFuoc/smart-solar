@@ -34,11 +34,14 @@ export function ScheduleVisitForm({
   request,
   purpose,
   zoneId,
+  onDone,
 }: {
   request: ServiceRequestView
   purpose: string
   /** Khu vực của công trình; null khi chưa biết */
   zoneId: string | null
+  /** Lưu xong (để nơi gọi đóng form đổi lịch) */
+  onDone?: () => void
 }) {
   const technicians = useTechniciansQuery()
   const schedule = useScheduleVisitMutation()
@@ -83,6 +86,7 @@ export function ScheduleVisitForm({
       })
       toast.success(moving ? 'Đã đổi lịch hẹn.' : 'Đã xếp lịch. Chờ kỹ thuật viên nhận việc.')
       setReason('')
+      onDone?.()
     } catch (err) {
       setError(scheduleError(err))
     }

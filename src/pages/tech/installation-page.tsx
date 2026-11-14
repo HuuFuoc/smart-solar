@@ -282,7 +282,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
             </Panel>
           )}
 
-          <Panel>
+          <Panel id="installation-report" className="scroll-mt-6">
             <PanelHeader title="Báo cáo hoàn thành" />
             <PanelBody className="space-y-6">
               {work && <CompletionReportForm view={view} />}

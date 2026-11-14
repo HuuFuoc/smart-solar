@@ -51,10 +51,13 @@ export const canEditDraft = (c: Pick<ContractView, 'status'>) => c.status === 'D
 export const canDiscard = (c: Pick<ContractView, 'status' | 'previousContractId'>) =>
   c.status === 'DRAFT' && c.previousContractId === null
 
-/** Lý do chưa phát hành được bản nháp (backend: CONTRACT_WARRANTY_REQUIRED) */
-export function issueBlockers(c: Pick<ContractView, 'status' | 'warrantyMonths'>): string[] {
+/** Lý do chưa phát hành được bản nháp (backend: CONTRACT_TERMS_REQUIRED, CONTRACT_WARRANTY_REQUIRED) */
+export function issueBlockers(c: Pick<ContractView, 'status' | 'warrantyMonths' | 'terms'>): string[] {
   if (c.status !== 'DRAFT') return []
-  return c.warrantyMonths == null ? ['Chưa chọn thời hạn bảo hành lắp đặt.'] : []
+  const blockers: string[] = []
+  if (!c.terms?.trim()) blockers.push('Chưa ghi điều khoản hợp đồng.')
+  if (c.warrantyMonths == null) blockers.push('Chưa chọn thời hạn bảo hành lắp đặt.')
+  return blockers
 }
 
 /** PDF chính thức gắn sau khi phát hành và trước khi gửi khách; gắn lại được (thay tệp) tới lúc gửi */

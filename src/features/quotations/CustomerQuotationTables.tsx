@@ -104,7 +104,6 @@ export function CustomerQuotationTables({
     return STATUS_GROUPS.map((cfg) => ({
       ...cfg,
       rows: map[cfg.key],
-      highlight: cfg.key === 'awaiting' && map[cfg.key].length > 0,
     }))
   }, [filtered])
 
@@ -131,7 +130,8 @@ export function CustomerQuotationTables({
         dateOptions={DATE_FILTER_OPTIONS}
         defaultDateValue="all"
         onDateChange={setDateFilter}
-        groups={grouped.map((g) => ({ key: g.key, title: g.title, count: g.rows.length, attention: g.highlight }))}
+        // Số đỏ đã ở menu nên số trên tab và tiêu đề nhóm là xám
+        groups={grouped.map((g) => ({ key: g.key, title: g.title, count: g.rows.length }))}
         totalCount={filtered.length}
         activeGroup={activeGroup}
         onGroupChange={setActiveGroup}
@@ -151,80 +151,86 @@ export function CustomerQuotationTables({
         />
       ) : (
         <div className="space-y-4">
-          {visibleTables.map((table) => (
-            <StatusTableSection
-              key={table.key}
-              title={table.title}
-              count={table.rows.length}
-              emptyText={table.emptyText}
-              highlight={table.highlight}
-              defaultOpen={!table.collapsed}
-            >
-              <Table stack>
-                <thead>
-                  <tr>
-                    <Th>Công trình</Th>
-                    <Th>Số báo giá</Th>
-                    <Th>Ngày gửi</Th>
-                    <Th>Tổng cộng</Th>
-                    <Th>Trạng thái</Th>
-                    <Th className="text-right">Thao tác</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {table.rows.map(({ quotation: q, propertyName }) => {
-                    const status = quotationStatusMeta(q, 'customer')
-                    return (
-                      <Tr key={q.quotationId}>
-                        <Td label="Công trình" className="font-semibold text-fg">
-                          {propertyName}
-                        </Td>
-                        <Td label="Số báo giá" className="tnum text-fg-2">
-                          {quotationTitle(q)}
-                        </Td>
-                        <Td label="Ngày gửi" className="tnum">
-                          <div className="min-w-0">
-                            <span className="block text-fg">{formatDateVn(q.issuedAt)}</span>
-                            {q.status === 'ISSUED' && q.validUntil && (
-                              <span className="mt-0.5 block text-meta text-fg-2">
-                                {q.isExpired ? 'Hết hạn' : 'Hạn'} {formatDateVn(q.validUntil)}
-                              </span>
-                            )}
-                            {q.status === 'ACCEPTED' && q.acceptedAt && (
-                              <span className="mt-0.5 block text-meta text-fg-2">
-                                Đồng ý {formatDateVn(q.acceptedAt)}
-                              </span>
-                            )}
-                            {q.status === 'REJECTED' && q.closedAt && (
-                              <span className="mt-0.5 block text-meta text-fg-2">
-                                Từ chối {formatDateVn(q.closedAt)}
-                              </span>
-                            )}
-                          </div>
-                        </Td>
-                        <Td label="Tổng cộng" className="tnum font-semibold whitespace-nowrap text-fg">
-                          {formatQuotationMoney(q.totalAmount, q.currency)}
-                        </Td>
-                        <Td label="Trạng thái">
-                          <Badge tone={status.tone}>{status.label}</Badge>
-                        </Td>
-                        <Td className="whitespace-nowrap lg:text-right">
-                          <ButtonLink
-                            icon="visibility"
-                            to={withId(ROUTES.customer.quotation, q.quotationId)}
-                            size="sm"
-                            variant="info"
-                          >
-                            Xem báo giá
-                          </ButtonLink>
-                        </Td>
-                      </Tr>
-                    )
-                  })}
-                </tbody>
-              </Table>
-            </StatusTableSection>
-          ))}
+          {visibleTables.map((table) => {
+            // Nhóm chỉ một trạng thái thì tiêu đề nhóm đã ghi trạng thái đó, cột trạng thái chỉ lặp lại
+            const showStatus =
+              new Set(table.rows.map((r) => quotationStatusMeta(r.quotation, 'customer').label)).size > 1
+            return (
+              <StatusTableSection
+                key={table.key}
+                title={table.title}
+                count={table.rows.length}
+                emptyText={table.emptyText}
+                defaultOpen={!table.collapsed}
+              >
+                <Table stack>
+                  <thead>
+                    <tr>
+                      <Th>Công trình</Th>
+                      <Th>Số báo giá</Th>
+                      <Th>Ngày gửi</Th>
+                      <Th>Tổng cộng</Th>
+                      {showStatus && <Th>Trạng thái</Th>}
+                      <Th className="text-right">Thao tác</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {table.rows.map(({ quotation: q, propertyName }) => {
+                      const status = quotationStatusMeta(q, 'customer')
+                      return (
+                        <Tr key={q.quotationId}>
+                          <Td label="Công trình" className="font-semibold text-fg">
+                            {propertyName}
+                          </Td>
+                          <Td label="Số báo giá" className="tnum text-fg-2">
+                            {quotationTitle(q)}
+                          </Td>
+                          <Td label="Ngày gửi" className="tnum">
+                            <div className="min-w-0">
+                              <span className="block text-fg">{formatDateVn(q.issuedAt)}</span>
+                              {q.status === 'ISSUED' && q.validUntil && (
+                                <span className="mt-0.5 block text-meta text-fg-2">
+                                  {q.isExpired ? 'Hết hạn' : 'Hạn'} {formatDateVn(q.validUntil)}
+                                </span>
+                              )}
+                              {q.status === 'ACCEPTED' && q.acceptedAt && (
+                                <span className="mt-0.5 block text-meta text-fg-2">
+                                  Đồng ý {formatDateVn(q.acceptedAt)}
+                                </span>
+                              )}
+                              {q.status === 'REJECTED' && q.closedAt && (
+                                <span className="mt-0.5 block text-meta text-fg-2">
+                                  Từ chối {formatDateVn(q.closedAt)}
+                                </span>
+                              )}
+                            </div>
+                          </Td>
+                          <Td label="Tổng cộng" className="tnum font-semibold whitespace-nowrap text-fg">
+                            {formatQuotationMoney(q.totalAmount, q.currency)}
+                          </Td>
+                          {showStatus && (
+                            <Td label="Trạng thái">
+                              <Badge tone={status.tone}>{status.label}</Badge>
+                            </Td>
+                          )}
+                          <Td className="whitespace-nowrap lg:text-right">
+                            <ButtonLink
+                              icon="visibility"
+                              to={withId(ROUTES.customer.quotation, q.quotationId)}
+                              size="sm"
+                              variant="info"
+                            >
+                              Xem báo giá
+                            </ButtonLink>
+                          </Td>
+                        </Tr>
+                      )
+                    })}
+                  </tbody>
+                </Table>
+              </StatusTableSection>
+            )
+          })}
         </div>
       )}
     </div>

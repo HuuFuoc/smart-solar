@@ -88,7 +88,8 @@ describe('lọc sản phẩm theo loại thiết bị đã lắp', () => {
       list.map((p) => p.id),
       [panelB.id, panelA.id],
     )
-    assert.match(formatProductOptionLabel(panelB, differences[0]), /^\[Hợp đồng\] /)
+    assert.match(formatProductOptionLabel(panelB, differences[0]), /^Theo hợp đồng: /)
+    assert.doesNotMatch(formatProductOptionLabel(panelB, differences[0]), /·/)
   })
 
   test('INVERTER chỉ lấy INVERTER đang bán; OTHER bỏ qua dịch vụ (INSTALLATION_LABOR...)', () => {

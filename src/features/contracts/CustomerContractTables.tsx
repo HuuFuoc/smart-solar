@@ -111,7 +111,6 @@ export function CustomerContractTables({
     return STATUS_GROUPS.map((cfg) => ({
       ...cfg,
       rows: map[cfg.key],
-      highlight: cfg.key === 'todo' && map[cfg.key].length > 0,
     }))
   }, [filtered])
 
@@ -138,7 +137,8 @@ export function CustomerContractTables({
         dateOptions={DATE_FILTER_OPTIONS}
         defaultDateValue="all"
         onDateChange={setDateFilter}
-        groups={grouped.map((g) => ({ key: g.key, title: g.title, count: g.rows.length, attention: g.highlight }))}
+        // Số đỏ đã ở menu nên số trên tab và tiêu đề nhóm là xám
+        groups={grouped.map((g) => ({ key: g.key, title: g.title, count: g.rows.length }))}
         totalCount={filtered.length}
         activeGroup={activeGroup}
         onGroupChange={setActiveGroup}
@@ -158,73 +158,79 @@ export function CustomerContractTables({
         />
       ) : (
         <div className="space-y-4">
-          {visibleTables.map((table) => (
-            <StatusTableSection
-              key={table.key}
-              title={table.title}
-              count={table.rows.length}
-              emptyText={table.emptyText}
-              highlight={table.highlight}
-            >
-              <Table stack>
-                <thead>
-                  <tr>
-                    <Th>Công trình</Th>
-                    <Th>Số hợp đồng</Th>
-                    <Th>Ngày gửi ký</Th>
-                    <Th>Tổng cộng</Th>
-                    <Th>Trạng thái</Th>
-                    <Th className="text-right">Thao tác</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {table.rows.map(({ contract: c, propertyName }) => {
-                    const status = contractStatusMeta(c.status, 'customer')
-                    const milestone = contractMilestoneLabel(c)
-                    return (
-                      <Tr key={c.contractId}>
-                        <Td label="Công trình" className="font-semibold text-fg">
-                          {propertyName}
-                        </Td>
-                        <Td label="Số hợp đồng" className="tnum text-fg-2">
-                          {c.contractNumber}, {versionLabel(c).toLowerCase()}
-                        </Td>
-                        <Td label="Ngày gửi ký" className="tnum">
-                          <div className="min-w-0">
-                            <span className="block text-fg">{formatDateVn(c.publishedAt ?? c.issuedAt)}</span>
-                            {milestone && <span className="mt-0.5 block text-meta text-fg-2">{milestone}</span>}
-                          </div>
-                        </Td>
-                        <Td label="Tổng cộng" className="tnum">
-                          <div className="min-w-0">
-                            <span className="block font-semibold whitespace-nowrap text-fg">
-                              {formatContractMoney(c)}
-                            </span>
-                            <span className="mt-0.5 block text-meta text-fg-2">
-                              Bảo hành: {warrantyText(c.warrantyMonths)}
-                            </span>
-                          </div>
-                        </Td>
-                        <Td label="Trạng thái">
-                          <Badge tone={status.tone}>{status.label}</Badge>
-                        </Td>
-                        <Td className="whitespace-nowrap lg:text-right">
-                          <ButtonLink
-                            icon="visibility"
-                            to={withId(ROUTES.customer.contract, c.contractId)}
-                            size="sm"
-                            variant="info"
-                          >
-                            Xem hợp đồng
-                          </ButtonLink>
-                        </Td>
-                      </Tr>
-                    )
-                  })}
-                </tbody>
-              </Table>
-            </StatusTableSection>
-          ))}
+          {visibleTables.map((table) => {
+            // Nhóm chỉ một trạng thái thì tiêu đề nhóm đã ghi trạng thái đó, cột trạng thái chỉ lặp lại
+            const showStatus =
+              new Set(table.rows.map((r) => contractStatusMeta(r.contract.status, 'customer').label)).size > 1
+            return (
+              <StatusTableSection
+                key={table.key}
+                title={table.title}
+                count={table.rows.length}
+                emptyText={table.emptyText}
+              >
+                <Table stack>
+                  <thead>
+                    <tr>
+                      <Th>Công trình</Th>
+                      <Th>Số hợp đồng</Th>
+                      <Th>Ngày gửi ký</Th>
+                      <Th>Tổng cộng</Th>
+                      {showStatus && <Th>Trạng thái</Th>}
+                      <Th className="text-right">Thao tác</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {table.rows.map(({ contract: c, propertyName }) => {
+                      const status = contractStatusMeta(c.status, 'customer')
+                      const milestone = contractMilestoneLabel(c)
+                      return (
+                        <Tr key={c.contractId}>
+                          <Td label="Công trình" className="font-semibold text-fg">
+                            {propertyName}
+                          </Td>
+                          <Td label="Số hợp đồng" className="tnum text-fg-2">
+                            {c.contractNumber}, {versionLabel(c).toLowerCase()}
+                          </Td>
+                          <Td label="Ngày gửi ký" className="tnum">
+                            <div className="min-w-0">
+                              <span className="block text-fg">{formatDateVn(c.publishedAt ?? c.issuedAt)}</span>
+                              {milestone && <span className="mt-0.5 block text-meta text-fg-2">{milestone}</span>}
+                            </div>
+                          </Td>
+                          <Td label="Tổng cộng" className="tnum">
+                            <div className="min-w-0">
+                              <span className="block font-semibold whitespace-nowrap text-fg">
+                                {formatContractMoney(c)}
+                              </span>
+                              <span className="mt-0.5 block text-meta text-fg-2">
+                                Bảo hành: {warrantyText(c.warrantyMonths)}
+                              </span>
+                            </div>
+                          </Td>
+                          {showStatus && (
+                            <Td label="Trạng thái">
+                              <Badge tone={status.tone}>{status.label}</Badge>
+                            </Td>
+                          )}
+                          <Td className="whitespace-nowrap lg:text-right">
+                            <ButtonLink
+                              icon="visibility"
+                              to={withId(ROUTES.customer.contract, c.contractId)}
+                              size="sm"
+                              variant="info"
+                            >
+                              Xem hợp đồng
+                            </ButtonLink>
+                          </Td>
+                        </Tr>
+                      )
+                    })}
+                  </tbody>
+                </Table>
+              </StatusTableSection>
+            )
+          })}
         </div>
       )}
     </div>

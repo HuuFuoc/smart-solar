@@ -95,11 +95,13 @@ export function formatProductOptionLabel(product: ProductResponse, difference?: 
   if (brand && !lower.includes(brand.toLowerCase())) extras.push(brand)
   const power = formatCompactPower(product.ratedPowerW)
   if (power) extras.push(power)
-  if (product.warrantyMonth != null) extras.push(`BH ${product.warrantyMonth}T`)
+  const months = product.warrantyMonth
+  if (months != null && months > 0)
+    extras.push(`bảo hành ${months % 12 === 0 ? `${months / 12} năm` : `${months} tháng`}`)
 
-  const prefix = difference && difference.contractedQuantity > 0 ? '[Hợp đồng] ' : ''
-  const suffix = extras.length > 0 ? ` (${extras.join(' · ')})` : ''
-  return `${prefix}${parts.join(' · ')}${suffix}`
+  const prefix = difference && difference.contractedQuantity > 0 ? 'Theo hợp đồng: ' : ''
+  const suffix = extras.length > 0 ? ` (${extras.join(', ')})` : ''
+  return `${prefix}${parts.join(', ')}${suffix}`
 }
 
 const clearProduct = (row: AssetRow, assetType = row.assetType): AssetRow => ({

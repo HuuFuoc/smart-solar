@@ -161,6 +161,13 @@ function quotationNextStep(quotations: QuotationView[]): TrackerNext {
 // Sau khi khách đồng ý báo giá: việc của hợp đồng. Thao tác nằm ở trang hợp đồng nên nút chỉ đưa tới khối Hợp đồng
 function contractStep(contracts: ContractView[]): TrackerNext {
   const c = currentContract(contracts)
+  // Bản nháp đầu tiên đã huỷ: báo giá này không lập hợp đồng được nữa, việc còn lại là đóng yêu cầu
+  if (!c && contracts.some((x) => x.status === 'DISCARDED'))
+    return {
+      tone: 'danger',
+      title: 'Bản nháp hợp đồng đã huỷ, cần đóng yêu cầu',
+      body: 'Báo giá này không lập hợp đồng mới được nữa. Bấm Đóng yêu cầu ở đầu trang và ghi lý do.',
+    }
   if (!c)
     return {
       tone: 'danger',

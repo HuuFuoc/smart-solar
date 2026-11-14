@@ -325,7 +325,7 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
     return THREE_STATUS_TABLES.map((t) => {
       const items = map[t.key].sort(byNextAction)
       // Nhóm đang xếp có lịch quá giờ hoặc cần phân công thì số đếm đỏ
-      return { ...t, items, urgent: t.key === 'dispatching' && items.some((it) => it.state.rank === 0) }
+      return { ...t, items }
     })
   }, [rows, needAssign, dateFilter, today])
 
@@ -365,13 +365,7 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
         </Field>
       </div>
       {shown.map((t) => (
-        <StatusTableSection
-          key={t.key}
-          title={t.title}
-          count={t.items.length}
-          emptyText="Không có yêu cầu nào."
-          highlight={t.urgent}
-        >
+        <StatusTableSection key={t.key} title={t.title} count={t.items.length} emptyText="Không có yêu cầu nào.">
           <MyRequestRows items={t.items} today={today} />
         </StatusTableSection>
       ))}

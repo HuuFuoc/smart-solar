@@ -239,10 +239,11 @@ function QuotationWork({ list }: { list: QuotationView[] }) {
 
 /** Một câu cho biết bản đã gửi đang ở đâu */
 function IssuedSummary({ quotation: q }: { quotation: QuotationView }) {
+  // Biên bản đổi sau khi khách đồng ý thì bản này không lập hợp đồng được nữa (khối cảnh báo ở trên đã nói)
   if (q.status === 'ACCEPTED')
     return (
       <Notice tone="ok" title={`Khách đồng ý lúc ${formatMoment(q.acceptedAt)}`}>
-        Bước tiếp theo là lập hợp đồng theo đúng báo giá này.
+        {q.surveyChanged ? null : 'Bước tiếp theo là lập hợp đồng theo đúng báo giá này.'}
       </Notice>
     )
   if (q.status === 'REVISION_REQUESTED')

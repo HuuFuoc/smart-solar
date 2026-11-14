@@ -58,7 +58,7 @@ const productFormSchema = z
   .object({
     sku: required('SKU'),
     name: required('tên sản phẩm'),
-    productType: required('loại sản phẩm'),
+    productType: z.string().trim().min(1, 'Chọn loại sản phẩm'),
     category: z.string().trim(),
     brand: required('hãng'),
     model: z.string().trim(),

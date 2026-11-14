@@ -4,7 +4,11 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Textarea } from '@/components/common/ui/field'
-import { hasPanelAndInverter, roundEvidenceCount } from '@/features/installations/technicianInstallationDisplay'
+import {
+  awaitsSubstitutionApproval,
+  hasPanelAndInverter,
+  roundEvidenceCount,
+} from '@/features/installations/technicianInstallationDisplay'
 import { useReportCompletionMutation } from '@/hooks/useTechnicianInstallations'
 import { errorMessage } from '@/services/api/errors'
 import type { InstallationTechnicianView } from '@/types/res/technicianInstallationsRes'
@@ -22,6 +26,7 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
   const [error, setError] = useState<string | null>(null)
   const photos = roundEvidenceCount(view)
   const equipped = hasPanelAndInverter(view)
+  const blocked = awaitsSubstitutionApproval(view)
   const length = text.trim().length
 
   function review() {
@@ -54,6 +59,7 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
             : `Chưa có ảnh nào của lượt ${view.currentRound} trên hệ thống. Ở khối "Ảnh lắp đặt", chọn ảnh rồi bấm "Tải lên" mới gửi được báo cáo.`}
         </li>
         <li>{equipped ? 'Đã ghi tấm pin và inverter.' : 'Chưa ghi đủ tấm pin và inverter đã lắp.'}</li>
+        {blocked && <li>Thiết bị lắp khác hợp đồng, chờ quản lý duyệt rồi mới gửi được báo cáo.</li>}
       </ul>
       <Field
         label="Nội dung báo cáo"
@@ -74,7 +80,7 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
         />
       </Field>
       <span className="flex flex-wrap items-center gap-3">
-        <Button icon="send" variant="primary" disabled={photos === 0 || report.isPending} onClick={review}>
+        <Button icon="send" variant="primary" disabled={photos === 0 || blocked || report.isPending} onClick={review}>
           Gửi báo cáo hoàn thành
         </Button>
         {error && (

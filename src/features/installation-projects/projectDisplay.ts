@@ -45,6 +45,14 @@ export function hasStarted(status: InstallationStatus) {
   return status === 'IN_PROGRESS' || status === 'REWORK_REQUIRED'
 }
 
+/**
+ * Đã lắp thiết bị hoặc đang lắp: chỉ khi đó chênh lệch với hợp đồng mới có nghĩa. Trước đó số đã lắp là 0 nên backend vẫn
+ * báo khác hợp đồng, nhưng chưa có gì để duyệt
+ */
+export function equipmentComparable(status: InstallationStatus) {
+  return hasStarted(status) || status === 'PENDING_CUSTOMER_ACCEPTANCE' || status === 'COMPLETED'
+}
+
 /** Huỷ chỉ trước khi thi công (IsCancellable) */
 export function canCancel(status: InstallationStatus) {
   return status === 'PENDING_ASSIGNMENT' || status === 'PENDING_TECHNICIAN_ACCEPTANCE' || status === 'SCHEDULED'

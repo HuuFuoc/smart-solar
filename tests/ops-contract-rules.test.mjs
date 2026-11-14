@@ -56,6 +56,7 @@ const contract = (status, extra = {}) => ({
   quotationId: 'q-1',
   status,
   warrantyMonths: 12,
+  terms: 'Thanh toán 100% sau khi ký.',
   canonicalHash: status === 'DRAFT' ? null : 'ab'.repeat(32),
   officialDocument: null,
   submissions: [],
@@ -108,10 +109,12 @@ describe('thời hạn bảo hành và điều khoản', () => {
 })
 
 describe('máy trạng thái hợp đồng', () => {
-  test('bản nháp: sửa được; thiếu thời hạn bảo hành thì chưa phát hành được', () => {
+  test('bản nháp: sửa được; thiếu điều khoản hoặc thời hạn bảo hành thì chưa phát hành được', () => {
     assert.equal(canEditDraft(contract('DRAFT')), true)
     assert.deepEqual(issueBlockers(contract('DRAFT')), [])
     assert.equal(issueBlockers(contract('DRAFT', { warrantyMonths: null })).length, 1)
+    assert.deepEqual(issueBlockers(contract('DRAFT', { terms: '  ' })), ['Chưa ghi điều khoản hợp đồng.'])
+    assert.equal(issueBlockers(contract('DRAFT', { terms: null, warrantyMonths: null })).length, 2)
     assert.equal(canEditDraft(contract('ISSUED')), false)
   })
 

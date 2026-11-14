@@ -163,7 +163,7 @@ function SchedulePanel({ request, zoneId }: { request: ServiceRequestView; zoneI
       />
       {(!visit || moving) && (
         <PanelBody>
-          <ScheduleVisitForm request={request} purpose={purpose} zoneId={zoneId} />
+          <ScheduleVisitForm request={request} purpose={purpose} zoneId={zoneId} onDone={() => setMoving(false)} />
         </PanelBody>
       )}
     </Panel>

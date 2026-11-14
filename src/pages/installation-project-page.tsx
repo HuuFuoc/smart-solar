@@ -22,6 +22,7 @@ import { AssetsPanel, HandoverPanel } from '@/features/installation-projects/Han
 import {
   blockingChecklist,
   canCancel,
+  equipmentComparable,
   formatInterval,
   formatSiteAddress,
   projectStatusMeta,
@@ -103,7 +104,7 @@ function nextStep(p: InstallationStaffView, isManager: boolean): TrackerNext {
     }
   if (p.status === 'COMPLETED')
     return { tone: 'neutral', title: 'Khách đã nghiệm thu, dự án đã bàn giao', body: formatMoment(p.handoverAt) }
-  if (p.equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED')
+  if (equipmentComparable(p.status) && p.equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED')
     return isManager
       ? {
           tone: 'danger',

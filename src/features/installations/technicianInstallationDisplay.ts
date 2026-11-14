@@ -46,6 +46,10 @@ export const canWork = (v: View) =>
 /** Số ảnh của lượt hiện tại; báo cáo cần ít nhất một */
 export const roundEvidenceCount = (v: View) => v.evidence.filter((e) => e.round === v.currentRound).length
 
+/** Thiết bị lắp khác hợp đồng chưa được quản lý duyệt: backend chưa nhận báo cáo hoàn thành */
+export const awaitsSubstitutionApproval = (v: Pick<View, 'equipment'>) =>
+  v.equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED'
+
 /** Backend mặc định bắt buộc có tấm pin và inverter trước khi gửi báo cáo (cấu hình được) */
 export const hasPanelAndInverter = (v: View) =>
   v.assets.some((a) => a.assetType === 'PANEL') && v.assets.some((a) => a.assetType === 'INVERTER')
@@ -143,15 +147,32 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
       }
     return { steps, next: { tone: 'info', title: 'Chưa bắt đầu được', body: reason } }
   }
-  if (v.status === 'IN_PROGRESS')
+  const ready = roundEvidenceCount(v) > 0 && hasPanelAndInverter(v)
+  if (working && ready && awaitsSubstitutionApproval(v))
     return {
       steps,
       next: {
-        tone: 'danger',
-        title: 'Thêm ảnh, ghi thiết bị rồi gửi báo cáo hoàn thành',
-        body: 'Báo cáo cần ít nhất một ảnh lắp đặt, tấm pin và inverter đã lắp.',
-        action: { label: 'Thêm ảnh', icon: 'add_a_photo', target: 'installation-photos' },
+        tone: 'info',
+        title: 'Thiết bị lắp khác hợp đồng, chờ quản lý duyệt',
+        body: 'Quản lý duyệt xong thì bạn mới gửi được báo cáo hoàn thành.',
       },
+    }
+  if (v.status === 'IN_PROGRESS')
+    return {
+      steps,
+      next: ready
+        ? {
+            tone: 'danger',
+            title: 'Gửi báo cáo hoàn thành',
+            body: 'Đã có ảnh, tấm pin và inverter. Viết báo cáo rồi gửi để khách nghiệm thu.',
+            action: { label: 'Viết báo cáo', icon: 'edit_note', target: 'installation-report' },
+          }
+        : {
+            tone: 'danger',
+            title: 'Thêm ảnh, ghi thiết bị rồi gửi báo cáo hoàn thành',
+            body: 'Báo cáo cần ít nhất một ảnh lắp đặt, tấm pin và inverter đã lắp.',
+            action: { label: 'Thêm ảnh', icon: 'add_a_photo', target: 'installation-photos' },
+          },
     }
   if (v.status === 'REWORK_REQUIRED') {
     const rework = latestRework(v)

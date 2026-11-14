@@ -226,7 +226,7 @@ export function CustomerShell({
 
         <PageCrumbContext value={setCrumb}>
           {/* Máy tính không có thanh trên: chuông ở góc phải, tiêu đề trang đứng đầu chừa chỗ cho nó */}
-          <main id="main" className="relative w-full p-4 lg:[&>[data-page-header]:first-child]:pr-16">
+          <main id="main" className="relative w-full p-4 lg:[&>[data-page-header]:first-child]:pr-28">
             {/* Trang chi tiết: nút quay về mục đang chọn trên menu, tên trang đã có ở tiêu đề ngay dưới */}
             {current && !onItemPage && (
               <nav aria-label="Quay lại" className="mb-4">

@@ -4,7 +4,7 @@ import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
-import { installationErrorMessage } from '@/features/installation-projects/projectDisplay'
+import { equipmentComparable, installationErrorMessage } from '@/features/installation-projects/projectDisplay'
 import { EquipmentDifferences } from '@/features/installations/EquipmentDifferences'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useApproveSubstitutionMutation } from '@/hooks/useManagerInstallations'
@@ -29,7 +29,7 @@ export function EquipmentPanel({ project: p, canApprove }: { project: Installati
   const [open, setOpen] = useState(false)
   const equipment = p.equipment
   const meta = equipment && STATUS_TEXT[equipment.status]
-  if (!equipment || !meta) return null
+  if (!equipment || !meta || !equipmentComparable(p.status)) return null
   const approvable = canApprove && equipment.status === 'SUBSTITUTION_APPROVAL_REQUIRED' && canApproveStatus(p.status)
 
   return (
