@@ -11,12 +11,14 @@ import { OnSiteSurveyFields, type DeclaredValues } from '@/features/onsite-surve
 import { OnSiteSurveyAmendmentEditor } from '@/features/onsite-survey/OnSiteSurveyAmendmentEditor'
 import { OnSiteSurveyAmendments } from '@/features/onsite-survey/OnSiteSurveyAmendments'
 import { canAmend } from '@/features/onsite-survey/onSiteSurveyAmendment'
+import { BOM_ERROR_KEY, FIELD_ERROR_CODES, unitsOf } from '@/features/onsite-survey/billOfMaterials'
 import { OnSiteSurveyFiles, type AttachmentUrlFetcher } from '@/features/onsite-survey/OnSiteSurveyFiles'
 import { OnSiteSurveySummary } from '@/features/onsite-survey/OnSiteSurveySummary'
 import { OnSiteSurveyUpload } from '@/features/onsite-survey/OnSiteSurveyUpload'
 import { onSiteSurveyStatusMeta, surveyStartOpensAt } from '@/features/onsite-survey/onSiteSurveyDisplay'
 import {
   formDiffers,
+  clearTouchedErrors,
   formFromView,
   serverOnSiteSurveyErrors,
   toRequest,
@@ -33,6 +35,7 @@ import {
   useStartOnSiteSurveyMutation,
 } from '@/hooks/useOnSiteSurvey'
 import { getMyOnSiteSurveyAttachmentUrl } from '@/services/onSiteSurveyService'
+import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { TechnicianJobView } from '@/types/res/technicianAppointmentsRes'
 import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
@@ -231,29 +234,23 @@ function SurveyEditor({
   const dirty = formDiffers(form, survey)
   const busy = save.isPending || complete.isPending
   const roofPhotos = survey.attachments.filter((a) => a.category === 'ROOF').length
-  const requiredLeft = Object.keys(validateOnSiteSurvey(form, { forCompletion: true })).length
+  const catalog = useCatalogPickerQuery()
+  const units = unitsOf(catalog.data?.items)
+  // Bảng vật tư không bắt buộc: lỗi của nó không tính là ô bắt buộc còn thiếu
+  const requiredLeft = Object.keys(validateOnSiteSurvey(form, { forCompletion: true, units })).filter(
+    (key) => !key.startsWith(BOM_ERROR_KEY),
+  ).length
 
   const declared = declaredOf(job)
 
   function change(patch: Partial<OnSiteSurveyForm>) {
     setForm((current) => ({ ...current, ...patch }))
-    const touched = Object.keys(patch)
-    setErrors((current) => {
-      const next = { ...current }
-      for (const key of Object.keys(next)) {
-        if (touched.includes(key) || (touched.includes('obstacles') && key.startsWith('obstacle-'))) delete next[key]
-      }
-      return next
-    })
+    setErrors((current) => clearTouchedErrors(current, Object.keys(patch)))
     setActionError(null)
   }
 
   function handleError(e: unknown) {
-    if (
-      isApiError(e) &&
-      (e.code === 'VALIDATION_FAILED' || e.code === 'ONSITE_SURVEY_INCOMPLETE') &&
-      e.hasFieldErrors
-    ) {
+    if (isApiError(e) && FIELD_ERROR_CODES.includes(e.code ?? '') && e.hasFieldErrors) {
       setErrors(serverOnSiteSurveyErrors(e.fieldErrors, form))
       focusFirstError()
     }
@@ -263,7 +260,7 @@ function SurveyEditor({
 
   /** Lưu lên hệ thống, trả về biên bản mới (hoặc null khi lỗi) */
   async function persist(): Promise<OnSiteSurveyView | null> {
-    const found = validateOnSiteSurvey(form, { forCompletion: false })
+    const found = validateOnSiteSurvey(form, { forCompletion: false, units })
     if (Object.keys(found).length > 0) {
       setErrors(found)
       setActionError('Sửa các ô được đánh dấu rồi lưu lại.')
@@ -287,7 +284,7 @@ function SurveyEditor({
 
   function askComplete() {
     setActionError(null)
-    const found = validateOnSiteSurvey(form, { forCompletion: true })
+    const found = validateOnSiteSurvey(form, { forCompletion: true, units })
     if (Object.keys(found).length > 0) {
       setErrors(found)
       setActionError('Còn ô chưa điền hoặc chưa đúng. Sửa các ô được đánh dấu rồi hoàn thành lại.')

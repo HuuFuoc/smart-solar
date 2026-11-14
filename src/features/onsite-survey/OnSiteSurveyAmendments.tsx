@@ -44,7 +44,13 @@ export function OnSiteSurveyAmendments({ survey }: { survey: OnSiteSurveyView })
                   {entries.map((entry) => (
                     <li key={entry.field} className="text-fg-2">
                       <span className="text-fg">{amendmentFieldLabel(entry.field)}</span>:{' '}
-                      {entry.kind === 'obstacles' ? (
+                      {entry.kind === 'bom' ? (
+                        <span className="tnum">
+                          {entry.old === entry.new
+                            ? `đổi sản phẩm hoặc số lượng (${entry.new} dòng)`
+                            : `${entry.old} dòng → ${entry.new} dòng`}
+                        </span>
+                      ) : entry.kind === 'obstacles' ? (
                         <>
                           {obstaclesText(entry.old)} → {obstaclesText(entry.new)}
                         </>

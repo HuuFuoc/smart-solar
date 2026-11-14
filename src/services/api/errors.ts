@@ -264,6 +264,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   ONSITE_SURVEY_NOT_STARTED: 'Bấm Bắt đầu khảo sát tại công trình trước khi hoàn thành.',
   ONSITE_SURVEY_INCOMPLETE: 'Còn thiếu số đo bắt buộc. Điền các ô được đánh dấu rồi hoàn thành lại.',
   ONSITE_SURVEY_STALE_REVISION: 'Biên bản vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  ONSITE_SURVEY_BOM_VALIDATION_FAILED:
+    'Bảng vật tư có sản phẩm không còn bán, sai loại hoặc số lượng chưa đúng. Sửa các dòng được đánh dấu rồi thử lại.',
   ONSITE_SURVEY_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh loại Mái trước khi hoàn thành khảo sát.',
   ONSITE_SURVEY_ATTACHMENT_NOT_FOUND: 'Không tìm thấy ảnh này trong biên bản.',
   INVALID_STATE_TRANSITION:

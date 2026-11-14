@@ -93,6 +93,11 @@ export function amendmentDiff(current: SurveyValues, original: SurveyValues): Am
     changes.obstacles = current.obstacles ?? []
     changed.push('obstacles')
   }
+  // Bảng vật tư gửi cả bảng như vật cản
+  if (JSON.stringify(current.billOfMaterials ?? null) !== JSON.stringify(original.billOfMaterials ?? null)) {
+    changes.billOfMaterials = current.billOfMaterials ?? { materials: [], serviceItems: [], installationNotes: null }
+    changed.push('billOfMaterials')
+  }
   return { changes, changed, uncleared }
 }
 
@@ -141,6 +146,8 @@ export type ObstacleSnapshot = {
 export type AmendmentEntry =
   | { field: string; kind: 'value'; old: AmendmentValue; new: AmendmentValue }
   | { field: 'obstacles'; kind: 'obstacles'; old: ObstacleSnapshot[]; new: ObstacleSnapshot[] }
+  /** Bảng vật tư: chỉ đếm số dòng, view không có tên sản phẩm */
+  | { field: 'billOfMaterials'; kind: 'bom'; old: number; new: number }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const scalar = (v: unknown): AmendmentValue =>
@@ -155,6 +162,12 @@ const obstacleList = (v: unknown): ObstacleSnapshot[] =>
       }))
     : []
 
+const bomLineCount = (v: unknown) =>
+  isRecord(v)
+    ? (Array.isArray(v.materials) ? v.materials.length : 0) +
+      (Array.isArray(v.serviceItems) ? v.serviceItems.length : 0)
+    : 0
+
 /** Các ô đã đổi của một lần bổ sung. Dạng lạ (backend đổi cấu trúc) thì bỏ qua ô đó, không đoán */
 export function amendmentEntries(changes: unknown): AmendmentEntry[] {
   if (!isRecord(changes)) return []
@@ -163,6 +176,8 @@ export function amendmentEntries(changes: unknown): AmendmentEntry[] {
     if (!isRecord(value) || !('old' in value || 'new' in value)) continue
     if (field === 'obstacles')
       entries.push({ field, kind: 'obstacles', old: obstacleList(value.old), new: obstacleList(value.new) })
+    else if (field === 'billOfMaterials')
+      entries.push({ field, kind: 'bom', old: bomLineCount(value.old), new: bomLineCount(value.new) })
     else entries.push({ field, kind: 'value', old: scalar(value.old), new: scalar(value.new) })
   }
   return entries

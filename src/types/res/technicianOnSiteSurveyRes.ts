@@ -24,6 +24,15 @@ export type OnSiteSurveyData = {
   notes: string | null
   /** Cùng danh sách với `obstacles` của view */
   obstacles: OnSiteSurveyObstacleView[] | null
+  /** Thiết bị và dịch vụ kỹ thuật viên chốt; null khi chưa ghi. Báo giá tự lập đọc bảng này */
+  billOfMaterials: OnSiteSurveyBillOfMaterials | null
+}
+
+/** BillOfMaterialsInput: chỉ mã sản phẩm + số lượng theo đơn vị của sản phẩm, không có giá */
+export type OnSiteSurveyBillOfMaterials = {
+  materials: { productId: string; quantity: number }[] | null
+  serviceItems: { productId: string; quantity: number }[] | null
+  installationNotes: string | null
 }
 
 export type OnSiteSurveyObstacleView = {

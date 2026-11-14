@@ -54,6 +54,7 @@ const AMENDMENT_FIELD_LABELS: Record<string, string> = {
   measuredLongitude: 'Kinh độ đo',
   notes: 'Ghi chú',
   obstacles: 'Vật cản',
+  billOfMaterials: 'Vật tư và dịch vụ',
 }
 const AMENDMENT_UNITS: Record<string, string> = {
   roofLengthM: 'm',

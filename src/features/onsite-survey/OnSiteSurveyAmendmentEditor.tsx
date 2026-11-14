@@ -14,8 +14,10 @@ import {
   amendmentDiff,
   amendmentErrors,
 } from '@/features/onsite-survey/onSiteSurveyAmendment'
+import { FIELD_ERROR_CODES, unitsOf } from '@/features/onsite-survey/billOfMaterials'
 import { amendmentFieldLabel } from '@/features/onsite-survey/onSiteSurveyDisplay'
 import {
+  clearTouchedErrors,
   formFromView,
   serverOnSiteSurveyErrors,
   toRequest,
@@ -25,6 +27,7 @@ import {
 } from '@/features/onsite-survey/onSiteSurveyForm'
 import { useFileUpload } from '@/hooks/useFiles'
 import { useAmendOnSiteSurveyMutation } from '@/hooks/useOnSiteSurvey'
+import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import { isApiError, rateLimitedMessage } from '@/services/api/errors'
 import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
 
@@ -56,6 +59,7 @@ export function OnSiteSurveyAmendmentEditor({
   onClose: () => void
 }) {
   const amend = useAmendOnSiteSurveyMutation(appointmentId)
+  const catalog = useCatalogPickerQuery()
   const { upload, uploading } = useFileUpload(PURPOSE)
   const [base, setBase] = useState(survey)
   const [form, setForm] = useState<OnSiteSurveyForm>(() => formFromView(survey))
@@ -73,14 +77,7 @@ export function OnSiteSurveyAmendmentEditor({
 
   function change(patch: Partial<OnSiteSurveyForm>) {
     setForm((current) => ({ ...current, ...patch }))
-    const touched = Object.keys(patch)
-    setErrors((current) => {
-      const next = { ...current }
-      for (const key of Object.keys(next)) {
-        if (touched.includes(key) || (touched.includes('obstacles') && key.startsWith('obstacle-'))) delete next[key]
-      }
-      return next
-    })
+    setErrors((current) => clearTouchedErrors(current, Object.keys(patch)))
     setActionError(null)
   }
 
@@ -93,7 +90,7 @@ export function OnSiteSurveyAmendmentEditor({
 
   function review() {
     setActionError(null)
-    const found = validateOnSiteSurvey(form, { forCompletion: true })
+    const found = validateOnSiteSurvey(form, { forCompletion: true, units: unitsOf(catalog.data?.items) })
     const problems = amendmentErrors({ reason, diff, fileCount: files.length })
     setErrors(found)
     setReasonError(problems.reason ?? null)
@@ -146,7 +143,7 @@ export function OnSiteSurveyAmendmentEditor({
     } catch (e) {
       setConfirming(false)
       if (isApiError(e) && e.code === 'ONSITE_SURVEY_STALE_REVISION') setStale(true)
-      if (isApiError(e) && e.code === 'VALIDATION_FAILED' && e.hasFieldErrors) {
+      if (isApiError(e) && FIELD_ERROR_CODES.includes(e.code ?? '') && e.hasFieldErrors) {
         setErrors(serverOnSiteSurveyErrors(e.fieldErrors, form))
         focusFirstError()
       }

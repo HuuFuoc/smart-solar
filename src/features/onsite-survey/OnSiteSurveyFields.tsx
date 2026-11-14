@@ -11,6 +11,7 @@ import { Button, IconButton } from '@/components/common/ui/button'
 import { Combobox } from '@/components/common/ui/combobox'
 import { Field, Input, Radio, Select, Textarea, WithUnit, fieldMessageId } from '@/components/common/ui/field'
 import { Segmented } from '@/components/common/ui/segmented'
+import { BillOfMaterialsFields } from '@/features/onsite-survey/BillOfMaterialsFields'
 import { directionLabel } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatCoordinates } from '@/features/onsite-survey/onSiteSurveyDisplay'
 import {
@@ -302,6 +303,10 @@ export function OnSiteSurveyFields({
         >
           {textArea('proposedPanelLayoutNotes', 'os-proposedPanelLayoutNotes', LIMITS.longNoteLength, 2)}
         </Field>
+      </Section>
+
+      <Section title="Vật tư và dịch vụ">
+        <BillOfMaterialsFields value={value} errors={errors} onChange={onChange} disabled={disabled} />
       </Section>
 
       <Section title={`Vật cản (${value.obstacles.length})`}>

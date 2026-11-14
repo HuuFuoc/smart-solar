@@ -9,7 +9,8 @@ import {
   roofConditionLabel,
 } from '@/features/onsite-survey/onSiteSurveyDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
-import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
+import { useCatalogPickerQuery } from '@/hooks/useProducts'
+import type { OnSiteSurveyBillOfMaterials, OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 })
 const n = (value: number | null | undefined, unit: string) => (value == null ? '—' : `${num.format(value)} ${unit}`)
@@ -82,6 +83,50 @@ export function OnSiteSurveySummary({ survey }: { survey: OnSiteSurveyView }) {
           </ul>
         )}
       </div>
+
+      <BillOfMaterialsSummary bom={d.billOfMaterials ?? null} />
+    </div>
+  )
+}
+
+function BillOfMaterialsSummary({ bom }: { bom: OnSiteSurveyBillOfMaterials | null }) {
+  const catalog = useCatalogPickerQuery()
+  const lines = [
+    ...(bom?.materials ?? []).map((i) => ({ ...i, service: false })),
+    ...(bom?.serviceItems ?? []).map((i) => ({ ...i, service: true })),
+  ]
+  const product = (id: string) => catalog.data?.items?.find((p) => p.id === id)
+  return (
+    <div>
+      <h4 className="mb-2 text-body font-medium text-fg">Vật tư và dịch vụ ({lines.length})</h4>
+      {lines.length === 0 ? (
+        <p className="text-body text-fg-2">Chưa ghi vật tư nào.</p>
+      ) : (
+        <ul className="divide-y divide-line border-y border-line">
+          {lines.map((line) => {
+            const p = product(line.productId)
+            return (
+              <li
+                key={line.productId}
+                className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-2 text-body"
+              >
+                <span className="min-w-0">
+                  <span className="font-medium text-fg">
+                    {p?.name ?? (catalog.isPending ? 'Đang tải…' : 'Sản phẩm không còn trong danh mục')}
+                  </span>
+                  {line.service && <span className="text-fg-2"> (dịch vụ)</span>}
+                </span>
+                <span className="tnum text-meta text-fg-2">
+                  {num.format(line.quantity)} {p?.unit ?? ''}
+                </span>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      {bom?.installationNotes && (
+        <p className="mt-2 text-body whitespace-pre-line text-fg-2">Ghi chú lắp đặt: {bom.installationNotes}</p>
+      )}
     </div>
   )
 }

@@ -1,6 +1,13 @@
 import { ONSITE_SURVEY_LIMITS as LIMITS } from '@/common/onsiteSurvey'
 import type { OnSiteSurveyRequest } from '@/types/req/technicianOnSiteSurveyReq'
 import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
+import {
+  BOM_ERROR_KEY,
+  bomErrors,
+  bomRequest,
+  rowsFromItems,
+  type BomRow,
+} from '@/features/onsite-survey/billOfMaterials'
 import { parseDecimal, toInputText } from '@/utils/number'
 
 // Form biên bản khảo sát tại công trình. Luật kiểm tra bám OnSiteSurveyHandlers.Validate của backend:
@@ -26,11 +33,33 @@ export type OnSiteSurveyForm = {
   measuredLatitude: number | null
   measuredLongitude: number | null
   obstacles: ObstacleRow[]
+  materials: BomRow[]
+  serviceItems: BomRow[]
+  installationNotes: string
+  /** Biên bản trên hệ thống đã có bảng vật tư */
+  hadBom: boolean
 }
+
+/** Ô của bảng vật tư: đổi ô nào thì xoá mọi lỗi `billOfMaterials…` */
+export const BOM_FIELDS: readonly string[] = ['materials', 'serviceItems', 'installationNotes']
 
 export type ObstacleField = 'heightM' | 'areaM2'
 /** Khoá là tên ô, vật cản dùng `obstacle-<chỉ số>-<ô>` */
 export type OnSiteSurveyErrors = Partial<Record<string, string>>
+
+/** Bỏ lỗi của các ô vừa sửa; sửa danh sách vật cản / bảng vật tư thì bỏ lỗi của mọi dòng trong đó */
+export function clearTouchedErrors(errors: OnSiteSurveyErrors, touched: string[]) {
+  const next = { ...errors }
+  for (const key of Object.keys(next)) {
+    if (
+      touched.includes(key) ||
+      (touched.includes('obstacles') && key.startsWith('obstacle-')) ||
+      (touched.some((t) => BOM_FIELDS.includes(t)) && key.startsWith(BOM_ERROR_KEY))
+    )
+      delete next[key]
+  }
+  return next
+}
 
 export const obstacleErrorKey = (index: number, field: ObstacleField) => `obstacle-${index}-${field}`
 
@@ -69,6 +98,10 @@ export function formFromView(view: OnSiteSurveyView | null | undefined): OnSiteS
       heightM: numberText(o.heightM),
       areaM2: numberText(o.areaM2),
     })),
+    materials: rowsFromItems(d?.billOfMaterials?.materials),
+    serviceItems: rowsFromItems(d?.billOfMaterials?.serviceItems),
+    installationNotes: text(d?.billOfMaterials?.installationNotes),
+    hadBom: Boolean(d?.billOfMaterials),
   }
 }
 
@@ -105,6 +138,7 @@ export function toRequest(form: OnSiteSurveyForm, revision: number | null): OnSi
       heightM: numberOrNull(o.heightM),
       areaM2: numberOrNull(o.areaM2),
     })),
+    billOfMaterials: bomRequest(form.materials, form.serviceItems, form.installationNotes, form.hadBom) ?? undefined,
   }
 }
 
@@ -118,8 +152,11 @@ function readNumber(value: string) {
   return parseDecimal(value)
 }
 
-export function validateOnSiteSurvey(form: OnSiteSurveyForm, { forCompletion }: { forCompletion: boolean }) {
-  const errors: OnSiteSurveyErrors = {}
+export function validateOnSiteSurvey(
+  form: OnSiteSurveyForm,
+  { forCompletion, units }: { forCompletion: boolean; units?: Record<string, string | null | undefined> },
+) {
+  const errors: OnSiteSurveyErrors = { ...bomErrors(form.materials, form.serviceItems, form.installationNotes, units) }
 
   function checkRange(field: keyof OnSiteSurveyForm, ok: (n: number) => boolean, message: string) {
     const n = readNumber(form[field] as string)
@@ -177,7 +214,11 @@ export function serverOnSiteSurveyErrors(fieldErrors: Record<string, string>, fo
   const local = validateOnSiteSurvey(form, { forCompletion: true })
   const errors: OnSiteSurveyErrors = {}
   for (const field of Object.keys(fieldErrors)) {
-    errors[field] = local[field] ?? 'Giá trị chưa hợp lệ.'
+    errors[field] =
+      local[field] ??
+      (field.startsWith(`${BOM_ERROR_KEY}.`)
+        ? 'Sản phẩm này không còn bán hoặc sai loại (thiết bị / dịch vụ). Chọn sản phẩm khác.'
+        : 'Giá trị chưa hợp lệ.')
   }
   return errors
 }

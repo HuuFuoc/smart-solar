@@ -30,6 +30,11 @@ export function useProductsQuery(params: ProductListParams, { enabled = true }: 
   })
 }
 
+// Danh mục để chọn sản phẩm (bảng vật tư khảo sát, dòng báo giá): một trang 100 sản phẩm, hằng ở module để khoá cache không đổi
+// shortcut: chỉ trang đầu, danh mục quá 100 sản phẩm thì cần ô tìm gọi theo từ khoá
+export const CATALOG_PICKER_QUERY = { PageSize: 100, SortBy: 'name', SortDirection: 'asc' } as const
+export const useCatalogPickerQuery = () => useProductsQuery(CATALOG_PICKER_QUERY)
+
 export function useProductQuery(id: string | undefined) {
   return useQuery<ProductResponse, ApiError>({
     queryKey: productKeys.detail(id ?? ''),
