@@ -349,10 +349,10 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
     xoá được (BE giữ giá trị cũ khi bỏ trống). Chi tiết công trình không trả `specifications` nên ô thông số chỉ ghi mới.
   - Lỗi `AFTER_SALES_INVALID_STATE` dịch theo câu gốc của BE (`managerActionError` ở `managerAfterSalesDisplay.ts`).
 - Hàng việc kinh doanh `/manage/sales-tasks`, `/admin/sales-tasks` (`pages/sales-tasks-page.tsx`): GET tasks, trạng thái cụ thể
-  gửi `status` lên BE, loại / người giữ lọc ở máy. Giao / giao lại (lý do bắt buộc khi đã có người giữ) ở cả hai cổng: người nhận
-  lấy từ `GET /manager/after-sales/sales-assignees` (MANAGER + ADMIN, chỉ mã + họ tên kinh doanh đang hoạt động), không dùng
-  `GET /admin/users`. API này chỉ có trong bản vá backend chưa merge (`smart-solar-backend-test`, nhánh
-  `test/post-audit-remediation`); backend chưa vá thì hộp "Giao việc" báo lỗi. Không đếm hạn xử lý ở FE.
+  gửi `status` lên BE, loại / người giữ lọc ở máy. Giao / giao lại (lý do bắt buộc khi đã có người giữ) chỉ ở cổng quản trị:
+  người nhận lấy từ `GET /admin/users?role=SALES&status=ACTIVE` (chỉ ADMIN). Backend `main` không có danh sách kinh doanh cho
+  quản lý (`/manager/after-sales/sales-assignees` chỉ có ở bản vá chưa merge) nên cổng quản lý chỉ xem, không có nút giao.
+  Không đếm hạn xử lý ở FE.
 - Nhóm không làm hoàn tiền (người dùng chốt 13/11/2026): web không có màn Hoàn tiền (duyệt / ghi nhận khoản hoàn) và Huỷ gói
   (xét huỷ gói đã trả tiền); báo cáo sau bán bỏ "Đã hoàn" và "Thực thu" (`DASHBOARD_HIDDEN_KEYS`). Đừng thêm lại. Nhãn trạng thái
   thanh toán `REFUND_REQUIRED` (khách trả hai lần) vẫn giữ vì là trạng thái BE trả về.
@@ -591,6 +591,16 @@ trong DLL; response viết tay ở `types/res/technicianOnSiteSurveyRes.ts`, enu
   mở form, bản đổi ở nơi khác thì khoá nút gửi tới khi "Tải bản mới nhất"). Lịch sử bổ sung (`OnSiteSurveyAmendments`: lý do, giá
   trị cũ → mới) hiện ở cả cổng kỹ thuật viên và kinh doanh. Ô số nhận dấu phẩy; mỗi ô có gợi ý "Khách khai: …" để đối chiếu; toạ độ chỉ lấy
   từ GPS của máy (nút "Lấy vị trí hiện tại"), không gõ tay. Thanh dưới dính đáy: hai điều kiện hoàn thành + trạng thái lưu.
+- Bảng vật tư và dịch vụ (khối "Vật tư và dịch vụ" của form, `BillOfMaterialsFields`; luật ở `billOfMaterials.ts` bám
+  `OnSiteSurveyHandlers`, test ở `tests/onsite-bom-rules.test.mjs`): kỹ thuật viên chọn sản phẩm đang bán trong danh mục
+  (`useCatalogPickerQuery`, một trang 100) + số lượng theo đơn vị của sản phẩm, không có giá. Thiết bị là mọi loại trừ
+  dịch vụ; dịch vụ là `INSTALLATION_LABOR` / `TRANSPORT` / `OTHER_SERVICE`. Mỗi sản phẩm một dòng, số lượng 0 < x ≤ 100 000,
+  đơn vị đếm (PCS, SET, UNIT, EA…) phải nguyên, tối đa 100 dòng, ghi chú lắp đặt ≤ 2000. Không bắt buộc để hoàn thành; gửi
+  `billOfMaterials` trong PUT (null là giữ bảng cũ, nên đã có bảng mà xoá hết thì gửi bảng rỗng) và trong bản bổ sung (gửi cả
+  bảng). Lỗi theo dòng của backend (`billOfMaterials.materials[0]`, `ONSITE_SURVEY_BOM_VALIDATION_FAILED`) hiện dưới đúng dòng.
+  Hoàn thành khảo sát có thiết bị thì backend tự lập báo giá từ bảng này (giá danh mục); thiếu tấm pin, inverter hoặc nhân công
+  thì form nhắc và báo giá có vấn đề cho kinh doanh. Dòng thiết bị của báo giá tự lập có mô tả là mã `MATERIAL`: FE không hiện
+  (`lineDescription`).
 - Kinh doanh / quản lý / quản trị: khối "Kết quả khảo sát tại công trình" (`OnSiteSurveyResultPanel`, GET
   /survey-requests/{id}/onsite-survey; chưa có biên bản là 404 `ONSITE_SURVEY_NOT_FOUND`, hook trả null) dưới khối lịch của
   `/ops/surveys/:id`, chỉ đọc (`OnSiteSurveySummary` + `OnSiteSurveyFiles`, link ký sẵn từng tệp).
@@ -649,10 +659,10 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
 - Duyệt bản ký (`SignaturePanel`): kinh doanh phụ trách và quản lý (`/manage/contracts/:id`); quản trị
   (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. "Xem" / "Tải về" PDF chính thức và từng bản ký
   (`ContractDocumentButtons`): xin link ký sẵn đúng lúc bấm (`GET /contracts/{id}/official-document/url`,
-  `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Các API link này thuộc
-  bản vá backend chưa merge (quyền: quản lý / quản trị, hoặc kinh doanh phụ trách). Backend đã deploy (160.187.1.242) chưa
-  có các API này (404) nên khách không tải được PDF trên web; thử luồng ký thì đưa khách đúng tệp PDF đã gắn, vì hộp ký so
-  SHA-256 của tệp khách đang giữ.
+  `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Backend `main` và
+  bản đã deploy chưa có các API link này (chỉ có ở bản vá chưa merge), nên nút đang ẩn bằng cờ `CONTRACT_DOCUMENT_LINKS`
+  (`common/contract.ts`, đang `false`); câu hướng dẫn đổi theo cờ: kinh doanh tự gửi đúng tệp PDF đã gắn cho khách, vì hộp ký
+  so SHA-256 của tệp khách đang giữ. Backend có API thì đổi cờ thành `true`.
 - Thanh toán (`ContractPaymentPanel`, `GET /contracts/{id}/payments`, cả 3 cổng): chỉ đọc, hỏi lại 30 giây / lần khi SIGNED;
   REVIEW_REQUIRED / REFUND_REQUIRED tô đỏ. PAID: quản lý / quản trị có nút sang "Hợp đồng chờ tạo dự án"; số hợp đồng ở danh
   sách đó dẫn về trang hợp đồng.
@@ -668,7 +678,8 @@ Kiểm tra và các chỗ còn chặn: `docs/api/customer-portal-verification.md
 
 - Ký (`CustomerSignPanel`, `SignContractDialog`): khách xem / tải PDF chính thức và bản ký của mình qua link ký sẵn
   (`GET /customers/me/contracts/{id}/official-document/url`, `…/submissions/{sid}/url`; chỉ chủ hợp đồng, bản vá backend chưa
-  merge), rồi kiểm tệp đang giữ bằng SHA-256 tính trên máy (không tải lên).
+  merge, nút ẩn khi `CONTRACT_DOCUMENT_LINKS` tắt và khách nhận PDF từ kinh doanh), rồi kiểm tệp đang giữ bằng SHA-256 tính
+  trên máy (không tải lên).
   SHA-256 của PDF chính thức được chụp lúc mở hộp thoại và gửi đúng mã đó; hợp đồng đổi phiên bản thì khoá nút gửi, lỗi
   `RESIGN_ERROR_CODES` bắt xem lại và ký lại, không tự gửi lại. Bản ký tải lên `SIGNED_CONTRACT` (PDF ≤ 20 MB).
 - Thanh toán (`CustomerContractPayment`): chỉ khi SIGNED; link tạo khi khách bấm (backend trả lại link còn sống), hỏi lại 5 giây /
