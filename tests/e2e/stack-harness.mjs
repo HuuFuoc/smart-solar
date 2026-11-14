@@ -28,6 +28,8 @@ export async function setupStack(phase) {
   before(async () => {
     if (skip) return
     process.env.API_PROXY_TARGET = S.STACK_API
+    // Stack chạy bản vá backend có API link PDF hợp đồng, nên bật nút Xem / Tải về (stack-3 tải PDF qua giao diện)
+    process.env.VITE_CONTRACT_DOCUMENT_LINKS ??= 'true'
     // Nghe thẳng IPv4: `localhost` có máy phân giải ra ::1 cho Vite nhưng 127.0.0.1 cho Chromium, module tải lỗi ngẫu nhiên
     server = await createServer({
       server: { host: '127.0.0.1', port: 3301, strictPort: false, hmr: false, watch: null },

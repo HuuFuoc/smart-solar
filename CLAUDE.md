@@ -660,9 +660,10 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
   (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. "Xem" / "Tải về" PDF chính thức và từng bản ký
   (`ContractDocumentButtons`): xin link ký sẵn đúng lúc bấm (`GET /contracts/{id}/official-document/url`,
   `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Backend `main` và
-  bản đã deploy chưa có các API link này (chỉ có ở bản vá chưa merge), nên nút đang ẩn bằng cờ `CONTRACT_DOCUMENT_LINKS`
-  (`common/contract.ts`, đang `false`); câu hướng dẫn đổi theo cờ: kinh doanh tự gửi đúng tệp PDF đã gắn cho khách, vì hộp ký
-  so SHA-256 của tệp khách đang giữ. Backend có API thì đổi cờ thành `true`.
+  bản đã deploy chưa có các API link này (chỉ có ở bản vá chưa merge), nên nút ẩn theo cờ `CONTRACT_DOCUMENT_LINKS`
+  (`common/contract.ts`, bật khi `VITE_CONTRACT_DOCUMENT_LINKS=true`, mặc định tắt; `stack-harness.mjs` tự bật vì stack kiểm thử
+  chạy bản vá); câu hướng dẫn đổi theo cờ: kinh doanh tự gửi đúng tệp PDF đã gắn cho khách, vì hộp ký so SHA-256 của tệp khách
+  đang giữ.
 - Thanh toán (`ContractPaymentPanel`, `GET /contracts/{id}/payments`, cả 3 cổng): chỉ đọc, hỏi lại 30 giây / lần khi SIGNED;
   REVIEW_REQUIRED / REFUND_REQUIRED tô đỏ. PAID: quản lý / quản trị có nút sang "Hợp đồng chờ tạo dự án"; số hợp đồng ở danh
   sách đó dẫn về trang hợp đồng.

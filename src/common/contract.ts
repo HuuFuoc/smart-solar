@@ -75,11 +75,12 @@ export const PAYMENT_EVENT_SOURCES: Record<string, string> = {
   SYSTEM: 'Hệ thống',
 }
 
-/** Giới hạn của backend (cột trong DB, Trim của ContractHandlers) */
 // Backend `main` chưa có API link xem / tải PDF hợp đồng và bản ký (`…/official-document/url`, `…/submissions/{id}/url`):
-// ẩn nút Xem / Tải về, kinh doanh tự gửi PDF cho khách. Có API thì bật lại
-export const CONTRACT_DOCUMENT_LINKS = false
+// mặc định ẩn nút Xem / Tải về, kinh doanh tự gửi PDF cho khách. Backend có các API này thì đặt
+// VITE_CONTRACT_DOCUMENT_LINKS=true (`?.` vì unit test chạy bằng node không có import.meta.env)
+export const CONTRACT_DOCUMENT_LINKS = import.meta.env?.VITE_CONTRACT_DOCUMENT_LINKS === 'true'
 
+/** Giới hạn của backend (cột trong DB, Trim của ContractHandlers) */
 export const CONTRACT_LIMITS = {
   /** Điều khoản dài hơn bị backend cắt */
   termsLength: 8000,
