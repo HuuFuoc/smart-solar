@@ -19,12 +19,6 @@ const COPY = {
     submit: 'Huỷ đơn',
     variant: 'danger-solid',
   },
-  paid: {
-    title: (name: string) => `Yêu cầu huỷ ${name}?`,
-    body: 'Gói đã thanh toán nhưng chưa hiệu lực. Quản lý xét yêu cầu; nếu đồng ý, số tiền hoàn do quản lý quyết định (tối đa bằng giá gói) và được chuyển khoản trả lại.',
-    submit: 'Gửi yêu cầu huỷ',
-    variant: 'danger',
-  },
 } as const
 
 /** Huỷ gói trước khi hiệu lực. Câu báo dựa vào trạng thái backend trả về, không tự đánh dấu đã huỷ */
@@ -122,7 +116,9 @@ export function CancelSubscriptionDialog({
         ) : (
           <>
             <DialogTitle>Không huỷ được gói này</DialogTitle>
-            <p className="mt-2 text-body text-fg-2">Gói đã hiệu lực hoặc đã kết thúc nên không huỷ trên mạng được.</p>
+            <p className="mt-2 text-body text-fg-2">
+              Gói đã thanh toán, đã hiệu lực hoặc đã kết thúc nên không huỷ trên mạng được.
+            </p>
             <DialogFooter>
               <Button icon="close" variant="secondary" onClick={close}>
                 Đóng

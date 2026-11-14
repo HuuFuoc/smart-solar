@@ -446,7 +446,7 @@ export function CustomerAfterSalesRequestPage() {
             <ReasonDialog
               open={dialog === 'cancel'}
               title="Huỷ yêu cầu này?"
-              description="Chưa thanh toán thì huỷ ngay. Đã thanh toán thì quản lý xét yêu cầu huỷ và báo lại số tiền hoàn."
+              description="Chưa thanh toán thì huỷ ngay. Đã thanh toán thì quản lý xét yêu cầu huỷ."
               submitLabel="Huỷ yêu cầu"
               icon="cancel"
               variant="danger"

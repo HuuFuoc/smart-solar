@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import {
   DASHBOARD_METRICS,
+  DASHBOARD_HIDDEN_KEYS,
   DASHBOARD_MONEY_KEYS,
   SERVICE_REQUEST_KINDS,
   SERVICE_REQUEST_STATUSES,
@@ -117,7 +118,9 @@ export function AdminReportsPage() {
   const money = DASHBOARD_MONEY_KEYS.map((key) => metrics.find((m) => m.key === key)).filter(
     (m): m is DashboardMetric => Boolean(m),
   )
-  const activity = metrics.filter((m) => !DASHBOARD_MONEY_KEYS.includes(m.key))
+  const activity = metrics.filter(
+    (m) => !DASHBOARD_MONEY_KEYS.includes(m.key) && !DASHBOARD_HIDDEN_KEYS.includes(m.key),
+  )
   const unavailable = query.isError && isFeatureUnavailable(query.error)
 
   async function exportCsv() {
@@ -273,7 +276,7 @@ export function AdminReportsPage() {
             </p>
             <Panel>
               <PanelHeader title="Tiền" />
-              <StatRow framed className="lg:grid-cols-3 xl:grid-cols-6">
+              <StatRow framed>
                 {money.map((m) => (
                   <Stat
                     key={m.key}

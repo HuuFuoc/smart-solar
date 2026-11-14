@@ -165,7 +165,7 @@ export function SubscriptionList({
                   <div className="flex flex-wrap items-center gap-3">
                     {mode && (
                       <Button icon="cancel" size="sm" variant="danger" onClick={() => onCancel(s)}>
-                        {mode === 'paid' ? 'Yêu cầu huỷ' : 'Huỷ đơn'}
+                        Huỷ đơn
                       </Button>
                     )}
                     {payAttempt && (

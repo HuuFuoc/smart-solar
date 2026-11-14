@@ -1,4 +1,4 @@
-// Giai đoạn 4 trên backend thật (xem stack-harness.mjs): sau bán. Gói (mua, huỷ, xét huỷ), hoàn tiền (duyệt, ghi nhận), hỗ trợ thiên tai
+// Giai đoạn 4 trên backend thật (xem stack-harness.mjs): sau bán. Gói (mua; nhóm không làm hoàn tiền nên không xét huỷ gói), hỗ trợ thiên tai
 // (từ chối, xin xét lại, duyệt), đóng trùng, sửa thiết bị, buổi kiểm tra ở lại sửa luôn (bảo hành / khách trả tiền), hạng mục phát sinh,
 // dừng việc, việc báo giá của kinh doanh, bảo trì của gói (đặt, đổi giờ, báo lỗi từ lần bảo trì), bảo trì lẻ không thực hiện được.
 // Endpoint thuộc 76 đi qua giao diện; bước nối giữa các vai trò ngoài 76 (khách báo lỗi, quản lý xếp buổi / quyết định chi phí, kỹ
@@ -24,110 +24,21 @@ const sawPath = (method, pattern, since, status) =>
 const request = (id) => S.must('MANAGER', 'GET', `/manager/after-sales/requests/${id}`)
 
 describe('4. Sau bán', { skip }, () => {
-  test('tiền đề (API, ngoài 76): cài đặt, 2 gói đang bán, khách mua cả hai trên hợp đồng đã trả tiền nhưng chưa bàn giao', async () => {
+  test('tiền đề (API, ngoài 76): cài đặt, 2 gói đang bán, khách mua gói thiên tai trên hợp đồng đã trả tiền nhưng chưa bàn giao', async () => {
     assert.ok(state.contractId, 'cần chạy giai đoạn 3 trước')
     assert.equal((await S.must('CUSTOMER', 'GET', `/customers/me/contracts/${state.contractId}`)).status, 'PAID')
     await F.setAfterSalesSettings()
     state.maintenancePackageId = await F.createPackage('MAINTENANCE', `Bảo trì 12 tháng ${tag}`, 2_000_000)
-    state.maintenancePackageName = `Bảo trì 12 tháng ${tag}`
     state.disasterPackageId = await F.createPackage('DISASTER_PROTECTION', `Bảo vệ bão ${tag}`, 1_500_000)
-    const subs = await F.buyPackages('CUSTOMER', state.contractId, {
-      maintenancePackageId: state.maintenancePackageId,
-      disasterPackageId: state.disasterPackageId,
-    })
-    // Chưa bàn giao: đã trả tiền nhưng kỳ chưa bắt đầu, khách còn xin huỷ được
-    assert.deepEqual(subs.map((s) => s.status).sort(), ['PAID', 'PAID'])
-    state.cancelledSubscriptionId = subs.find((s) => s.kind === 'MAINTENANCE').subscriptionId
-  })
-
-  test('M06: hàng chờ huỷ gói → chi tiết → từ chối; khách xin lại → duyệt hoàn một phần (số vượt giá bị chặn)', async () => {
-    const id = state.cancelledSubscriptionId
-    await S.must('CUSTOMER', 'POST', `/customers/me/after-sales/subscriptions/${id}/cancel`, {
-      reason: `Đổi ý lần 1 (${tag})`,
-    })
-    let t = mark()
-    const page = await as('MANAGER', '/manage/package-cancellations')
-    await sawPath('GET', /^\/api\/manager\/after-sales\/subscriptions$/, t)
-    const row = page.locator('tr', { hasText: state.maintenancePackageName })
-    await row.getByRole('link', { name: 'Xét huỷ' }).click()
-    await page.waitForURL(new RegExp(`/manage/package-cancellations/${id}$`))
-    await page.getByText(`Đổi ý lần 1 (${tag})`).waitFor()
-    await page.getByLabel('Không đồng ý huỷ').check()
-    await page.locator('#package-note').fill('Gói bảo trì vẫn dùng được sau khi bàn giao')
-    t = mark()
-    await page.getByRole('button', { name: 'Từ chối huỷ' }).click()
-    await expectCall('M06', t)
-    await until(
-      async () =>
-        (await S.must('CUSTOMER', 'GET', '/customers/me/after-sales/subscriptions')).find(
-          (s) => s.subscriptionId === id,
-        )?.status === 'PAID',
-      'gói về PAID',
+    const subs = await F.buyPackages('CUSTOMER', state.contractId, { disasterPackageId: state.disasterPackageId })
+    // Chưa bàn giao: đã trả tiền nhưng kỳ chưa bắt đầu
+    assert.deepEqual(
+      subs.map((s) => s.status),
+      ['PAID'],
     )
-    // Quyết định lần hai khi không còn yêu cầu huỷ: backend từ chối
-    const again = await S.call('MANAGER', 'POST', `/manager/after-sales/subscriptions/${id}/cancellation-decision`, {
-      approve: true,
-      refundAmount: 0,
-      note: null,
-    })
-    assert.equal(again.error?.code, 'AFTER_SALES_INVALID_STATE')
-
-    await S.must('CUSTOMER', 'POST', `/customers/me/after-sales/subscriptions/${id}/cancel`, {
-      reason: `Đổi ý lần 2 (${tag})`,
-    })
-    await page.goto(page.url().replace(/\/[^/]+$/, ''))
-    await page.locator('tr', { hasText: state.maintenancePackageName }).getByRole('link', { name: 'Xét huỷ' }).click()
-    await page.getByText(`Đổi ý lần 2 (${tag})`).waitFor()
-    await page.getByLabel('Đồng ý huỷ gói và hoàn tiền').check()
-    await page.locator('#package-refund').fill('2.500.000')
-    t = mark()
-    await page.getByRole('button', { name: 'Duyệt huỷ gói' }).click()
-    await page
-      .getByText(/Không vượt quá 2\.000\.000/)
-      .first()
-      .waitFor()
-    assert.equal(evidence.slice(t).filter((e) => e.id === 'M06').length, 0, 'số vượt giá không được gửi')
-    await page.locator('#package-refund').fill('1.500.000')
-    await page.getByRole('button', { name: 'Duyệt huỷ gói' }).click()
-    await expectCall('M06', t)
-    await page.getByText('Gói đã huỷ').waitFor()
-    const refunds = await S.must('MANAGER', 'GET', '/manager/after-sales/refunds')
-    const refund = refunds.find((r) => r.subscriptionId === id)
-    assert.deepEqual([refund.status, refund.approvedAmount, refund.originalAmount], ['APPROVED', 1_500_000, 2_000_000])
-    state.packageRefundId = refund.refundId
   })
 
-  test('M09 + A03: quản lý thấy khoản đã duyệt; quản trị ghi nhận đã hoàn (thiếu xác nhận bị chặn); ghi nhận lần hai bị từ chối', async () => {
-    const manager = await as('MANAGER', '/manage/refunds?nhom=approved')
-    let t = mark()
-    await expectCall('M09', 0)
-    await manager.locator('tr', { hasText: `Đổi ý lần 2 (${tag})` }).waitFor()
-
-    const admin = await as('ADMIN', '/admin/refunds')
-    const row = admin.locator('tr', { hasText: `Đổi ý lần 2 (${tag})` })
-    await row.getByRole('button', { name: 'Ghi nhận đã hoàn' }).click()
-    const dialog = admin.getByRole('dialog', { name: 'Ghi nhận đã hoàn tiền' })
-    await dialog.locator('#refund-reference').fill(`CK-${tag}`)
-    t = mark()
-    await dialog.getByRole('button', { name: 'Ghi nhận đã hoàn' }).click()
-    await admin.waitForTimeout(500)
-    assert.equal(evidence.slice(t).filter((e) => e.id === 'A03').length, 0, 'chưa tick xác nhận thì không gửi')
-    await dialog.getByRole('checkbox', { name: /Tôi xác nhận đã chuyển/ }).check()
-    await dialog.getByRole('button', { name: 'Ghi nhận đã hoàn' }).click()
-    await expectCall('A03', t)
-    const refund = (await S.must('MANAGER', 'GET', '/manager/after-sales/refunds')).find(
-      (r) => r.refundId === state.packageRefundId,
-    )
-    assert.equal(refund.status, 'REFUNDED')
-    assert.equal(refund.refundReference, `CK-${tag}`)
-    const twice = await S.call('ADMIN', 'POST', `/admin/after-sales/refunds/${state.packageRefundId}/record`, {
-      refundedAt: new Date().toISOString(),
-      reference: null,
-    })
-    assert.equal(twice.error?.code, 'AFTER_SALES_INVALID_STATE')
-  })
-
-  test('tiền đề (API, ngoài 76): thi công → bàn giao; gói thiên tai bắt đầu kỳ; khách mua lại gói bảo trì (bắt đầu ngay)', async () => {
+  test('tiền đề (API, ngoài 76): thi công → bàn giao; gói thiên tai bắt đầu kỳ; khách mua gói bảo trì (bắt đầu ngay)', async () => {
     const { projectId, assets } = await F.installAndHandOver(state.contractId, state.productId)
     state.projectId = projectId
     state.inverterAssetId = assets.find((a) => a.assetType === 'INVERTER').assetId
@@ -277,17 +188,15 @@ describe('4. Sau bán', { skip }, () => {
     const extra = withExtra.items.find((i) => i.description === 'Đầu nối MC4 chuỗi 2 bị cháy')
     assert.deepEqual([extra.status, extra.coverage], ['OPEN', 'PENDING'])
 
-    // Khách không cho làm tiếp hạng mục phát sinh: quản lý dừng ngoại lệ. Việc bảo hành khách chưa trả gì nên ô hoàn khoá ở 0
+    // Khách không cho làm tiếp hạng mục phát sinh: quản lý dừng ngoại lệ. Nhóm không làm hoàn tiền nên hộp chỉ hỏi lý do
     const manager = await as('MANAGER', `/manage/after-sales/${fault.requestId}`)
     await manager.getByRole('button', { name: 'Dừng việc' }).click()
-    const stop = manager.getByRole('dialog', { name: 'Dừng việc' })
-    assert.equal(await stop.locator('#stop-refund').inputValue(), '0')
-    assert.equal(await stop.locator('#stop-refund').isDisabled(), true, 'không trả tiền thì không có gì để hoàn')
+    const stop = manager.getByRole('dialog', { name: /^Dừng việc/ })
     t = mark()
     await stop.getByRole('button', { name: 'Dừng việc' }).click()
-    await stop.getByText('Ghi lý do dừng việc.').waitFor()
+    await stop.getByText('Ghi lý do.').waitFor()
     assert.equal(evidence.slice(t).filter((e) => e.id === 'M03').length, 0, 'thiếu lý do thì không gửi')
-    await stop.locator('#stop-reason').fill('Khách không đồng ý làm tiếp hạng mục phát sinh')
+    await stop.locator('#reason-dialog-text').fill('Khách không đồng ý làm tiếp hạng mục phát sinh')
     await stop.getByRole('button', { name: 'Dừng việc' }).click()
     await expectCall('M03', t)
     assert.equal((await request(fault.requestId)).status, 'CANCELLED')
@@ -470,63 +379,5 @@ describe('4. Sau bán', { skip }, () => {
       reason: 'Thử sai loại',
     })
     assert.equal(wrong.error?.code, 'AFTER_SALES_INVALID_STATE')
-  })
-
-  test('M10: công trình thứ hai bị huỷ trước bàn giao → khoản hoàn chờ duyệt → quản lý duyệt một phần (vượt gốc bị chặn); quản trị ghi nhận', async () => {
-    const second = await F.paidContract('CUSTOMER2', `Nhà phố Lê Thánh Tôn ${tag}`, state.productId)
-    state.secondContractId = second.contractId
-    const pkg = await F.createPackage('DISASTER_PROTECTION', `Bảo vệ bão công trình 2 ${tag}`, 1_234_000)
-    await F.buyPackages('CUSTOMER2', second.contractId, { disasterPackageId: pkg })
-    const project = await S.must('MANAGER', 'POST', `/contracts/${second.contractId}/installation-project`)
-    await S.must('MANAGER', 'POST', `/installation-projects/${project.projectId}/cancel`, {
-      reason: 'Khách đổi địa điểm lắp đặt',
-      expectedRevision: project.revision,
-    })
-    // Backend quét định kỳ (AfterSales:PollSeconds) rồi huỷ gói đã trả của công trình bị huỷ, tạo khoản hoàn chờ quản lý duyệt
-    const pending = await F.poll(
-      async () =>
-        (await S.must('MANAGER', 'GET', '/manager/after-sales/refunds')).find(
-          (r) => r.originalAmount === 1_234_000 && r.status === 'PENDING_APPROVAL',
-        ),
-      'khoản hoàn chờ duyệt',
-      180_000,
-      5000,
-    )
-
-    const page = await as('MANAGER', '/manage/refunds')
-    const row = page.locator('tr', { hasText: '1.234.000' })
-    await row.getByRole('button', { name: 'Xét hoàn tiền' }).click()
-    const dialog = page.getByRole('dialog', { name: 'Xét hoàn tiền' })
-    await dialog.locator('#refund-amount').fill('2.000.000')
-    let t = mark()
-    await dialog.getByRole('button', { name: 'Duyệt hoàn tiền' }).click()
-    await page.waitForTimeout(500)
-    assert.equal(evidence.slice(t).filter((e) => e.id === 'M10').length, 0, 'vượt số gốc thì không gửi')
-    await dialog.locator('#refund-amount').fill('1.000.000')
-    await dialog.locator('#refund-note').fill('Trừ phí xử lý hồ sơ')
-    await dialog.getByRole('button', { name: 'Duyệt hoàn tiền' }).click()
-    await expectCall('M10', t)
-    const decided = (await S.must('MANAGER', 'GET', '/manager/after-sales/refunds')).find(
-      (r) => r.refundId === pending.refundId,
-    )
-    assert.deepEqual([decided.status, decided.approvedAmount], ['APPROVED', 1_000_000])
-    const again = await S.call('MANAGER', 'POST', `/manager/after-sales/refunds/${pending.refundId}/decision`, {
-      approve: false,
-      approvedAmount: null,
-      note: null,
-    })
-    assert.equal(again.error?.code, 'AFTER_SALES_INVALID_STATE')
-
-    const admin = await as('ADMIN', '/admin/refunds')
-    await admin
-      .locator('tr', { hasText: '1.000.000' })
-      .filter({ hasText: 'Công trình bị huỷ' })
-      .getByRole('button', { name: 'Ghi nhận đã hoàn' })
-      .click()
-    const record = admin.getByRole('dialog', { name: 'Ghi nhận đã hoàn tiền' })
-    await record.getByRole('checkbox', { name: /Tôi xác nhận đã chuyển/ }).check()
-    t = mark()
-    await record.getByRole('button', { name: 'Ghi nhận đã hoàn' }).click()
-    await expectCall('A03', t)
   })
 })

@@ -38,11 +38,13 @@ export const SUBSCRIPTION_STATUSES: Record<string, { label: string; tone: Tone }
   CANCELLED: { label: 'Đã huỷ', tone: 'neutral' },
 }
 
-/** Trạng thái huỷ được trên mạng: chưa trả tiền thì huỷ ngay, đã trả tiền thì gửi yêu cầu huỷ cho quản lý */
-export const SUBSCRIPTION_CANCEL_MODES: Record<string, 'unpaid' | 'paid'> = {
+/**
+ * Trạng thái khách tự huỷ được: chỉ đơn chưa trả tiền (huỷ ngay). Gói đã trả tiền thì huỷ là xin hoàn tiền, nhóm không làm
+ * hoàn tiền nên không mở
+ */
+export const SUBSCRIPTION_CANCEL_MODES: Record<string, 'unpaid'> = {
   AWAITING_PAYMENT: 'unpaid',
   CHECKOUT_EXPIRED: 'unpaid',
-  PAID: 'paid',
 }
 
 /** PaymentStatuses của một link PayOS */
@@ -221,7 +223,7 @@ export const INSTALLATION_WARRANTY_STATUSES: Record<string, { label: string; ton
   EXPIRED: { label: 'Hết bảo hành', tone: 'neutral' },
 }
 
-// Quản trị sau bán: thời hạn bảo hành, hoàn tiền làm tay, báo cáo
+// Quản trị sau bán: thời hạn bảo hành, báo cáo
 
 /** WarrantyOptionKinds. Thời hạn được chép vào hợp đồng / báo giá lúc lập nên đổi ở đây không áp cho bản đã lập */
 export const WARRANTY_OPTION_KINDS = {
@@ -234,22 +236,12 @@ export const WARRANTY_OPTION_KIND_LABELS: Record<string, string> = {
   REPAIR: 'Bảo hành sửa chữa',
 }
 
-/** RefundStatuses. Duyệt chưa phải đã hoàn: chỉ REFUNDED là tiền đã được trả */
-export const REFUND_STATUSES: Record<string, { label: string; tone: Tone }> = {
-  PENDING_APPROVAL: { label: 'Chờ quản lý duyệt', tone: 'info' },
-  APPROVED: { label: 'Đã duyệt, chờ ghi nhận', tone: 'info' },
-  REJECTED: { label: 'Không hoàn', tone: 'neutral' },
-  REFUNDED: { label: 'Đã hoàn', tone: 'neutral' },
-}
-
 /** Chỉ số của báo cáo sau bán theo `key` của backend. `money`: số tiền VND */
 export const DASHBOARD_METRICS: Record<string, { label: string; money?: boolean }> = {
   collected_contracts: { label: 'Tiền hợp đồng lắp đặt', money: true },
   collected_packages: { label: 'Tiền gói dịch vụ', money: true },
   collected_services: { label: 'Tiền sửa chữa, bảo trì lẻ', money: true },
   collected_total: { label: 'Tổng thu', money: true },
-  refunded: { label: 'Đã hoàn', money: true },
-  net_collected: { label: 'Thực thu', money: true },
   total_customers: { label: 'Khách hàng (cuối kỳ)' },
   new_customers: { label: 'Khách hàng mới' },
   installation_projects: { label: 'Dự án thi công mới' },
@@ -312,8 +304,7 @@ export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
   CANCELLATION_APPROVED: 'Yêu cầu huỷ đã được duyệt',
   CANCELLATION_REJECTED: 'Yêu cầu huỷ không được duyệt',
   WORK_STOPPED: 'Việc sửa chữa đã dừng',
-  SERVICE_NOT_FULFILLED: 'Chưa xếp được lịch, bạn được hoàn tiền',
-  REFUND_RECORDED: 'Smart Solar đã hoàn tiền',
+  SERVICE_NOT_FULFILLED: 'Smart Solar chưa xếp được lịch, yêu cầu đã huỷ',
   PACKAGE_PAID: 'Đã nhận tiền gói dịch vụ',
   PACKAGE_ACTIVE: 'Gói dịch vụ bắt đầu hiệu lực',
   PACKAGE_EXPIRING: 'Gói dịch vụ sắp hết hạn',
@@ -336,12 +327,13 @@ export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
   EQUIPMENT_SUBSTITUTION_APPROVAL_REQUIRED: 'Có đề xuất đổi thiết bị chờ bạn đồng ý',
 }
 
-/** Thứ tự các chỉ số tiền trên báo cáo: các nguồn thu, tổng, hoàn, thực thu */
+/** Thứ tự các chỉ số tiền trên báo cáo: các nguồn thu rồi tổng */
 export const DASHBOARD_MONEY_KEYS: readonly string[] = [
   'collected_contracts',
   'collected_packages',
   'collected_services',
   'collected_total',
-  'refunded',
-  'net_collected',
 ]
+
+/** Nhóm không làm hoàn tiền: bỏ số đã hoàn và thực thu (luôn bằng tổng thu) */
+export const DASHBOARD_HIDDEN_KEYS: readonly string[] = ['refunded', 'net_collected']

@@ -1,22 +1,11 @@
-import type {
-  AssetCorrectionRequest,
-  PackageCancellationDecisionRequest,
-  RefundDecisionRequest,
-  StopWorkRequest,
-} from '@/types/req/managerAfterSalesReq'
-import type {
-  InstalledAssetView,
-  ServiceRequestSummary,
-  ServiceRequestView,
-  SubscriptionView,
-} from '@/types/res/customerAfterSalesRes'
-import type { RefundView } from '@/types/res/managerAfterSalesRes'
+import type { AssetCorrectionRequest, StopWorkRequest } from '@/types/req/managerAfterSalesReq'
+import type { InstalledAssetView, ServiceRequestSummary, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
 // Luật các quyết định của quản lý / quản trị sau bán: hỗ trợ gói thiên tai, đóng vì trùng, dừng việc, không thực hiện được,
-// sửa thiết bị, giao việc kinh doanh, duyệt hoàn tiền, xét huỷ gói. Bám ServiceManagerHandlers, SalesTaskHandlers.AssignAsync,
-// RefundHandlers.DecideAsync, ServicePackageHandlers.DecideCancellationAsync của backend `main` (7c79fa8). Chỉ để bật / tắt
-// nút và báo lỗi trước khi gửi; backend vẫn kiểm lại. Không import giá trị qua "@/" để chạy được bằng node --test
+// sửa thiết bị, giao việc kinh doanh. Bám ServiceManagerHandlers, SalesTaskHandlers.AssignAsync của backend `main` (7c79fa8).
+// Chỉ để bật / tắt nút và báo lỗi trước khi gửi; backend vẫn kiểm lại. Không import giá trị qua "@/" để chạy được bằng
+// node --test
 
 /** Text.Trim của backend: lý do dài hơn bị cắt, nên chặn ở ô nhập */
 export const CLAIM_REASON_MAX = 1000
@@ -25,8 +14,6 @@ export const STOP_REASON_MAX = 1000
 export const NOT_FULFILLED_REASON_MAX = 1000
 export const ASSET_REASON_MAX = 500
 export const TASK_REASON_MAX = 500
-export const REFUND_NOTE_MAX = 1000
-export const PACKAGE_NOTE_MAX = 500
 export const ASSET_FIELD_MAX = {
   manufacturer: 100,
   model: 100,
@@ -37,25 +24,6 @@ export const ASSET_FIELD_MAX = {
 
 const FINAL_STATUSES = ['COMPLETED', 'NOT_COMPLETED', 'CANCELLED', 'CLOSED_DUPLICATE']
 const isFinal = (status: string) => FINAL_STATUSES.includes(status)
-
-/**
- * Tiền VND nguyên người dùng gõ: số liền ("1500000") hoặc ngăn hàng nghìn bằng chấm, phẩy, khoảng trắng ("1.500.000").
- * "1,5" không phải số VND nguyên nên trả null thay vì hiểu thành 15
- */
-export function parseVnd(text: string): number | null {
-  const t = text.trim()
-  if (!/^\d+$/.test(t) && !/^\d{1,3}([.,\s]\d{3})+$/.test(t)) return null
-  const value = Number(t.replace(/[\s.,]/g, ''))
-  return Number.isSafeInteger(value) ? value : null
-}
-
-function moneyError(text: string, max: number, maxText: string) {
-  if (!text.trim()) return 'Nhập số tiền (0 nếu không hoàn).'
-  const value = parseVnd(text)
-  if (value === null) return 'Số tiền là số nguyên VND không âm.'
-  if (value > max) return `Không vượt quá ${maxText}.`
-  return undefined
-}
 
 const tooLong = (text: string, max: number) => (text.trim().length > max ? `Tối đa ${max} ký tự.` : undefined)
 
@@ -81,10 +49,6 @@ export const disasterCoverageAllowed = (r: ClaimHolder) => r.claim?.status === '
 type Quoted = Pick<ServiceRequestView, 'quotations'>
 
 export const hasPaidQuotation = (r: Quoted) => r.quotations.some((q) => q.status === 'PAID')
-
-/** Tiền khách đã trả qua các báo giá đã thanh toán (đã trừ phần gói thiên tai hỗ trợ) */
-export const paidAmount = (r: Quoted) =>
-  r.quotations.filter((q) => q.status === 'PAID').reduce((sum, q) => sum + q.customerAmount, 0)
 
 /** Lý do không đóng vì trùng được; null khi đóng được */
 export function duplicateBlocker(r: Pick<ServiceRequestView, 'status' | 'quotations'>) {
@@ -136,26 +100,16 @@ export function workStarted(r: Progressing) {
  */
 export const canStopWork = (r: Progressing) => !isFinal(r.status) && workStarted(r)
 
-export type StopInput = { reason: string; refund: string }
-
-export function stopErrors(input: StopInput, paid: number, paidText: string) {
-  const errors: Partial<Record<keyof StopInput, string>> = {}
-  if (!input.reason.trim()) errors.reason = 'Ghi lý do dừng việc.'
-  else if (tooLong(input.reason, STOP_REASON_MAX)) errors.reason = tooLong(input.reason, STOP_REASON_MAX)
-  const money = moneyError(input.refund, paid, paidText)
-  if (money) errors.refund = money
-  return errors
-}
-
-export function stopBody(input: StopInput): StopWorkRequest {
-  return { reason: input.reason.trim(), refundAmount: parseVnd(input.refund) ?? 0 }
+/** Nhóm không làm hoàn tiền: luôn gửi 0 để backend không ghi khoản hoàn */
+export function stopBody(reason: string): StopWorkRequest {
+  return { reason: reason.trim(), refundAmount: 0 }
 }
 
 // ---------------------------------------------------------------- không thực hiện được
 
 /**
  * Chỉ bảo trì lẻ còn mở mà chưa làm (ConfirmCannotFulfillAsync): Smart Solar không bố trí được người hoặc khách không nhận
- * giờ khác. Yêu cầu bị huỷ và backend duyệt hoàn 100 % tiền khách đã trả (quản trị chuyển tiền rồi ghi nhận)
+ * giờ khác. Yêu cầu bị huỷ
  */
 export const canMarkNotFulfilled = (r: Pick<ServiceRequestView, 'kind' | 'status' | 'visits'>) =>
   r.kind === 'ONE_TIME_MAINTENANCE' &&
@@ -263,104 +217,4 @@ export function matchesTaskFilter(
   if (filter.assignee === 'some') return t.assignedSalesUserId !== null
   if (filter.assignee) return t.assignedSalesUserId === filter.assignee
   return true
-}
-
-// ---------------------------------------------------------------- hoàn tiền
-
-export const canDecideRefund = (r: Pick<RefundView, 'status'>) => r.status === 'PENDING_APPROVAL'
-
-export type RefundDecisionInput = { approve: boolean; amount: string; note: string }
-
-export function refundDecisionErrors(
-  refund: Pick<RefundView, 'originalAmount'>,
-  input: RefundDecisionInput,
-  maxText: string,
-) {
-  const errors: { amount?: string; note?: string } = {}
-  if (input.approve) {
-    const money = moneyError(input.amount, refund.originalAmount, maxText)
-    if (money) errors.amount = money
-  }
-  const long = tooLong(input.note, REFUND_NOTE_MAX)
-  if (long) errors.note = long
-  return errors
-}
-
-/** Duyệt chưa phải đã trả tiền: chỉ ghi số được hoàn, quản trị chuyển tiền rồi ghi nhận */
-export function refundDecisionBody(input: RefundDecisionInput): RefundDecisionRequest {
-  return {
-    approve: input.approve,
-    approvedAmount: input.approve ? parseVnd(input.amount) : null,
-    note: input.note.trim() || null,
-  }
-}
-
-// ---------------------------------------------------------------- huỷ gói đã trả tiền
-
-/** Chỉ gói khách đã xin huỷ (đã trả tiền, chưa bắt đầu kỳ) */
-export const canDecidePackageCancellation = (s: Pick<SubscriptionView, 'status'>) =>
-  s.status === 'CANCELLATION_REQUESTED'
-
-export function packageRefundError(price: number, text: string, priceText: string) {
-  return moneyError(text, price, priceText)
-}
-
-/** Backend chỉ lưu ghi chú khi từ chối (Text.Trim 500); duyệt thì lý do của khoản hoàn là lý do khách xin huỷ */
-export const PACKAGE_CANCELLATION_NOTE_MAX = 500
-
-export type PackageCancellationInput = { approve: boolean; amount: string; note: string }
-
-export function packageCancellationErrors(price: number, input: PackageCancellationInput, priceText: string) {
-  const errors: { amount?: string; note?: string } = {}
-  if (input.approve) {
-    const money = packageRefundError(price, input.amount, priceText)
-    if (money) errors.amount = money
-  } else {
-    const long = tooLong(input.note, PACKAGE_CANCELLATION_NOTE_MAX)
-    if (long) errors.note = long
-  }
-  return errors
-}
-
-/** Duyệt: gói bị huỷ và backend tạo khoản hoàn "đã duyệt" với đúng số này (chưa chuyển tiền). Từ chối: gói về PAID */
-export function packageCancellationBody(input: PackageCancellationInput): PackageCancellationDecisionRequest {
-  return input.approve
-    ? { approve: true, refundAmount: parseVnd(input.amount), note: null }
-    : { approve: false, refundAmount: null, note: input.note.trim() || null }
-}
-
-// ---------------------------------------------------------------- lý do của khoản hoàn (câu tiếng Anh của backend)
-
-const PAYMENT_PROBLEMS: [RegExp, (m: RegExpExecArray) => string][] = [
-  [/^The package order no longer exists\.$/, () => 'đơn gói không còn'],
-  [/^The package order belongs to another checkout\.$/, () => 'đơn gói đã gắn với lần thanh toán khác'],
-  [/^The package order is (\w+)\.$/, (m) => `đơn gói đang ở trạng thái ${m[1]}`],
-  [/^The payment was made after the checkout expired\.$/, () => 'khách trả sau khi link thanh toán hết hạn'],
-  [/^The quotation no longer exists\.$/, () => 'báo giá không còn'],
-  [/^The quotation belongs to another checkout\.$/, () => 'báo giá đã gắn với lần thanh toán khác'],
-  [/^The quotation is (\w+)\.$/, (m) => `báo giá đang ở trạng thái ${m[1]}`],
-  [/^The payment was made after the quotation expired\.$/, () => 'khách trả sau khi báo giá hết hạn'],
-  [/^Unknown payment line\.$/, () => 'không rõ khoản thanh toán'],
-]
-
-/** Dịch lý do backend tự ghi cho khoản hoàn; phần lý do do người gõ giữ nguyên */
-export function refundReasonText(reason: string) {
-  const paid = /^Payment received but not applied: (.*)$/s.exec(reason)
-  if (paid) {
-    const detail = paid[1]!
-    for (const [pattern, text] of PAYMENT_PROBLEMS) {
-      const m = pattern.exec(detail)
-      if (m) return `Đã nhận tiền nhưng không áp dụng được: ${text(m)}.`
-    }
-    return `Đã nhận tiền nhưng không áp dụng được: ${detail}`
-  }
-  const prefixes: [string, string][] = [
-    ['Package cancelled before activation: ', 'Khách huỷ gói trước khi bắt đầu kỳ: '],
-    ['Work stopped: ', 'Dừng việc: '],
-    ['Cancelled before work started: ', 'Huỷ trước khi bắt đầu làm: '],
-    ['SmartSolar could not provide the service: ', 'Smart Solar không thực hiện được: '],
-  ]
-  for (const [en, vi] of prefixes) if (reason.startsWith(en)) return vi + reason.slice(en.length)
-  if (reason === 'Installation cancelled before handover') return 'Công trình bị huỷ trước khi bàn giao.'
-  return reason
 }

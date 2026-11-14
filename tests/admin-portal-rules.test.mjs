@@ -8,8 +8,6 @@ import {
   installationWarrantyGap,
   parseWarrantyMonths,
   rangeError,
-  refundedAtError,
-  refundedAtValue,
   sortWarrantyOptions,
   warrantyMonthsError,
 } from '../src/features/after-sales/adminAfterSalesRules.ts'
@@ -83,25 +81,6 @@ describe('thời hạn bảo hành', () => {
       sortWarrantyOptions(list).map((o) => o.months),
       [24, 60, 12],
     )
-  })
-})
-
-describe('ghi nhận hoàn tiền', () => {
-  const now = new Date('2026-11-03T03:00:00Z') // 10:00 giờ Việt Nam
-
-  test('gửi ngày giờ kèm múi giờ Việt Nam', () => {
-    assert.equal(refundedAtValue('2026-11-03', '09:30'), '2026-11-03T09:30:00+07:00')
-    assert.equal(refundedAtError('2026-11-03', '09:30', now), undefined)
-  })
-
-  test('không nhận ngày giờ ở tương lai (backend cũng từ chối)', () => {
-    assert.match(refundedAtError('2026-11-03', '10:15', now), /tương lai/)
-    assert.match(refundedAtError('2026-11-04', '00:00', now), /tương lai/)
-  })
-
-  test('bắt buộc chọn ngày và giờ', () => {
-    assert.match(refundedAtError('', '09:00', now), /Chọn ngày và giờ/)
-    assert.match(refundedAtError('2026-11-03', '', now), /Chọn ngày và giờ/)
   })
 })
 

@@ -341,8 +341,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   PAYMENT_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
   PAYMENT_CONTRACT_NOT_SIGNED: 'Hợp đồng chưa được duyệt bản ký nên chưa thanh toán được.',
   PAYMENT_ALREADY_PAID: 'Hợp đồng này đã được thanh toán. Danh sách đã được tải lại.',
-  // Thời hạn bảo hành, hoàn tiền (quản trị)
-  REFUND_NOT_FOUND: 'Không tìm thấy khoản hoàn tiền này.',
   // Khu vực phục vụ
   ZONE_NOT_FOUND: 'Không tìm thấy khu vực này.',
   ZONE_MANAGEMENT_FORBIDDEN: 'Chỉ quản trị viên đang hoạt động mới tạo hoặc sửa khu vực.',

@@ -96,13 +96,6 @@ describe('cổng quản trị với backend thật', { skip }, () => {
     await dialog.getByRole('button', { name: 'Huỷ' }).click()
   })
 
-  test('hoàn tiền: đọc danh sách thật dùng chung với quản lý', async () => {
-    await go('Hoàn tiền')
-    await page.getByRole('heading', { name: 'Hoàn tiền' }).waitFor()
-    await until(() => last('GET', '/manager/after-sales/refunds'), 'GET refunds')
-    assert.equal(last('GET', '/manager/after-sales/refunds').status, 200)
-  })
-
   test('báo cáo: số liệu thật, CSV tải về đúng bộ lọc đang hiện', async () => {
     await go('Báo cáo')
     await page.getByText('Tổng thu').first().waitFor()

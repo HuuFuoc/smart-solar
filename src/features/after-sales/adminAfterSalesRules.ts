@@ -1,13 +1,12 @@
 import type { WarrantyOptionView } from '@/types/res/adminAfterSalesRes'
 
-// Luật phía quản trị sau bán: thời hạn bảo hành, ghi nhận hoàn tiền, bộ lọc báo cáo. Bám handler của backend
-// (ServicePackageHandlers.SaveWarrantyOptionAsync, RefundHandlers.RecordAsync, AfterSalesDashboard.GetAsync); backend vẫn kiểm lại
+// Luật phía quản trị sau bán: thời hạn bảo hành, bộ lọc báo cáo. Bám handler của backend
+// (ServicePackageHandlers.SaveWarrantyOptionAsync, AfterSalesDashboard.GetAsync); backend vẫn kiểm lại
 // Không import giá trị qua "@/" để chạy được bằng node --test
 
 export const WARRANTY_MONTHS = { min: 1, max: 240 } as const
 /** Mỗi khoảng ngày của báo cáo dài tối đa 367 ngày, tính cả hai đầu */
 export const DASHBOARD_MAX_RANGE_DAYS = 367
-export const REFUND_REFERENCE_MAX = 100
 
 /** Số tháng bảo hành vừa gõ, null khi không hợp lệ */
 export function parseWarrantyMonths(text: string): number | null {
@@ -98,18 +97,4 @@ export function dashboardParams(f: DashboardFilter) {
 /** Tên tệp CSV theo hai khoảng đang xem */
 export function dashboardCsvName(f: Pick<DashboardFilter, 'from' | 'to' | 'compareFrom' | 'compareTo'>) {
   return `bao-cao-sau-ban_${f.from}_${f.to}_so-voi_${f.compareFrom}_${f.compareTo}.csv`
-}
-
-/** Thời điểm đã trả tiền, gửi kèm múi giờ Việt Nam: "2026-11-03T09:30:00+07:00" */
-export function refundedAtValue(date: string, time: string) {
-  return `${date}T${time}:00+07:00`
-}
-
-/** Backend không nhận ngày hoàn ở tương lai */
-export function refundedAtError(date: string, time: string, now: Date = new Date()) {
-  if (!date || !time) return 'Chọn ngày và giờ đã chuyển tiền.'
-  const at = Date.parse(refundedAtValue(date, time))
-  if (Number.isNaN(at)) return 'Ngày giờ chưa hợp lệ.'
-  if (at > now.getTime()) return 'Ngày giờ đã chuyển tiền không được ở tương lai.'
-  return undefined
 }

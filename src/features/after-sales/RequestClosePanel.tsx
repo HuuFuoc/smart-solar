@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
-import { Field, Input, Select, Textarea } from '@/components/common/ui/field'
+import { Field, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
@@ -19,13 +19,9 @@ import {
   duplicateBlocker,
   duplicateCandidates,
   duplicateErrors,
-  paidAmount,
-  parseVnd,
   stopBody,
-  stopErrors,
-  type StopInput,
 } from '@/features/after-sales/managerAfterSalesRules'
-import { formatVnd, isFinalRequest, requestKindLabel, requestStatusMeta } from '@/features/after-sales/serviceDisplay'
+import { isFinalRequest, requestKindLabel, requestStatusMeta } from '@/features/after-sales/serviceDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
   useMarkDuplicateMutation,
@@ -38,8 +34,7 @@ import { withId } from '@/routes/paths'
 import type { ServiceRequestView } from '@/types/res/customerAfterSalesRes'
 
 // Kết thúc một yêu cầu còn mở theo quyết định của quản lý / quản trị: đóng vì trùng yêu cầu khác, dừng việc đã bắt đầu,
-// bảo trì lẻ không thực hiện được. Cả ba không mở lại được. Khoản hoàn (nếu có) backend ghi là "đã duyệt"; tiền chỉ được
-// trả khi quản trị chuyển ngoài hệ thống rồi ghi nhận ở mục Hoàn tiền
+// bảo trì lẻ không thực hiện được. Cả ba không mở lại được. Nhóm không làm hoàn tiền nên giao diện không hỏi số tiền hoàn
 
 function ErrorNotice({ message }: { message: string | null }) {
   if (!message) return null
@@ -190,108 +185,6 @@ function DuplicateDialog({
   )
 }
 
-function StopWorkDialog({ request, onClose }: { request: ServiceRequestView; onClose: () => void }) {
-  const stop = useStopWorkMutation()
-  const paid = paidAmount(request)
-  const [input, setInput] = useState<StopInput>({ reason: '', refund: paid === 0 ? '0' : '' })
-  const [checked, setChecked] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const errors = checked ? stopErrors(input, paid, formatVnd(paid)) : {}
-
-  async function submit() {
-    if (stop.isPending) return
-    setChecked(true)
-    setError(null)
-    if (Object.keys(stopErrors(input, paid, formatVnd(paid))).length > 0) return
-    const body = stopBody(input)
-    try {
-      await stop.mutateAsync({ requestId: request.requestId, body })
-      toast.success(
-        body.refundAmount
-          ? `Đã dừng việc. Khoản hoàn ${formatVnd(body.refundAmount)} đã duyệt, chờ quản trị chuyển tiền.`
-          : 'Đã dừng việc.',
-      )
-      onClose()
-    } catch (e) {
-      // Yêu cầu vừa đóng ở nơi khác: trang tải lại và khối này biến mất, nên đóng hộp thoại và báo bằng toast
-      if (changedMeanwhile(e)) {
-        toast.error(managerActionError(e))
-        onClose()
-        return
-      }
-      setError(managerActionError(e))
-    }
-  }
-
-  const refund = parseVnd(input.refund)
-  return (
-    <>
-      <DialogTitle>Dừng việc {request.requestNumber}</DialogTitle>
-      <p className="mt-2 text-body text-fg-2">
-        Dừng ngoại lệ việc đã bắt đầu: yêu cầu bị huỷ, buổi hẹn đang mở, báo giá chưa trả và việc của kinh doanh cũng bị
-        huỷ. Không mở lại được.
-      </p>
-      <div className="mt-4 grid gap-4">
-        <Field
-          label="Số tiền hoàn cho khách (VND)"
-          htmlFor="stop-refund"
-          required
-          hint={
-            paid === 0
-              ? 'Khách chưa thanh toán báo giá nào của yêu cầu này nên không có tiền để hoàn.'
-              : `Khách đã trả ${formatVnd(paid)}. Nhập 0 nếu không hoàn; hoàn dưới số đã trả thì ghi rõ lý do.`
-          }
-          error={errors.refund}
-        >
-          <Input
-            id="stop-refund"
-            inputMode="numeric"
-            className="w-full sm:w-56"
-            value={input.refund}
-            aria-required
-            aria-invalid={errors.refund ? true : undefined}
-            disabled={stop.isPending || paid === 0}
-            onChange={(e) => setInput((v) => ({ ...v, refund: e.target.value }))}
-          />
-        </Field>
-        <Field
-          label="Lý do"
-          htmlFor="stop-reason"
-          required
-          hint={`Khách đọc được. Tối đa ${STOP_REASON_MAX} ký tự.`}
-          error={errors.reason}
-        >
-          <Textarea
-            id="stop-reason"
-            rows={3}
-            maxLength={STOP_REASON_MAX}
-            value={input.reason}
-            aria-required
-            aria-invalid={errors.reason ? true : undefined}
-            disabled={stop.isPending}
-            onChange={(e) => setInput((v) => ({ ...v, reason: e.target.value }))}
-          />
-        </Field>
-      </div>
-      {refund !== null && refund > 0 && refund <= paid && (
-        <Notice tone="neutral" className="mt-4">
-          Khoản hoàn {formatVnd(refund)} được duyệt ngay, chưa phải đã trả: quản trị chuyển tiền cho khách rồi ghi nhận
-          ở mục Hoàn tiền.
-        </Notice>
-      )}
-      <ErrorNotice message={error} />
-      <DialogFooter>
-        <Button icon="close" variant="secondary" disabled={stop.isPending} onClick={onClose}>
-          Đóng
-        </Button>
-        <Button icon="stop_circle" variant="danger-solid" disabled={stop.isPending} onClick={() => void submit()}>
-          {stop.isPending ? 'Đang gửi…' : 'Dừng việc'}
-        </Button>
-      </DialogFooter>
-    </>
-  )
-}
-
 type Action = 'duplicate' | 'stop' | 'not-fulfilled'
 
 function ActionRow({ title, body, action }: { title: string; body: ReactNode; action: ReactNode }) {
@@ -309,9 +202,9 @@ function ActionRow({ title, body, action }: { title: string; body: ReactNode; ac
 export function RequestClosePanel({ request, detailPattern }: { request: ServiceRequestView; detailPattern: string }) {
   const [open, setOpen] = useState<Action | null>(null)
   const notFulfilled = useMarkNotFulfilledMutation()
+  const stop = useStopWorkMutation()
   if (isFinalRequest(request.status)) return null
   const blocker = duplicateBlocker(request)
-  const paid = paidAmount(request)
   const close = () => setOpen(null)
 
   return (
@@ -342,7 +235,7 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
           {canStopWork(request) && (
             <ActionRow
               title="Dừng việc đã bắt đầu"
-              body={`Khách không tự huỷ được việc đã bắt đầu. ${paid > 0 ? `Khách đã trả ${formatVnd(paid)}; ghi số tiền hoàn khi dừng.` : 'Khách chưa trả tiền cho yêu cầu này.'}`}
+              body="Khách không tự huỷ được việc đã bắt đầu."
               action={
                 <Button icon="stop_circle" size="sm" variant="danger" onClick={() => setOpen('stop')}>
                   Dừng việc
@@ -353,7 +246,7 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
           {canMarkNotFulfilled(request) && (
             <ActionRow
               title="Không thực hiện được"
-              body={`Smart Solar không bố trí được kỹ thuật viên phù hợp, hoặc khách không nhận các giờ khác. ${paid > 0 ? `Khách được hoàn toàn bộ ${formatVnd(paid)} đã trả.` : 'Khách chưa trả tiền nên không có khoản hoàn.'}`}
+              body="Smart Solar không bố trí được kỹ thuật viên phù hợp, hoặc khách không nhận các giờ khác."
               action={
                 <Button icon="event_busy" size="sm" variant="danger" onClick={() => setOpen('not-fulfilled')}>
                   Không thực hiện được
@@ -371,28 +264,30 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
         >
           <DuplicateDialog request={request} detailPattern={detailPattern} onClose={close} />
         </ModalDialog>
-        <ModalDialog
+        <ReasonDialog
           open={open === 'stop'}
-          onOpenChange={(next) => !next && close()}
-          className="max-h-[calc(100dvh-2rem)] max-w-lg overflow-y-auto"
-          aria-label="Dừng việc"
-        >
-          <StopWorkDialog request={request} onClose={close} />
-        </ModalDialog>
+          title={`Dừng việc ${request.requestNumber}`}
+          description="Yêu cầu bị huỷ, buổi hẹn đang mở, báo giá chưa trả và việc của kinh doanh cũng bị huỷ. Không mở lại được. Khách đọc được lý do."
+          maxLength={STOP_REASON_MAX}
+          submitLabel="Dừng việc"
+          variant="danger-solid"
+          icon="stop_circle"
+          onSubmit={async (reason) => {
+            try {
+              await stop.mutateAsync({ requestId: request.requestId, body: stopBody(reason) })
+            } catch (e) {
+              if (!changedMeanwhile(e)) throw new Error(managerActionError(e))
+              toast.error(managerActionError(e))
+              return
+            }
+            toast.success('Đã dừng việc.')
+          }}
+          onClose={close}
+        />
         <ReasonDialog
           open={open === 'not-fulfilled'}
           title={`Không thực hiện được ${request.requestNumber}`}
-          description={
-            <>
-              <p>Yêu cầu bị huỷ, buổi hẹn và báo giá còn mở cũng bị huỷ. Không mở lại được.</p>
-              {paid > 0 && (
-                <p className="mt-2">
-                  Khoản hoàn {formatVnd(paid)} (toàn bộ số khách đã trả) được duyệt ngay; quản trị chuyển tiền rồi ghi
-                  nhận.
-                </p>
-              )}
-            </>
-          }
+          description="Yêu cầu bị huỷ, buổi hẹn và báo giá còn mở cũng bị huỷ. Không mở lại được."
           maxLength={NOT_FULFILLED_REASON_MAX}
           submitLabel="Xác nhận không thực hiện được"
           variant="danger-solid"
@@ -405,9 +300,7 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
               toast.error(managerActionError(e))
               return
             }
-            toast.success(
-              paid > 0 ? `Đã huỷ yêu cầu. Khoản hoàn ${formatVnd(paid)} chờ quản trị chuyển tiền.` : 'Đã huỷ yêu cầu.',
-            )
+            toast.success('Đã huỷ yêu cầu.')
           }}
           onClose={close}
         />

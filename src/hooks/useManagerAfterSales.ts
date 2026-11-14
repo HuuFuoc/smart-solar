@@ -11,19 +11,12 @@ import type {
   DecisionRequest,
   DisputeReviewRequest,
   DuplicateRequest,
-  PackageCancellationDecisionRequest,
-  RefundDecisionRequest,
   ScheduleVisitRequest,
   StopWorkRequest,
 } from '@/types/req/managerAfterSalesReq'
 import type { WarrantyActivationBody } from '@/services/managerAfterSalesService'
-import type {
-  InstalledAssetView,
-  ServiceRequestSummary,
-  ServiceRequestView,
-  SubscriptionView,
-} from '@/types/res/customerAfterSalesRes'
-import type { ManagerSubscriptionView, RefundView, SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
+import type { InstalledAssetView, ServiceRequestSummary, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
+import type { SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
 // Yêu cầu bảo hành, sửa chữa, bảo trì phía quản lý / quản trị. Không tự gửi lại khi bị 409: tải lại rồi để người dùng làm lại
@@ -32,24 +25,11 @@ export const managerAfterSalesKeys = {
   all: ['manager-after-sales'] as const,
   requests: () => [...managerAfterSalesKeys.all, 'requests'] as const,
   request: (requestId: string) => [...managerAfterSalesKeys.requests(), requestId] as const,
-  refunds: () => [...managerAfterSalesKeys.all, 'refunds'] as const,
   tasks: (status?: string) => [...managerAfterSalesKeys.all, 'tasks', status ?? 'all'] as const,
-  subscriptions: () => [...managerAfterSalesKeys.all, 'subscriptions'] as const,
-  subscription: (subscriptionId: string) =>
-    [...managerAfterSalesKeys.subscriptions(), 'detail', subscriptionId] as const,
   salesAssignees: () => [...managerAfterSalesKeys.all, 'sales-assignees'] as const,
 }
 
 type Options = { enabled?: boolean }
-
-/** Mọi khoản hoàn tiền, lọc theo trạng thái ở máy để có số đếm từng nhóm. Dùng chung cho quản lý và quản trị */
-export function useRefundsQuery({ enabled = true }: Options = {}) {
-  return useQuery<RefundView[], ApiError>({
-    queryKey: managerAfterSalesKeys.refunds(),
-    queryFn: () => managerService.listRefunds(),
-    enabled,
-  })
-}
 
 /** `enabled`: menu chỉ gọi khi đã chắc là quản lý / quản trị */
 export function useServiceRequestsQuery({ enabled = true }: Options = {}) {
@@ -79,21 +59,12 @@ export function useSalesTasksQuery(status?: string, { enabled = true }: Options 
   })
 }
 
-/**
- * Mutation trên một yêu cầu; xong (kể cả lỗi) thì tải lại danh sách và chi tiết. `touchesRefunds`: lệnh có thể sinh khoản
- * hoàn tiền nên tải lại cả danh sách hoàn tiền
- */
-function useRequestMutation<Body>(
-  action: (requestId: string, body: Body) => Promise<ServiceRequestView>,
-  { touchesRefunds = false } = {},
-) {
+/** Mutation trên một yêu cầu; xong (kể cả lỗi) thì tải lại danh sách và chi tiết */
+function useRequestMutation<Body>(action: (requestId: string, body: Body) => Promise<ServiceRequestView>) {
   const queryClient = useQueryClient()
   return useMutation<ServiceRequestView, ApiError, { requestId: string; body: Body }>({
     mutationFn: ({ requestId, body }) => action(requestId, body),
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.requests() })
-      if (touchesRefunds) void queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.refunds() })
-    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.requests() }),
   })
 }
 
@@ -110,7 +81,7 @@ export function useReviewDisputeMutation() {
 }
 
 export function useDecideCancellationMutation() {
-  return useRequestMutation<CancellationDecisionRequest>(managerService.decideCancellation, { touchesRefunds: true })
+  return useRequestMutation<CancellationDecisionRequest>(managerService.decideCancellation)
 }
 
 export function useDecideClaimMutation() {
@@ -122,11 +93,11 @@ export function useMarkDuplicateMutation() {
 }
 
 export function useStopWorkMutation() {
-  return useRequestMutation<StopWorkRequest>(managerService.stopWork, { touchesRefunds: true })
+  return useRequestMutation<StopWorkRequest>(managerService.stopWork)
 }
 
 export function useMarkNotFulfilledMutation() {
-  return useRequestMutation<AfterSalesReasonRequest>(managerService.markNotFulfilled, { touchesRefunds: true })
+  return useRequestMutation<AfterSalesReasonRequest>(managerService.markNotFulfilled)
 }
 
 /** Thiết bị đọc từ chi tiết công trình, nên tải lại công trình và yêu cầu */
@@ -137,36 +108,6 @@ export function useCorrectAssetMutation() {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: managerInstallationKeys.all })
       void queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.requests() })
-    },
-  })
-}
-
-/** Gói đang chờ xét huỷ, cũ nhất trước. `enabled`: menu chỉ gọi khi đã chắc là quản lý / quản trị */
-export function usePackageCancellationsQuery({ enabled = true }: Options = {}) {
-  return useQuery<ManagerSubscriptionView[], ApiError>({
-    queryKey: managerAfterSalesKeys.subscriptions(),
-    queryFn: () => managerService.listSubscriptions('CANCELLATION_REQUESTED'),
-    refetchInterval: 60_000,
-    enabled,
-  })
-}
-
-export function useManagerSubscriptionQuery(subscriptionId: string | undefined) {
-  return useQuery<ManagerSubscriptionView, ApiError>({
-    queryKey: managerAfterSalesKeys.subscription(subscriptionId ?? ''),
-    queryFn: () => managerService.getSubscription(subscriptionId!),
-    enabled: Boolean(subscriptionId),
-  })
-}
-
-/** Quyết định xong (kể cả lỗi: người khác vừa quyết định) thì tải lại hàng chờ, chi tiết và hoàn tiền (duyệt huỷ tạo khoản hoàn) */
-export function useDecidePackageCancellationMutation() {
-  const queryClient = useQueryClient()
-  return useMutation<SubscriptionView, ApiError, { subscriptionId: string; body: PackageCancellationDecisionRequest }>({
-    mutationFn: ({ subscriptionId, body }) => managerService.decidePackageCancellation(subscriptionId, body),
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.subscriptions() })
-      void queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.refunds() })
     },
   })
 }
@@ -186,14 +127,6 @@ export function useAssignTaskMutation() {
   return useMutation<SalesTaskView, ApiError, { taskId: string; body: AssignTaskRequest }>({
     mutationFn: ({ taskId, body }) => managerService.assignTask(taskId, body),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [...managerAfterSalesKeys.all, 'tasks'] }),
-  })
-}
-
-export function useDecideRefundMutation() {
-  const queryClient = useQueryClient()
-  return useMutation<RefundView, ApiError, { refundId: string; body: RefundDecisionRequest }>({
-    mutationFn: ({ refundId, body }) => managerService.decideRefund(refundId, body),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.refunds() }),
   })
 }
 

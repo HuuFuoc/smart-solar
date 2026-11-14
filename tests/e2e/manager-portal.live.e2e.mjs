@@ -98,21 +98,6 @@ describe('cổng quản lý với backend thật', { skip }, () => {
     )
   })
 
-  test('hoàn tiền: GET refunds thật; số tiền vượt số gốc bị chặn, không gửi', async () => {
-    await go('Hoàn tiền')
-    await page.getByRole('heading', { name: 'Hoàn tiền' }).waitFor()
-    await until(() => last('GET', '/manager/after-sales/refunds'), 'GET refunds')
-    assert.equal(last('GET', '/manager/after-sales/refunds').status, 200)
-    const decide = page.getByRole('button', { name: 'Xét hoàn tiền' }).first()
-    if ((await decide.count()) === 0) return
-    await decide.click()
-    const dialog = page.getByRole('dialog', { name: 'Xét hoàn tiền' })
-    await dialog.locator('#refund-amount').fill('999999999999')
-    await dialog.getByRole('button', { name: 'Duyệt hoàn tiền' }).click()
-    await dialog.getByText(/Không vượt quá/).waitFor()
-    await dialog.getByRole('button', { name: 'Huỷ' }).click()
-  })
-
   test('chi tiết yêu cầu: đọc thật, các khối quyết định hiện theo trạng thái', async () => {
     await go('Bảo hành, sửa chữa')
     await page.getByRole('heading', { name: 'Bảo hành, sửa chữa' }).waitFor()

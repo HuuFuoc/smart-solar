@@ -1,6 +1,6 @@
-// Luật của cổng quản lý (dùng chung với quản trị) cho 10 endpoint ManagerAfterSales: hỗ trợ gói thiên tai, đóng vì trùng,
-// dừng việc, không thực hiện được, sửa thiết bị, xét huỷ gói, hàng việc kinh doanh, hoàn tiền. Bám ServiceManagerHandlers,
-// SalesTaskHandlers, RefundHandlers, ServicePackageHandlers của backend `main` (7c79fa8). Chạy: npm test
+// Luật của cổng quản lý (dùng chung với quản trị) cho các endpoint ManagerAfterSales: hỗ trợ gói thiên tai, đóng vì trùng,
+// dừng việc, không thực hiện được, sửa thiết bị, hàng việc kinh doanh. Bám ServiceManagerHandlers, SalesTaskHandlers của
+// backend `main` (7c79fa8). Nhóm không làm hoàn tiền nên không có luật duyệt / ghi nhận hoàn tiền. Chạy: npm test
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import {
@@ -10,8 +10,6 @@ import {
   assignTaskErrors,
   canAssignTask,
   canDecideClaim,
-  canDecidePackageCancellation,
-  canDecideRefund,
   canMarkNotFulfilled,
   canStopWork,
   changedAssetFields,
@@ -21,18 +19,9 @@ import {
   duplicateCandidates,
   duplicateErrors,
   isReassignment,
-  packageCancellationBody,
-  packageCancellationErrors,
   matchesTaskFilter,
-  packageRefundError,
-  paidAmount,
-  parseVnd,
   reasonError,
-  refundDecisionBody,
-  refundDecisionErrors,
-  refundReasonText,
   stopBody,
-  stopErrors,
   taskStatusParam,
   workStarted,
 } from '../src/features/after-sales/managerAfterSalesRules.ts'
@@ -49,22 +38,6 @@ const request = (over = {}) => ({
   possibleDuplicates: [],
   claim: null,
   ...over,
-})
-
-describe('tiền VND', () => {
-  test('nhận số liền và số ngăn hàng nghìn', () => {
-    assert.equal(parseVnd('1500000'), 1_500_000)
-    assert.equal(parseVnd('1.500.000'), 1_500_000)
-    assert.equal(parseVnd(' 2 000 '), 2000)
-    assert.equal(parseVnd('0'), 0)
-  })
-  test('từ chối số lẻ, số âm, chữ', () => {
-    assert.equal(parseVnd('1,5'), null)
-    assert.equal(parseVnd('-1000'), null)
-    assert.equal(parseVnd('12.5'), null)
-    assert.equal(parseVnd('abc'), null)
-    assert.equal(parseVnd(''), null)
-  })
 })
 
 describe('hỗ trợ của gói thiên tai (claim-decision)', () => {
@@ -128,21 +101,8 @@ describe('dừng việc đã bắt đầu (stop)', () => {
     assert.equal(canStopWork(request({ status: 'CANCELLED', visits: [{ status: 'IN_PROGRESS' }] })), false)
     assert.equal(workStarted(request({ status: 'AWAITING_DECISION', visits: [{ status: 'REPORTED' }] })), false)
   })
-  test('số hoàn nguyên, không vượt số khách đã trả; lý do bắt buộc', () => {
-    const r = request({ quotations: [quotation('PAID', 800_000), quotation('PAID', 200_000), quotation('ISSUED')] })
-    const paid = paidAmount(r)
-    assert.equal(paid, 1_000_000)
-    assert.deepEqual(stopErrors({ reason: 'Khách đổi ý', refund: '1.000.000' }, paid, '1.000.000 ₫'), {})
-    assert.deepEqual(stopErrors({ reason: '', refund: '' }, paid, '1.000.000 ₫'), {
-      reason: 'Ghi lý do dừng việc.',
-      refund: 'Nhập số tiền (0 nếu không hoàn).',
-    })
-    assert.match(stopErrors({ reason: 'x', refund: '1000001' }, paid, '1.000.000 ₫').refund, /Không vượt/)
-    assert.match(stopErrors({ reason: 'x', refund: '1,5' }, paid, '1.000.000 ₫').refund, /nguyên/)
-    assert.deepEqual(stopBody({ reason: ' Hỏng thêm ', refund: '500.000' }), {
-      reason: 'Hỏng thêm',
-      refundAmount: 500_000,
-    })
+  test('không hoàn tiền: luôn gửi số hoàn 0, lý do bỏ khoảng trắng', () => {
+    assert.deepEqual(stopBody(' Hỏng thêm '), { reason: 'Hỏng thêm', refundAmount: 0 })
   })
 })
 
@@ -240,90 +200,5 @@ describe('hàng việc kinh doanh (GET tasks, POST assign)', () => {
     assert.equal(matchesTaskFilter(held, f({ assignee: 's1' })), true)
     assert.equal(matchesTaskFilter(held, f({ type: 'REPAIR_QUOTATION' })), false)
     assert.equal(matchesTaskFilter({ ...held, status: 'DONE' }, f({ status: 'open' })), false)
-  })
-})
-
-describe('hoàn tiền (GET refunds, POST decision)', () => {
-  const refund = { status: 'PENDING_APPROVAL', originalAmount: 1_500_000 }
-  test('duyệt một phần hoặc toàn bộ, không vượt số gốc', () => {
-    assert.equal(canDecideRefund(refund), true)
-    assert.deepEqual(refundDecisionErrors(refund, { approve: true, amount: '1.500.000', note: '' }, '1.500.000 ₫'), {})
-    assert.deepEqual(refundDecisionBody({ approve: true, amount: '1.000.000', note: ' Trừ phí ' }), {
-      approve: true,
-      approvedAmount: 1_000_000,
-      note: 'Trừ phí',
-    })
-    assert.match(
-      refundDecisionErrors(refund, { approve: true, amount: '1500001', note: '' }, '1.500.000 ₫').amount,
-      /Không vượt/,
-    )
-  })
-  test('từ chối không gửi số tiền', () => {
-    assert.deepEqual(refundDecisionErrors(refund, { approve: false, amount: 'abc', note: '' }, ''), {})
-    assert.deepEqual(refundDecisionBody({ approve: false, amount: '1', note: '' }), {
-      approve: false,
-      approvedAmount: null,
-      note: null,
-    })
-  })
-  test('chuyển không hợp lệ: khoản đã duyệt / đã hoàn / không hoàn không xét lại', () => {
-    for (const s of ['APPROVED', 'REFUNDED', 'REJECTED']) assert.equal(canDecideRefund({ status: s }), false, s)
-  })
-  test('dịch lý do backend tự ghi, giữ lý do người gõ', () => {
-    assert.equal(
-      refundReasonText('Package cancelled before activation: Chuyển nhà'),
-      'Khách huỷ gói trước khi bắt đầu kỳ: Chuyển nhà',
-    )
-    assert.equal(
-      refundReasonText('Payment received but not applied: The payment was made after the checkout expired.'),
-      'Đã nhận tiền nhưng không áp dụng được: khách trả sau khi link thanh toán hết hạn.',
-    )
-    assert.equal(refundReasonText('Installation cancelled before handover'), 'Công trình bị huỷ trước khi bàn giao.')
-    assert.equal(refundReasonText('Work stopped: Mưa lớn'), 'Dừng việc: Mưa lớn')
-    assert.equal(refundReasonText('Khác'), 'Khác')
-  })
-})
-
-describe('xét huỷ gói đã trả tiền (subscriptions/cancellation-decision)', () => {
-  test('chỉ gói khách đã xin huỷ', () => {
-    assert.equal(canDecidePackageCancellation({ status: 'CANCELLATION_REQUESTED' }), true)
-    for (const s of ['PAID', 'ACTIVE', 'AWAITING_PAYMENT', 'CANCELLED'])
-      assert.equal(canDecidePackageCancellation({ status: s }), false, s)
-  })
-  test('số hoàn nguyên, từ 0 tới giá gói', () => {
-    assert.equal(packageRefundError(990_000, '990.000', '990.000 ₫'), undefined)
-    assert.equal(packageRefundError(990_000, '0', '990.000 ₫'), undefined)
-    assert.match(packageRefundError(990_000, '990001', '990.000 ₫'), /Không vượt/)
-    assert.match(packageRefundError(990_000, '', '990.000 ₫'), /Nhập số tiền/)
-  })
-  test('duyệt: lỗi ở ô số tiền; từ chối: không kiểm số tiền, chỉ giới hạn ghi chú 500 ký tự', () => {
-    const approve = (amount) => ({ approve: true, amount, note: '' })
-    assert.deepEqual(packageCancellationErrors(2_000_000, approve('1.500.000'), '2.000.000 ₫'), {})
-    assert.match(
-      packageCancellationErrors(2_000_000, approve('2.500.000'), '2.000.000 ₫').amount,
-      /Không vượt quá 2.000.000/,
-    )
-    assert.match(packageCancellationErrors(2_000_000, approve('1,5'), '2.000.000 ₫').amount, /số nguyên/)
-    const reject = (note) => ({ approve: false, amount: '9.999.999', note })
-    assert.deepEqual(packageCancellationErrors(2_000_000, reject(''), '2.000.000 ₫'), {})
-    assert.deepEqual(packageCancellationErrors(2_000_000, reject('x'.repeat(500)), '2.000.000 ₫'), {})
-    assert.match(packageCancellationErrors(2_000_000, reject('x'.repeat(501)), '2.000.000 ₫').note, /Tối đa 500/)
-  })
-  test('body: duyệt gửi số tiền, không gửi ghi chú; từ chối không gửi số tiền, ghi chú trống thành null', () => {
-    assert.deepEqual(packageCancellationBody({ approve: true, amount: '1.500.000', note: 'bỏ qua' }), {
-      approve: true,
-      refundAmount: 1_500_000,
-      note: null,
-    })
-    assert.deepEqual(packageCancellationBody({ approve: false, amount: '1.500.000', note: '  ' }), {
-      approve: false,
-      refundAmount: null,
-      note: null,
-    })
-    assert.deepEqual(packageCancellationBody({ approve: false, amount: '', note: ' Gói vẫn dùng được ' }), {
-      approve: false,
-      refundAmount: null,
-      note: 'Gói vẫn dùng được',
-    })
   })
 })

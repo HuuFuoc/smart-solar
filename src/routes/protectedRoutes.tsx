@@ -83,15 +83,6 @@ const ManageAfterSalesRequestPage = page(
   'ManageAfterSalesRequestPage',
 )
 const ManageSalesTasksPage = page(() => import('@/pages/sales-tasks-page'), 'ManageSalesTasksPage')
-const ManageRefundsPage = page(() => import('@/pages/refunds-page'), 'ManageRefundsPage')
-const ManagePackageCancellationsPage = page(
-  () => import('@/pages/package-cancellations-page'),
-  'ManagePackageCancellationsPage',
-)
-const ManagePackageCancellationPage = page(
-  () => import('@/pages/package-cancellations-page'),
-  'ManagePackageCancellationPage',
-)
 
 const AdminDashboardPage = page(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage')
 const AdminUsersPage = page(() => import('@/pages/admin/users-page'), 'AdminUsersPage')
@@ -116,7 +107,6 @@ const AdminSettingsPage = page(() => import('@/pages/admin/settings-page'), 'Adm
 const AdminZonesPage = page(() => import('@/pages/admin/zones-page'), 'AdminZonesPage')
 const AdminZonePage = page(() => import('@/pages/admin/zone-page'), 'AdminZonePage')
 const AdminWarrantyOptionsPage = page(() => import('@/pages/admin/warranty-options-page'), 'AdminWarrantyOptionsPage')
-const AdminRefundsPage = page(() => import('@/pages/refunds-page'), 'AdminRefundsPage')
 const AdminSalesTasksPage = page(() => import('@/pages/sales-tasks-page'), 'AdminSalesTasksPage')
 const AdminReportsPage = page(() => import('@/pages/admin/reports-page'), 'AdminReportsPage')
 const AdminKnowledgeDocumentsPage = page(
@@ -244,9 +234,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
       { path: manage.afterSalesRequest, lazy: ManageAfterSalesRequestPage },
       { path: manage.salesTasks, lazy: ManageSalesTasksPage },
-      { path: manage.refunds, lazy: ManageRefundsPage },
-      { path: manage.packageCancellations, lazy: ManagePackageCancellationsPage },
-      { path: manage.packageCancellation, lazy: ManagePackageCancellationPage },
       { path: manage.pricingApprovals, lazy: ManagePricingApprovalsPage },
       { path: manage.dispatch, lazy: ManageDispatchRequestsPage },
       { path: manage.dispatchRequest, lazy: ManageDispatchRequestPage },
@@ -283,7 +270,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.zones, lazy: AdminZonesPage },
       { path: admin.zone, lazy: AdminZonePage },
       { path: admin.warrantyOptions, lazy: AdminWarrantyOptionsPage },
-      { path: admin.refunds, lazy: AdminRefundsPage },
       { path: admin.salesTasks, lazy: AdminSalesTasksPage },
       { path: admin.reports, lazy: AdminReportsPage },
       { path: admin.knowledgeBase, lazy: AdminKnowledgeDocumentsPage },

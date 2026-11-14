@@ -7,7 +7,6 @@ type AdminActionAlertsCardProps = {
   isLoading?: boolean
   readyContractsCount: number
   missingBaseTechCount: number
-  refundsToRecordCount: number
   openDispatchCount: number
   warrantyGap: boolean
 }
@@ -28,7 +27,6 @@ export function AdminActionAlertsCard({
   isLoading,
   readyContractsCount,
   missingBaseTechCount,
-  refundsToRecordCount,
   openDispatchCount,
   warrantyGap,
 }: AdminActionAlertsCardProps) {
@@ -84,20 +82,6 @@ export function AdminActionAlertsCard({
       icon: 'person_alert',
       actionLabel: 'Phân bổ kỹ thuật viên',
       actionTo: ROUTES.admin.technicians,
-    })
-  }
-
-  if (refundsToRecordCount > 0) {
-    alerts.push({
-      id: 'refunds-to-record',
-      title: 'Khoản hoàn tiền đã duyệt chờ ghi nhận thực chi',
-      description: `Có ${refundsToRecordCount} khoản hoàn tiền đã được quản lý phê duyệt, cần quản trị viên ghi nhận mã chuyển khoản ngoài.`,
-      count: refundsToRecordCount,
-      tone: 'danger',
-      badgeText: 'Chờ ghi nhận',
-      icon: 'receipt_long',
-      actionLabel: 'Ghi nhận hoàn tiền',
-      actionTo: ROUTES.admin.refunds,
     })
   }
 

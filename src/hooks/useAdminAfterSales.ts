@@ -2,11 +2,9 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import * as adminAfterSalesService from '@/services/adminAfterSalesService'
 import type { DashboardParams } from '@/services/adminAfterSalesService'
 import type { ApiError } from '@/services/api/errors'
-import { managerAfterSalesKeys } from '@/hooks/useManagerAfterSales'
-import type { PackageRequest, RecordRefundRequest, WarrantyOptionRequest } from '@/types/req/adminAfterSalesReq'
+import type { PackageRequest, WarrantyOptionRequest } from '@/types/req/adminAfterSalesReq'
 import type { DashboardView, WarrantyOptionView } from '@/types/res/adminAfterSalesRes'
 import type { PackageView } from '@/types/res/customerAfterSalesRes'
-import type { RefundView } from '@/types/res/managerAfterSalesRes'
 
 export const adminAfterSalesKeys = {
   all: ['admin-after-sales'] as const,
@@ -67,18 +65,6 @@ export function useSaveWarrantyOptionMutation() {
   return useMutation<WarrantyOptionView, ApiError, WarrantyOptionRequest>({
     mutationFn: (body) => adminAfterSalesService.saveWarrantyOption(body),
     onSettled: () => queryClient.invalidateQueries({ queryKey: adminAfterSalesKeys.warrantyOptions() }),
-  })
-}
-
-// Danh sách hoàn tiền dùng chung với quản lý, báo cáo có số tiền đã hoàn nên cũng tải lại
-export function useRecordRefundMutation() {
-  const queryClient = useQueryClient()
-  return useMutation<RefundView, ApiError, { refundId: string; body: RecordRefundRequest }>({
-    mutationFn: ({ refundId, body }) => adminAfterSalesService.recordRefund(refundId, body),
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.refunds() })
-      void queryClient.invalidateQueries({ queryKey: [...adminAfterSalesKeys.all, 'dashboard'] })
-    },
   })
 }
 

@@ -108,11 +108,6 @@ export const ROUTES = {
     dispatchRequest: '/manage/dispatch/:id',
     /** Hàng việc sau bán của kinh doanh: xem, lọc (quản lý dùng chung trang với quản trị) */
     salesTasks: '/manage/sales-tasks',
-    /** Khoản hoàn tiền làm tay: duyệt / từ chối (quản lý dùng chung trang với quản trị) */
-    refunds: '/manage/refunds',
-    /** Gói khách xin huỷ trước khi bắt đầu kỳ: hàng chờ → chi tiết → duyệt / từ chối */
-    packageCancellations: '/manage/package-cancellations',
-    packageCancellation: '/manage/package-cancellations/:id',
     /** Báo giá có giá thấp hơn danh mục chờ quản lý duyệt */
     pricingApprovals: '/manage/pricing-approvals',
     /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
@@ -143,8 +138,6 @@ export const ROUTES = {
     zone: '/admin/zones/:id',
     /** Thời hạn bảo hành lắp đặt / sửa chữa cho kinh doanh chọn */
     warrantyOptions: '/admin/warranty-options',
-    /** Duyệt khoản hoàn tiền và ghi nhận đã chuyển cho khách */
-    refunds: '/admin/refunds',
     /** Hàng việc sau bán của kinh doanh: giao / giao lại */
     salesTasks: '/admin/sales-tasks',
     /** Báo cáo thu tiền và hoạt động sau bán, xuất CSV */

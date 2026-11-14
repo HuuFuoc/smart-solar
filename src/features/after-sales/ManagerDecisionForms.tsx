@@ -159,25 +159,21 @@ export function DisputeReviewForm({ request }: { request: ServiceRequestView }) 
   )
 }
 
-/** Khách xin huỷ việc đã thanh toán: đồng ý (giữ lại chi phí không hoàn được) hoặc từ chối */
+/** Khách xin huỷ việc đã thanh toán: đồng ý hoặc từ chối. Nhóm không làm hoàn tiền nên không hỏi chi phí giữ lại */
 export function CancellationDecisionForm({ request }: { request: ServiceRequestView }) {
   const decide = useDecideCancellationMutation()
   const paid = request.quotations.filter((q) => q.status === 'PAID').reduce((sum, q) => sum + q.customerAmount, 0)
-  const [kept, setKept] = useState('0')
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   async function submit(approve: boolean) {
-    const amount = Number(kept)
-    if (approve && (!Number.isInteger(amount) || amount < 0 || amount > paid))
-      return setError(`Số tiền giữ lại là số nguyên từ 0 đến ${formatVnd(paid)}.`)
     setError(null)
     try {
       await decide.mutateAsync({
         requestId: request.requestId,
-        body: { approve, nonRecoverableAmount: approve ? amount : 0, note: note.trim() || null },
+        body: { approve, nonRecoverableAmount: 0, note: note.trim() || null },
       })
-      toast.success(approve ? 'Đã đồng ý huỷ. Quản trị sẽ hoàn tiền cho khách.' : 'Đã từ chối yêu cầu huỷ.')
+      toast.success(approve ? 'Đã đồng ý huỷ.' : 'Đã từ chối yêu cầu huỷ.')
     } catch (e) {
       setError(errorMessage(e))
     }
@@ -188,22 +184,9 @@ export function CancellationDecisionForm({ request }: { request: ServiceRequestV
       <p className="text-body text-fg">
         Khách đã trả {formatVnd(paid)}. Lý do huỷ: {request.cancellationReason ?? '—'}
       </p>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Chi phí không hoàn được (VND)" htmlFor="cancel-kept" hint="Phần trừ vào tiền hoàn cho khách.">
-          <Input
-            id="cancel-kept"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            step={1000}
-            value={kept}
-            onChange={(e) => setKept(e.target.value)}
-          />
-        </Field>
-        <Field label="Ghi chú" htmlFor="cancel-note">
-          <Input id="cancel-note" maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
-        </Field>
-      </div>
+      <Field label="Ghi chú" htmlFor="cancel-note">
+        <Input id="cancel-note" maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
+      </Field>
       <ErrorNotice message={error} />
       <div className="flex flex-wrap gap-3">
         <Button icon="cancel" variant="danger" disabled={decide.isPending} onClick={() => void submit(true)}>

@@ -1,11 +1,10 @@
-import type { PackageRequest, RecordRefundRequest, WarrantyOptionRequest } from '@/types/req/adminAfterSalesReq'
+import type { PackageRequest, WarrantyOptionRequest } from '@/types/req/adminAfterSalesReq'
 import type { DashboardView, WarrantyOptionView } from '@/types/res/adminAfterSalesRes'
 import type { PackageView, ServicePackageKind } from '@/types/res/customerAfterSalesRes'
-import type { RefundView } from '@/types/res/managerAfterSalesRes'
 import { get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
-// Sau bán phía quản trị (chỉ ADMIN): gói dịch vụ, thời hạn bảo hành, ghi nhận hoàn tiền, báo cáo.
+// Sau bán phía quản trị (chỉ ADMIN): gói dịch vụ, thời hạn bảo hành, báo cáo.
 // Gói khách đã mua lưu bản chụp tên, giá, thời hạn, quyền lợi lúc mua, nên sửa hay ngừng bán chỉ áp cho lần mua sau.
 // Không có API xoá gói: ngừng bán là isActive = false
 
@@ -37,11 +36,6 @@ export function listWarrantyOptions(kind?: string) {
  */
 export function saveWarrantyOption(body: WarrantyOptionRequest) {
   return put<WarrantyOptionView>(api.warrantyOptions, body)
-}
-
-/** Ghi nhận khoản đã duyệt đã được trả ngoài hệ thống. Chỉ khoản APPROVED, `refundedAt` không ở tương lai */
-export function recordRefund(refundId: string, body: RecordRefundRequest) {
-  return post<RefundView>(api.recordRefund(refundId), body)
 }
 
 /** Query đúng tên tham số của swagger (From, To, CompareFrom, CompareTo, ZoneId, ServiceType, Status) */

@@ -6,8 +6,6 @@ import type {
   DecisionRequest,
   DisputeReviewRequest,
   DuplicateRequest,
-  PackageCancellationDecisionRequest,
-  RefundDecisionRequest,
   ScheduleVisitRequest,
   StopWorkRequest,
 } from '@/types/req/managerAfterSalesReq'
@@ -17,9 +15,8 @@ import type {
   ServiceEvidenceUrlView,
   ServiceRequestSummary,
   ServiceRequestView,
-  SubscriptionView,
 } from '@/types/res/customerAfterSalesRes'
-import type { ManagerSubscriptionView, RefundView, SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
+import type { SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 import { get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
@@ -57,7 +54,7 @@ export function reviewDispute(requestId: string, body: DisputeReviewRequest) {
   return post<ServiceRequestView>(api.disputeReview(requestId), body)
 }
 
-/** Khách xin huỷ việc đã trả tiền: đồng ý (giữ lại chi phí không hoàn được) hoặc từ chối */
+/** Khách xin huỷ việc đã trả tiền: đồng ý hoặc từ chối */
 export function decideCancellation(requestId: string, body: CancellationDecisionRequest) {
   return post<ServiceRequestView>(api.cancellationDecision(requestId), body)
 }
@@ -75,12 +72,12 @@ export function markDuplicate(requestId: string, body: DuplicateRequest) {
   return post<ServiceRequestView>(api.duplicate(requestId), body)
 }
 
-/** Dừng ngoại lệ việc đã bắt đầu, lý do bắt buộc. `refundAmount` > 0 thì backend tạo khoản hoàn đã duyệt (chưa chuyển tiền) */
+/** Dừng ngoại lệ việc đã bắt đầu, lý do bắt buộc. Nhóm không làm hoàn tiền nên luôn gửi `refundAmount` 0 */
 export function stopWork(requestId: string, body: StopWorkRequest) {
   return post<ServiceRequestView>(api.stop(requestId), body)
 }
 
-/** Bảo trì lẻ Smart Solar không thực hiện được: huỷ yêu cầu, backend duyệt hoàn 100 % tiền đã trả. Lý do bắt buộc */
+/** Bảo trì lẻ Smart Solar không thực hiện được: huỷ yêu cầu. Lý do bắt buộc */
 export function markNotFulfilled(requestId: string, body: AfterSalesReasonRequest) {
   return post<ServiceRequestView>(api.notFulfilled(requestId), body)
 }
@@ -88,23 +85,6 @@ export function markNotFulfilled(requestId: string, body: AfterSalesReasonReques
 /** Sửa thông tin thiết bị đã lắp: ô null giữ nguyên, lý do bắt buộc; backend ghi giá trị cũ và mới vào lịch sử */
 export function correctAsset(assetId: string, body: AssetCorrectionRequest) {
   return put<InstalledAssetView>(api.asset(assetId), body)
-}
-
-/**
- * Xét yêu cầu huỷ gói đã trả tiền (CANCELLATION_REQUESTED). Đồng ý thì gói bị huỷ và backend ghi khoản hoàn đã duyệt
- * (mặc định cả giá gói); từ chối thì gói về PAID
- */
-export function decidePackageCancellation(subscriptionId: string, body: PackageCancellationDecisionRequest) {
-  return post<SubscriptionView>(api.packageCancellationDecision(subscriptionId), body)
-}
-
-/** Gói khách đã mua theo trạng thái; không truyền `status` là gói đang chờ xét huỷ (CANCELLATION_REQUESTED), cũ nhất trước */
-export function listSubscriptions(status?: string) {
-  return get<ManagerSubscriptionView[]>(api.subscriptions, { params: status ? { status } : undefined })
-}
-
-export function getSubscription(subscriptionId: string) {
-  return get<ManagerSubscriptionView>(api.subscription(subscriptionId))
 }
 
 /** Tài khoản kinh doanh đang hoạt động để giao việc (quản lý và quản trị; không cần API tài khoản của quản trị) */
@@ -120,19 +100,6 @@ export function listTasks(status?: string) {
 /** Giao việc chưa ai nhận, hoặc giao lại việc đã có người (bắt buộc lý do). Người nhận phải là kinh doanh đang hoạt động */
 export function assignTask(taskId: string, body: AssignTaskRequest) {
   return post<SalesTaskView>(api.assignTask(taskId), body)
-}
-
-/**
- * Khoản hoàn tiền làm tay, mới nhất trước (MANAGER và ADMIN). Không truyền `status` là mọi trạng thái. Dùng chung: quản lý
- * duyệt, quản trị ghi nhận đã trả
- */
-export function listRefunds(status?: string) {
-  return get<RefundView[]>(api.refunds, { params: status ? { status } : undefined })
-}
-
-/** Duyệt / từ chối khoản PENDING_APPROVAL. Duyệt chỉ ghi số được hoàn (≤ số gốc), tiền chưa được trả */
-export function decideRefund(refundId: string, body: RefundDecisionRequest) {
-  return post<RefundView>(api.refundDecision(refundId), body)
 }
 
 /** Ngày kích hoạt bảo hành hãng của thiết bị (ISO kèm múi giờ, không ở tương lai) + tài liệu PROJECT_DOCUMENT đã xác minh */

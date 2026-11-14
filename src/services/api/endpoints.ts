@@ -308,15 +308,9 @@ export const ENDPOINTS = {
       `/manager/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
     asset: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}`,
     warrantyActivation: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}/warranty-activation`,
-    subscriptions: '/manager/after-sales/subscriptions',
-    subscription: (subscriptionId: string) => `/manager/after-sales/subscriptions/${encode(subscriptionId)}`,
     salesAssignees: '/manager/after-sales/sales-assignees',
-    packageCancellationDecision: (subscriptionId: string) =>
-      `/manager/after-sales/subscriptions/${encode(subscriptionId)}/cancellation-decision`,
     tasks: '/manager/after-sales/tasks',
     assignTask: (taskId: string) => `/manager/after-sales/tasks/${encode(taskId)}/assign`,
-    refunds: '/manager/after-sales/refunds',
-    refundDecision: (refundId: string) => `/manager/after-sales/refunds/${encode(refundId)}/decision`,
   },
 
   // Điều phối kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý và quản trị)
@@ -369,7 +363,6 @@ export const ENDPOINTS = {
     packages: '/admin/after-sales/packages',
     package: (packageId: string) => `/admin/after-sales/packages/${encode(packageId)}`,
     warrantyOptions: '/admin/after-sales/warranty-options',
-    recordRefund: (refundId: string) => `/admin/after-sales/refunds/${encode(refundId)}/record`,
     dashboard: '/admin/after-sales/dashboard',
     dashboardExport: '/admin/after-sales/dashboard/export',
   },
