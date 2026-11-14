@@ -1,7 +1,7 @@
 import { ENTITLEMENT_STATUSES } from '@/common/afterSales'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
-import { ListRow } from '@/components/common/ui/list-row'
 import {
   bySubscriptionRank,
   cancelMode,
@@ -18,6 +18,7 @@ import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment, vnDate } from '@/features/scheduling/schedulingDisplay'
 import { ROUTES, withId } from '@/routes/paths'
 import type { EntitlementView, SubscriptionView } from '@/types/res/customerAfterSalesRes'
+import { cx } from '@/utils/cx'
 import { formatMoney } from '@/utils/format'
 
 const vnd = (amount: number | null) => <span className="tnum">{formatMoney(amount, 'VND')}</span>
@@ -130,39 +131,68 @@ export function SubscriptionList({
   onBook: (entitlement: EntitlementView, subscription: SubscriptionView) => void
 }) {
   return (
-    <ul className="divide-y divide-line">
+    <ul className="space-y-3">
       {[...items].sort(bySubscriptionRank).map((s) => {
         const status = subscriptionStatusMeta(s.status)
         const mode = cancelMode(s.status)
         const term = termText(s)
         const payAttempt = s.status === 'AWAITING_PAYMENT' ? s.currentPaymentAttemptId : null
         return (
-          <ListRow key={s.subscriptionId}>
-            <div className="grid gap-x-8 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <li
+            key={s.subscriptionId}
+            className="rounded-container border border-line/70 bg-surface-2/30 p-4 transition-colors hover:bg-surface-2/60"
+          >
+            <div className="grid gap-x-6 gap-y-3 lg:grid-cols-[auto_minmax(0,1.2fr)_minmax(0,1.8fr)_auto] lg:items-center">
+              {/* Left Icon Box */}
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-container border border-accent-line/30 bg-accent-soft text-accent-fg">
+                <Icon name="bolt" className="text-[20px]" />
+              </div>
+
+              {/* Col 1: Package Title and Contract / Price info */}
               <div className="min-w-0">
-                <h3 className="text-title font-semibold">{s.packageName}</h3>
-                <p className="mt-1 text-body text-fg-2">
+                <h3 className="text-body font-bold text-fg">{s.packageName}</h3>
+                <p className="mt-0.5 text-meta text-fg-2">
                   Hợp đồng <span className="tnum">{contractNumbers.get(s.contractId) ?? shortCode(s.contractId)}</span>,{' '}
                   {vnd(s.price)}, {formatDurationMonths(s.durationMonths)}
                 </p>
-                {term && <p className="mt-2 text-body text-fg">{term}</p>}
+                {term && <p className="mt-1 text-meta font-medium text-fg">{term}</p>}
                 {s.status === 'ACTIVE' && s.supportAvailable != null && (
-                  <p className="mt-1 text-body text-fg">
+                  <p className="mt-0.5 text-meta text-fg">
                     Hạn mức kỳ còn {vnd(s.supportAvailable)}
                     {s.supportReserved > 0 && (
                       <span className="text-fg-2">, đang giữ {vnd(s.supportReserved)} cho báo giá sửa chữa</span>
                     )}
                   </p>
                 )}
-                <p className="mt-1 text-body text-fg-2">{benefitText(s)}</p>
-                {isMaintenance(s.kind) && s.entitlements.length > 0 && (
-                  <EntitlementList subscription={s} onBook={onBook} />
-                )}
               </div>
-              <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
-                <Badge tone={status.tone}>{status.label}</Badge>
+
+              {/* Col 2: Benefits with Checkmark */}
+              <div className="min-w-0">
+                <div className="flex items-start gap-2">
+                  <Icon name="check_circle" className="mt-0.5 shrink-0 text-primary text-[20px]" />
+                  <span className="text-meta leading-relaxed text-fg">{benefitText(s)}</span>
+                </div>
+              </div>
+
+              {/* Col 3: Status Badge & Actions */}
+              <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-end">
+                <span className="inline-flex items-center gap-1.5 rounded-control border border-line bg-surface-2 px-3 py-1 text-meta font-medium text-fg-2 select-none">
+                  <span
+                    className={cx(
+                      'h-1.5 w-1.5 rounded-full shrink-0',
+                      status.tone === 'ok'
+                        ? 'bg-ok'
+                        : status.tone === 'danger' || status.tone === 'warn'
+                          ? 'bg-warn'
+                          : 'bg-fg-3',
+                    )}
+                    aria-hidden="true"
+                  />
+                  <span>{status.label}</span>
+                </span>
+
                 {(payAttempt || mode) && (
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
                     {mode && (
                       <Button icon="cancel" size="sm" variant="danger" onClick={() => onCancel(s)}>
                         Huỷ đơn
@@ -177,7 +207,10 @@ export function SubscriptionList({
                 )}
               </div>
             </div>
-          </ListRow>
+
+            {/* Entitlements if active/maintenance */}
+            {isMaintenance(s.kind) && s.entitlements.length > 0 && <EntitlementList subscription={s} onBook={onBook} />}
+          </li>
         )
       })}
     </ul>
