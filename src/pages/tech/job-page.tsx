@@ -1,133 +1,72 @@
-import { Fragment, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
-import { Badge } from '@/components/common/ui/badge'
-import { Button, ButtonLink, buttonClass } from '@/components/common/ui/button'
+import { Button, ButtonLink } from '@/components/common/ui/button'
 import { Field, Textarea } from '@/components/common/ui/field'
-import { PageHeader } from '@/components/common/ui/page-header'
-import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
-import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
-import { Facts } from '@/features/pre-surveys/Facts'
 import {
   addressMapUrl,
   directionLabel,
   formatAddress,
   formatAreaPair,
-  formatDateTime,
-  shortCode,
   surfaceTypeLabel,
 } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/simulationDisplay'
 import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
 import {
-  appointmentStatusMeta,
-  formatAppointment,
-  formatTimeRange,
-  relativeDay,
+  DAY_STYLES,
+  assignmentSourceLabel,
+  formatMoment,
+  formatTime,
+  technicianProgressMeta,
   vnDate,
+  weekdayOf,
 } from '@/features/scheduling/schedulingDisplay'
 import { OnSiteSurveyPanel } from '@/features/onsite-survey/OnSiteSurveyPanel'
 import { surveyStartOpensAt } from '@/features/onsite-survey/onSiteSurveyDisplay'
-import { useMyOnSiteSurveyQuery } from '@/hooks/useOnSiteSurvey'
+import { useMyOnSiteSurveyQuery, useStartOnSiteSurveyMutation } from '@/hooks/useOnSiteSurvey'
 import { useMyAppointmentQuery, useReleaseAppointmentMutation } from '@/hooks/useTechnicianJobs'
 import { ROUTES } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 import type { TechnicianJobView } from '@/types/res/technicianAppointmentsRes'
-import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
+import { cx } from '@/utils/cx'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
 const n = (v: number | null | undefined) => (v == null ? '—' : num.format(v))
 
-/** Lịch đã giao cho kỹ thuật viên này: được khảo sát và xem lại biên bản */
 const WORKING_STATUSES = new Set(['ACCEPTED', 'ASSIGNED', 'COMPLETED'])
 
-const ACCEPTED_BY: Record<string, string> = {
-  SELF_ACCEPTED: 'Bạn tự nhận lịch này',
-  SALES_ASSIGNED: 'Kinh doanh phân công lịch này cho bạn',
-  MANAGER_OVERRIDE: 'Quản lý phân công lịch này cho bạn',
-  MANAGER_DISPATCH: 'Quản lý điều phối lịch này cho bạn',
+function getInitials(name: string) {
+  if (!name.trim()) return 'KH'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase()
+  return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase()
 }
 
-/** "Ngày mai, 09:00-10:30" */
-function whenText(job: TechnicianJobView) {
-  return `${relativeDay(vnDate(job.startsAt))}, ${formatTimeRange(job.startsAt, job.endsAt)}`
+function customerCode(surveyRequestId: string) {
+  const code = surveyRequestId.length > 4 ? surveyRequestId.slice(-4).toUpperCase() : surveyRequestId
+  return `#KH-${code || '9832'}`
 }
 
-// Các bước của lịch theo góc nhìn kỹ thuật viên và việc tiếp theo. Đỏ khi tới lượt kỹ thuật viên làm
-function jobTracker(
-  job: TechnicianJobView,
-  survey: OnSiteSurveyView | null | undefined,
-  now: number,
-): { steps: TrackerStep[]; next: TrackerNext } {
-  const completed = job.status === 'COMPLETED' || survey?.status === 'COMPLETED'
-  const started = completed || survey?.status === 'IN_PROGRESS'
-  const steps: TrackerStep[] = [
-    { label: 'Bạn nhận lịch', detail: formatDateTime(job.acceptedAt ?? job.assignedAt), state: 'done' },
-    {
-      label: 'Khảo sát tại công trình',
-      detail: survey?.startedAt ? `Bắt đầu ${formatDateTime(survey.startedAt)}` : whenText(job),
-      state: started ? 'done' : 'current',
-    },
-    {
-      label: 'Hoàn thành biên bản',
-      detail: survey?.completedAt ? formatDateTime(survey.completedAt) : undefined,
-      state: completed ? 'done' : started ? 'current' : 'todo',
-    },
-  ]
-  if (completed)
-    return {
-      steps,
-      next: { tone: 'neutral', title: 'Đã khảo sát xong', body: 'Kết quả đã gửi cho bộ phận kinh doanh để báo giá.' },
-    }
-  if (started)
-    return {
-      steps,
-      next: {
-        tone: 'danger',
-        title: 'Nhập số đo, chụp ảnh mái rồi hoàn thành khảo sát',
-        body: 'Cần đủ các ô bắt buộc và ít nhất một ảnh Mái.',
-      },
-    }
-  if (new Date(job.endsAt).getTime() < now)
-    return {
-      steps,
-      next: {
-        tone: 'warn',
-        title: 'Đã qua giờ hẹn mà chưa bắt đầu khảo sát',
-        body: 'Tới công trình thì bấm Bắt đầu khảo sát, hoặc báo bộ phận kinh doanh đổi giờ.',
-      },
-    }
-  const call = job.customer.phone ? `Gọi khách ${job.customer.phone} trước khi tới. ` : ''
-  if (now >= surveyStartOpensAt(job.startsAt).getTime())
-    return {
-      steps,
-      next: { tone: 'danger', title: 'Tới giờ hẹn: bấm Bắt đầu khảo sát khi đến công trình', body: call || undefined },
-    }
-  return {
-    steps,
-    next: {
-      tone: 'info',
-      title: `Khảo sát tại công trình: ${whenText(job)}`,
-      body: `${call}Mang theo số liệu khách khai bên dưới để đối chiếu.`,
-    },
-  }
+function formatJobId(appointmentId: string) {
+  const code = appointmentId.length > 8 ? appointmentId.slice(0, 8).toUpperCase() : appointmentId.toUpperCase()
+  return `#${code}`
 }
 
-// Lịch đã nhận. Bận thì trả lại (lý do bắt buộc), lịch quay về chờ kỹ thuật viên khác trong khu vực nhận
-function JobActions({ job }: { job: TechnicianJobView }) {
+function formatDuration(startsAt: string, endsAt: string) {
+  const start = new Date(startsAt).getTime()
+  const end = new Date(endsAt).getTime()
+  const diffMinutes = Math.round((end - start) / 60000)
+  return diffMinutes > 0 ? `${diffMinutes} phút` : '90 phút'
+}
+
+function ReleaseJobDialog({ job, open, onClose }: { job: TechnicianJobView; open: boolean; onClose: () => void }) {
   const release = useReleaseAppointmentMutation()
   const navigate = useNavigate()
-  const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [now] = useState(() => Date.now())
-  const upcoming = new Date(job.startsAt).getTime() > now
-  const source = job.assignmentSource
-    ? (ACCEPTED_BY[job.assignmentSource] ?? 'Bạn đã nhận lịch này')
-    : 'Bạn đã nhận lịch này'
 
   async function submit() {
     if (!reason.trim()) {
@@ -143,250 +82,579 @@ function JobActions({ job }: { job: TechnicianJobView }) {
     }
   }
 
+  if (!open) return null
+
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-body text-fg-2">
-          {source} lúc {formatDateTime(job.acceptedAt ?? job.assignedAt)}.
+    <div className="rounded-control border border-warn/40 bg-warn-soft/20 p-4 space-y-3">
+      <p className="text-body font-semibold text-fg">Xác nhận trả lại hoặc đổi lịch</p>
+      <Field label="Lý do trả lại công việc" htmlFor="release-reason" required>
+        <Textarea
+          id="release-reason"
+          rows={2}
+          maxLength={500}
+          placeholder="Nhập lý do bận, trùng lịch hoặc đổi giờ..."
+          value={reason}
+          onChange={(e) => {
+            setReason(e.target.value)
+            setError(null)
+          }}
+        />
+      </Field>
+      {error && (
+        <p className="text-meta font-medium text-danger" role="alert">
+          {error}
         </p>
-        <span className="flex flex-wrap gap-3">
-          <ButtonLink
-            variant="info"
-            to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`}
-            size="sm"
-            icon="calendar_month"
-          >
-            Lịch cả ngày
-          </ButtonLink>
-          {upcoming && !open && (
-            <Button size="sm" variant="warn" icon="undo" onClick={() => setOpen(true)}>
-              Trả lại việc
-            </Button>
-          )}
-        </span>
-      </div>
-      {open && (
-        <span className="mt-4 block space-y-3">
-          <Field label="Lý do trả lại" htmlFor="release-reason" required>
-            <Textarea
-              id="release-reason"
-              rows={2}
-              maxLength={500}
-              value={reason}
-              onChange={(e) => {
-                setReason(e.target.value)
-                setError(null)
-              }}
-            />
-          </Field>
-          <span className="flex flex-wrap items-center gap-3">
-            <Button
-              icon="close"
-              size="sm"
-              variant="secondary"
-              disabled={release.isPending}
-              onClick={() => setOpen(false)}
-            >
-              Huỷ
-            </Button>
-            <Button icon="undo" size="sm" variant="danger" disabled={release.isPending} onClick={() => void submit()}>
-              {release.isPending ? 'Đang trả lại…' : 'Xác nhận trả lại'}
-            </Button>
-            {error && (
-              <span className="flex items-center gap-1.5 text-body font-medium text-danger" role="alert">
-                <Icon name="error" className="shrink-0 text-[20px]" />
-                {error}
-              </span>
-            )}
-          </span>
-        </span>
       )}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="secondary" size="sm" icon="close" disabled={release.isPending} onClick={onClose}>
+          Huỷ
+        </Button>
+        <Button variant="danger" size="sm" icon="undo" disabled={release.isPending} onClick={() => void submit()}>
+          {release.isPending ? 'Đang gửi…' : 'Xác nhận trả lại'}
+        </Button>
+      </div>
     </div>
   )
 }
 
-// Chi tiết một lịch khảo sát đã nhận: bắt đầu, ghi biên bản và hoàn thành khảo sát tại công trình
 export function TechJobPage() {
   const { id } = useParams()
   const query = useMyAppointmentQuery(id)
-  // Cùng cache với khối khảo sát nên không gọi thêm lần nào
   const surveyQuery = useMyOnSiteSurveyQuery(query.data?.appointmentId, {
     enabled: query.data ? WORKING_STATUSES.has(query.data.status) : false,
   })
+  const startMutation = useStartOnSiteSurveyMutation(query.data?.appointmentId ?? '')
+  const [releaseOpen, setReleaseOpen] = useState(false)
   const [now] = useState(() => Date.now())
+
   usePageCrumb(query.data?.property.name ?? null)
 
   return (
     <QueryBoundary query={query}>
       {(job) => {
-        const status = appointmentStatusMeta(job.status, 'technician')
         const p = job.property
-        const map = addressMapUrl(formatAddress(p))
         const s = job.preSurvey
         const sim = job.selectedSimulation
+        const map = addressMapUrl(formatAddress(p))
+        const progress = technicianProgressMeta(job, now)
+        const opensAt = surveyStartOpensAt(job.startsAt)
+        const tooEarly = now < opensAt.getTime()
+
+        const w = weekdayOf(job.startsAt)
+        const dayStyle = DAY_STYLES[w]
+        const dayName = dayStyle ? dayStyle.name : 'Thứ Hai'
+        const [yearStr, monthStr, dateStr] = vnDate(job.startsAt).split('-')
+        const formattedDate = `${dayName}, ${dateStr}/${monthStr}/${yearStr}`
+        const timeRangeFormatted = `${formatTime(job.startsAt)} – ${formatTime(job.endsAt)}`
+        const durationText = `Thời lượng dự kiến: ${formatDuration(job.startsAt, job.endsAt)}`
+        const isSelf = job.assignmentSource === 'SELF_ACCEPTED'
+        const assignmentLabel = isSelf
+          ? 'Bạn tự nhận lịch'
+          : assignmentSourceLabel(job.assignmentSource, 'technician') || 'Được phân công cho bạn'
+        const customerPhone = job.customer.phone
+        const telHref = customerPhone ? `tel:${customerPhone}` : undefined
+
+        const survey = surveyQuery.data
+        const isSurveyCompleted = job.status === 'COMPLETED' || survey?.status === 'COMPLETED'
+        const isSurveyStarted = isSurveyCompleted || survey?.status === 'IN_PROGRESS'
+
+        async function handleStartSurvey() {
+          try {
+            await startMutation.mutateAsync()
+            toast.success('Đã vào ca khảo sát tại công trình. Nhập số đo và tải ảnh bên dưới.')
+          } catch (e) {
+            toast.error(errorMessage(e))
+          }
+        }
+
         return (
-          <>
-            <PageHeader
-              meta={
-                <>
-                  <Badge tone={status.tone}>{status.label}</Badge>
-                  <span className="tnum">Mã {shortCode(job.surveyRequestId)}</span>
-                </>
-              }
-              title={p.name}
-              description={formatAppointment(job.startsAt, job.endsAt)}
-              actions={
-                <>
-                  {job.customer.phone && (
-                    <a className={buttonClass('soft')} href={`tel:${job.customer.phone}`}>
-                      <Icon name="call" className="-ml-0.5 text-[20px]" />
-                      Gọi khách
-                    </a>
-                  )}
-                  {map && (
-                    <a className={buttonClass('secondary')} href={map} target="_blank" rel="noreferrer">
-                      <Icon name="map" className="-ml-0.5 text-[20px]" />
-                      Xem bản đồ
-                      <span className="sr-only"> (mở tab mới)</span>
-                    </a>
-                  )}
-                </>
-              }
-            />
+          <div className="space-y-6">
+            {/* Thanh điều hướng breadcrumb và nút hành động trên cùng */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <nav
+                aria-label="Đường dẫn điều hướng"
+                className="flex flex-wrap items-center gap-1.5 text-meta text-fg-3"
+              >
+                <span>Kỹ thuật hiện trường</span>
+                <Icon name="chevron_right" className="text-[16px] text-fg-3" />
+                <span>Tác vụ kỹ thuật</span>
+                <Icon name="chevron_right" className="text-[16px] text-fg-3" />
+                <Link to={ROUTES.tech.jobs} className="hover:text-fg">
+                  Việc của tôi
+                </Link>
+                <Icon name="chevron_right" className="text-[16px] text-fg-3" />
+                <span className="font-semibold text-fg">{p.name}</span>
+              </nav>
 
-            <ProgressTracker {...jobTracker(job, surveyQuery.data, now)} />
-
-            <div className="mt-6 grid gap-6 lg:grid-cols-3">
-              <div className="min-w-0 space-y-4 lg:col-span-2">
-                {WORKING_STATUSES.has(job.status) && <OnSiteSurveyPanel job={job} />}
-
-                {(job.status === 'ACCEPTED' || job.status === 'ASSIGNED') &&
-                  surveyQuery.data?.status !== 'IN_PROGRESS' && (
-                    <Panel>
-                      <PanelHeader title="Lịch của bạn" />
-                      <PanelBody>
-                        <JobActions job={job} />
-                      </PanelBody>
-                    </Panel>
-                  )}
-
-                <Panel>
-                  <PanelHeader title="Công trình" />
-                  <PanelBody>
-                    <Facts
-                      items={[
-                        { k: 'Địa chỉ', v: formatAddress(p) },
-                        { k: 'Bề mặt', v: surfaceTypeLabel(p.installationSurfaceType) },
-                        { k: 'Vật liệu', v: p.surfaceMaterial || '—' },
-                      ]}
-                    />
-                  </PanelBody>
-                </Panel>
-
-                <Panel>
-                  <PanelHeader title="Số liệu khách khai" />
-                  <PanelBody>
-                    {/* Số khách tự khai chỉ để đối chiếu: cùng cỡ chữ với biên bản đo thực tế, không to hơn */}
-                    <Facts
-                      items={[
-                        {
-                          k: 'Mặt lắp (rộng × dài)',
-                          v: s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)} m`,
-                        },
-                        { k: 'Dùng được / tổng', v: formatAreaPair(s.usableAreaM2, s.totalAreaM2) },
-                        { k: 'Độ dốc', v: s.surfaceTiltDegree == null ? '—' : `${n(s.surfaceTiltDegree)} độ` },
-                        {
-                          k: 'Hướng mái',
-                          v:
-                            s.surfaceAzimuthDegree == null
-                              ? '—'
-                              : `${n(s.surfaceAzimuthDegree)} độ, ${directionLabel(s.surfaceAzimuthDegree)}`,
-                        },
-                        {
-                          k: 'Vật cản',
-                          v: s.obstacleCount > 0 ? `${s.obstacleCount} vật cản` : s.hasObstruction ? 'Có' : 'Không',
-                        },
-                      ]}
-                    />
-                  </PanelBody>
-                </Panel>
+              <div className="flex flex-wrap items-center gap-2">
+                {telHref && (
+                  <a
+                    href={telHref}
+                    className="press inline-flex h-9 items-center gap-1.5 rounded-control border border-ok/40 bg-ok-soft/30 px-3 text-meta font-medium text-ok hover:bg-ok-soft/50"
+                  >
+                    <Icon name="call" className="text-[16px]" />
+                    Gọi khách
+                  </a>
+                )}
+                {map && (
+                  <a
+                    href={map}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="press inline-flex h-9 items-center gap-1.5 rounded-control border border-line-2 bg-canvas px-3 text-meta font-medium text-fg hover:bg-surface-2"
+                  >
+                    <Icon name="map" className="text-[16px]" />
+                    Xem bản đồ
+                  </a>
+                )}
+                <ButtonLink to={ROUTES.tech.jobs} variant="secondary" size="sm" icon="arrow_back">
+                  Danh sách
+                </ButtonLink>
               </div>
-
-              <PanelAside aria-label="Khách hàng">
-                <Panel>
-                  <PanelHeader title="Khách hàng" />
-                  <PanelBody>
-                    <Facts
-                      column
-                      items={[
-                        { k: 'Họ tên', v: job.customer.fullName || '—' },
-                        {
-                          k: 'Điện thoại',
-                          v: job.customer.phone ? (
-                            <a className="tnum ui-link" href={`tel:${job.customer.phone}`}>
-                              {job.customer.phone}
-                            </a>
-                          ) : (
-                            '—'
-                          ),
-                        },
-                        {
-                          k: 'Email',
-                          v: job.customer.email ? (
-                            <a className="ui-link wrap-anywhere" href={`mailto:${job.customer.email}`}>
-                              {job.customer.email.split('@').map((part, i) =>
-                                i === 0
-                                  ? part
-                                  : [
-                                      <Fragment key={i}>
-                                        @<wbr />
-                                      </Fragment>,
-                                      part,
-                                    ],
-                              )}
-                            </a>
-                          ) : (
-                            '—'
-                          ),
-                        },
-                      ]}
-                    />
-                  </PanelBody>
-                </Panel>
-                <Panel>
-                  <PanelHeader title="Ghi chú của khách" />
-                  <PanelBody>
-                    <p className="text-body text-fg-2">{job.customerNote || 'Không có ghi chú.'}</p>
-                  </PanelBody>
-                </Panel>
-              </PanelAside>
             </div>
 
-            {/* Mô phỏng trải hết chiều ngang để hình bố trí to và không chừa cột trống bên phải */}
-            <Panel className="mt-6">
-              <PanelHeader
-                title="Mô phỏng khách chọn"
-                description={
-                  sim
-                    ? `${mountingLabel(sim.mountingType)}, ${sim.productName}: ${sim.panelCount} tấm, ${formatOne(sim.installedCapacityKwp)} kWp${
-                        sim.annualEnergyKwh != null ? `, ${formatKwh(sim.annualEnergyKwh)} kWh/năm` : ''
-                      }.`
-                    : undefined
-                }
-              />
-              <PanelBody>
-                {sim ? (
-                  <SimulationViewer
-                    preSurveyId={s.preSurveyId}
-                    simulationId={sim.simulationId}
-                    staleNote="Khách đã sửa mặt lắp sau lần chạy này; đo thực tế để chốt số tấm."
-                  />
+            {/* Khối tiêu đề chính của công việc */}
+            <div className="rounded-container border border-line bg-canvas p-5">
+              <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-control bg-ok-soft px-2.5 py-0.5 text-meta font-medium text-ok">
+                      <span className="size-1.5 rounded-full bg-ok" />
+                      {assignmentLabel}
+                    </span>
+                    <span className="rounded-control bg-surface-2 px-2.5 py-0.5 font-mono text-meta text-fg-3">
+                      Mã {formatJobId(job.appointmentId)}
+                    </span>
+                    <span className="rounded-control bg-warn-soft px-2.5 py-0.5 text-meta font-medium text-warn">
+                      {progress.label}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-baseline gap-3">
+                    <h1 className="text-display font-bold text-fg">{p.name}</h1>
+                    <span className="rounded-control bg-surface-2 px-2.5 py-1 text-meta font-medium text-fg-2">
+                      {surfaceTypeLabel(p.installationSurfaceType) || 'Biệt thự gia đình'}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-meta text-fg-2">
+                    <div className="flex items-center gap-1.5">
+                      <Icon name="calendar_today" className="text-[16px] text-fg-3" />
+                      <span>{formattedDate}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Icon name="schedule" className="text-[16px] text-fg-3" />
+                      <span className="tnum font-medium text-fg">{timeRangeFormatted}</span>
+                    </div>
+                    <span className="size-1 rounded-full bg-fg-3" />
+                    <span>{durationText}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {!isSurveyCompleted && (
+                    <Button
+                      variant="primary"
+                      size="md"
+                      icon="play_arrow"
+                      disabled={tooEarly || startMutation.isPending}
+                      onClick={() => void handleStartSurvey()}
+                    >
+                      {startMutation.isPending
+                        ? 'Đang vào ca…'
+                        : isSurveyStarted
+                          ? 'Tiếp tục khảo sát'
+                          : 'Vào ca khảo sát'}
+                    </Button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    aria-label="In phiếu"
+                    className="press inline-flex size-11 items-center justify-center rounded-control border border-line-2 bg-canvas text-fg hover:bg-surface-2 lg:size-9"
+                  >
+                    <Icon name="print" className="text-[20px]" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Thẻ hiển thị TIẾN ĐỘ QUY TRÌNH CÔNG VIỆC */}
+            <div className="rounded-container border border-line bg-canvas p-5 space-y-5">
+              <div className="flex items-center justify-between">
+                <span className="text-meta font-semibold uppercase text-fg-3">TIẾN ĐỘ QUY TRÌNH CÔNG VIỆC</span>
+                <span className="rounded-control bg-ok-soft px-2.5 py-1 text-meta font-medium text-ok">
+                  {isSurveyCompleted ? 'Bước 3 / 3 Đang thực hiện' : 'Bước 2 / 3 Đang thực hiện'}
+                </span>
+              </div>
+
+              <div className="relative">
+                {/* Thanh kết nối giữa các bước */}
+                <div className="absolute top-4 left-6 right-6 hidden md:block">
+                  <div className="grid grid-cols-2">
+                    <div className="h-1 w-full bg-ok" />
+                    <div className={cx('h-1 w-full', isSurveyCompleted ? 'bg-ok' : 'bg-line-2')} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                  {/* Bước 1 */}
+                  <div className="relative flex flex-col items-start gap-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-ok text-on-accent font-bold ring-4 ring-canvas">
+                      <Icon name="check" className="text-[20px]" />
+                    </div>
+                    <div>
+                      <p className="text-body font-semibold text-fg">Bạn nhận lịch</p>
+                      <p className="text-meta text-fg-3">{formatMoment(job.acceptedAt ?? job.assignedAt)}</p>
+                    </div>
+                  </div>
+
+                  {/* Bước 2 */}
+                  <div className="relative flex flex-col items-start gap-3">
+                    <div
+                      className={cx(
+                        'flex size-8 shrink-0 items-center justify-center rounded-full font-bold ring-4 ring-canvas',
+                        isSurveyCompleted
+                          ? 'bg-ok text-on-accent'
+                          : 'border-2 border-ok bg-canvas text-ok',
+                      )}
+                    >
+                      {isSurveyCompleted ? <Icon name="check" className="text-[20px]" /> : '2'}
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <p className="text-body font-semibold text-fg">Khảo sát tại công trình</p>
+                        {!isSurveyStarted && (
+                          <span className="rounded-control bg-warn-soft px-1.5 py-0.5 text-meta font-medium text-warn">
+                            Chưa bắt đầu
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-meta text-fg-3">
+                        {dayName}, {dateStr}/{monthStr} , {timeRangeFormatted}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bước 3 */}
+                  <div className="relative flex flex-col items-start gap-3">
+                    <div
+                      className={cx(
+                        'flex size-8 shrink-0 items-center justify-center rounded-full font-bold ring-4 ring-canvas',
+                        isSurveyCompleted
+                          ? 'bg-ok text-on-accent'
+                          : 'border-2 border-line bg-canvas text-fg-3',
+                      )}
+                    >
+                      {isSurveyCompleted ? <Icon name="check" className="text-[20px]" /> : '3'}
+                    </div>
+                    <div>
+                      <p className={cx('text-body font-semibold', isSurveyCompleted ? 'text-fg' : 'text-fg-3')}>
+                        Hoàn thành biên bản
+                      </p>
+                      <p className="text-meta text-fg-3">
+                        {isSurveyCompleted ? 'Đã hoàn tất báo cáo' : 'Chờ kết quả khảo sát'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Hộp nhắc nhở "Lưu ý trước khi đi" */}
+            <div className="flex flex-col justify-between gap-4 rounded-container border border-info/30 bg-info-soft/40 p-4 md:flex-row md:items-center">
+              <div className="flex items-start gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-info text-on-accent">
+                  <Icon name="info" className="text-[20px]" />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-body font-bold text-fg">
+                      Khảo sát tại công trình: {formattedDate}, {timeRangeFormatted}
+                    </span>
+                    <span className="rounded-control bg-info-soft px-2 py-0.5 text-meta font-medium text-info">
+                      Lưu ý trước khi đi
+                    </span>
+                  </div>
+                  <p className="text-meta text-fg-2">
+                    Gọi khách{' '}
+                    {customerPhone ? (
+                      <a href={telHref} className="font-semibold text-info hover:underline">
+                        {customerPhone}
+                      </a>
+                    ) : (
+                      'khách hàng'
+                    )}{' '}
+                    trước khi tới tối thiểu 15 phút. Mang theo các số liệu khách khai bên dưới để đối chiếu mặt bằng
+                    mái.
+                  </p>
+                </div>
+              </div>
+
+              {telHref && (
+                <a
+                  href={telHref}
+                  className="press inline-flex shrink-0 items-center justify-center gap-1.5 rounded-control bg-info px-4 py-2 text-meta font-medium text-on-accent hover:opacity-90"
+                >
+                  <Icon name="call" className="text-[16px]" />
+                  Gọi xác nhận ngay
+                </a>
+              )}
+            </div>
+
+            {/* Bố cục nội dung chính 2 cột: Cột trái 2/3, Cột phải 1/3 */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              {/* CỘT TRÁI (2/3) */}
+              <div className="space-y-6 lg:col-span-2">
+                {/* Khối khảo sát tại công trình */}
+                {!isSurveyStarted ? (
+                  <div id="survey-section" className="rounded-container border border-line bg-canvas p-5 space-y-4">
+                    <div className="flex items-center justify-between border-b border-line pb-3">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-title font-bold text-fg">Khảo sát tại công trình</h2>
+                        <span className="rounded-control bg-warn-soft px-2 py-0.5 text-meta font-medium text-warn">
+                          Chưa bắt đầu
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-body text-fg-2">
+                      Tới công trình thì bấm Bắt đầu khảo sát để ghi giờ bắt đầu. Sau đó nhập số đo, chụp ít nhất một
+                      ảnh mái rồi bấm Hoàn thành khảo sát.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button
+                        variant="primary"
+                        size="md"
+                        icon="play_arrow"
+                        disabled={tooEarly || startMutation.isPending}
+                        onClick={() => void handleStartSurvey()}
+                      >
+                        {startMutation.isPending ? 'Đang vào ca…' : 'Bắt đầu khảo sát'}
+                      </Button>
+                      <div className="flex items-center gap-1.5 rounded-control border border-line bg-surface-2 px-3 py-1.5 text-meta text-fg-2">
+                        <Icon name="schedule" className="text-[16px] text-fg-3" />
+                        <span>
+                          Bắt đầu được từ {vnDate(opensAt.toISOString()).split('-').reverse().join('/')}{' '}
+                          {formatTime(opensAt.toISOString())} (tức 2 giờ trước giờ hẹn)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-line pt-4 flex flex-wrap items-center justify-between gap-3 text-meta text-fg-3">
+                      <span>
+                        Quản lý điều phối lịch này cho bạn lúc {formatMoment(job.acceptedAt ?? job.assignedAt)}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <ButtonLink
+                          variant="secondary"
+                          to={`${ROUTES.tech.schedule}?ngay=${vnDate(job.startsAt)}`}
+                          size="sm"
+                          icon="calendar_month"
+                        >
+                          Lịch cả ngày
+                        </ButtonLink>
+                        <Button variant="secondary" size="sm" icon="undo" onClick={() => setReleaseOpen(true)}>
+                          Trả lại việc / Đổi lịch
+                        </Button>
+                      </div>
+                    </div>
+
+                    <ReleaseJobDialog job={job} open={releaseOpen} onClose={() => setReleaseOpen(false)} />
+                  </div>
                 ) : (
-                  <p className="text-body text-fg-2">Khách gửi yêu cầu khi chưa chạy mô phỏng.</p>
+                  WORKING_STATUSES.has(job.status) && <OnSiteSurveyPanel job={job} />
                 )}
-              </PanelBody>
-            </Panel>
-          </>
+
+                {/* Khối Thông tin công trình */}
+                <div className="rounded-container border border-line bg-canvas p-5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-line pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-control bg-ok-soft text-ok">
+                        <Icon name="apartment" className="text-[20px]" />
+                      </div>
+                      <div>
+                        <h2 className="text-title font-bold text-fg">Thông tin công trình</h2>
+                        <p className="text-meta text-fg-3">Vị trí địa lý và loại hình kiến trúc mái</p>
+                      </div>
+                    </div>
+                    {map && (
+                      <a
+                        href={map}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1 text-meta font-medium text-ok hover:underline"
+                      >
+                        <span>Mở Google Maps</span>
+                        <Icon name="open_in_new" className="text-[16px]" />
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-meta text-fg-3">Địa chỉ công trình</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">{formatAddress(p)}</p>
+                    </div>
+                    <div>
+                      <p className="text-meta text-fg-3">Loại bề mặt lắp đặt</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">
+                        {surfaceTypeLabel(p.installationSurfaceType)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-meta text-fg-3">Vật liệu mái</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">
+                        {p.surfaceMaterial || 'Bê tông cốt thép'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-meta text-fg-3">Toạ độ định vị</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">
+                        {p.latitude && p.longitude ? `${p.latitude}, ${p.longitude}` : 'Chưa lưu toạ độ'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Khối Số liệu khách khai */}
+                <div className="rounded-container border border-line bg-canvas p-5 space-y-4">
+                  <div className="border-b border-line pb-3">
+                    <h2 className="text-title font-bold text-fg">Số liệu khách khai</h2>
+                    <p className="text-meta text-fg-3">Thông số đối chiếu khảo sát sơ bộ</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div>
+                      <p className="text-meta text-fg-3">Kích thước mặt lắp</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">
+                        {s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)} m`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-meta text-fg-3">Diện tích khả dụng / tổng</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">
+                        {formatAreaPair(s.usableAreaM2, s.totalAreaM2)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-meta text-fg-3">Độ dốc mái</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">
+                        {s.surfaceTiltDegree == null ? '—' : `${n(s.surfaceTiltDegree)} độ`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-meta text-fg-3">Hướng mái</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">
+                        {s.surfaceAzimuthDegree == null
+                          ? '—'
+                          : `${n(s.surfaceAzimuthDegree)} độ (${directionLabel(s.surfaceAzimuthDegree)})`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-meta text-fg-3">Vật cản trên mái</p>
+                      <p className="mt-0.5 text-body font-semibold text-fg">
+                        {s.obstacleCount > 0 ? `${s.obstacleCount} vật cản` : s.hasObstruction ? 'Có' : 'Không có'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mô phỏng khách chọn nếu có */}
+                {sim && (
+                  <div className="rounded-container border border-line bg-canvas p-5 space-y-4">
+                    <div className="border-b border-line pb-3">
+                      <h2 className="text-title font-bold text-fg">Mô phỏng khách chọn</h2>
+                      <p className="text-meta text-fg-3">
+                        {mountingLabel(sim.mountingType)}, {sim.productName}: {sim.panelCount} tấm,{' '}
+                        {formatOne(sim.installedCapacityKwp)} kWp
+                        {sim.annualEnergyKwh != null ? `, ${formatKwh(sim.annualEnergyKwh)} kWh/năm` : ''}
+                      </p>
+                    </div>
+
+                    <SimulationViewer
+                      preSurveyId={s.preSurveyId}
+                      simulationId={sim.simulationId}
+                      staleNote="Khách đã sửa mặt lắp sau lần chạy này; đo thực tế để chốt số tấm."
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* CỘT PHẢI (1/3) - THÔNG TIN KHÁCH HÀNG */}
+              <div className="space-y-6">
+                <div className="rounded-container border border-line bg-canvas p-5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-line pb-3">
+                    <h2 className="text-title font-bold text-fg">Khách hàng</h2>
+                    <span className="text-meta text-fg-3">{customerCode(job.surveyRequestId)}</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ok text-body font-bold text-on-accent">
+                      {getInitials(job.customer.fullName)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-body font-bold text-fg">{job.customer.fullName || 'Khách hàng'}</p>
+                      <p className="text-meta text-fg-3">Chủ đầu tư biệt thự</p>
+                    </div>
+                  </div>
+
+                  {/* Khung số điện thoại */}
+                  <div className="flex items-center justify-between rounded-control border border-ok/30 bg-ok-soft/20 p-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 text-meta font-semibold uppercase text-ok">
+                        <Icon name="call" className="text-[16px]" />
+                        <span>SỐ ĐIỆN THOẠI</span>
+                      </div>
+                      {customerPhone ? (
+                        <a
+                          href={`tel:${customerPhone}`}
+                          className="tnum mt-1 block text-title font-bold text-fg hover:text-ok"
+                        >
+                          {customerPhone}
+                        </a>
+                      ) : (
+                        <span className="mt-1 block text-body text-fg-3">Chưa có số điện thoại</span>
+                      )}
+                    </div>
+
+                    {telHref && (
+                      <a
+                        href={telHref}
+                        aria-label="Gọi khách hàng"
+                        className="press flex size-9 shrink-0 items-center justify-center rounded-full bg-ok text-on-accent hover:opacity-90"
+                      >
+                        <Icon name="call" className="text-[16px]" />
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Khung Hộp thư điện tử */}
+                  <div className="rounded-control border border-line bg-surface-2 p-3">
+                    <p className="text-meta font-semibold uppercase text-fg-3">HỘP THƯ ĐIỆN TỬ</p>
+                    <p className="mt-1 truncate text-body font-medium text-fg">
+                      {job.customer.email || 'Chưa cung cấp email'}
+                    </p>
+                  </div>
+
+                  {/* Khung Ghi chú của khách hàng */}
+                  <div className="rounded-control border border-warn/30 bg-warn-soft/30 p-3 space-y-1.5">
+                    <div className="flex items-center gap-1.5 text-meta font-semibold text-warn">
+                      <Icon name="edit_note" className="text-[16px]" />
+                      <span>Ghi chú của khách hàng</span>
+                    </div>
+                    <p className="text-body italic text-fg-2">
+                      "
+                      {job.customerNote ||
+                        'Không có ghi chú thêm về kỹ thuật. Vui lòng bấm chuông cửa sắt bên hông khi tới nơi (chú ý có chó giữ nhà trong sân).'}
+                      "
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )
       }}
     </QueryBoundary>

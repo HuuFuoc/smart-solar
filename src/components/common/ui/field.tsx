@@ -195,19 +195,43 @@ export function DateField({
   )
 }
 
-/* Ô tìm kiếm: icon kính lúp ở đầu ô để nhận ra ngay là ô tìm, không chỉ dựa vào chữ gợi ý. */
+/* Ô tìm kiếm: icon kính lúp ở đầu ô để nhận ra ngay là ô tìm, không chỉ dựa vào chữ gợi ý.
+   Có `onClear` thì khi ô có chữ hiện nút xoá ở cuối ô (nút xoá gốc của trình duyệt bị ẩn vì Firefox không có). */
 export function SearchInput({
   className,
   size = 'md',
+  onClear,
+  value,
   ...rest
-}: Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> & { size?: ControlSize }) {
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> & { size?: ControlSize; onClear?: () => void }) {
+  const clearable = onClear !== undefined && typeof value === 'string' && value !== ''
   return (
     <span className={cx('relative block', width(className), className)}>
       <Icon
         name="search"
         className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[20px] text-fg-3"
       />
-      <input type="search" className={cx(control, 'w-full pr-3 pl-10', heights[size])} {...rest} />
+      <input
+        type="search"
+        value={value}
+        className={cx(
+          control,
+          'w-full pl-10 [&::-webkit-search-cancel-button]:appearance-none',
+          onClear !== undefined ? 'pr-10' : 'pr-3',
+          heights[size],
+        )}
+        {...rest}
+      />
+      {clearable && (
+        <button
+          type="button"
+          aria-label="Xoá từ khoá"
+          onClick={onClear}
+          className="press absolute top-1/2 right-1 flex size-8 -translate-y-1/2 items-center justify-center rounded-control text-fg-3 hover:bg-hover hover:text-fg"
+        >
+          <Icon name="close" className="text-[20px]" />
+        </button>
+      )}
     </span>
   )
 }

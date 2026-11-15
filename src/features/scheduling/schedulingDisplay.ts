@@ -154,10 +154,11 @@ export function dayChip(date: string) {
   return { weekday: WEEKDAYS_SHORT[p.weekday]!, date: `${pad(p.day)}/${pad(p.month)}`, isSunday: p.weekday === 0 }
 }
 
-/** "Hôm nay", "Ngày mai", hoặc "Thứ Ba, 20/10". */
+/** "Hôm nay", "Ngày mai", "Hôm qua", hoặc "Thứ Ba, 20/10". */
 export function relativeDay(date: string, today = todayVn()) {
   if (date === today) return 'Hôm nay'
   if (date === addDays(today, 1)) return 'Ngày mai'
+  if (date === addDays(today, -1)) return 'Hôm qua'
   return formatDay(date)
 }
 
@@ -211,6 +212,24 @@ export function appointmentStatusMeta(
       status,
     tone: APPOINTMENT_TONES[viewer][status] ?? 'neutral',
   }
+}
+
+/**
+ * Tiến độ khảo sát của một lịch kỹ thuật viên đã có, tách khỏi cách nhận việc (assignmentSource) để hai cột không nói
+ * cùng một chuyện. Suy từ trạng thái, giờ hẹn và cờ quá giờ của backend, không thêm trạng thái mới
+ */
+export function technicianProgressMeta(
+  a: { status: string; startsAt: string; endsAt: string; isOverdue: boolean },
+  now = Date.now(),
+): { label: string; tone: Tone } {
+  if (a.status === 'COMPLETED') return { label: 'Đã khảo sát', tone: 'neutral' }
+  if (a.status === 'CANCELLED') return { label: 'Đã huỷ', tone: 'neutral' }
+  if (a.isOverdue) return { label: 'Quá giờ, chưa khảo sát', tone: 'danger' }
+  const start = new Date(a.startsAt).getTime()
+  const end = new Date(a.endsAt).getTime()
+  if (now >= start && now < end) return { label: 'Đang trong giờ hẹn', tone: 'info' }
+  if (now < start) return { label: 'Sắp tới', tone: 'ok' }
+  return appointmentStatusMeta(a.status, 'technician')
 }
 
 export function assignmentSourceLabel(source: string | null | undefined, viewer: AppointmentViewer) {

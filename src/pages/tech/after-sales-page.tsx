@@ -1,22 +1,33 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
-import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
+import { Td } from '@/components/common/ui/table'
+import { TruncatedText } from '@/components/common/ui/tooltip'
 import { technicianVisitMeta, visitTab, type VisitTab } from '@/features/after-sales/technicianVisitDisplay'
 import { visitPurposeLabel } from '@/features/after-sales/serviceDisplay'
-import { formatAppointment } from '@/features/scheduling/schedulingDisplay'
-import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
+import {
+  DayActionsCell,
+  DayGroupedTable,
+  DayRow,
+  DayTimeCell,
+  DayTitleCell,
+  type DayColumn,
+} from '@/features/scheduling/DayGroupedTable'
 import { useMyVisitsQuery } from '@/hooks/useTechnicianAfterSales'
 import { ROUTES, withId } from '@/routes/paths'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 
-const COLUMNS = 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,2fr)_minmax(0,2fr)_minmax(0,1.2fr)_9rem]'
-const LABELS = ['Thời gian', 'Việc', 'Địa chỉ', 'Tình hình', '']
+const COLUMNS: DayColumn[] = [
+  { label: 'Giờ' },
+  { label: 'Việc', primary: true },
+  { label: 'Địa chỉ' },
+  { label: 'Tình hình' },
+]
 
 const EMPTY: Record<VisitTab, { title: string; description?: string }> = {
   pending: {
@@ -27,59 +38,46 @@ const EMPTY: Record<VisitTab, { title: string; description?: string }> = {
   done: { title: 'Chưa có buổi hẹn nào đã xong' },
 }
 
-const byStart = (a: TechnicianVisitView, b: TechnicianVisitView) => a.startsAt.localeCompare(b.startsAt)
-
 function VisitRow({ visit, tab }: { visit: TechnicianVisitView; tab: VisitTab }) {
   const status = technicianVisitMeta(visit)
+  const navigate = useNavigate()
+  const to = withId(ROUTES.tech.afterSalesVisit, visit.visitId)
+  const title = `${visitPurposeLabel(visit.purpose)} ${visit.requestNumber}`
   return (
-    <ListRow>
-      <ListCells columns={COLUMNS}>
-        <ListCell label="Thời gian" wide>
-          <div className="flex flex-wrap items-center gap-2">
-            <WeekdayBadge date={visit.startsAt} format="short" withBar />
-            <span className="tnum font-semibold">{formatAppointment(visit.startsAt, visit.endsAt)}</span>
-          </div>
-        </ListCell>
-        <ListCell wide>
-          <p className="font-semibold">
-            <Link to={withId(ROUTES.tech.afterSalesVisit, visit.visitId)} className="hover:underline">
-              {visitPurposeLabel(visit.purpose)} <span className="tnum">{visit.requestNumber}</span>
-            </Link>
-          </p>
-          <p className="mt-0.5 line-clamp-2 text-meta text-fg-2">{visit.description}</p>
-        </ListCell>
-        <ListCell label="Địa chỉ">{visit.siteAddress ?? '—'}</ListCell>
-        <ListCell label="Tình hình">
-          {/* Việc chờ nhận đã báo đỏ ở đầu trang nên dòng chỉ ghi chữ */}
-          <Badge tone={tab === 'pending' ? 'info' : status.tone}>{status.label}</Badge>
-        </ListCell>
-        <ListCell wide className="lg:justify-self-end">
-          <ButtonLink
-            to={withId(ROUTES.tech.afterSalesVisit, visit.visitId)}
-            size="sm"
-            variant="info"
-            icon="visibility"
-          >
-            {tab === 'pending' ? 'Xem và trả lời' : 'Xem chi tiết'}
-          </ButtonLink>
-        </ListCell>
-      </ListCells>
-    </ListRow>
+    <DayRow>
+      <DayTimeCell startsAt={visit.startsAt} endsAt={visit.endsAt} />
+      <DayTitleCell to={to} title={<span className="tnum">{title}</span>} detail={visit.description} />
+      <Td label="Địa chỉ">
+        {visit.siteAddress ? (
+          <TruncatedText text={visit.siteAddress} className="xl:max-w-72" onClick={() => navigate(to)} />
+        ) : (
+          '—'
+        )}
+      </Td>
+      <Td label="Tình hình" className="whitespace-nowrap">
+        {/* Việc chờ nhận đã báo đỏ ở đầu trang nên dòng chỉ ghi chữ */}
+        <Badge tone={tab === 'pending' ? 'info' : status.tone}>{status.label}</Badge>
+      </Td>
+      <DayActionsCell>
+        <ButtonLink to={to} size="sm" variant="info" icon="visibility">
+          {tab === 'pending' ? 'Xem và trả lời' : 'Xem chi tiết'}
+          <span className="sr-only"> {title}</span>
+        </ButtonLink>
+      </DayActionsCell>
+    </DayRow>
   )
 }
 
-// Buổi hẹn bảo hành, sửa chữa, bảo trì giao cho kỹ thuật viên: chờ nhận, sắp tới / đang làm, đã xong
+// Buổi hẹn bảo hành, sửa chữa, bảo trì giao cho kỹ thuật viên: chờ nhận, sắp tới / đang làm, đã xong, nhóm theo ngày
+// như Việc của tôi
 export function TechAfterSalesPage() {
   const query = useMyVisitsQuery()
   const [picked, setPicked] = useState<VisitTab | null>(null)
   const rows = query.data ?? []
   const groups: Record<VisitTab, TechnicianVisitView[]> = {
-    pending: rows.filter((v) => visitTab(v) === 'pending').sort(byStart),
-    active: rows.filter((v) => visitTab(v) === 'active').sort(byStart),
-    done: rows
-      .filter((v) => visitTab(v) === 'done')
-      .sort(byStart)
-      .reverse(),
+    pending: rows.filter((v) => visitTab(v) === 'pending'),
+    active: rows.filter((v) => visitTab(v) === 'active'),
+    done: rows.filter((v) => visitTab(v) === 'done'),
   }
   const waiting = groups.pending.length
   const tab: VisitTab = picked ?? (waiting > 0 ? 'pending' : 'active')
@@ -92,7 +90,7 @@ export function TechAfterSalesPage() {
       />
       <FilterChips
         label="Lọc buổi hẹn"
-        className="mb-6"
+        className="mb-4"
         value={tab}
         onChange={setPicked}
         chips={[
@@ -106,14 +104,14 @@ export function TechAfterSalesPage() {
           groups[tab].length === 0 ? (
             <EmptyState {...EMPTY[tab]} />
           ) : (
-            <div>
-              <ListHead columns={COLUMNS} labels={LABELS} />
-              <ul className="divide-y divide-line">
-                {groups[tab].map((visit) => (
-                  <VisitRow key={visit.visitId} visit={visit} tab={tab} />
-                ))}
-              </ul>
-            </div>
+            <DayGroupedTable
+              label="Buổi hẹn"
+              columns={COLUMNS}
+              rows={groups[tab]}
+              rowKey={(visit) => visit.visitId}
+              unit="buổi hẹn"
+              row={(visit) => <VisitRow visit={visit} tab={tab} />}
+            />
           )
         }
       </QueryBoundary>

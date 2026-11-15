@@ -13,10 +13,18 @@ function errorTitle(error: unknown) {
   return undefined
 }
 
-// Đang tải thì hiện skeleton, chưa có dữ liệu mà lỗi thì hiện lỗi
-// Đã có dữ liệu mà làm mới nền bị lỗi thì giữ dữ liệu và hiện thông báo nhỏ
-export function QueryBoundary<T>({ query, children }: { query: UseQueryResult<T>; children: (data: T) => ReactNode }) {
-  if (query.isPending) return <PageSkeleton />
+// Đang tải thì hiện skeleton (`fallback` cho skeleton cùng hình với nội dung, để không nhảy bố cục khi dữ liệu về),
+// chưa có dữ liệu mà lỗi thì hiện lỗi. Đã có dữ liệu mà làm mới nền bị lỗi thì giữ dữ liệu và hiện thông báo nhỏ
+export function QueryBoundary<T>({
+  query,
+  fallback,
+  children,
+}: {
+  query: UseQueryResult<T>
+  fallback?: ReactNode
+  children: (data: T) => ReactNode
+}) {
+  if (query.isPending) return fallback ?? <PageSkeleton />
   if (query.data === undefined)
     return (
       <ErrorState

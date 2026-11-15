@@ -578,6 +578,26 @@ nghỉ cố định. Kỹ thuật viên nhận lịch xong thì khảo sát tạ
   và hiện nhãn trong ô. Người dùng không chấp nhận dòng dồn chữ bên trái, khoảng giữa bỏ trống. "Của tôi" của sales xếp
   cần phân công lên đầu, rồi lịch sắp tới, rồi chưa có kỹ thuật viên, cuối cùng là đã qua giờ hẹn (danh sách của backend
   không cho biết khách đã đặt giờ chưa nên các yêu cầu chưa có kỹ thuật viên chỉ ghi vậy).
+- Thứ tự danh sách lịch hẹn / việc theo giờ (người dùng chốt 15/11/2026): ngày mới nhất lên đầu, trong một ngày giờ bắt đầu
+  sớm trước; như nhau ở mọi tab và sau khi tìm / lọc. Dùng `byStartsAt`, `compareSchedule`, `groupByDay` ở
+  `features/scheduling/scheduleOrder.ts` (test `tests/schedule-order.test.mjs`), không tự viết `.sort` theo `startsAt`. Đang
+  dùng: `/tech/jobs`, `/tech/after-sales`, `/tech/installations`, lịch một ngày (`ScheduleDay`), bảng "Của tôi" của sales
+  (sau mức ưu tiên). Giữ thứ tự riêng: "Chờ nhận" của sales (chờ lâu nhất trước), hàng chờ điều phối (theo hạn phản hồi),
+  "Lịch hẹn sắp tới" ở tổng quan khách và lịch nghỉ sắp tới (gần nhất trước).
+- Bảng việc / lịch của kỹ thuật viên (`/tech/jobs`, `/tech/installations`, `/tech/after-sales`, người dùng chốt 15/11/2026)
+  dùng chung `DayGroupedTable` (`features/scheduling/DayGroupedTable.tsx`): không khung viền, dải ngày xám `bg-surface-2`
+  - viền trên / dưới, ghi "Hôm nay, Chủ nhật, 15/11/2026" (chữ "Hôm nay" màu `accent-fg` như bước "đang ở" của Tình hình)
+    và số việc của ngày ngay cạnh; không tô màu theo thứ trong tuần. Cột giờ: giờ bắt đầu đậm, giờ kết thúc nhạt. Cột chính
+    (`primary`) nhận phần rộng còn lại, cột phụ sát nhau; dòng phụ dài cắt bằng `TruncatedText` (`ui/tooltip.tsx`, rê chuột
+    xem đủ). Cả dòng bấm được (link tên phủ dòng, như bảng sản phẩm), nút thao tác nằm trên lớp phủ (`DayActionsCell`).
+    Chia cột từ xl (`stack="xl"`); dưới xl giờ và tên đứng đầu khối không nhãn, các ô còn lại có nhãn. Tỉnh chỉ ghi khi
+    khác TP.HCM (`siteArea`). Mật độ: dải ngày 36px, ô dòng `py-2.5` (dòng hai dòng chữ khoảng 62px). Khung chờ cùng hình
+    `DayGroupedTableSkeleton` truyền qua `fallback` của `QueryBoundary`.
+  - `/tech/jobs`: cột "Nhận việc" (tự nhận / ai phân công + lúc nào) và "Tình hình" (`technicianProgressMeta`: đã khảo sát,
+    đã huỷ, quá giờ chưa khảo sát (đỏ), đang trong giờ hẹn, sắp tới; suy từ trạng thái + giờ + `isOverdue`, test
+    `tests/tech-progress.test.mjs`) là hai chuyện khác nhau, không ghi "Bạn đã nhận" ở cả hai. Nút xem trên dòng là
+    `IconButtonLink` (`ui/button.tsx`, icon `visibility`, `info`, aria-label "Xem chi tiết <tên>"). `SearchInput` có
+    `onClear` thì hiện nút xoá từ khoá; "Xoá lọc" là nút `ghost`.
 
 **Khảo sát tại công trình** (22/10/2026; code chỉ có trong image `smartsolar-api` đang chạy, luật đọc từ `OnSiteSurveyHandlers`
 trong DLL; response viết tay ở `types/res/technicianOnSiteSurveyRes.ts`, enum ở `common/onsiteSurvey.ts`, component ở

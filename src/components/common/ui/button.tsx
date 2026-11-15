@@ -109,6 +109,33 @@ export function ButtonLink({
   )
 }
 
+// Link chỉ có icon (nút xem lặp lại trên từng dòng bảng). `label` là aria-label, `tooltip` là chữ ngắn hiện khi rê / focus
+export function IconButtonLink({
+  icon,
+  label,
+  tooltip,
+  variant = 'ghost',
+  size = 'md',
+  className,
+  ...rest
+}: Omit<LinkProps, 'children'> & {
+  icon: string
+  label: string
+  tooltip?: string
+  variant?: Variant
+  size?: Size
+}) {
+  return (
+    <WithTooltip label={tooltip ?? label}>
+      {(tip) => (
+        <Link aria-label={label} className={cx(base, variants[variant], iconSizes[size], className)} {...rest} {...tip}>
+          <Icon name={icon} className="text-[20px]" />
+        </Link>
+      )}
+    </WithTooltip>
+  )
+}
+
 // Nút chỉ có icon. `label` dùng cho trình đọc màn hình và hiện thành tooltip
 export function IconButton({
   icon,

@@ -1,5 +1,6 @@
-import { useEffect, useState, type DOMAttributes, type ReactNode } from 'react'
+import { useEffect, useState, type DOMAttributes, type MouseEventHandler, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { cx } from '@/utils/cx'
 
 export type TooltipHandlers = Partial<
   Pick<
@@ -94,5 +95,34 @@ export function WithTooltip({
           document.body,
         )}
     </>
+  )
+}
+
+// Chữ một dòng, bị cắt thì rê chuột thấy đủ. `relative` để nổi trên link phủ cả dòng của bảng, nên dòng truyền `onClick`
+// để bấm vào chữ vẫn mở như bấm dòng
+export function TruncatedText({
+  text,
+  className,
+  onClick,
+}: {
+  text: string
+  className?: string
+  onClick?: MouseEventHandler<HTMLSpanElement>
+}) {
+  return (
+    <WithTooltip label={text}>
+      {(tip) => (
+        <span
+          className={cx('relative inline-block max-w-full truncate align-top', className)}
+          onMouseEnter={(e) => {
+            if (e.currentTarget.scrollWidth > e.currentTarget.clientWidth) tip.onMouseEnter?.(e)
+          }}
+          onMouseLeave={tip.onMouseLeave}
+          onClick={onClick}
+        >
+          {text}
+        </span>
+      )}
+    </WithTooltip>
   )
 }

@@ -234,8 +234,20 @@ function Rail({
             <div className="flex min-w-0 items-start gap-2.5">
               <BrandImage className="mt-0.5 size-8" />
               <div className="min-w-0">
-                <p className="text-body font-semibold">Smart Solar</p>
-                <p className="text-meta text-balance text-fg-2">{portal.name}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-body font-semibold">Smart Solar</p>
+                  {portal.key === 'tech' && (
+                    <span className="rounded-control bg-ok-soft px-1.5 py-0.5 text-meta font-bold text-ok">PRO</span>
+                  )}
+                </div>
+                <p
+                  className={cx(
+                    'text-meta text-balance',
+                    portal.key === 'tech' ? 'font-semibold uppercase text-ok' : 'text-fg-2',
+                  )}
+                >
+                  {portal.name}
+                </p>
               </div>
             </div>
             {/* Chỉ icon ✕ (có tên đọc) để tên portal đủ chỗ trên một dòng; chỉ hiện trong drawer cảm ứng */}
@@ -247,6 +259,14 @@ function Rail({
               onClick={onClose}
             >
               <Icon name="close" className="text-[24px]" />
+            </button>
+            <button
+              type="button"
+              aria-label="Thu gọn menu"
+              onClick={onToggleCollapsed}
+              className="press -mr-2 hidden size-8 items-center justify-center rounded-control text-fg-3 hover:bg-hover hover:text-fg lg:inline-flex"
+            >
+              <Icon name="keyboard_double_arrow_left" className="text-[16px]" />
             </button>
           </div>
         )}
@@ -555,7 +575,12 @@ function SessionBlock({ compact, onExpandRail }: { compact: boolean; onExpandRai
               <Avatar name={name} size="sm" tone="accent" className={cx(!compact && '-ml-1')} />
               {!compact && (
                 <>
-                  <span className="min-w-0 flex-1 truncate">{shortName || 'Tài khoản'}</span>
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="truncate text-body font-medium leading-tight">
+                      {user?.email || shortName || 'Tài khoản'}
+                    </p>
+                    <p className="truncate text-meta text-fg-3 leading-tight">{role || 'Kỹ thuật viên chính'}</p>
+                  </div>
                   <Icon name={expanded ? 'expand_less' : 'expand_more'} className="shrink-0 text-[20px] text-fg-3" />
                 </>
               )}
@@ -563,6 +588,30 @@ function SessionBlock({ compact, onExpandRail }: { compact: boolean; onExpandRai
           )}
         </WithTooltip>
       </div>
+
+      {!compact && !expanded && (
+        <div className="mt-1 flex items-center justify-between gap-1 px-1">
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(true)
+              setThemeOpen(true)
+            }}
+            className="flex items-center gap-1.5 rounded-control px-2 py-1 text-meta text-fg-2 hover:bg-hover hover:text-fg"
+          >
+            <Icon name={current.icon} className="text-[16px]" />
+            <span>Giao diện</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="flex items-center gap-1.5 rounded-control px-2 py-1 text-meta text-danger hover:bg-danger-soft hover:text-danger"
+          >
+            <Icon name="logout" className="text-[16px]" />
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+      )}
 
       {expanded && (
         <ul id={groupId} className="mt-0.5 -mr-3 ml-[9px] space-y-0.5 border-l border-line pl-2">

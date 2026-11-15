@@ -141,22 +141,31 @@ const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
 
-/** "vừa xong", "35 phút trước", "hôm qua"...; quá 30 ngày thì in ngày giờ */
-export function formatRelative(iso: string | null | undefined, now = Date.now()) {
+/** "vừa xong", "35 phút trước", "hôm qua", "3 tháng trước": luôn là khoảng cách, cho cột thời gian cần dò theo một kiểu */
+export function formatAge(iso: string | null | undefined, now = Date.now()) {
   if (!iso) return '—'
   const time = new Date(iso).getTime()
   if (Number.isNaN(time)) return '—'
   const diff = time - now
   const distance = Math.abs(diff)
   if (distance < MINUTE) return 'vừa xong'
-  if (distance >= 30 * DAY) return formatDateTime(iso)
 
   let text: string
   if (distance < HOUR) text = relative.format(Math.round(diff / MINUTE), 'minute')
   else if (distance < DAY) text = relative.format(Math.round(diff / HOUR), 'hour')
-  else text = relative.format(Math.round(diff / DAY), 'day')
+  else if (distance < 60 * DAY) text = relative.format(Math.round(diff / DAY), 'day')
+  else text = relative.format(Math.round(diff / (30 * DAY)), 'month')
   // Intl viết hoa "Hôm qua", đổi về chữ thường vì câu hiển thị luôn đặt nó sau một động từ
   return text.charAt(0).toLowerCase() + text.slice(1)
+}
+
+/** Như formatAge nhưng quá 30 ngày thì in ngày giờ, cho câu văn ("khách gửi 20/10/2026 08:00") */
+export function formatRelative(iso: string | null | undefined, now = Date.now()) {
+  if (!iso) return '—'
+  const time = new Date(iso).getTime()
+  if (Number.isNaN(time)) return '—'
+  if (Math.abs(time - now) >= 30 * DAY) return formatDateTime(iso)
+  return formatAge(iso, now)
 }
 
 export function isOverdue(iso: string | null | undefined, now = Date.now()) {

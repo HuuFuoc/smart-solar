@@ -12,8 +12,8 @@ import {
   formatTimeRange,
   relativeDay,
   todayVn,
-  weekdayStyle,
 } from '@/features/scheduling/schedulingDisplay'
+import { byStartsAt } from '@/features/scheduling/scheduleOrder'
 import { errorMessage, type ApiError } from '@/services/api/errors'
 import type { ScheduleAppointmentView, TechnicianScheduleView } from '@/types/res/technicianAppointmentsRes'
 import { cx } from '@/utils/cx'
@@ -108,28 +108,21 @@ export function ScheduleDay({
   if (query.isError) return <ErrorState message={errorMessage(query.error)} onRetry={() => query.refetch()} />
 
   const s = query.data
-  const dayStyle = weekdayStyle(date)
   const today = todayVn()
   const relDay = relativeDay(date, today)
-  const fullDay = formatDay(date, { year: true })
+  const named = relDay !== formatDay(date)
 
   return (
     <section aria-label={`Lịch ${relativeDay(date)}`} aria-busy={query.isFetching} className="space-y-6">
-      <div
-        className={cx(
-          'flex items-center justify-between gap-3 rounded-container border px-4 py-3 font-semibold',
-          dayStyle.row,
+      {/* Cùng kiểu dải ngày của bảng nhóm theo ngày (DayGroupedTable) */}
+      <p className="rounded-container border border-line bg-surface-2 px-4 py-2 text-body font-semibold text-fg">
+        {named && (
+          <>
+            <span className={cx(date === today && 'text-accent-fg')}>{relDay}</span>,{' '}
+          </>
         )}
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className={cx('inline-block h-5 w-2 rounded-control shrink-0', dayStyle.bar)} aria-hidden="true" />
-          <span className="text-body font-semibold truncate">
-            {relDay}
-            {relDay !== fullDay && <span className="font-normal opacity-85">, {fullDay}</span>}
-          </span>
-        </div>
-        <span className="text-meta font-medium opacity-85 shrink-0">{dayStyle.name}</span>
-      </div>
+        {formatDay(date, { year: true })}
+      </p>
 
       {s.appointmentCount > 0 && (
         <StatRow framed>
@@ -149,7 +142,7 @@ export function ScheduleDay({
         <EmptyState title={emptyText} />
       ) : (
         <ol className="space-y-3">
-          {s.appointments.map((item) => (
+          {[...s.appointments].sort(byStartsAt).map((item) => (
             <AppointmentItem
               key={item.appointmentId}
               item={item}

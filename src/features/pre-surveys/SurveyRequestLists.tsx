@@ -26,6 +26,7 @@ import {
   todayVn,
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
+import { compareSchedule } from '@/features/scheduling/scheduleOrder'
 import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { ROUTES, withId } from '@/routes/paths'
 import { HCM_PROVINCE } from '@/services/administrativeUnitService'
@@ -243,11 +244,14 @@ function classifyThreeStatus(r: MySurveyRequestItem, mustAssign: boolean): { key
   }
 }
 
-// Cần làm lên đầu, rồi lịch sắp tới (gần nhất trước), rồi đang chờ, cuối cùng là lịch đã qua
+// Việc cần làm lên đầu, rồi theo giờ hẹn như mọi danh sách lịch (ngày mới nhất trước, trong ngày giờ sớm trước);
+// chưa có giờ hẹn thì yêu cầu bạn nhận gần nhất trước
 function byNextAction(a: MyRow, b: MyRow) {
   if (a.state.rank !== b.state.rank) return a.state.rank - b.state.rank
-  if (a.state.rank === 1) return (appointmentStart(a.row) ?? '').localeCompare(appointmentStart(b.row) ?? '')
-  return new Date(b.row.assignedAt ?? 0).getTime() - new Date(a.row.assignedAt ?? 0).getTime()
+  return (
+    compareSchedule(appointmentStart(a.row), appointmentStart(b.row)) ||
+    new Date(b.row.assignedAt ?? 0).getTime() - new Date(a.row.assignedAt ?? 0).getTime()
+  )
 }
 
 const THREE_STATUS_TABLES: { key: ThreeStatusKey; title: string }[] = [

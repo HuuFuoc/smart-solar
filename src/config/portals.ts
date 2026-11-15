@@ -148,13 +148,19 @@ export const PORTALS: Record<PortalKey, Portal> = {
     home: ROUTES.tech.home,
     groups: [
       {
+        label: 'TÁC VỤ KỸ THUẬT',
         items: [
           { label: 'Việc của tôi', to: ROUTES.tech.jobs, icon: 'assignment' },
-          { label: 'Lắp đặt', to: ROUTES.tech.installations, icon: 'construction' },
-          { label: 'Bảo hành, sửa chữa', to: ROUTES.tech.afterSales, icon: 'build' },
+          { label: 'Khảo sát & Lắp đặt', to: ROUTES.tech.installations, icon: 'construction' },
+          { label: 'Bảo hành & Sửa chữa', to: ROUTES.tech.afterSales, icon: 'build' },
           { label: 'Lịch làm việc', to: ROUTES.tech.schedule, icon: 'calendar_month' },
-          { label: 'Sản phẩm', to: ROUTES.tech.products, icon: 'solar_power' },
-          { label: 'Trợ lý', to: ROUTES.tech.assistant, icon: 'smart_toy' },
+        ],
+      },
+      {
+        label: 'HỖ TRỢ & KHO',
+        items: [
+          { label: 'Kho sản phẩm & Vật tư', to: ROUTES.tech.products, icon: 'inventory_2' },
+          { label: 'Trợ lý Kỹ thuật AI', to: ROUTES.tech.assistant, icon: 'smart_toy', badge: 'PRO' },
         ],
       },
     ],

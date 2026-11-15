@@ -12,7 +12,9 @@ type TechJobFilterBarProps = {
   onReset: () => void
 }
 
-// Thanh tìm kiếm và lọc lịch theo ngày, giờ cho kỹ thuật viên
+// Thanh tìm kiếm và lọc lịch theo ngày, giờ cho kỹ thuật viên. Một hàng: ô tìm giãn tới một bề rộng vừa đọc, ngày và
+// giờ bề rộng cố định đứng sát bên; hẹp thì cụm ngày / giờ xuống hàng, điện thoại mỗi ô một hàng. Lọc ở máy nên không
+// cần chờ ngừng gõ
 export function TechJobFilterBar({
   search,
   onSearchChange,
@@ -24,24 +26,23 @@ export function TechJobFilterBar({
   onReset,
 }: TechJobFilterBarProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <label className="min-w-0 flex-1">
-        <span className="sr-only">Tìm kiếm công trình, ngày, giờ</span>
+    <div role="search" className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <label className="min-w-0 flex-1 sm:min-w-64 lg:max-w-md">
+        <span className="sr-only">Tìm theo công trình, địa điểm, ngày, giờ</span>
         <SearchInput
           name="job-search"
-          placeholder="Tìm theo công trình, ngày, giờ..."
+          placeholder="Tìm theo công trình, địa điểm, ngày, giờ..."
           maxLength={100}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
+          onClear={() => onSearchChange('')}
         />
       </label>
-      <div className="flex flex-wrap items-center gap-3 sm:shrink-0">
-        <div className="w-full sm:w-40">
-          <span className="sr-only">Lọc theo ngày</span>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0 flex-1 sm:w-44 sm:flex-none">
           <DateField value={date} onChange={onDateChange} label="Lọc theo ngày" />
         </div>
-        <div className="w-full sm:w-36">
-          <span className="sr-only">Lọc theo giờ</span>
+        <div className="min-w-0 flex-1 sm:w-40 sm:flex-none">
           <TimeSelect
             value={time}
             onChange={onTimeChange}
@@ -54,7 +55,7 @@ export function TechJobFilterBar({
           />
         </div>
         {hasFilter && (
-          <Button variant="secondary" icon="close" onClick={onReset}>
+          <Button variant="ghost" bleed={false} icon="filter_alt_off" onClick={onReset}>
             Xoá lọc
           </Button>
         )}

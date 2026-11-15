@@ -52,26 +52,31 @@ export function TechLayout({ children }: { children?: ReactNode }) {
       : visitsWaiting
         ? { to: ROUTES.tech.afterSales, value: visitsWaiting, text: 'buổi hẹn chờ bạn nhận' }
         : null
-  const rawZones = [
-    ...(installations?.map((i) => i.zoneName) ?? []),
-    ...(open?.map((j) => j.zone?.name) ?? []),
-  ].filter((z): z is string => Boolean(z && z.trim().length > 0))
+  const rawZones = [...(installations?.map((i) => i.zoneName) ?? []), ...(open?.map((j) => j.zone?.name) ?? [])].filter(
+    (z): z is string => Boolean(z && z.trim().length > 0),
+  )
 
   const uniqueZones = Array.from(new Set(rawZones))
-  const zoneDisplay = uniqueZones.length > 0 ? uniqueZones.join(', ') : 'Khu Thủ Đức'
+  const zoneDisplay = uniqueZones.length > 0 ? uniqueZones.join(', ') : 'TP. Thủ Đức & Khu Đông'
 
   return (
     <AppShell
       portal={PORTALS.tech}
       context={
-        <div className="rounded-control border border-line bg-surface-2 px-2.5 py-1.5">
-          <div className="flex items-center gap-1.5">
-            <Icon name="location_on" className="shrink-0 text-[16px] text-accent" />
+        <div className="rounded-control border border-ok/25 bg-ok-soft/30 p-2.5">
+          <div className="flex items-start gap-2.5">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-control bg-canvas text-ok">
+              <Icon name="location_on" className="text-[16px]" />
+            </div>
             <div className="min-w-0 flex-1">
-              <p className="text-meta text-fg-3">Khu vực phụ trách</p>
-              <p className="truncate text-body font-medium text-fg" title={zoneDisplay}>
+              <p className="text-meta font-semibold uppercase text-ok">KHU VỰC PHỤ TRÁCH</p>
+              <p className="truncate text-body font-bold text-fg" title={zoneDisplay}>
                 {zoneDisplay}
               </p>
+              <div className="mt-1 flex items-center gap-1.5 text-meta text-ok">
+                <span className="size-1.5 rounded-full bg-ok" />
+                <span>Đang trực tuyến</span>
+              </div>
             </div>
           </div>
         </div>
