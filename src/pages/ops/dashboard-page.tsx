@@ -124,7 +124,7 @@ export function OpsDashboardPage() {
   const completedCount = enrichedMySurveys.filter((s) => isCompletedStatus(s.status)).length
 
   return (
-    <div className="space-y-5">
+    <div className="sv-list space-y-6">
       <SalesDashboardHeader
         pendingCount={pendingSurveys.length}
         onRefresh={handleRefresh}
@@ -141,7 +141,7 @@ export function OpsDashboardPage() {
       {/* Grid 2 cột cân đối: Cột chính bên trái (~67%) và Cột phụ bên phải (~33%) */}
       <div className="grid gap-6 items-start lg:grid-cols-12">
         {/* Cột chính bên trái: Tiến độ mini + Bảng Hồ sơ của tôi */}
-        <div className="space-y-4 lg:col-span-8">
+        <div className="space-y-6 lg:col-span-8">
           <SalesPipelineFunnel
             total={totalCount}
             pending={pendingAssignmentCount}
@@ -153,7 +153,7 @@ export function OpsDashboardPage() {
         </div>
 
         {/* Cột phụ bên phải: Việc cần xử lý ngay, Báo giá dịch vụ sau bán và Địa bàn theo phường/xã */}
-        <div className="space-y-4 lg:col-span-4">
+        <div className="space-y-6 lg:col-span-4">
           <SalesUrgentActionsCard
             escalatedAppointments={escalatedAppointments}
             pendingRequests={pendingSurveys}

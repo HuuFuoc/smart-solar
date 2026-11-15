@@ -30,6 +30,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
     home: ROUTES.customer.home,
     groups: [
       {
+        label: 'Dịch vụ',
         items: [
           { label: 'Tổng quan', to: ROUTES.customer.dashboard, icon: 'dashboard', end: true },
           { label: 'Sản phẩm', to: ROUTES.customer.products, icon: 'solar_power' },
@@ -40,6 +41,11 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Lắp đặt', to: ROUTES.customer.projects, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.customer.afterSales, icon: 'build' },
           { label: 'Gói dịch vụ', to: ROUTES.customer.packages, icon: 'shield' },
+        ],
+      },
+      {
+        label: 'Hỗ trợ',
+        items: [
           { label: 'Thông báo', to: ROUTES.customer.notifications, icon: 'notifications' },
           { label: 'Trợ lý', to: ROUTES.customer.assistant, icon: 'smart_toy' },
         ],
@@ -52,16 +58,17 @@ export const PORTALS: Record<PortalKey, Portal> = {
     home: ROUTES.ops.home,
     groups: [
       {
+        label: 'Tổng quan',
         items: [{ label: 'Tổng quan', to: ROUTES.ops.dashboard, icon: 'dashboard', end: true }],
       },
       {
         label: 'Yêu cầu khảo sát',
         items: [
           { label: 'Chờ nhận', to: ROUTES.ops.surveys, icon: 'move_to_inbox', end: true },
-          // Backend chỉ trả chi tiết cho sales đã nhận yêu cầu, nên trang chi tiết thuộc "Của tôi"
-          // Hợp đồng mở từ trang yêu cầu nên cũng thuộc "Của tôi"
+          // Backend chỉ trả chi tiết cho sales đã nhận yêu cầu, nên trang chi tiết thuộc "Đã nhận"
+          // Hợp đồng mở từ trang yêu cầu nên cũng thuộc "Đã nhận"
           {
-            label: 'Của tôi',
+            label: 'Đã nhận',
             to: ROUTES.ops.surveysMine,
             icon: 'assignment_ind',
             alsoActiveOn: [ROUTES.ops.survey, ROUTES.ops.contract],
@@ -74,6 +81,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Sản phẩm', to: ROUTES.ops.products, icon: 'solar_power' },
           { label: 'Trợ lý', to: ROUTES.ops.assistant, icon: 'smart_toy' },
         ],
+        label: 'Hỗ trợ và danh mục',
       },
     ],
   },
@@ -83,6 +91,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
     home: ROUTES.manage.home,
     groups: [
       {
+        label: 'Công việc',
         items: [
           { label: 'Điều phối', to: ROUTES.manage.dispatch, icon: 'support_agent' },
           {
@@ -94,6 +103,11 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Bảo hành, sửa chữa', to: ROUTES.manage.afterSales, icon: 'build' },
           { label: 'Duyệt giá báo giá', to: ROUTES.manage.pricingApprovals, icon: 'price_check' },
           { label: 'Việc của kinh doanh', to: ROUTES.manage.salesTasks, icon: 'assignment' },
+        ],
+      },
+      {
+        label: 'Đội ngũ và danh mục',
+        items: [
           { label: 'Kỹ thuật viên', to: ROUTES.manage.technicians, icon: 'engineering' },
           { label: 'Sản phẩm', to: ROUTES.manage.products, icon: 'solar_power' },
           { label: 'Trợ lý', to: ROUTES.manage.assistant, icon: 'smart_toy' },
@@ -107,6 +121,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
     home: ROUTES.admin.dashboard,
     groups: [
       {
+        label: 'Điều hành',
         items: [
           { label: 'Tổng quan', to: ROUTES.admin.dashboard, icon: 'dashboard', end: true },
           { label: 'Tài khoản', to: ROUTES.admin.users, icon: 'manage_accounts' },
@@ -150,8 +165,8 @@ export const PORTALS: Record<PortalKey, Portal> = {
       {
         label: 'TÁC VỤ KỸ THUẬT',
         items: [
-          { label: 'Việc của tôi', to: ROUTES.tech.jobs, icon: 'assignment' },
-          { label: 'Khảo sát & Lắp đặt', to: ROUTES.tech.installations, icon: 'construction' },
+          { label: 'Khảo sát', to: ROUTES.tech.jobs, icon: 'assignment' },
+          { label: 'Lắp đặt', to: ROUTES.tech.installations, icon: 'construction' },
           { label: 'Bảo hành & Sửa chữa', to: ROUTES.tech.afterSales, icon: 'build' },
           { label: 'Lịch làm việc', to: ROUTES.tech.schedule, icon: 'calendar_month' },
         ],

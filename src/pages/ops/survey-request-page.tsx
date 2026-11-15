@@ -1,13 +1,15 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useState, type ReactNode } from 'react'
 import { useParams } from 'react-router'
 import { Badge, Count } from '@/components/common/ui/badge'
-import { Button, buttonClass } from '@/components/common/ui/button'
+import { toast } from 'sonner'
+import { cx } from '@/utils/cx'
+import { Button, IconButton, buttonClass } from '@/components/common/ui/button'
 import { CloseRequestDialog } from '@/features/pre-surveys/CloseRequestDialog'
 import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
 import { Icon } from '@/components/common/stitch-ui/Icon'
-import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
+import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { EmptyState } from '@/components/common/ui/states'
@@ -23,7 +25,6 @@ import {
   surfaceTypeLabel,
   surveyStatusMeta,
 } from '@/features/pre-surveys/preSurveyDisplay'
-import { Facts } from '@/features/pre-surveys/Facts'
 import { formatKwh, formatOne, mountingLabel } from '@/features/pre-surveys/simulationDisplay'
 import { SimulationHistory } from '@/features/pre-surveys/SimulationHistory'
 import { SimulationViewer } from '@/features/pre-surveys/SimulationViewer'
@@ -52,6 +53,29 @@ import type { ContractView } from '@/types/res/customerContractsRes'
 import type { SurveyRequestDetail } from '@/types/res/surveyRequestsRes'
 
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
+
+function SvTile({ label, value, children }: { label: string; value: ReactNode; children?: ReactNode }) {
+  return (
+    <div className="sv-tile">
+      <p className="sv-label text-meta">{label}</p>
+      <p className="tnum text-title font-semibold wrap-break-word">{value}</p>
+      {children}
+    </div>
+  )
+}
+
+function CopyButton({ text, label }: { text: string; label: string }) {
+  return (
+    <IconButton
+      icon="content_copy"
+      label={label}
+      size="sm"
+      onClick={() => {
+        if (navigator.clipboard) void navigator.clipboard.writeText(text).then(() => toast.success('Đã sao chép.'))
+      }}
+    />
+  )
+}
 
 /** "Ngày mai, 09:00-10:30" */
 function whenText(startsAt: string, endsAt: string) {
@@ -324,21 +348,37 @@ export function OpsSurveyRequestPage() {
         const canClose =
           !isClosedRequest(r.status) && !hasLiveContract && (!r.appointment || r.appointment.status === 'COMPLETED')
         const notFeasible = onsite.data?.data.installationFeasibility === 'NOT_FEASIBLE'
+        const initials = (r.customerName || r.customerEmail || '?')
+          .split(/[\s@]+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((w) => w[0]!.toUpperCase())
+          .join('')
+        const usedPct =
+          r.usableAreaM2 != null && r.totalAreaM2
+            ? Math.min(100, Math.round((r.usableAreaM2 / r.totalAreaM2) * 100))
+            : null
         return (
-          <>
+          <div className="sv-detail">
             <PageHeader
               meta={
                 <>
-                  <Badge tone={status.tone}>{status.label}</Badge>
-                  <span className="tnum">Mã {shortCode(r.surveyRequestId)}</span>
+                  <span className="sv-pill" data-tone={status.tone}>
+                    <Badge tone={status.tone}>{status.label}</Badge>
+                  </span>
+                  <span className="sv-chip tnum">Mã {shortCode(r.surveyRequestId)}</span>
                 </>
               }
               title={r.propertyName || 'Công trình chưa đặt tên'}
-              description={formatAddress(r)}
+              description={
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="location_on" className="text-[20px]" />
+                  {formatAddress(r)}
+                </span>
+              }
               actions={
                 <>
                   {r.customerPhone && (
-                    // Cùng kiểu nút gọi với trang kỹ thuật viên; nút đặc dành cho việc chính của từng giai đoạn
                     <a className={buttonClass('soft')} href={`tel:${r.customerPhone}`}>
                       <Icon name="call" className="-ml-0.5 text-[20px]" />
                       Gọi {r.customerPhone}
@@ -366,98 +406,139 @@ export function OpsSurveyRequestPage() {
               }
             />
 
-            <ProgressTracker
-              steps={trackerSteps(r, quotations.data, contracts.data)}
-              next={nextStep(r, quotations.data, contracts.data)}
-            />
-
-            <div className="mt-6 grid gap-6 lg:grid-cols-3">
-              <div className="min-w-0 space-y-4 lg:col-span-2">
-                <div id="survey-schedule" className="scroll-mt-6">
-                  <SalesSchedulePanel request={r} />
-                </div>
-                <OnSiteSurveyResultPanel surveyRequestId={r.surveyRequestId} enabled={onsiteEnabled} />
-                <SalesQuotationPanel
-                  surveyRequestId={r.surveyRequestId}
-                  enabled={surveyCompleted}
-                  feasibility={onsite.data?.data.installationFeasibility}
-                />
-                <SalesContractPanel surveyRequestId={r.surveyRequestId} quotations={quotations.data} />
-                <Panel>
-                  <PanelHeader title="Số liệu khách khai" />
-                  <PanelBody className="space-y-6">
-                    {/* Số khách tự khai chỉ để đối chiếu: cùng cỡ chữ với biên bản đo thực tế, không to hơn */}
-                    <Facts
-                      items={[
-                        { k: 'Dùng được / tổng', v: formatAreaPair(r.usableAreaM2, r.totalAreaM2) },
-                        { k: 'Độ dốc mái', v: r.tiltDegree == null ? '—' : `${num.format(r.tiltDegree)} độ` },
-                        {
-                          k: 'Hướng mái',
-                          v:
-                            r.azimuthDegree == null
-                              ? '—'
-                              : `${num.format(r.azimuthDegree)} độ, ${directionLabel(r.azimuthDegree)}`,
-                        },
-                        { k: 'Vật cản', v: r.hasObstruction == null ? '—' : r.hasObstruction ? 'Có' : 'Không' },
-                      ]}
-                    />
-                    <Facts
-                      items={[
-                        { k: 'Bề mặt', v: surfaceTypeLabel(r.installationSurfaceType) },
-                        { k: 'Vật liệu', v: r.surfaceMaterial || '—' },
-                      ]}
-                    />
-                  </PanelBody>
-                </Panel>
-              </div>
-
-              <PanelAside aria-label="Khách hàng">
-                <Panel>
-                  <PanelHeader title="Khách hàng" />
-                  <PanelBody>
-                    <Facts
-                      column
-                      items={[
-                        { k: 'Họ tên', v: r.customerName || '—' },
-                        {
-                          k: 'Điện thoại',
-                          v: r.customerPhone ? (
-                            <a className="tnum ui-link" href={`tel:${r.customerPhone}`}>
-                              {r.customerPhone}
-                            </a>
-                          ) : (
-                            '—'
-                          ),
-                        },
-                        {
-                          k: 'Email',
-                          v: r.customerEmail ? (
-                            <a className="ui-link wrap-anywhere" href={`mailto:${r.customerEmail}`}>
-                              {/* Cột hẹp: ưu tiên xuống dòng ngay sau "@" thay vì giữa tên miền. */}
-                              {r.customerEmail.split('@').map((part, i) =>
-                                i === 0
-                                  ? part
-                                  : [
-                                      <Fragment key={i}>
-                                        @<wbr />
-                                      </Fragment>,
-                                      part,
-                                    ],
-                              )}
-                            </a>
-                          ) : (
-                            '—'
-                          ),
-                        },
-                      ]}
-                    />
-                  </PanelBody>
-                </Panel>
-              </PanelAside>
+            <div className="sv-card">
+              <ProgressTracker
+                steps={trackerSteps(r, quotations.data, contracts.data)}
+                next={nextStep(r, quotations.data, contracts.data)}
+              />
             </div>
 
-            {/* Mô phỏng trải hết chiều ngang để hình bố trí to và không chừa cột trống bên phải */}
-            <div className="mt-6 space-y-4 border-t border-line pt-4">
+            <div className="mt-6 grid items-start gap-6 lg:grid-cols-3">
+              <div className="min-w-0 space-y-6 lg:col-span-2">
+                <div id="survey-schedule" className="sv-card scroll-mt-6">
+                  <SalesSchedulePanel request={r} />
+                </div>
+                <div className="sv-card">
+                  <OnSiteSurveyResultPanel surveyRequestId={r.surveyRequestId} enabled={onsiteEnabled} />
+                </div>
+                <div className="sv-card">
+                  <SalesQuotationPanel
+                    surveyRequestId={r.surveyRequestId}
+                    enabled={surveyCompleted}
+                    feasibility={onsite.data?.data.installationFeasibility}
+                  />
+                </div>
+                <div className="sv-card">
+                  <SalesContractPanel surveyRequestId={r.surveyRequestId} quotations={quotations.data} />
+                </div>
+                <div className="sv-card">
+                  <Panel>
+                    <PanelHeader
+                      title={
+                        <span className="sv-title">
+                          <Icon name="home_work" className="text-[20px] text-accent-fg" />
+                          Số liệu khách khai
+                        </span>
+                      }
+                      action={<span className="text-meta text-fg-3">Tự kê khai qua form web</span>}
+                    />
+                    <PanelBody className="space-y-4">
+                      <div className="sv-tiles">
+                        <SvTile label="Dùng được / tổng" value={formatAreaPair(r.usableAreaM2, r.totalAreaM2)}>
+                          {usedPct != null && (
+                            <>
+                              <span className="sv-bar" role="presentation">
+                                <span style={{ width: `${usedPct}%` }} />
+                              </span>
+                              <span className="text-meta text-fg-2">{usedPct}% diện tích</span>
+                            </>
+                          )}
+                        </SvTile>
+                        <SvTile
+                          label="Độ dốc mái"
+                          value={r.tiltDegree == null ? '—' : `${num.format(r.tiltDegree)} độ`}
+                        />
+                        <SvTile
+                          label="Hướng mái"
+                          value={
+                            r.azimuthDegree == null
+                              ? '—'
+                              : `${num.format(r.azimuthDegree)} độ, ${directionLabel(r.azimuthDegree)}`
+                          }
+                        />
+                        <SvTile
+                          label="Vật cản"
+                          value={r.hasObstruction == null ? '—' : r.hasObstruction ? 'Có' : 'Không có'}
+                        />
+                      </div>
+                      <div className="sv-tiles">
+                        <SvTile label="Bề mặt" value={surfaceTypeLabel(r.installationSurfaceType)} />
+                        <SvTile label="Vật liệu" value={r.surfaceMaterial || '—'} />
+                      </div>
+                    </PanelBody>
+                  </Panel>
+                </div>
+              </div>
+
+              <aside aria-label="Khách hàng" className="sv-card min-w-0 space-y-4 self-start">
+                <h2 className="text-title font-semibold">Khách hàng</h2>
+                <div className="flex items-center gap-3 border-t border-line pt-4">
+                  <span className="sv-avatar text-title" aria-hidden>
+                    {initials}
+                  </span>
+                  <p className="min-w-0 text-title font-semibold wrap-break-word">
+                    {r.customerName || 'Chưa có họ tên'}
+                  </p>
+                </div>
+                {r.customerPhone && (
+                  <div className="sv-field">
+                    <Icon name="call" className="text-[20px] text-fg-2" />
+                    <a className="tnum ui-link min-w-0 flex-1" href={`tel:${r.customerPhone}`}>
+                      {r.customerPhone}
+                    </a>
+                    <CopyButton text={r.customerPhone} label="Sao chép số điện thoại" />
+                  </div>
+                )}
+                {r.customerEmail && (
+                  <div className="sv-field">
+                    <Icon name="mail" className="text-[20px] text-fg-2" />
+                    <a className="ui-link min-w-0 flex-1 wrap-anywhere" href={`mailto:${r.customerEmail}`}>
+                      {r.customerEmail.split('@').map((part, i) =>
+                        i === 0
+                          ? part
+                          : [
+                              <Fragment key={i}>
+                                @<wbr />
+                              </Fragment>,
+                              part,
+                            ],
+                      )}
+                    </a>
+                    <CopyButton text={r.customerEmail} label="Sao chép email" />
+                  </div>
+                )}
+                <dl className="space-y-2 border-t border-line pt-4 text-body">
+                  <div className="sv-meta">
+                    <dt className="text-fg-2">Thời gian tạo</dt>
+                    <dd className="tnum text-right">{formatDateTime(r.submittedAt)}</dd>
+                  </div>
+                  {r.assignedAt && (
+                    <div className="sv-meta">
+                      <dt className="text-fg-2">Nhận yêu cầu lúc</dt>
+                      <dd className="tnum text-right">{formatDateTime(r.assignedAt)}</dd>
+                    </div>
+                  )}
+                </dl>
+                {r.customerPhone && (
+                  <a className={cx(buttonClass('primary'), 'w-full')} href={`tel:${r.customerPhone}`}>
+                    <Icon name="call" className="-ml-0.5 text-[20px]" />
+                    Liên hệ khách hàng
+                  </a>
+                )}
+              </aside>
+            </div>
+
+            <div className="sv-card mt-6">
               <SimulationPanel request={r} />
             </div>
 
@@ -470,7 +551,7 @@ export function OpsSurveyRequestPage() {
                 onOpenChange={setClosing}
               />
             )}
-          </>
+          </div>
         )
       }}
     </QueryBoundary>

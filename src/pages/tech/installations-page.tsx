@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Count } from '@/components/common/ui/badge'
-import { Button, ButtonLink } from '@/components/common/ui/button'
+import { Button, ButtonLink, IconButtonLink } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { DateField, Field, SearchInput, Select, Textarea } from '@/components/common/ui/field'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
@@ -327,7 +327,7 @@ function MaterialRequestModal({
   )
 }
 
-/** Thẻ công trình lắp đặt */
+/** Thẻ công trình lắp đặt: dòng đầu (tên, nhãn, trạng thái, thao tác), dưới là ba khối lịch trình / địa điểm / tiến độ */
 function InstallationCard({ view }: { view: InstallationTechnicianView }) {
   const site = view.site
   const detailUrl = withId(ROUTES.tech.installation, view.projectId)
@@ -341,107 +341,26 @@ function InstallationCard({ view }: { view: InstallationTechnicianView }) {
   const progress = getInstallationProgress(view)
 
   return (
-    <div className="rounded-container border border-line bg-canvas p-4 transition-colors hover:border-line-2">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-start">
-        {/* Cột 1: THỜI GIAN / LỊCH TRÌNH */}
-        <div className="space-y-1 lg:col-span-3">
-          <div className="flex items-center gap-2">
-            <span className="tnum text-title font-bold text-fg">{timeDisplay}</span>
-            <span
-              className={cx(
-                'rounded-control px-2 py-0.5 text-meta font-medium',
-                durationBadge.includes('Thi công') ? 'bg-ok-soft text-ok' : 'bg-surface-2 text-fg-2',
-              )}
-            >
-              {durationBadge}
-            </span>
-          </div>
-          <p className="flex items-center gap-1.5 text-meta text-fg-3">
-            <Icon name="schedule" className="text-[16px] text-fg-3" />
-            <span>{timeSubtext}</span>
-          </p>
-          <p className="font-mono text-meta text-fg-3">{itemCode}</p>
+    <div className="sv-card space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+          <Link to={detailUrl} className="text-title font-bold text-fg hover:text-accent-fg" title={name}>
+            {name}
+          </Link>
+          <span
+            className={cx(
+              'rounded-control px-2 py-0.5 text-meta font-medium',
+              systemTag.tone === 'info' && 'bg-info-soft text-info',
+              systemTag.tone === 'purple' && 'bg-surface-2 font-semibold text-fg',
+              systemTag.tone === 'warn' && 'bg-warn-soft text-warn',
+            )}
+          >
+            {systemTag.label}
+          </span>
+          <span className="font-mono text-meta text-fg-3">{itemCode}</span>
         </div>
 
-        {/* Cột 2: CÔNG TRÌNH & THÔNG SỐ KỸ THUẬT */}
-        <div className="space-y-2 lg:col-span-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <Link to={detailUrl} className="text-title font-bold text-fg hover:text-ok" title={name}>
-              {name}
-            </Link>
-            <span
-              className={cx(
-                'rounded-control px-2 py-0.5 text-meta font-medium',
-                systemTag.tone === 'info' && 'bg-info-soft text-info',
-                systemTag.tone === 'purple' && 'bg-surface-2 text-fg font-semibold',
-                systemTag.tone === 'warn' && 'bg-warn-soft text-warn',
-              )}
-            >
-              {systemTag.label}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-meta text-fg-2">
-            <Icon name="location_on" className="shrink-0 text-[16px] text-fg-3" />
-            <span className="truncate">{address}</span>
-          </div>
-
-          <p className="text-meta text-fg-3">{progress.equipment}</p>
-
-          {progress.percentage != null && (
-            <div className="space-y-1 pt-0.5">
-              <div className="flex items-center justify-between text-meta">
-                <span className="text-fg-2 font-medium">{progress.stage}</span>
-                <span className="tnum font-bold text-fg">{progress.percentage}%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-control bg-line-2">
-                <div
-                  className="h-full bg-ok transition-all duration-300"
-                  style={{ width: `${progress.percentage}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {progress.percentage == null && <p className="text-meta text-fg-2 font-medium">{progress.stage}</p>}
-
-          {progress.technicalNote && (
-            <div className="rounded-control border border-warn/30 bg-warn-soft/30 p-2.5 text-meta">
-              <div className="flex items-start gap-2">
-                <Icon name="info" className="shrink-0 text-[16px] text-warn" />
-                <p className="text-meta text-fg-2">
-                  <strong className="text-warn font-semibold">Ghi chú kỹ thuật: </strong>
-                  {progress.technicalNote}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Cột 3: KHU VỰC / ĐỘI PHỤ TRÁCH */}
-        <div className="space-y-2 lg:col-span-2">
-          <div>
-            <p className="text-meta text-fg-3">Khu vực</p>
-            <p className="text-body font-bold text-fg">{view.zoneName || 'Khu Thủ Đức'}</p>
-          </div>
-          <div>
-            <p className="text-meta text-fg-3">{progress.teamLabel}</p>
-            {progress.teamAvatars ? (
-              <div className="mt-1 flex items-center">
-                <div className="flex size-7 items-center justify-center rounded-full bg-ok text-meta font-bold text-on-accent">
-                  K
-                </div>
-                <div className="-ml-2 flex size-7 items-center justify-center rounded-full border-2 border-canvas bg-info text-meta font-bold text-on-accent">
-                  T
-                </div>
-                <span className="ml-2 text-meta text-fg-2">+ Bạn tiếp nhận</span>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Cột 4: TRẠNG THÁI & THAO TÁC */}
-        <div className="flex flex-col items-start gap-2.5 lg:col-span-2 lg:items-end">
+        <div className="flex flex-wrap items-center gap-2">
           <span
             className={cx(
               'inline-flex items-center gap-1.5 rounded-control px-2.5 py-0.5 text-meta font-medium',
@@ -458,37 +377,104 @@ function InstallationCard({ view }: { view: InstallationTechnicianView }) {
                 progress.statusTone === 'neutral' && 'bg-fg-3',
               )}
             />
-            <span>{progress.statusLabel}</span>
+            {progress.statusLabel}
           </span>
-
           {progress.isExecuting && (
-            <ButtonLink
-              to={detailUrl}
-              variant="primary"
-              size="sm"
-              icon="edit"
-              className="w-full justify-center lg:w-auto"
-            >
+            <ButtonLink to={detailUrl} variant="primary" size="sm" icon="edit">
               Cập nhật tiến độ
             </ButtonLink>
           )}
+          <ButtonLink to={detailUrl} variant="secondary" size="sm" icon="visibility">
+            {progress.isExecuting ? 'Chi tiết' : 'Xem chi tiết'}
+          </ButtonLink>
+          {progress.isExecuting && (
+            <IconButtonLink
+              to={detailUrl}
+              variant="secondary"
+              size="sm"
+              icon="description"
+              label="Xem biên bản thi công"
+            />
+          )}
+        </div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <ButtonLink to={detailUrl} variant="secondary" size="sm" icon="visibility">
-              {progress.isExecuting ? 'Chi tiết' : 'Xem chi tiết'}
-            </ButtonLink>
-            {progress.isExecuting && (
-              <ButtonLink
-                to={detailUrl}
-                variant="secondary"
-                size="sm"
-                icon="description"
-                aria-label="Xem biên bản thi công"
-              />
+      <div className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-line pt-4 lg:grid-cols-12">
+        <div className="space-y-1.5 lg:col-span-3">
+          <p className="sv-label text-meta">Lịch trình thi công</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="tnum text-figure font-bold text-fg">{timeDisplay}</span>
+            <span
+              className={cx(
+                'rounded-control px-2 py-0.5 text-meta font-medium',
+                durationBadge.includes('Thi công') ? 'bg-ok-soft text-ok' : 'bg-surface-2 text-fg-2',
+              )}
+            >
+              {durationBadge}
+            </span>
+          </div>
+          <p className="flex items-center gap-1.5 text-meta text-fg-2">
+            <Icon name="calendar_month" className="shrink-0 text-[16px] text-fg-3" />
+            <span>{timeSubtext}</span>
+          </p>
+        </div>
+
+        <div className="space-y-1.5 lg:col-span-5">
+          <p className="sv-label text-meta">Địa điểm &amp; thiết bị</p>
+          <p className="flex items-start gap-1.5 text-body text-fg">
+            <Icon name="location_on" className="mt-0.5 shrink-0 text-[16px] text-fg-3" />
+            <span>{address}</span>
+          </p>
+          <p className="flex items-start gap-1.5 text-meta text-fg-2">
+            <Icon name="inventory_2" className="mt-0.5 shrink-0 text-[16px] text-fg-3" />
+            <span>{progress.equipment}</span>
+          </p>
+        </div>
+
+        <div className="space-y-2 lg:col-span-4">
+          {progress.percentage != null ? (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-3 text-meta">
+                <span className="font-medium text-fg-2">{progress.stage}</span>
+                <span className="tnum font-bold text-fg">{progress.percentage}%</span>
+              </div>
+              <div className="sv-bar">
+                <span style={{ width: `${progress.percentage}%` }} />
+              </div>
+            </div>
+          ) : (
+            <p className="text-meta font-medium text-fg-2">{progress.stage}</p>
+          )}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-meta">
+            <p className="text-fg-2">
+              Khu vực: <span className="font-semibold text-fg">{view.zoneName || 'Khu Thủ Đức'}</span>
+            </p>
+            {progress.teamAvatars ? (
+              <span className="flex items-center">
+                <span className="flex size-7 items-center justify-center rounded-full bg-ok font-bold text-on-accent">
+                  K
+                </span>
+                <span className="-ml-2 flex size-7 items-center justify-center rounded-full border-2 border-canvas bg-info font-bold text-on-accent">
+                  T
+                </span>
+                <span className="ml-2 text-fg-2">+ Bạn tiếp nhận</span>
+              </span>
+            ) : (
+              <span className="rounded-control bg-surface-2 px-2 py-0.5 text-fg-2">{progress.teamLabel}</span>
             )}
           </div>
         </div>
       </div>
+
+      {progress.technicalNote && (
+        <div className="flex items-start gap-2 rounded-control border border-warn-soft bg-warn-soft p-3 text-meta">
+          <Icon name="info" className="shrink-0 text-[16px] text-warn" />
+          <p className="text-fg-2">
+            <strong className="font-semibold text-warn">Ghi chú kỹ thuật: </strong>
+            {progress.technicalNote}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
@@ -652,7 +638,7 @@ export function TechInstallationsPage() {
   const activeProjectsCount = counts.active
 
   return (
-    <div className="space-y-6">
+    <div className="sv-list space-y-6">
       {/* 1. Thanh điều hướng breadcrumb và nút tác vụ trên cùng */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <nav aria-label="Đường dẫn điều hướng" className="flex flex-wrap items-center gap-1.5 text-meta text-fg-3">
@@ -660,7 +646,7 @@ export function TechInstallationsPage() {
           <Icon name="chevron_right" className="text-[16px] text-fg-3" />
           <span>Tác vụ kỹ thuật</span>
           <Icon name="chevron_right" className="text-[16px] text-fg-3" />
-          <span className="font-semibold text-fg">Khảo sát & Lắp đặt</span>
+          <span className="font-semibold text-fg">Lắp đặt</span>
         </nav>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -723,7 +709,7 @@ export function TechInstallationsPage() {
       </div>
 
       {/* 3. Thẻ bộ lọc tìm kiếm */}
-      <div className="rounded-container border border-line bg-canvas p-4 space-y-4">
+      <div className="sv-card space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <SearchInput
             name="installation-search"
@@ -810,12 +796,9 @@ export function TechInstallationsPage() {
               <KanbanBoard rows={filteredInstallations} />
             ) : (
               <div className="space-y-6">
-                {/* Tiêu đề các cột bảng trên màn hình lớn */}
-                <div className="hidden grid-cols-12 gap-4 px-4 text-meta font-semibold uppercase text-fg-3 lg:grid">
-                  <div className="col-span-3">THỜI GIAN / LỊCH TRÌNH</div>
-                  <div className="col-span-5">CÔNG TRÌNH & THÔNG SỐ KỸ THUẬT</div>
-                  <div className="col-span-2">KHU VỰC / ĐỘI PHỤ TRÁCH</div>
-                  <div className="col-span-2 text-right">TRẠNG THÁI & THAO TÁC</div>
+                <div className="flex items-center justify-between gap-3 text-meta">
+                  <span className="sv-label font-semibold">Danh sách công trình</span>
+                  <span className="text-fg-3">Sắp xếp theo ngày thi công</span>
                 </div>
 
                 {filteredInstallations.length === 0 ? (

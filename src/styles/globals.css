@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/schibsted-grotesk';
 @import './landing.css';
+@import './survey-detail.css';
 
 /* `dark:` theo data-theme trên <html> (không đặt thì theo hệ thống), vì mặc định Tailwind chỉ đọc prefers-color-scheme */
 @custom-variant dark {

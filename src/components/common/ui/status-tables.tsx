@@ -4,6 +4,7 @@ import { Count } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
 import { SearchInput, Select } from '@/components/common/ui/field'
+import { cx } from '@/utils/cx'
 
 export type StatusGroupSummary<TGroup extends string> = {
   key: TGroup
@@ -13,11 +14,15 @@ export type StatusGroupSummary<TGroup extends string> = {
   attention?: boolean
 }
 
+const DOT_COLORS = { ok: 'bg-ok', warn: 'bg-warn', info: 'bg-info', danger: 'bg-danger' } as const
+
 type StatusTableSectionProps = {
   title: string
   count: number
   emptyText: string
   highlight?: boolean
+  /** Chấm màu trước tiêu đề nhóm */
+  dot?: 'ok' | 'warn' | 'info' | 'danger'
   defaultOpen?: boolean
   children: ReactNode
 }
@@ -28,6 +33,7 @@ export function StatusTableSection({
   count,
   emptyText,
   highlight = false,
+  dot,
   defaultOpen = true,
   children,
 }: StatusTableSectionProps) {
@@ -42,6 +48,7 @@ export function StatusTableSection({
           aria-expanded={open}
           className="press flex w-full items-center gap-2 px-4 py-2 text-left text-body font-semibold text-fg hover:bg-hover"
         >
+          {dot && <span aria-hidden className={cx('size-2.5 rounded-full', DOT_COLORS[dot])} />}
           {title}
           <Count value={count} attention={highlight && count > 0} />
           <Icon name={open ? 'expand_less' : 'expand_more'} className="ml-auto text-[20px] text-fg-2" aria-hidden />

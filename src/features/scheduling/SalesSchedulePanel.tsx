@@ -442,7 +442,15 @@ export function SalesSchedulePanel({ request }: { request: SurveyRequestDetail }
   if (!a)
     return (
       <Panel>
-        <PanelHeader title="Lịch khảo sát" />
+        <PanelHeader
+          title={
+            <span className="sv-title">
+              <Icon name="calendar_month" className="text-[20px] text-accent-fg" />
+              Lịch khảo sát
+            </span>
+          }
+          action={!isClosedRequest(request.status) && <Badge tone="warn">Chưa lên lịch</Badge>}
+        />
         <PanelBody>
           <p className="max-w-prose text-body text-fg-2">
             {isClosedRequest(request.status)

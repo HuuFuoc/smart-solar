@@ -5,6 +5,7 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { DateField, SearchInput } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
+import { ListPager } from '@/components/common/ui/pagination'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState, Skeleton } from '@/components/common/ui/states'
 import { formatArea, surfaceTypeLabel } from '@/features/pre-surveys/preSurveyDisplay'
@@ -100,18 +101,18 @@ function OpenJobCard({ job }: { job: OpenAppointmentView }) {
   const address = siteArea([job.ward, job.district], job.province)
 
   return (
-    <div className="rounded-container border border-line border-l-4 border-l-info bg-canvas p-4 transition-colors hover:border-line-2">
+    <div className="sv-job" data-tone="info">
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div className="flex min-w-0 flex-1 flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <div className="w-full shrink-0 rounded-control border border-line bg-surface-2 p-3 text-center sm:w-28 md:w-32">
-            <p className="text-meta font-semibold uppercase text-fg-3">KHUNG GIỜ</p>
+          <div className="sv-time w-full shrink-0 sm:w-28 md:w-32">
+            <p className="sv-label text-meta font-semibold">Khung giờ</p>
             <p className="tnum mt-0.5 text-title font-bold leading-tight text-fg">{formatTime(job.startsAt)}</p>
             <p className="tnum mt-0.5 text-meta leading-tight text-fg-2">đến {formatTime(job.endsAt)}</p>
           </div>
 
           <div className="min-w-0 flex-1 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-control bg-info-soft px-2 py-0.5 text-meta font-medium text-info">
+              <span className="sv-tag" data-tone="info">
                 {categoryText}
               </span>
               <span className="font-mono text-meta text-fg-3">{jobCode}</span>
@@ -130,14 +131,20 @@ function OpenJobCard({ job }: { job: OpenAppointmentView }) {
               <span className="truncate">{address}</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-meta text-fg-3">
-              <span>Hạn nhận: {formatMoment(job.acceptanceDeadlineAt)}</span>
-              <span className="text-line-2">/</span>
-              <span>Dùng được {formatArea(job.usableAreaM2)}</span>
+            <div className="sv-meta-row text-meta text-fg-3">
+              <span>
+                Hạn nhận: <b className="font-medium text-fg-2">{formatMoment(job.acceptanceDeadlineAt)}</b>
+              </span>
+              <span className="sv-dot" aria-hidden />
+              <span>
+                Dùng được <b className="font-medium text-fg-2">{formatArea(job.usableAreaM2)}</b>
+              </span>
               {job.zone?.name && (
                 <>
-                  <span className="text-line-2">/</span>
-                  <span>Khu vực {job.zone.name}</span>
+                  <span className="sv-dot" aria-hidden />
+                  <span>
+                    Khu vực <b className="font-medium text-fg-2">{job.zone.name}</b>
+                  </span>
                 </>
               )}
             </div>
@@ -146,12 +153,12 @@ function OpenJobCard({ job }: { job: OpenAppointmentView }) {
 
         <div className="flex shrink-0 flex-wrap items-start justify-between gap-3 lg:flex-col lg:items-end lg:justify-center">
           {job.canAccept ? (
-            <span className="inline-flex items-center gap-1.5 rounded-control bg-info-soft px-2.5 py-1 text-meta font-medium text-info">
+            <span className="sv-tag" data-tone="info" data-shape="pill">
               <Icon name="pending_actions" className="text-[16px]" />
               <span>Chờ nhận việc</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-control bg-surface-2 px-2.5 py-1 text-meta font-medium text-fg-3">
+            <span className="sv-tag" data-tone="neutral" data-shape="pill">
               <span>{ineligibleLabel(job.reason) ?? 'Bận lịch khác'}</span>
             </span>
           )}
@@ -185,37 +192,25 @@ function MyJobCard({ job, now }: { job: TechnicianAppointmentListItem; now: numb
   const jobCode = formatJobCode(job.appointmentId, job.startsAt)
   const address = siteArea([job.communeName ?? job.ward ?? job.district], job.province)
 
-  let accentBorder = 'border-l-ok'
-  if (job.isOverdue) {
-    accentBorder = 'border-l-danger'
-  } else if (!isActive(job, now)) {
-    accentBorder = 'border-l-warn'
-  }
+  const tone = job.isOverdue ? 'danger' : !isActive(job, now) ? 'warn' : 'ok'
 
   const isSelf = job.assignmentSource === 'SELF_ACCEPTED'
-  const sourceText = isSelf
-    ? 'Nguồn: Bạn tự nhận'
-    : `Phân công: ${assignmentSourceLabel(job.assignmentSource, 'technician')}`
-  const timeText = job.assignedAt ? `Giao lúc: ${formatMoment(job.assignedAt)}` : ''
+  const sourceLabel = isSelf ? 'Nguồn' : 'Phân công'
+  const sourceValue = isSelf ? 'Bạn tự nhận' : assignmentSourceLabel(job.assignmentSource, 'technician')
 
   return (
-    <div
-      className={cx(
-        'rounded-container border border-line border-l-4 bg-canvas p-4 transition-colors hover:border-line-2',
-        accentBorder,
-      )}
-    >
+    <div className="sv-job" data-tone={tone}>
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div className="flex min-w-0 flex-1 flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <div className="w-full shrink-0 rounded-control border border-line bg-surface-2 p-3 text-center sm:w-28 md:w-32">
-            <p className="text-meta font-semibold uppercase text-fg-3">KHUNG GIỜ</p>
+          <div className="sv-time w-full shrink-0 sm:w-28 md:w-32">
+            <p className="sv-label text-meta font-semibold">Khung giờ</p>
             <p className="tnum mt-0.5 text-title font-bold leading-tight text-fg">{formatTime(job.startsAt)}</p>
             <p className="tnum mt-0.5 text-meta leading-tight text-fg-2">đến {formatTime(job.endsAt)}</p>
           </div>
 
           <div className="min-w-0 flex-1 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-control bg-info-soft px-2 py-0.5 text-meta font-medium text-info">
+              <span className="sv-tag" data-tone="ok">
                 Khảo sát hệ thống Solar Áp Mái
               </span>
               <span className="font-mono text-meta text-fg-3">{jobCode}</span>
@@ -234,13 +229,17 @@ function MyJobCard({ job, now }: { job: TechnicianAppointmentListItem; now: numb
               <span className="truncate">{address}</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-meta text-fg-3">
-              <Icon name={isSelf ? 'task_alt' : 'assignment_ind'} className="shrink-0 text-[16px] text-fg-3" />
-              <span>{sourceText}</span>
-              {timeText && (
+            <div className="sv-meta-row text-meta text-fg-3">
+              <Icon name="person" className="shrink-0 text-[16px]" />
+              <span>
+                {sourceLabel}: <b className="font-medium text-fg-2">{sourceValue}</b>
+              </span>
+              {job.assignedAt && (
                 <>
-                  <span className="text-line-2">/</span>
-                  <span>{timeText}</span>
+                  <span className="sv-dot" aria-hidden />
+                  <span>
+                    Giao lúc: <b className="font-medium text-fg-2">{formatMoment(job.assignedAt)}</b>
+                  </span>
                 </>
               )}
             </div>
@@ -249,27 +248,27 @@ function MyJobCard({ job, now }: { job: TechnicianAppointmentListItem; now: numb
 
         <div className="flex shrink-0 flex-wrap items-start justify-between gap-3 lg:flex-col lg:items-end lg:justify-center">
           {job.isOverdue ? (
-            <span className="inline-flex items-center gap-1.5 rounded-control bg-danger-soft px-2.5 py-1 text-meta font-medium text-danger">
+            <span className="sv-tag" data-tone="danger" data-shape="pill">
               <Icon name="error_outline" className="text-[16px]" />
               <span>Quá giờ, chưa khảo sát</span>
             </span>
           ) : inProgress ? (
-            <span className="inline-flex items-center gap-1.5 rounded-control bg-info-soft px-2.5 py-1 text-meta font-medium text-info">
+            <span className="sv-tag" data-tone="info" data-shape="pill">
               <Icon name="schedule" className="text-[16px]" />
               <span>Đang trong giờ hẹn</span>
             </span>
           ) : upcoming ? (
-            <span className="inline-flex items-center gap-1.5 rounded-control bg-ok-soft px-2.5 py-1 text-meta font-medium text-ok">
+            <span className="sv-tag" data-tone="ok" data-shape="pill">
               <span className="size-1.5 rounded-full bg-ok" />
               <span>Sắp diễn ra</span>
             </span>
           ) : job.status === 'COMPLETED' ? (
-            <span className="inline-flex items-center gap-1.5 rounded-control bg-surface-2 px-2.5 py-1 text-meta font-medium text-fg-2">
+            <span className="sv-tag" data-tone="neutral" data-shape="pill">
               <Icon name="check_circle" className="text-[16px]" />
               <span>Đã khảo sát</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-control bg-warn-soft px-2.5 py-1 text-meta font-medium text-warn">
+            <span className="sv-tag" data-tone="warn" data-shape="pill">
               <Icon name="warning" className="text-[16px]" />
               <span>Chưa chốt biên bản</span>
             </span>
@@ -377,7 +376,7 @@ export function TechJobsPage() {
     return list
   }, [tab, filteredUpcoming, filteredPast, filteredUrgent, sortBy])
 
-  const pageSize = 8
+  const pageSize = 5
   const totalItems = tab === 'open' ? openActiveJobs.length : myActiveJobs.length
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
   const currentPage = Math.min(page, totalPages)
@@ -434,15 +433,23 @@ export function TechJobsPage() {
 
           return (
             <section key={day} className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5">
-                  <span className={cx('size-2.5 rounded-full', isPastDay ? 'bg-warn' : 'bg-ok')} />
-                  <h2 className="text-body font-bold uppercase text-fg">{title}</h2>
-                  <span className="rounded-control bg-ok-soft px-2 py-0.5 text-meta font-medium text-ok">
+                  <span className={cx('size-2.5 rounded-full', isToday ? 'bg-danger' : 'bg-ok')} />
+                  <h2 className="sv-heading text-body font-bold text-fg">{title}</h2>
+                  <span className="sv-tag" data-tone={isToday ? 'danger' : 'ok'} data-shape="pill">
                     {items.length} công việc
                   </span>
                 </div>
-                <span className="text-meta text-fg-3">{hint}</span>
+                <span
+                  className={cx(
+                    'inline-flex items-center gap-1.5 text-meta',
+                    isToday ? 'font-medium text-danger' : 'text-fg-3',
+                  )}
+                >
+                  {isToday && <Icon name="warning" className="text-[16px]" />}
+                  {hint}
+                </span>
               </div>
 
               <div className="space-y-3">
@@ -458,56 +465,25 @@ export function TechJobsPage() {
           )
         })}
 
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-4">
-          <span className="text-meta text-fg-2">
-            Hiển thị {isOpenTab ? paginatedOpenJobs.length : paginatedMyJobs.length} trong tổng số {totalItems} công
-            việc
-          </span>
-
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={currentPage <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Trang trước
-            </Button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPage(p)}
-                className={cx(
-                  'size-8 rounded-control text-meta font-medium transition-colors',
-                  p === currentPage
-                    ? 'border border-line bg-surface-2 font-bold text-fg'
-                    : 'text-fg-2 hover:bg-hover hover:text-fg',
-                )}
-              >
-                {p}
-              </button>
-            ))}
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              Trang sau
-            </Button>
-          </div>
-        </div>
+        <ListPager
+          page={currentPage}
+          pages={totalPages}
+          from={totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+          to={Math.min(currentPage * pageSize, totalItems)}
+          total={totalItems}
+          noun="công việc"
+          onChange={setPage}
+        />
       </div>
     )
   }
 
   return (
-    <>
+    <div className="sv-list">
       <div className="mb-2 flex items-center gap-1.5 text-meta text-fg-3">
         <span>Kỹ thuật hiện trường</span>
         <span className="text-fg-3">/</span>
-        <span className="text-fg-2">Việc của tôi</span>
+        <span className="text-fg-2">Khảo sát</span>
       </div>
 
       <PageHeader
@@ -541,7 +517,7 @@ export function TechJobsPage() {
         }
       />
 
-      <div className="mb-6 rounded-container border border-line bg-canvas p-4 space-y-4">
+      <div className="sv-card mb-6 space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2 lg:col-span-1">
             <SearchInput
@@ -710,7 +686,10 @@ export function TechJobsPage() {
             <select
               aria-label="Sắp xếp"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortBy)}
+              onChange={(e) => {
+                setSortBy(e.target.value as SortBy)
+                setPage(1)
+              }}
               className="h-8 rounded-control border border-line bg-canvas px-2 text-meta text-fg focus:outline-hidden"
             >
               <option value="nearest">Thời gian biểu gần nhất</option>
@@ -794,6 +773,6 @@ export function TechJobsPage() {
           }}
         </QueryBoundary>
       )}
-    </>
+    </div>
   )
 }

@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { Link, Outlet } from 'react-router'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Count } from '@/components/common/ui/badge'
 import { AppShell } from '@/components/layout/app-shell'
 import { PORTALS } from '@/config/portals'
@@ -57,29 +56,20 @@ export function TechLayout({ children }: { children?: ReactNode }) {
   )
 
   const uniqueZones = Array.from(new Set(rawZones))
-  const zoneDisplay = uniqueZones.length > 0 ? uniqueZones.join(', ') : 'TP. Thủ Đức & Khu Đông'
+  const zoneDisplay = uniqueZones.join(', ')
 
   return (
     <AppShell
       portal={PORTALS.tech}
       context={
-        <div className="rounded-control border border-ok/25 bg-ok-soft/30 p-2.5">
-          <div className="flex items-start gap-2.5">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-control bg-canvas text-ok">
-              <Icon name="location_on" className="text-[16px]" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-meta font-semibold uppercase text-ok">KHU VỰC PHỤ TRÁCH</p>
-              <p className="truncate text-body font-bold text-fg" title={zoneDisplay}>
-                {zoneDisplay}
-              </p>
-              <div className="mt-1 flex items-center gap-1.5 text-meta text-ok">
-                <span className="size-1.5 rounded-full bg-ok" />
-                <span>Đang trực tuyến</span>
-              </div>
-            </div>
+        uniqueZones.length > 0 && (
+          <div className="rounded-container border border-line bg-surface-2 p-2">
+            <p className="text-meta text-fg-2">Khu vực công việc</p>
+            <p className="truncate text-body font-semibold text-fg" title={zoneDisplay}>
+              {zoneDisplay}
+            </p>
           </div>
-        </div>
+        )
       }
       badges={{
         [ROUTES.tech.jobs]: { value: waiting + jobs, attention: true },

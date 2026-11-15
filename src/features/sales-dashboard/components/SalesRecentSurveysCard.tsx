@@ -57,7 +57,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
   })
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5">
+    <div className="sv-card">
       {/* Hàng 1: Tiêu đề khối & Nút Xem toàn bộ */}
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -139,7 +139,9 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                         <div className="text-meta text-fg-2">{locationText}</div>
                       </Td>
                       <Td className="py-2.5">
-                        <Badge tone={statusInfo.tone}>{statusInfo.label}</Badge>
+                        <span className="sv-pill" data-tone={statusInfo.tone}>
+                          <Badge tone={statusInfo.tone}>{statusInfo.label}</Badge>
+                        </span>
                       </Td>
                       <Td className="py-2.5">
                         <div className="whitespace-nowrap text-meta text-fg-3">

@@ -41,7 +41,11 @@ export function ListRow({
 // `columns` là lớp lg:grid-cols-[...] dùng chung cho tiêu đề và mọi dòng để các cột thẳng nhau
 export function ListHead({ columns, labels }: { columns: string; labels: string[] }) {
   return (
-    <div aria-hidden className={cx('hidden gap-x-6 border-b border-line pb-2 text-meta text-fg-2 lg:grid', columns)}>
+    <div
+      aria-hidden
+      data-list-head
+      className={cx('hidden gap-x-6 border-b border-line pb-2 text-meta text-fg-2 lg:grid', columns)}
+    >
       {labels.map((label, i) => (
         <span key={i}>{label}</span>
       ))}

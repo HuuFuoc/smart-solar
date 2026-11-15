@@ -180,7 +180,7 @@ export function TechJobPage() {
                 <span>Tác vụ kỹ thuật</span>
                 <Icon name="chevron_right" className="text-[16px] text-fg-3" />
                 <Link to={ROUTES.tech.jobs} className="hover:text-fg">
-                  Việc của tôi
+                  Khảo sát
                 </Link>
                 <Icon name="chevron_right" className="text-[16px] text-fg-3" />
                 <span className="font-semibold text-fg">{p.name}</span>

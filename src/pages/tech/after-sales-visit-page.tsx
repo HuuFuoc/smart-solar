@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 import { useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
-import { Button } from '@/components/common/ui/button'
-import { KeyValueList, Notice } from '@/components/common/ui/lists'
+import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Button, buttonClass } from '@/components/common/ui/button'
+import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
@@ -13,7 +14,8 @@ import { PhotoUpload } from '@/features/after-sales/PhotoUpload'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { ServiceItemList } from '@/features/after-sales/ServiceRequestParts'
 import { ServicePhotos } from '@/features/after-sales/ServicePhotos'
-import { assetName, requestKindLabel, visitPurposeLabel } from '@/features/after-sales/serviceDisplay'
+import { requestKindLabel, visitPurposeLabel } from '@/features/after-sales/serviceDisplay'
+import { assetTypeLabel } from '@/features/installations/installationDisplay'
 import {
   awaitsAnswer,
   isAccepted,
@@ -36,6 +38,19 @@ import {
 import { errorMessage } from '@/services/api/errors'
 import { getEvidenceUrl } from '@/services/technicianAfterSalesService'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
+
+const minutesBetween = (startsAt: string, endsAt: string) =>
+  Math.max(0, Math.round((new Date(endsAt).getTime() - new Date(startsAt).getTime()) / 60000))
+
+/** Tiêu đề khối có icon thương hiệu đứng trước */
+function BlockTitle({ icon, children }: { icon: string; children: ReactNode }) {
+  return (
+    <span className="sv-title">
+      <Icon name={icon} className="text-[20px]" />
+      {children}
+    </span>
+  )
+}
 
 function trackerSteps(v: TechnicianVisitView): TrackerStep[] {
   const stage = awaitsAnswer(v) ? 0 : v.status === 'SCHEDULED' ? 1 : v.status === 'IN_PROGRESS' ? 2 : 3
@@ -183,135 +198,213 @@ export function TechAfterSalesVisitPage() {
       {(v) => {
         const status = technicianVisitMeta(v)
         const next = nextStep(v)
+        const map = v.siteAddress ? addressMapUrl(v.siteAddress) : null
         return (
           <>
-            <PageHeader
-              meta={
-                <>
-                  <Badge tone={next.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
-                  <span>{requestKindLabel(v.requestKind)}</span>
-                </>
-              }
-              title={
-                <>
-                  {visitPurposeLabel(v.purpose)} <span className="tnum">{v.requestNumber}</span>
-                </>
-              }
-            />
-            <div className="space-y-6">
-              <ProgressTracker steps={trackerSteps(v)} next={next} />
-              <ActionPanel visit={v} onDecline={() => setDialog('decline')} onAbsent={() => setDialog('absent')} />
+            <div className="sv-detail">
+              <PageHeader
+                meta={
+                  <>
+                    <span className="sv-pill" data-tone={next.tone === 'danger' ? undefined : status.tone}>
+                      <Badge tone={next.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
+                    </span>
+                    <span className="sv-chip tnum">Mã {v.requestNumber}</span>
+                  </>
+                }
+                title={
+                  <>
+                    {visitPurposeLabel(v.purpose)} <span className="tnum">{v.requestNumber}</span>
+                  </>
+                }
+                description={requestKindLabel(v.requestKind)}
+                actions={
+                  map && (
+                    <a className={buttonClass('secondary')} href={map} target="_blank" rel="noreferrer">
+                      <Icon name="map" className="-ml-0.5 text-[20px]" />
+                      Xem bản đồ
+                      <span className="sr-only"> (mở tab mới)</span>
+                    </a>
+                  )
+                }
+              />
 
-              {isOpen(v) && isAccepted(v) && (
-                <Panel id="visit-photos" className="scroll-mt-6">
-                  <PanelHeader
-                    title="Ảnh hiện trường"
-                    description={
-                      v.evidence.length > 0 ? `${v.evidence.length} ảnh` : 'Cần ít nhất 1 ảnh trước khi báo cáo'
-                    }
-                  />
-                  <PanelBody className="space-y-4">
-                    <PhotoUpload visitId={v.visitId} />
-                    <ServicePhotos photos={v.evidence} getUrl={getUrl} emptyText="Chưa có ảnh nào." />
-                  </PanelBody>
-                </Panel>
-              )}
+              <div className="sv-card">
+                <ProgressTracker steps={trackerSteps(v)} next={next} title="Tình hình tiến độ công việc" />
+              </div>
 
-              {v.waitingOnSite && <OnSiteWaitPanel visit={v} />}
-
-              {canReportInspection(v) && (
-                <Panel>
-                  <PanelHeader title="Kết quả kiểm tra" />
-                  <PanelBody>
-                    <InspectionReportForm visit={v} />
-                  </PanelBody>
-                </Panel>
-              )}
-
-              {canReportWork(v) && (
-                <Panel>
-                  <PanelHeader title="Báo cáo công việc" />
-                  <PanelBody>
-                    <WorkReportForm visit={v} />
-                  </PanelBody>
-                </Panel>
-              )}
-
-              {canAddSupplementary(v) && (
-                <Panel>
-                  <PanelHeader
-                    title="Hạng mục phát sinh"
-                    description="Lỗi khác thấy khi đang sửa: quản lý quyết định chi phí trước khi bạn làm"
-                  />
-                  <PanelBody>
-                    <Button icon="add" variant="soft" onClick={() => setDialog('supplementary')}>
-                      Báo hạng mục phát sinh
-                    </Button>
-                  </PanelBody>
-                </Panel>
-              )}
-
-              <Panel>
-                <PanelHeader title="Thông tin buổi hẹn" />
-                <PanelBody className="space-y-4">
-                  <KeyValueList
-                    columns={2}
-                    items={[
-                      { k: 'Thời gian', v: formatAppointment(v.startsAt, v.endsAt) },
-                      {
-                        k: 'Địa chỉ',
-                        v: v.siteAddress ? (
-                          <a
-                            href={addressMapUrl(v.siteAddress) ?? undefined}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="ui-link"
-                          >
-                            {v.siteAddress}
-                          </a>
-                        ) : (
-                          '—'
-                        ),
-                      },
-                    ]}
-                  />
-                  <div>
-                    <p className="text-meta text-fg-2">Khách mô tả</p>
-                    <p className="max-w-[72ch] text-body whitespace-pre-line text-fg">{v.description}</p>
+              <div className="mt-6 grid items-start gap-6 lg:grid-cols-3">
+                <div className="min-w-0 space-y-6 lg:col-span-2">
+                  <div className="sv-card">
+                    <ActionPanel
+                      visit={v}
+                      onDecline={() => setDialog('decline')}
+                      onAbsent={() => setDialog('absent')}
+                    />
                   </div>
-                  {v.assets.length > 0 && (
-                    <div>
-                      <p className="text-meta text-fg-2">Thiết bị của công trình</p>
-                      <ul className="mt-1 space-y-1 text-body text-fg">
-                        {v.assets.map((asset) => (
-                          <li key={asset.assetId}>
-                            {assetName(asset)}
-                            {asset.positionCode && `, ${asset.positionCode}`}
-                          </li>
-                        ))}
-                      </ul>
+
+                  {isOpen(v) && isAccepted(v) && (
+                    <div className="sv-card">
+                      <Panel id="visit-photos" className="scroll-mt-6">
+                        <PanelHeader
+                          title={<BlockTitle icon="photo_camera">Ảnh hiện trường</BlockTitle>}
+                          description={
+                            v.evidence.length > 0 ? `${v.evidence.length} ảnh` : 'Cần ít nhất 1 ảnh trước khi báo cáo'
+                          }
+                        />
+                        <PanelBody className="space-y-4 border-t border-line pt-4">
+                          <PhotoUpload visitId={v.visitId} />
+                          <ServicePhotos photos={v.evidence} getUrl={getUrl} emptyText="Chưa có ảnh nào." />
+                        </PanelBody>
+                      </Panel>
                     </div>
                   )}
-                </PanelBody>
-              </Panel>
 
-              {v.items.length > 0 && (
-                <Panel>
-                  <PanelHeader title="Hạng mục" description={`${v.items.length} hạng mục`} />
-                  <PanelBody>
-                    <ServiceItemList items={v.items} />
-                  </PanelBody>
-                </Panel>
-              )}
+                  {v.waitingOnSite && (
+                    <div className="sv-card">
+                      <OnSiteWaitPanel visit={v} />
+                    </div>
+                  )}
 
-              {!isOpen(v) && v.evidence.length > 0 && (
-                <Panel>
-                  <PanelHeader title="Ảnh hiện trường" description={`${v.evidence.length} ảnh`} />
-                  <PanelBody>
-                    <ServicePhotos photos={v.evidence} getUrl={getUrl} emptyText="Chưa có ảnh nào." />
-                  </PanelBody>
-                </Panel>
-              )}
+                  {canReportInspection(v) && (
+                    <div className="sv-card">
+                      <Panel>
+                        <PanelHeader title={<BlockTitle icon="fact_check">Kết quả kiểm tra</BlockTitle>} />
+                        <PanelBody>
+                          <InspectionReportForm visit={v} />
+                        </PanelBody>
+                      </Panel>
+                    </div>
+                  )}
+
+                  {canReportWork(v) && (
+                    <div className="sv-card">
+                      <Panel>
+                        <PanelHeader title={<BlockTitle icon="description">Báo cáo công việc</BlockTitle>} />
+                        <PanelBody>
+                          <WorkReportForm visit={v} />
+                        </PanelBody>
+                      </Panel>
+                    </div>
+                  )}
+
+                  {canAddSupplementary(v) && (
+                    <div className="sv-card">
+                      <Panel>
+                        <PanelHeader
+                          title="Hạng mục phát sinh"
+                          description="Lỗi khác thấy khi đang sửa: quản lý quyết định chi phí trước khi bạn làm"
+                        />
+                        <PanelBody>
+                          <Button icon="add" variant="soft" onClick={() => setDialog('supplementary')}>
+                            Báo hạng mục phát sinh
+                          </Button>
+                        </PanelBody>
+                      </Panel>
+                    </div>
+                  )}
+
+                  <section aria-label="Thông tin buổi hẹn" className="sv-card space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h2 className="sv-title text-title font-semibold">
+                        <Icon name="event_note" className="text-[20px]" />
+                        Thông tin buổi hẹn
+                      </h2>
+                      <span className="sv-chip tnum">Mã: {v.requestNumber}</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 rounded-container border border-line bg-surface-2 p-4">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ok-soft text-ok">
+                        <Icon name="schedule" className="text-[20px]" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-meta text-fg-3">Thời gian diễn ra</p>
+                        <p className="tnum text-body font-bold text-fg">{formatAppointment(v.startsAt, v.endsAt)}</p>
+                      </div>
+                      <span className="sv-tag" data-tone="neutral">
+                        Khung {minutesBetween(v.startsAt, v.endsAt)} phút
+                      </span>
+                    </div>
+
+                    {v.siteAddress && (
+                      <div className="flex items-start gap-3 rounded-container border border-line bg-surface-2 p-4">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-info-soft text-info">
+                          <Icon name="location_on" className="text-[20px]" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-meta text-fg-3">Địa chỉ chi tiết</p>
+                          {map ? (
+                            <a href={map} target="_blank" rel="noreferrer" className="ui-link font-bold">
+                              {v.siteAddress}
+                              <span className="sr-only"> (mở tab mới)</span>
+                            </a>
+                          ) : (
+                            <p className="text-body font-bold text-fg">{v.siteAddress}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {v.description && (
+                      <div className="rounded-container border border-line bg-surface-2 p-4">
+                        <p className="sv-label text-meta font-semibold">Mô tả từ khách hàng</p>
+                        <p className="mt-1 text-body whitespace-pre-line text-fg">{v.description}</p>
+                      </div>
+                    )}
+                  </section>
+
+                  {v.items.length > 0 && (
+                    <div className="sv-card">
+                      <Panel>
+                        <PanelHeader title="Hạng mục" description={`${v.items.length} hạng mục`} />
+                        <PanelBody>
+                          <ServiceItemList items={v.items} />
+                        </PanelBody>
+                      </Panel>
+                    </div>
+                  )}
+
+                  {!isOpen(v) && v.evidence.length > 0 && (
+                    <div className="sv-card">
+                      <Panel>
+                        <PanelHeader
+                          title={<BlockTitle icon="photo_camera">Ảnh hiện trường</BlockTitle>}
+                          description={`${v.evidence.length} ảnh`}
+                        />
+                        <PanelBody>
+                          <ServicePhotos photos={v.evidence} getUrl={getUrl} emptyText="Chưa có ảnh nào." />
+                        </PanelBody>
+                      </Panel>
+                    </div>
+                  )}
+                </div>
+
+                {v.assets.length > 0 && (
+                  <aside aria-label="Thiết bị của công trình" className="sv-card min-w-0 space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <h2 className="sv-title text-title font-semibold">
+                        <Icon name="memory" className="text-[20px]" />
+                        Thiết bị của công trình
+                      </h2>
+                      <span className="sv-chip tnum">{v.assets.length}</span>
+                    </div>
+                    <ul className="space-y-3 border-t border-line pt-4">
+                      {v.assets.map((asset) => (
+                        <li key={asset.assetId} className="rounded-container border border-line p-3">
+                          <p className="text-body font-bold text-fg">
+                            {assetTypeLabel(asset.assetType)} {asset.manufacturer} {asset.model}
+                          </p>
+                          <p className="tnum mt-0.5 text-meta text-fg-2">Serial: {asset.serialNumber}</p>
+                          {asset.positionCode && (
+                            <span className="sv-tag mt-2" data-tone="neutral">
+                              Vị trí: {asset.positionCode}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </aside>
+                )}
+              </div>
             </div>
 
             <ReasonDialog
