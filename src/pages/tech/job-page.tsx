@@ -314,9 +314,7 @@ export function TechJobPage() {
                     <div
                       className={cx(
                         'flex size-8 shrink-0 items-center justify-center rounded-full font-bold ring-4 ring-canvas',
-                        isSurveyCompleted
-                          ? 'bg-ok text-on-accent'
-                          : 'border-2 border-ok bg-canvas text-ok',
+                        isSurveyCompleted ? 'bg-ok text-on-accent' : 'border-2 border-ok bg-canvas text-ok',
                       )}
                     >
                       {isSurveyCompleted ? <Icon name="check" className="text-[20px]" /> : '2'}
@@ -341,9 +339,7 @@ export function TechJobPage() {
                     <div
                       className={cx(
                         'flex size-8 shrink-0 items-center justify-center rounded-full font-bold ring-4 ring-canvas',
-                        isSurveyCompleted
-                          ? 'bg-ok text-on-accent'
-                          : 'border-2 border-line bg-canvas text-fg-3',
+                        isSurveyCompleted ? 'bg-ok text-on-accent' : 'border-2 border-line bg-canvas text-fg-3',
                       )}
                     >
                       {isSurveyCompleted ? <Icon name="check" className="text-[20px]" /> : '3'}
