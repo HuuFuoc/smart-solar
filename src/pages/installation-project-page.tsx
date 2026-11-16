@@ -4,7 +4,6 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
 import { PageHeader } from '@/components/common/ui/page-header'
-import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
@@ -169,10 +168,10 @@ function SiteAside({ project }: { project: InstallationStaffView }) {
   const site = project.site
   const map = siteMapUrl(site)
   return (
-    <PanelAside aria-label="Khách hàng và công trình">
-      <Panel>
-        <PanelHeader title="Khách hàng và công trình" />
-        <PanelBody>
+    <>
+      <section aria-label="Khách hàng và công trình" className="sv-card space-y-4">
+        <h2 className="text-title font-semibold text-fg">Khách hàng và công trình</h2>
+        <div className="border-t border-line pt-4">
           {site ? (
             <Facts
               column
@@ -208,11 +207,11 @@ function SiteAside({ project }: { project: InstallationStaffView }) {
           ) : (
             <p className="text-body text-fg-2">Không đọc được thông tin công trình.</p>
           )}
-        </PanelBody>
-      </Panel>
-      <Panel>
-        <PanelHeader title="Hồ sơ" />
-        <PanelBody>
+        </div>
+      </section>
+      <section aria-label="Hồ sơ" className="sv-card space-y-4">
+        <h2 className="text-title font-semibold text-fg">Hồ sơ</h2>
+        <div className="border-t border-line pt-4">
           <Facts
             column
             items={[
@@ -221,9 +220,9 @@ function SiteAside({ project }: { project: InstallationStaffView }) {
               { k: 'Yêu cầu khảo sát', v: shortCode(project.surveyRequestId) },
             ]}
           />
-        </PanelBody>
-      </Panel>
-    </PanelAside>
+        </div>
+      </section>
+    </>
   )
 }
 
@@ -243,67 +242,100 @@ function InstallationProjectPage() {
         const map = siteMapUrl(p.site)
         const completed = p.status === 'COMPLETED'
         return (
-          <>
-            <PageHeader
-              meta={
-                <>
-                  <Badge tone={status.tone}>{status.label}</Badge>
-                  <span className="tnum">Mã {shortCode(p.projectId)}</span>
-                </>
-              }
-              title={projectTitle(p)}
-              description={formatSiteAddress(p.site)}
-              actions={
-                <>
-                  {p.site?.customerPhone && (
-                    <a className={buttonClass('secondary')} href={`tel:${p.site.customerPhone}`}>
-                      <Icon name="call" className="-ml-0.5 text-[20px]" />
-                      Gọi {p.site.customerPhone}
-                    </a>
-                  )}
-                  {map && (
-                    <a className={buttonClass('secondary')} href={map} target="_blank" rel="noreferrer">
-                      <Icon name="map" className="-ml-0.5 text-[20px]" />
-                      Xem bản đồ
-                      <span className="sr-only"> (mở tab mới)</span>
-                    </a>
-                  )}
-                  {canCancel(p.status) && (
-                    <Button icon="cancel" variant="danger" onClick={() => setCancelling(true)}>
-                      Huỷ dự án
-                    </Button>
-                  )}
-                </>
-              }
-            />
-
-            <ProgressTracker steps={trackerSteps(p)} next={nextStep(p, isManager)} />
-
-            <div className="mt-6 grid gap-6 lg:grid-cols-3">
-              <div className="min-w-0 space-y-4 lg:col-span-2">
-                <div id="assignment" className="scroll-mt-6">
-                  <AssignmentPanel project={p} />
+          <div className="sv-detail">
+            <div className="sv-card mb-6">
+              <PageHeader
+                meta={
+                  <>
+                    <span className="sv-pill" data-tone={status.tone === 'danger' ? undefined : status.tone}>
+                      <Badge tone={status.tone}>{status.label}</Badge>
+                    </span>
+                    <span className="sv-chip tnum">Mã dự án: {shortCode(p.projectId)}</span>
+                  </>
+                }
+                title={projectTitle(p)}
+                description={
+                  <span className="inline-flex items-start gap-1.5">
+                    <Icon name="location_on" className="mt-0.5 shrink-0 text-[20px] text-ok" />
+                    {formatSiteAddress(p.site)}
+                  </span>
+                }
+                actions={
+                  <>
+                    {p.site?.customerPhone && (
+                      <a className={buttonClass('soft')} href={`tel:${p.site.customerPhone}`}>
+                        <Icon name="call" className="-ml-0.5 text-[20px]" />
+                        Gọi {p.site.customerPhone}
+                      </a>
+                    )}
+                    {map && (
+                      <a className={buttonClass('secondary')} href={map} target="_blank" rel="noreferrer">
+                        <Icon name="map" className="-ml-0.5 text-[20px]" />
+                        Xem bản đồ
+                        <span className="sr-only"> (mở tab mới)</span>
+                      </a>
+                    )}
+                    {canCancel(p.status) && (
+                      <Button icon="cancel" variant="danger" onClick={() => setCancelling(true)}>
+                        Huỷ dự án
+                      </Button>
+                    )}
+                  </>
+                }
+              />
+              {p.handoverAt && (
+                <div className="mt-4 flex flex-wrap gap-3 border-t border-line pt-4">
+                  <div className="sv-field flex-col items-start gap-0.5 px-4 py-2">
+                    <p className="text-meta text-fg-3">Thời điểm bàn giao</p>
+                    <p className="tnum text-title font-semibold text-fg">{formatMoment(p.handoverAt)}</p>
+                  </div>
+                  <div className="sv-field flex-col items-start gap-0.5 px-4 py-2">
+                    <p className="text-meta text-fg-3">Trạng thái công trình</p>
+                    <p className="text-title font-semibold text-ok">{status.label}</p>
+                  </div>
                 </div>
-                <div id="checklist" className="scroll-mt-6">
-                  <ChecklistPanel project={p} />
-                </div>
-                <div id="equipment" className="scroll-mt-6">
-                  <EquipmentPanel project={p} canApprove={isManager} />
-                </div>
-                <CompletionPanel project={p} />
-              </div>
-              <SiteAside project={p} />
+              )}
             </div>
 
-            <div className="mt-6 space-y-4 border-t border-line pt-4">
-              {completed ? <HandoverPanel projectId={p.projectId} /> : <AssetsPanel assets={p.assets} />}
-              <EnergyEstimatePanel query={energy} />
-              <EvidencePanel projectId={p.projectId} currentRound={p.currentRound} />
+            <div className="sv-card">
+              <ProgressTracker steps={trackerSteps(p)} next={nextStep(p, isManager)} title="Tình hình thực hiện" />
+            </div>
+
+            <div className="mt-6 grid items-start gap-6 lg:grid-cols-3">
+              <div className="min-w-0 space-y-6 lg:col-span-2">
+                <div id="equipment" className="sv-card scroll-mt-6">
+                  <EquipmentPanel project={p} canApprove={isManager} />
+                </div>
+                <div className="sv-card">
+                  <CompletionPanel project={p} />
+                </div>
+                <div className="sv-card">
+                  {completed ? <HandoverPanel projectId={p.projectId} /> : <AssetsPanel assets={p.assets} />}
+                </div>
+                <div className="sv-card">
+                  <EnergyEstimatePanel query={energy} />
+                </div>
+                <div className="sv-card">
+                  <EvidencePanel projectId={p.projectId} currentRound={p.currentRound} />
+                </div>
+              </div>
+              <div className="min-w-0 space-y-6">
+                <div id="assignment" className="sv-card scroll-mt-6">
+                  <AssignmentPanel project={p} />
+                </div>
+                <div id="checklist" className="sv-card scroll-mt-6">
+                  <ChecklistPanel project={p} />
+                </div>
+                <SiteAside project={p} />
+              </div>
+            </div>
+
+            <div className="sv-card mt-6">
               <EventLog events={p.events} />
             </div>
 
             {cancelling && <CancelProjectDialog project={p} onClose={() => setCancelling(false)} />}
-          </>
+          </div>
         )
       }}
     </QueryBoundary>

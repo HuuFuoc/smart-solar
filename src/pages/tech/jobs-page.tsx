@@ -12,11 +12,11 @@ import { formatArea, surfaceTypeLabel } from '@/features/pre-surveys/preSurveyDi
 import {
   DAY_STYLES,
   assignmentSourceLabel,
+  formatJobCode,
   formatMoment,
   formatTime,
   ineligibleLabel,
   todayVn,
-  vnDate,
   weekdayOf,
 } from '@/features/scheduling/schedulingDisplay'
 import { groupByDay } from '@/features/scheduling/scheduleOrder'
@@ -38,12 +38,6 @@ type StatusFilter = 'all' | 'overdue' | 'upcoming' | 'in_progress' | 'completed'
 
 /** Lịch chưa kết thúc hoặc quá giờ mà chưa khảo sát */
 const isActive = (a: TechnicianAppointmentListItem, now: number) => a.isOverdue || new Date(a.endsAt).getTime() >= now
-
-function formatJobCode(appointmentId: string, startsAt: string) {
-  const datePart = vnDate(startsAt).replace(/-/g, '').slice(0, 6)
-  const lastPart = appointmentId.length > 3 ? appointmentId.slice(-3).toUpperCase() : appointmentId
-  return `#JOB-${datePart}-${lastPart}`
-}
 
 function formatGroupDayTitle(day: string, today: string) {
   const w = weekdayOf(day)

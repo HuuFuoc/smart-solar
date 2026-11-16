@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useParams } from 'react-router'
 import { toast } from 'sonner'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
@@ -254,7 +255,7 @@ function AssignPanel({ dispatch: d }: { dispatch: DispatchStaffView }) {
   }
 
   return (
-    <Panel id="dispatch-assign" className="scroll-mt-6" raised>
+    <Panel id="dispatch-assign" className="scroll-mt-6">
       <PanelHeader title="Xếp kỹ thuật viên" />
       <PanelBody className="space-y-4">
         {allPassed && (
@@ -477,6 +478,19 @@ function ProposalHistory({ proposals }: { proposals: StaffProposalView[] }) {
   )
 }
 
+/** Một ô của khối "Khách muốn": nhãn nhạt có icon, giá trị bên dưới */
+function WantItem({ icon, label, children }: { icon: string; label: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0 space-y-2">
+      <dt className="flex items-center gap-1.5 text-body text-fg-2">
+        <Icon name={icon} className="text-[16px] text-fg-3" />
+        {label}
+      </dt>
+      <dd className="text-body">{children}</dd>
+    </div>
+  )
+}
+
 // Chi tiết một yêu cầu điều phối cho quản lý / quản trị
 function DispatchRequestPage() {
   const { id } = useParams()
@@ -518,103 +532,144 @@ function DispatchRequestPage() {
         }
 
         return (
-          <>
-            <PageHeader
-              meta={
-                <>
-                  <Badge tone={next.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
-                  <span className="tnum">Mã {shortCode(r.dispatchRequestId)}</span>
-                </>
-              }
-              title={r.propertyName || 'Công trình chưa đặt tên'}
-              description={[r.customerName, r.zone?.name ?? 'Chưa thuộc khu vực nào', r.province]
-                .filter(Boolean)
-                .join(', ')}
-              actions={
-                active ? (
+          <div className="sv-detail">
+            <div className="sv-card mb-6">
+              <PageHeader
+                meta={
                   <>
-                    <Button variant="warn" icon="block" onClick={() => openResolve('unserviceable')}>
-                      Không phục vụ được
-                    </Button>
-                    <Button variant="danger" icon="close" onClick={() => openResolve('close')}>
-                      Đóng yêu cầu
-                    </Button>
+                    <span className="sv-pill" data-tone={next.tone === 'danger' ? undefined : status.tone}>
+                      <Badge tone={next.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
+                    </span>
+                    <span className="sv-chip tnum">Mã {shortCode(r.dispatchRequestId)}</span>
                   </>
-                ) : undefined
-              }
-            />
+                }
+                title={r.propertyName || 'Công trình chưa đặt tên'}
+                description={
+                  <span className="inline-flex items-start gap-1.5">
+                    <Icon name="location_on" className="mt-0.5 shrink-0 text-[20px] text-ok" />
+                    {[r.customerName, r.zone?.name ?? 'Chưa thuộc khu vực nào', r.province].filter(Boolean).join(', ')}
+                  </span>
+                }
+                actions={
+                  active ? (
+                    <>
+                      <Button variant="warn" icon="block" onClick={() => openResolve('unserviceable')}>
+                        Không phục vụ được
+                      </Button>
+                      <Button variant="danger" icon="close" onClick={() => openResolve('close')}>
+                        Đóng yêu cầu
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="border-l border-line pl-4 text-right">
+                      <p className="text-meta text-fg-3">Trạng thái vận hành</p>
+                      <p className="text-body font-medium text-fg">
+                        {dispatchResolutionLabel(d.resolution) ?? status.label}
+                      </p>
+                    </div>
+                  )
+                }
+              />
+            </div>
 
-            <ProgressTracker steps={steps} next={next} />
+            <div className="sv-card">
+              <ProgressTracker steps={steps} next={next} />
+            </div>
 
-            <div className="mt-6 space-y-4">
-              <Panel>
-                <PanelHeader title="Khách muốn" />
-                <PanelBody className="space-y-4">
-                  <KeyValueList
-                    columns={2}
-                    items={[
-                      { k: 'Vì sao cần xếp', v: dispatchReasonLabel(r.reason) },
-                      { k: 'Gửi lúc', v: formatMoment(r.createdAt) },
-                      {
-                        k: 'Khung giờ tiện',
-                        v: d.preferredWindows.length ? (
-                          <ul className="space-y-0.5">
-                            {d.preferredWindows.map((w) => (
-                              <li key={w.startsAt}>
-                                {formatWindow(w)}
-                                {windowPassed(w, now) && <span className="text-fg-3"> (đã qua)</span>}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          'Không chọn'
-                        ),
-                      },
-                      { k: 'Ghi chú của khách', v: d.customerNote || '—' },
-                    ]}
-                  />
-                  {active && d.currentCoverageStatus === 'COVERED' && (
-                    <Notice tone="info">
-                      Khu vực của công trình nay đã có kỹ thuật viên nhận lịch, khách cũng tự đặt giờ được.
-                    </Notice>
-                  )}
-                  {active &&
-                    d.currentCoverageStatus !== 'COVERED' &&
-                    d.currentCoverageStatus !== r.reason &&
-                    coverageText(d.currentCoverageStatus) && (
-                      <p className="text-meta text-fg-2">Hiện tại: {coverageText(d.currentCoverageStatus)}</p>
+            <div className="mt-6 space-y-6">
+              <section aria-label="Khách muốn" className="sv-card space-y-4">
+                <h2 className="text-title font-semibold text-fg">Khách muốn</h2>
+                <dl className="grid gap-x-6 gap-y-4 border-t border-line pt-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <WantItem icon="warning" label="Vì sao cần xếp">
+                    <span className="sv-reason">{dispatchReasonLabel(r.reason)}</span>
+                  </WantItem>
+                  <WantItem icon="schedule" label="Khung giờ tiện">
+                    {d.preferredWindows.length ? (
+                      <ul className="space-y-0.5">
+                        {d.preferredWindows.map((w) => (
+                          <li key={w.startsAt} className="font-medium text-fg">
+                            {formatWindow(w)}
+                            {windowPassed(w, now) && <span className="font-normal text-fg-3"> (đã qua)</span>}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-fg-2">Không chọn</span>
                     )}
-                </PanelBody>
-              </Panel>
+                  </WantItem>
+                  <WantItem icon="calendar_month" label="Gửi lúc">
+                    <span className="tnum font-medium text-fg">{formatMoment(r.createdAt)}</span>
+                  </WantItem>
+                  <WantItem icon="chat" label="Ghi chú của khách">
+                    {d.customerNote ? (
+                      <span className="whitespace-pre-line text-fg">{d.customerNote}</span>
+                    ) : (
+                      <span className="text-fg-3 italic">Không có ghi chú bổ sung</span>
+                    )}
+                  </WantItem>
+                </dl>
+                {active && d.currentCoverageStatus === 'COVERED' && (
+                  <Notice tone="info">
+                    Khu vực của công trình nay đã có kỹ thuật viên nhận lịch, khách cũng tự đặt giờ được.
+                  </Notice>
+                )}
+                {active &&
+                  d.currentCoverageStatus !== 'COVERED' &&
+                  d.currentCoverageStatus !== r.reason &&
+                  coverageText(d.currentCoverageStatus) && (
+                    <p className="text-meta text-fg-2">Hiện tại: {coverageText(d.currentCoverageStatus)}</p>
+                  )}
+              </section>
 
-              {r.status === 'OPEN' && <AssignPanel key={r.dispatchRequestId} dispatch={d} />}
+              {r.status === 'OPEN' && (
+                <div className="sv-card">
+                  <AssignPanel key={r.dispatchRequestId} dispatch={d} />
+                </div>
+              )}
               {r.status === 'PROPOSAL_PENDING' && r.liveProposal && (
-                <LiveProposalPanel dispatch={d} proposal={r.liveProposal} />
+                <div className="sv-card">
+                  <LiveProposalPanel dispatch={d} proposal={r.liveProposal} />
+                </div>
               )}
 
-              <SurveyStaffPanel surveyRequestId={r.surveyRequestId} canChangeSales={isAdmin} />
+              <div className="sv-card">
+                <SurveyStaffPanel surveyRequestId={r.surveyRequestId} canChangeSales={isAdmin} />
+              </div>
 
               {d.proposals.length > 0 && (
-                <Panel>
-                  <PanelHeader title="Các đề xuất" />
-                  <PanelBody>
-                    <ProposalHistory proposals={d.proposals} />
-                  </PanelBody>
-                </Panel>
+                <div className="sv-card">
+                  <Panel>
+                    <PanelHeader title="Các đề xuất" />
+                    <PanelBody>
+                      <ProposalHistory proposals={d.proposals} />
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
 
               {d.events.length > 0 && (
-                <Panel>
-                  <PanelHeader title="Lịch sử" />
-                  <PanelBody>
-                    <ActivityList
-                      items={[...d.events].reverse().map((e) => ({
-                        title: dispatchEventLabel(e.eventType),
-                        time: formatMoment(e.createdAt),
-                      }))}
+                <div className="sv-card">
+                  <Panel>
+                    <PanelHeader
+                      title={
+                        <span className="flex flex-wrap items-center gap-3">
+                          Lịch sử
+                          <span className="sv-tag" data-shape="pill">
+                            {d.events.length} sự kiện
+                          </span>
+                        </span>
+                      }
                     />
-                  </PanelBody>
-                </Panel>
+                    <PanelBody>
+                      <ActivityList
+                        items={[...d.events].reverse().map((e) => ({
+                          title: dispatchEventLabel(e.eventType),
+                          time: formatMoment(e.createdAt),
+                        }))}
+                      />
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
             </div>
 
@@ -634,7 +689,7 @@ function DispatchRequestPage() {
               error={error}
               onConfirm={(reason) => void confirmResolve(reason)}
             />
-          </>
+          </div>
         )
       }}
     </QueryBoundary>

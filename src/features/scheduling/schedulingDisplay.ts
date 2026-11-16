@@ -335,3 +335,10 @@ export function technicianReadiness(t: {
   if (t.zones.length === 0) return { label: 'Chưa thuộc khu vực nào', tone: 'danger' }
   return { label: 'Đang tắt nhận lịch', tone: 'neutral' }
 }
+
+/** Mã hiển thị của một lịch khảo sát: "#JOB-202611-17A" (tháng hẹn + ba ký tự cuối của mã lịch) */
+export function formatJobCode(appointmentId: string, startsAt: string) {
+  const datePart = vnDate(startsAt).replace(/-/g, '').slice(0, 6)
+  const lastPart = appointmentId.length > 3 ? appointmentId.slice(-3).toUpperCase() : appointmentId
+  return `#JOB-${datePart}-${lastPart}`
+}

@@ -113,12 +113,15 @@ export function PagedList<T>({
   noun,
   pageSize = 10,
   keepScroll,
+  pagerClassName,
   children,
 }: {
   items: T[]
   noun: string
   pageSize?: number
   keepScroll?: boolean
+  /** Lớp thêm cho thanh trang, vd. đệm khi danh sách nằm trong khung không có lề */
+  pagerClassName?: string
   children: (pageItems: T[]) => ReactNode
 }) {
   const [page, setPage] = useState(1)
@@ -139,6 +142,7 @@ export function PagedList<T>({
         noun={noun}
         onChange={setPage}
         keepScroll={keepScroll}
+        className={pagerClassName}
       />
     </>
   )

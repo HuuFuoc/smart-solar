@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
+import { BlockTitle } from '@/components/common/ui/block-title'
 import { Button } from '@/components/common/ui/button'
-import { KeyValueList, Notice } from '@/components/common/ui/lists'
+import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ProgressTracker, type TrackerNext } from '@/components/common/ui/progress-tracker'
@@ -112,28 +113,35 @@ function nextStep(r: ServiceRequestView): TrackerNext {
 
 function RequestFacts({ request: r }: { request: ServiceRequestView }) {
   const items = [
-    { k: 'Loại', v: requestKindLabel(r.kind) },
-    { k: 'Ngày gửi', v: formatMoment(r.createdAt) },
+    { k: 'Loại dịch vụ', v: requestKindLabel(r.kind) },
+    { k: 'Ngày gửi yêu cầu', v: formatMoment(r.createdAt) },
   ]
+  if (r.preferredStartsAt) items.push({ k: 'Giờ khách muốn hẹn', v: formatMoment(r.preferredStartsAt) })
   if (r.kind === 'FAULT') {
     items.push({ k: 'Bảo hành lắp đặt lúc báo', v: installationWarrantyText(r) })
     items.push({ k: 'Bảo hành sửa chữa lúc báo', v: r.withinRepairWarranty ? 'Còn hạn' : 'Không có' })
   }
-  if (r.preferredStartsAt) items.push({ k: 'Giờ khách muốn hẹn', v: formatMoment(r.preferredStartsAt) })
   return (
-    <Panel>
-      <PanelHeader title="Nội dung yêu cầu" />
-      <PanelBody className="space-y-4">
-        <p className="max-w-[72ch] text-body whitespace-pre-line text-fg">{r.description}</p>
-        <KeyValueList items={items} columns={2} />
-        {r.possibleDuplicates.length > 0 && (
-          <Notice tone="warn">
-            Công trình còn {r.possibleDuplicates.length} yêu cầu báo lỗi khác đang mở:{' '}
-            {r.possibleDuplicates.map((d) => d.requestNumber).join(', ')}. Kiểm tra xem có trùng không.
-          </Notice>
-        )}
-      </PanelBody>
-    </Panel>
+    <section aria-label="Nội dung yêu cầu" className="sv-card space-y-4">
+      <h2 className="text-title font-semibold text-fg">
+        <BlockTitle icon="description">Nội dung yêu cầu</BlockTitle>
+      </h2>
+      <p className="rounded-container bg-surface-2 p-4 text-body whitespace-pre-line text-fg">{r.description}</p>
+      <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((item) => (
+          <div key={item.k} className="sv-work-box">
+            <dt className="text-meta text-fg-3">{item.k}</dt>
+            <dd className="tnum mt-0.5 text-body font-medium text-fg">{item.v}</dd>
+          </div>
+        ))}
+      </dl>
+      {r.possibleDuplicates.length > 0 && (
+        <Notice tone="warn">
+          Công trình còn {r.possibleDuplicates.length} yêu cầu báo lỗi khác đang mở:{' '}
+          {r.possibleDuplicates.map((d) => d.requestNumber).join(', ')}. Kiểm tra xem có trùng không.
+        </Notice>
+      )}
+    </section>
   )
 }
 
@@ -193,93 +201,139 @@ function AfterSalesRequestPage({
         const next = nextStep(r)
         const open = !isFinalRequest(r.status)
         return (
-          <>
-            <PageHeader
-              meta={
-                <>
-                  <Badge tone={next.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
-                  <Link to={withId(installationPattern, r.projectId)} className="ui-link">
-                    Công trình {shortCode(r.projectId)}
-                  </Link>
-                </>
-              }
-              title={
-                <>
-                  {requestKindLabel(r.kind)} <span className="tnum">{r.requestNumber}</span>
-                </>
-              }
-            />
+          <div className="sv-detail">
+            <div className="sv-card mb-6">
+              <PageHeader
+                meta={
+                  <>
+                    <span className="sv-pill" data-tone={next.tone === 'danger' ? undefined : status.tone}>
+                      <Badge tone={next.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
+                    </span>
+                    <Link to={withId(installationPattern, r.projectId)} className="sv-chip ui-link tnum">
+                      Công trình {shortCode(r.projectId)}
+                    </Link>
+                  </>
+                }
+                title={
+                  <>
+                    {requestKindLabel(r.kind)} <span className="tnum">{r.requestNumber}</span>
+                  </>
+                }
+              />
+            </div>
+
             <div className="space-y-6">
-              <ProgressTracker steps={requestTrackerSteps(r)} next={next} />
+              <div className="sv-card">
+                <ProgressTracker steps={requestTrackerSteps(r)} next={next} title="Tình hình xử lý" />
+              </div>
               {r.duplicateOfRequestId && (
                 <DuplicateOfNotice requestId={r.duplicateOfRequestId} detailPattern={detailPattern} />
               )}
               {open && r.cancellationRequestedAt && (
-                <Panel id="cancellation" className="scroll-mt-6">
-                  <PanelHeader title="Yêu cầu huỷ của khách" description={formatMoment(r.cancellationRequestedAt)} />
-                  <PanelBody>
-                    <CancellationDecisionForm request={r} />
-                  </PanelBody>
-                </Panel>
+                <div className="sv-card">
+                  <Panel id="cancellation" className="scroll-mt-6">
+                    <PanelHeader title="Yêu cầu huỷ của khách" description={formatMoment(r.cancellationRequestedAt)} />
+                    <PanelBody>
+                      <CancellationDecisionForm request={r} />
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
-              {open && <SchedulePanel request={r} zoneId={project.data?.zone?.zoneId ?? null} />}
-              <ClaimDecisionPanel request={r} />
+              {open && (
+                <div className="sv-card">
+                  <SchedulePanel request={r} zoneId={project.data?.zone?.zoneId ?? null} />
+                </div>
+              )}
+              <div className="sv-card">
+                <ClaimDecisionPanel request={r} />
+              </div>
               {open && pendingItems(r).length > 0 && (
-                <Panel id="coverage" className="scroll-mt-6">
-                  <PanelHeader title="Xét bảo hành" description={`${pendingItems(r).length} hạng mục chờ quyết định`} />
-                  <PanelBody>
-                    <CoverageForm request={r} />
-                  </PanelBody>
-                </Panel>
+                <div className="sv-card">
+                  <Panel id="coverage" className="scroll-mt-6">
+                    <PanelHeader
+                      title="Xét bảo hành"
+                      description={`${pendingItems(r).length} hạng mục chờ quyết định`}
+                    />
+                    <PanelBody>
+                      <CoverageForm request={r} />
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
               {r.status === 'DISPUTED' && (
-                <Panel id="dispute" className="scroll-mt-6">
-                  <PanelHeader title="Xét ý kiến của khách" />
-                  <PanelBody>
-                    <DisputeReviewForm request={r} />
-                  </PanelBody>
-                </Panel>
+                <div className="sv-card">
+                  <Panel id="dispute" className="scroll-mt-6">
+                    <PanelHeader title="Xét ý kiến của khách" />
+                    <PanelBody>
+                      <DisputeReviewForm request={r} />
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
               <RequestFacts request={r} />
               {r.items.length > 0 && (
-                <Panel>
-                  <PanelHeader title="Kết quả kiểm tra" description={`${r.items.length} hạng mục`} />
-                  <PanelBody>
-                    <ServiceItemList items={r.items} />
-                  </PanelBody>
-                </Panel>
+                <div className="sv-card">
+                  <Panel>
+                    <PanelHeader
+                      title={<BlockTitle icon="fact_check">Kết quả kiểm tra</BlockTitle>}
+                      description={`${r.items.length} hạng mục`}
+                    />
+                    <PanelBody>
+                      <ServiceItemList items={r.items} />
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
-              {project.data && <WarrantyActivationPanel request={r} assets={project.data.assets} />}
-              {project.data && <AssetCorrectionPanel request={r} assets={project.data.assets} />}
+              {project.data && (
+                <div className="sv-card">
+                  <WarrantyActivationPanel request={r} assets={project.data.assets} />
+                </div>
+              )}
+              {project.data && (
+                <div className="sv-card">
+                  <AssetCorrectionPanel request={r} assets={project.data.assets} />
+                </div>
+              )}
               {r.visits.length > 0 && (
-                <Panel>
-                  <PanelHeader title="Buổi hẹn" />
-                  <PanelBody>
-                    <ServiceVisitList visits={r.visits} />
-                  </PanelBody>
-                </Panel>
+                <div className="sv-card">
+                  <Panel>
+                    <PanelHeader title={<BlockTitle icon="event_note">Buổi hẹn</BlockTitle>} />
+                    <PanelBody>
+                      <ServiceVisitList visits={r.visits} />
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
               {r.evidence.length > 0 && (
-                <Panel>
-                  <PanelHeader title="Ảnh" description={`${r.evidence.length} ảnh`} />
-                  <PanelBody>
-                    <ServicePhotos photos={r.evidence} getUrl={getUrl} emptyText="Chưa có ảnh nào." />
-                  </PanelBody>
-                </Panel>
+                <div className="sv-card">
+                  <Panel>
+                    <PanelHeader
+                      title={<BlockTitle icon="photo_camera">Ảnh</BlockTitle>}
+                      description={`${r.evidence.length} ảnh`}
+                    />
+                    <PanelBody>
+                      <ServicePhotos photos={r.evidence} getUrl={getUrl} emptyText="Chưa có ảnh nào." />
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
               {r.quotations.length > 0 && (
-                <Panel>
-                  <PanelHeader title="Báo giá" />
-                  <PanelBody className="space-y-6">
-                    {[...r.quotations].reverse().map((q) => (
-                      <QuotationDetail key={q.quotationId} quotation={q} />
-                    ))}
-                  </PanelBody>
-                </Panel>
+                <div className="sv-card">
+                  <Panel>
+                    <PanelHeader title={<BlockTitle icon="request_quote">Báo giá dịch vụ</BlockTitle>} />
+                    <PanelBody className="space-y-6">
+                      {[...r.quotations].reverse().map((q) => (
+                        <QuotationDetail key={q.quotationId} quotation={q} />
+                      ))}
+                    </PanelBody>
+                  </Panel>
+                </div>
               )}
-              <RequestClosePanel request={r} detailPattern={detailPattern} />
+              <div className="sv-card">
+                <RequestClosePanel request={r} detailPattern={detailPattern} />
+              </div>
             </div>
-          </>
+          </div>
         )
       }}
     </QueryBoundary>

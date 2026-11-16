@@ -7,7 +7,6 @@ import { FilterChips } from '@/components/common/ui/chips'
 import { DateField, SearchInput } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
-import { EmptyState } from '@/components/common/ui/states'
 import { technicianVisitMeta, visitTab, type VisitTab } from '@/features/after-sales/technicianVisitDisplay'
 import { visitPurposeLabel } from '@/features/after-sales/serviceDisplay'
 import { formatDay, formatTime, relativeDay, todayVn, vnDate } from '@/features/scheduling/schedulingDisplay'
@@ -15,6 +14,7 @@ import { groupByDay } from '@/features/scheduling/scheduleOrder'
 import { useMyVisitsQuery } from '@/hooks/useTechnicianAfterSales'
 import { ROUTES, withId } from '@/routes/paths'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
+import { fold } from '@/utils/fold'
 
 const EMPTY: Record<VisitTab, { title: string; description?: string }> = {
   pending: {
@@ -26,9 +26,6 @@ const EMPTY: Record<VisitTab, { title: string; description?: string }> = {
 }
 
 const TAG_TONES = ['ok', 'info', 'warn', 'danger'] as const
-
-/** Bỏ dấu và chữ hoa để tìm không phân biệt dấu */
-const fold = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/gi, 'd').toLowerCase()
 
 const minutesBetween = (startsAt: string, endsAt: string) =>
   Math.max(0, Math.round((new Date(endsAt).getTime() - new Date(startsAt).getTime()) / 60000))
@@ -88,6 +85,69 @@ function VisitCard({ visit, tab }: { visit: TechnicianVisitView; tab: VisitTab }
   )
 }
 
+const SHORTCUT_TEXT: Record<VisitTab, { title: (n: number) => string; hint: string; icon: string }> = {
+  pending: {
+    title: (n) => `Xem ${n} buổi chờ bạn nhận`,
+    hint: 'Nhận hoặc từ chối buổi hẹn mới',
+    icon: 'pending_actions',
+  },
+  active: { title: (n) => `Xem ${n} buổi sắp tới`, hint: 'Buổi hẹn bạn đã nhận', icon: 'event_available' },
+  done: {
+    title: (n) => `Xem ${n} buổi đã xong`,
+    hint: 'Kiểm tra lại các buổi đã báo cáo',
+    icon: 'assignment_turned_in',
+  },
+}
+
+/** Khung trống nét đứt: giải thích vì sao trống và dẫn sang các tab còn việc */
+function TabEmpty({
+  title,
+  description,
+  onClear,
+  shortcuts,
+  onPick,
+}: {
+  title: string
+  description?: string
+  onClear?: () => void
+  shortcuts: { tab: VisitTab; count: number }[]
+  onPick: (tab: VisitTab) => void
+}) {
+  return (
+    <div className="sv-empty">
+      <span className="sv-empty-icon" aria-hidden>
+        <Icon name="verified_user" className="text-[24px]" />
+        <span className="sv-empty-dot" />
+      </span>
+      <h2 className="mt-6 text-figure font-bold text-fg">{title}</h2>
+      {description && <p className="mt-2 max-w-xl text-body text-fg-2">{description}</p>}
+      {onClear && (
+        <Button className="mt-6" variant="secondary" icon="filter_alt_off" onClick={onClear}>
+          Xoá lọc
+        </Button>
+      )}
+      {shortcuts.length > 0 && (
+        <div className="mt-8 grid w-full max-w-2xl gap-4 text-left sm:grid-cols-2">
+          {shortcuts.slice(0, 2).map((s) => {
+            const text = SHORTCUT_TEXT[s.tab]
+            return (
+              <button key={s.tab} type="button" onClick={() => onPick(s.tab)} className="sv-empty-card press">
+                <span className="sv-empty-card-icon">
+                  <Icon name={text.icon} className="text-[20px]" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-body font-semibold text-fg">{text.title(s.count)}</span>
+                  <span className="block text-meta text-fg-2">{text.hint}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Buổi hẹn bảo hành, sửa chữa, bảo trì giao cho kỹ thuật viên: chờ nhận, sắp tới / đang làm, đã xong, nhóm theo ngày
 // như Việc của tôi
 export function TechAfterSalesPage() {
@@ -136,6 +196,19 @@ export function TechAfterSalesPage() {
           onClear={() => setSearch('')}
         />
         <DateField value={date} onChange={setDate} label="Lọc theo ngày" />
+        <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+          <span className="text-meta text-fg-3">Bộ lọc nhanh:</span>
+          <button
+            type="button"
+            aria-pressed={date === today}
+            onClick={() => setDate(date === today ? '' : today)}
+            className="sv-tag press cursor-pointer"
+            data-shape="pill"
+            data-tone={date === today ? 'ok' : undefined}
+          >
+            Hôm nay
+          </button>
+        </div>
       </div>
 
       <FilterChips
@@ -153,24 +226,26 @@ export function TechAfterSalesPage() {
       <QueryBoundary query={query}>
         {() =>
           groups[tab].length === 0 ? (
-            <EmptyState
+            <TabEmpty
               {...(filtering
                 ? { title: 'Không tìm thấy buổi hẹn phù hợp', description: 'Thử đổi từ khoá hoặc ngày.' }
                 : EMPTY[tab])}
-              action={
-                filtering ? (
-                  <Button
-                    variant="secondary"
-                    icon="filter_alt_off"
-                    onClick={() => {
+              onClear={
+                filtering
+                  ? () => {
                       setSearch('')
                       setDate('')
-                    }}
-                  >
-                    Xoá lọc
-                  </Button>
-                ) : undefined
+                    }
+                  : undefined
               }
+              shortcuts={
+                filtering
+                  ? []
+                  : (['pending', 'active', 'done'] as const)
+                      .filter((t) => t !== tab && groups[t].length > 0)
+                      .map((t) => ({ tab: t, count: groups[t].length }))
+              }
+              onPick={setPicked}
             />
           ) : (
             <div className="space-y-8">

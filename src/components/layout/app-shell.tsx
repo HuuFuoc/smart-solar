@@ -150,7 +150,7 @@ export function AppShell({
 
       <div className={cx('transition-[padding] duration-200 motion-reduce:transition-none', sidebarOffset(compact))}>
         {/* Dưới thanh trên (h-12) khi thanh đó hiện (dưới lg); từ lg dính sát mép trên. */}
-        <div className="sticky top-12 z-10 border-b border-line bg-canvas px-4 md:px-6 lg:top-0">
+        <div className="sticky top-12 z-20 border-b border-line bg-canvas px-4 md:px-6 lg:top-0">
           <LocationBar portal={portal} crumb={crumb?.pathname === location.pathname ? crumb.label : null} />
         </div>
         <PageCrumbContext value={setCrumb}>

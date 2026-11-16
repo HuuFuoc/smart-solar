@@ -428,3 +428,246 @@
   border-radius: 999px;
   background: var(--fg-3);
 }
+
+/* Khung trống nét đứt của các tab: biểu tượng khiên xanh, tiêu đề, lối tắt sang tab còn việc */
+.sv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1.5rem;
+  border: 2px dashed var(--line-2);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.sv-empty-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 999px;
+  background: var(--ok-soft);
+  box-shadow: 0 0 0 10px color-mix(in oklab, var(--ok-soft) 55%, transparent);
+  color: var(--ok);
+}
+
+.sv-empty-dot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 3px solid var(--canvas);
+  border-radius: 999px;
+  background: var(--ok);
+}
+
+.sv-empty-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--canvas);
+  box-shadow: var(--sv-shadow);
+  text-align: left;
+  cursor: pointer;
+}
+.sv-empty-card:hover {
+  border-color: var(--accent-line);
+}
+
+.sv-empty-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ok);
+}
+
+.sv-card.sv-compact {
+  padding: 1rem 1.25rem;
+}
+
+/* Lịch làm việc (/tech/schedule): lưới bảy cột, mỗi ô một ngày, việc là chip màu theo nghiệp vụ */
+.sv-cal {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--canvas);
+  box-shadow: var(--sv-shadow);
+}
+
+.sv-cal-head,
+.sv-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.sv-cal-head {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.sv-cal-head > div {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.sv-cal-cell {
+  position: relative;
+  display: flex;
+  min-height: 8.5rem;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.sv-cal-cell:nth-child(7n) {
+  border-right: 0;
+}
+.sv-cal-cell[data-tall='true'] {
+  min-height: 16rem;
+}
+.sv-cal-cell[data-out='true'] {
+  color: var(--fg-3);
+}
+.sv-cal-cell[data-out='true'] > div > button {
+  color: var(--fg-3);
+}
+.sv-cal-cell[data-today='true'] {
+  z-index: 1;
+  outline: 2px solid var(--ok);
+  outline-offset: -2px;
+}
+
+.sv-cal-chip {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-radius: 6px;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sv-cal-chip[data-kind='survey'] {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.sv-cal-chip[data-kind='installation'] {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.sv-cal-chip[data-kind='service'] {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.sv-cal-chip[data-done='true'] {
+  opacity: 0.6;
+}
+button.sv-cal-chip {
+  cursor: pointer;
+  text-align: left;
+}
+button.sv-cal-chip:hover {
+  border-color: currentColor;
+}
+
+/* Hộp thoại việc của một ngày (lịch làm việc): đầu và chân sát mép, thân xám, mỗi việc một thẻ viền theo loại */
+.sv-modal {
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sv-tag[data-tone='plain'] {
+  background: var(--canvas);
+}
+
+.sv-work {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--canvas);
+}
+.sv-work[data-kind='survey'] {
+  border-color: color-mix(in oklab, var(--info) 35%, var(--line));
+}
+.sv-work[data-kind='installation'] {
+  border-color: color-mix(in oklab, var(--ok) 35%, var(--line));
+}
+.sv-work[data-kind='service'] {
+  border-color: color-mix(in oklab, var(--warn) 35%, var(--line));
+}
+
+.sv-work-box {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+/* Ô tổng quan của hàng chờ điều phối: nhãn, icon bên phải, số lớn; ô đang lọc viền xanh */
+.sv-dtile {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--canvas);
+  box-shadow: var(--sv-shadow);
+  text-align: left;
+}
+button.sv-dtile {
+  cursor: pointer;
+}
+button.sv-dtile:hover {
+  border-color: var(--accent-line);
+}
+.sv-dtile[data-active='true'] {
+  border: 2px solid var(--accent);
+  padding: calc(1.25rem - 1px);
+}
+.sv-dtile .sv-stat-icon[data-tone='warn'] {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.sv-dtile .sv-stat-icon[data-tone='info'] {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.sv-dtile .sv-stat-icon[data-tone='danger'] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.sv-dtile .sv-stat-icon[data-tone='ok'] {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+/* Lý do điều phối: khung vàng nhạt, lưu ý không đòi làm ngay */
+.sv-reason {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--warn) 30%, transparent);
+  border-radius: 8px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 13px;
+}
+
+/* Dòng dự án đang lắp đặt trong bảng: nền xanh rất nhạt */
+.sv-list tr[data-live='true'] {
+  background: color-mix(in oklab, var(--ok-soft) 55%, transparent);
+}
