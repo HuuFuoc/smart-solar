@@ -7,6 +7,7 @@ import {
   ROOF_MATERIAL_SUGGESTIONS,
   ROOF_TYPE_SUGGESTIONS,
 } from '@/common/onsiteSurvey'
+import { DIRECTIONS } from '@/common/preSurvey'
 import { Button, IconButton } from '@/components/common/ui/button'
 import { Combobox } from '@/components/common/ui/combobox'
 import { Field, Input, Radio, Select, Textarea, WithUnit, fieldMessageId } from '@/components/common/ui/field'
@@ -35,6 +36,8 @@ export type DeclaredValues = {
 const num = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 })
 const declaredText = (value: number | null | undefined, unit: string) =>
   value == null ? null : `Khách khai: ${num.format(value)} ${unit}.`
+const declaredDirectionText = (value: number | null | undefined) =>
+  value == null ? undefined : `Khách khai: ${directionLabel(value)} (${num.format(value)}°).`
 const join = (...parts: (string | null | undefined)[]) => parts.filter(Boolean).join(' ') || undefined
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -64,6 +67,19 @@ export function OnSiteSurveyFields({
   amending?: boolean
 }) {
   const azimuth = readDecimal(value.azimuthDegree)
+  // Giá trị nằm giữa hai hướng (nhập từ bản cũ hoặc khách khai) vẫn hiện, không bị đổi ngầm sang hướng gần nhất
+  const onCompass = azimuth !== null && azimuth % 45 === 0 && azimuth >= 0 && azimuth < 360
+  const azimuthSelected = onCompass ? String(azimuth) : value.azimuthDegree.trim() === '' ? '' : value.azimuthDegree
+  const azimuthOther =
+    value.azimuthDegree.trim() !== '' && !onCompass
+      ? {
+          value: value.azimuthDegree,
+          label:
+            azimuth !== null && Number.isFinite(azimuth)
+              ? `${num.format(azimuth)}° (gần ${directionLabel(azimuth)})`
+              : `Giá trị cũ: ${value.azimuthDegree}`,
+        }
+      : null
   const length = readDecimal(value.roofLengthM)
   const width = readDecimal(value.roofWidthM)
   const maxArea = length && width ? length * width : null
@@ -198,15 +214,25 @@ export function OnSiteSurveyFields({
             label="Hướng mái"
             htmlFor="os-azimuthDegree"
             required
-            hint={join(
-              azimuth !== null && azimuth >= 0 && azimuth < 360
-                ? `Hướng ${directionLabel(azimuth)}.`
-                : '0 là Bắc, 90 là Đông, 180 là Nam.',
-              declaredText(declared?.azimuthDegree, 'độ'),
-            )}
+            hint={declaredDirectionText(declared?.azimuthDegree)}
             error={errors.azimuthDegree}
           >
-            <WithUnit unit="độ">{numberInput('azimuthDegree', 'os-azimuthDegree')}</WithUnit>
+            <Select
+              id="os-azimuthDegree"
+              disabled={disabled}
+              value={azimuthSelected}
+              onChange={(e) => onChange({ azimuthDegree: e.target.value })}
+              aria-invalid={Boolean(errors.azimuthDegree)}
+              aria-describedby={fieldMessageId('os-azimuthDegree')}
+            >
+              <option value="">Chọn hướng</option>
+              {DIRECTIONS.map((name, i) => (
+                <option key={name} value={String(i * 45)}>
+                  {name} ({i * 45}°)
+                </option>
+              ))}
+              {azimuthOther && <option value={azimuthOther.value}>{azimuthOther.label}</option>}
+            </Select>
           </Field>
           <fieldset aria-describedby={errors.roofCondition ? fieldMessageId('os-roofCondition') : undefined}>
             <legend className="mb-2 text-body font-medium text-fg">
@@ -240,29 +266,6 @@ export function OnSiteSurveyFields({
         >
           {textArea('electricalCabinetNotes', 'os-electricalCabinetNotes', LIMITS.longNoteLength)}
         </Field>
-        <Field
-          label="Đấu nối điện"
-          htmlFor="os-electricalConnectionNotes"
-          hint="Không bắt buộc. Đường đi dây, điểm đấu vào lưới."
-          error={errors.electricalConnectionNotes}
-        >
-          {textArea('electricalConnectionNotes', 'os-electricalConnectionNotes', LIMITS.longNoteLength, 2)}
-        </Field>
-        <Field
-          label="Vị trí đặt inverter"
-          htmlFor="os-proposedInverterLocation"
-          hint="Không bắt buộc."
-          error={errors.proposedInverterLocation}
-        >
-          <Input
-            id="os-proposedInverterLocation"
-            maxLength={LIMITS.inverterLocationLength}
-            disabled={disabled}
-            value={value.proposedInverterLocation}
-            onChange={(e) => onChange({ proposedInverterLocation: e.target.value })}
-            aria-describedby={fieldMessageId('os-proposedInverterLocation')}
-          />
-        </Field>
       </Section>
 
       <Section title="Phương án lắp đặt">
@@ -295,14 +298,6 @@ export function OnSiteSurveyFields({
             </p>
           )}
         </fieldset>
-        <Field
-          label="Bố trí tấm pin"
-          htmlFor="os-proposedPanelLayoutNotes"
-          hint="Không bắt buộc. Số dãy, hướng đặt tấm, chỗ cần tránh."
-          error={errors.proposedPanelLayoutNotes}
-        >
-          {textArea('proposedPanelLayoutNotes', 'os-proposedPanelLayoutNotes', LIMITS.longNoteLength, 2)}
-        </Field>
       </Section>
 
       <Section title="Vật tư và dịch vụ">

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { BomLineFix } from '@/features/quotations/quotationRules'
 import * as quotationService from '@/services/salesQuotationService'
 import type { ApiError } from '@/services/api/errors'
@@ -26,6 +26,20 @@ export function useQuotationsQuery(
     queryKey: salesQuotationKeys.list(surveyRequestId ?? ''),
     queryFn: () => quotationService.listForSurveyRequest(surveyRequestId!),
     enabled: enabled && Boolean(surveyRequestId),
+  })
+}
+
+/**
+ * Báo giá của nhiều yêu cầu cùng lúc (backend không có danh sách chung): cùng khoá với trang yêu cầu nên mở trang đó
+ * không gọi lại. Chỉ truyền yêu cầu đã khảo sát xong
+ */
+export function useQuotationsForRequestsQuery(surveyRequestIds: string[]) {
+  return useQueries({
+    queries: surveyRequestIds.map((id) => ({
+      queryKey: salesQuotationKeys.list(id),
+      queryFn: () => quotationService.listForSurveyRequest(id),
+      staleTime: 60_000,
+    })),
   })
 }
 

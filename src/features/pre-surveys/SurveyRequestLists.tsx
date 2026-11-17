@@ -45,7 +45,7 @@ import type {
 const COLUMNS = 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)_minmax(0,1.25fr)_minmax(0,1.3fr)_minmax(0,1.45fr)_9rem]'
 
 // Tên và phường, xã của công trình. Dự án chỉ nhận công trình ở TP.HCM nên chỉ ghi tỉnh khi khác.
-function Property({
+export function Property({
   name,
   row,
 }: {
@@ -63,7 +63,7 @@ function Property({
 }
 
 /** "hôm kia" và giờ chính xác ngay dưới; quá 30 ngày thì formatRelative đã là giờ chính xác nên chỉ một dòng */
-function When({ iso }: { iso: string }) {
+export function When({ iso }: { iso: string }) {
   const relative = formatRelative(iso)
   if (relative === formatDateTime(iso)) {
     return (

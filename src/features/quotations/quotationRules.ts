@@ -62,6 +62,40 @@ export function pricingBlockers(q: Pick<QuotationView, 'surveyChanged' | 'pricin
   return reasons
 }
 
+/** Việc báo giá kinh doanh còn phải làm cho một yêu cầu đã khảo sát xong; `rank` nhỏ hơn thì lên trước */
+export type QuotationWork = {
+  rank: number
+  label: string
+  tone: 'info' | 'warn'
+  hints: string[]
+}
+
+/**
+ * Báo giá của một yêu cầu đã khảo sát xong còn việc gì cho kinh doanh. null là không còn việc: đã gửi và đang chờ khách,
+ * khách đã đồng ý, khách từ chối hoặc đã đóng cùng yêu cầu
+ */
+export function quotationWork(list: QuotationView[], now = Date.now()): QuotationWork | null {
+  if (list.length === 0) return { rank: 2, label: 'Chưa lập báo giá', tone: 'info', hints: [] }
+  const byVersion = [...list].sort((a, b) => b.version - a.version)
+  const live = (q: QuotationView) =>
+    q.status === 'ISSUED' || q.status === 'ACCEPTED' || q.status === 'REVISION_REQUESTED'
+  const q = byVersion.find((v) => v.status === 'DRAFT') ?? byVersion.find(live) ?? byVersion[0]!
+  if (q.status === 'DRAFT')
+    return { rank: 3, label: 'Bản nháp, chưa gửi khách', tone: 'info', hints: pricingBlockers(q) }
+  if (q.status === 'REVISION_REQUESTED')
+    return { rank: 0, label: 'Khách yêu cầu sửa', tone: 'warn', hints: q.revisionReason ? [q.revisionReason] : [] }
+  if ((q.status === 'ISSUED' || q.status === 'ACCEPTED') && q.surveyChanged)
+    return {
+      rank: 1,
+      label: 'Biên bản khảo sát đã đổi',
+      tone: 'warn',
+      hints: ['Lập bản sửa theo biên bản mới.'],
+    }
+  if (q.status === 'ISSUED' && (q.isExpired || (q.validUntil !== null && new Date(q.validUntil).getTime() <= now)))
+    return { rank: 1, label: 'Báo giá đã hết hạn', tone: 'warn', hints: ['Lập bản sửa với hạn hiệu lực mới.'] }
+  return null
+}
+
 /** Lý do bắt buộc của các lệnh xin duyệt, quyết định duyệt, xác nhận theo biên bản mới */
 export function reviewReasonError(text: string) {
   if (!text.trim()) return 'Ghi lý do.'

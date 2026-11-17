@@ -57,6 +57,8 @@ export const ROUTES = {
     /** Tab "Của tôi" có đường dẫn riêng để menu đánh dấu đúng */
     surveysMine: '/ops/surveys/mine',
     survey: '/ops/surveys/:id',
+    /** Yêu cầu đã khảo sát xong còn việc báo giá; làm việc ở trang yêu cầu */
+    quotations: '/ops/quotations',
     /** Một phiên bản hợp đồng lắp đặt; mở từ khối Hợp đồng của yêu cầu khảo sát (backend không có danh sách mọi hợp đồng) */
     contract: '/ops/contracts/:id',
     /** Việc báo giá sửa chữa, bảo trì, việc nhắc khách; chi tiết theo mã yêu cầu */

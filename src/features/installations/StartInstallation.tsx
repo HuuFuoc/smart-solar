@@ -7,7 +7,7 @@ import { useStartInstallationMutation } from '@/hooks/useTechnicianInstallations
 import { errorMessage } from '@/services/api/errors'
 import type { InstallationTechnicianView } from '@/types/res/technicianInstallationsRes'
 
-// Bắt đầu lắp đặt. Backend tự kiểm tra lại ngày, khung giờ và hạng mục bắt buộc; canStart chỉ để khoá nút sớm
+// Bắt đầu lắp đặt. Nút luôn bấm được: backend kiểm tra ngày, khung giờ và hạng mục bắt buộc rồi báo lý do ngay dưới nút nếu chưa cho
 export function StartInstallation({ view }: { view: InstallationTechnicianView }) {
   const start = useStartInstallationMutation()
   const [error, setError] = useState<string | null>(null)
@@ -31,12 +31,7 @@ export function StartInstallation({ view }: { view: InstallationTechnicianView }
         {view.canStart ? ' Tới công trình thì bấm bắt đầu.' : blocked && ` ${blocked}`}
       </p>
       <span className="flex flex-wrap items-center gap-3">
-        <Button
-          icon="play_arrow"
-          variant="primary"
-          disabled={!view.canStart || start.isPending}
-          onClick={() => void onStart()}
-        >
+        <Button icon="play_arrow" variant="primary" disabled={start.isPending} onClick={() => void onStart()}>
           {start.isPending ? 'Đang bắt đầu…' : 'Bắt đầu lắp đặt'}
         </Button>
         {error && (

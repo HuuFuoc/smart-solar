@@ -44,6 +44,7 @@ import {
   canRequestPricingApproval,
   canReviseQuotation,
   pricingBlockers,
+  quotationWork,
   reviewReasonError,
 } from '../src/features/quotations/quotationRules.ts'
 
@@ -72,6 +73,45 @@ const options = [
   { optionId: 'o36', kind: 'INSTALLATION', months: 36, isDefault: false, isActive: false },
   { optionId: 'r6', kind: 'REPAIR', months: 6, isDefault: true, isActive: true },
 ]
+
+describe('tab Báo giá: yêu cầu đã khảo sát xong còn việc báo giá', () => {
+  const view = (status, extra = {}) =>
+    quotation(status, {
+      version: 1,
+      surveyChanged: false,
+      isExpired: false,
+      validUntil: null,
+      pricingReview: null,
+      ...extra,
+    })
+
+  test('chưa có báo giá nào: cần lập', () => {
+    assert.equal(quotationWork([]).label, 'Chưa lập báo giá')
+  })
+
+  test('bản nháp, khách yêu cầu sửa, biên bản đổi, hết hạn: còn việc', () => {
+    assert.equal(quotationWork([view('DRAFT')]).label, 'Bản nháp, chưa gửi khách')
+    assert.equal(
+      quotationWork([view('REVISION_REQUESTED', { revisionReason: 'Giảm công suất' })]).hints[0],
+      'Giảm công suất',
+    )
+    assert.equal(quotationWork([view('ISSUED', { surveyChanged: true })]).label, 'Biên bản khảo sát đã đổi')
+    assert.equal(quotationWork([view('ACCEPTED', { surveyChanged: true })]).label, 'Biên bản khảo sát đã đổi')
+    assert.equal(quotationWork([view('ISSUED', { isExpired: true })]).label, 'Báo giá đã hết hạn')
+  })
+
+  test('đã gửi còn hạn, khách đã đồng ý hoặc từ chối: không còn việc', () => {
+    assert.equal(quotationWork([view('ISSUED', { validUntil: '2999-01-01T00:00:00+07:00' })]), null)
+    assert.equal(quotationWork([view('ACCEPTED')]), null)
+    assert.equal(quotationWork([view('REJECTED')]), null)
+  })
+
+  test('bản nháp mới nhất thắng bản cũ đã bị thay; việc gấp xếp trước', () => {
+    const list = [view('SUPERSEDED', { version: 1 }), view('DRAFT', { version: 2 })]
+    assert.equal(quotationWork(list).label, 'Bản nháp, chưa gửi khách')
+    assert.ok(quotationWork([view('REVISION_REQUESTED')]).rank < quotationWork([view('DRAFT')]).rank)
+  })
+})
 
 describe('lập hợp đồng từ báo giá', () => {
   test('báo giá ACCEPTED, chưa có hợp đồng: lập được', () => {

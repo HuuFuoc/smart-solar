@@ -36,6 +36,7 @@ const CustomerCatalogProductPage = page(() => import('@/pages/catalog-product-pa
 const OpsDashboardPage = page(() => import('@/pages/ops/dashboard-page'), 'OpsDashboardPage')
 const OpsSurveysPage = page(() => import('@/pages/ops/surveys-page'), 'OpsSurveysPage')
 const OpsMySurveysPage = page(() => import('@/pages/ops/my-surveys-page'), 'OpsMySurveysPage')
+const OpsQuotationsPage = page(() => import('@/pages/ops/quotations-page'), 'OpsQuotationsPage')
 const OpsSurveyRequestPage = page(() => import('@/pages/ops/survey-request-page'), 'OpsSurveyRequestPage')
 const OpsAfterSalesPage = page(() => import('@/pages/ops/after-sales-page'), 'OpsAfterSalesPage')
 const OpsAfterSalesRequestPage = page(() => import('@/pages/ops/after-sales-request-page'), 'OpsAfterSalesRequestPage')
@@ -192,6 +193,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: ops.dashboard, lazy: OpsDashboardPage },
       { path: ops.surveys, lazy: OpsSurveysPage },
       { path: ops.surveysMine, lazy: OpsMySurveysPage },
+      { path: ops.quotations, lazy: OpsQuotationsPage },
       { path: ops.survey, lazy: OpsSurveyRequestPage },
       { path: ops.contract, lazy: OpsContractPage },
       { path: ops.afterSales, lazy: OpsAfterSalesPage },

@@ -164,65 +164,69 @@ function nextStep(p: InstallationStaffView, isManager: boolean): TrackerNext {
   }
 }
 
-function SiteAside({ project }: { project: InstallationStaffView }) {
+function SitePanel({ project }: { project: InstallationStaffView }) {
   const site = project.site
   const map = siteMapUrl(site)
   return (
-    <>
-      <section aria-label="Khách hàng và công trình" className="sv-card space-y-4">
-        <h2 className="text-title font-semibold text-fg">Khách hàng và công trình</h2>
-        <div className="border-t border-line pt-4">
-          {site ? (
-            <Facts
-              column
-              items={[
-                { k: 'Khách hàng', v: site.customerName || '—' },
-                {
-                  k: 'Điện thoại',
-                  v: site.customerPhone ? (
-                    <a className="tnum ui-link" href={`tel:${site.customerPhone}`}>
-                      {site.customerPhone}
-                    </a>
-                  ) : (
-                    '—'
-                  ),
-                },
-                { k: 'Công trình', v: site.propertyName || '—' },
-                { k: 'Địa chỉ', v: formatSiteAddress(site) },
-                {
-                  k: 'Toạ độ',
-                  v:
-                    site.latitude != null && site.longitude != null && map ? (
-                      <a className="tnum ui-link" href={map} target="_blank" rel="noreferrer">
-                        {site.latitude}, {site.longitude}
-                        <span className="sr-only"> (mở bản đồ ở tab mới)</span>
-                      </a>
-                    ) : (
-                      'Chưa có'
-                    ),
-                },
-                { k: 'Khu vực', v: project.zone?.name ?? 'Chưa thuộc khu vực nào' },
-              ]}
-            />
-          ) : (
-            <p className="text-body text-fg-2">Không đọc được thông tin công trình.</p>
-          )}
-        </div>
-      </section>
-      <section aria-label="Hồ sơ" className="sv-card space-y-4">
-        <h2 className="text-title font-semibold text-fg">Hồ sơ</h2>
-        <div className="border-t border-line pt-4">
+    <section aria-label="Khách hàng và công trình" className="sv-card space-y-4">
+      <h2 className="text-title font-semibold text-fg">Khách hàng và công trình</h2>
+      <div className="border-t border-line pt-4">
+        {site ? (
           <Facts
             column
+            className="gap-x-8 sm:grid-cols-2"
             items={[
-              { k: 'Mã dự án', v: shortCode(project.projectId) },
-              { k: 'Hợp đồng', v: shortCode(project.contractId) },
-              { k: 'Yêu cầu khảo sát', v: shortCode(project.surveyRequestId) },
+              { k: 'Khách hàng', v: site.customerName || '—' },
+              {
+                k: 'Điện thoại',
+                v: site.customerPhone ? (
+                  <a className="tnum ui-link" href={`tel:${site.customerPhone}`}>
+                    {site.customerPhone}
+                  </a>
+                ) : (
+                  '—'
+                ),
+              },
+              { k: 'Công trình', v: site.propertyName || '—' },
+              { k: 'Địa chỉ', v: formatSiteAddress(site) },
+              {
+                k: 'Toạ độ',
+                v:
+                  site.latitude != null && site.longitude != null && map ? (
+                    <a className="tnum ui-link" href={map} target="_blank" rel="noreferrer">
+                      {site.latitude}, {site.longitude}
+                      <span className="sr-only"> (mở bản đồ ở tab mới)</span>
+                    </a>
+                  ) : (
+                    'Chưa có'
+                  ),
+              },
+              { k: 'Khu vực', v: project.zone?.name ?? 'Chưa thuộc khu vực nào' },
             ]}
           />
-        </div>
-      </section>
-    </>
+        ) : (
+          <p className="text-body text-fg-2">Không đọc được thông tin công trình.</p>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function RecordPanel({ project }: { project: InstallationStaffView }) {
+  return (
+    <section aria-label="Hồ sơ" className="sv-card space-y-4">
+      <h2 className="text-title font-semibold text-fg">Hồ sơ</h2>
+      <div className="border-t border-line pt-4">
+        <Facts
+          column
+          items={[
+            { k: 'Mã dự án', v: shortCode(project.projectId) },
+            { k: 'Hợp đồng', v: shortCode(project.contractId) },
+            { k: 'Yêu cầu khảo sát', v: shortCode(project.surveyRequestId) },
+          ]}
+        />
+      </div>
+    </section>
   )
 }
 
@@ -303,6 +307,7 @@ function InstallationProjectPage() {
 
             <div className="mt-6 grid items-start gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-6 lg:col-span-2">
+                <SitePanel project={p} />
                 <div id="equipment" className="sv-card scroll-mt-6">
                   <EquipmentPanel project={p} canApprove={isManager} />
                 </div>
@@ -326,7 +331,7 @@ function InstallationProjectPage() {
                 <div id="checklist" className="sv-card scroll-mt-6">
                   <ChecklistPanel project={p} />
                 </div>
-                <SiteAside project={p} />
+                <RecordPanel project={p} />
               </div>
             </div>
 

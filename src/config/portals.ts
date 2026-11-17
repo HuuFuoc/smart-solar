@@ -73,6 +73,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
             icon: 'assignment_ind',
             alsoActiveOn: [ROUTES.ops.survey, ROUTES.ops.contract],
           },
+          { label: 'Báo giá', to: ROUTES.ops.quotations, icon: 'request_quote', end: true },
         ],
       },
       {
