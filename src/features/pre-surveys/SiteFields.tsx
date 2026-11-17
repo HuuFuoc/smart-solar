@@ -24,7 +24,7 @@ export function SiteFields({ value, errors, onChange }: Props) {
   return (
     <div className="space-y-6">
       <p className="text-meta text-fg-2">
-        Ô có dấu <span className="text-danger">*</span> là bắt buộc.
+        Ô có dấu <span className="text-fg">*</span> là bắt buộc.
       </p>
 
       <Field
@@ -58,7 +58,7 @@ export function SiteFields({ value, errors, onChange }: Props) {
           <Field
             label="Số nhà, tên đường"
             htmlFor="streetLine"
-            hint="Không bắt buộc."
+            optional
             className="sm:col-span-2"
             error={errors.streetLine}
           >
@@ -80,7 +80,7 @@ export function SiteFields({ value, errors, onChange }: Props) {
       >
         <legend className="float-left mb-4 w-full text-body font-semibold text-fg">
           Lắp trên bề mặt nào?
-          <span aria-hidden className="text-danger">
+          <span aria-hidden className="text-fg-2">
             {' *'}
           </span>
         </legend>
@@ -107,7 +107,8 @@ export function SiteFields({ value, errors, onChange }: Props) {
         <Field
           label="Vật liệu bề mặt"
           htmlFor="surfaceMaterial"
-          hint="Không bắt buộc. Ví dụ: mái tôn, bê tông."
+          optional
+          hint="Ví dụ: mái tôn, bê tông."
           error={errors.surfaceMaterial}
           className="mt-5 sm:w-1/2 sm:pr-2"
         >
@@ -124,7 +125,8 @@ export function SiteFields({ value, errors, onChange }: Props) {
       <Field
         label="Ghi chú"
         htmlFor="siteNote"
-        hint="Không bắt buộc. Ví dụ: giờ vào được công trình."
+        optional
+        hint="Ví dụ: giờ vào được công trình."
         error={errors.note}
         className="border-t border-line pt-5"
       >

@@ -48,7 +48,7 @@ function ReasonField({
       label="Lý do"
       required
       htmlFor={id}
-      hint={`Bắt buộc, tối đa ${REASON_MAX} ký tự. Lưu vào lịch sử của yêu cầu.`}
+      hint={`Tối đa ${REASON_MAX} ký tự. Lưu vào lịch sử của yêu cầu.`}
       error={missing ? 'Ghi lý do.' : undefined}
     >
       <Textarea
@@ -140,7 +140,7 @@ function OverrideDialog({
               <div>
                 <p className="mb-2 text-body font-medium text-fg">
                   Kỹ thuật viên
-                  <span aria-hidden className="text-danger">
+                  <span aria-hidden className="text-fg-2">
                     {' *'}
                   </span>
                 </p>

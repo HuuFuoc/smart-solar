@@ -115,7 +115,7 @@ function UploadForm({
         <div className="flex flex-col gap-2">
           <span className="text-body font-medium text-fg">
             Tệp
-            <span aria-hidden className="text-danger">
+            <span aria-hidden className="text-fg-2">
               {' *'}
             </span>
           </span>

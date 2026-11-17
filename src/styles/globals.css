@@ -28,6 +28,9 @@
 
   --canvas: oklch(98.6% 0.003 110);
   --surface-2: oklch(95.6% 0.006 110);
+  /* Nền ô nhập: khác nền khung để nhìn là biết chỗ gõ; đang gõ thì sáng lên */
+  --field: oklch(96.6% 0.005 110);
+  --field-focus: oklch(100% 0 0);
   --surface-3: oklch(92.5% 0.008 110);
   --rail: oklch(96% 0.012 155);
   --line: oklch(87% 0.01 110);
@@ -76,6 +79,8 @@
 
     --canvas: oklch(17% 0.006 130);
     --surface-2: oklch(22% 0.008 130);
+    --field: oklch(21% 0.008 130);
+    --field-focus: oklch(21% 0.008 130);
     --surface-3: oklch(27% 0.009 130);
     --rail: oklch(20.5% 0.01 150);
     --line: oklch(30% 0.01 130);
@@ -120,6 +125,8 @@
 
   --canvas: oklch(17% 0.006 130);
   --surface-2: oklch(22% 0.008 130);
+  --field: oklch(21% 0.008 130);
+  --field-focus: oklch(21% 0.008 130);
   --surface-3: oklch(27% 0.009 130);
   --rail: oklch(20.5% 0.01 150);
   --line: oklch(30% 0.01 130);
@@ -164,6 +171,8 @@
 
   --color-canvas: var(--canvas);
   --color-surface-2: var(--surface-2);
+  --color-field: var(--field);
+  --color-field-focus: var(--field-focus);
   --color-surface-3: var(--surface-3);
   --color-rail: var(--rail);
   --color-line: var(--line);

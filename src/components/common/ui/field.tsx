@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cx } from '@/utils/cx'
 
-/* `required`: dấu * màu đỏ sau nhãn (chỉ để nhìn; ô nhập tự đặt aria-required).
+/* `required`: dấu * xám sau nhãn (chỉ để nhìn; ô nhập tự đặt aria-required). Đỏ để dành cho lỗi, không tô mọi ô bắt buộc.
    Có `htmlFor` thì dòng gợi ý / lỗi có id `<htmlFor>-msg` để ô nhập trỏ tới bằng aria-describedby. */
 export function Field({
   label,
@@ -30,7 +30,7 @@ export function Field({
       <label htmlFor={htmlFor} className="text-body font-medium text-fg">
         {label}
         {required && (
-          <span aria-hidden className="text-danger">
+          <span aria-hidden className="text-fg-2">
             {' *'}
           </span>
         )}
@@ -57,13 +57,15 @@ export function fieldMessageId(htmlFor: string | undefined) {
 
 type ControlSize = 'sm' | 'md'
 
-// Trạng thái ô nhập: hover viền đậm, focus một vòng 2px màu chính, lỗi viền đỏ, disabled nền xám
+// Trạng thái ô nhập: nền riêng (field) để nhìn là biết chỗ gõ; hover viền đậm; đang gõ nền sáng lên, viền + vòng 2px màu
+// chính; lỗi viền đỏ; chỉ đọc (readonly) nền trong, viền nét đứt; khoá (disabled) nền trong, chữ nhạt, con trỏ cấm.
+// `:read-only` của CSS khớp cả select, checkbox nên chỉ đọc theo thuộc tính [readonly].
 // Màu chữ, viền, nền không để trong `shape` vì cx không gộp class trùng nhau
 const shape =
-  'rounded-control border text-body placeholder:text-fg-3 disabled:border-line disabled:bg-surface-2 disabled:text-fg-3'
+  'rounded-control border text-body placeholder:text-fg-3 disabled:cursor-not-allowed disabled:border-line disabled:bg-transparent disabled:text-fg-3 [&[readonly]]:border-dashed [&[readonly]]:bg-transparent'
 const states =
-  'not-disabled:hover:border-fg-3 focus:border-accent focus-visible:outline-1 focus-visible:outline-offset-0 focus-visible:outline-accent aria-invalid:border-danger aria-invalid:outline-danger not-disabled:aria-invalid:hover:border-danger'
-const control = cx(shape, states, 'border-line-2 bg-canvas text-fg')
+  'not-disabled:hover:border-fg-3 focus:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent aria-invalid:border-danger aria-invalid:outline-danger not-disabled:aria-invalid:hover:border-danger'
+const control = cx(shape, states, 'border-line-2 bg-field text-fg [&:not([readonly]):focus]:bg-field-focus')
 // Bộ lọc đang áp dụng thì tô màu chính
 const controlActive = cx(shape, states, 'border-accent-line bg-accent-soft font-medium text-accent-fg')
 

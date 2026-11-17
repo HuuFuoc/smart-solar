@@ -210,7 +210,8 @@ function StatusForm({
       <Field
         label="Lý do"
         htmlFor="status-reason"
-        hint={`Không bắt buộc, tối đa ${REASON_MAX} ký tự. Lưu vào nhật ký.`}
+        optional
+        hint={`Tối đa ${REASON_MAX} ký tự. Lưu vào nhật ký.`}
         className="mt-4"
       >
         <Textarea
@@ -362,12 +363,7 @@ export function DeleteAccountDialog({
         Người dùng bị đăng xuất và không đăng nhập được nữa. Lịch sử (yêu cầu, lịch hẹn, nhật ký) vẫn giữ. Giao diện
         chưa có cách khôi phục tài khoản đã xoá.
       </p>
-      <Field
-        label="Lý do"
-        htmlFor="delete-reason"
-        hint={`Không bắt buộc, tối đa ${REASON_MAX} ký tự.`}
-        className="mt-4"
-      >
+      <Field label="Lý do" htmlFor="delete-reason" optional hint={`Tối đa ${REASON_MAX} ký tự.`} className="mt-4">
         <Textarea
           id="delete-reason"
           rows={2}

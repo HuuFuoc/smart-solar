@@ -143,7 +143,8 @@ function ReasonDialog({
         label="Lý do"
         htmlFor="dispatch-staff-reason"
         required={required}
-        hint={`${required ? 'Bắt buộc' : 'Không bắt buộc'}, tối đa ${REASON_MAX} ký tự.`}
+        optional={!required}
+        hint={`Tối đa ${REASON_MAX} ký tự.`}
         error={(missing ? 'Ghi lý do.' : error) ?? undefined}
         className="mt-4"
       >

@@ -96,7 +96,8 @@ function AssignForm({ task, sales, onClose }: { task: SalesTaskView; sales: Sale
           label="Lý do"
           htmlFor="assign-reason"
           required={reassign}
-          hint={`${reassign ? 'Bắt buộc khi giao lại' : 'Không bắt buộc'}, tối đa ${TASK_REASON_MAX} ký tự. Lưu vào lịch sử của việc.`}
+          optional={!reassign}
+          hint={`Tối đa ${TASK_REASON_MAX} ký tự. Lưu vào lịch sử của việc.`}
           error={errors.reason}
         >
           <Textarea

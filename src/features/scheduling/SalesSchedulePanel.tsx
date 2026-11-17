@@ -99,7 +99,7 @@ function ErrorLine({ message }: { message: string | null }) {
 /** Ô lý do bắt buộc khi phân công / đổi người */
 function ReasonField({ id, value, onChange }: { id: string; value: string; onChange: (value: string) => void }) {
   return (
-    <Field label="Lý do" htmlFor={id} required hint="Bắt buộc, tối đa 500 ký tự. Lưu vào lịch sử của lịch hẹn.">
+    <Field label="Lý do" htmlFor={id} required hint="Tối đa 500 ký tự. Lưu vào lịch sử của lịch hẹn.">
       <Textarea id={id} rows={2} maxLength={500} value={value} onChange={(e) => onChange(e.target.value)} />
     </Field>
   )

@@ -98,7 +98,8 @@ export function RescheduleForm({
           label="Lý do đổi giờ"
           htmlFor="reschedule-reason"
           required={overdue}
-          hint={overdue ? 'Bắt buộc vì lịch đã qua giờ, tối đa 500 ký tự.' : 'Không bắt buộc, tối đa 500 ký tự.'}
+          optional={!overdue}
+          hint={overdue ? 'Lịch đã qua giờ nên phải ghi lý do. Tối đa 500 ký tự.' : 'Tối đa 500 ký tự.'}
         >
           <Textarea
             id="reschedule-reason"

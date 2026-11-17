@@ -107,8 +107,7 @@ function FaultForm({
     <>
       <DialogTitle>Báo lỗi</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Smart Solar sẽ hẹn kỹ thuật viên tới kiểm tra. Lỗi thuộc bảo hành thì không tính tiền; phần phải trả tiền sẽ có
-        báo giá để bạn duyệt trước khi làm.
+        Kỹ thuật viên sẽ tới kiểm tra. Lỗi trong bảo hành không tính tiền; phần tính tiền có báo giá để bạn duyệt trước.
       </p>
       <div className="mt-4 space-y-4">
         <Field
@@ -132,9 +131,10 @@ function FaultForm({
           <Field
             label="Thiết bị nghi bị lỗi"
             htmlFor="fault-asset"
+            optional
             hint={(() => {
               const picked = assets.find((asset) => asset.assetId === assetId)
-              return picked ? `${equipmentWarrantyText(picked)}.` : 'Không bắt buộc.'
+              return picked ? `${equipmentWarrantyText(picked)}.` : undefined
             })()}
           >
             <Select id="fault-asset" value={assetId} onChange={(e) => setAssetId(e.target.value)}>

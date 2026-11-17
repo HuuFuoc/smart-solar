@@ -138,7 +138,7 @@ function PreferredTimeForm({
             <TimeSelect id="preferred-time" value={time} from="08:00" to="16:00" onChange={setTime} />
           </Field>
           {withNote && (
-            <Field label="Ghi chú" htmlFor="preferred-note" hint="Không bắt buộc." className="sm:col-span-2">
+            <Field label="Ghi chú" htmlFor="preferred-note" optional className="sm:col-span-2">
               <Textarea
                 id="preferred-note"
                 rows={3}

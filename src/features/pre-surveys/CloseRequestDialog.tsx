@@ -100,7 +100,8 @@ export function CloseRequestDialog({
         label="Ghi chú"
         htmlFor="close-note"
         required={noteRequired}
-        hint={`${noteRequired ? 'Bắt buộc' : 'Không bắt buộc'}, tối đa ${NOTE_MAX} ký tự.`}
+        optional={!noteRequired}
+        hint={`Tối đa ${NOTE_MAX} ký tự.`}
         error={error ?? undefined}
         className="mt-4"
       >

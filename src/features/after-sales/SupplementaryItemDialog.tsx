@@ -136,7 +136,8 @@ function SupplementaryForm({
           label="Vật tư cần"
           htmlFor="supplementary-parts"
           error={errors.requiredParts}
-          hint="Không bắt buộc. Ghi tên, số lượng."
+          optional
+          hint="Ghi tên, số lượng."
         >
           <Input
             id="supplementary-parts"

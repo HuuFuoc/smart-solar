@@ -143,7 +143,7 @@ export function ReconsiderationDialog({ requestId, onClose }: { requestId: strin
             </FileButton>
             <span className="text-meta text-fg-2">
               {progress ??
-                `Không bắt buộc. ${fileTypesText(PURPOSE)}, tối đa ${maxSizeText(PURPOSE)} mỗi ảnh, ${RECONSIDERATION_PHOTOS_MAX} ảnh.`}
+                `${fileTypesText(PURPOSE)}, tối đa ${maxSizeText(PURPOSE)} mỗi ảnh, ${RECONSIDERATION_PHOTOS_MAX} ảnh (không bắt buộc).`}
             </span>
           </div>
         </section>

@@ -94,14 +94,11 @@ export function BookingPanel({
             !rescheduling && onRequestDispatch ? (coverage) => onRequestDispatch(coverage, date) : undefined
           }
         />
-        <Field
-          label="Ghi chú cho kỹ thuật viên"
-          htmlFor="booking-note"
-          hint="Không bắt buộc. Ví dụ: gọi trước khi đến, lối lên mái, có người ở nhà sau 17:00."
-        >
+        <Field label="Ghi chú cho kỹ thuật viên" htmlFor="booking-note" optional>
           <Textarea
             id="booking-note"
             rows={3}
+            placeholder="Ví dụ: gọi trước khi đến, lối lên mái, có người ở nhà sau 17:00…"
             maxLength={NOTE_MAX}
             value={note}
             onChange={(e) => setNote(e.target.value)}

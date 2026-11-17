@@ -105,7 +105,7 @@ export function OfficialDocumentDialog({ contract, onClose }: { contract: Contra
         <section className="space-y-2">
           <h3 className="text-body font-medium text-fg">
             Tệp PDF
-            <span aria-hidden className="text-danger">
+            <span aria-hidden className="text-fg-2">
               {' *'}
             </span>
           </h3>

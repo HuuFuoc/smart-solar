@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Count } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { Field, Select } from '@/components/common/ui/field'
-import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { isApiError } from '@/services/api/errors'
 import { formatArea, formatRelative } from '@/features/pre-surveys/preSurveyDisplay'
 import { useMyDraftsQuery, useMySitesQuery } from '@/hooks/usePreSurveys'
@@ -24,9 +24,6 @@ function LoadFailed({ text, error, onRetry }: { text: string; error: unknown; on
     </p>
   )
 }
-
-/** Số bản nháp hiện sẵn, còn lại bấm xem thêm để form của bước không bị đẩy quá xa */
-const DRAFTS_SHOWN = 3
 
 /**
  * Chọn lại địa điểm đã khai, ví dụ đánh giá lại công trình có yêu cầu đã đóng. `null` là "Nhập địa điểm mới".
@@ -53,11 +50,7 @@ export function SavedSitePicker({
   if (items.length === 0) return null
   const current = items.some((s) => s.siteId === currentSiteId) ? currentSiteId : ''
   return (
-    <Field
-      label="Địa điểm đã lưu"
-      htmlFor="saved-site"
-      hint="Chọn lại công trình đã khai trước đây, hoặc nhập địa điểm mới bên dưới."
-    >
+    <Field label="Địa điểm đã lưu" htmlFor="saved-site">
       <Select
         id="saved-site"
         value={current}
@@ -74,7 +67,7 @@ export function SavedSitePicker({
   )
 }
 
-/** Bản nháp chưa gửi, trừ bản đang mở. Không có thì ẩn */
+/** Bản nháp chưa gửi, trừ bản đang mở: một dòng gập sẵn để form của bước vẫn đứng đầu trang. Không có thì ẩn */
 export function SavedDrafts({
   currentId,
   onOpen,
@@ -84,7 +77,6 @@ export function SavedDrafts({
 }) {
   const drafts = useMyDraftsQuery()
   const sites = useMySitesQuery()
-  const [showAll, setShowAll] = useState(false)
   const items = (drafts.data?.items ?? []).filter((d) => d.preSurveyId !== currentId)
   if (drafts.data === undefined && drafts.isError)
     return (
@@ -95,44 +87,44 @@ export function SavedDrafts({
       />
     )
   if (items.length === 0) return null
-  const shown = showAll ? items : items.slice(0, DRAFTS_SHOWN)
   return (
-    <Panel>
-      <PanelHeader title="Bản nháp đã lưu" />
-      <PanelBody>
-        <ul className="divide-y divide-line">
-          {shown.map((d) => {
-            const site = sites.data?.items.find((s) => s.siteId === d.propertySiteId)
-            const facts = [
-              `Sửa ${formatRelative(d.updatedAt)}`,
-              d.usableAreaM2 != null ? `dùng được ${formatArea(d.usableAreaM2)}` : null,
-              d.selectedSimulationId ? 'đã chọn mô phỏng' : null,
-            ]
-            return (
-              <li key={d.preSurveyId} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <p className="text-body font-medium text-fg">{d.siteName || 'Công trình chưa đặt tên'}</p>
-                  <p className="text-meta text-fg-2">{facts.filter(Boolean).join(', ')}</p>
-                </div>
-                <Button
-                  icon="edit_note"
-                  size="sm"
-                  variant="soft"
-                  disabled={sites.isPending}
-                  onClick={() => onOpen(d, site)}
-                >
-                  Mở bản nháp
-                </Button>
-              </li>
-            )
-          })}
-        </ul>
-        {items.length > shown.length && (
-          <Button icon="expand_more" size="sm" variant="secondary" className="mt-2" onClick={() => setShowAll(true)}>
-            Xem thêm {items.length - shown.length} bản nháp
-          </Button>
-        )}
-      </PanelBody>
-    </Panel>
+    <details className="group rounded-container border border-line bg-canvas">
+      <summary className="tap flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 text-body font-medium text-fg [&::-webkit-details-marker]:hidden">
+        <span className="flex items-center gap-2">
+          Tiếp tục bản nháp đã lưu <Count value={items.length} />
+        </span>
+        <Icon
+          name="expand_more"
+          className="text-[20px] text-fg-2 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+        />
+      </summary>
+      <ul className="divide-y divide-line border-t border-line px-4">
+        {items.map((d) => {
+          const site = sites.data?.items.find((s) => s.siteId === d.propertySiteId)
+          const facts = [
+            `Sửa ${formatRelative(d.updatedAt)}`,
+            d.usableAreaM2 != null ? `dùng được ${formatArea(d.usableAreaM2)}` : null,
+            d.selectedSimulationId ? 'đã chọn mô phỏng' : null,
+          ]
+          return (
+            <li key={d.preSurveyId} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-body font-medium text-fg">{d.siteName || 'Công trình chưa đặt tên'}</p>
+                <p className="text-meta text-fg-2">{facts.filter(Boolean).join(', ')}</p>
+              </div>
+              <Button
+                icon="edit_note"
+                size="sm"
+                variant="soft"
+                disabled={sites.isPending}
+                onClick={() => onOpen(d, site)}
+              >
+                Mở bản nháp
+              </Button>
+            </li>
+          )
+        })}
+      </ul>
+    </details>
   )
 }

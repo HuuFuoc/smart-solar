@@ -51,8 +51,7 @@ function Payable({
     <div className="mt-4 space-y-4">
       {attempt.checkoutUrl ? (
         <p className="text-body text-fg-2">
-          Trả tiền trên trang PayOS rồi quay lại đây. Trạng thái tự kiểm tra lại mỗi 10 giây và chỉ đổi khi PayOS xác
-          nhận đã nhận tiền.
+          Trả tiền trên trang PayOS rồi quay lại đây; trạng thái tự cập nhật khi PayOS xác nhận đã nhận tiền.
         </p>
       ) : (
         <Notice tone="warn">PayOS chưa trả link cho đơn này. Bấm Kiểm tra lại sau ít phút.</Notice>

@@ -14,18 +14,19 @@ và không thêm file vào danh sách bỏ qua.
 
 ## Component phải dùng
 
-| Cần                      | Dùng                                                                                       | Không tự làm                                      |
-| ------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| Trạng thái               | `Badge` (`ui/badge.tsx`): chữ có màu, không nền, không viền, không icon                    | Nhãn dạng viên thuốc có nền / viền / icon         |
-| Số đếm cạnh tab, tiêu đề | `Count` (`attention` khi là việc đang chờ: số đỏ)                                          | Ô tròn tự vẽ bằng `rounded-full px-*`             |
-| Lọc theo nhóm / tab      | `FilterChips` (tab gạch chân), `Segmented`, `Select active`                                | Dãy nút viên thuốc `rounded-full`                 |
-| Ô tìm                    | `SearchInput`                                                                              | Input tự ghép icon kính lúp                       |
-| Bảng / danh sách         | `Table` `Th` `Td` `Tr` (`ui/table.tsx`) hoặc `ListHead` `ListCells` `ListCell` `ListRow`   | Mỗi dòng một thẻ có viền                          |
-| Nhóm theo trạng thái     | `StatusTableSection` (`ui/status-tables.tsx`)                                              | Bản sao riêng của khối đó trong từng trang        |
-| Khối nội dung            | `Panel`, `PanelHeader`, `PanelBody`, `KeyValueList`                                        | Thẻ tô nền màu thương hiệu, vạch màu lề trái      |
-| Nút                      | `Button` / `ButtonLink` / `IconButton`, chọn `variant` theo việc (CLAUDE.md quy tắc 9, 10) | `<button>` tự style, nút không viền               |
-| Trống / đang tải / lỗi   | `EmptyState`, `Skeleton`, `QueryBoundary`, `Notice`                                        | Khung tự vẽ với `animate-pulse`                   |
-| Tiêu đề trang            | `PageHeader`                                                                               | Tiêu đề kèm nhãn trạng thái viên thuốc, mô tả dài |
+| Cần                      | Dùng                                                                                                                                                            | Không tự làm                                       |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Trạng thái               | `Badge` (`ui/badge.tsx`): chữ có màu, không nền, không viền, không icon                                                                                         | Nhãn dạng viên thuốc có nền / viền / icon          |
+| Số đếm cạnh tab, tiêu đề | `Count` (`attention` khi là việc đang chờ: số đỏ)                                                                                                               | Ô tròn tự vẽ bằng `rounded-full px-*`              |
+| Lọc theo nhóm / tab      | `FilterChips` (tab gạch chân), `Segmented`, `Select active`                                                                                                     | Dãy nút viên thuốc `rounded-full`                  |
+| Ô tìm                    | `SearchInput`                                                                                                                                                   | Input tự ghép icon kính lúp                        |
+| Bảng / danh sách         | `Table` `Th` `Td` `Tr` (`ui/table.tsx`) hoặc `ListHead` `ListCells` `ListCell` `ListRow`                                                                        | Mỗi dòng một thẻ có viền                           |
+| Nhóm theo trạng thái     | `StatusTableSection` (`ui/status-tables.tsx`)                                                                                                                   | Bản sao riêng của khối đó trong từng trang         |
+| Khối nội dung            | `Panel`, `PanelHeader`, `PanelBody`, `KeyValueList`                                                                                                             | Thẻ tô nền màu thương hiệu, vạch màu lề trái       |
+| Ô nhập                   | `Input`, `Textarea`, `Select`, `DateField`, `TimeSelect` trong `Field` (nền `field`, focus 2px sẵn); ô không bắt buộc dùng `optional`, ví dụ để ở `placeholder` | Ô tự style; dấu * đỏ; dòng gợi ý "Không bắt buộc." |
+| Nút                      | `Button` / `ButtonLink` / `IconButton`, chọn `variant` theo việc (CLAUDE.md quy tắc 9, 10)                                                                      | `<button>` tự style, nút không viền                |
+| Trống / đang tải / lỗi   | `EmptyState`, `Skeleton`, `QueryBoundary`, `Notice`                                                                                                             | Khung tự vẽ với `animate-pulse`                    |
+| Tiêu đề trang            | `PageHeader`                                                                                                                                                    | Tiêu đề kèm nhãn trạng thái viên thuốc, mô tả dài  |
 
 ## Không được làm (dấu hiệu "giao diện AI")
 

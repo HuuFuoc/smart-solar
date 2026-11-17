@@ -169,7 +169,7 @@ function AccountForm({
             aria-invalid={Boolean(errors.fullName)}
           />
         </Field>
-        <Field label="Điện thoại" htmlFor="account-phone" hint="Không bắt buộc." error={errors.phone}>
+        <Field label="Điện thoại" htmlFor="account-phone" optional error={errors.phone}>
           <Input
             id="account-phone"
             type="tel"
@@ -183,7 +183,7 @@ function AccountForm({
           <fieldset>
             <legend className="text-body font-medium text-fg">
               Vai trò
-              <span aria-hidden className="text-danger">
+              <span aria-hidden className="text-fg-2">
                 {' *'}
               </span>
             </legend>

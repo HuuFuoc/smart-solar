@@ -282,10 +282,11 @@ function LineForm({
         <Field
           label="Mô tả thêm"
           htmlFor="quotation-line-description"
+          optional
           hint={
             editing && lineDescription(line)
               ? 'Khách thấy mô tả này. Để trống thì giữ mô tả cũ.'
-              : 'Không bắt buộc. Khách thấy mô tả này trong báo giá.'
+              : 'Khách thấy mô tả này trong báo giá.'
           }
         >
           <Textarea

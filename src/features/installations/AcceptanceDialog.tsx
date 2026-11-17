@@ -16,7 +16,7 @@ const COPY = {
     title: 'Nghiệm thu công trình?',
     body: 'Bạn xác nhận công trình đã lắp đặt đạt yêu cầu theo báo cáo của kỹ thuật viên. Quyết định này không đổi lại được.',
     label: 'Ghi chú',
-    hint: `Không bắt buộc, tối đa ${REASON_MAX} ký tự.`,
+    hint: `Tối đa ${REASON_MAX} ký tự.`,
     submit: 'Nghiệm thu',
     icon: 'check_circle',
     pending: 'Đang gửi…',
@@ -26,7 +26,7 @@ const COPY = {
     title: 'Yêu cầu sửa lại?',
     body: 'Kỹ thuật viên sửa theo mô tả của bạn rồi gửi báo cáo mới để bạn nghiệm thu lại. Yêu cầu đã gửi không rút lại được.',
     label: 'Chỗ cần sửa',
-    hint: `Bắt buộc, tối đa ${REASON_MAX} ký tự.`,
+    hint: `Tối đa ${REASON_MAX} ký tự.`,
     submit: 'Gửi yêu cầu sửa lại',
     icon: 'replay',
     pending: 'Đang gửi…',
@@ -103,6 +103,7 @@ export function AcceptanceDialog({
             hint={copy.hint}
             error={fieldError ?? undefined}
             required={rework}
+            optional={!rework}
             className="mt-4"
           >
             <Textarea
