@@ -41,7 +41,7 @@ export function Pagination({
               'tnum',
               item,
               p === page
-                ? 'inline-flex bg-primary font-semibold text-primary-fg'
+                ? 'inline-flex bg-accent-soft font-semibold text-accent-fg'
                 : 'hidden text-fg-2 hover:bg-hover hover:text-fg md:inline-flex',
             )}
           >
@@ -86,15 +86,10 @@ export function ListPager({
   className?: string
 }) {
   return (
-    <div
-      className={cx('mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-line/60', className)}
-    >
-      <div className="flex items-center gap-1.5 text-meta text-fg-2">
-        <Icon name="history" className="text-primary text-[20px]" />
-        <span className="tnum">
-          Hiển thị {from}–{to} trên {total} {noun}
-        </span>
-      </div>
+    <div className={cx('mt-4 flex flex-wrap items-center justify-between gap-3', className)}>
+      <p className="tnum text-meta text-fg-2">
+        Hiển thị {from}–{to} trên {total} {noun}
+      </p>
       <Pagination
         page={page}
         pages={Math.max(1, pages)}

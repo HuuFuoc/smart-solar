@@ -1,12 +1,10 @@
-import { useMemo, useState, type ReactNode } from 'react'
-import { Icon } from '@/components/common/stitch-ui/Icon'
-import { Badge, Count, type Tone } from '@/components/common/ui/badge'
+import { useMemo, useState } from 'react'
+import { Badge, type Tone } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
-import { cx } from '@/utils/cx'
-import { Field, SearchInput, Select } from '@/components/common/ui/field'
+import { FilterChips } from '@/components/common/ui/chips'
+import { SearchInput, Select } from '@/components/common/ui/field'
 import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
 import { PagedList } from '@/components/common/ui/pagination'
-import { Segmented } from '@/components/common/ui/segmented'
 import {
   formatAreaPair,
   formatDateTime,
@@ -30,7 +28,6 @@ import {
   vnDate,
 } from '@/features/scheduling/schedulingDisplay'
 import { compareSchedule } from '@/features/scheduling/scheduleOrder'
-import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { ROUTES, withId } from '@/routes/paths'
 import { HCM_PROVINCE } from '@/services/administrativeUnitService'
 import type {
@@ -103,10 +100,7 @@ function PendingAppointment({
   if (!appointment) return <span className="text-fg-2">Khách chưa đặt giờ</span>
   return (
     <div className="space-y-0.5">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <WeekdayBadge date={appointment.startsAt} format="short" withBar />
-        <span className="font-medium text-fg">{startsLabel(appointment.startsAt, today)}</span>
-      </div>
+      <span className="block font-medium text-fg">{startsLabel(appointment.startsAt, today)}</span>
       <span className="block text-meta text-fg-2">{appointmentStatusMeta(appointment.status, 'sales').label}</span>
     </div>
   )
@@ -178,7 +172,7 @@ type RowState = {
 /** Giờ hẹn đang hiệu lực: lịch chờ người nhận cũng có giờ khách đã chọn */
 const appointmentStart = (r: MySurveyRequestItem) => r.appointment?.startsAt ?? r.scheduledAt
 
-type ThreeStatusKey = 'unscheduled' | 'dispatching' | 'confirmed'
+type ThreeStatusKey = 'unscheduled' | 'dispatching' | 'confirmed' | 'finished'
 
 type MyRow = {
   row: MySurveyRequestItem
@@ -186,30 +180,29 @@ type MyRow = {
   groupKey: ThreeStatusKey
 }
 
-/** Phân loại chính xác 3 trạng thái của yêu cầu khảo sát */
+/** Nhóm của một yêu cầu: đang xếp người, khách chưa đặt giờ, đã có kỹ thuật viên nhận, đã xong hoặc đã đóng */
 function classifyThreeStatus(r: MySurveyRequestItem, mustAssign: boolean): { key: ThreeStatusKey; state: RowState } {
-  const hasApptStart = Boolean(appointmentStart(r))
-  const hasAppt = Boolean(r.appointment)
-  const isSched =
-    r.status === 'SCHEDULED' ||
+  if (isCompletedStatus(r.status) || r.appointment?.status === 'COMPLETED')
+    return { key: 'finished', state: { rank: 4, label: 'Đã khảo sát', tone: 'neutral', hint: null } }
+  if (isClosedRequest(r.status))
+    return { key: 'finished', state: { rank: 5, ...surveyStatusMeta(r.status), hint: null } }
+
+  const confirmed =
     isScheduledStatus(r.status) ||
     Boolean(r.appointment?.technicianUserId) ||
     r.appointment?.status === 'ACCEPTED' ||
     r.appointment?.status === 'ASSIGNED'
-  const isCompleted = isCompletedStatus(r.status) || r.appointment?.status === 'COMPLETED'
-  const isClosed = isClosedRequest(r.status)
-
-  // 1. Kỹ thuật viên đã nhận lịch / Đã có lịch
-  if (isSched || isCompleted) {
-    const label = isCompleted ? 'Đã khảo sát' : 'Kỹ thuật viên đã nhận lịch'
-    return {
-      key: 'confirmed',
-      state: { rank: 1, label, tone: 'ok', hint: null },
-    }
+  if (confirmed) {
+    if (r.appointment?.isOverdue)
+      return {
+        key: 'confirmed',
+        state: { rank: 0, label: 'Quá giờ, chưa khảo sát', tone: 'danger', hint: 'Hẹn lại giờ khác với khách.' },
+      }
+    return { key: 'confirmed', state: { rank: 1, label: 'Kỹ thuật viên đã nhận lịch', tone: 'ok', hint: null } }
   }
 
-  // 2. Đang xếp kỹ thuật viên (khách đã chọn giờ / có appointment nhưng chưa có KTV nhận)
-  if (hasApptStart || hasAppt || mustAssign) {
+  // Khách đã chọn giờ nhưng chưa kỹ thuật viên nào nhận
+  if (appointmentStart(r) || r.appointment || mustAssign) {
     if (r.appointment?.isOverdue) {
       return {
         key: 'dispatching',
@@ -233,18 +226,7 @@ function classifyThreeStatus(r: MySurveyRequestItem, mustAssign: boolean): { key
     }
   }
 
-  // 3. Khách chưa đặt giờ
-  if (isClosed) {
-    return {
-      key: 'unscheduled',
-      state: { rank: 5, ...surveyStatusMeta(r.status), hint: null },
-    }
-  }
-
-  return {
-    key: 'unscheduled',
-    state: { rank: 3, label: 'Khách chưa đặt giờ', tone: 'info', hint: null },
-  }
+  return { key: 'unscheduled', state: { rank: 3, label: 'Khách chưa đặt giờ', tone: 'info', hint: null } }
 }
 
 // Việc cần làm lên đầu, rồi theo giờ hẹn như mọi danh sách lịch (ngày mới nhất trước, trong ngày giờ sớm trước);
@@ -257,20 +239,13 @@ function byNextAction(a: MyRow, b: MyRow) {
   )
 }
 
-const THREE_STATUS_TABLES: { key: ThreeStatusKey; title: string; dot: 'ok' | 'warn' | 'info' }[] = [
-  { key: 'confirmed', title: 'Kỹ thuật viên đã nhận lịch', dot: 'ok' },
-  { key: 'unscheduled', title: 'Khách chưa đặt giờ', dot: 'warn' },
-  { key: 'dispatching', title: 'Đang xếp kỹ thuật viên', dot: 'info' },
+// Nhóm cần làm trước đứng trước; đã xong, đã đóng ở cuối
+const THREE_STATUS_TABLES: { key: ThreeStatusKey; title: string }[] = [
+  { key: 'dispatching', title: 'Đang xếp kỹ thuật viên' },
+  { key: 'unscheduled', title: 'Khách chưa đặt giờ' },
+  { key: 'confirmed', title: 'Kỹ thuật viên đã nhận lịch' },
+  { key: 'finished', title: 'Đã khảo sát, đã đóng' },
 ]
-
-type AgeFilter = 'all' | 'old' | 'recent'
-const AGE_FILTERS: { value: AgeFilter; label: string }[] = [
-  { value: 'all', label: 'Tất cả' },
-  { value: 'old', label: 'Quá 7 ngày' },
-  { value: 'recent', label: 'Gần đây' },
-]
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000
-const DOT_BG = { ok: 'bg-ok', warn: 'bg-warn', info: 'bg-info' } as const
 
 /** Bỏ dấu, chữ thường: tìm "dat lich" ra "Đặt lịch" */
 const fold = (text: string | null | undefined) =>
@@ -280,63 +255,12 @@ const fold = (text: string | null | undefined) =>
     .replace(/đ/gi, 'd')
     .toLowerCase()
 
-function SvStat({
-  label,
-  value,
-  icon,
-  tone,
-}: {
-  label: string
-  value: number
-  icon: string
-  tone?: 'warn' | 'info' | 'ok'
-}) {
-  return (
-    <div className="sv-stat" data-tone={tone}>
-      <div className="min-w-0">
-        <p className="text-body">{label}</p>
-        <p className="tnum text-display font-semibold">{value}</p>
-      </div>
-      <span className="sv-stat-icon" aria-hidden>
-        <Icon name={icon} className="text-[24px]" />
-      </span>
-    </div>
-  )
-}
-
-function CustomerCell({ name }: { name: string | null }) {
-  if (!name) return <>—</>
-  return (
-    <span className="flex items-center gap-2">
-      <span className="sv-avatar-sm" aria-hidden>
-        {name.trim()[0]?.toUpperCase()}
-      </span>
-      <span className="min-w-0 wrap-break-word">{name}</span>
-    </span>
-  )
-}
-
-function StatusPill({ tone, children }: { tone: Tone; children: ReactNode }) {
-  return (
-    <span className="sv-pill" data-tone={tone}>
-      <Badge tone={tone}>{children}</Badge>
-    </span>
-  )
-}
-
 function MyRequestRows({ items, today }: { items: MyRow[]; today: string }) {
   return (
     <>
       <ListHead
         columns={COLUMNS}
-        labels={[
-          'Tên công trình & địa chỉ',
-          'Khách hàng',
-          'Thời gian nhận',
-          'Lịch hẹn khảo sát',
-          'Trạng thái',
-          'Thao tác',
-        ]}
+        labels={['Công trình', 'Khách hàng', 'Thời gian nhận', 'Lịch hẹn khảo sát', 'Trạng thái', 'Thao tác']}
       />
       <ul className="divide-y divide-line">
         {items.map(({ row: r, state }) => {
@@ -346,11 +270,11 @@ function MyRequestRows({ items, today }: { items: MyRow[]; today: string }) {
               <ListCells columns={COLUMNS}>
                 <Property name={r.propertyName} row={r} />
                 <ListCell label="Trạng thái" wide className="lg:order-5">
-                  <StatusPill tone={state.tone}>{state.label}</StatusPill>
+                  <Badge tone={state.tone}>{state.label}</Badge>
                   {state.hint && <p className="mt-0.5 text-meta text-fg-2">{state.hint}</p>}
                 </ListCell>
                 <ListCell label="Khách hàng" className="lg:order-2">
-                  <CustomerCell name={r.customerName} />
+                  {r.customerName || '—'}
                 </ListCell>
                 <ListCell label="Thời gian nhận" className="lg:order-3">
                   {r.assignedAt ? <When iso={r.assignedAt} /> : '—'}
@@ -358,10 +282,7 @@ function MyRequestRows({ items, today }: { items: MyRow[]; today: string }) {
                 <ListCell label="Lịch hẹn khảo sát" className="lg:order-4">
                   {appointmentStart(r) ? (
                     <div className="space-y-0.5">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <WeekdayBadge date={appointmentStart(r)!} format="short" withBar />
-                        <span className="font-medium text-fg">{startsLabel(appointmentStart(r), today)}</span>
-                      </div>
+                      <span className="block font-medium text-fg">{startsLabel(appointmentStart(r), today)}</span>
                       {technician && <span className="block text-meta text-fg-2">{technician}</span>}
                     </div>
                   ) : (
@@ -391,14 +312,12 @@ function MyRequestRows({ items, today }: { items: MyRow[]; today: string }) {
 export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[]; needAssign: Set<string> }) {
   const today = todayVn()
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
-  const [active, setActive] = useState<ThreeStatusKey>('confirmed')
-  const [age, setAge] = useState<AgeFilter>('all')
-  const [now] = useState(() => Date.now())
+  const [picked, setPicked] = useState<ThreeStatusKey | null>(null)
   const [keyword, setKeyword] = useState('')
 
   const needle = fold(keyword.trim())
   const tables = useMemo(() => {
-    const map: Record<ThreeStatusKey, MyRow[]> = { unscheduled: [], dispatching: [], confirmed: [] }
+    const map: Record<ThreeStatusKey, MyRow[]> = { unscheduled: [], dispatching: [], confirmed: [], finished: [] }
     for (const row of rows) {
       if (!matchesVnDate(vnDate(row.assignedAt || row.submittedAt), dateFilter, today)) continue
       if (
@@ -409,104 +328,54 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
       const { key, state } = classifyThreeStatus(row, needAssign.has(row.surveyRequestId))
       map[key].push({ row, state, groupKey: key })
     }
-    return THREE_STATUS_TABLES.map((t) => {
-      const items = map[t.key].sort(byNextAction)
-      // Nhóm đang xếp có lịch quá giờ hoặc cần phân công thì số đếm đỏ
-      return { ...t, items }
-    })
+    return THREE_STATUS_TABLES.map((t) => ({ ...t, items: map[t.key].sort(byNextAction) }))
   }, [rows, needAssign, dateFilter, needle, today])
 
-  // Số tổng quan tính trên mọi yêu cầu của bạn, không theo bộ lọc
-  const overview = useMemo(() => {
-    const out = { total: rows.length, unscheduled: 0, booked: 0, done: 0 }
-    for (const row of rows) {
-      const { key } = classifyThreeStatus(row, needAssign.has(row.surveyRequestId))
-      if (key === 'unscheduled') out.unscheduled += 1
-      else if (isCompletedStatus(row.status) || row.appointment?.status === 'COMPLETED') out.done += 1
-      else out.booked += 1
-    }
-    return out
-  }, [rows, needAssign])
-
+  // Mở sẵn nhóm đầu tiên còn việc
+  const active = picked ?? tables.find((t) => t.items.length > 0)?.key ?? 'confirmed'
   const current = tables.find((t) => t.key === active) ?? tables[0]!
-  const isOld = (r: MySurveyRequestItem) => now - new Date(r.assignedAt || r.submittedAt).getTime() > WEEK_MS
-  const items = current.items.filter(({ row }) => age === 'all' || (age === 'old') === isOld(row))
-  const count = (kind: AgeFilter) =>
-    current.items.filter(({ row }) => kind === 'all' || (kind === 'old') === isOld(row)).length
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SvStat label="Tổng yêu cầu của tôi" value={overview.total} icon="assignment" />
-        <SvStat label="Khách chưa đặt giờ" value={overview.unscheduled} icon="schedule" tone="warn" />
-        <SvStat label="Đã có lịch hẹn" value={overview.booked} icon="calendar_month" tone="info" />
-        <SvStat label="Hoàn tất khảo sát" value={overview.done} icon="task_alt" tone="ok" />
-      </div>
-      <div className="sv-card flex flex-wrap items-end gap-4">
-        <div className="min-w-0 flex-1 basis-72">
+    <div className="space-y-3">
+      <div role="search" className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <label className="min-w-0 flex-1 sm:min-w-64 lg:max-w-md">
+          <span className="sr-only">Tìm yêu cầu</span>
           <SearchInput
             name="my-requests-search"
-            aria-label="Tìm yêu cầu"
             placeholder="Tìm theo tên công trình, khách hàng, phường, xã..."
             maxLength={100}
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onClear={() => setKeyword('')}
           />
-        </div>
-        <Field label="Thời gian nhận" htmlFor="my-requests-date" className="w-full sm:w-52">
-          <Select
-            id="my-requests-date"
-            active={dateFilter !== 'all'}
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-          >
-            {DATE_FILTER_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        </label>
+        <Select
+          aria-label="Thời gian nhận"
+          className="sm:w-52"
+          active={dateFilter !== 'all'}
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+        >
+          {DATE_FILTER_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.value === 'all' ? 'Nhận lúc: mọi ngày' : `Nhận ${o.label.toLowerCase()}`}
+            </option>
+          ))}
+        </Select>
       </div>
-      <div role="tablist" aria-label="Tình hình yêu cầu" className="sv-tabs">
-        {tables.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            role="tab"
-            aria-selected={t.key === current.key}
-            onClick={() => {
-              setActive(t.key)
-              setAge('all')
-            }}
-          >
-            <span aria-hidden className={cx('size-2.5 rounded-full', DOT_BG[t.dot])} />
-            {t.title}
-            <Count value={t.items.length} />
-          </button>
-        ))}
-      </div>
-      <section className="sv-card sv-flush">
-        <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3 text-meta text-fg-2">
-          <span>Bộ lọc nhóm:</span>
-          <Segmented
-            label="Lọc theo thời gian nhận"
-            value={age}
-            onChange={setAge}
-            options={AGE_FILTERS.map((o) => ({ value: o.value, label: `${o.label} (${count(o.value)})` }))}
-          />
-        </div>
-        <div className="px-4 pb-2">
-          {items.length === 0 ? (
-            <p className="py-3 text-meta text-fg-2">Không có yêu cầu nào.</p>
-          ) : (
-            <PagedList key={`${current.key}-${age}`} items={items} noun="yêu cầu" keepScroll>
-              {(pageItems) => <MyRequestRows items={pageItems} today={today} />}
-            </PagedList>
-          )}
-        </div>
-      </section>
+      <FilterChips
+        label="Tình hình yêu cầu"
+        value={current.key}
+        onChange={setPicked}
+        chips={tables.map((t) => ({ value: t.key, label: t.title, count: t.items.length }))}
+      />
+      {current.items.length === 0 ? (
+        <p className="py-3 text-meta text-fg-2">Không có yêu cầu nào.</p>
+      ) : (
+        <PagedList key={current.key} items={current.items} noun="yêu cầu" keepScroll>
+          {(pageItems) => <MyRequestRows items={pageItems} today={today} />}
+        </PagedList>
+      )}
     </div>
   )
 }

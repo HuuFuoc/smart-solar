@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { SERVICE_PACKAGE_KINDS } from '@/common/afterSales'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
+import { PageHeader } from '@/components/common/ui/page-header'
 import { PagedList } from '@/components/common/ui/pagination'
-import { ErrorState, Skeleton } from '@/components/common/ui/states'
+import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
+import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { awaitsPayment, packageKindLabel } from '@/features/after-sales/afterSalesDisplay'
 import { CancelSubscriptionDialog } from '@/features/after-sales/CancelSubscriptionDialog'
 import { BOOKING_LEAD_DAYS, entitlementDeadline } from '@/features/after-sales/customerServiceRules'
@@ -36,23 +37,26 @@ const PAYMENT_PARAM = 'thanh-toan'
 function OnSale({ kind, onBuy }: { kind: ServicePackageKind; onBuy: (pkg: PackageView) => void }) {
   const packages = usePackagesQuery(kind)
   const label = packageKindLabel(kind)
-
-  if (packages.isPending) {
-    return <Skeleton className="h-44 rounded-container" />
-  }
-  if (packages.data === undefined) {
-    return (
-      <ErrorState
-        title={`Không tải được gói ${label.toLowerCase()}.`}
-        message={packages.error?.message}
-        onRetry={() => void packages.refetch()}
-      />
-    )
-  }
-  if (packages.data.length === 0) {
-    return null
-  }
-  return <PackageList items={packages.data} onBuy={onBuy} />
+  return (
+    <Panel>
+      <PanelHeader title={label} />
+      <PanelBody>
+        {packages.isPending ? (
+          <Skeleton className="h-40" />
+        ) : packages.data === undefined ? (
+          <ErrorState
+            title={`Không tải được gói ${label.toLowerCase()}.`}
+            message={packages.error?.message}
+            onRetry={() => void packages.refetch()}
+          />
+        ) : packages.data.length === 0 ? (
+          <EmptyState title={`Chưa có gói ${label.toLowerCase()} đang bán`} />
+        ) : (
+          <PackageList items={packages.data} onBuy={onBuy} />
+        )}
+      </PanelBody>
+    </Panel>
+  )
 }
 
 export function CustomerPackagesPage() {
@@ -76,21 +80,14 @@ export function CustomerPackagesPage() {
 
   return (
     <>
-      {/* Header trang với thanh màu dọc và mô tả chuẩn mockup */}
-      <div className="mb-6 flex items-start gap-3">
-        <span className="mt-1 inline-block h-6 w-1.5 rounded-control bg-primary shrink-0" aria-hidden="true" />
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-figure font-bold text-fg">Gói dịch vụ</h1>
-            {toPay > 0 && <Badge tone="danger">{toPay} gói chờ bạn thanh toán</Badge>}
-          </div>
-          <p className="mt-0.5 text-meta text-fg-2">Quản lý thông tin các gói dịch vụ và quyền lợi của bạn</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Gói dịch vụ"
+        description={toPay > 0 ? <Badge tone="danger">{toPay} gói chờ bạn thanh toán</Badge> : undefined}
+      />
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         {subscriptions.isPending ? (
-          <Skeleton className="h-32 rounded-container" />
+          <Skeleton className="h-32" />
         ) : subscriptions.data === undefined ? (
           <ErrorState
             title="Không tải được gói bạn đã mua."
@@ -99,23 +96,22 @@ export function CustomerPackagesPage() {
           />
         ) : (
           mine.length > 0 && (
-            <section className="rounded-container border border-line bg-canvas p-5" aria-label="Gói của bạn">
-              <div className="mb-4 flex items-center gap-2">
-                <Icon name="check_circle" className="text-primary text-[20px]" />
-                <h2 className="text-body font-bold text-fg">Gói của bạn</h2>
-              </div>
-              <PagedList items={mine} noun="gói" keepScroll>
-                {(page) => (
-                  <SubscriptionList
-                    items={page}
-                    contractNumbers={contractNumbers}
-                    onPay={setPayingAttemptId}
-                    onCancel={setCancelling}
-                    onBook={(entitlement, subscription) => setBooking({ entitlement, subscription })}
-                  />
-                )}
-              </PagedList>
-            </section>
+            <Panel>
+              <PanelHeader title="Gói của bạn" />
+              <PanelBody>
+                <PagedList items={mine} noun="gói" keepScroll>
+                  {(page) => (
+                    <SubscriptionList
+                      items={page}
+                      contractNumbers={contractNumbers}
+                      onPay={setPayingAttemptId}
+                      onCancel={setCancelling}
+                      onBook={(entitlement, subscription) => setBooking({ entitlement, subscription })}
+                    />
+                  )}
+                </PagedList>
+              </PanelBody>
+            </Panel>
           )
         )}
 

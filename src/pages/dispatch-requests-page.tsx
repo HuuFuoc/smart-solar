@@ -11,7 +11,6 @@ import { EmptyState } from '@/components/common/ui/states'
 import { SummaryTile } from '@/components/common/ui/summary-tile'
 import { dispatchReasonLabel, dispatchStatusMeta } from '@/features/dispatch/dispatchDisplay'
 import { formatAppointment, formatMoment } from '@/features/scheduling/schedulingDisplay'
-import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useDispatchQueueQuery } from '@/hooks/useDispatch'
 import { ROUTES, withId } from '@/routes/paths'
 import type { DispatchQueueItemView } from '@/types/res/dispatchRes'
@@ -89,7 +88,6 @@ function DispatchRow({ row: r, detailPattern }: { row: DispatchQueueItemView; de
           {r.status === 'PROPOSAL_PENDING' && r.liveProposal ? (
             <div className="mt-1 space-y-0.5">
               <div className="flex flex-wrap items-center gap-1.5">
-                <WeekdayBadge date={r.liveProposal.startsAt} format="short" withBar />
                 <span className="text-meta text-fg-2">
                   Đề xuất {formatAppointment(r.liveProposal.startsAt, r.liveProposal.endsAt)},{' '}
                   {r.liveProposal.technicianName}
