@@ -8,6 +8,7 @@ import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Input } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
+import { useAuth } from '@/context/AuthProvider'
 import { useChangePasswordMutation } from '@/hooks/useAuthMutations'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import { changePasswordContent, isStrongPassword, passwordRules, registerContent } from '@/data/auth'
@@ -52,6 +53,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
 function ChangePasswordForm({ onDone, onBusyChange }: { onDone: () => void; onBusyChange: (busy: boolean) => void }) {
   const id = useId()
   const changeMutation = useChangePasswordMutation()
+  const { clearSession } = useAuth()
   const [formError, setFormError] = useState<string | null>(null)
   const {
     register,
@@ -75,8 +77,10 @@ function ChangePasswordForm({ onDone, onBusyChange }: { onDone: () => void; onBu
     setFormError(null)
     try {
       await changeMutation.mutateAsync({ currentPassword: values.currentPassword, newPassword: values.newPassword })
-      toast.success(changePasswordContent.success)
+      toast.success(changePasswordContent.successRelogin)
       onDone()
+      // Backend thu hồi mọi token của tài khoản ngay khi đổi mật khẩu: xoá phiên ở máy để về trang đăng nhập
+      clearSession()
     } catch (error) {
       // 401 ở đây là phiên đã hết (client.ts đã thử refresh), mật khẩu chưa được đổi
       // Sai mật khẩu hiện tại thì backend trả 400 AUTH_CURRENT_PASSWORD_INVALID
