@@ -354,6 +354,10 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
   - Sửa thiết bị (`AssetCorrectionPanel`, PUT .../assets/{id}): chỉ gửi ô đã đổi, lý do bắt buộc; hãng / model / serial không
     xoá được (BE giữ giá trị cũ khi bỏ trống). Chi tiết công trình không trả `specifications` nên ô thông số chỉ ghi mới.
   - Lỗi `AFTER_SALES_INVALID_STATE` dịch theo câu gốc của BE (`managerActionError` ở `managerAfterSalesDisplay.ts`).
+  - Bảo hành của hãng (`WarrantyActivationPanel`): chi tiết công trình của nhân viên không trả ngày kích hoạt hay nguồn thời hạn, nên
+    trình duyệt nhớ thiết bị backend báo đã ghi (`AFTER_SALES_WARRANTY_ACTIVATION_RECORDED`) hoặc chưa kiểm chứng
+    (`AFTER_SALES_WARRANTY_SOURCE_UNVERIFIED`, thiết bị `LEGACY_UNVERIFIED`) để không hiện lại nút "Ghi ngày kích hoạt". Biên bản bàn
+    giao của quản lý không hiện `warrantyEndsOn` (backend tính từ ngày bàn giao, khác hạn khách thấy); khách thấy hạn từ màn bảo hành.
 - Hàng việc kinh doanh `/manage/sales-tasks`, `/admin/sales-tasks` (`pages/sales-tasks-page.tsx`): GET tasks, trạng thái cụ thể
   gửi `status` lên BE, loại / người giữ lọc ở máy. Giao / giao lại (lý do bắt buộc khi đã có người giữ) chỉ ở cổng quản trị:
   người nhận lấy từ `GET /admin/users?role=SALES&status=ACTIVE` (chỉ ADMIN). Backend `main` không có danh sách kinh doanh cho
@@ -755,15 +759,50 @@ GET phiên không trả `notice` / `grounded`: `notice` chỉ hiện cho câu tr
 người dùng), `grounded` suy từ `status` (INSUFFICIENT_CONTEXT = chưa có tài liệu hỗ trợ, nhãn vàng, không nguồn). Nguồn không có
 link tải; chỉ quản trị có link sang `/admin/knowledge-base/:id`. Đang gửi thì khoá ô, nút và chuyển phiên; câu hỏi hiện "Đang gửi"
 nhưng không vào lịch sử, lỗi thì giữ câu. Gửi lại đúng câu trong đúng phiên dùng lại `clientMessageId` (backend chỉ chống lặp khi
-đã có phiên). 429 `AUTH_TOO_MANY_REQUESTS` có Retry-After → đếm ngược; `RAG_QUOTA_EXCEEDED` / `RAG_TOO_MANY_CONCURRENT_REQUESTS`
-không đếm; không tự gửi lại. 503 `FEATURE_PENDING_MIGRATION` / `SCHEMA_NOT_READY` → "Trợ lý chưa sẵn sàng" (quản trị có lối sang
+đã có phiên). 503 `FEATURE_PENDING_MIGRATION` / `SCHEMA_NOT_READY` → "Trợ lý chưa sẵn sàng" (quản trị có lối sang
 Kho tri thức). Khoá cache có mã người dùng, đăng xuất thì `queryClient.clear()`. Không có API xoá / đổi tên phiên, không streaming.
-Image đang chạy để `Features__KnowledgeBaseEnabled=false` nên chưa thử được câu trả lời thật.
-Trợ lý cấu hình (backend ad10455): câu hỏi về diện tích / ngân sách / điện tiêu thụ được trả lời bằng `advisor` (`SolarAdvisorView`,
-không gọi mô hình); ô "Thêm số liệu để tư vấn cấu hình" (`AdvisorInputs`, luật `advisorRules.ts`) gửi kèm `advisor` ở câu tiếp theo rồi
-xoá. `AdvisorResult` hiện trạng thái READY / NEEDS_INPUT (câu hỏi của backend) / BLOCKED, các cấu hình tham khảo, cách tính, giới hạn,
-nguồn và lời lưu ý "không phải báo giá"; kết quả chỉ giữ trong cache của lần dùng trang (GET phiên không trả). Lỗi `RAG_TIMEOUT`
-(504), `RAG_BUSY`, `RAG_ADVISOR_UNAVAILABLE` (503) có câu riêng, không tự gửi lại; `clientMessageId` nay chống lặp cả câu đầu phiên.
+Giới hạn và chi phí (backend nhánh `feat/cloud-rag-security-cost-control` 4fb5b95, tài liệu BE `guides/rag-fe-integration.md`; luật ở
+`features/chat/chatRules.ts`, test ở `tests/shared-portal-rules.test.mjs`):
+
+- Câu hỏi tối đa 1.000 ký tự (`CHAT_LIMITS.messageMax`, đếm `trim().length`); 400 `RAG_MESSAGE_TOO_LONG` có `details.maxCharacters`
+  thấp hơn thì dùng số đó (`messageMaxAfter`). Bộ đếm "82 / 1.000" hiện từ khi gõ, đỏ khi quá.
+- Dấu "!" cuối dòng dưới ô hỏi (`ChatLimitHint.tsx`, mọi cổng): rê chuột, focus bàn phím hoặc bấm / chạm mở khung giới hạn; Esc
+  đóng khung đó trước khung trợ lý. Trạng thái (`chatLimitState`): tạm ngưng > hết hạn mức / hết lượt > đang phải chờ > quá / sắp chạm
+  số ký tự > bình thường; chỉ lấy từ lỗi backend, không đếm lượt còn lại (người dùng không có API xem lượt), không hiện USD.
+- Lỗi theo mã (`chatBlockOf`, câu ở `errors.ts`): `AUTH_TOO_MANY_REQUESTS` đếm ngược theo Retry-After; `RAG_TOO_MANY_CONCURRENT_REQUESTS`,
+  `AI_GLOBAL_CONCURRENCY_LIMIT` đếm ngược theo `details.retryAfterSeconds`; `RAG_QUOTA_EXCEEDED`, `AI_BUDGET_EXCEEDED` (hạn mức ngày hoặc
+  tháng, không hẹn "ngày mai"), `AI_GENERATION_DISABLED` (503, câu tư vấn cấu hình vẫn hỏi được) giữ tới khi có câu trả lời hoặc tới giờ
+  backend hẹn, nhớ trong sessionStorage để tải lại trang không tưởng là đã hết. Không tự gửi lại, trừ `AI_REQUEST_IN_PROGRESS`: chờ
+  `retryAfterSeconds` (1–30 giây) rồi gửi lại đúng body, cùng `clientMessageId`, tối đa 3 lần, không hiện lỗi; chuyển phiên thì thôi.
+  Trợ lý cấu hình (backend ad10455): câu hỏi về diện tích / ngân sách / điện tiêu thụ được trả lời bằng `advisor` (`SolarAdvisorView`,
+  không gọi mô hình); ô "Thêm số liệu để tư vấn cấu hình" (`AdvisorInputs`, luật `advisorRules.ts`) gửi kèm `advisor` ở câu tiếp theo rồi
+  xoá. `AdvisorResult` hiện trạng thái READY / NEEDS_INPUT (câu hỏi của backend) / BLOCKED, các cấu hình tham khảo, cách tính, giới hạn,
+  nguồn và lời lưu ý "không phải báo giá"; kết quả chỉ giữ trong cache của lần dùng trang (GET phiên không trả). Lỗi `RAG_TIMEOUT`
+  (504), `RAG_BUSY`, `RAG_ADVISOR_UNAVAILABLE` (503) có câu riêng, không tự gửi lại; `clientMessageId` nay chống lặp cả câu đầu phiên.
+
+**Chi phí AI** (`/admin/ai-usage`, chỉ quản trị, menu "Danh mục, hệ thống"; backend nhánh cloud RAG 4fb5b95, tài liệu BE
+`guides/admin-rag-dashboard-api.md`, `guides/rag-security-and-cost-control.md`). Response viết tay ở `types/res/adminRagUsageRes.ts`
+theo record C# (swagger chỉ khai "200 OK"), 9 path chép từ swagger của server chung vào `docs/api/swagger.json`. Service
+`adminRagUsageService.ts`, hook `useAdminRagUsage.ts`, luật `features/ai-usage/aiUsageRules.ts` (test `tests/ai-usage-rules.test.mjs`),
+nhãn mã ở `common/aiUsage.ts`.
+
+- Mọi GET chung 60 lần / phút nên không tự tải lại khi quay lại tab. Khoảng ngày theo UTC như backend (mặc định ngày 1 của tháng tới
+  hôm nay, tối đa 92 ngày, nằm trên địa chỉ `?tu=&den=`). Tiền USD tối đa 6 chữ số lẻ, số dương nhỏ hơn 0,000001 ghi "< 0,000001 USD"
+  (`formatUsd`); đã dùng = đã chốt + chờ đối soát + đang giữ.
+- Khối "Ngân sách" (GET `/admin/rag-budget`): ba kỳ (hôm nay, tháng, nạp tài liệu tháng), cảnh báo dịch theo mã (`budgetAlertText`;
+  critical đỏ, warning vàng), model và các giới hạn đang áp dụng. "Sửa giới hạn" (`BudgetDialog`): ô theo `ceilings` của backend, chỉ gửi
+  ô đã đổi + `expectedActiveVersion`; lưu là tạo và áp dụng ngay phiên bản cấu hình mới; 409 thì đóng hộp, tải lại; tắt soạn câu trả lời
+  phải xác nhận.
+- Số liệu trong khoảng (summary), biểu đồ chi phí theo ngày (`DailyCostChart`, một chuỗi `chart-1`, lượt chỉ ở tooltip và bảng), theo
+  loại chi phí / model / vai trò, người dùng tốn nhiều nhất, sổ chi phí (`UsageLedger`: lọc việc / trạng thái tiền / kết quả, 20 dòng một
+  trang ở server). Dòng "Chờ đối soát" (UNCERTAIN) có "Đối soát": chi phí thật 0–100 USD (6 chữ số lẻ, 0 nếu không bị tính) + ghi chú
+  1–500 ký tự; 404 `AI_USAGE_NOT_FOUND` = đã được đối soát, tải lại.
+- Tab "Cấu hình AI / RAG" của Cài đặt hệ thống (luật `features/admin-settings/ragConfigRules.ts`): chỉ chọn model registry báo
+  `usable` (model đang dùng mà không còn dùng được thì hiện khoá + cảnh báo, khoá nút lưu / áp dụng), không có danh sách model viết sẵn;
+  giá theo 1 triệu token; mức suy luận chỉ trong `reasoningEfforts`; model không nhận độ ngẫu nhiên thì ẩn ô và gửi `temperature: null`;
+  trần token trả lời theo model. "Điền giá trị mặc định" lấy model `isDefault`. Lưu bản nháp gửi kèm giới hạn chi phí đang dùng
+  (`costControlsOf`) để áp dụng bản nháp không đưa ngân sách về số cũ; bản nháp cũ còn khác thì báo vàng. Nạp lại tài liệu (202) là mới
+  xếp hàng, ghi chi phí ước tính; `AI_BUDGET_EXCEEDED` ở đây là ngân sách nạp tài liệu.
 
 **Lắp đặt, phía kỹ thuật viên** (`/tech/installations(/:id)`, backend nhánh `fix/business-rules-flow-1-2`, tài liệu
 `guides/installation-workflow-api-integration.md` + `installation-workflow-business-flow.md`; response viết tay ở
@@ -937,7 +976,7 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 | `/coming-soon`                                               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                                                                                                                                       |
 | `/products`, `/products/:id`                                 | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                                                                                                                                              |
 | `/payments/return`, `/payments/cancel`, `/return`, `/cancel` | –                | PayOS chuyển về; chuyển ngay tới trang đã mở link thanh toán (`PaymentReturnPage`)                                                                                                                                                                                  |
-| `/admin/*`                                                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Hợp đồng, Lịch thi công, Thi công, Sản phẩm, Gói dịch vụ, Việc của kinh doanh – bọc `<RequireRole role="admin">`                                                                                                                          |
+| `/admin/*`                                                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Hợp đồng, Lịch thi công, Thi công, Sản phẩm, Gói dịch vụ, Việc của kinh doanh, Chi phí AI – bọc `<RequireRole role="admin">`                                                                                                              |
 | `/tech/*`                                                    | `TechLayout`     | Khảo sát (giỏ báo giá), Hẹn lịch thi công, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                                                                                 |
 | `/customer/*`                                                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ, đặt trực tiếp), Báo giá (đồng ý / yêu cầu sửa), Hợp đồng (ký, PayOS / tiền mặt, lịch thi công), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói, đặt lượt bảo trì), Thông báo, Sản phẩm – bọc `<RequireRole role="customer">` |
 | `/ops/*`                                                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên; báo giá, hợp đồng chỉ xem), Bảo hành / việc nhắc khách – bọc `<RequireRole role="sales">`                                                                                                                          |
