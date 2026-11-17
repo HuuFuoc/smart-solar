@@ -143,7 +143,8 @@ export function DispatchRequestForm({
         <Field
           label="Ghi chú"
           htmlFor="dispatch-note"
-          hint={`Không bắt buộc, tối đa ${NOTE_MAX} ký tự. Ví dụ: lối lên mái, người ở nhà khi kỹ thuật viên đến.`}
+          optional
+          hint={`Tối đa ${NOTE_MAX} ký tự. Ví dụ: lối lên mái, người ở nhà khi kỹ thuật viên đến.`}
         >
           <Textarea
             id="dispatch-note"

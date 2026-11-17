@@ -153,7 +153,7 @@ function ZoneForm({
           error={
             managerInvalid ? errorMessage(serverError) : managers.isError ? errorMessage(managers.error) : undefined
           }
-          hint="Không bắt buộc."
+          optional
         >
           <Select
             id="zone-manager"

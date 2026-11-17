@@ -159,7 +159,7 @@ function ChecklistDialog({
             <h3 id="checklist-document" className="text-body font-medium text-fg">
               Tài liệu
               {!hasDocument && (
-                <span aria-hidden className="text-danger">
+                <span aria-hidden className="text-fg-2">
                   {' *'}
                 </span>
               )}
@@ -191,7 +191,7 @@ function ChecklistDialog({
             )}
           </section>
         )}
-        <Field label="Ghi chú" htmlFor="checklist-note" hint="Không bắt buộc, tối đa 1.000 ký tự.">
+        <Field label="Ghi chú" htmlFor="checklist-note" optional hint="Tối đa 1.000 ký tự.">
           <Textarea
             id="checklist-note"
             rows={2}

@@ -302,7 +302,7 @@ function PackageForm({
           <fieldset className="flex flex-col gap-2 sm:col-span-3">
             <legend className="mb-2 text-body font-medium text-fg">
               Thiên tai được bảo vệ
-              <span aria-hidden className="text-danger">
+              <span aria-hidden className="text-fg-2">
                 {' *'}
               </span>
             </legend>
@@ -398,7 +398,7 @@ function PackageForm({
         </div>
       )}
 
-      <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t border-line bg-canvas px-6 py-4">
+      <DialogFooter className="sticky -bottom-6 -mx-6 -mb-6 border-t border-line bg-canvas px-6 py-4">
         {checked && (hasErrors(errors) || imageError) && (
           <p className="mr-auto flex items-center gap-1.5 text-body text-danger">
             <Icon name="error" className="shrink-0 text-[20px]" />

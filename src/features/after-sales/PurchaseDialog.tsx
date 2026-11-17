@@ -112,8 +112,7 @@ export function PurchaseDialog({
               />
             ) : options.length === 0 ? (
               <Notice tone="warn" title="Chưa có hợp đồng mua gói được">
-                Gói được mua cho một hợp đồng lắp đặt đã ký hoặc đã thanh toán. Hợp đồng của bạn hiện ở đây khi tới bước
-                đó.
+                Gói mua cho một hợp đồng lắp đặt đã ký hoặc đã thanh toán.
               </Notice>
             ) : (
               <Field label="Hợp đồng" htmlFor="purchase-contract" required>
@@ -144,8 +143,7 @@ export function PurchaseDialog({
           )}
 
           <p className="mt-4 text-body text-fg-2">
-            Giá và quyền lợi của gói được giữ như lúc mua. Kỳ của gói bắt đầu khi PayOS xác nhận đã nhận tiền và công
-            trình đã được bàn giao, tính từ mốc muộn hơn.
+            Giá và quyền lợi giữ như lúc mua. Gói bắt đầu khi đã trả tiền và công trình đã bàn giao, theo mốc muộn hơn.
           </p>
 
           {error && (

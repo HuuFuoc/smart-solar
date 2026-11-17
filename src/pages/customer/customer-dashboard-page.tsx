@@ -1,16 +1,17 @@
 import { useMemo } from 'react'
+import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel } from '@/components/common/ui/panel'
 import { Stat, StatRow } from '@/components/common/ui/stat'
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/common/ui/states'
 import { Stepper, type Step } from '@/components/common/ui/stepper'
-import { CUSTOMER_INSTALLATION_LABELS, INSTALLATION_STATUS_LABELS } from '@/common/installation'
 import {
   CustomerProjectPanel,
   ServicesSummary,
   UpcomingAppointments,
 } from '@/features/customer-dashboard/CustomerOverviewPanels'
+import { isCustomerTodo } from '@/features/contracts/customerContractRules'
 import { CustomerTodoList } from '@/features/customer-dashboard/CustomerTodoList'
 import { customerTodos } from '@/features/customer-dashboard/customerTodos'
 import { isUpcomingAppointment } from '@/features/customer-dashboard/services/dashboardChartService'
@@ -37,7 +38,8 @@ type StageId = (typeof STAGES)[number]['id']
 
 const isOpenProject = (status: string) => status !== 'COMPLETED' && status !== 'CANCELLED'
 
-// /customer/dashboard: việc đang chờ khách lên đầu, rồi số liệu, chặng hiện tại, công trình, lịch hẹn, gói dịch vụ.
+// /customer/dashboard: số liệu của những việc khách đang theo, rồi việc đang chờ khách (lọc theo nhóm), chặng hiện tại,
+// công trình, lịch hẹn, gói dịch vụ.
 // Dữ liệu lấy từ các query mà khung khách hàng đã gọi cho số trên menu, nên không thêm lời gọi API
 export function CustomerDashboardPage() {
   const installationsQuery = useMyInstallationsQuery()
@@ -69,12 +71,15 @@ export function CustomerDashboardPage() {
     [surveyRequests, dispatches, quotations, contracts, installations, serviceRequests, subscriptions],
   )
 
-  const activeProject = installations.find((p) => isOpenProject(p.status))
   const activeProjects = installations.filter((p) => isOpenProject(p.status)).length
   const completedProjects = installations.filter((p) => p.status === 'COMPLETED').length
-  const openServices = serviceRequests.filter(
-    (s) => s.status !== 'COMPLETED' && s.status !== 'CANCELLED' && s.status !== 'CLOSED_DUPLICATE',
+  const openSurveys = surveyRequests.filter(
+    (r) => r.status !== 'COMPLETED' && r.status !== 'CANCELLED' && r.status !== 'CLOSED',
   ).length
+  const toBook = todos.filter((t) => t.kind === 'survey').length
+  const quotesToAnswer = todos.filter((t) => t.kind === 'quotation').length
+  const contractsToDo = contracts.filter(isCustomerTodo)
+  const toPay = contractsToDo.filter((c) => c.status === 'SIGNED').length
   const upcoming = surveyRequests
     .filter((r) => isUpcomingAppointment(r))
     .sort((a, b) => a.appointment!.startsAt.localeCompare(b.appointment!.startsAt))
@@ -122,7 +127,7 @@ export function CustomerDashboardPage() {
     <>
       <PageHeader
         title="Tổng quan"
-        description={todos.length > 0 ? `${todos.length} việc đang chờ bạn.` : 'Không có việc nào đang chờ bạn.'}
+        description={todos.length > 0 ? <Badge tone="danger">{todos.length} việc đang chờ bạn</Badge> : undefined}
         actions={
           <>
             <ButtonLink to={ROUTES.customer.assessment} variant="primary" icon="roofing">
@@ -150,35 +155,35 @@ export function CustomerDashboardPage() {
         />
       ) : (
         <div className="space-y-6">
-          {todos.length > 0 && (
-            <Panel raised aria-labelledby="todo-title">
-              <h2 id="todo-title" className="mb-3 text-title font-semibold">
-                Việc cần làm
-              </h2>
-              <CustomerTodoList items={todos} />
-            </Panel>
-          )}
-
           <StatRow framed>
             <Stat
-              label="Công trình đang lắp đặt"
-              value={activeProjects}
-              note={
-                activeProject
-                  ? (CUSTOMER_INSTALLATION_LABELS[activeProject.status] ??
-                    INSTALLATION_STATUS_LABELS[activeProject.status] ??
-                    activeProject.status)
-                  : undefined
-              }
+              label="Khảo sát đang mở"
+              value={openSurveys}
+              note={toBook > 0 ? `${toBook} chờ bạn chọn giờ` : undefined}
+            />
+            <Stat label="Báo giá chờ bạn trả lời" value={quotesToAnswer} />
+            <Stat
+              label="Hợp đồng chờ ký, thanh toán"
+              value={contractsToDo.length}
+              note={toPay > 0 ? `${toPay} chờ thanh toán` : undefined}
             />
             <Stat
               label="Lịch hẹn sắp tới"
               value={upcoming.length}
               note={upcoming[0]?.appointment ? formatMoment(upcoming[0].appointment.startsAt) : undefined}
             />
-            <Stat label="Hệ thống đã bàn giao" value={completedProjects} />
-            <Stat label="Yêu cầu bảo hành đang mở" value={openServices} />
           </StatRow>
+
+          <Panel raised aria-labelledby="todo-title">
+            <h2 id="todo-title" className="mb-2 text-title font-semibold">
+              Việc cần làm
+            </h2>
+            {todos.length > 0 ? (
+              <CustomerTodoList items={todos} />
+            ) : (
+              <p className="text-body text-fg-2">Không có việc nào đang chờ bạn.</p>
+            )}
+          </Panel>
 
           <section aria-labelledby="stage-title">
             <h2 id="stage-title" className="mb-3 text-title font-semibold">

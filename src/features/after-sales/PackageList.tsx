@@ -1,14 +1,13 @@
 import { useState } from 'react'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
+import { ListRow } from '@/components/common/ui/list-row'
 import { KeyValueList, type KV } from '@/components/common/ui/lists'
 import {
   disasterTypesLabel,
   formatDurationMonths,
   formatPercent,
-  isMaintenance,
-  packageKindLabel,
   visitMonthsLabel,
+  isMaintenance,
 } from '@/features/after-sales/afterSalesDisplay'
 import type { PackageView } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
@@ -35,134 +34,52 @@ function packageFacts(p: PackageView): KV[] {
   ]
 }
 
-/** Giá, thời hạn và quyền lợi của gói theo loại, dùng trong PurchaseDialog */
+/** Giá, thời hạn và quyền lợi của gói theo loại, đúng như backend trả */
 export function PackageFacts({ pkg, columns, className }: { pkg: PackageView; columns?: 1 | 2; className?: string }) {
   return <KeyValueList columns={columns} className={className} items={packageFacts(pkg)} />
 }
 
-/** Ảnh bìa của gói; gói không có ảnh, hoặc ảnh không tải được, thì hiện ô biểu tượng theo loại gói */
-function PackageCover({ pkg: p }: { pkg: PackageView }) {
+/** Ảnh bìa của gói; không có ảnh hoặc ảnh không tải được thì bỏ hẳn, không thay bằng ô biểu tượng */
+function PackageCover({ url }: { url: string | null }) {
   const [broken, setBroken] = useState(false)
-  if (p.imageUrl && !broken)
-    return (
-      <img
-        src={p.imageUrl}
-        alt=""
-        loading="lazy"
-        className="h-16 w-24 shrink-0 rounded-container border border-line object-cover"
-        onError={() => setBroken(true)}
-      />
-    )
+  if (!url || broken) return null
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-container border border-accent-line/30 bg-accent-soft text-primary">
-      <Icon name={isMaintenance(p.kind) ? 'build' : 'verified_user'} className="text-[24px] text-primary" />
-    </div>
+    <img
+      src={url}
+      alt=""
+      loading="lazy"
+      width={96}
+      height={64}
+      className="h-16 w-24 shrink-0 rounded-container border border-line object-cover"
+      onError={() => setBroken(true)}
+    />
   )
 }
 
-/** Thẻ gói dịch vụ hiển thị nổi bật theo chuẩn giao diện hiện đại */
-function PackageCard({ pkg: p, onBuy }: { pkg: PackageView; onBuy: (pkg: PackageView) => void }) {
-  const isMaint = isMaintenance(p.kind)
-  const kindTitle = packageKindLabel(p.kind)
-  const subtitle = [p.name !== kindTitle ? p.name : null, p.description].filter(Boolean).join(' – ')
-
-  return (
-    <article className="rounded-container border border-line bg-canvas p-5 sm:p-6 mb-4 last:mb-0">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        {/* Header Left: Icon Box + Title/Subtitle */}
-        <div className="flex items-start gap-4 min-w-0">
-          <PackageCover pkg={p} />
-          <div className="min-w-0">
-            <h3 className="text-title font-bold text-fg">{kindTitle}</h3>
-            {subtitle && <p className="mt-0.5 text-meta text-fg-2 leading-relaxed">{subtitle}</p>}
-          </div>
-        </div>
-
-        {/* Header Right: Mua gói Button */}
-        <div className="shrink-0">
-          {isMaint ? (
-            <Button icon="shopping_cart" variant="primary" onClick={() => onBuy(p)}>
-              Mua gói
-            </Button>
-          ) : (
-            <Button
-              icon="receipt_long"
-              variant="secondary"
-              className="border-primary! text-primary! hover:bg-accent-soft!"
-              onClick={() => onBuy(p)}
-            >
-              Mua gói
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Metrics Row with dividers */}
-      <div className="mt-5 grid grid-cols-1 gap-y-4 pt-4 border-t border-line/60 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-0">
-        {/* Metric 1: Giá */}
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-meta text-fg-2">
-            <Icon name="payments" className="text-primary text-[20px]" />
-            <span>Giá</span>
-          </div>
-          <p className="text-body font-bold text-fg">{vnd(p.price)}</p>
-        </div>
-
-        {/* Metric 2: Thời hạn */}
-        <div className="space-y-1 lg:border-l lg:border-line lg:pl-6">
-          <div className="flex items-center gap-1.5 text-meta text-fg-2">
-            <Icon name="calendar_today" className="text-primary text-[20px]" />
-            <span>Thời hạn</span>
-          </div>
-          <p className="text-body font-bold text-fg">{formatDurationMonths(p.durationMonths)}</p>
-        </div>
-
-        {isMaint ? (
-          /* Maintenance Metric 3: Lịch bảo trì */
-          <div className="space-y-1 lg:border-l lg:border-line lg:pl-6 lg:col-span-2">
-            <div className="flex items-center gap-1.5 text-meta text-fg-2">
-              <Icon name="format_list_bulleted" className="text-primary text-[20px]" />
-              <span>Lịch bảo trì</span>
-            </div>
-            <p className="text-body font-bold text-fg">
-              Vào {visitMonthsLabel(p.visitMonths)} tính từ khi gói bắt đầu.
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Disaster Metric 3: Tỷ lệ hỗ trợ */}
-            <div className="space-y-1 lg:border-l lg:border-line lg:pl-6">
-              <div className="flex items-center gap-1.5 text-meta text-fg-2">
-                <Icon name="percent" className="text-primary text-[20px]" />
-                <span>Tỷ lệ hỗ trợ</span>
-              </div>
-              <p className="text-body font-bold text-fg">
-                {p.coveragePercent != null ? `${formatPercent(p.coveragePercent)} chi phí sửa chữa được duyệt` : '—'}
-              </p>
-            </div>
-
-            {/* Disaster Metric 4: Hạn mức mỗi kỳ */}
-            <div className="space-y-1 lg:border-l lg:border-line lg:pl-6">
-              <div className="flex items-center gap-1.5 text-meta text-fg-2">
-                <Icon name="savings" className="text-primary text-[20px]" />
-                <span>{p.termLimit != null ? 'Hạn mức mỗi kỳ' : 'Hạn mức mỗi sự cố'}</span>
-              </div>
-              <p className="text-body font-bold text-fg">{vnd(p.termLimit ?? p.perIncidentLimit)}</p>
-            </div>
-          </>
-        )}
-      </div>
-    </article>
-  )
-}
-
-/** Danh sách các gói đang bán */
+/** Gói đang bán của một loại */
 export function PackageList({ items, onBuy }: { items: PackageView[]; onBuy: (pkg: PackageView) => void }) {
   return (
-    <div className="space-y-4">
+    <ul className="divide-y divide-line">
       {items.map((p) => (
-        <PackageCard key={p.packageId} pkg={p} onBuy={onBuy} />
+        <ListRow key={p.packageId}>
+          <div className="grid gap-x-8 gap-y-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+            <div className="flex min-w-0 items-start gap-4">
+              <PackageCover url={p.imageUrl} />
+              <div className="min-w-0">
+                <h3 className="text-title font-semibold">{p.name}</h3>
+                {p.description && (
+                  <p className="mt-1 max-w-[72ch] text-body whitespace-pre-line text-fg-2">{p.description}</p>
+                )}
+                <PackageFacts pkg={p} columns={2} className="mt-4" />
+              </div>
+            </div>
+            <Button icon="shopping_cart" variant="soft" onClick={() => onBuy(p)}>
+              Mua gói
+              <span className="sr-only"> {p.name}</span>
+            </Button>
+          </div>
+        </ListRow>
       ))}
-    </div>
+    </ul>
   )
 }

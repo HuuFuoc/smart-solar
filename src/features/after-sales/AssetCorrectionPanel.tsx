@@ -125,7 +125,7 @@ function CorrectionDialog({
           label="Lý do sửa"
           htmlFor="asset-reason"
           required
-          hint={`Bắt buộc, tối đa ${ASSET_REASON_MAX} ký tự.`}
+          hint={`Tối đa ${ASSET_REASON_MAX} ký tự.`}
           error={errors.reason}
           className="sm:col-span-2"
         >

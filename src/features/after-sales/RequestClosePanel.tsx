@@ -145,7 +145,8 @@ function DuplicateDialog({
         <Field
           label="Ghi chú"
           htmlFor="duplicate-reason"
-          hint={`Không bắt buộc, tối đa ${DUPLICATE_REASON_MAX} ký tự. Lưu vào lịch sử của yêu cầu.`}
+          optional
+          hint={`Tối đa ${DUPLICATE_REASON_MAX} ký tự. Lưu vào lịch sử của yêu cầu.`}
           error={errors.reason}
         >
           <Textarea

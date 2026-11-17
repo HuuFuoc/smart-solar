@@ -740,9 +740,12 @@ Phường 9 Quận 3 = 27142) và chỉ đổ khi mã đó có trong danh mục 
 phường cũ một dòng: gộp theo mã mới. `PARTIAL` = địa bàn cũ bị chia, ghi cảnh báo. Ô tỉnh hiện tên từ GET provinces cho mã 79
 (lỗi thì báo, không điền tên viết sẵn; không mở phạm vi ra tỉnh khác).
 
-**Trợ lý (chatbot)** (`/<cổng>/assistant` ở cả 5 cổng, menu "Trợ lý", trang dùng chung `pages/assistant-page.tsx`, component ở
-`features/chat/`, hook `hooks/useChat.ts`; backend `main` 7c79fa8 `ChatController` + `ChatService`, mọi người đăng nhập, chỉ đọc
-phiên của mình). Cuộc trò chuyện đang mở ở `?phien=<mã>`; không có là cuộc mới (backend mở phiên khi nhận câu đầu). Response:
+**Trợ lý (chatbot)** (ô chat nổi `features/chat/ChatWidget.tsx`: nút "Trợ lý" góc phải dưới trên mọi trang của 5 cổng, gắn sẵn
+trong `app-shell.tsx` và `customer-shell.tsx`, không còn mục menu hay trang `/<cổng>/assistant`; hàng nút dính đáy
+(`data-sticky-bottom`) thì nút đứng cao hơn; `<main>` chừa `pb-20` để nút không che dòng cuối. Hook `hooks/useChat.ts`; backend
+`main` 7c79fa8 `ChatController` + `ChatService`, mọi người đăng nhập, chỉ đọc phiên của mình). Cuộc trò chuyện đang mở và trạng thái
+mở / đóng nhớ trong sessionStorage theo người dùng (`smart-solar.chat.<mã>`); không có là cuộc mới (backend mở phiên khi nhận câu đầu).
+Esc đóng khung (trừ khi đang mở hộp thoại khác), con trỏ trở về nút "Trợ lý". Response:
 `{ sessionId, question, answer: { content, status, citations[] }, grounded, notice }` (khác report: nguồn nằm trong `answer`).
 GET phiên không trả `notice` / `grounded`: `notice` chỉ hiện cho câu trả lời nhận trong lần dùng trang (giữ trong cache theo
 người dùng), `grounded` suy từ `status` (INSUFFICIENT_CONTEXT = chưa có tài liệu hỗ trợ, nhãn vàng, không nguồn). Nguồn không có

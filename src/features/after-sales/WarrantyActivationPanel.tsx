@@ -151,7 +151,7 @@ function ActivationDialog({
         <section aria-labelledby="activation-document" className="space-y-2">
           <h3 id="activation-document" className="text-body font-medium text-fg">
             Tài liệu
-            <span aria-hidden className="text-danger">
+            <span aria-hidden className="text-fg-2">
               {' *'}
             </span>
           </h3>
@@ -185,7 +185,7 @@ function ActivationDialog({
           label="Lý do"
           htmlFor="activation-reason"
           required
-          hint={`Bắt buộc, tối đa ${REASON_MAX} ký tự.`}
+          hint={`Tối đa ${REASON_MAX} ký tự.`}
           error={error ?? undefined}
         >
           <Textarea

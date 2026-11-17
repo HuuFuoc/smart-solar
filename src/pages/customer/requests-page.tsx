@@ -10,7 +10,6 @@ import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { customerRequestProgress, customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
 import { formatRelative, shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatAppointment, formatMoment } from '@/features/scheduling/schedulingDisplay'
-import { WeekdayBadge } from '@/features/scheduling/WeekdayBadge'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useMyDispatchesQuery } from '@/hooks/useDispatch'
 import { ROUTES, withId } from '@/routes/paths'
@@ -54,7 +53,6 @@ function RequestTable({ rows, showStatus }: { rows: Row[]; showStatus: boolean }
                 {live ? (
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <WeekdayBadge date={live.startsAt} format="short" withBar />
                       <span className="tnum font-medium text-fg">
                         Đề xuất {formatAppointment(live.startsAt, live.endsAt)}
                       </span>
@@ -64,7 +62,6 @@ function RequestTable({ rows, showStatus }: { rows: Row[]; showStatus: boolean }
                 ) : a ? (
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <WeekdayBadge date={a.startsAt} format="short" withBar />
                       <span className="tnum font-medium text-fg">{formatAppointment(a.startsAt, a.endsAt)}</span>
                     </div>
                     {a.assignedTechnicianName && (

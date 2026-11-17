@@ -81,7 +81,7 @@ export function CancelSubscriptionDialog({
             <Field
               label="Lý do"
               htmlFor="cancel-subscription-reason"
-              hint={`Bắt buộc, tối đa ${REASON_MAX} ký tự.`}
+              hint={`Tối đa ${REASON_MAX} ký tự.`}
               error={fieldError ?? undefined}
               required
               className="mt-4"

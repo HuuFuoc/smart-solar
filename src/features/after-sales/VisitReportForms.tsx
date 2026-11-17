@@ -242,7 +242,8 @@ export function WorkReportForm({ visit }: { visit: TechnicianVisitView }) {
       <Field
         label="Phát hiện thêm"
         htmlFor="work-finding"
-        hint="Không bắt buộc. Lỗi khác bạn thấy, khách có thể báo lỗi riêng."
+        optional
+        hint="Lỗi khác bạn thấy, khách có thể báo lỗi riêng."
       >
         <Input
           id="work-finding"

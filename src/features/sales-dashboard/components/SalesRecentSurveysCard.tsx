@@ -5,6 +5,7 @@ import { FilterChips } from '@/components/common/ui/chips'
 import { SearchInput } from '@/components/common/ui/field'
 import { PagedList } from '@/components/common/ui/pagination'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
+import { siteArea } from '@/features/scheduling/siteArea'
 import { ROUTES, withId } from '@/routes/paths'
 import type { MySurveyRequestItem } from '@/types/res/surveyRequestsRes'
 import {
@@ -62,7 +63,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h2 className="text-title font-semibold text-fg">Hồ sơ của tôi</h2>
-          <span className="text-meta font-mono text-fg-3">({surveys.length})</span>
+          <span className="tnum text-meta text-fg-2">{surveys.length}</span>
         </div>
         <ButtonLink
           to={ROUTES.ops.surveysMine}
@@ -76,7 +77,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
       </div>
 
       {/* Hàng 2: Toolbar chung 1 hàng - Tabs trạng thái bên trái & Ô tìm kiếm bên phải */}
-      <div className="flex flex-col gap-3 border-b border-line pb-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-line pb-2">
         <FilterChips
           label="Lọc hồ sơ theo trạng thái"
           className="min-w-0 flex-1 shadow-none"
@@ -89,7 +90,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
             { value: 'completed', label: 'Khảo sát xong', count: completedCount },
           ]}
         />
-        <div className="shrink-0 sm:w-56 lg:w-64">
+        <div className="sm:max-w-sm">
           <label>
             <span className="sr-only">Tìm hồ sơ</span>
             <SearchInput
@@ -112,7 +113,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
       ) : (
         <PagedList key={`${tab}|${searchTerm}`} items={filteredSurveys} noun="hồ sơ" pageSize={6} keepScroll>
           {(page) => (
-            <Table className="mt-1">
+            <Table stack="xl" className="mt-1">
               <thead>
                 <tr>
                   <Th>Khách hàng & Công trình</Th>
@@ -125,8 +126,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
               <tbody>
                 {page.map((item) => {
                   const statusInfo = surveyStatusMeta(item.status)
-                  const locationText =
-                    [item.ward, item.district, item.province].filter(Boolean).join(', ') || 'Chưa cập nhật vị trí'
+                  const locationText = siteArea([item.communeName ?? item.ward, item.district], item.province) ?? '—'
                   const isCompleted = isCompletedStatus(item.status)
 
                   return (
@@ -135,15 +135,13 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                         <div className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</div>
                         <div className="text-meta text-fg-2">{item.propertyName || 'Công trình'}</div>
                       </Td>
-                      <Td className="py-2.5">
+                      <Td label="Khu vực" className="py-2.5">
                         <div className="text-meta text-fg-2">{locationText}</div>
                       </Td>
-                      <Td className="py-2.5">
-                        <span className="sv-pill" data-tone={statusInfo.tone}>
-                          <Badge tone={statusInfo.tone}>{statusInfo.label}</Badge>
-                        </span>
+                      <Td label="Trạng thái" className="py-2.5 whitespace-nowrap">
+                        <Badge tone={statusInfo.tone}>{statusInfo.label}</Badge>
                       </Td>
-                      <Td className="py-2.5">
+                      <Td label="Thời gian" className="py-2.5">
                         <div className="whitespace-nowrap text-meta text-fg-3">
                           Tiếp nhận {formatRelative(item.assignedAt)}
                         </div>

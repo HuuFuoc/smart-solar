@@ -5,7 +5,7 @@ import { messageCounter } from '@/features/chat/chatDisplay'
 import { chatMessageProblem } from '@/features/chat/chatRules'
 import { cx } from '@/utils/cx'
 
-// Ô hỏi, dính đáy màn hình. Enter gửi, Shift + Enter xuống dòng (bỏ qua khi bộ gõ đang ghép chữ).
+// Ô hỏi ở đáy khung trợ lý. Enter gửi, Shift + Enter xuống dòng (bỏ qua khi bộ gõ đang ghép chữ).
 // Đang gửi thì khoá ô và nút, nội dung vẫn giữ: chỉ xoá khi backend đã trả lời; lỗi thì giữ để gửi lại.
 
 export function ChatComposer({
@@ -38,11 +38,7 @@ export function ChatComposer({
   else if (waitSeconds > 0) label = `Chờ ${waitSeconds} giây`
 
   return (
-    <form
-      onSubmit={submit}
-      data-sticky-bottom
-      className="sticky bottom-0 z-10 border-t border-line bg-canvas/95 p-4 backdrop-blur md:p-5"
-    >
+    <form onSubmit={submit} className="shrink-0 border-t border-line bg-canvas p-3">
       <label htmlFor="chat-message" className="sr-only">
         Câu hỏi cho trợ lý
       </label>
@@ -62,19 +58,19 @@ export function ChatComposer({
           placeholder="Hỏi về sản phẩm, lắp đặt, bảo hành, bảo trì…"
           aria-invalid={Boolean(error) || counter?.over || undefined}
           aria-describedby="chat-message-msg"
-          className="max-h-56 min-h-11 flex-1 resize-y rounded-control border-line bg-canvas focus:border-accent"
+          className="max-h-40 min-h-11 flex-1 resize-none"
         />
-        <Button type="submit" variant="primary" icon="send" disabled={blocked || invalid} className="shrink-0 px-5">
+        <Button type="submit" variant="primary" icon="send" disabled={blocked || invalid} className="shrink-0">
           {label}
         </Button>
       </div>
-      <div id="chat-message-msg" className="mt-2.5 flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+      <div id="chat-message-msg" className="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
         {error ? (
           <p role="alert" className="text-meta text-danger">
             {error}
           </p>
         ) : (
-          <p className="text-meta text-fg-3">Enter để gửi, Shift + Enter để xuống dòng.</p>
+          <p className="text-meta text-fg-2">Enter để gửi, Shift + Enter để xuống dòng.</p>
         )}
         {counter && <p className={cx('tnum text-meta', counter.over ? 'text-danger' : 'text-fg-3')}>{counter.text}</p>}
       </div>

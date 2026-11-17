@@ -621,7 +621,7 @@ function ProductForm({
         </div>
       )}
 
-      <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t border-line bg-canvas px-6 py-4">
+      <DialogFooter className="sticky -bottom-6 -mx-6 -mb-6 border-t border-line bg-canvas px-6 py-4">
         <Button icon="close" variant="secondary" disabled={isSubmitting} onClick={onDone}>
           Huỷ
         </Button>

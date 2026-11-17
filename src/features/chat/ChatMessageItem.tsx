@@ -1,5 +1,4 @@
 import { Link } from 'react-router'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { CHAT_ROLES } from '@/common/chat'
 import { answerStateMeta, citationMeta } from '@/features/chat/chatDisplay'
@@ -25,16 +24,9 @@ export function ChatMessageItem({
     <li className={cx('flex', isUser ? 'justify-end' : 'justify-start')}>
       <article
         aria-label={isUser ? 'Câu hỏi của bạn' : 'Trợ lý trả lời'}
-        className={cx('min-w-0 max-w-full lg:max-w-2xl', isUser && 'text-right')}
+        className={cx('min-w-0 max-w-[85%]', isUser && 'text-right')}
       >
-        {!isUser && (
-          <div className="mb-2 flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-control bg-accent-soft text-accent">
-              <Icon name="smart_toy" className="text-[16px]" />
-            </span>
-            <span className="text-meta font-medium text-fg">Trợ lý Smart Solar</span>
-          </div>
-        )}
+        {!isUser && <p className="mb-1 text-meta font-medium text-fg-2">Trợ lý Smart Solar</p>}
 
         <div
           className={cx(
@@ -70,15 +62,12 @@ function Citations({
   documentHref?: (documentId: string) => string
 }) {
   return (
-    <div className="mt-3 rounded-control border border-line bg-surface-2/40 p-3 text-left">
-      <p className="flex items-center gap-1.5 text-meta font-medium text-fg-2">
-        <Icon name="menu_book" className="text-[16px] text-accent" />
-        <span>Nguồn tham chiếu ({citations.length})</span>
-      </p>
+    <div className="mt-2 rounded-control border border-line bg-surface-2 p-3 text-left">
+      <p className="text-meta font-medium text-fg-2">Nguồn tham chiếu ({citations.length})</p>
       <ol className="mt-2 space-y-2">
         {citations.map((c) => (
           <li key={c.rank} className="text-meta text-fg-2">
-            <span className="tnum font-semibold text-fg-3">[{c.rank}] </span>
+            <span className="tnum font-semibold text-fg-2">[{c.rank}] </span>
             {documentHref ? (
               <Link to={documentHref(c.documentId)} className="ui-link font-medium">
                 {c.documentTitle}

@@ -78,8 +78,8 @@ function MaintenanceForm({
     <>
       <DialogTitle>Đặt bảo trì lẻ</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Vệ sinh tấm pin, kiểm tra đấu nối và inverter. Bạn chọn giờ muốn hẹn; Smart Solar gửi báo giá, bạn đồng ý và
-        thanh toán thì kỹ thuật viên tới làm.
+        Vệ sinh tấm pin, kiểm tra đấu nối và inverter. Bạn chọn giờ; đồng ý báo giá và thanh toán xong thì kỹ thuật viên
+        tới làm.
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <Field label="Ngày muốn hẹn" htmlFor="maintenance-date" hint={`Đặt trước ít nhất ${LEAD_DAYS} ngày.`} required>
@@ -89,7 +89,7 @@ function MaintenanceForm({
           <TimeSelect id="maintenance-time" value={time} from="08:00" to="16:00" onChange={setTime} />
         </Field>
       </div>
-      <Field label="Ghi chú" htmlFor="maintenance-note" hint="Không bắt buộc." className="mt-4">
+      <Field label="Ghi chú" htmlFor="maintenance-note" optional className="mt-4">
         <Textarea
           id="maintenance-note"
           rows={3}

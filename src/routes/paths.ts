@@ -46,8 +46,6 @@ export const ROUTES = {
     /** Báo giá lắp đặt; chi tiết theo mã báo giá (mỗi bản một mã) */
     quotations: '/customer/quotations',
     quotation: '/customer/quotations/:id',
-    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
-    assistant: '/customer/assistant',
   },
 
   ops: {
@@ -66,8 +64,6 @@ export const ROUTES = {
     afterSalesRequest: '/ops/after-sales/:id',
     products: '/ops/products',
     product: '/ops/products/:id',
-    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
-    assistant: '/ops/assistant',
   },
 
   tech: {
@@ -86,8 +82,6 @@ export const ROUTES = {
     schedule: '/tech/schedule',
     products: '/tech/products',
     product: '/tech/products/:id',
-    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
-    assistant: '/tech/assistant',
   },
 
   manage: {
@@ -112,8 +106,6 @@ export const ROUTES = {
     salesTasks: '/manage/sales-tasks',
     /** Báo giá có giá thấp hơn danh mục chờ quản lý duyệt */
     pricingApprovals: '/manage/pricing-approvals',
-    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
-    assistant: '/manage/assistant',
   },
 
   admin: {
@@ -147,8 +139,6 @@ export const ROUTES = {
     /** Kho tri thức của chatbot; chi tiết theo mã tài liệu */
     knowledgeBase: '/admin/knowledge-base',
     knowledgeDocument: '/admin/knowledge-base/:id',
-    /** Trợ lý hỏi đáp theo tài liệu đã công bố; mở lại một cuộc trò chuyện bằng ?phien=<mã> */
-    assistant: '/admin/assistant',
   },
 
   // Đường cũ của kỹ thuật viên, mọi đường chuyển về /tech

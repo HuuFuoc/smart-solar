@@ -11,6 +11,7 @@ import { sidebarAsideClass, sidebarOffset } from '@/components/layout/sidebar-st
 import { SidebarBrand, SidebarFooter, SidebarNav, type RailCount } from '@/components/layout/sidebar-parts'
 import { PageCrumbContext, isNavItemActive, isNavItemPage, type PageCrumb } from '@/components/layout/page-crumb'
 import { PORTALS } from '@/config/portals'
+import { ChatWidget } from '@/features/chat/ChatWidget'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
 import { ROUTES } from '@/routes/paths'
@@ -85,7 +86,12 @@ export function CustomerShell({
     if (!drawerOpen) return
     // Esc của hộp thoại hoặc bảng tài khoản mở từ drawer chỉ đóng chính nó
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented || document.querySelector('dialog[open], [role=dialog]')) return
+      if (
+        e.key !== 'Escape' ||
+        e.defaultPrevented ||
+        document.querySelector('dialog[open], [role=dialog]:not([data-chat-panel])')
+      )
+        return
       closeDrawer()
     }
     window.addEventListener('keydown', onKey)
@@ -173,7 +179,7 @@ export function CustomerShell({
 
         <PageCrumbContext value={setCrumb}>
           {/* Máy tính không có thanh trên: chuông ở góc phải, tiêu đề trang đứng đầu chừa chỗ cho nó */}
-          <main id="main" className="relative w-full p-4 lg:[&>[data-page-header]:first-child]:pr-28">
+          <main id="main" className="relative w-full p-4 pb-20 lg:[&>[data-page-header]:first-child]:pr-28">
             {/* Trang chi tiết: nút quay về mục đang chọn trên menu, tên trang đã có ở tiêu đề ngay dưới */}
             {current && !onItemPage && (
               <nav aria-label="Quay lại" className="mb-4">
@@ -192,6 +198,7 @@ export function CustomerShell({
           </main>
         </PageCrumbContext>
       </div>
+      <ChatWidget />
     </div>
   )
 }

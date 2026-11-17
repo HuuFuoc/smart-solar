@@ -12,11 +12,11 @@ export const STEP_LABELS = ['Thông tin khách hàng', 'Địa điểm lắp đ�
 
 /** Câu mô tả dưới tiêu đề trang, cho khách biết bước này làm gì */
 export const STEP_HINTS = [
-  'Cho biết bạn lắp đặt cho cá nhân hay doanh nghiệp. Chỉ khai một lần cho tài khoản này.',
-  'Công trình ở đâu và tấm pin sẽ lắp trên bề mặt nào.',
-  'Đo mặt mái định lắp, chọn hướng mái và đánh dấu các vật cản trên mái.',
-  'Chọn tấm pin và kiểu lắp để xem xếp được bao nhiêu tấm và ước tính sản lượng điện.',
-  'Kiểm tra lại thông tin rồi gửi. Gửi xong bạn chọn ngày giờ để kỹ thuật viên tới khảo sát.',
+  'Chỉ khai một lần cho tài khoản này.',
+  '',
+  'Nhập kích thước, hướng mái và các vật cản trên mái.',
+  'Chọn tấm pin và kiểu lắp để xem số tấm và sản lượng ước tính.',
+  'Gửi xong bạn chọn giờ để kỹ thuật viên tới khảo sát trong 30 ngày tới.',
 ]
 
 /** Tên bước trên URL (?buoc=...) */

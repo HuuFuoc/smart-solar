@@ -237,7 +237,8 @@ function FinishDialog({
       <Field
         label="Ghi chú"
         htmlFor="finish-note"
-        hint="Không bắt buộc. Vd: Khách chưa thanh toán, thiếu quạt tản nhiệt."
+        optional
+        hint="Ví dụ: Khách chưa thanh toán, thiếu quạt tản nhiệt."
         className="mt-4"
       >
         <Textarea

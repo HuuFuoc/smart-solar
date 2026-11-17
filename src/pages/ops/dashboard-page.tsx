@@ -1,5 +1,4 @@
-import { useMemo, useState } from 'react'
-import { useQueries } from '@tanstack/react-query'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { ErrorState, PageSkeleton } from '@/components/common/ui/states'
 import {
@@ -9,7 +8,6 @@ import {
   usePendingSurveyRequestsQuery,
 } from '@/hooks/useSurveyRequests'
 import { useMyTasksQuery, useOpenTasksQuery } from '@/hooks/useSalesAfterSales'
-import { getSurveyRequest } from '@/services/surveyRequestService'
 import { errorMessage } from '@/services/api/errors'
 import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
 import { isCompletedStatus, isPendingStatus, isScheduledStatus } from '@/features/pre-surveys/preSurveyDisplay'
@@ -51,29 +49,6 @@ export function OpsDashboardPage() {
   const { data: myTasks = [], refetch: refetchMyTasks } = useMyTasksQuery()
 
   const claimMutation = useClaimSurveyRequestMutation()
-
-  // Tận dụng API chi tiết GET /api/survey-requests/{id} vốn có sẵn của BE để lấy trường ward
-  // Không cần chỉnh sửa bất kỳ dòng code nào ở Backend!
-  const detailQueries = useQueries({
-    queries: mySurveys.map((survey) => ({
-      queryKey: ['survey-request', survey.surveyRequestId],
-      queryFn: () => getSurveyRequest(survey.surveyRequestId),
-      staleTime: 5 * 60 * 1000,
-      enabled: Boolean(survey.surveyRequestId),
-    })),
-  })
-
-  // Ghép trường ward và district lấy được từ API chi tiết vào danh sách hồ sơ
-  const enrichedMySurveys = useMemo(() => {
-    return mySurveys.map((survey, index) => {
-      const detail = detailQueries[index]?.data
-      return {
-        ...survey,
-        ward: detail?.ward || survey.ward || null,
-        district: detail?.district || survey.district || null,
-      }
-    })
-  }, [mySurveys, detailQueries])
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -118,10 +93,10 @@ export function OpsDashboardPage() {
   }
 
   // Statistical calculations from real dataset
-  const totalCount = enrichedMySurveys.length
-  const pendingAssignmentCount = enrichedMySurveys.filter((s) => isPendingStatus(s.status)).length
-  const scheduledCount = enrichedMySurveys.filter((s) => isScheduledStatus(s.status)).length
-  const completedCount = enrichedMySurveys.filter((s) => isCompletedStatus(s.status)).length
+  const totalCount = mySurveys.length
+  const pendingAssignmentCount = mySurveys.filter((s) => isPendingStatus(s.status)).length
+  const scheduledCount = mySurveys.filter((s) => isScheduledStatus(s.status)).length
+  const completedCount = mySurveys.filter((s) => isCompletedStatus(s.status)).length
 
   return (
     <div className="sv-list space-y-6">
@@ -149,7 +124,7 @@ export function OpsDashboardPage() {
             completed={completedCount}
           />
 
-          <SalesRecentSurveysCard surveys={enrichedMySurveys} />
+          <SalesRecentSurveysCard surveys={mySurveys} />
         </div>
 
         {/* Cột phụ bên phải: Việc cần xử lý ngay, Báo giá dịch vụ sau bán và Địa bàn theo phường/xã */}
@@ -163,7 +138,7 @@ export function OpsDashboardPage() {
 
           <SalesAfterSalesTasksCard tasks={openTasks} myTasks={myTasks} />
 
-          <SalesRegionalDistributionCard surveys={enrichedMySurveys} />
+          <SalesRegionalDistributionCard surveys={mySurveys} />
         </div>
       </div>
     </div>

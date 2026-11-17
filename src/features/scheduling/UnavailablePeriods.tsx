@@ -79,7 +79,7 @@ function AddPeriodForm({ technicianUserId }: { technicianUserId: string }) {
           />
         </Field>
       </div>
-      <Field label="Lý do" htmlFor="leave-reason" hint={`Không bắt buộc, tối đa ${REASON_MAX} ký tự.`}>
+      <Field label="Lý do" htmlFor="leave-reason" optional hint={`Tối đa ${REASON_MAX} ký tự.`}>
         <Input id="leave-reason" maxLength={REASON_MAX} value={reason} onChange={(e) => setReason(e.target.value)} />
       </Field>
       <ConflictList conflicts={conflicts} />

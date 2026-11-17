@@ -130,8 +130,9 @@ export function ScheduleVisitForm({
       <Field
         label="Lý do"
         htmlFor="visit-reason"
-        hint={reasonRequired ? `Bắt buộc, tối đa ${REASON_MAX} ký tự.` : 'Không bắt buộc.'}
+        hint={reasonRequired ? `Tối đa ${REASON_MAX} ký tự.` : undefined}
         required={reasonRequired}
+        optional={!reasonRequired}
       >
         <Input id="visit-reason" maxLength={REASON_MAX} value={reason} onChange={(e) => setReason(e.target.value)} />
       </Field>

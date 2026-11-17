@@ -64,7 +64,8 @@ function ReasonDialog({
       <Field
         label="Lý do"
         htmlFor="dispatch-reason"
-        hint={`Không bắt buộc, tối đa ${REASON_MAX} ký tự.`}
+        optional
+        hint={`Tối đa ${REASON_MAX} ký tự.`}
         error={error ?? undefined}
         className="mt-4"
       >

@@ -94,7 +94,8 @@ export function FollowUpDialog({ task, onClose }: { task: SalesTaskView; onClose
           label="Ghi chú"
           htmlFor="follow-up-note"
           error={errors.note}
-          hint={`Không bắt buộc, tối đa ${FOLLOW_UP_NOTE_MAX} ký tự.`}
+          optional
+          hint={`Tối đa ${FOLLOW_UP_NOTE_MAX} ký tự.`}
         >
           <Textarea
             id="follow-up-note"

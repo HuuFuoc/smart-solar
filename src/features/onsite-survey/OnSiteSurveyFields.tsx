@@ -237,7 +237,7 @@ export function OnSiteSurveyFields({
           <fieldset aria-describedby={errors.roofCondition ? fieldMessageId('os-roofCondition') : undefined}>
             <legend className="mb-2 text-body font-medium text-fg">
               Tình trạng mái
-              <span aria-hidden className="text-danger">
+              <span aria-hidden className="text-fg-2">
                 {' *'}
               </span>
             </legend>
@@ -274,7 +274,7 @@ export function OnSiteSurveyFields({
         >
           <legend className="mb-3 text-body font-medium text-fg">
             Khả năng lắp đặt
-            <span aria-hidden className="text-danger">
+            <span aria-hidden className="text-fg-2">
               {' *'}
             </span>
           </legend>
@@ -310,7 +310,7 @@ export function OnSiteSurveyFields({
 
       <Section title="Vị trí và ghi chú">
         <LocationField value={value} disabled={disabled} onChange={onChange} />
-        <Field label="Ghi chú" htmlFor="os-notes" hint="Không bắt buộc." error={errors.notes}>
+        <Field label="Ghi chú" htmlFor="os-notes" optional error={errors.notes}>
           {textArea('notes', 'os-notes', LIMITS.notesLength)}
         </Field>
       </Section>
@@ -486,7 +486,7 @@ function LocationField({
           {error}
         </p>
       ) : (
-        <p className="text-meta text-fg-3">Không bắt buộc. Đứng tại công trình rồi bấm để ghi toạ độ GPS của máy.</p>
+        <p className="text-meta text-fg-3">Đứng tại công trình rồi bấm để ghi toạ độ GPS của máy (không bắt buộc).</p>
       )}
     </div>
   )

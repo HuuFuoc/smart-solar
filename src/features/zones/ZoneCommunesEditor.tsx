@@ -274,7 +274,8 @@ export function ZoneCommunesEditor({
         <Field
           label="Lý do"
           htmlFor="zone-communes-reason"
-          hint={`Không bắt buộc, lưu vào lịch sử gán / gỡ. Tối đa ${ZONE_LIMITS.reasonMax} ký tự.`}
+          optional
+          hint={`Lưu vào lịch sử gán / gỡ. Tối đa ${ZONE_LIMITS.reasonMax} ký tự.`}
           className="mt-4"
         >
           <Textarea

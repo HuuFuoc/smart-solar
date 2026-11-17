@@ -35,11 +35,6 @@ export function AssessmentAside({ runs, viewingRunId, onViewRun, preSurveyId, su
           </PanelBody>
         </Panel>
       )}
-      {/* Thông tin cần đọc nhưng không phải việc phải làm ngay: khối xám, để form vẫn là trọng tâm */}
-      <Notice tone="neutral" title="Sau khi gửi">
-        Bạn chọn ngày giờ khảo sát trong 30 ngày tới. Kỹ thuật viên phụ trách khu vực của công trình nhận lịch rồi tới
-        kiểm tra lại các số đo bạn khai.
-      </Notice>
       {preSurveyId && !submitted && (
         <Notice tone="ok">
           Bản nháp <span className="tnum font-medium text-fg">{shortCode(preSurveyId)}</span> đã lưu. Phần đang nhập dở

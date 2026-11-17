@@ -1,4 +1,3 @@
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { ChatMessageItem } from '@/features/chat/ChatMessageItem'
@@ -63,26 +62,25 @@ export function ChatThread({
   return (
     <>
       {messages.length === 0 && pendingQuestion === null && <ChatWelcomeBanner onSelectPrompt={onSelectPrompt} />}
-      <ol className="space-y-6" aria-label="Nội dung cuộc trò chuyện">
+      <ol className="space-y-5" aria-label="Nội dung cuộc trò chuyện">
         {messages.map((m) => (
           <ChatMessageItem key={m.messageId} message={m} notice={notices[m.messageId]} documentHref={documentHref} />
         ))}
         {pendingQuestion !== null && (
           <li className="flex justify-end">
-            <div className="min-w-0 max-w-full text-right lg:max-w-2xl">
+            <div className="min-w-0 max-w-[85%] text-right">
               <div className="inline-block max-w-full rounded-container bg-accent px-4 py-3 text-left text-body break-words whitespace-pre-wrap text-on-accent opacity-75">
                 {pendingQuestion}
               </div>
-              <p className="mt-1 text-meta text-fg-3">Đang gửi…</p>
+              <p className="mt-1 text-meta text-fg-2">Đang gửi…</p>
             </div>
           </li>
         )}
       </ol>
       {pendingQuestion !== null && (
-        <div className="mt-6 flex items-center gap-2 text-meta text-fg-2" role="status" aria-live="polite">
-          <Icon name="auto_awesome" className="text-[16px] text-accent" />
-          <span>Trợ lý đang tìm kiếm tài liệu và trả lời…</span>
-        </div>
+        <p className="mt-6 text-meta text-fg-2" role="status" aria-live="polite">
+          Trợ lý đang tìm trong tài liệu và trả lời…
+        </p>
       )}
     </>
   )

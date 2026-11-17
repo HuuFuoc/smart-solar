@@ -63,12 +63,7 @@ export function ReasonField({
   onChange: (value: string) => void
 }) {
   return (
-    <Field
-      label={label}
-      htmlFor={id}
-      required={required}
-      hint={hint ?? (required ? 'Bắt buộc, tối đa 500 ký tự.' : 'Không bắt buộc, tối đa 500 ký tự.')}
-    >
+    <Field label={label} htmlFor={id} required={required} optional={!required} hint={hint ?? 'Tối đa 500 ký tự.'}>
       <Textarea
         id={id}
         rows={2}

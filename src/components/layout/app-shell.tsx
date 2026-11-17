@@ -9,6 +9,7 @@ import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
 import { sidebarAsideClass, sidebarOffset } from '@/components/layout/sidebar-style'
 import { BrandMark, SidebarBrand, SidebarFooter, SidebarNav, type RailCount } from '@/components/layout/sidebar-parts'
 import { PageCrumbContext, isNavItemActive, isNavItemPage, type PageCrumb } from '@/components/layout/page-crumb'
+import { ChatWidget } from '@/features/chat/ChatWidget'
 
 // Rail bên trái (288px), nội dung bên phải. Desktop có thể thu gọn rail còn 72px, dưới lg rail thành drawer
 // Mở drawer thì focus vào nút "Đóng", đóng thì trả focus về "Menu", Esc để đóng
@@ -73,7 +74,12 @@ export function AppShell({
     if (!open) return
     // Esc của dialog mở từ drawer chỉ đóng dialog đó
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented || document.querySelector('dialog[open], [role=dialog]')) return
+      if (
+        e.key !== 'Escape' ||
+        e.defaultPrevented ||
+        document.querySelector('dialog[open], [role=dialog]:not([data-chat-panel])')
+      )
+        return
       closeDrawer()
     }
     window.addEventListener('keydown', onKey)
@@ -154,11 +160,12 @@ export function AppShell({
           <LocationBar portal={portal} crumb={crumb?.pathname === location.pathname ? crumb.label : null} />
         </div>
         <PageCrumbContext value={setCrumb}>
-          <main id="main" className="w-full p-4">
+          <main id="main" className="w-full p-4 pb-20">
             {children}
           </main>
         </PageCrumbContext>
       </div>
+      <ChatWidget />
     </div>
   )
 }
