@@ -1,5 +1,20 @@
 import { SettingFieldInput } from './SettingFieldInput'
-import type { RagConfigurationValues, RagModelCatalog } from '@/types/res/adminRagConfigTypes'
+import { Field, Select } from '@/components/common/ui/field'
+import { Notice } from '@/components/common/ui/lists'
+import {
+  RAG_SERVICE_CAPS,
+  fieldBounds,
+  findModel,
+  modelOptions,
+  modelPriceText,
+  withModel,
+} from '@/features/admin-settings/ragConfigRules'
+import {
+  DEFAULT_RAG_TEMPERATURE,
+  DEFAULT_RAG_VALUES,
+  type RagConfigurationValues,
+  type RagModelCatalog,
+} from '@/types/res/adminRagConfigTypes'
 
 type Props = {
   form: RagConfigurationValues
@@ -10,91 +25,138 @@ type Props = {
   onNotesChange: (notes: string) => void
 }
 
+const cap = (n: number) => n.toLocaleString('vi-VN')
+
 export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, onChange, onNotesChange }: Props) {
-  const models = modelCatalog?.models || [
-    { id: 'gpt-4.1-mini', displayName: 'GPT-4.1 mini' },
-    { id: 'gpt-4.1', displayName: 'GPT-4.1' },
-    { id: 'gpt-4o-mini', displayName: 'GPT-4o mini' },
-  ]
-  const promptVersions = modelCatalog?.promptVersions || ['v1']
+  // Chỉ model registry báo dùng được; chưa tải được registry thì không có lựa chọn nào (không dùng danh sách viết sẵn)
+  const options = modelOptions(modelCatalog, form.generationModel)
+  const model = findModel(modelCatalog, form.generationModel)
+  const usable = Boolean(model && model.usable !== false)
+  const efforts = model?.reasoningEfforts ?? []
+  const price = model ? modelPriceText(model) : null
+  const promptVersions = modelCatalog?.promptVersions ?? [form.promptVersion]
+  const bounds = fieldBounds(modelCatalog?.limits, model)
 
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-control border border-line bg-canvas p-3.5">
-          <label htmlFor="rag-model-select" className="text-body font-medium text-fg-1">
-            Mô hình sinh nội dung (LLM)
-          </label>
-          <select
+        <Field
+          label="Model soạn câu trả lời"
+          htmlFor="rag-model-select"
+          hint={
+            model
+              ? [
+                  price ?? 'Chưa có giá trong danh sách model.',
+                  model.pricingEffectiveDate && `Giá áp dụng từ ${model.pricingEffectiveDate}.`,
+                ]
+                  .filter(Boolean)
+                  .join(' ')
+              : undefined
+          }
+        >
+          <Select
             id="rag-model-select"
             value={form.generationModel}
-            disabled={isSaving}
-            onChange={(e) => onChange((p) => ({ ...p, generationModel: e.target.value }))}
-            className="mt-3 w-full rounded-control border border-line bg-canvas px-3 py-1.5 text-body text-fg-1 outline-none focus:border-accent"
+            disabled={isSaving || !modelCatalog}
+            aria-describedby="rag-model-select-msg"
+            onChange={(e) => {
+              const next = findModel(modelCatalog, e.target.value)
+              if (next) onChange((p) => withModel(p, next))
+            }}
           >
-            {models.map((m) => (
-              <option key={m.id} value={m.id}>
+            {options.map(({ model: m, disabled }) => (
+              <option key={m.id} value={m.id} disabled={disabled}>
                 {m.displayName || m.id}
+                {m.isDefault ? ' (mặc định)' : ''}
+                {disabled ? ' (không còn dùng được)' : ''}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </Field>
 
-        <div className="rounded-control border border-line bg-canvas p-3.5">
-          <label htmlFor="rag-prompt-select" className="text-body font-medium text-fg-1">
-            Phiên bản Prompt hệ thống
-          </label>
-          <select
+        <Field label="Phiên bản câu lệnh hệ thống" htmlFor="rag-prompt-select">
+          <Select
             id="rag-prompt-select"
             value={form.promptVersion}
             disabled={isSaving}
             onChange={(e) => onChange((p) => ({ ...p, promptVersion: e.target.value }))}
-            className="mt-3 w-full rounded-control border border-line bg-canvas px-3 py-1.5 text-body text-fg-1 outline-none focus:border-accent"
           >
             {promptVersions.map((v) => (
               <option key={v} value={v}>
                 {v}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </Field>
+
+        {efforts.length > 0 && (
+          <Field
+            label="Mức suy luận"
+            htmlFor="rag-reasoning-select"
+            hint="Cao hơn thì trả lời kỹ hơn nhưng chậm và tốn hơn."
+          >
+            <Select
+              id="rag-reasoning-select"
+              value={form.reasoningEffort ?? model?.defaultReasoningEffort ?? efforts[0]}
+              disabled={isSaving}
+              aria-describedby="rag-reasoning-select-msg"
+              onChange={(e) => onChange((p) => ({ ...p, reasoningEffort: e.target.value }))}
+            >
+              {efforts.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                  {v === model?.defaultReasoningEffort ? ' (mặc định)' : ''}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
       </div>
 
+      {modelCatalog && !usable && (
+        <Notice tone="warn" title={`Model ${form.generationModel} không còn dùng được`}>
+          Cấu hình này vẫn đang lưu model đó nên chi phí bị tính theo giá cao nhất. Chọn một model trong danh sách rồi
+          lưu bản nháp.
+        </Notice>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <SettingFieldInput
-          id="temperature"
-          label="Độ ngẫu nhiên (Temperature)"
-          description="Giá trị thấp bám sát tài liệu; cao hơn cho câu trả lời tự nhiên."
-          value={form.temperature ?? 0.1}
-          unit="độ"
-          min={0}
-          max={1}
-          step={0.01}
-          defaultValue={0.1}
-          disabled={isSaving}
-          onChange={(v) => onChange((p) => ({ ...p, temperature: v }))}
-        />
+        {model?.supportsTemperature !== false && (
+          <SettingFieldInput
+            id="temperature"
+            label="Độ ngẫu nhiên"
+            description="Giá trị thấp bám sát tài liệu; cao hơn cho câu trả lời tự nhiên."
+            value={form.temperature ?? DEFAULT_RAG_TEMPERATURE}
+            unit="độ"
+            min={bounds.temperature.min}
+            max={bounds.temperature.max}
+            step={0.01}
+            defaultValue={DEFAULT_RAG_TEMPERATURE}
+            disabled={isSaving}
+            onChange={(v) => onChange((p) => ({ ...p, temperature: v }))}
+          />
+        )}
         <SettingFieldInput
           id="maxOutputTokens"
-          label="Tokens phản hồi tối đa"
-          description="Giới hạn độ dài phản hồi tối đa của câu trả lời chatbot."
+          label="Token trả lời tối đa"
+          description={`Độ dài tối đa của câu trả lời. Dịch vụ trả lời chỉ dùng tối đa ${cap(RAG_SERVICE_CAPS.maxOutputTokens)} token; số lớn hơn không có tác dụng.`}
           value={form.maxOutputTokens}
-          unit="tokens"
-          min={64}
-          max={1500}
-          defaultValue={700}
+          unit="token"
+          min={bounds.maxOutputTokens.min}
+          max={bounds.maxOutputTokens.max}
+          defaultValue={DEFAULT_RAG_VALUES.maxOutputTokens}
           disabled={isSaving}
           onChange={(v) => onChange((p) => ({ ...p, maxOutputTokens: v }))}
         />
         <SettingFieldInput
           id="maxContextTokens"
-          label="Tokens ngữ cảnh tối đa"
-          description="Độ dài tài liệu tối đa đưa vào mỗi câu trả lời."
+          label="Token tài liệu tối đa"
+          description={`Độ dài tài liệu đưa vào mỗi câu trả lời. Dịch vụ trả lời chỉ dùng tối đa ${cap(RAG_SERVICE_CAPS.maxContextTokens)} token.`}
           value={form.maxContextTokens}
-          unit="tokens"
-          min={500}
-          max={6000}
-          defaultValue={3000}
+          unit="token"
+          min={bounds.maxContextTokens.min}
+          max={bounds.maxContextTokens.max}
+          defaultValue={DEFAULT_RAG_VALUES.maxContextTokens}
           disabled={isSaving}
           onChange={(v) => onChange((p) => ({ ...p, maxContextTokens: v }))}
         />
@@ -104,9 +166,9 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           description="Số ký tự tối đa của một đoạn khi chia nhỏ tài liệu."
           value={form.chunkCharacters}
           unit="ký tự"
-          min={400}
-          max={8000}
-          defaultValue={2400}
+          min={bounds.chunkCharacters.min}
+          max={bounds.chunkCharacters.max}
+          defaultValue={DEFAULT_RAG_VALUES.chunkCharacters}
           disabled={isSaving}
           onChange={(v) => onChange((p) => ({ ...p, chunkCharacters: v }))}
         />
@@ -118,7 +180,7 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           unit="ký tự"
           min={0}
           max={form.chunkCharacters / 2}
-          defaultValue={300}
+          defaultValue={DEFAULT_RAG_VALUES.chunkOverlap}
           disabled={isSaving}
           onChange={(v) => onChange((p) => ({ ...p, chunkOverlap: v }))}
         />
@@ -128,9 +190,9 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           description="Số lượng đoạn tài liệu liên quan cao nhất được nạp vào câu trả lời."
           value={form.topK}
           unit="đoạn"
-          min={1}
-          max={10}
-          defaultValue={6}
+          min={bounds.topK.min}
+          max={bounds.topK.max}
+          defaultValue={DEFAULT_RAG_VALUES.topK}
           disabled={isSaving}
           onChange={(v) => onChange((p) => ({ ...p, topK: v }))}
         />
@@ -140,10 +202,10 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           description="Các đoạn tài liệu có điểm tương đồng dưới ngưỡng này sẽ bị loại."
           value={form.minScore}
           unit="điểm"
-          min={0}
-          max={1}
+          min={bounds.minScore.min}
+          max={bounds.minScore.max}
           step={0.001}
-          defaultValue={0.2}
+          defaultValue={DEFAULT_RAG_VALUES.minScore}
           disabled={isSaving}
           onChange={(v) => onChange((p) => ({ ...p, minScore: v }))}
         />
@@ -153,9 +215,9 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           description="Số tin nhắn hội thoại gần nhất đưa vào ngữ cảnh sinh câu trả lời."
           value={form.maxHistoryMessages}
           unit="tin nhắn"
-          min={0}
-          max={20}
-          defaultValue={6}
+          min={bounds.maxHistoryMessages.min}
+          max={bounds.maxHistoryMessages.max}
+          defaultValue={DEFAULT_RAG_VALUES.maxHistoryMessages}
           disabled={isSaving}
           onChange={(v) => onChange((p) => ({ ...p, maxHistoryMessages: v }))}
         />

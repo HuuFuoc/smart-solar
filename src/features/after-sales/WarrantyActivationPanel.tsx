@@ -22,15 +22,16 @@ import type { ServiceRequestView } from '@/types/res/customerAfterSalesRes'
 import type { AssetView } from '@/types/res/managerInstallationsRes'
 
 // Bảo hành của hãng cho thiết bị trong yêu cầu. Hạn chỉ tính được khi quản lý ghi ngày kích hoạt kèm tài liệu
-// (phiếu bảo hành, hoá đơn); ghi một lần, không sửa. Xem chi tiết công trình chưa trả ngày đã ghi,
-// nên trình duyệt này nhớ thiết bị đã ghi (cả khi ghi lại mới biết là đã có) để tải lại trang không hiện nút nữa
+// (phiếu bảo hành, hoá đơn); ghi một lần, không sửa. Xem chi tiết công trình chưa trả ngày đã ghi, cũng không cho biết thiết bị
+// ghi trước khi có quy tắc bảo hành (LEGACY_UNVERIFIED, không ghi được ngày), nên trình duyệt này nhớ cả hai khi backend báo,
+// để tải lại trang không hiện nút nữa
 
 const DOCUMENT = 'PROJECT_DOCUMENT'
 const REASON_MAX = 500
 const RECORDED_KEY = 'smartsolar.warrantyActivation'
 
-/** Ngày đã ghi; null khi chỉ biết là đã ghi ở nơi khác */
-type Recorded = { warrantyStartsAt: string | null; warrantyEndsAt: string | null }
+/** Ngày đã ghi; null khi chỉ biết là đã ghi ở nơi khác. `unverified`: backend báo thiết bị chưa có thời hạn đã kiểm chứng */
+type Recorded = { warrantyStartsAt: string | null; warrantyEndsAt: string | null; unverified?: boolean }
 
 function readRecorded(): Record<string, Recorded> {
   try {
@@ -109,6 +110,12 @@ function ActivationDialog({
       if (isApiError(e) && e.code === 'AFTER_SALES_WARRANTY_ACTIVATION_RECORDED') {
         toast.info('Thiết bị này đã ghi ngày kích hoạt trước đó, không cần ghi lại.')
         onRecorded(asset.assetId, { warrantyStartsAt: null, warrantyEndsAt: null })
+        onOpenChange(false)
+        return
+      }
+      if (isApiError(e) && e.code === 'AFTER_SALES_WARRANTY_SOURCE_UNVERIFIED') {
+        toast.error(e.message)
+        onRecorded(asset.assetId, { warrantyStartsAt: null, warrantyEndsAt: null, unverified: true })
         onOpenChange(false)
         return
       }
@@ -239,13 +246,15 @@ export function WarrantyActivationPanel({ request, assets }: { request: ServiceR
                     {activatable ? `, bảo hành ${formatWarrantyMonths(a.warrantyMonths)}` : ''}
                     {done?.warrantyStartsAt
                       ? `, từ ${formatDateOnly(vnDate(done.warrantyStartsAt))} đến ${formatDateOnly(vnDate(done.warrantyEndsAt ?? ''))}`
-                      : done
+                      : done && !done.unverified
                         ? ', đã ghi ngày kích hoạt'
                         : ''}
                   </p>
                 </div>
                 {!activatable ? (
                   <p className="text-meta text-fg-2">Chưa gắn sản phẩm trong danh mục nên chưa ghi được</p>
+                ) : done?.unverified ? (
+                  <p className="text-meta text-fg-2">Thiết bị ghi trước khi có quy tắc bảo hành nên chưa ghi được</p>
                 ) : (
                   !done && (
                     <Button

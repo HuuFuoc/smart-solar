@@ -148,6 +148,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },
           { label: 'Kho tri thức AI', to: ROUTES.admin.knowledgeBase, icon: 'menu_book' },
+          { label: 'Chi phí AI', to: ROUTES.admin.aiUsage, icon: 'paid' },
           { label: 'Cài đặt hệ thống', to: ROUTES.admin.settings, icon: 'settings' },
         ],
       },

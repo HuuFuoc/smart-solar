@@ -17,11 +17,25 @@ export const CHAT_MESSAGE_STATUSES = {
 } as const
 
 /**
- * Rag.MaxQuestionCharacters, ChatController. Giới hạn số lần (mặc định 10 câu / phút, 100 câu và 200 000 token / ngày / người,
- * 2 câu trả lời cùng lúc) là cấu hình của backend nên không ghi ở đây: FE chỉ đọc lỗi 429 trả về
+ * Rag.MaxQuestionCharacters, ChatController. Số lần hỏi mỗi phút, số câu mỗi ngày, số câu cùng lúc và ngân sách là cấu hình của
+ * backend nên không ghi ở đây: FE chỉ đọc lỗi trả về
  */
 export const CHAT_LIMITS = {
-  /** Số ký tự của câu hỏi sau khi bỏ khoảng trắng hai đầu */
-  messageMax: 8000,
+  /**
+   * Số ký tự của câu hỏi sau khi bỏ khoảng trắng hai đầu. Quản trị chỉnh được trong khoảng 100–2000; ngưỡng thấp hơn thì
+   * 400 RAG_MESSAGE_TOO_LONG trả `details.maxCharacters` và FE dùng số đó
+   */
+  messageMax: 1000,
   clientMessageIdMax: 64,
+  /** Số lần tự gửi lại khi backend báo câu này đang được trả lời (AI_REQUEST_IN_PROGRESS) */
+  inProgressRetries: 3,
+} as const
+
+/** Lỗi giới hạn khi gửi câu hỏi, theo mã backend; mã AI_* nội bộ được gộp về đúng loại */
+export const CHAT_LIMIT_CODES = {
+  cooldown: ['AUTH_TOO_MANY_REQUESTS', 'RAG_TOO_MANY_CONCURRENT_REQUESTS', 'AI_CONCURRENCY_LIMIT'],
+  'quota-exceeded': ['RAG_QUOTA_EXCEEDED', 'AI_USER_QUOTA_EXCEEDED', 'AI_GLOBAL_TOKEN_QUOTA'],
+  'global-busy': ['AI_GLOBAL_CONCURRENCY_LIMIT'],
+  'budget-exceeded': ['AI_BUDGET_EXCEEDED'],
+  'generation-disabled': ['AI_GENERATION_DISABLED'],
 } as const

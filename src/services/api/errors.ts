@@ -392,10 +392,22 @@ const ERROR_MESSAGES: Record<string, string> = {
   RAG_BUSY: 'Trợ lý đang bận trả lời câu hỏi khác. Thử lại sau vài giây.',
   RAG_ADVISOR_UNAVAILABLE: 'Phần tư vấn cấu hình tạm thời chưa dùng được. Thử lại sau; các câu hỏi khác vẫn hỏi được.',
   RAG_SESSION_NOT_FOUND: 'Không tìm thấy cuộc trò chuyện này. Mở cuộc trò chuyện mới để hỏi tiếp.',
-  RAG_MESSAGE_TOO_LONG: 'Câu hỏi phải có từ 1 đến 8.000 ký tự.',
-  // Hạn mức theo ngày của từng người hoặc của cả hệ thống, backend không nói là hạn mức nào
-  RAG_QUOTA_EXCEEDED: 'Đã hết lượt hỏi trợ lý trong hôm nay. Hỏi lại vào ngày mai.',
-  RAG_TOO_MANY_CONCURRENT_REQUESTS: 'Câu hỏi trước vẫn đang được trả lời. Chờ xong rồi hỏi tiếp.',
+  // Ngưỡng do quản trị đặt; `details.maxCharacters` (nếu có) được ghép vào câu ở chatDisplay.ts
+  RAG_MESSAGE_TOO_LONG: 'Câu hỏi dài quá số ký tự cho phép. Rút gọn rồi gửi lại.',
+  // Hạn mức số câu / ngày của từng người hoặc hạn mức chung, backend không nói là hạn mức nào
+  RAG_QUOTA_EXCEEDED: 'Bạn đã dùng hết lượt hỏi trợ lý hiện tại.',
+  AI_USER_QUOTA_EXCEEDED: 'Bạn đã dùng hết lượt hỏi trợ lý hiện tại.',
+  AI_GLOBAL_TOKEN_QUOTA: 'Bạn đã dùng hết lượt hỏi trợ lý hiện tại.',
+  RAG_TOO_MANY_CONCURRENT_REQUESTS: 'Câu hỏi khác của bạn đang được trả lời. Chờ xong rồi hỏi tiếp.',
+  AI_CONCURRENCY_LIMIT: 'Câu hỏi khác của bạn đang được trả lời. Chờ xong rồi hỏi tiếp.',
+  AI_REQUEST_IN_PROGRESS: 'Câu hỏi này vẫn đang được trả lời. Chờ một lát rồi gửi lại.',
+  AI_GLOBAL_CONCURRENCY_LIMIT: 'Trợ lý đang bận trả lời nhiều người.',
+  // Hạn mức chi phí theo ngày hoặc theo tháng, nên không hẹn "ngày mai"
+  AI_BUDGET_EXCEEDED: 'Trợ lý tạm ngưng trả lời vì đã chạm hạn mức chung của hệ thống.',
+  AI_GENERATION_DISABLED:
+    'Trợ lý đang tạm ngưng trả lời theo cài đặt của quản trị. Câu hỏi tư vấn cấu hình (diện tích, ngân sách, điện tiêu thụ) vẫn hỏi được.',
+  AI_USAGE_NOT_FOUND: 'Dòng này đã được đối soát hoặc không còn. Đã tải lại danh sách.',
+  AI_USAGE_REVIEW_INVALID: 'Chi phí phải từ 0 đến 100 USD (tối đa 6 chữ số lẻ) và có ghi chú.',
   RAG_CONFIG_VALIDATION_FAILED: 'Cấu hình chưa hợp lệ. Kiểm tra lại các tham số được báo lỗi.',
   RAG_CONFIG_STALE_REVISION: 'Cấu hình vừa được sửa ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
   RAG_CONFIG_DRAFT_NOT_FOUND: 'Không còn bản nháp nào. Đã tải lại cấu hình.',

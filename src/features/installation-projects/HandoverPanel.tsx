@@ -4,14 +4,14 @@ import { Facts } from '@/features/pre-surveys/Facts'
 import { PanelQuery } from '@/features/installation-projects/formParts'
 import { assetTypeLabel } from '@/features/installation-projects/projectDisplay'
 import { serialText } from '@/features/installations/installationDisplay'
-import { formatDay, formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useHandoverQuery } from '@/hooks/useManagerInstallations'
 import type { AssetView, HandoverAssetView } from '@/types/res/managerInstallationsRes'
 
-// Thiết bị kỹ thuật viên đã ghi, và biên bản bàn giao khi khách đã nghiệm thu (hạn bảo hành do backend tính)
+// Thiết bị kỹ thuật viên đã ghi, và biên bản bàn giao khi khách đã nghiệm thu. Không hiện `warrantyEndsOn` của biên bản:
+// backend tính từ ngày bàn giao, còn hạn bảo hành của hãng tính từ ngày kích hoạt quản lý ghi (khách thấy ngày đó)
 
 function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
-  const withWarrantyEnd = assets.some((a) => 'warrantyEndsOn' in a)
   return (
     <Table stack>
       <thead>
@@ -21,7 +21,6 @@ function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
           <Th>Số serial</Th>
           <Th>Vị trí</Th>
           <Th className="text-right">Bảo hành</Th>
-          {withWarrantyEnd && <Th>Hết bảo hành</Th>}
         </tr>
       </thead>
       <tbody>
@@ -44,11 +43,6 @@ function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
             <Td label="Bảo hành" className="tnum lg:text-right">
               {a.warrantyMonths != null ? `${a.warrantyMonths} tháng` : <span className="text-fg-3">Chưa ghi</span>}
             </Td>
-            {withWarrantyEnd && (
-              <Td label="Hết bảo hành" className="tnum">
-                {'warrantyEndsOn' in a && a.warrantyEndsOn ? formatDay(a.warrantyEndsOn, { year: true }) : '—'}
-              </Td>
-            )}
           </Tr>
         ))}
       </tbody>
