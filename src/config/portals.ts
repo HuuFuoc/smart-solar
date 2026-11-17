@@ -159,7 +159,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
     home: ROUTES.tech.home,
     groups: [
       {
-        label: 'Công việc',
+        label: 'Tác vụ kỹ thuật',
         items: [
           { label: 'Khảo sát', to: ROUTES.tech.jobs, icon: 'assignment' },
           { label: 'Hẹn lịch thi công', to: ROUTES.tech.installationSchedules, icon: 'event_note' },
@@ -169,8 +169,8 @@ export const PORTALS: Record<PortalKey, Portal> = {
         ],
       },
       {
-        label: 'Hỗ trợ và danh mục',
-        items: [{ label: 'Sản phẩm', to: ROUTES.tech.products, icon: 'solar_power' }],
+        label: 'Hỗ trợ và kho',
+        items: [{ label: 'Kho sản phẩm và vật tư', to: ROUTES.tech.products, icon: 'inventory_2' }],
       },
     ],
   },

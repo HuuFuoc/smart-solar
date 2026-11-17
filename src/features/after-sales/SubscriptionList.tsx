@@ -1,7 +1,6 @@
 import { ENTITLEMENT_STATUSES } from '@/common/afterSales'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
-import { ListRow } from '@/components/common/ui/list-row'
 import {
   bySubscriptionRank,
   cancelMode,
@@ -130,39 +129,36 @@ export function SubscriptionList({
   onBook: (entitlement: EntitlementView, subscription: SubscriptionView) => void
 }) {
   return (
-    <ul className="divide-y divide-line">
+    <ul className="space-y-3">
       {[...items].sort(bySubscriptionRank).map((s) => {
         const status = subscriptionStatusMeta(s.status)
         const mode = cancelMode(s.status)
         const term = termText(s)
         const payAttempt = s.status === 'AWAITING_PAYMENT' ? s.currentPaymentAttemptId : null
         return (
-          <ListRow key={s.subscriptionId}>
-            <div className="grid gap-x-8 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <li key={s.subscriptionId} className="rounded-container border border-line bg-surface-2 p-4">
+            <div className="grid gap-x-6 gap-y-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.8fr)_auto] lg:items-center">
               <div className="min-w-0">
-                <h3 className="text-title font-semibold">{s.packageName}</h3>
-                <p className="mt-1 text-body text-fg-2">
+                <h3 className="text-body font-semibold text-fg">{s.packageName}</h3>
+                <p className="mt-0.5 text-meta text-fg-2">
                   Hợp đồng <span className="tnum">{contractNumbers.get(s.contractId) ?? shortCode(s.contractId)}</span>,{' '}
                   {vnd(s.price)}, {formatDurationMonths(s.durationMonths)}
                 </p>
-                {term && <p className="mt-2 text-body text-fg">{term}</p>}
+                {term && <p className="mt-1 text-meta font-medium text-fg">{term}</p>}
                 {s.status === 'ACTIVE' && s.supportAvailable != null && (
-                  <p className="mt-1 text-body text-fg">
+                  <p className="mt-0.5 text-meta text-fg">
                     Hạn mức kỳ còn {vnd(s.supportAvailable)}
                     {s.supportReserved > 0 && (
                       <span className="text-fg-2">, đang giữ {vnd(s.supportReserved)} cho báo giá sửa chữa</span>
                     )}
                   </p>
                 )}
-                <p className="mt-1 text-body text-fg-2">{benefitText(s)}</p>
-                {isMaintenance(s.kind) && s.entitlements.length > 0 && (
-                  <EntitlementList subscription={s} onBook={onBook} />
-                )}
               </div>
-              <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
+              <p className="min-w-0 text-meta text-fg">{benefitText(s)}</p>
+              <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-end">
                 <Badge tone={status.tone}>{status.label}</Badge>
                 {(payAttempt || mode) && (
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     {mode && (
                       <Button icon="cancel" size="sm" variant="danger" onClick={() => onCancel(s)}>
                         Huỷ đơn
@@ -177,7 +173,8 @@ export function SubscriptionList({
                 )}
               </div>
             </div>
-          </ListRow>
+            {isMaintenance(s.kind) && s.entitlements.length > 0 && <EntitlementList subscription={s} onBook={onBook} />}
+          </li>
         )
       })}
     </ul>

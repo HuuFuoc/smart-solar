@@ -10,7 +10,7 @@ import type { ServiceRequestSummary } from '@/types/res/customerAfterSalesRes'
 // Danh sách yêu cầu dạng cột của khách, quản lý, quản trị. `detailPattern` là đường dẫn chi tiết có ":id"
 
 const COLUMNS = 'lg:grid-cols-[minmax(0,2.6fr)_minmax(0,1fr)_minmax(0,1.1fr)_minmax(0,1.3fr)_7rem]'
-const LABELS = ['Yêu cầu', 'Loại', 'Ngày gửi', 'Tình hình', 'Thao tác']
+const LABELS = ['Yêu cầu và nội dung sự cố', 'Phân loại', 'Ngày gửi', 'Tình hình', 'Thao tác']
 
 export function ServiceRequestList({
   rows,
@@ -41,7 +41,7 @@ export function ServiceRequestList({
                   </Link>
                   <p className="mt-1 line-clamp-2 text-body text-fg-2">{r.description}</p>
                 </ListCell>
-                <ListCell label="Loại">{requestKindLabel(r.kind)}</ListCell>
+                <ListCell label="Phân loại">{requestKindLabel(r.kind)}</ListCell>
                 <ListCell label="Ngày gửi" className="tnum">
                   {when.slice(0, 10)} <span className="text-fg-2">{when.slice(11)}</span>
                 </ListCell>
@@ -49,7 +49,7 @@ export function ServiceRequestList({
                   <Badge tone={status.tone}>{status.label}</Badge>
                 </ListCell>
                 <ListCell wide className="lg:justify-self-end">
-                  <ButtonLink icon="visibility" variant="info" to={to} size="sm">
+                  <ButtonLink icon={todo ? 'arrow_forward' : 'visibility'} variant="info" to={to} size="sm">
                     {todo ? 'Xử lý' : 'Xem'}
                     <span className="sr-only"> {r.requestNumber}</span>
                   </ButtonLink>

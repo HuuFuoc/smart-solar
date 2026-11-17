@@ -77,7 +77,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
       </div>
 
       {/* Hàng 2: Toolbar chung 1 hàng - Tabs trạng thái bên trái & Ô tìm kiếm bên phải */}
-      <div className="flex flex-col gap-3 border-b border-line pb-2">
+      <div className="flex flex-col gap-3 border-b border-line pb-2 sm:flex-row sm:items-center sm:justify-between">
         <FilterChips
           label="Lọc hồ sơ theo trạng thái"
           className="min-w-0 flex-1 shadow-none"
@@ -90,7 +90,7 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
             { value: 'completed', label: 'Khảo sát xong', count: completedCount },
           ]}
         />
-        <div className="sm:max-w-sm">
+        <div className="shrink-0 sm:w-56 lg:w-64">
           <label>
             <span className="sr-only">Tìm hồ sơ</span>
             <SearchInput

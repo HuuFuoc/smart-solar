@@ -21,7 +21,7 @@ export type DayColumn = {
 }
 
 /** "Hôm nay, Chủ nhật, 15/11/2026"; ngày khác "Thứ Năm, 12/11/2026" */
-function DayName({ day, today }: { day: string; today: string }) {
+export function DayName({ day, today }: { day: string; today: string }) {
   const relative = relativeDay(day, today)
   const named = relative !== formatDay(day)
   return (

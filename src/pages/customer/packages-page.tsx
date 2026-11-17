@@ -5,8 +5,7 @@ import { SERVICE_PACKAGE_KINDS } from '@/common/afterSales'
 import { Badge } from '@/components/common/ui/badge'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { PagedList } from '@/components/common/ui/pagination'
-import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
-import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
+import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { awaitsPayment, packageKindLabel } from '@/features/after-sales/afterSalesDisplay'
 import { CancelSubscriptionDialog } from '@/features/after-sales/CancelSubscriptionDialog'
 import { BOOKING_LEAD_DAYS, entitlementDeadline } from '@/features/after-sales/customerServiceRules'
@@ -37,26 +36,18 @@ const PAYMENT_PARAM = 'thanh-toan'
 function OnSale({ kind, onBuy }: { kind: ServicePackageKind; onBuy: (pkg: PackageView) => void }) {
   const packages = usePackagesQuery(kind)
   const label = packageKindLabel(kind)
-  return (
-    <Panel>
-      <PanelHeader title={label} />
-      <PanelBody>
-        {packages.isPending ? (
-          <Skeleton className="h-40" />
-        ) : packages.data === undefined ? (
-          <ErrorState
-            title={`Không tải được gói ${label.toLowerCase()}.`}
-            message={packages.error?.message}
-            onRetry={() => void packages.refetch()}
-          />
-        ) : packages.data.length === 0 ? (
-          <EmptyState title={`Chưa có gói ${label.toLowerCase()} đang bán`} />
-        ) : (
-          <PackageList items={packages.data} onBuy={onBuy} />
-        )}
-      </PanelBody>
-    </Panel>
-  )
+  if (packages.isPending) return <Skeleton className="h-44" />
+  if (packages.data === undefined)
+    return (
+      <ErrorState
+        title={`Không tải được gói ${label.toLowerCase()}.`}
+        message={packages.error?.message}
+        onRetry={() => void packages.refetch()}
+      />
+    )
+  // Loại gói chưa có gói nào đang bán thì không chiếm chỗ
+  if (packages.data.length === 0) return null
+  return <PackageList items={packages.data} onBuy={onBuy} />
 }
 
 export function CustomerPackagesPage() {
@@ -96,22 +87,22 @@ export function CustomerPackagesPage() {
           />
         ) : (
           mine.length > 0 && (
-            <Panel>
-              <PanelHeader title="Gói của bạn" />
-              <PanelBody>
-                <PagedList items={mine} noun="gói" keepScroll>
-                  {(page) => (
-                    <SubscriptionList
-                      items={page}
-                      contractNumbers={contractNumbers}
-                      onPay={setPayingAttemptId}
-                      onCancel={setCancelling}
-                      onBook={(entitlement, subscription) => setBooking({ entitlement, subscription })}
-                    />
-                  )}
-                </PagedList>
-              </PanelBody>
-            </Panel>
+            <section aria-labelledby="my-packages" className="rounded-container border border-line bg-canvas p-4">
+              <h2 id="my-packages" className="mb-3 text-title font-semibold text-fg">
+                Gói của bạn
+              </h2>
+              <PagedList items={mine} noun="gói" keepScroll>
+                {(page) => (
+                  <SubscriptionList
+                    items={page}
+                    contractNumbers={contractNumbers}
+                    onPay={setPayingAttemptId}
+                    onCancel={setCancelling}
+                    onBook={(entitlement, subscription) => setBooking({ entitlement, subscription })}
+                  />
+                )}
+              </PagedList>
+            </section>
           )
         )}
 

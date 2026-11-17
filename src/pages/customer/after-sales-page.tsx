@@ -1,22 +1,26 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
-import { ButtonLink } from '@/components/common/ui/button'
+import { Button, ButtonLink } from '@/components/common/ui/button'
 import { SearchInput, Select } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { PagedList } from '@/components/common/ui/pagination'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
+import { Segmented } from '@/components/common/ui/segmented'
 import { EmptyState } from '@/components/common/ui/states'
 import {
   filterCustomerServiceRequests,
   type ServiceRequestFilterStatus,
   type ServiceRequestTimeSort,
 } from '@/features/after-sales/customerAfterSalesDisplay'
-import { ServiceRequestList } from '@/features/after-sales/ServiceRequestList'
+import { CustomerServiceRequestGrid } from '@/features/after-sales/CustomerServiceRequestGrid'
+import { CustomerServiceRequestTable } from '@/features/after-sales/CustomerServiceRequestTable'
 import { byRequestRank, isTodo } from '@/features/after-sales/serviceDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
 import { useMyServiceRequestsQuery } from '@/hooks/useCustomerServiceRequests'
 import { ROUTES } from '@/routes/paths'
+import { errorMessage } from '@/services/api/errors'
 
 // Mọi yêu cầu bảo hành, sửa chữa, bảo trì lẻ của khách. Gửi yêu cầu mới từ trang công trình đã bàn giao
 export function CustomerAfterSalesPage() {
@@ -25,6 +29,20 @@ export function CustomerAfterSalesPage() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<ServiceRequestFilterStatus>('ALL')
   const [sort, setSort] = useState<ServiceRequestTimeSort>('ALL')
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
+  const [syncing, setSyncing] = useState(false)
+
+  async function sync() {
+    setSyncing(true)
+    try {
+      await Promise.all([query.refetch({ throwOnError: true }), installations.refetch({ throwOnError: true })])
+      toast.success('Đã cập nhật tiến độ các yêu cầu.')
+    } catch (e) {
+      toast.error(errorMessage(e))
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   // Tìm theo mã hợp đồng của công trình
   const projectContracts = useMemo(
@@ -43,9 +61,14 @@ export function CustomerAfterSalesPage() {
           todo > 0 ? <Badge tone="danger">{todo} yêu cầu chờ bạn duyệt báo giá hoặc nghiệm thu</Badge> : undefined
         }
         actions={
-          <ButtonLink icon="construction" to={ROUTES.customer.projects} variant="info">
-            Công trình của tôi
-          </ButtonLink>
+          <>
+            <Button variant="secondary" icon="sync" disabled={syncing} onClick={() => void sync()}>
+              {syncing ? 'Đang đồng bộ…' : 'Đồng bộ tiến độ'}
+            </Button>
+            <ButtonLink icon="construction" to={ROUTES.customer.projects} variant="info">
+              Công trình của tôi
+            </ButtonLink>
+          </>
         }
       />
       <QueryBoundary query={query}>
@@ -92,18 +115,39 @@ export function CustomerAfterSalesPage() {
                   <option value="NEWEST">Gửi mới nhất trước</option>
                   <option value="OLDEST">Gửi cũ nhất trước</option>
                 </Select>
+                <Segmented
+                  label="Cách xem"
+                  className="sm:ml-auto"
+                  value={viewMode}
+                  onChange={setViewMode}
+                  options={[
+                    { value: 'table', label: 'Bảng', icon: 'format_list_bulleted' },
+                    { value: 'grid', label: 'Lưới', icon: 'grid_view' },
+                  ]}
+                />
               </div>
               {shown.length === 0 ? (
-                <EmptyState title="Không tìm thấy yêu cầu phù hợp" />
+                <EmptyState
+                  title="Không tìm thấy yêu cầu phù hợp"
+                  description="Thử đổi bộ lọc hoặc từ khoá tìm kiếm khác."
+                />
               ) : (
                 <PagedList items={shown} noun="yêu cầu">
-                  {(page) => (
-                    <ServiceRequestList
-                      rows={page}
-                      viewer="customer"
-                      detailPattern={ROUTES.customer.afterSalesRequest}
-                    />
-                  )}
+                  {(page) =>
+                    viewMode === 'table' ? (
+                      <CustomerServiceRequestTable
+                        rows={page}
+                        projectContracts={projectContracts}
+                        detailPattern={ROUTES.customer.afterSalesRequest}
+                      />
+                    ) : (
+                      <CustomerServiceRequestGrid
+                        rows={page}
+                        projectContracts={projectContracts}
+                        detailPattern={ROUTES.customer.afterSalesRequest}
+                      />
+                    )
+                  }
                 </PagedList>
               )}
             </>

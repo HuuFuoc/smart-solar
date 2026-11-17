@@ -63,9 +63,10 @@ export function TechLayout({ children }: { children?: ReactNode }) {
       portal={PORTALS.tech}
       context={
         uniqueZones.length > 0 && (
-          <p className="px-2">
-            Khu vực: <span className="font-semibold text-fg">{zoneDisplay}</span>
-          </p>
+          <div className="rounded-container border border-line bg-surface-2 p-2">
+            <p className="text-meta text-fg-2">Khu vực công việc</p>
+            <p className="text-body font-semibold text-fg">{zoneDisplay}</p>
+          </div>
         )
       }
       badges={{

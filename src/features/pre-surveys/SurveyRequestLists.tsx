@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import { Badge, type Tone } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
-import { SearchInput, Select } from '@/components/common/ui/field'
+import { Field, SearchInput, Select } from '@/components/common/ui/field'
 import { ListCell, ListCells, ListHead, ListRow } from '@/components/common/ui/list-row'
 import { PagedList } from '@/components/common/ui/pagination'
+import { Segmented } from '@/components/common/ui/segmented'
 import {
   formatAreaPair,
   formatDateTime,
@@ -309,10 +310,31 @@ function MyRequestRows({ items, today }: { items: MyRow[]; today: string }) {
 }
 
 /** `needAssign`: id các yêu cầu có lịch quá hạn cần sales phân công */
+type AgeFilter = 'all' | 'old' | 'recent'
+const AGE_FILTERS: { value: AgeFilter; label: string }[] = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'old', label: 'Quá 7 ngày' },
+  { value: 'recent', label: 'Gần đây' },
+]
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+
+function SvStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="sv-stat">
+      <div className="min-w-0">
+        <p className="text-body text-fg-2">{label}</p>
+        <p className="tnum text-figure font-semibold">{value}</p>
+      </div>
+    </div>
+  )
+}
+
 export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[]; needAssign: Set<string> }) {
   const today = todayVn()
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
   const [picked, setPicked] = useState<ThreeStatusKey | null>(null)
+  const [age, setAge] = useState<AgeFilter>('all')
+  const [now] = useState(() => Date.now())
   const [keyword, setKeyword] = useState('')
 
   const needle = fold(keyword.trim())
@@ -331,14 +353,36 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
     return THREE_STATUS_TABLES.map((t) => ({ ...t, items: map[t.key].sort(byNextAction) }))
   }, [rows, needAssign, dateFilter, needle, today])
 
+  // Số tổng quan tính trên mọi yêu cầu của bạn, không theo bộ lọc
+  const overview = useMemo(() => {
+    const out = { total: rows.length, unscheduled: 0, booked: 0, done: 0 }
+    for (const row of rows) {
+      const { key } = classifyThreeStatus(row, needAssign.has(row.surveyRequestId))
+      if (key === 'unscheduled') out.unscheduled += 1
+      else if (key === 'finished') out.done += 1
+      else out.booked += 1
+    }
+    return out
+  }, [rows, needAssign])
+
   // Mở sẵn nhóm đầu tiên còn việc
   const active = picked ?? tables.find((t) => t.items.length > 0)?.key ?? 'confirmed'
   const current = tables.find((t) => t.key === active) ?? tables[0]!
+  const isOld = (r: MySurveyRequestItem) => now - new Date(r.assignedAt || r.submittedAt).getTime() > WEEK_MS
+  const byAge = (kind: AgeFilter) =>
+    current.items.filter(({ row }) => kind === 'all' || (kind === 'old') === isOld(row))
+  const items = byAge(age)
 
   return (
-    <div className="space-y-3">
-      <div role="search" className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <label className="min-w-0 flex-1 sm:min-w-64 lg:max-w-md">
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <SvStat label="Tổng yêu cầu của tôi" value={overview.total} />
+        <SvStat label="Khách chưa đặt giờ" value={overview.unscheduled} />
+        <SvStat label="Đã có lịch hẹn" value={overview.booked} />
+        <SvStat label="Đã khảo sát, đã đóng" value={overview.done} />
+      </div>
+      <div role="search" className="sv-card flex flex-wrap items-end gap-4">
+        <label className="min-w-0 flex-1 basis-72">
           <span className="sr-only">Tìm yêu cầu</span>
           <SearchInput
             name="my-requests-search"
@@ -349,33 +393,51 @@ export function MyRequestList({ rows, needAssign }: { rows: MySurveyRequestItem[
             onClear={() => setKeyword('')}
           />
         </label>
-        <Select
-          aria-label="Thời gian nhận"
-          className="sm:w-52"
-          active={dateFilter !== 'all'}
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-        >
-          {DATE_FILTER_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.value === 'all' ? 'Nhận lúc: mọi ngày' : `Nhận ${o.label.toLowerCase()}`}
-            </option>
-          ))}
-        </Select>
+        <Field label="Thời gian nhận" htmlFor="my-requests-date" className="w-full sm:w-52">
+          <Select
+            id="my-requests-date"
+            active={dateFilter !== 'all'}
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+          >
+            {DATE_FILTER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
       </div>
       <FilterChips
         label="Tình hình yêu cầu"
         value={current.key}
-        onChange={setPicked}
+        onChange={(key) => {
+          setPicked(key)
+          setAge('all')
+        }}
         chips={tables.map((t) => ({ value: t.key, label: t.title, count: t.items.length }))}
       />
-      {current.items.length === 0 ? (
-        <p className="py-3 text-meta text-fg-2">Không có yêu cầu nào.</p>
-      ) : (
-        <PagedList key={current.key} items={current.items} noun="yêu cầu" keepScroll>
-          {(pageItems) => <MyRequestRows items={pageItems} today={today} />}
-        </PagedList>
-      )}
+      <section className="sv-card sv-flush">
+        <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3 text-meta text-fg-2">
+          <span>Lọc theo thời gian nhận</span>
+          <Segmented
+            label="Lọc theo thời gian nhận"
+            size="sm"
+            value={age}
+            onChange={setAge}
+            options={AGE_FILTERS.map((o) => ({ value: o.value, label: `${o.label} (${byAge(o.value).length})` }))}
+          />
+        </div>
+        <div className="px-4 pb-2">
+          {items.length === 0 ? (
+            <p className="py-3 text-meta text-fg-2">Không có yêu cầu nào.</p>
+          ) : (
+            <PagedList key={`${current.key}-${age}`} items={items} noun="yêu cầu" keepScroll>
+              {(pageItems) => <MyRequestRows items={pageItems} today={today} />}
+            </PagedList>
+          )}
+        </div>
+      </section>
     </div>
   )
 }
