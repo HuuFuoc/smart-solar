@@ -204,7 +204,7 @@ function SalesActions({ contract: c }: { contract: ContractView }) {
           <p>
             {CONTRACT_DOCUMENT_LINKS
               ? 'Khách thấy hợp đồng trên cổng khách hàng, tải PDF chính thức, in, ký tay rồi gửi lại bản ký.'
-              : 'Khách thấy hợp đồng trên cổng khách hàng. Gửi đúng tệp PDF đã gắn cho khách để khách in, ký tay rồi gửi lại bản ký.'}
+              : 'Khách thấy hợp đồng trên cổng khách hàng, in hợp đồng từ trang, ký tay rồi gửi lại bản ký.'}
           </p>
           <p>Sau khi gửi, PDF chính thức không thay được; muốn đổi nội dung phải lập phụ lục.</p>
         </ContractConfirmDialog>

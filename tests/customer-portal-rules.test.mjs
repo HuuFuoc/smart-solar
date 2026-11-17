@@ -40,6 +40,7 @@ import {
   snapshotStillCurrent,
 } from '../src/features/contracts/customerContractRules.ts'
 import { PAYOS_RETURN_PARAM, rememberCheckout, returnPathFor } from '../src/features/payments/payosReturn.ts'
+import { contractPrintHtml, longDate, moneyInWords } from '../src/features/contracts/contractPrint.ts'
 
 const OFFICIAL = 'a'.repeat(64)
 
@@ -481,5 +482,37 @@ describe('báo lỗi do thiên tai', () => {
     assert.ok(incidentTimeError('2026-11-07T09:00:00+07:00', coverage, now))
     assert.equal(incidentTimeError('2026-11-07T09:30:00+07:00', coverage, now), null)
     assert.equal(incidentTimeError('2026-11-01T09:00:00+07:00', null, now), null)
+  })
+})
+
+describe('bản in hợp đồng', () => {
+  test('số tiền bằng chữ đọc đúng linh, mốt, tư, lăm', () => {
+    assert.equal(moneyInWords(405_000_000), 'Bốn trăm linh năm triệu đồng')
+    assert.equal(moneyInWords(535_971_600), 'Năm trăm ba mươi lăm triệu chín trăm bảy mươi mốt nghìn sáu trăm đồng')
+    assert.equal(moneyInWords(1_024_015), 'Một triệu không trăm hai mươi tư nghìn không trăm mười lăm đồng')
+    assert.equal(moneyInWords(0), 'Không đồng')
+  })
+
+  test('ngày theo giờ Việt Nam, ngày dưới 10 và tháng 1, 2 có số 0', () => {
+    assert.equal(longDate('2026-02-08T18:00:00Z'), 'ngày 09 tháng 02 năm 2026')
+    assert.equal(longDate('2026-11-15T03:00:00Z'), 'ngày 15 tháng 11 năm 2026')
+  })
+
+  test('in đủ mã nội dung, phường, ngày đồng ý báo giá và không chèn được HTML từ điều khoản', () => {
+    const html = contractPrintHtml({
+      contract: contract({
+        terms: '<script>alert(1)</script>',
+        issuedAt: '2026-11-15T03:00:00Z',
+        pricingSnapshot: { quoteNumber: 'BG-1', lines: [] },
+        customerSnapshot: { customerName: 'Đoàn Nguyễn', streetLine: '12 Lê Lợi', province: 'Thành phố Hồ Chí Minh' },
+      }),
+      ward: 'Phường Sài Gòn',
+      quotationAcceptedAt: '2026-11-10T03:00:00Z',
+    })
+    assert.equal(html.split('b'.repeat(64)).length - 1, 2)
+    assert.ok(html.includes('12 Lê Lợi, Phường Sài Gòn, Thành phố Hồ Chí Minh'))
+    assert.ok(html.includes('Báo giá số BG-1, phiên bản 1, Bên A đã đồng ý trên hệ thống Smart Solar ngày 10/11/2026'))
+    assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'))
+    assert.ok(!html.includes('<script>'))
   })
 })

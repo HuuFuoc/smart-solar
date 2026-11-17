@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { CONTRACT_DOCUMENT_LINKS } from '@/common/contract'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Checkbox } from '@/components/common/ui/field'
@@ -27,7 +28,8 @@ import type { ContractView } from '@/types/res/customerContractsRes'
 
 // Khách gửi bản hợp đồng đã ký tay (quét thành PDF, mục đích SIGNED_CONTRACT). SHA-256 của PDF chính thức được chụp lúc mở
 // hộp thoại và gửi đúng mã đó: hợp đồng đổi phiên bản trong lúc khách ký thì backend từ chối, khách xem lại bản mới rồi ký
-// lại. Không tự gửi lại với mã mới. Khách tự kiểm tệp PDF chính thức đang giữ bằng SHA-256 tính trên máy
+// lại. Không tự gửi lại với mã mới. Khách tự kiểm tệp PDF chính thức đang giữ bằng SHA-256 tính trên máy; khách tự in hợp đồng
+// (không có link tải) thì tệp không bao giờ trùng SHA-256 của PDF kinh doanh gắn nên bỏ bước này, chỉ đối chiếu mã nội dung
 
 const PURPOSE = 'SIGNED_CONTRACT'
 
@@ -125,8 +127,8 @@ export function SignContractDialog({ contract, onClose }: { contract: ContractVi
       ) : (
         <>
           <p className="mt-2 text-body text-fg-2">
-            In PDF chính thức của {contractTitle(snapshot)}, ký tay, quét lại thành một tệp PDF rồi gửi ở đây. Smart
-            Solar kiểm tra bản ký trước khi mở thanh toán.
+            In {contractTitle(snapshot)}, ký tay, quét lại thành một tệp PDF rồi gửi ở đây. Smart Solar kiểm tra bản ký
+            trước khi mở thanh toán.
           </p>
 
           <div className="mt-4 space-y-5">
@@ -140,25 +142,27 @@ export function SignContractDialog({ contract, onClose }: { contract: ContractVi
 
             <section className="space-y-2">
               <h3 className="text-body font-medium text-fg">Bản bạn ký</h3>
-              <p className="text-body text-fg-2">Mã nội dung in trên PDF chính thức phải trùng với mã này:</p>
+              <p className="text-body text-fg-2">Mã nội dung in trên hợp đồng phải trùng với mã này:</p>
               <code className="block rounded-control bg-surface-2 px-3 py-2 font-mono text-meta break-all text-fg">
                 {snapshot.canonicalHash ?? '—'}
               </code>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <FileButton
-                  size="sm"
-                  variant="info"
-                  icon="fact_check"
-                  accept={acceptFor(PURPOSE)}
-                  disabled={busy || checking || blocked}
-                  onFiles={(files) => void verifyLocal(files)}
-                >
-                  Kiểm tra tệp PDF chính thức
-                </FileButton>
-                <span className="text-meta text-fg-2">
-                  {checking ? 'Đang kiểm tra…' : 'Tệp chỉ được đọc trên máy của bạn, không tải lên.'}
-                </span>
-              </div>
+              {CONTRACT_DOCUMENT_LINKS && (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <FileButton
+                    size="sm"
+                    variant="info"
+                    icon="fact_check"
+                    accept={acceptFor(PURPOSE)}
+                    disabled={busy || checking || blocked}
+                    onFiles={(files) => void verifyLocal(files)}
+                  >
+                    Kiểm tra tệp PDF chính thức
+                  </FileButton>
+                  <span className="text-meta text-fg-2">
+                    {checking ? 'Đang kiểm tra…' : 'Tệp chỉ được đọc trên máy của bạn, không tải lên.'}
+                  </span>
+                </div>
+              )}
               {check && (
                 <p
                   className={check.result === 'match' ? 'text-meta text-ok' : 'text-meta text-danger'}
@@ -217,8 +221,8 @@ export function SignContractDialog({ contract, onClose }: { contract: ContractVi
               checked={confirmed}
               disabled={busy || blocked}
               onChange={(e) => setConfirmed(e.target.checked)}
-              label={`Tôi đã ký đúng PDF chính thức có mã nội dung ${shortHash(snapshot.canonicalHash)}`}
-              description="Bản ký của PDF khác (phiên bản cũ, tệp đã sửa) sẽ bị từ chối."
+              label={`Tôi đã ký đúng hợp đồng có mã nội dung ${shortHash(snapshot.canonicalHash)}`}
+              description="Bản ký của phiên bản cũ hoặc bản đã sửa sẽ bị từ chối."
             />
           </div>
         </>

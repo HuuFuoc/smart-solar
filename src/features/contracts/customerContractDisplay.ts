@@ -36,7 +36,7 @@ export function customerContractNext(c: ContractView): TrackerNext {
       return {
         tone: 'danger',
         title: 'Bạn cần ký hợp đồng',
-        body: 'In PDF hợp đồng chính thức, ký tay, quét thành một tệp PDF rồi gửi lại ở đây.',
+        body: 'In hợp đồng, ký tay, quét thành một tệp PDF rồi gửi lại ở đây.',
         action: { label: 'Gửi bản đã ký', icon: 'draw', target: 'contract-sign' },
       }
     case 'SIGNATURE_REJECTED': {
