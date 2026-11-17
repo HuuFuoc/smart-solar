@@ -431,6 +431,11 @@
   scroll-padding-bottom: 6rem;
 }
 
+/* Nút Trợ lý nổi đứng trên hàng nút dính đáy, không che nút chính của bước */
+:root:has([data-sticky-bottom]) [data-chat-launcher] {
+  bottom: 6rem;
+}
+
 /* Tắt hẳn transition (0s) thay vì 0.01ms, vì transition-property mặc định là `all` */
 @media (prefers-reduced-motion: reduce) {
   *,

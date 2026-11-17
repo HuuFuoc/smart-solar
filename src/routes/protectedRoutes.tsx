@@ -121,7 +121,6 @@ const AdminKnowledgeDocumentPage = page(
 )
 
 // Dùng chung mọi cổng: backend cho mọi người đăng nhập dùng chatbot
-const AssistantPage = page(() => import('@/pages/assistant-page'), 'AssistantPage')
 
 type PortalConfig = {
   role: UserRole
@@ -180,7 +179,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: customer.afterSalesRequest, lazy: CustomerAfterSalesRequestPage },
       { path: customer.products, lazy: CustomerCatalogPage },
       { path: customer.product, lazy: CustomerCatalogProductPage },
-      { path: customer.assistant, lazy: AssistantPage },
     ],
   }),
 
@@ -200,7 +198,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: ops.afterSalesRequest, lazy: OpsAfterSalesRequestPage },
       { path: ops.products, lazy: OpsCatalogPage },
       { path: ops.product, lazy: OpsCatalogProductPage },
-      { path: ops.assistant, lazy: AssistantPage },
     ],
   }),
 
@@ -220,7 +217,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: tech.schedule, lazy: TechSchedulePage },
       { path: tech.products, lazy: TechCatalogPage },
       { path: tech.product, lazy: TechCatalogProductPage },
-      { path: tech.assistant, lazy: AssistantPage },
     ],
   }),
 
@@ -244,7 +240,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.technician, lazy: ManageTechnicianPage },
       { path: manage.products, lazy: ManageCatalogPage },
       { path: manage.product, lazy: ManageCatalogProductPage },
-      { path: manage.assistant, lazy: AssistantPage },
     ],
   }),
 
@@ -277,7 +272,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.reports, lazy: AdminReportsPage },
       { path: admin.knowledgeBase, lazy: AdminKnowledgeDocumentsPage },
       { path: admin.knowledgeDocument, lazy: AdminKnowledgeDocumentPage },
-      { path: admin.assistant, lazy: AssistantPage },
     ],
   }),
 

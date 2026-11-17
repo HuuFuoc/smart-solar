@@ -80,20 +80,22 @@ describe('2. Kho tri thức, RAG, trợ lý', { skip }, () => {
       audience: 'CUSTOMER',
       reason: 'Tài liệu chính sách cho khách (kiểm thử)',
     })
-    const page = await as('CUSTOMER', '/customer/assistant')
+    const page = await as('CUSTOMER', '/customer/dashboard')
     const t = mark()
+    await page.getByRole('button', { name: 'Trợ lý', exact: true }).click()
     await expectCall('G02', t)
     await page.getByRole('textbox', { name: 'Câu hỏi cho trợ lý' }).fill('Tam pin duoc bao hanh bao lau?')
     await page.getByRole('button', { name: 'Gửi', exact: true }).click()
     await expectCall('G01', t)
-    await page.waitForURL(/phien=/)
     const thread = page.getByRole('list', { name: 'Nội dung cuộc trò chuyện' })
     await thread
       .getByText(/Chinh sach bao hanh Smart Solar/)
       .first()
       .waitFor()
     await page.getByText(TITLE).first().waitFor()
-    state.chatSession = new URL(page.url()).searchParams.get('phien')
+    // Ô trợ lý không ghi phiên lên địa chỉ: lấy phiên vừa tạo (mới cập nhật nhất) từ API
+    const sessions = await S.must('CUSTOMER', 'GET', '/chat/sessions')
+    state.chatSession = [...sessions].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0].sessionId
     const t2 = mark()
     await page.reload({ waitUntil: 'domcontentloaded' })
     await expectCall('G03', t2)

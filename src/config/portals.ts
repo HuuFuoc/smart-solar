@@ -45,10 +45,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
       },
       {
         label: 'Hỗ trợ',
-        items: [
-          { label: 'Thông báo', to: ROUTES.customer.notifications, icon: 'notifications' },
-          { label: 'Trợ lý', to: ROUTES.customer.assistant, icon: 'smart_toy' },
-        ],
+        items: [{ label: 'Thông báo', to: ROUTES.customer.notifications, icon: 'notifications' }],
       },
     ],
   },
@@ -79,7 +76,6 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Bảo hành, sửa chữa', to: ROUTES.ops.afterSales, icon: 'build' },
           { label: 'Sản phẩm', to: ROUTES.ops.products, icon: 'solar_power' },
-          { label: 'Trợ lý', to: ROUTES.ops.assistant, icon: 'smart_toy' },
         ],
         label: 'Hỗ trợ và danh mục',
       },
@@ -110,7 +106,6 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Kỹ thuật viên', to: ROUTES.manage.technicians, icon: 'engineering' },
           { label: 'Sản phẩm', to: ROUTES.manage.products, icon: 'solar_power' },
-          { label: 'Trợ lý', to: ROUTES.manage.assistant, icon: 'smart_toy' },
         ],
       },
     ],
@@ -151,7 +146,6 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },
           { label: 'Kho tri thức AI', to: ROUTES.admin.knowledgeBase, icon: 'menu_book' },
-          { label: 'Trợ lý', to: ROUTES.admin.assistant, icon: 'smart_toy' },
           { label: 'Cài đặt hệ thống', to: ROUTES.admin.settings, icon: 'settings' },
         ],
       },

@@ -2,7 +2,7 @@
 // 1. Không cần tài khoản: danh mục hành chính là API công khai nên đối chiếu thẳng response (mã tỉnh 79, mã phường mới khác
 //    mã cũ, truncated, lỗi q ngắn); 3 endpoint chat phải trả 401 khi không có token (route có, cần đăng nhập), khác 404.
 //    Bỏ qua khi không gọi được API_BASE (mặc định http://localhost:8080).
-// 2. Có tài khoản: mở trang Trợ lý qua giao diện (Vite dev, proxy /api) và ghi lại backend đang bật chatbot hay chưa. Chỉ đọc;
+// 2. Có tài khoản: mở ô Trợ lý nổi qua giao diện (Vite dev, proxy /api) và ghi lại backend đang bật chatbot hay chưa. Chỉ đọc;
 //    chỉ gửi câu hỏi (ghi một phiên vào DB dùng chung) khi khai thêm E2E_CHAT_WRITE=1.
 //    E2E_CUSTOMER_EMAIL=... E2E_CUSTOMER_PASSWORD=... node --test tests/e2e/shared-portal.live.e2e.mjs
 import assert from 'node:assert/strict'
@@ -94,7 +94,7 @@ describe('backend thật: danh mục hành chính (công khai)', async () => {
 })
 
 describe(
-  'trang Trợ lý với backend thật (chỉ đọc)',
+  'ô Trợ lý với backend thật (chỉ đọc)',
   { skip: !email || !password ? 'chưa khai E2E_CUSTOMER_EMAIL / E2E_CUSTOMER_PASSWORD' : false },
   () => {
     let server
@@ -130,8 +130,8 @@ describe(
       await page.locator('#login-password').fill(password)
       await page.locator('button[type="submit"]').click()
       await page.waitForURL(/\/customer/, { timeout: 60_000 })
-      await page.getByRole('link', { name: 'Trợ lý', exact: true }).first().click()
-      await page.getByRole('heading', { name: 'Trợ lý', exact: true }).waitFor()
+      await page.getByRole('button', { name: 'Trợ lý', exact: true }).click()
+      await page.getByRole('dialog', { name: 'Trợ lý' }).waitFor()
     })
 
     after(async () => {
@@ -139,7 +139,7 @@ describe(
       await server?.close()
     })
 
-    test('GET /chat/sessions: chatbot tắt thì trang báo chưa sẵn sàng; bật thì có danh sách và ô hỏi', async () => {
+    test('GET /chat/sessions: chatbot tắt thì ô trợ lý báo chưa sẵn sàng; bật thì có ô hỏi', async () => {
       for (let i = 0; i < 100 && !responses.some((r) => r.path === '/api/chat/sessions'); i++)
         await new Promise((r) => setTimeout(r, 100))
       const res = responses.find((r) => r.path === '/api/chat/sessions')
