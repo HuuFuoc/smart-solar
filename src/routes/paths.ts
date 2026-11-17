@@ -145,6 +145,8 @@ export const ROUTES = {
     /** Kho tri thức của chatbot; chi tiết theo mã tài liệu */
     knowledgeBase: '/admin/knowledge-base',
     knowledgeDocument: '/admin/knowledge-base/:id',
+    /** Chi phí của trợ lý (sổ chi phí, ngân sách, giới hạn) */
+    aiUsage: '/admin/ai-usage',
   },
 
   // Đường cũ của kỹ thuật viên, mọi đường chuyển về /tech

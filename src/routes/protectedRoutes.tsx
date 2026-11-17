@@ -127,6 +127,7 @@ const AdminZonePage = page(() => import('@/pages/admin/zone-page'), 'AdminZonePa
 const AdminWarrantyOptionsPage = page(() => import('@/pages/admin/warranty-options-page'), 'AdminWarrantyOptionsPage')
 const AdminSalesTasksPage = page(() => import('@/pages/sales-tasks-page'), 'AdminSalesTasksPage')
 const AdminReportsPage = page(() => import('@/pages/admin/reports-page'), 'AdminReportsPage')
+const AdminAiUsagePage = page(() => import('@/pages/admin/ai-usage-page'), 'AdminAiUsagePage')
 const AdminKnowledgeDocumentsPage = page(
   () => import('@/pages/admin/knowledge-documents-page'),
   'AdminKnowledgeDocumentsPage',
@@ -292,6 +293,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.reports, lazy: AdminReportsPage },
       { path: admin.knowledgeBase, lazy: AdminKnowledgeDocumentsPage },
       { path: admin.knowledgeDocument, lazy: AdminKnowledgeDocumentPage },
+      { path: admin.aiUsage, lazy: AdminAiUsagePage },
     ],
   }),
 

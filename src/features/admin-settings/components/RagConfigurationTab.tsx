@@ -7,6 +7,14 @@ import { Notice } from '@/components/common/ui/lists'
 import { ErrorState, UnavailableState } from '@/components/common/ui/states'
 import { RagConfigurationFields } from './RagConfigurationFields'
 import { LoadingWaveDots } from './LoadingWaveDots'
+import {
+  COST_CONTROL_LABELS,
+  costControlChanges,
+  costControlsOf,
+  defaultRagValues,
+  isModelUsable,
+} from '@/features/admin-settings/ragConfigRules'
+import { formatUsd } from '@/features/ai-usage/aiUsageRules'
 import { KNOWLEDGE_UNAVAILABLE } from '@/features/knowledge/knowledgeDisplay'
 import {
   useActivateRagDraftMutation,
@@ -25,15 +33,14 @@ import {
   pendingMigrationsOf,
   rateLimitedMessage,
 } from '@/services/api/errors'
-import {
-  DEFAULT_RAG_VALUES,
-  type RagActivationView,
-  type RagConfigurationState,
-  type RagConfigurationValidationView,
-  type RagConfigurationValues,
-  type RagConfigurationView,
-  type RagModelCatalog,
-  type RagReindexStaleView,
+import type {
+  RagActivationView,
+  RagConfigurationState,
+  RagConfigurationValidationView,
+  RagConfigurationValues,
+  RagConfigurationView,
+  RagModelCatalog,
+  RagReindexStaleView,
 } from '@/types/res/adminRagConfigTypes'
 
 // Cấu hình chatbot: lưu bản nháp, kiểm tra, áp dụng. Áp dụng luôn kiểm tra bản nháp trước; đổi cách cắt đoạn thì hỏi lại vì
@@ -47,11 +54,11 @@ type FormProps = {
   onActivated: (result: RagActivationView) => void
 }
 
-function extractRagValues(view?: RagConfigurationView | null): RagConfigurationValues {
-  if (!view) return DEFAULT_RAG_VALUES
+function extractRagValues(view: RagConfigurationView): RagConfigurationValues {
   return {
     generationModel: view.generationModel,
     temperature: view.temperature,
+    reasoningEffort: view.reasoningEffort ?? null,
     maxOutputTokens: view.maxOutputTokens,
     chunkCharacters: view.chunkCharacters,
     chunkOverlap: view.chunkOverlap,
@@ -99,8 +106,11 @@ function ReindexNotice({
       <Notice tone="info" title={`Đã xếp lượt nạp lại theo cấu hình v${result.configVersion}`}>
         {result.queued} phiên bản được xếp nạp lại
         {result.skippedOpenJob > 0 && `, ${result.skippedOpenJob} phiên bản đang có lượt nạp chờ nên bỏ qua`} (tổng{' '}
-        {result.stale} phiên bản cắt theo cấu hình cũ). Bản đang công bố vẫn được dùng cho tới khi nạp lại xong. Xem
-        tiến độ ở Kho tri thức AI.
+        {result.stale} phiên bản cắt theo cấu hình cũ).
+        {result.estimatedCostUsd != null &&
+          ` Chi phí ước tính tối đa ${formatUsd(result.estimatedCostUsd)}, ngân sách nạp tài liệu còn ${formatUsd(result.remainingIngestionBudgetUsd)}.`}{' '}
+        Mới xếp hàng, chưa phải đã nạp xong: bản đang công bố vẫn được dùng cho tới khi nạp lại xong. Xem tiến độ ở Kho
+        tri thức AI.
       </Notice>
     )
   return (
@@ -135,9 +145,14 @@ function RagConfigForm({ initialValues, configState, modelCatalog, onActivated }
   const [confirmChunk, setConfirmChunk] = useState<RagConfigurationValidationView | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const draft = configState.draft ?? null
+  const current = configState.active ?? configState.effective
+  const staleCosts = costControlChanges(draft, current)
+  const modelUsable = isModelUsable(modelCatalog, form.generationModel)
 
   const handleRestoreDefaults = () => {
-    setForm(DEFAULT_RAG_VALUES)
+    const defaults = defaultRagValues(modelCatalog)
+    if (!defaults) return toast.error('Chưa tải được danh sách model nên chưa điền được giá trị mặc định.')
+    setForm(defaults)
     toast.info('Đã điền lại các tham số mặc định. Bấm "Lưu bản nháp" để lưu.')
   }
 
@@ -145,7 +160,12 @@ function RagConfigForm({ initialValues, configState, modelCatalog, onActivated }
     setSaveError(null)
     setValidation(null)
     try {
-      await saveMutation.mutateAsync({ ...form, notes: notes.trim() || undefined, expectedRevision: draft?.revision })
+      await saveMutation.mutateAsync({
+        ...form,
+        ...costControlsOf(current),
+        notes: notes.trim() || undefined,
+        expectedRevision: draft?.revision,
+      })
       toast.success('Đã lưu bản nháp cấu hình.')
     } catch (e) {
       setSaveError(e)
@@ -235,6 +255,14 @@ function RagConfigForm({ initialValues, configState, modelCatalog, onActivated }
         onNotesChange={setNotes}
       />
 
+      {staleCosts.length > 0 && (
+        <Notice tone="warn" title={`Bản nháp v${draft?.version} còn giữ giới hạn chi phí cũ`}>
+          {staleCosts.map((f) => COST_CONTROL_LABELS[f]).join(', ')} khác cấu hình đang dùng (có thể vừa đổi ở trang Chi
+          phí AI). Áp dụng bản nháp lúc này sẽ đưa các giới hạn đó về số cũ; bấm "Lưu bản nháp" để bản nháp lấy giới hạn
+          đang dùng.
+        </Notice>
+      )}
+
       {fieldErrors && Object.keys(fieldErrors).length > 0 && (
         <div role="alert">
           <Notice tone="danger" title="Bản nháp chưa lưu được">
@@ -270,11 +298,21 @@ function RagConfigForm({ initialValues, configState, modelCatalog, onActivated }
             </Button>
           </>
         )}
-        <Button variant="secondary" icon="save" disabled={isSaving} onClick={() => void handleSaveDraft()}>
+        <Button
+          variant="secondary"
+          icon="save"
+          disabled={isSaving || !modelUsable}
+          onClick={() => void handleSaveDraft()}
+        >
           {saveMutation.isPending ? 'Đang lưu…' : 'Lưu bản nháp'}
         </Button>
         {draft && (
-          <Button variant="primary" icon="check_circle" disabled={isSaving} onClick={() => void handleActivate()}>
+          <Button
+            variant="primary"
+            icon="check_circle"
+            disabled={isSaving || !modelUsable}
+            onClick={() => void handleActivate()}
+          >
             {activateMutation.isPending ? 'Đang áp dụng…' : 'Áp dụng bản nháp'}
           </Button>
         )}
@@ -356,7 +394,10 @@ export function RagActivationResult({ activation }: { activation: RagActivationV
       setReindexResult(await reindexMutation.mutateAsync())
     } catch (e) {
       if (isApiError(e) && e.status === 429 && e.retryAfter) cooldown.start(e.retryAfter)
-      toast.error(rateLimitedMessage(e))
+      // Cùng mã với lúc trợ lý hết hạn mức nhưng ở đây là ngân sách nạp tài liệu của tháng
+      if (isApiError(e) && e.code === 'AI_BUDGET_EXCEEDED')
+        toast.error('Ngân sách nạp tài liệu tháng này không đủ cho lượt nạp lại. Tăng ngân sách ở trang Chi phí AI.')
+      else toast.error(rateLimitedMessage(e))
     }
   }
 

@@ -422,6 +422,18 @@ export const ENDPOINTS = {
     rollback: '/admin/rag-configuration/rollback',
     reindexStale: '/admin/rag-configuration/reindex-stale',
   },
+  // Sổ chi phí AI và ngân sách, chỉ quản trị
+  adminRagUsage: {
+    summary: '/admin/rag-usage/summary',
+    timeseries: '/admin/rag-usage/timeseries',
+    byModel: '/admin/rag-usage/by-model',
+    byOperation: '/admin/rag-usage/by-operation',
+    byRole: '/admin/rag-usage/by-role',
+    topUsers: '/admin/rag-usage/top-users',
+    requests: '/admin/rag-usage/requests',
+    review: (ledgerId: string) => `/admin/rag-usage/${encode(ledgerId)}/review`,
+  },
+  adminRagBudget: '/admin/rag-budget',
 
   // Tệp tải lên kho S3, mọi vai trò
   files: {
