@@ -4,6 +4,8 @@ export type AddProductImageRequest = {
   url?: string | null
   altText?: string | null
   makePrimary?: boolean | null
+  /** Format: uuid */
+  fileId?: string | null
 }
 
 export type ChangeProductStatusRequest = {

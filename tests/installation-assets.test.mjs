@@ -6,12 +6,18 @@ import {
   MANUAL_PRODUCT_VALUE,
   assetCount,
   changeAssetType,
+  entryCount,
   filterProductsForAssetType,
   formatProductOptionLabel,
   hasErrors,
+  missingAssetsText,
+  missingAssetTypes,
+  missingFromDetails,
   newAssetRow,
   parseSerials,
+  rowUnits,
   selectAssetProduct,
+  serverRowErrors,
   toAssetRequests,
   validateAssetRows,
 } from '../src/features/installations/assetForm.ts'
@@ -280,11 +286,85 @@ describe('một dòng nhiều serial (dán cột Excel, máy quét mã vạch)',
     assert.match(errors[1].serials, /Trùng với dòng 1: B\./)
   })
 
-  test('serial quá dài báo đúng thứ tự trong ô; ô trống báo thiếu serial', () => {
+  test('serial quá dài báo đúng thứ tự trong ô; ô serial trống thì phải có số lượng', () => {
     const row = { ...selectAssetProduct(newAssetRow(), panelA.id, catalog), serials: `OK\n${'x'.repeat(101)}` }
     const empty = { ...selectAssetProduct(newAssetRow(), panelA.id, catalog), serials: '\n \n' }
     const errors = validateAssetRows([row, empty], [])
     assert.match(errors[0].serials, /Serial thứ 2 dài hơn 100/)
-    assert.equal(errors[1].serials, 'Nhập số serial.')
+    assert.equal(errors[1].serials, undefined)
+    assert.match(errors[1].quantity, /Nhập số lượng đã lắp/)
+  })
+})
+
+describe('ghi theo số lượng (lô) hoặc theo serial', () => {
+  const panelRow = (over) => ({ ...selectAssetProduct(newAssetRow(), panelA.id, catalog), ...over })
+
+  test('một lô 100 tấm pin là một mục không có serial; inverter có serial không gửi số lượng', () => {
+    const lot = panelRow({ quantity: ' 100 ', positionCode: 'Mái A' })
+    const inv = { ...selectAssetProduct(changeAssetType(newAssetRow(), 'INVERTER', catalog), inverter.id, catalog) }
+    const rows = [lot, { ...inv, serials: 'HW-001' }]
+    assert.equal(hasErrors(validateAssetRows(rows, [])), false)
+    const requests = toAssetRequests(rows)
+    assert.deepEqual(requests[0], {
+      assetType: 'PANEL',
+      productId: panelA.id,
+      manufacturer: 'JA Solar',
+      model: 'JAM72S30-550/MR',
+      positionCode: 'Mái A',
+      warrantyMonths: 144,
+      serialNumber: null,
+      quantity: 100,
+    })
+    assert.equal(requests[1].serialNumber, 'HW-001')
+    assert.equal('quantity' in requests[1], false)
+    assert.equal(rowUnits(lot), 100)
+    assert.equal(assetCount(rows), 101)
+    assert.equal(entryCount(rows), 2)
+  })
+
+  test('có serial mà số lượng khác số serial thì chặn; số lượng trùng số serial thì nhận', () => {
+    const wrong = panelRow({ serials: 'SN-1', quantity: '100' })
+    assert.match(validateAssetRows([wrong], [])[0].quantity, /Đã nhập 1 số serial thì số lượng là 1/)
+    assert.equal(hasErrors(validateAssetRows([panelRow({ serials: 'SN-1\nSN-2', quantity: '2' })], [])), false)
+  })
+
+  test('số lượng của lô là số nguyên từ 1 đến 10.000', () => {
+    for (const quantity of ['', '0', '10001', '1,5', '-3', 'mười'])
+      assert.ok(validateAssetRows([panelRow({ quantity })], [])[0].quantity, quantity)
+    for (const quantity of ['1', '10000'])
+      assert.equal(hasErrors(validateAssetRows([panelRow({ quantity })], [])), false)
+  })
+
+  test('thiết bị ngoài danh mục phải ghi serial; số lượng gõ dở từ trước không bị báo lỗi', () => {
+    const manual = { ...changeAssetType(newAssetRow(), 'OTHER', catalog), manufacturer: 'ABC', model: 'M1' }
+    assert.match(validateAssetRows([{ ...manual, quantity: '5' }], [])[0].serials, /ngoài danh mục phải ghi số serial/)
+    assert.equal(hasErrors(validateAssetRows([{ ...manual, quantity: '5', serials: 'SN-M' }], [])), false)
+  })
+
+  test('lỗi theo mục của backend về đúng dòng: mục của lô đứng sau các serial của dòng trước', () => {
+    const rows = [panelRow({ serials: 'A\nB' }), panelRow({ quantity: '20000' })]
+    const errors = serverRowErrors({ 'assets[2].quantity': 'x', 'assets[0].productId': 'y' }, rows)
+    assert.ok(errors[1].quantity)
+    assert.ok(errors[0].productId)
+    assert.equal(errors[0].quantity, undefined)
+    assert.equal(serverRowErrors({ reason: 'x', 'assets[9].quantity': 'ngoài danh sách' }, rows), null)
+  })
+})
+
+describe('báo cáo hoàn thành: loại thiết bị còn thiếu', () => {
+  const panel = { assetType: 'PANEL' }
+  test('cần ít nhất một dòng tấm pin và một dòng inverter khi công trình yêu cầu', () => {
+    assert.deepEqual(missingAssetTypes({ assets: [panel], requiresPanelAndInverterAssets: true }), ['INVERTER'])
+    assert.deepEqual(missingAssetTypes({ assets: [] }), ['PANEL', 'INVERTER'])
+    assert.deepEqual(missingAssetTypes({ assets: [panel, { assetType: 'INVERTER' }] }), [])
+    assert.deepEqual(missingAssetTypes({ assets: [], requiresPanelAndInverterAssets: false }), [])
+  })
+  test('câu báo thiếu ghi đúng loại; đọc `details.missing` của backend, bỏ giá trị lạ', () => {
+    assert.equal(missingAssetsText(['INVERTER']), 'Chưa ghi inverter đã lắp.')
+    assert.equal(missingAssetsText(['PANEL', 'INVERTER']), 'Chưa ghi tấm pin và inverter đã lắp.')
+    assert.equal(missingAssetsText([]), null)
+    assert.deepEqual(missingFromDetails({ missing: ['INVERTER', 3] }), ['INVERTER'])
+    assert.deepEqual(missingFromDetails(null), [])
+    assert.deepEqual(missingFromDetails({ missing: 'INVERTER' }), [])
   })
 })

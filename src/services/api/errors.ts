@@ -172,6 +172,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_DUPLICATE_SERIAL: 'Số serial này đã được ghi trên hệ thống (trùng hãng và serial). Kiểm tra lại.',
   INSTALLATION_ASSET_PRODUCT_VALIDATION_FAILED:
     'Thiết bị đã chọn không khớp với danh mục sản phẩm hoặc thời hạn bảo hành không hợp lệ. Chọn đúng sản phẩm trong danh sách.',
+  INSTALLATION_ASSET_QUANTITY_VALIDATION_FAILED:
+    'Số lượng hoặc số serial của một dòng chưa hợp lệ. Kiểm tra các dòng được đánh dấu.',
   INSTALLATION_SUBSTITUTION_APPROVAL_REQUIRED:
     'Thiết bị đã lắp khác với hợp đồng. Quản lý cần duyệt thay đổi thiết bị trước khi gửi báo cáo hoàn thành.',
   INSTALLATION_SUBSTITUTION_CUSTOMER_APPROVAL_REQUIRED:
@@ -215,6 +217,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   FILE_OBJECT_MISSING: 'Tệp này không còn nữa.',
   STORAGE_NOT_CONFIGURED: 'Chức năng tải tệp đang tạm tắt. Liên hệ quản trị hệ thống.',
   STORAGE_UNAVAILABLE: 'Tạm thời chưa mở được tệp. Thử lại sau ít phút.',
+  STORAGE_PUBLIC_URL_NOT_CONFIGURED: 'Hiện chưa nhận ảnh tải từ máy. Dán link ảnh (https) thay thế.',
   // Gói dịch vụ sau lắp đặt (khách hàng). Mua gói dùng mã PROJECT_NOT_FOUND khi không tìm thấy hợp đồng
   AFTER_SALES_PROJECT_NOT_FOUND: 'Không tìm thấy hợp đồng hoặc công trình này trong tài khoản của bạn.',
   AFTER_SALES_VALIDATION_FAILED: 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các ô được đánh dấu.',
@@ -241,6 +244,8 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Thiết bị này không có thời hạn bảo hành từ danh mục sản phẩm nên không ghi được ngày kích hoạt.',
   AFTER_SALES_WARRANTY_ACTIVATION_RECORDED: 'Thiết bị này đã có ngày kích hoạt bảo hành. Ngày đã ghi không sửa được.',
   AFTER_SALES_PAYMENT_REQUIRED: 'Khách chưa thanh toán phần phải trả tiền nên chưa làm được.',
+  AFTER_SALES_PAID_CANCELLATION_UNSUPPORTED:
+    'Việc hoặc gói đã thanh toán không huỷ được trên hệ thống, vì hệ thống không xử lý hoàn tiền.',
   AFTER_SALES_EVIDENCE_REQUIRED: 'Cần ít nhất một ảnh hiện trường của buổi này trước khi gửi báo cáo.',
   AFTER_SALES_PARTS_UNAVAILABLE:
     'Chưa đủ linh kiện nên không sửa luôn được. Kết thúc buổi chờ để quản lý xếp buổi sửa.',
@@ -318,6 +323,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     'PDF không được tạo từ phiên bản hợp đồng đang xem (mã nội dung không khớp). Tạo lại PDF từ đúng phiên bản.',
   CONTRACT_DOCUMENT_MISSING: 'Gắn PDF hợp đồng chính thức trước khi gửi khách ký.',
   CONTRACT_DOCUMENT_NOT_FOUND: 'Hợp đồng chưa có tài liệu này.',
+  CONTRACT_SUBMISSION_NOT_FOUND: 'Không tìm thấy bản ký này của hợp đồng.',
   CONTRACT_WRONG_DOCUMENT_VERSION: 'Bản ký không phải bản in của PDF hợp đồng chính thức hiện tại.',
   CONTRACT_REJECTION_REASON_REQUIRED: 'Ghi lý do từ chối bản ký.',
   CONTRACT_WARRANTY_VALIDATION_FAILED: 'Thời hạn bảo hành này không còn được dùng. Chọn lại thời hạn trong danh sách.',

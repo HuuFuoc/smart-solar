@@ -6,6 +6,7 @@ import { DateField, Field, Textarea } from '@/components/common/ui/field'
 import { FileButton } from '@/components/common/ui/file-button'
 import { Progress } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
+import { AssetIdentity } from '@/features/after-sales/AssetIdentity'
 import { acceptFor, fileProblem, fileTypesText, maxSizeText } from '@/features/files/fileDisplay'
 import {
   assetTypeLabel,
@@ -125,8 +126,8 @@ function ActivationDialog({
     >
       <DialogTitle>Ngày kích hoạt bảo hành: {assetLabel(asset)}</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Serial {asset.serialNumber}. Hạn bảo hành tính từ ngày này cộng {formatWarrantyMonths(asset.warrantyMonths)}.
-        Ghi một lần, không sửa được.
+        <AssetIdentity asset={asset} />. Hạn bảo hành tính từ ngày này cộng {formatWarrantyMonths(asset.warrantyMonths)}
+        . Ghi một lần, không sửa được.
       </p>
       <div className="mt-4 space-y-4">
         <Field
@@ -234,7 +235,7 @@ export function WarrantyActivationPanel({ request, assets }: { request: ServiceR
                 <div className="min-w-0 flex-1">
                   <p className="text-body font-medium text-fg">{assetLabel(a)}</p>
                   <p className="text-meta text-fg-2">
-                    Serial <span className="tnum">{a.serialNumber}</span>
+                    <AssetIdentity asset={a} />
                     {activatable ? `, bảo hành ${formatWarrantyMonths(a.warrantyMonths)}` : ''}
                     {done?.warrantyStartsAt
                       ? `, từ ${formatDateOnly(vnDate(done.warrantyStartsAt))} đến ${formatDateOnly(vnDate(done.warrantyEndsAt ?? ''))}`

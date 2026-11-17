@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
 import { KeyValueList, type KV } from '@/components/common/ui/lists'
@@ -39,6 +40,26 @@ export function PackageFacts({ pkg, columns, className }: { pkg: PackageView; co
   return <KeyValueList columns={columns} className={className} items={packageFacts(pkg)} />
 }
 
+/** Ảnh bìa của gói; gói không có ảnh, hoặc ảnh không tải được, thì hiện ô biểu tượng theo loại gói */
+function PackageCover({ pkg: p }: { pkg: PackageView }) {
+  const [broken, setBroken] = useState(false)
+  if (p.imageUrl && !broken)
+    return (
+      <img
+        src={p.imageUrl}
+        alt=""
+        loading="lazy"
+        className="h-16 w-24 shrink-0 rounded-container border border-line object-cover"
+        onError={() => setBroken(true)}
+      />
+    )
+  return (
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-container border border-accent-line/30 bg-accent-soft text-primary">
+      <Icon name={isMaintenance(p.kind) ? 'build' : 'verified_user'} className="text-[24px] text-primary" />
+    </div>
+  )
+}
+
 /** Thẻ gói dịch vụ hiển thị nổi bật theo chuẩn giao diện hiện đại */
 function PackageCard({ pkg: p, onBuy }: { pkg: PackageView; onBuy: (pkg: PackageView) => void }) {
   const isMaint = isMaintenance(p.kind)
@@ -50,9 +71,7 @@ function PackageCard({ pkg: p, onBuy }: { pkg: PackageView; onBuy: (pkg: Package
       <div className="flex flex-wrap items-start justify-between gap-4">
         {/* Header Left: Icon Box + Title/Subtitle */}
         <div className="flex items-start gap-4 min-w-0">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-container border border-accent-line/30 bg-accent-soft text-primary">
-            <Icon name={isMaint ? 'build' : 'verified_user'} className="text-[24px] text-primary" />
-          </div>
+          <PackageCover pkg={p} />
           <div className="min-w-0">
             <h3 className="text-title font-bold text-fg">{kindTitle}</h3>
             {subtitle && <p className="mt-0.5 text-meta text-fg-2 leading-relaxed">{subtitle}</p>}

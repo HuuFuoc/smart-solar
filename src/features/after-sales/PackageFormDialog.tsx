@@ -20,14 +20,20 @@ import {
   type PackageField,
   type PackageFormValues,
 } from '@/features/after-sales/packageForm'
+import { ImageSourceField } from '@/features/products/ImageSourceField'
+import { imageSourceError } from '@/features/products/imageSource'
 import { useCreatePackageMutation, useUpdatePackageMutation } from '@/hooks/useAdminAfterSales'
+import { useFileUpload } from '@/hooks/useFiles'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { PackageRequest } from '@/types/req/adminAfterSalesReq'
 import type { PackageView, ServicePackageKind } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
 
 // Thêm / sửa gói dịch vụ (POST / PUT /api/admin/after-sales/packages). Loại gói chọn lúc tạo, không đổi được sau đó.
-// Sửa gửi revision lúc mở form: gói vừa bị sửa ở nơi khác thì báo xung đột, không ghi đè
+// Sửa gửi revision lúc mở form: gói vừa bị sửa ở nơi khác thì báo xung đột, không ghi đè.
+// Ảnh bìa: link https (`imageUrl`) hoặc tệp từ máy tải lên lúc lưu (`imageFileId`); backend chỉ nhận một trong hai
+
+const IMAGE_PURPOSE = 'PACKAGE_IMAGE'
 
 const KIND_OPTIONS = [SERVICE_PACKAGE_KINDS.disasterProtection, SERVICE_PACKAGE_KINDS.maintenance].map((value) => ({
   value,
@@ -102,8 +108,16 @@ function PackageForm({
   // Báo lỗi từng ô sau lần bấm lưu đầu tiên, rồi cập nhật ngay khi gõ
   const [checked, setChecked] = useState(false)
   const [rootError, setRootError] = useState<string | null>(null)
+  const upload = useFileUpload(IMAGE_PURPOSE)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  // Tệp đã tải và xác minh: lưu gói lỗi thì lần sau chỉ lưu, không tải lại
+  const [uploadedId, setUploadedId] = useState<string | null>(null)
+  const image = { url: values.imageUrl, file: imageFile }
   const errors: PackageErrors = checked ? validatePackage(values) : {}
+  const imageError = checked ? imageSourceError(image, IMAGE_PURPOSE, false) : undefined
   const maintenance = isMaintenance(values.kind)
+  const busy = saving || upload.uploading
+  const percent = upload.progress === null ? null : Math.round(upload.progress * 100)
 
   const set = <K extends keyof PackageFormValues>(key: K, value: PackageFormValues[K]) => {
     setValues((current) => ({ ...current, [key]: value }))
@@ -117,7 +131,7 @@ function PackageForm({
   }
 
   async function submit() {
-    if (saving) return
+    if (busy) return
     setChecked(true)
     setRootError(null)
     const found = validatePackage(values)
@@ -127,8 +141,18 @@ function PackageForm({
       document.getElementById(target)?.focus()
       return
     }
+    if (imageSourceError(image, IMAGE_PURPOSE, false)) {
+      document.getElementById(f('imageUrl'))?.focus()
+      return
+    }
     try {
-      const view = await save(toPackageRequest(values, revision))
+      let imageFileId = uploadedId
+      if (imageFile && !imageFileId) {
+        imageFileId = (await upload.upload(imageFile)).fileId
+        setUploadedId(imageFileId)
+      }
+      const body = toPackageRequest(values, revision)
+      const view = await save(imageFileId ? { ...body, imageUrl: null, imageFileId } : body)
       toast.success(pkg ? `Đã lưu ${view.name}` : `Đã thêm ${view.name}`)
       onDone()
     } catch (error) {
@@ -149,7 +173,7 @@ function PackageForm({
           <DialogTitle>{pkg ? 'Sửa gói' : 'Thêm gói'}</DialogTitle>
           <p className="mt-1 text-body text-fg-2">{pkg ? packageKindLabel(pkg.kind) : 'Ô có dấu * là bắt buộc.'}</p>
         </div>
-        <Button variant="secondary" icon="close" className="-mt-2" disabled={saving} onClick={onDone}>
+        <Button variant="secondary" icon="close" className="-mt-2" disabled={busy} onClick={onDone}>
           Đóng
         </Button>
       </div>
@@ -198,6 +222,21 @@ function PackageForm({
             onChange={(e) => set('description', e.target.value)}
           />
         </Field>
+        <div className="sm:col-span-2">
+          <ImageSourceField
+            id={f('imageUrl')}
+            label="Ảnh bìa"
+            purpose={IMAGE_PURPOSE}
+            value={image}
+            error={imageError}
+            disabled={busy}
+            onChange={(next) => {
+              set('imageUrl', next.url)
+              setImageFile(next.file)
+              setUploadedId(null)
+            }}
+          />
+        </div>
         <Field
           label="Giá"
           required
@@ -360,17 +399,17 @@ function PackageForm({
       )}
 
       <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t border-line bg-canvas px-6 py-4">
-        {checked && hasErrors(errors) && (
+        {checked && (hasErrors(errors) || imageError) && (
           <p className="mr-auto flex items-center gap-1.5 text-body text-danger">
             <Icon name="error" className="shrink-0 text-[20px]" />
             Còn ô chưa hợp lệ.
           </p>
         )}
-        <Button icon="close" variant="secondary" disabled={saving} onClick={onDone}>
+        <Button icon="close" variant="secondary" disabled={busy} onClick={onDone}>
           Huỷ
         </Button>
-        <Button icon="save" type="submit" variant="primary" disabled={saving}>
-          {saving ? 'Đang lưu…' : pkg ? 'Lưu thay đổi' : 'Thêm gói'}
+        <Button icon="save" type="submit" variant="primary" disabled={busy}>
+          {percent !== null ? `Đang tải ảnh ${percent}%` : saving ? 'Đang lưu…' : pkg ? 'Lưu thay đổi' : 'Thêm gói'}
         </Button>
       </DialogFooter>
     </form>

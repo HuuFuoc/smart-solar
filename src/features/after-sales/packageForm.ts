@@ -25,6 +25,8 @@ export type PackageFormValues = {
   coveragePercent: string
   perIncidentLimit: string
   termLimit: string
+  /** Link ảnh bìa; ảnh chọn từ máy nằm ngoài form, tải lên lúc lưu */
+  imageUrl: string
   isActive: boolean
 }
 
@@ -43,6 +45,7 @@ export function emptyPackage(kind: ServicePackageKind): PackageFormValues {
     coveragePercent: '',
     perIncidentLimit: '',
     termLimit: '',
+    imageUrl: '',
     isActive: true,
   }
 }
@@ -63,6 +66,7 @@ export function valuesFromPackage(p: PackageView): PackageFormValues {
     coveragePercent: p.coveragePercent == null ? '' : decimalText.format(p.coveragePercent),
     perIncidentLimit: money(p.perIncidentLimit),
     termLimit: money(p.termLimit),
+    imageUrl: p.imageUrl ?? '',
     isActive: p.isActive,
   }
 }
@@ -148,6 +152,7 @@ export function toPackageRequest(v: PackageFormValues, revision: number): Packag
     coveragePercent: maintenance ? null : parsePercent(v.coveragePercent),
     perIncidentLimit: maintenance ? null : parseVnd(v.perIncidentLimit),
     termLimit: maintenance ? null : parseVnd(v.termLimit),
+    imageUrl: v.imageUrl.trim() || null,
     isActive: v.isActive,
     revision,
   }
@@ -167,6 +172,8 @@ export function requestFromPackage(p: PackageView, change: Partial<PackageReques
     coveragePercent: p.coveragePercent,
     perIncidentLimit: p.perIncidentLimit,
     termLimit: p.termLimit,
+    // PUT ghi lại cả gói: không gửi lại link thì backend xoá ảnh bìa
+    imageUrl: p.imageUrl,
     isActive: p.isActive,
     revision: p.revision,
     ...change,

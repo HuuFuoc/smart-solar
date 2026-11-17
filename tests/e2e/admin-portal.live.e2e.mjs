@@ -180,7 +180,7 @@ describe('cổng quản trị với backend thật', { skip }, () => {
     const detail = responses.filter((r) => r.method === 'GET' && /^\/admin\/products\/[^/]+$/.test(r.path)).at(-1)
     assert.equal(detail.status, 200)
     const mark = responses.length
-    await dialog.getByLabel('Link ảnh').fill('http://example.com/anh.jpg')
+    await dialog.getByRole('textbox', { name: 'Ảnh', exact: true }).fill('http://example.com/anh.jpg')
     await dialog.getByRole('button', { name: 'Thêm ảnh' }).click()
     await dialog.getByText('Chỉ nhận link bắt đầu bằng https://.').waitFor()
     assert.equal(since(mark, 'POST', '/admin/products/').length, 0)

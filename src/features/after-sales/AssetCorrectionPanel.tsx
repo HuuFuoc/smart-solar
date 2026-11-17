@@ -14,10 +14,12 @@ import {
   assetCorrectionErrors,
   assetDraftOf,
   changedAssetFields,
+  isMultiUnitLot,
   type AssetDraft,
   type AssetField,
 } from '@/features/after-sales/managerAfterSalesRules'
-import { assetTypeLabel } from '@/features/installations/installationDisplay'
+import { AssetIdentity } from '@/features/after-sales/AssetIdentity'
+import { assetTypeLabel, assetUnits } from '@/features/installations/installationDisplay'
 import { useCorrectAssetMutation } from '@/hooks/useManagerAfterSales'
 import type { InstalledAssetView, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
 import type { AssetView } from '@/types/res/managerInstallationsRes'
@@ -58,7 +60,9 @@ function CorrectionDialog({
     if (Object.keys(assetCorrectionErrors(asset, draft)).length > 0) return
     try {
       const result = await correct.mutateAsync({ assetId: asset.assetId, body: assetCorrectionBody(asset, draft) })
-      toast.success(`Đã sửa thông tin ${assetTypeLabel(result.assetType).toLowerCase()} serial ${result.serialNumber}.`)
+      toast.success(
+        `Đã sửa thông tin ${assetTypeLabel(result.assetType).toLowerCase()}${result.serialNumber ? ` serial ${result.serialNumber}` : ''}.`,
+      )
       onDone(result)
       onClose()
     } catch (e) {
@@ -114,7 +118,7 @@ function CorrectionDialog({
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {field('manufacturer', true, asset.manufacturer)}
         {field('model', true, asset.model)}
-        {field('serialNumber', true, asset.serialNumber)}
+        {!isMultiUnitLot(asset) && field('serialNumber', asset.serialNumber !== null, asset.serialNumber)}
         {field('positionCode', false, asset.positionCode)}
         {field('specifications', false, null)}
         <Field
@@ -179,7 +183,7 @@ export function AssetCorrectionPanel({ request, assets }: { request: ServiceRequ
     <Panel>
       <PanelHeader
         title="Thiết bị của công trình"
-        description={`${assets.length} thiết bị`}
+        description={`${assetUnits(assets).toLocaleString('vi-VN')} thiết bị`}
         action={
           hidden > 0 || showAll ? (
             <Button
@@ -188,7 +192,7 @@ export function AssetCorrectionPanel({ request, assets }: { request: ServiceRequ
               variant="ghost"
               onClick={() => setShowAll((s) => !s)}
             >
-              {showAll ? 'Chỉ thiết bị liên quan' : `Xem cả ${hidden} thiết bị khác`}
+              {showAll ? 'Chỉ thiết bị liên quan' : `Xem cả ${hidden} dòng khác`}
             </Button>
           ) : undefined
         }
@@ -203,7 +207,7 @@ export function AssetCorrectionPanel({ request, assets }: { request: ServiceRequ
                   {related.has(a.assetId) && <Badge tone="neutral">Liên quan yêu cầu này</Badge>}
                 </p>
                 <p className="text-meta text-fg-2">
-                  Serial <span className="tnum">{a.serialNumber}</span>
+                  <AssetIdentity asset={a} />
                   {a.positionCode ? `, vị trí ${a.positionCode}` : ''}
                   {a.assetId in specs ? `, thông số: ${specs[a.assetId] ?? '(trống)'}` : ''}
                 </p>

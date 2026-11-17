@@ -1,7 +1,12 @@
 import { START_BLOCKED_REASONS, TECHNICIAN_ASSIGNMENT_STATUSES } from '@/common/installation'
 import type { Tone } from '@/components/common/ui/badge'
 import type { TrackerNext, TrackerStep } from '@/components/common/ui/progress-tracker'
-import { formatInstallationWindow, installationStatusMeta } from '@/features/installations/installationDisplay'
+import { missingAssetTypes } from '@/features/installations/assetForm'
+import {
+  assetUnits,
+  formatInstallationWindow,
+  installationStatusMeta,
+} from '@/features/installations/installationDisplay'
 import { formatDateTime } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatDay, vnDate } from '@/features/scheduling/schedulingDisplay'
 import type { InstallationTechnicianView } from '@/types/res/technicianInstallationsRes'
@@ -50,10 +55,6 @@ export const roundEvidenceCount = (v: View) => v.evidence.filter((e) => e.round 
 export const awaitsSubstitutionApproval = (v: Pick<View, 'equipment'>) =>
   v.equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED'
 
-/** Backend mặc định bắt buộc có tấm pin và inverter trước khi gửi báo cáo (cấu hình được) */
-export const hasPanelAndInverter = (v: View) =>
-  v.assets.some((a) => a.assetType === 'PANEL') && v.assets.some((a) => a.assetType === 'INVERTER')
-
 export function startBlockedText(code: string | null | undefined) {
   if (!code) return null
   return code in START_BLOCKED_REASONS ? START_BLOCKED_REASONS[code] : `Chưa bắt đầu lắp đặt được (${code}).`
@@ -87,7 +88,7 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
     },
     {
       label: 'Ảnh và thiết bị',
-      detail: started ? `${v.evidence.length} ảnh, ${v.assets.length} thiết bị` : undefined,
+      detail: started ? `${v.evidence.length} ảnh, ${assetUnits(v.assets)} thiết bị` : undefined,
       state: reported ? 'done' : working ? 'current' : 'todo',
     },
     {
@@ -147,14 +148,14 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
       }
     return { steps, next: { tone: 'info', title: 'Chưa bắt đầu được', body: reason } }
   }
-  const ready = roundEvidenceCount(v) > 0 && hasPanelAndInverter(v)
+  const ready = roundEvidenceCount(v) > 0 && missingAssetTypes(v).length === 0
   if (working && ready && awaitsSubstitutionApproval(v))
     return {
       steps,
       next: {
         tone: 'info',
-        title: 'Thiết bị lắp khác hợp đồng, chờ quản lý duyệt',
-        body: 'Quản lý duyệt xong thì bạn mới gửi được báo cáo hoàn thành.',
+        title: 'Thiết bị đã ghi chưa khớp hợp đồng',
+        body: 'Ghi đủ theo hợp đồng. Nếu thực tế lắp khác hợp đồng thì chờ quản lý duyệt rồi mới gửi được báo cáo hoàn thành.',
       },
     }
   if (v.status === 'IN_PROGRESS')

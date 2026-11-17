@@ -4,20 +4,17 @@ import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Textarea } from '@/components/common/ui/field'
-import {
-  awaitsSubstitutionApproval,
-  hasPanelAndInverter,
-  roundEvidenceCount,
-} from '@/features/installations/technicianInstallationDisplay'
+import { missingAssetsText, missingAssetTypes, missingFromDetails } from '@/features/installations/assetForm'
+import { awaitsSubstitutionApproval, roundEvidenceCount } from '@/features/installations/technicianInstallationDisplay'
 import { useReportCompletionMutation } from '@/hooks/useTechnicianInstallations'
-import { errorMessage } from '@/services/api/errors'
+import { errorMessage, isApiError } from '@/services/api/errors'
 import type { InstallationTechnicianView } from '@/types/res/technicianInstallationsRes'
 
 /** Giới hạn của backend sau khi bỏ khoảng trắng đầu cuối */
 const REPORT_MAX = 8000
 
-// Báo cáo hoàn thành gửi cho khách nghiệm thu. Backend bắt buộc ít nhất một ảnh của lượt hiện tại (khoá nút ở đây)
-// và mặc định cần tấm pin + inverter (cấu hình được nên chỉ nhắc, để backend quyết định).
+// Báo cáo hoàn thành gửi cho khách nghiệm thu. Backend bắt buộc ít nhất một ảnh của lượt hiện tại và, khi công trình yêu
+// cầu, ít nhất một dòng tấm pin và một dòng inverter: thiếu thì khoá nút và ghi rõ loại còn thiếu.
 // Gửi xong công trình chờ khách; kỹ thuật viên không tự đánh dấu hoàn tất
 export function CompletionReportForm({ view }: { view: InstallationTechnicianView }) {
   const report = useReportCompletionMutation()
@@ -25,7 +22,7 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const photos = roundEvidenceCount(view)
-  const equipped = hasPanelAndInverter(view)
+  const missing = missingAssetTypes(view)
   const blocked = awaitsSubstitutionApproval(view)
   const length = text.trim().length
 
@@ -46,7 +43,8 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
       toast.success('Đã gửi báo cáo. Công trình chờ khách nghiệm thu.')
     } catch (e) {
       setConfirming(false)
-      setError(errorMessage(e))
+      const lacking = isApiError(e) && e.code === 'INSTALLATION_ASSETS_REQUIRED' ? missingFromDetails(e.details) : []
+      setError(missingAssetsText(lacking) ?? errorMessage(e))
     }
   }
 
@@ -58,8 +56,15 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
             ? `Đã có ${photos} ảnh của lượt ${view.currentRound}.`
             : `Chưa có ảnh nào của lượt ${view.currentRound} trên hệ thống. Ở khối "Ảnh lắp đặt", chọn ảnh rồi bấm "Tải lên" mới gửi được báo cáo.`}
         </li>
-        <li>{equipped ? 'Đã ghi tấm pin và inverter.' : 'Chưa ghi đủ tấm pin và inverter đã lắp.'}</li>
-        {blocked && <li>Thiết bị lắp khác hợp đồng, chờ quản lý duyệt rồi mới gửi được báo cáo.</li>}
+        {view.requiresPanelAndInverterAssets !== false && (
+          <li>{missingAssetsText(missing) ?? 'Đã ghi tấm pin và inverter.'}</li>
+        )}
+        {blocked && (
+          <li>
+            Thiết bị đã ghi chưa khớp hợp đồng. Ghi đủ theo hợp đồng; nếu thực tế lắp khác thì chờ quản lý duyệt rồi mới
+            gửi được báo cáo.
+          </li>
+        )}
       </ul>
       <Field
         label="Nội dung báo cáo"
@@ -80,7 +85,12 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
         />
       </Field>
       <span className="flex flex-wrap items-center gap-3">
-        <Button icon="send" variant="primary" disabled={photos === 0 || blocked || report.isPending} onClick={review}>
+        <Button
+          icon="send"
+          variant="primary"
+          disabled={photos === 0 || missing.length > 0 || blocked || report.isPending}
+          onClick={review}
+        >
           Gửi báo cáo hoàn thành
         </Button>
         {error && (

@@ -73,7 +73,7 @@ export function markDuplicate(requestId: string, body: DuplicateRequest) {
   return post<ServiceRequestView>(api.duplicate(requestId), body)
 }
 
-/** Dừng ngoại lệ việc đã bắt đầu, lý do bắt buộc. Nhóm không làm hoàn tiền nên luôn gửi `refundAmount` 0 */
+/** Dừng ngoại lệ việc đã bắt đầu, lý do bắt buộc */
 export function stopWork(requestId: string, body: StopWorkRequest) {
   return post<ServiceRequestView>(api.stop(requestId), body)
 }

@@ -3,6 +3,7 @@ import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { PanelQuery } from '@/features/installation-projects/formParts'
 import { assetTypeLabel } from '@/features/installation-projects/projectDisplay'
+import { serialText } from '@/features/installations/installationDisplay'
 import { formatDay, formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useHandoverQuery } from '@/hooks/useManagerInstallations'
 import type { AssetView, HandoverAssetView } from '@/types/res/managerInstallationsRes'
@@ -16,6 +17,7 @@ function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
       <thead>
         <tr>
           <Th>Thiết bị</Th>
+          <Th className="text-right">Số lượng</Th>
           <Th>Số serial</Th>
           <Th>Vị trí</Th>
           <Th className="text-right">Bảo hành</Th>
@@ -23,16 +25,20 @@ function AssetTable({ assets }: { assets: (AssetView | HandoverAssetView)[] }) {
         </tr>
       </thead>
       <tbody>
-        {assets.map((a) => (
-          <Tr key={'assetId' in a ? a.assetId : `${a.manufacturer}-${a.serialNumber}`}>
+        {assets.map((a, i) => (
+          // Dòng của biên bản bàn giao không có mã; lô không có serial nên dùng thứ tự
+          <Tr key={'assetId' in a ? a.assetId : i}>
             <Td label="Thiết bị">
               <p className="font-medium text-fg">{assetTypeLabel(a.assetType)}</p>
               <p className="text-meta text-fg-2">
                 {a.manufacturer} {a.model}
               </p>
             </Td>
+            <Td label="Số lượng" className="tnum lg:text-right">
+              {a.quantity.toLocaleString('vi-VN')}
+            </Td>
             <Td label="Số serial" className="tnum wrap-anywhere">
-              {a.serialNumber}
+              {serialText(a)}
             </Td>
             <Td label="Vị trí">{a.positionCode || <span className="text-fg-3">—</span>}</Td>
             <Td label="Bảo hành" className="tnum lg:text-right">

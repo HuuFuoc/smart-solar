@@ -50,6 +50,8 @@ export type PackageView = {
   termLimit: number | null
   isActive: boolean
   revision: number
+  /** Ảnh bìa (link https tuyệt đối); null khi gói không có ảnh */
+  imageUrl: string | null
 }
 
 /** Một lượt bảo trì của gói MAINTENANCE */
@@ -158,7 +160,8 @@ export type InstalledAssetView = {
   assetType: string
   manufacturer: string
   model: string
-  serialNumber: string
+  /** null khi dòng là một lô ghi theo số lượng */
+  serialNumber: string | null
   positionCode: string | null
   status: string
   replacesAssetId: string | null
@@ -171,6 +174,8 @@ export type InstalledAssetView = {
   /** Chỉ có sau khi quản lý ghi ngày kích hoạt kèm tài liệu */
   warrantyStartsAt: string | null
   warrantyEndsAt: string | null
+  /** Số thiết bị của dòng: 1 với thiết bị có serial, số đã đếm với lô */
+  quantity: number
 }
 
 /** GET .../installations/{projectId}/warranty: bảo hành lắp đặt của một công trình */

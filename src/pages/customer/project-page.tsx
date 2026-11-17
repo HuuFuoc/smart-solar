@@ -21,6 +21,7 @@ import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
 import {
   acceptanceDecisionMeta,
   assetTypeLabel,
+  assetUnits,
   awaitsCustomerDecision,
   deciderLabel,
   formatDateOnly,
@@ -28,6 +29,7 @@ import {
   formatWarrantyMonths,
   installationStatusMeta,
   pendingAcceptance,
+  serialText,
 } from '@/features/installations/installationDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment, vnDate } from '@/features/scheduling/schedulingDisplay'
@@ -283,6 +285,7 @@ function AssetTable({
         <tr>
           <Th>Thiết bị</Th>
           <Th>Hãng, model</Th>
+          <Th className="text-right">Số lượng</Th>
           <Th>Số serial</Th>
           <Th>Vị trí</Th>
           <Th>Bảo hành</Th>
@@ -290,16 +293,20 @@ function AssetTable({
         </tr>
       </thead>
       <tbody>
-        {assets.map((a) => (
-          <Tr key={'assetId' in a ? a.assetId : `${a.manufacturer}-${a.serialNumber}`}>
+        {assets.map((a, i) => (
+          // Dòng của biên bản bàn giao không có mã; lô không có serial nên dùng thứ tự
+          <Tr key={'assetId' in a ? a.assetId : i}>
             <Td label="Thiết bị" className="font-medium text-fg">
               {assetTypeLabel(a.assetType)}
             </Td>
             <Td label="Hãng, model">
               {a.manufacturer} {a.model}
             </Td>
+            <Td label="Số lượng" className="tnum xl:text-right">
+              {a.quantity.toLocaleString('vi-VN')}
+            </Td>
             <Td label="Số serial" className="tnum">
-              {a.serialNumber}
+              {serialText(a)}
             </Td>
             <Td label="Vị trí">{a.positionCode || '—'}</Td>
             <Td label="Bảo hành">{formatWarrantyMonths(a.warrantyMonths)}</Td>
@@ -322,7 +329,11 @@ function HandoverPanel({ projectId }: { projectId: string }) {
   const h = handover.data
   const warrantyOf = (a: AssetView | HandoverAssetView) => {
     const asset = warranty.data?.assets.find(
-      (w) => w.serialNumber === a.serialNumber && w.manufacturer === a.manufacturer,
+      (w) =>
+        w.serialNumber === a.serialNumber &&
+        w.manufacturer === a.manufacturer &&
+        w.model === a.model &&
+        w.positionCode === a.positionCode,
     )
     if (!asset || asset.warrantyMonths == null || asset.warrantyMonths === 0) return '—'
     return asset.warrantyEndsAt ? formatDateOnly(vnDate(asset.warrantyEndsAt)) : 'Chưa xác nhận'
@@ -462,7 +473,10 @@ export function CustomerProjectPage() {
                   <EvidencePanel projectId={p.projectId} />
                   {!completed && p.assets.length > 0 && (
                     <Panel>
-                      <PanelHeader title="Thiết bị đã lắp" description={`${p.assets.length} thiết bị`} />
+                      <PanelHeader
+                        title="Thiết bị đã lắp"
+                        description={`${assetUnits(p.assets).toLocaleString('vi-VN')} thiết bị`}
+                      />
                       <PanelBody>
                         <AssetTable assets={p.assets} />
                       </PanelBody>

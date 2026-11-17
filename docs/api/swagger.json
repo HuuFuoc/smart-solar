@@ -180,52 +180,6 @@
         }
       }
     },
-    "/api/admin/after-sales/refunds/{refundId}/record": {
-      "post": {
-        "tags": ["AdminAfterSales"],
-        "parameters": [
-          { "name": "refundId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/RecordRefundRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/RecordRefundRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/RecordRefundRequest" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
     "/api/admin/after-sales/dashboard": {
       "get": {
         "tags": ["AdminAfterSales"],
@@ -641,6 +595,280 @@
         },
         "responses": {
           "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/admin/iot/devices": {
+      "post": {
+        "tags": ["AdminIotDevices"],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RegisterIotDeviceRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/RegisterIotDeviceRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/RegisterIotDeviceRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotDeviceCredentialViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotDeviceCredentialViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotDeviceCredentialViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      },
+      "get": {
+        "tags": ["AdminIotDevices"],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "format": "int32", "default": 1 } },
+          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "format": "int32", "default": 20 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotDeviceViewPagedResultApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotDeviceViewPagedResultApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotDeviceViewPagedResultApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/admin/iot/devices/{deviceId}": {
+      "get": {
+        "tags": ["AdminIotDevices"],
+        "parameters": [
+          { "name": "deviceId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/admin/iot/devices/{deviceId}/disable": {
+      "post": {
+        "tags": ["AdminIotDevices"],
+        "parameters": [
+          { "name": "deviceId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/DisableIotDeviceRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/DisableIotDeviceRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/DisableIotDeviceRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/admin/iot/devices/{deviceId}/enable": {
+      "post": {
+        "tags": ["AdminIotDevices"],
+        "parameters": [
+          { "name": "deviceId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "expectedRevision", "in": "query", "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotDeviceViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/admin/iot/devices/{deviceId}/rotate-credential": {
+      "post": {
+        "tags": ["AdminIotDevices"],
+        "parameters": [
+          { "name": "deviceId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "expectedRevision", "in": "query", "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotDeviceCredentialViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotDeviceCredentialViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotDeviceCredentialViewApiResponse" } }
+            }
+          },
           "400": {
             "description": "Validation failed (see error.fieldErrors).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -4634,6 +4862,93 @@
         }
       }
     },
+    "/api/customers/me/contracts/{contractId}/official-document/url": {
+      "get": {
+        "tags": ["CustomerContracts"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "disposition", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/contracts/{contractId}/submissions/{submissionId}/url": {
+      "get": {
+        "tags": ["CustomerContracts"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "submissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "disposition", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/customers/me/survey-requests/{surveyRequestId}/dispatch-request": {
       "post": {
         "tags": ["CustomerDispatchRequests"],
@@ -5166,6 +5481,136 @@
         ],
         "responses": {
           "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/installation-projects/{projectId}/energy-monitoring/device": {
+      "get": {
+        "tags": ["CustomerIotMonitoring"],
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotProjectDeviceViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotProjectDeviceViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotProjectDeviceViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/installation-projects/{projectId}/energy-monitoring/readings/latest": {
+      "get": {
+        "tags": ["CustomerIotMonitoring"],
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotLatestReadingViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotLatestReadingViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotLatestReadingViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/installation-projects/{projectId}/energy-monitoring/readings": {
+      "get": {
+        "tags": ["CustomerIotMonitoring"],
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "before", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotReadingHistoryViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotReadingHistoryViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotReadingHistoryViewApiResponse" } }
+            }
+          },
           "400": {
             "description": "Validation failed (see error.fieldErrors).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -6076,6 +6521,49 @@
         }
       }
     },
+    "/api/iot/devices/{deviceId}/readings": {
+      "post": {
+        "tags": ["IotTelemetry"],
+        "parameters": [{ "name": "deviceId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/TelemetryReadingRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/TelemetryReadingRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/TelemetryReadingRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotIngestViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotIngestViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotIngestViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/manager/after-sales/requests": {
       "get": {
         "tags": ["ManagerAfterSales"],
@@ -6740,81 +7228,6 @@
             "application/json": { "schema": { "$ref": "#/components/schemas/AssignTaskRequest" } },
             "text/json": { "schema": { "$ref": "#/components/schemas/AssignTaskRequest" } },
             "application/*+json": { "schema": { "$ref": "#/components/schemas/AssignTaskRequest" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/manager/after-sales/refunds": {
-      "get": {
-        "tags": ["ManagerAfterSales"],
-        "parameters": [{ "name": "status", "in": "query", "schema": { "type": "string" } }],
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/manager/after-sales/refunds/{refundId}/decision": {
-      "post": {
-        "tags": ["ManagerAfterSales"],
-        "parameters": [
-          { "name": "refundId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/RefundDecisionRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/RefundDecisionRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/RefundDecisionRequest" } }
           }
         },
         "responses": {
@@ -7782,6 +8195,33 @@
         }
       }
     },
+    "/api/files/public/{fileId}": {
+      "get": {
+        "tags": ["PublicFiles"],
+        "parameters": [
+          { "name": "fileId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "302": { "description": "Found" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/sales/after-sales/warranty-options": {
       "get": {
         "tags": ["SalesAfterSales"],
@@ -8368,6 +8808,93 @@
           },
           "409": {
             "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/official-document/url": {
+      "get": {
+        "tags": ["SalesContracts"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "disposition", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/submissions/{submissionId}/url": {
+      "get": {
+        "tags": ["SalesContracts"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "submissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "disposition", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
           "429": {
@@ -9472,6 +9999,284 @@
           },
           "409": {
             "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/installation-projects/{projectId}/iot-device": {
+      "post": {
+        "tags": ["StaffIotMonitoring"],
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/BindIotDeviceRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/BindIotDeviceRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/BindIotDeviceRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotBindingViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotBindingViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotBindingViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/iot/bindings": {
+      "get": {
+        "tags": ["StaffIotMonitoring"],
+        "parameters": [
+          { "name": "projectId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "deviceId", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotBindingViewIReadOnlyListApiResponse" } },
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IotBindingViewIReadOnlyListApiResponse" }
+              },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotBindingViewIReadOnlyListApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/iot/bindings/{bindingId}/release": {
+      "post": {
+        "tags": ["StaffIotMonitoring"],
+        "parameters": [
+          { "name": "bindingId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ReleaseIotBindingRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/ReleaseIotBindingRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/ReleaseIotBindingRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotBindingViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotBindingViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotBindingViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/installation-projects/{projectId}/energy-monitoring/device": {
+      "get": {
+        "tags": ["StaffIotMonitoring"],
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotProjectDeviceViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotProjectDeviceViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotProjectDeviceViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/installation-projects/{projectId}/energy-monitoring/readings/latest": {
+      "get": {
+        "tags": ["StaffIotMonitoring"],
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotLatestReadingViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotLatestReadingViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotLatestReadingViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/installation-projects/{projectId}/energy-monitoring/readings": {
+      "get": {
+        "tags": ["StaffIotMonitoring"],
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "before", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/IotReadingHistoryViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/IotReadingHistoryViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/IotReadingHistoryViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
           "429": {
@@ -11656,7 +12461,8 @@
         "properties": {
           "url": { "type": "string", "nullable": true },
           "altText": { "type": "string", "nullable": true },
-          "makePrimary": { "type": "boolean", "nullable": true }
+          "makePrimary": { "type": "boolean", "nullable": true },
+          "fileId": { "type": "string", "format": "uuid", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -11729,7 +12535,8 @@
           "model": { "type": "string", "nullable": true },
           "serialNumber": { "type": "string", "nullable": true },
           "positionCode": { "type": "string", "nullable": true },
-          "warrantyMonths": { "type": "integer", "format": "int32", "nullable": true }
+          "warrantyMonths": { "type": "integer", "format": "int32", "nullable": true },
+          "quantity": { "type": "integer", "format": "int32", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -11749,7 +12556,8 @@
           "warrantyMonths": { "type": "integer", "format": "int32", "nullable": true },
           "warrantySource": { "type": "string", "nullable": true },
           "warrantyStartsAt": { "type": "string", "format": "date-time", "nullable": true },
-          "warrantyEndsAt": { "type": "string", "format": "date-time", "nullable": true }
+          "warrantyEndsAt": { "type": "string", "format": "date-time", "nullable": true },
+          "quantity": { "type": "integer", "format": "int32" }
         },
         "additionalProperties": false
       },
@@ -11907,6 +12715,15 @@
         },
         "additionalProperties": false
       },
+      "BindIotDeviceRequest": {
+        "type": "object",
+        "properties": {
+          "deviceId": { "type": "string", "nullable": true },
+          "note": { "type": "string", "nullable": true },
+          "replaceCurrent": { "type": "boolean", "nullable": true }
+        },
+        "additionalProperties": false
+      },
       "BookSurveyAppointmentRequest": {
         "type": "object",
         "properties": {
@@ -11935,11 +12752,7 @@
       },
       "CancellationDecisionRequest": {
         "type": "object",
-        "properties": {
-          "approve": { "type": "boolean" },
-          "nonRecoverableAmount": { "type": "number", "format": "double" },
-          "note": { "type": "string", "nullable": true }
-        },
+        "properties": { "approve": { "type": "boolean" }, "note": { "type": "string", "nullable": true } },
         "additionalProperties": false
       },
       "ChangePasswordRequest": {
@@ -12474,6 +13287,14 @@
         },
         "additionalProperties": false
       },
+      "DisableIotDeviceRequest": {
+        "type": "object",
+        "properties": {
+          "reason": { "type": "string", "nullable": true },
+          "expectedRevision": { "type": "integer", "format": "int32", "nullable": true }
+        },
+        "additionalProperties": false
+      },
       "DisasterClaimView": {
         "type": "object",
         "properties": {
@@ -12559,7 +13380,9 @@
           "simulated": { "$ref": "#/components/schemas/SimulatedProductionView" },
           "alerts": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "alertsStatus": { "type": "string", "nullable": true },
-          "notice": { "type": "string", "nullable": true }
+          "notice": { "type": "string", "nullable": true },
+          "measuredDataSource": { "type": "string", "nullable": true },
+          "measured": { "$ref": "#/components/schemas/IotMeasuredMonitoringView" }
         },
         "additionalProperties": false
       },
@@ -12892,6 +13715,238 @@
         },
         "additionalProperties": false
       },
+      "IotBindingView": {
+        "type": "object",
+        "properties": {
+          "bindingId": { "type": "string", "format": "uuid" },
+          "deviceRecordId": { "type": "string", "format": "uuid" },
+          "deviceId": { "type": "string", "nullable": true },
+          "deviceDisplayName": { "type": "string", "nullable": true },
+          "projectId": { "type": "string", "format": "uuid" },
+          "customerUserId": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "nullable": true },
+          "boundAt": { "type": "string", "format": "date-time" },
+          "boundByUserId": { "type": "string", "format": "uuid" },
+          "note": { "type": "string", "nullable": true },
+          "releasedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "releasedByUserId": { "type": "string", "format": "uuid", "nullable": true },
+          "releaseReason": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "IotBindingViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/IotBindingView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotBindingViewIReadOnlyListApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/IotBindingView" }, "nullable": true },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotDeviceCredentialView": {
+        "type": "object",
+        "properties": {
+          "device": { "$ref": "#/components/schemas/IotDeviceView" },
+          "secret": { "type": "string", "nullable": true },
+          "secretVersion": { "type": "integer", "format": "int32" }
+        },
+        "additionalProperties": false
+      },
+      "IotDeviceCredentialViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/IotDeviceCredentialView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotDeviceView": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "deviceId": { "type": "string", "nullable": true },
+          "displayName": { "type": "string", "nullable": true },
+          "status": { "type": "string", "nullable": true },
+          "sensorModel": { "type": "string", "nullable": true },
+          "maxCurrentAmps": { "type": "number", "format": "double" },
+          "secretVersion": { "type": "integer", "format": "int32" },
+          "secretRotatedAt": { "type": "string", "format": "date-time" },
+          "lastSeenAt": { "type": "string", "format": "date-time", "nullable": true },
+          "connectionStatus": { "type": "string", "nullable": true },
+          "currentBinding": { "$ref": "#/components/schemas/IotBindingView" },
+          "disabledAt": { "type": "string", "format": "date-time", "nullable": true },
+          "disabledReason": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "revision": { "type": "integer", "format": "int32" }
+        },
+        "additionalProperties": false
+      },
+      "IotDeviceViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/IotDeviceView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotDeviceViewPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/IotDeviceView" }, "nullable": true },
+          "page": { "type": "integer", "format": "int32" },
+          "pageSize": { "type": "integer", "format": "int32" },
+          "totalItems": { "type": "integer", "format": "int32" },
+          "totalPages": { "type": "integer", "format": "int32" }
+        },
+        "additionalProperties": false
+      },
+      "IotDeviceViewPagedResultApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/IotDeviceViewPagedResult" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotIngestView": {
+        "type": "object",
+        "properties": {
+          "readingId": { "type": "string", "format": "uuid" },
+          "receivedAt": { "type": "string", "format": "date-time" },
+          "currentAmps": { "type": "number", "format": "double" },
+          "connectionStatus": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "IotIngestViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/IotIngestView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotLatestReadingView": {
+        "type": "object",
+        "properties": {
+          "connectionStatus": { "type": "string", "nullable": true },
+          "reading": { "$ref": "#/components/schemas/IotReadingView" }
+        },
+        "additionalProperties": false
+      },
+      "IotLatestReadingViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/IotLatestReadingView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotMeasuredMonitoringView": {
+        "type": "object",
+        "properties": {
+          "source": { "type": "string", "nullable": true },
+          "device": { "$ref": "#/components/schemas/IotProjectDeviceView" },
+          "latest": { "$ref": "#/components/schemas/IotReadingView" },
+          "currentAmps": { "$ref": "#/components/schemas/IotMeasuredQuantityView" },
+          "powerWatts": { "$ref": "#/components/schemas/IotMeasuredQuantityView" },
+          "energyProducedKwh": { "$ref": "#/components/schemas/IotMeasuredQuantityView" },
+          "energyImportedKwh": { "$ref": "#/components/schemas/IotMeasuredQuantityView" },
+          "energyExportedKwh": { "$ref": "#/components/schemas/IotMeasuredQuantityView" },
+          "notice": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "IotMeasuredQuantityView": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "nullable": true },
+          "value": { "type": "number", "format": "double", "nullable": true },
+          "unit": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "IotProjectDeviceView": {
+        "type": "object",
+        "properties": {
+          "bindingId": { "type": "string", "format": "uuid" },
+          "deviceId": { "type": "string", "nullable": true },
+          "displayName": { "type": "string", "nullable": true },
+          "sensorModel": { "type": "string", "nullable": true },
+          "maxCurrentAmps": { "type": "number", "format": "double" },
+          "deviceStatus": { "type": "string", "nullable": true },
+          "connectionStatus": { "type": "string", "nullable": true },
+          "boundAt": { "type": "string", "format": "date-time" },
+          "lastReadingAt": { "type": "string", "format": "date-time", "nullable": true },
+          "offlineAfterSeconds": { "type": "integer", "format": "int32" },
+          "expectedReportIntervalSeconds": { "type": "integer", "format": "int32" }
+        },
+        "additionalProperties": false
+      },
+      "IotProjectDeviceViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/IotProjectDeviceView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotReadingHistoryView": {
+        "type": "object",
+        "properties": {
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/IotReadingView" }, "nullable": true },
+          "limit": { "type": "integer", "format": "int32" },
+          "hasMore": { "type": "boolean" },
+          "nextBefore": { "type": "string", "format": "date-time", "nullable": true },
+          "from": { "type": "string", "format": "date-time", "nullable": true },
+          "to": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "IotReadingHistoryViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/IotReadingHistoryView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "IotReadingView": {
+        "type": "object",
+        "properties": {
+          "readingId": { "type": "string", "format": "uuid" },
+          "deviceId": { "type": "string", "nullable": true },
+          "receivedAt": { "type": "string", "format": "date-time" },
+          "currentAmps": { "type": "number", "format": "double" }
+        },
+        "additionalProperties": false
+      },
       "IssueQuotationRequest": {
         "type": "object",
         "properties": {
@@ -13214,11 +14269,7 @@
       },
       "PackageCancellationDecisionRequest": {
         "type": "object",
-        "properties": {
-          "approve": { "type": "boolean" },
-          "refundAmount": { "type": "number", "format": "double", "nullable": true },
-          "note": { "type": "string", "nullable": true }
-        },
+        "properties": { "approve": { "type": "boolean" }, "note": { "type": "string", "nullable": true } },
         "additionalProperties": false
       },
       "PackageRequest": {
@@ -13235,7 +14286,9 @@
           "perIncidentLimit": { "type": "number", "format": "double", "nullable": true },
           "termLimit": { "type": "number", "format": "double", "nullable": true },
           "isActive": { "type": "boolean" },
-          "revision": { "type": "integer", "format": "int32" }
+          "revision": { "type": "integer", "format": "int32" },
+          "imageUrl": { "type": "string", "nullable": true },
+          "imageFileId": { "type": "string", "format": "uuid", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -13792,26 +14845,9 @@
         },
         "additionalProperties": false
       },
-      "RecordRefundRequest": {
-        "type": "object",
-        "properties": {
-          "refundedAt": { "type": "string", "format": "date-time" },
-          "reference": { "type": "string", "nullable": true }
-        },
-        "additionalProperties": false
-      },
       "RefreshTokenRequest": {
         "type": "object",
         "properties": { "refreshToken": { "type": "string", "nullable": true } },
-        "additionalProperties": false
-      },
-      "RefundDecisionRequest": {
-        "type": "object",
-        "properties": {
-          "approve": { "type": "boolean" },
-          "approvedAmount": { "type": "number", "format": "double", "nullable": true },
-          "note": { "type": "string", "nullable": true }
-        },
         "additionalProperties": false
       },
       "RegisterFileRequest": {
@@ -13824,6 +14860,16 @@
           "contentType": { "type": "string", "nullable": true },
           "sizeBytes": { "type": "integer", "format": "int64" },
           "checksumSha256": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "RegisterIotDeviceRequest": {
+        "type": "object",
+        "properties": {
+          "deviceId": { "type": "string", "nullable": true },
+          "displayName": { "type": "string", "nullable": true },
+          "sensorModel": { "type": "string", "nullable": true },
+          "maxCurrentAmps": { "type": "number", "format": "double", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -13872,6 +14918,11 @@
         "additionalProperties": false
       },
       "ReleaseAppointmentRequest": {
+        "type": "object",
+        "properties": { "reason": { "type": "string", "nullable": true } },
+        "additionalProperties": false
+      },
+      "ReleaseIotBindingRequest": {
         "type": "object",
         "properties": { "reason": { "type": "string", "nullable": true } },
         "additionalProperties": false
@@ -14485,10 +15536,7 @@
       },
       "StopWorkRequest": {
         "type": "object",
-        "properties": {
-          "reason": { "type": "string", "nullable": true },
-          "refundAmount": { "type": "number", "format": "double" }
-        },
+        "properties": { "reason": { "type": "string", "nullable": true } },
         "additionalProperties": false
       },
       "SubstitutionApprovalRequest": {
@@ -14762,6 +15810,11 @@
           "data": { "$ref": "#/components/schemas/TechnicianVisitView" },
           "error": { "$ref": "#/components/schemas/ApiError" }
         },
+        "additionalProperties": false
+      },
+      "TelemetryReadingRequest": {
+        "type": "object",
+        "properties": { "current": { "type": "number", "format": "double", "nullable": true } },
         "additionalProperties": false
       },
       "UpdateAdminUserRequest": {

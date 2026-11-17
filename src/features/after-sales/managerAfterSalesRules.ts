@@ -104,9 +104,8 @@ export function workStarted(r: Progressing) {
  */
 export const canStopWork = (r: Progressing) => !isFinal(r.status) && workStarted(r)
 
-/** Nhóm không làm hoàn tiền: luôn gửi 0 để backend không ghi khoản hoàn */
 export function stopBody(reason: string): StopWorkRequest {
-  return { reason: reason.trim(), refundAmount: 0 }
+  return { reason: reason.trim() }
 }
 
 // ---------------------------------------------------------------- không thực hiện được
@@ -120,6 +119,19 @@ export const canMarkNotFulfilled = (r: Pick<ServiceRequestView, 'kind' | 'status
   !isFinal(r.status) &&
   !r.visits.some((v) => v.status === 'IN_PROGRESS' || v.status === 'REPORTED')
 
+/** Số tiền khách đã trả cho yêu cầu (các báo giá PAID) */
+export const paidAmount = (r: { quotations: readonly { status: string; customerAmount: number }[] }) =>
+  r.quotations.filter((q) => q.status === 'PAID').reduce((sum, q) => sum + q.customerAmount, 0)
+
+/**
+ * Huỷ việc khách đã trả tiền (đồng ý yêu cầu huỷ, đóng vì không thực hiện được) bị backend từ chối
+ * (AFTER_SALES_PAID_CANCELLATION_UNSUPPORTED): hệ thống không xử lý hoàn tiền
+ */
+export const paidCancellationBlocker = (r: Parameters<typeof paidAmount>[0]) =>
+  paidAmount(r) > 0
+    ? 'Khách đã thanh toán nên không huỷ được trên hệ thống. Thoả thuận khoản tiền với khách ngoài hệ thống.'
+    : null
+
 export function reasonError(reason: string, max: number) {
   if (!reason.trim()) return 'Ghi lý do.'
   return tooLong(reason, max)
@@ -128,7 +140,7 @@ export function reasonError(reason: string, max: number) {
 // ---------------------------------------------------------------- sửa thông tin thiết bị
 
 // Chi tiết công trình (nguồn danh sách thiết bị của quản lý) không trả `specifications`; khi đó coi như đang trống
-type AssetFacts = Pick<InstalledAssetView, 'manufacturer' | 'model' | 'serialNumber' | 'positionCode'> & {
+type AssetFacts = Pick<InstalledAssetView, 'manufacturer' | 'model' | 'serialNumber' | 'positionCode' | 'quantity'> & {
   specifications?: string | null
 }
 export type AssetField = keyof typeof ASSET_FIELD_MAX
@@ -138,7 +150,7 @@ export function assetDraftOf(asset: AssetFacts): AssetDraft {
   return {
     manufacturer: asset.manufacturer,
     model: asset.model,
-    serialNumber: asset.serialNumber,
+    serialNumber: asset.serialNumber ?? '',
     positionCode: asset.positionCode ?? '',
     specifications: asset.specifications ?? '',
     reason: '',
@@ -149,6 +161,10 @@ const ASSET_FIELDS = Object.keys(ASSET_FIELD_MAX) as AssetField[]
 /** Bỏ trống thì backend giữ giá trị cũ, nên ba ô này không xoá được */
 const REQUIRED_ASSET_FIELDS: AssetField[] = ['manufacturer', 'model', 'serialNumber']
 
+/** Lô nhiều thiết bị ghi theo số lượng không mang một số serial: từng thiết bị chỉ có serial khi được thay */
+export const isMultiUnitLot = (asset: Pick<AssetFacts, 'serialNumber' | 'quantity'>) =>
+  asset.serialNumber === null && asset.quantity > 1
+
 /** Các ô đã đổi so với thiết bị đang xem (so sau khi bỏ khoảng trắng hai đầu) */
 export function changedAssetFields(asset: AssetFacts, draft: AssetDraft) {
   return ASSET_FIELDS.filter((f) => draft[f].trim() !== (asset[f] ?? '').trim())
@@ -157,7 +173,11 @@ export function changedAssetFields(asset: AssetFacts, draft: AssetDraft) {
 export function assetCorrectionErrors(asset: AssetFacts, draft: AssetDraft) {
   const errors: Partial<Record<AssetField | 'reason' | 'form', string>> = {}
   for (const f of ASSET_FIELDS) {
-    if (REQUIRED_ASSET_FIELDS.includes(f) && !draft[f].trim()) errors[f] = 'Không để trống ô này.'
+    // Dòng chưa có serial thì ô serial được để trống
+    const required = REQUIRED_ASSET_FIELDS.includes(f) && (f !== 'serialNumber' || asset.serialNumber !== null)
+    if (required && !draft[f].trim()) errors[f] = 'Không để trống ô này.'
+    else if (f === 'serialNumber' && isMultiUnitLot(asset) && draft[f].trim())
+      errors[f] = `Dòng này ghi ${asset.quantity} thiết bị theo số lượng nên không ghi một số serial.`
     else if (tooLong(draft[f], ASSET_FIELD_MAX[f])) errors[f] = tooLong(draft[f], ASSET_FIELD_MAX[f])
   }
   if (changedAssetFields(asset, draft).length === 0) errors.form = 'Chưa sửa ô nào.'

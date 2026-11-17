@@ -17,8 +17,6 @@ export type AssignTaskRequest = {
 
 export type CancellationDecisionRequest = {
   approve?: boolean
-  /** Format: double */
-  nonRecoverableAmount?: number
   note?: string | null
 }
 
@@ -51,15 +49,6 @@ export type DuplicateRequest = {
 
 export type PackageCancellationDecisionRequest = {
   approve?: boolean
-  /** Format: double */
-  refundAmount?: number | null
-  note?: string | null
-}
-
-export type RefundDecisionRequest = {
-  approve?: boolean
-  /** Format: double */
-  approvedAmount?: number | null
   note?: string | null
 }
 
@@ -79,8 +68,6 @@ export type ScheduleVisitRequest = {
 
 export type StopWorkRequest = {
   reason?: string | null
-  /** Format: double */
-  refundAmount?: number
 }
 
 export type WarrantyActivationRequest = {

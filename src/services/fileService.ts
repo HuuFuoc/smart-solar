@@ -87,19 +87,24 @@ async function putToStorage(
       },
     })
   } catch (error) {
-    const status = axios.isAxiosError(error) ? (error.response?.status ?? 0) : 0
-    throw new ApiError({ status, message: storageFailureMessage(status) })
+    const response = axios.isAxiosError(error) ? error.response : undefined
+    const status = response?.status ?? 0
+    throw new ApiError({ status, message: storageFailureMessage(status, String(response?.data ?? '')) })
   }
 }
 
 // Status 0 khi đang có mạng thường là S3 trả lời không kèm CORS (vd. 301 vì backend ký sai vùng của bucket),
-// không phải mất mạng
-function storageFailureMessage(status: number) {
+// không phải mất mạng. 403 chỉ là link hết hạn khi S3 ghi "expired"; còn lại là tài khoản ký link chưa được phép ghi vào
+// thư mục của mục đích này (IAM), thử lại không hết
+function storageFailureMessage(status: number, body = '') {
   if (status === 0)
     return typeof navigator !== 'undefined' && !navigator.onLine
       ? messageForStatus(0)
       : 'Không tải được tệp lên. Mạng vẫn ổn thì báo quản trị hệ thống.'
-  if (status === 403) return 'Link tải lên đã hết hạn hoặc không hợp lệ. Thử lại.'
+  if (status === 403)
+    return /expired/i.test(body)
+      ? 'Link tải lên đã hết hạn. Thử lại.'
+      : 'Hệ thống chưa được phép lưu loại tệp này. Báo quản trị hệ thống.'
   return 'Chưa tải được tệp lên. Thử lại sau ít phút.'
 }
 

@@ -6,14 +6,11 @@ import { DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Checkbox, Field, Input } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
+import { ImageSourceField, Thumb } from '@/features/products/ImageSourceField'
+import { EMPTY_IMAGE_SOURCE, imageSourceError, type ImageSource } from '@/features/products/imageSource'
 import { productStatusMeta } from '@/features/products/productDisplay'
-import {
-  PRODUCT_IMAGE_LIMITS,
-  altTextError,
-  imageUrlError,
-  moveImage,
-  sortImages,
-} from '@/features/products/productImageRules'
+import { PRODUCT_IMAGE_LIMITS, altTextError, moveImage, sortImages } from '@/features/products/productImageRules'
+import { useFileUpload } from '@/hooks/useFiles'
 import {
   useAddProductImageMutation,
   useAdminProductQuery,
@@ -24,8 +21,10 @@ import {
 import { errorMessage, isApiError } from '@/services/api/errors'
 import type { ProductImageResponse, ProductResponse } from '@/types/res/adminProductsRes'
 
-// Ảnh của một sản phẩm: thêm bằng link https (backend nhận link, không nhận tệp tải lên), sắp xếp, đặt ảnh chính, xoá.
-// Đọc chi tiết quản trị nên mở được cả sản phẩm ngừng bán. Mỗi thao tác trả lại cả bộ ảnh mới, hiện đúng bộ đó
+// Ảnh của một sản phẩm: thêm bằng link https hoặc tệp ảnh từ máy (tải lên kho rồi gửi mã tệp), sắp xếp, đặt ảnh chính,
+// xoá. Đọc chi tiết quản trị nên mở được cả sản phẩm ngừng bán. Mỗi thao tác trả lại cả bộ ảnh mới, hiện đúng bộ đó
+
+const PURPOSE = 'PRODUCT_IMAGE'
 
 function serverField(error: unknown, field: string) {
   if (!isApiError(error)) return undefined
@@ -33,43 +32,43 @@ function serverField(error: unknown, field: string) {
   return key ? error.fieldErrors[key] : undefined
 }
 
-function Thumb({ url, alt }: { url: string; alt: string }) {
-  const [broken, setBroken] = useState(false)
-  return (
-    <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-control bg-surface-2">
-      {broken ? (
-        <span className="px-1 text-center text-meta text-fg-3">Không tải được</span>
-      ) : (
-        <img src={url} alt={alt} loading="lazy" className="size-full object-cover" onError={() => setBroken(true)} />
-      )}
-    </div>
-  )
-}
-
 function AddImageForm({ product, disabled }: { product: ProductResponse; disabled: boolean }) {
   const add = useAddProductImageMutation()
-  const [url, setUrl] = useState('')
+  const upload = useFileUpload(PURPOSE)
+  const [source, setSource] = useState<ImageSource>(EMPTY_IMAGE_SOURCE)
+  // Tệp đã tải và xác minh: gắn lỗi thì lần sau chỉ gắn, không tải lại
+  const [uploadedId, setUploadedId] = useState<string | null>(null)
   const [alt, setAlt] = useState('')
   const [makePrimary, setMakePrimary] = useState(false)
   const [checked, setChecked] = useState(false)
   const [error, setError] = useState<unknown>(null)
-  const urlError = (checked ? imageUrlError(url) : undefined) ?? serverField(error, 'url')
+  const sourceError =
+    (checked ? imageSourceError(source, PURPOSE, true) : undefined) ??
+    serverField(error, 'url') ??
+    serverField(error, 'fileId')
   const altError = altTextError(alt) ?? serverField(error, 'altText')
-  const previewable = !imageUrlError(url)
   const full = (product.images?.length ?? 0) >= PRODUCT_IMAGE_LIMITS.maxImages
+  const busy = upload.uploading || add.isPending
+  const percent = upload.progress === null ? null : Math.round(upload.progress * 100)
 
   async function submit() {
-    if (add.isPending || !product.id) return
+    if (busy || !product.id) return
     setChecked(true)
     setError(null)
-    if (imageUrlError(url) || altTextError(alt)) return
+    if (imageSourceError(source, PURPOSE, true) || altTextError(alt)) return
     try {
+      let fileId = uploadedId
+      if (source.file && !fileId) {
+        fileId = (await upload.upload(source.file)).fileId
+        setUploadedId(fileId)
+      }
       await add.mutateAsync({
         id: product.id,
-        body: { url: url.trim(), altText: alt.trim() || null, makePrimary },
+        body: { ...(fileId ? { fileId } : { url: source.url.trim() }), altText: alt.trim() || null, makePrimary },
       })
       toast.success('Đã thêm ảnh.')
-      setUrl('')
+      setSource(EMPTY_IMAGE_SOURCE)
+      setUploadedId(null)
       setAlt('')
       setMakePrimary(false)
       setChecked(false)
@@ -93,65 +92,51 @@ function AddImageForm({ product, disabled }: { product: ProductResponse; disable
           Sản phẩm đã có {PRODUCT_IMAGE_LIMITS.maxImages} ảnh, mức tối đa. Xoá bớt ảnh rồi thêm lại.
         </p>
       ) : (
-        <div className="mt-3 grid gap-4 sm:grid-cols-[1fr_auto]">
-          <div className="space-y-4">
-            <Field
-              label="Link ảnh"
-              required
-              htmlFor="product-image-url"
-              error={urlError}
-              hint="Link https tới ảnh đã đăng sẵn (trang của hãng, kho ảnh). Không tải tệp từ máy lên được."
-            >
-              <Input
-                id="product-image-url"
-                inputMode="url"
-                value={url}
-                maxLength={PRODUCT_IMAGE_LIMITS.urlMax}
-                aria-required
-                aria-invalid={urlError ? true : undefined}
-                onChange={(e) => {
-                  setUrl(e.target.value)
-                  setError(null)
-                }}
-              />
-            </Field>
-            <Field
-              label="Mô tả ảnh"
-              htmlFor="product-image-alt"
-              error={altError}
-              hint="Cho người dùng trình đọc màn hình, ví dụ Mặt trước tấm pin."
-            >
-              <Input
-                id="product-image-alt"
-                value={alt}
-                maxLength={PRODUCT_IMAGE_LIMITS.altMax}
-                onChange={(e) => setAlt(e.target.value)}
-              />
-            </Field>
-            <Checkbox
-              label="Đặt làm ảnh chính"
-              description="Ảnh chính hiện ở danh mục. Sản phẩm chưa có ảnh thì ảnh đầu tiên luôn là ảnh chính."
-              checked={makePrimary}
-              onChange={(e) => setMakePrimary(e.target.checked)}
+        <div className="mt-3 space-y-4">
+          <ImageSourceField
+            id="product-image-url"
+            label="Ảnh"
+            purpose={PURPOSE}
+            value={source}
+            error={sourceError}
+            required
+            disabled={busy}
+            onChange={(next) => {
+              setSource(next)
+              setUploadedId(null)
+              setError(null)
+            }}
+          />
+          <Field
+            label="Mô tả ảnh"
+            htmlFor="product-image-alt"
+            error={altError}
+            hint="Cho người dùng trình đọc màn hình, ví dụ Mặt trước tấm pin."
+          >
+            <Input
+              id="product-image-alt"
+              value={alt}
+              maxLength={PRODUCT_IMAGE_LIMITS.altMax}
+              onChange={(e) => setAlt(e.target.value)}
             />
-          </div>
-          {previewable && (
-            <div>
-              <p className="mb-2 text-meta text-fg-2">Xem trước</p>
-              <Thumb key={url.trim()} url={url.trim()} alt={alt || 'Ảnh xem trước'} />
-            </div>
-          )}
+          </Field>
+          <Checkbox
+            label="Đặt làm ảnh chính"
+            description="Ảnh chính hiện ở danh mục. Sản phẩm chưa có ảnh thì ảnh đầu tiên luôn là ảnh chính."
+            checked={makePrimary}
+            onChange={(e) => setMakePrimary(e.target.checked)}
+          />
         </div>
       )}
-      {error != null && !serverField(error, 'url') && !serverField(error, 'altText') && (
+      {error != null && !sourceError && !serverField(error, 'altText') && (
         <div role="alert" className="mt-4">
           <Notice tone="danger">{errorMessage(error)}</Notice>
         </div>
       )}
       {!full && (
         <div className="mt-4 flex justify-end">
-          <Button icon="add_photo_alternate" type="submit" variant="primary" disabled={disabled || add.isPending}>
-            {add.isPending ? 'Đang thêm…' : 'Thêm ảnh'}
+          <Button icon="add_photo_alternate" type="submit" variant="primary" disabled={disabled || busy}>
+            {percent !== null ? `Đang tải ${percent}%` : add.isPending ? 'Đang thêm…' : 'Thêm ảnh'}
           </Button>
         </div>
       )}

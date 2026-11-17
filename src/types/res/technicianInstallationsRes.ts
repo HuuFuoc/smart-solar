@@ -56,4 +56,6 @@ export type InstallationTechnicianView = {
   assets: AssetView[]
   acceptances: AcceptanceView[]
   equipment?: EquipmentComparisonView | null
+  /** Báo cáo hoàn thành cần ít nhất một dòng PANEL và một dòng INVERTER (backend luôn trả, mặc định true) */
+  requiresPanelAndInverterAssets?: boolean
 }

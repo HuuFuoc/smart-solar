@@ -44,9 +44,10 @@ export const warrantyStatusMeta = (status: string) => INSTALLATION_WARRANTY_STAT
 
 export const formatVnd = (amount: number) => formatMoney(amount, 'VND')
 
-/** "Inverter Huawei SUN2000 (serial ABC)" */
+/** "Inverter Huawei SUN2000 (serial ABC)"; lô ghi theo số lượng: "Tấm pin Jinko Tiger Neo (100 thiết bị, không ghi serial)" */
 export function assetName(asset: InstalledAssetView) {
-  return `${assetTypeLabel(asset.assetType)} ${asset.manufacturer} ${asset.model} (serial ${asset.serialNumber})`
+  const detail = asset.serialNumber ? `serial ${asset.serialNumber}` : `${asset.quantity} thiết bị, không ghi serial`
+  return `${assetTypeLabel(asset.assetType)} ${asset.manufacturer} ${asset.model} (${detail})`
 }
 
 /**
@@ -75,8 +76,8 @@ export function groupEquipmentWarranty(assets: InstalledAssetView[]) {
     const text = equipmentWarrantyText(asset)
     const key = `${name}|${text}`
     const group = groups.get(key)
-    if (group) group.count += 1
-    else groups.set(key, { name, count: 1, text })
+    if (group) group.count += asset.quantity
+    else groups.set(key, { name, count: asset.quantity, text })
   }
   return [...groups.values()]
 }

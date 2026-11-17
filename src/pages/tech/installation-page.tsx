@@ -13,12 +13,15 @@ import { AssetEntry } from '@/features/installations/AssetEntry'
 import { AssignmentResponse } from '@/features/installations/AssignmentResponse'
 import { CompletionReportForm } from '@/features/installations/CompletionReportForm'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
+import { EquipmentDifferences } from '@/features/installations/EquipmentDifferences'
 import { EvidenceUpload } from '@/features/installations/EvidenceUpload'
 import {
   acceptanceDecisionMeta,
   assetTypeLabel,
+  assetUnits,
   deciderLabel,
   formatWarrantyMonths,
+  serialText,
 } from '@/features/installations/installationDisplay'
 import { StartInstallation } from '@/features/installations/StartInstallation'
 import {
@@ -85,8 +88,11 @@ function AssetCards({ assets, equipment }: { assets: AssetView[]; equipment?: Eq
             <dl className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-3">
               <AssetField label="Hãng">{a.manufacturer}</AssetField>
               <AssetField label="Model">{a.model}</AssetField>
+              <AssetField label="Số lượng" mono>
+                {a.quantity.toLocaleString('vi-VN')}
+              </AssetField>
               <AssetField label="Số serial" mono>
-                {a.serialNumber}
+                {serialText(a)}
               </AssetField>
               <AssetField label="Vị trí">{a.positionCode ?? '—'}</AssetField>
               <AssetField label="Bảo hành">{formatWarrantyMonths(a.warrantyMonths)}</AssetField>
@@ -252,7 +258,9 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
                 <PanelHeader
                   title={<BlockTitle icon="settings">Thiết bị đã lắp</BlockTitle>}
                   description={
-                    view.assets.length > 0 ? `Hiện có ${view.assets.length} thiết bị trong hệ thống` : undefined
+                    view.assets.length > 0
+                      ? `Hiện có ${assetUnits(view.assets).toLocaleString('vi-VN')} thiết bị trong hệ thống`
+                      : undefined
                   }
                   action={
                     work &&
@@ -276,6 +284,14 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
                     <AssetCards assets={view.assets} equipment={view.equipment} />
                   ) : (
                     !addingAssets && <p className="text-body text-fg-2">Chưa ghi thiết bị nào.</p>
+                  )}
+                  {view.equipment && view.equipment.differences.length > 0 && (
+                    <section aria-labelledby="equipment-differences" className="space-y-2">
+                      <h3 id="equipment-differences" className="text-body font-medium text-fg">
+                        Chưa khớp hợp đồng
+                      </h3>
+                      <EquipmentDifferences items={view.equipment.differences} />
+                    </section>
                   )}
                 </PanelBody>
               </Panel>

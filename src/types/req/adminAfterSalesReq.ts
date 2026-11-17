@@ -19,12 +19,9 @@ export type PackageRequest = {
   isActive?: boolean
   /** Format: int32 */
   revision?: number
-}
-
-export type RecordRefundRequest = {
-  /** Format: date-time */
-  refundedAt?: string
-  reference?: string | null
+  imageUrl?: string | null
+  /** Format: uuid */
+  imageFileId?: string | null
 }
 
 export type WarrantyOptionRequest = {

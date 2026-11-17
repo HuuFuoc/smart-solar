@@ -4,7 +4,11 @@ import { Button } from '@/components/common/ui/button'
 import { FormActions } from '@/components/common/ui/form-actions'
 import { Field, Input, Select, Textarea } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
-import { disasterCoverageAllowed } from '@/features/after-sales/managerAfterSalesRules'
+import {
+  disasterCoverageAllowed,
+  paidAmount,
+  paidCancellationBlocker,
+} from '@/features/after-sales/managerAfterSalesRules'
 import { formatVnd, pendingItems } from '@/features/after-sales/serviceDisplay'
 import {
   useDecideCancellationMutation,
@@ -159,10 +163,11 @@ export function DisputeReviewForm({ request }: { request: ServiceRequestView }) 
   )
 }
 
-/** Khách xin huỷ việc đã thanh toán: đồng ý hoặc từ chối. Nhóm không làm hoàn tiền nên không hỏi chi phí giữ lại */
+/** Khách xin huỷ việc chưa bắt đầu. Việc đã thanh toán chỉ từ chối được: backend không huỷ khoản đã trả */
 export function CancellationDecisionForm({ request }: { request: ServiceRequestView }) {
   const decide = useDecideCancellationMutation()
-  const paid = request.quotations.filter((q) => q.status === 'PAID').reduce((sum, q) => sum + q.customerAmount, 0)
+  const paid = paidAmount(request)
+  const blocker = paidCancellationBlocker(request)
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -171,7 +176,7 @@ export function CancellationDecisionForm({ request }: { request: ServiceRequestV
     try {
       await decide.mutateAsync({
         requestId: request.requestId,
-        body: { approve, nonRecoverableAmount: 0, note: note.trim() || null },
+        body: { approve, note: note.trim() || null },
       })
       toast.success(approve ? 'Đã đồng ý huỷ.' : 'Đã từ chối yêu cầu huỷ.')
     } catch (e) {
@@ -184,14 +189,17 @@ export function CancellationDecisionForm({ request }: { request: ServiceRequestV
       <p className="text-body text-fg">
         Khách đã trả {formatVnd(paid)}. Lý do huỷ: {request.cancellationReason ?? '—'}
       </p>
+      {blocker && <Notice tone="warn">{blocker}</Notice>}
       <Field label="Ghi chú" htmlFor="cancel-note">
         <Input id="cancel-note" maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
       </Field>
       <ErrorNotice message={error} />
       <div className="flex flex-wrap gap-3">
-        <Button icon="cancel" variant="danger" disabled={decide.isPending} onClick={() => void submit(true)}>
-          Đồng ý huỷ
-        </Button>
+        {!blocker && (
+          <Button icon="cancel" variant="danger" disabled={decide.isPending} onClick={() => void submit(true)}>
+            Đồng ý huỷ
+          </Button>
+        )}
         <Button icon="block" variant="danger" disabled={decide.isPending} onClick={() => void submit(false)}>
           Không đồng ý
         </Button>

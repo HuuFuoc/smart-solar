@@ -202,7 +202,6 @@ describe('4. Sau bán', { skip }, () => {
     assert.equal((await request(fault.requestId)).status, 'CANCELLED')
     const again = await S.call('MANAGER', 'POST', `/manager/after-sales/requests/${fault.requestId}/stop`, {
       reason: 'Lần hai',
-      refundAmount: 0,
     })
     assert.equal(again.error?.code, 'AFTER_SALES_INVALID_STATE')
   })

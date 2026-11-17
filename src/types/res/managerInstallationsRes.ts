@@ -112,9 +112,12 @@ export type AssetView = {
   productId: string | null
   manufacturer: string
   model: string
-  serialNumber: string
+  /** null khi dòng là một lô ghi theo số lượng */
+  serialNumber: string | null
   positionCode: string | null
   warrantyMonths: number | null
+  quantity: number
+  registeredAt: string | null
 }
 
 export type AcceptanceView = {
@@ -219,10 +222,11 @@ export type HandoverAssetView = {
   productId: string | null
   manufacturer: string
   model: string
-  serialNumber: string
+  serialNumber: string | null
   positionCode: string | null
   warrantyMonths: number | null
   warrantyEndsOn: string | null
+  quantity: number
 }
 
 /** GET /api/installation-projects/{id}/handover, chỉ có khi dự án COMPLETED */

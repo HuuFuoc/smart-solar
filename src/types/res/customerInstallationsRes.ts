@@ -46,9 +46,13 @@ export type AssetView = {
   productId: string | null
   manufacturer: string
   model: string
-  serialNumber: string
+  /** null khi dòng là một lô ghi theo số lượng */
+  serialNumber: string | null
   positionCode: string | null
   warrantyMonths: number | null
+  /** Số thiết bị của dòng: 1 với thiết bị có serial, số đã đếm với lô */
+  quantity: number
+  registeredAt: string | null
 }
 
 /** Chênh lệch giữa thiết bị trong hợp đồng và thiết bị đã lắp (EquipmentDifference) */
@@ -165,11 +169,12 @@ export type HandoverAssetView = {
   productId: string | null
   manufacturer: string
   model: string
-  serialNumber: string
+  serialNumber: string | null
   positionCode: string | null
   warrantyMonths: number | null
   /** Format: date (YYYY-MM-DD), tính từ ngày bàn giao theo giờ Việt Nam */
   warrantyEndsOn: string | null
+  quantity: number
 }
 
 /** GET .../handover, chỉ khi dự án COMPLETED (trước đó 409 INSTALLATION_NOT_HANDED_OVER) */

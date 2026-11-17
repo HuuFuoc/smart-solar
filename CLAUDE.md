@@ -348,8 +348,9 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
     hiện khi yêu cầu còn mở và còn hạng mục chưa xét (`coverageDecisionAhead`).
   - "Kết thúc yêu cầu" (`RequestClosePanel`): đóng vì trùng (chọn yêu cầu gốc cùng công trình từ danh sách, xem lại trước khi
     đóng; `possibleDuplicates` chỉ để cảnh báo; khoá khi đã có báo giá đã trả), dừng việc (chỉ việc đã bắt đầu như
-    `CancelAsync` của khách định nghĩa; chỉ hỏi lý do, luôn gửi `refundAmount` 0), không thực hiện được (chỉ bảo trì lẻ chưa
-    làm; BE huỷ yêu cầu). Xét huỷ việc đã trả tiền không hỏi chi phí giữ lại (gửi `nonRecoverableAmount` 0).
+    `CancelAsync` của khách định nghĩa; chỉ gửi lý do), không thực hiện được (chỉ bảo trì lẻ chưa làm; BE huỷ yêu cầu).
+    Backend `main` facbc5e bỏ các ô số hoàn và không huỷ việc khách đã trả tiền (409 `AFTER_SALES_PAID_CANCELLATION_UNSUPPORTED`):
+    yêu cầu huỷ của việc đã trả tiền chỉ còn nút "Không đồng ý", "Không thực hiện được" khoá kèm lý do (`paidCancellationBlocker`).
   - Sửa thiết bị (`AssetCorrectionPanel`, PUT .../assets/{id}): chỉ gửi ô đã đổi, lý do bắt buộc; hãng / model / serial không
     xoá được (BE giữ giá trị cũ khi bỏ trống). Chi tiết công trình không trả `specifications` nên ô thông số chỉ ghi mới.
   - Lỗi `AFTER_SALES_INVALID_STATE` dịch theo câu gốc của BE (`managerActionError` ở `managerAfterSalesDisplay.ts`).
@@ -495,8 +496,11 @@ nhập làm nguồn chính + kéo thả vật cản.
   kể cả GET, chung giới hạn 30 lần / phút (`CatalogWritePolicy`) nên hai query quản trị không tự làm mới khi quay lại tab.
   "Ngừng bán" hỏi xác nhận, có "Hoàn tác". Ảnh sản phẩm là danh sách (`images`, tối đa 10, đúng một ảnh chính; `imageUrl`
   cũ chỉ còn là link ảnh chính), sửa trong `ProductImagesDialog` (nút ảnh trên từng dòng, nút "Quản lý ảnh" ở trang chi
-  tiết): thêm bằng link https, đặt ảnh chính, đổi thứ tự, xoá (4 API `/images…`, mỗi thao tác lưu ngay; backend không nhận
-  tải tệp ảnh). Form thêm sản phẩm có một link ảnh chính, PUT không đụng tới ảnh. INVERTER có ô riêng cho thông số trong
+  tiết): thêm bằng link https hoặc tệp ảnh từ máy (`ImageSourceField`: tải lên mục đích `PRODUCT_IMAGE` rồi gửi `fileId`,
+  backend lưu thành link công khai `/api/files/public/{id}`), đặt ảnh chính, đổi thứ tự, xoá (4 API `/images…`, mỗi thao tác lưu
+  ngay). Tải từ máy cần server đặt `Storage__PublicFileBaseUrl` và IAM cho phép ghi `products/*`, `packages/*` (17/11 IAM chưa cho:
+  S3 trả 403 AccessDenied, web báo "Hệ thống chưa được phép lưu loại tệp này"). Form thêm sản phẩm có một link ảnh chính, PUT
+  không đụng tới ảnh. INVERTER có ô riêng cho thông số trong
   `spec` (`ratedAcPowerW`, `maxDcInputPowerW`, `maxDcVoltageV`, `mpptCount`, `efficiencyPercent`, `phase`) vì backend
   kiểm tra đúng kiểu số; các trang danh mục hiện các thông số này có tên tiếng Việt và đơn vị.
 - `/admin/packages` (menu "Gói dịch vụ"): gói sau lắp đặt, tag AdminAfterSales (chỉ ADMIN; code chưa lên git, luật đọc từ
@@ -504,7 +508,9 @@ nhập làm nguồn chính + kéo thả vật cản.
   GET .../packages trả cả gói ngừng bán, response là `PackageView` của `customerAfterSalesRes.ts`. Form (`PackageFormDialog.tsx`,
   luật ở `packageForm.ts` bám `ValidatePackage`): tên ≤ 150, mô tả ≤ 2000, giá nguyên VND > 0, thời hạn 1–120 tháng; gói bảo
   trì cần các tháng có lượt (khác nhau, trong thời hạn); gói thiên tai cần ≥ 1 loại thiên tai, tỷ lệ 0 < x ≤ 100, hạn mức mỗi
-  sự cố > 0 và mỗi kỳ ≥ mỗi sự cố (đều nguyên VND). Loại gói chọn lúc tạo, không đổi được. PUT ghi đè cả gói kèm `revision`
+  sự cố > 0 và mỗi kỳ ≥ mỗi sự cố (đều nguyên VND). Ảnh bìa (không bắt buộc): link https (`imageUrl`) hoặc tệp
+  `PACKAGE_IMAGE` tải lên lúc lưu (`imageFileId`), không gửi cả hai; khách thấy ảnh ở thẻ gói (`PackageView.imageUrl`). Ngừng bán /
+  mở bán gửi lại `imageUrl` đang có, vì PUT ghi đè cả gói. Loại gói chọn lúc tạo, không đổi được. PUT ghi đè cả gói kèm `revision`
   lúc mở form (lệch thì 409, không ghi đè). Không có API xoá: "Ngừng bán" (hỏi xác nhận, có "Hoàn tác") = PUT với `isActive` là false. Gói đã mua lưu bản chụp điều kiện lúc mua nên sửa / ngừng bán chỉ áp cho lần mua sau. Đầu trang báo đỏ khi không còn gói thiên tai nào đang bán; số cạnh menu = số gói đang bán.
 - `/tech/products(/:id)`, `/manage/products(/:id)`: danh mục sản phẩm thật (GET /api/products, bản portal kit) cho kỹ
   thuật viên và quản lý. Không còn trang giữ chỗ "chưa có chức năng" (08/10/2026); `/field/*` chuyển về `/tech`.
@@ -684,11 +690,9 @@ Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-co
 - Duyệt bản ký (`SignaturePanel`): kinh doanh phụ trách và quản lý (`/manage/contracts/:id`); quản trị
   (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. "Xem" / "Tải về" PDF chính thức và từng bản ký
   (`ContractDocumentButtons`): xin link ký sẵn đúng lúc bấm (`GET /contracts/{id}/official-document/url`,
-  `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Backend `main` và
-  bản đã deploy chưa có các API link này (chỉ có ở bản vá chưa merge), nên nút ẩn theo cờ `CONTRACT_DOCUMENT_LINKS`
-  (`common/contract.ts`, bật khi `VITE_CONTRACT_DOCUMENT_LINKS=true`, mặc định tắt; `stack-harness.mjs` tự bật vì stack kiểm thử
-  chạy bản vá); câu hướng dẫn đổi theo cờ: kinh doanh tự gửi đúng tệp PDF đã gắn cho khách, vì hộp ký so SHA-256 của tệp khách
-  đang giữ.
+  `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Có từ backend `main`
+  facbc5e (kể cả phiên bản SUPERSEDED). Cờ `CONTRACT_DOCUMENT_LINKS` (`common/contract.ts`) mặc định bật; chạy với backend cũ
+  chưa có các API này thì đặt `VITE_CONTRACT_DOCUMENT_LINKS=false`: nút ẩn và khách in hợp đồng từ trang (mục dưới).
 - Thanh toán (`ContractPaymentPanel`, `GET /contracts/{id}/payments`, cả 3 cổng): chỉ đọc, hỏi lại 30 giây / lần khi SIGNED;
   REVIEW_REQUIRED / REFUND_REQUIRED tô đỏ. PAID: quản lý / quản trị có nút sang "Hợp đồng chờ tạo dự án"; số hợp đồng ở danh
   sách đó dẫn về trang hợp đồng.
@@ -703,9 +707,11 @@ Luật ở `features/contracts/customerContractRules.ts`, hiển thị ở `cust
 Kiểm tra và các chỗ còn chặn: `docs/api/customer-portal-verification.md`.
 
 - Ký (`CustomerSignPanel`, `SignContractDialog`): khách xem / tải PDF chính thức và bản ký của mình qua link ký sẵn
-  (`GET /customers/me/contracts/{id}/official-document/url`, `…/submissions/{sid}/url`; chỉ chủ hợp đồng, bản vá backend chưa
-  merge, nút ẩn khi `CONTRACT_DOCUMENT_LINKS` tắt và khách nhận PDF từ kinh doanh), rồi kiểm tệp đang giữ bằng SHA-256 tính
-  trên máy (không tải lên).
+  (`GET /customers/me/contracts/{id}/official-document/url`, `…/submissions/{sid}/url`; chỉ chủ hợp đồng, nút ẩn khi
+  `CONTRACT_DOCUMENT_LINKS` tắt), rồi kiểm tệp đang giữ bằng SHA-256 tính trên máy (không tải lên).
+  Cờ tắt thì khách bấm "In hợp đồng": `features/contracts/contractPrint.ts` dựng hợp đồng từ `ContractView` (cùng mẫu với PDF
+  kinh doanh gắn, mã nội dung ở khung đầu và chân mỗi trang qua ô lề `@page`), phường lấy từ địa điểm của yêu cầu, mở tab mới
+  rồi bật hộp in. Tệp khách in không trùng SHA-256 của PDF đã gắn nên hộp gửi bản ký bỏ bước kiểm tệp, chỉ đối chiếu mã nội dung.
   SHA-256 của PDF chính thức được chụp lúc mở hộp thoại và gửi đúng mã đó; hợp đồng đổi phiên bản thì khoá nút gửi, lỗi
   `RESIGN_ERROR_CODES` bắt xem lại và ký lại, không tự gửi lại. Bản ký tải lên `SIGNED_CONTRACT` (PDF ≤ 20 MB).
 - Thanh toán (`CustomerContractPayment`): chỉ khi SIGNED; link tạo khi khách bấm (backend trả lại link còn sống), hỏi lại 5 giây /
@@ -758,15 +764,19 @@ theo đội / ca / mốc (`InstallationTaskPage`, `InstallationChecklistPage`, `
   ≤ 500) gửi `expectedRevision` = `revision` đang xem; quá khung giờ được giao thì không nhận được. Bắt đầu chỉ khi `canStart`
   (lý do chặn `startBlockedReason`: chưa tới ngày, hết khung giờ, quản lý chưa xong hạng mục bắt buộc); checklist chỉ quản lý
   sửa được (`PUT …/checklist` chỉ cho Manager/Admin), kỹ thuật viên không thấy.
-- Thiết bị (`AssetEntry.tsx`, luật ở `assetForm.ts` bám `RegisterAssetsAsync`): backend cần mỗi thiết bị một serial và số đã ghi
-  khớp hợp đồng theo từng sản phẩm, nên mỗi dòng là một sản phẩm + ô serial nhiều dòng (mỗi dòng một số; dán cột Excel hoặc quét
-  mã vạch liên tục, `parseSerials` tách cả tab / phẩy / chấm phẩy), gửi thành từng thiết bị dùng chung sản phẩm và vị trí lắp; dưới
-  ô ghi "Đã nhập N, hợp đồng còn M". Tối đa 500 thiết bị mỗi lần lưu (giới hạn của backend). "Thêm dòng" luôn thêm dòng trống; Enter
-  ở ô vị trí chuyển ô, không gửi form. Đã lưu thì không sửa / xoá được nên báo serial trùng (cùng hãng: trong ô, với dòng trên, với
-  thiết bị đã lưu) trước khi gửi.
-- Báo cáo hoàn thành (≤ 8000 ký tự, hỏi xác nhận) cần ít nhất một ảnh của lượt hiện tại (khoá nút) và mặc định tấm pin + inverter
-  (cấu hình được ở backend nên chỉ nhắc). Thiết bị lắp khác hợp đồng mà quản lý chưa duyệt (`awaitsSubstitutionApproval`)
-  thì khoá nút và Tình hình ghi "chờ quản lý duyệt". Gửi xong công trình chờ khách nghiệm thu; kỹ thuật viên không tự đánh dấu
+- Thiết bị (`AssetEntry.tsx`, luật ở `assetForm.ts` bám `RegisterAssetsAsync` của backend `main` facbc5e): mỗi dòng là một sản
+  phẩm, ghi theo số lượng (lô: ô serial để trống, `quantity` 1–10.000, bắt buộc sản phẩm danh mục, gửi một mục `serialNumber`
+  null) hoặc theo serial (ô serial nhiều dòng, dán cột Excel hoặc quét mã vạch, `parseSerials` tách cả tab / phẩy / chấm phẩy;
+  mỗi serial một mục, không gửi `quantity`). Thiết bị ngoài danh mục chỉ ghi theo serial. Backend so với hợp đồng theo tổng số
+  thiết bị (`SUM(quantity)`), nên mọi số "N thiết bị" trên web là `assetUnits`, không phải số dòng; bảng thiết bị có cột "Số lượng",
+  lô ghi "Theo số lượng". Tối đa 500 mục mỗi lần lưu (một lô là một mục). Lỗi theo mục của backend (`assets[i].quantity`,
+  `assets[i].productId`) về đúng dòng (`serverRowErrors`). "Thêm dòng" luôn thêm dòng trống; Enter ở ô vị trí chuyển ô, không gửi
+  form. Đã lưu thì không sửa / xoá được nên báo serial trùng (cùng hãng: trong ô, với dòng trên, với thiết bị đã lưu) trước khi gửi.
+  Trang kỹ thuật viên hiện bảng "Chưa khớp hợp đồng" (`equipment.differences`).
+- Báo cáo hoàn thành (≤ 8000 ký tự, hỏi xác nhận) cần ít nhất một ảnh của lượt hiện tại và, khi `requiresPanelAndInverterAssets`,
+  ít nhất một dòng tấm pin và một dòng inverter: thiếu thì khoá nút và ghi đúng loại còn thiếu (`missingAssetTypes`; lỗi
+  `INSTALLATION_ASSETS_REQUIRED` đọc `details.missing`). Thiết bị lắp khác hợp đồng mà quản lý chưa duyệt (`awaitsSubstitutionApproval`)
+  thì khoá nút. Gửi xong công trình chờ khách nghiệm thu; kỹ thuật viên không tự đánh dấu
   hoàn tất.
 - Ảnh lắp đặt (`EvidenceUpload.tsx`, khi `canWork`): chọn nhiều ảnh, mỗi ảnh một ô chú thích (≤ 300 ký tự), "Tải lên N ảnh"
   chạy hàng đợi `useUploadQueue` (mục "Tải tệp lên kho S3" dưới): tải `INSTALLATION_EVIDENCE` rồi gắn vào lượt hiện tại bằng
@@ -968,7 +978,8 @@ Auth gọi backend .NET thật, KHÔNG còn mock. Nguồn sự thật là `docs/
 - **API**: 9 hàm trong `src/services/authService.ts` (DTO ở `src/types/req/authReq.ts` và `src/types/res/authRes.ts`) (register, verify-email, resend-verification,
   login, refresh, logout, forgot-password, reset-password, change-password); mutation của
   react-query trong `src/hooks/useAuthMutations.ts`; login/logout nằm trong `AuthProvider`
-  vì còn phải lưu token.
+  vì còn phải lưu token. Từ backend `main` 5476dba, đổi / đặt lại mật khẩu thu hồi ngay mọi token của tài khoản (cả access
+  token đang dùng): `ChangePasswordDialog` đổi xong thì `clearSession()` để về `/login`, báo "Vui lòng đăng nhập lại".
 - **Tài khoản mẫu** ở `/login` chỉ hiện khi `import.meta.env.DEV` và lấy từ
   `.env.development.local` (không commit) – xem `src/config/demoAccounts.ts`.
 - **CHỜ BACKEND**: swagger chưa có endpoint `/me` (đọc hồ sơ người đăng nhập) và token thật chỉ có `sub`, `email`, role

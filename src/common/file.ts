@@ -28,6 +28,10 @@ export const FILE_PURPOSES = {
   PROJECT_DOCUMENT: { types: ['application/pdf', 'image/jpeg', 'image/png'], maxBytes: 20 * MB },
   /** Kỹ thuật viên, khách hàng: ảnh bảo hành, sự cố */
   SERVICE_EVIDENCE: { types: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 15 * MB },
+  /** Quản trị, quản lý: ảnh sản phẩm tải từ máy */
+  PRODUCT_IMAGE: { types: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 10 * MB },
+  /** Quản trị: ảnh bìa gói dịch vụ tải từ máy */
+  PACKAGE_IMAGE: { types: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 10 * MB },
 } as const satisfies Record<string, { types: readonly string[]; maxBytes: number }>
 
 export type FilePurpose = keyof typeof FILE_PURPOSES

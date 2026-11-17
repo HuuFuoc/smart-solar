@@ -16,6 +16,7 @@ import {
   STOP_REASON_MAX,
   canMarkNotFulfilled,
   canStopWork,
+  paidCancellationBlocker,
   duplicateBlocker,
   duplicateCandidates,
   duplicateErrors,
@@ -205,6 +206,7 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
   const stop = useStopWorkMutation()
   if (isFinalRequest(request.status)) return null
   const blocker = duplicateBlocker(request)
+  const paidBlocker = paidCancellationBlocker(request)
   const close = () => setOpen(null)
 
   return (
@@ -246,9 +248,18 @@ export function RequestClosePanel({ request, detailPattern }: { request: Service
           {canMarkNotFulfilled(request) && (
             <ActionRow
               title="Không thực hiện được"
-              body="Smart Solar không bố trí được kỹ thuật viên phù hợp, hoặc khách không nhận các giờ khác."
+              body={
+                paidBlocker ??
+                'Smart Solar không bố trí được kỹ thuật viên phù hợp, hoặc khách không nhận các giờ khác.'
+              }
               action={
-                <Button icon="event_busy" size="sm" variant="danger" onClick={() => setOpen('not-fulfilled')}>
+                <Button
+                  icon="event_busy"
+                  size="sm"
+                  variant="danger"
+                  disabled={Boolean(paidBlocker)}
+                  onClick={() => setOpen('not-fulfilled')}
+                >
                   Không thực hiện được
                 </Button>
               }

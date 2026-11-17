@@ -220,10 +220,26 @@ export function AssetEntryRow({
           </div>
         )}
       </Cell>
+      <Cell row={row} field="quantity" label="Số lượng" error={errors.quantity} className="col-span-2 xl:col-span-1">
+        <Input
+          id={assetFieldId(row, 'quantity')}
+          value={row.quantity}
+          inputMode="numeric"
+          maxLength={5}
+          autoComplete="off"
+          // Thiết bị ngoài danh mục chỉ ghi được theo serial
+          disabled={manualMode}
+          placeholder={serialCount > 0 ? String(serialCount) : undefined}
+          className="tnum"
+          onChange={(e) => onChangeRow((r) => ({ ...r, quantity: e.target.value }))}
+          {...ariaInvalid(row, 'quantity', errors)}
+        />
+        {remaining !== null && <p className="tnum text-meta text-fg-2">Hợp đồng còn {remaining}</p>}
+      </Cell>
       <Cell
         row={row}
         field="serials"
-        label="Số serial (mỗi dòng một số)"
+        label="Số serial (nếu ghi từng thiết bị, mỗi dòng một số)"
         error={errors.serials}
         className="col-span-2 xl:col-span-1"
       >
@@ -233,17 +249,11 @@ export function AssetEntryRow({
           rows={Math.min(Math.max(serialLines, 2), 8)}
           autoComplete="off"
           spellCheck={false}
-          aria-required
           className="tnum"
           onChange={(e) => onChangeRow((r) => ({ ...r, serials: e.target.value }))}
           {...ariaInvalid(row, 'serials', errors)}
         />
-        {(serialCount > 0 || remaining !== null) && (
-          <p className="tnum text-meta text-fg-2">
-            Đã nhập {serialCount}
-            {remaining !== null && `, hợp đồng còn ${remaining}`}
-          </p>
-        )}
+        {serialCount > 0 && <p className="tnum text-meta text-fg-2">Đã nhập {serialCount} số serial</p>}
       </Cell>
       <Cell row={row} field="positionCode" label="Vị trí lắp (không bắt buộc)" error={errors.positionCode}>
         <Input

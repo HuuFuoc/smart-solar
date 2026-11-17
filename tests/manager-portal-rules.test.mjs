@@ -19,8 +19,11 @@ import {
   duplicateBlocker,
   duplicateCandidates,
   duplicateErrors,
+  isMultiUnitLot,
   isReassignment,
   matchesTaskFilter,
+  paidAmount,
+  paidCancellationBlocker,
   reasonError,
   stopBody,
   taskStatusParam,
@@ -112,8 +115,8 @@ describe('dừng việc đã bắt đầu (stop)', () => {
     assert.equal(canStopWork(request({ status: 'CANCELLED', visits: [{ status: 'IN_PROGRESS' }] })), false)
     assert.equal(workStarted(request({ status: 'AWAITING_DECISION', visits: [{ status: 'REPORTED' }] })), false)
   })
-  test('không hoàn tiền: luôn gửi số hoàn 0, lý do bỏ khoảng trắng', () => {
-    assert.deepEqual(stopBody(' Hỏng thêm '), { reason: 'Hỏng thêm', refundAmount: 0 })
+  test('lệnh dừng chỉ gửi lý do, bỏ khoảng trắng hai đầu', () => {
+    assert.deepEqual(stopBody(' Hỏng thêm '), { reason: 'Hỏng thêm' })
   })
 })
 
@@ -178,6 +181,36 @@ describe('sửa thông tin thiết bị (PUT assets)', () => {
   test('thông số không đọc được từ chi tiết công trình: bỏ trống là giữ nguyên', () => {
     const draft = { ...assetDraftOf(asset), model: 'SUN2000-5KTL', reason: 'Sai model' }
     assert.equal(assetCorrectionBody(asset, draft).specifications, null)
+  })
+  test('lô ghi theo số lượng: ô serial để trống được; lô nhiều thiết bị không nhận một số serial', () => {
+    const lot = { manufacturer: 'Jinko', model: 'Tiger Neo', serialNumber: null, positionCode: null, quantity: 100 }
+    assert.equal(isMultiUnitLot(lot), true)
+    assert.equal(isMultiUnitLot({ ...lot, quantity: 1 }), false)
+    assert.equal(isMultiUnitLot({ ...asset, quantity: 1 }), false)
+    const draft = { ...assetDraftOf(lot), model: 'Tiger Neo 550', reason: 'Sai model' }
+    assert.equal(draft.serialNumber, '')
+    assert.deepEqual(assetCorrectionErrors(lot, draft), {})
+    assert.equal(assetCorrectionBody(lot, draft).serialNumber, null)
+    assert.match(
+      assetCorrectionErrors(lot, { ...draft, serialNumber: 'SN-1' }).serialNumber,
+      /100 thiết bị theo số lượng/,
+    )
+    assert.deepEqual(assetCorrectionErrors({ ...lot, quantity: 1 }, { ...draft, serialNumber: 'SN-1' }), {})
+  })
+})
+
+describe('việc khách đã trả tiền không huỷ được trên hệ thống', () => {
+  test('số đã trả chỉ tính báo giá PAID', () => {
+    const r = request({
+      quotations: [quotation('PAID', 300_000), quotation('ISSUED', 900_000), quotation('PAID', 200_000)],
+    })
+    assert.equal(paidAmount(r), 500_000)
+    assert.equal(paidAmount(request()), 0)
+  })
+  test('đã trả tiền thì chặn đồng ý huỷ và đóng vì không thực hiện được; chưa trả thì không chặn', () => {
+    assert.match(paidCancellationBlocker(request({ quotations: [quotation('PAID')] })), /đã thanh toán/)
+    assert.equal(paidCancellationBlocker(request({ quotations: [quotation('ISSUED')] })), null)
+    assert.equal(paidCancellationBlocker(request({ quotations: [quotation('PAID', 0)] })), null)
   })
 })
 

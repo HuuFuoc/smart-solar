@@ -15,6 +15,8 @@ export type AssetRequest = {
   positionCode?: string | null
   /** Format: int32 */
   warrantyMonths?: number | null
+  /** Format: int32 */
+  quantity?: number | null
 }
 
 export type AssetsRequest = {
