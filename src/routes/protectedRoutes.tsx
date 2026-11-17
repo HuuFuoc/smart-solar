@@ -16,6 +16,10 @@ const CustomerDashboardPage = page(() => import('@/pages/customer/customer-dashb
 const AssessmentPage = page(() => import('@/pages/customer/assessment-page'), 'AssessmentPage')
 const CustomerRequestsPage = page(() => import('@/pages/customer/requests-page'), 'CustomerRequestsPage')
 const CustomerRequestPage = page(() => import('@/pages/customer/request-page'), 'CustomerRequestPage')
+const CustomerDirectBookingPage = page(
+  () => import('@/pages/customer/direct-booking-page'),
+  'CustomerDirectBookingPage',
+)
 const CustomerQuotationsPage = page(() => import('@/pages/customer/quotations-page'), 'CustomerQuotationsPage')
 const CustomerQuotationPage = page(() => import('@/pages/customer/quotation-page'), 'CustomerQuotationPage')
 const CustomerProjectsPage = page(() => import('@/pages/customer/projects-page'), 'CustomerProjectsPage')
@@ -36,7 +40,6 @@ const CustomerCatalogProductPage = page(() => import('@/pages/catalog-product-pa
 const OpsDashboardPage = page(() => import('@/pages/ops/dashboard-page'), 'OpsDashboardPage')
 const OpsSurveysPage = page(() => import('@/pages/ops/surveys-page'), 'OpsSurveysPage')
 const OpsMySurveysPage = page(() => import('@/pages/ops/my-surveys-page'), 'OpsMySurveysPage')
-const OpsQuotationsPage = page(() => import('@/pages/ops/quotations-page'), 'OpsQuotationsPage')
 const OpsSurveyRequestPage = page(() => import('@/pages/ops/survey-request-page'), 'OpsSurveyRequestPage')
 const OpsAfterSalesPage = page(() => import('@/pages/ops/after-sales-page'), 'OpsAfterSalesPage')
 const OpsAfterSalesRequestPage = page(() => import('@/pages/ops/after-sales-request-page'), 'OpsAfterSalesRequestPage')
@@ -50,6 +53,10 @@ const TechJobPage = page(() => import('@/pages/tech/job-page'), 'TechJobPage')
 const TechOpenJobPage = page(() => import('@/pages/tech/open-job-page'), 'TechOpenJobPage')
 const TechInstallationsPage = page(() => import('@/pages/tech/installations-page'), 'TechInstallationsPage')
 const TechInstallationPage = page(() => import('@/pages/tech/installation-page'), 'TechInstallationPage')
+const TechInstallationSchedulesPage = page(
+  () => import('@/pages/tech/installation-schedules-page'),
+  'TechInstallationSchedulesPage',
+)
 const TechAfterSalesPage = page(() => import('@/pages/tech/after-sales-page'), 'TechAfterSalesPage')
 const TechAfterSalesVisitPage = page(() => import('@/pages/tech/after-sales-visit-page'), 'TechAfterSalesVisitPage')
 const TechSchedulePage = page(() => import('@/pages/tech/schedule-page'), 'TechSchedulePage')
@@ -70,7 +77,11 @@ const ManageInstallationProjectPage = page(
   'ManageInstallationProjectPage',
 )
 const ManageContractPage = page(() => import('@/pages/contract-page'), 'ManageContractPage')
-const ManagePricingApprovalsPage = page(() => import('@/pages/pricing-approvals-page'), 'ManagePricingApprovalsPage')
+const ManageContractsPage = page(() => import('@/pages/contracts-page'), 'ManageContractsPage')
+const ManageInstallationSchedulesPage = page(
+  () => import('@/pages/installation-schedules-page'),
+  'ManageInstallationSchedulesPage',
+)
 
 // Điều phối khảo sát (quản lý và quản trị dùng chung trang)
 const ManageDispatchRequestsPage = page(() => import('@/pages/dispatch-requests-page'), 'ManageDispatchRequestsPage')
@@ -103,6 +114,11 @@ const AdminInstallationProjectPage = page(
   'AdminInstallationProjectPage',
 )
 const AdminContractPage = page(() => import('@/pages/contract-page'), 'AdminContractPage')
+const AdminContractsPage = page(() => import('@/pages/contracts-page'), 'AdminContractsPage')
+const AdminInstallationSchedulesPage = page(
+  () => import('@/pages/installation-schedules-page'),
+  'AdminInstallationSchedulesPage',
+)
 const AdminAfterSalesPage = page(() => import('@/pages/after-sales-requests-page'), 'AdminAfterSalesPage')
 const AdminAfterSalesRequestPage = page(() => import('@/pages/after-sales-request-page'), 'AdminAfterSalesRequestPage')
 const AdminSettingsPage = page(() => import('@/pages/admin/settings-page'), 'AdminSettingsPage')
@@ -166,6 +182,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: customer.dashboard, lazy: CustomerDashboardPage },
       { path: customer.assessment, lazy: AssessmentPage },
       { path: customer.requests, lazy: CustomerRequestsPage },
+      { path: customer.directBooking, lazy: CustomerDirectBookingPage },
       { path: customer.request, lazy: CustomerRequestPage },
       { path: customer.quotations, lazy: CustomerQuotationsPage },
       { path: customer.quotation, lazy: CustomerQuotationPage },
@@ -191,7 +208,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: ops.dashboard, lazy: OpsDashboardPage },
       { path: ops.surveys, lazy: OpsSurveysPage },
       { path: ops.surveysMine, lazy: OpsMySurveysPage },
-      { path: ops.quotations, lazy: OpsQuotationsPage },
       { path: ops.survey, lazy: OpsSurveyRequestPage },
       { path: ops.contract, lazy: OpsContractPage },
       { path: ops.afterSales, lazy: OpsAfterSalesPage },
@@ -212,6 +228,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: tech.openJob, lazy: TechOpenJobPage },
       { path: tech.installations, lazy: TechInstallationsPage },
       { path: tech.installation, lazy: TechInstallationPage },
+      { path: tech.installationSchedules, lazy: TechInstallationSchedulesPage },
       { path: tech.afterSales, lazy: TechAfterSalesPage },
       { path: tech.afterSalesVisit, lazy: TechAfterSalesVisitPage },
       { path: tech.schedule, lazy: TechSchedulePage },
@@ -229,11 +246,12 @@ export const protectedRoutes: RouteObject[] = [
     pages: [
       { path: manage.installations, lazy: ManageInstallationProjectsPage },
       { path: manage.installation, lazy: ManageInstallationProjectPage },
+      { path: manage.contracts, lazy: ManageContractsPage },
       { path: manage.contract, lazy: ManageContractPage },
+      { path: manage.installationSchedules, lazy: ManageInstallationSchedulesPage },
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
       { path: manage.afterSalesRequest, lazy: ManageAfterSalesRequestPage },
       { path: manage.salesTasks, lazy: ManageSalesTasksPage },
-      { path: manage.pricingApprovals, lazy: ManagePricingApprovalsPage },
       { path: manage.dispatch, lazy: ManageDispatchRequestsPage },
       { path: manage.dispatchRequest, lazy: ManageDispatchRequestPage },
       { path: manage.technicians, lazy: ManageTechniciansPage },
@@ -258,7 +276,9 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.product, lazy: AdminProductPage },
       { path: admin.installations, lazy: AdminInstallationProjectsPage },
       { path: admin.installation, lazy: AdminInstallationProjectPage },
+      { path: admin.contracts, lazy: AdminContractsPage },
       { path: admin.contract, lazy: AdminContractPage },
+      { path: admin.installationSchedules, lazy: AdminInstallationSchedulesPage },
       { path: admin.packages, lazy: AdminPackagesPage },
       { path: admin.afterSales, lazy: AdminAfterSalesPage },
       { path: admin.dispatch, lazy: AdminDispatchRequestsPage },

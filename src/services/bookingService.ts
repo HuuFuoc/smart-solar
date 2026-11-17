@@ -1,9 +1,11 @@
 import type {
   BookSurveyAppointmentRequest,
   CancelSurveyAppointmentRequest,
+  DirectSurveyBookingRequest,
 } from '@/types/req/customerSurveyRequestsReq'
 import type {
   BookingConfirmation,
+  DirectSurveyBookingView,
   CustomerAppointmentView,
   CustomerSurveyRequestDetailView,
   CustomerSurveyRequestView,
@@ -28,6 +30,16 @@ export function listMyRequests() {
 /** GET /api/customers/me/survey-requests/{id}, kèm lịch sử các lần đặt */
 export function getMyRequest(id: string) {
   return get<CustomerSurveyRequestDetailView>(ENDPOINTS.customerSurveyRequests.byId(id))
+}
+
+/**
+ * Đặt khảo sát thẳng cho một địa điểm của khách, không qua đánh giá sơ bộ: backend mở (hoặc dùng lại) yêu cầu đặt trực tiếp đang
+ * mở của địa điểm rồi giữ chỗ theo đúng luật đặt giờ. 201 khi vừa giữ được chỗ, 200 khi gửi lại đúng giờ cũ. Hết chỗ / khu vực
+ * chưa có người nhận thì lỗi kèm `details.surveyRequestId`: yêu cầu vẫn mở, khách chọn giờ khác trên yêu cầu đó (không tạo yêu
+ * cầu thứ hai). Địa điểm đang có yêu cầu từ đánh giá sơ bộ thì 409 SURVEY_REQUEST_ALREADY_OPEN kèm mã yêu cầu đó
+ */
+export function bookDirectSurvey(body: DirectSurveyBookingRequest) {
+  return post<DirectSurveyBookingView>(ENDPOINTS.customerSurveyRequests.direct, body)
 }
 
 /** 201 tạo mới, gửi lại đúng giờ cũ thì 200 với created=false */

@@ -1,5 +1,6 @@
-// Luật của cổng kinh doanh: hợp đồng lắp đặt, việc nhắc khách, PDF báo giá. Bám ContractHandlers, SalesTaskHandlers,
-// QuotationHandlers.AttachDocumentAsync của backend `main` (7c79fa8). Chạy: npm test
+// Luật hợp đồng lắp đặt phía nhân viên (quản lý / quản trị ghi, kinh doanh chỉ đọc), xác nhận tiền mặt, việc nhắc khách của
+// kinh doanh, giỏ báo giá của kỹ thuật viên. Bám ContractHandlers, PaymentService.ConfirmCashAsync, SalesTaskHandlers,
+// QuotationTechnicianCart của backend `main` (ad10455). Chạy: npm test
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import {
@@ -7,13 +8,20 @@ import {
   amendBlocker,
   bindingContract,
   canAmend,
+  awaitingCashConfirmation,
   canAttachOfficialDocument,
+  canConfirmCash,
   canCreateContract,
   canDiscard,
   canEditDraft,
   canPublish,
   canReview,
+  canSeePayments,
+  canWriteContract,
+  cashConfirmBody,
+  cashConfirmErrors,
   currentContract,
+  extractId,
   hasPaymentStage,
   isAwaitingPayment,
   issueBlockers,
@@ -36,16 +44,17 @@ import {
   taskNoteText,
 } from '../src/features/after-sales/salesTaskRules.ts'
 import {
-  bomMismatchText,
-  bomLineFixes,
-  canAttachQuotationDocument,
-  canConfirmSurveyVersion,
+  addedQuantity,
+  canCreateCart,
   canRejectQuotation,
-  canRequestPricingApproval,
-  canReviseQuotation,
-  pricingBlockers,
-  quotationWork,
-  reviewReasonError,
+  canReviseCart,
+  cartIssueBlockers,
+  cartQuantityError,
+  isStaleQuotationError,
+  isTechnicianDraft,
+  missingCartTypes,
+  priceProblemLineIds,
+  workingQuotation,
 } from '../src/features/quotations/quotationRules.ts'
 
 const quotation = (status, extra = {}) => ({ quotationId: 'q-1', status, documentFileId: null, ...extra })
@@ -73,45 +82,6 @@ const options = [
   { optionId: 'o36', kind: 'INSTALLATION', months: 36, isDefault: false, isActive: false },
   { optionId: 'r6', kind: 'REPAIR', months: 6, isDefault: true, isActive: true },
 ]
-
-describe('tab Báo giá: yêu cầu đã khảo sát xong còn việc báo giá', () => {
-  const view = (status, extra = {}) =>
-    quotation(status, {
-      version: 1,
-      surveyChanged: false,
-      isExpired: false,
-      validUntil: null,
-      pricingReview: null,
-      ...extra,
-    })
-
-  test('chưa có báo giá nào: cần lập', () => {
-    assert.equal(quotationWork([]).label, 'Chưa lập báo giá')
-  })
-
-  test('bản nháp, khách yêu cầu sửa, biên bản đổi, hết hạn: còn việc', () => {
-    assert.equal(quotationWork([view('DRAFT')]).label, 'Bản nháp, chưa gửi khách')
-    assert.equal(
-      quotationWork([view('REVISION_REQUESTED', { revisionReason: 'Giảm công suất' })]).hints[0],
-      'Giảm công suất',
-    )
-    assert.equal(quotationWork([view('ISSUED', { surveyChanged: true })]).label, 'Biên bản khảo sát đã đổi')
-    assert.equal(quotationWork([view('ACCEPTED', { surveyChanged: true })]).label, 'Biên bản khảo sát đã đổi')
-    assert.equal(quotationWork([view('ISSUED', { isExpired: true })]).label, 'Báo giá đã hết hạn')
-  })
-
-  test('đã gửi còn hạn, khách đã đồng ý hoặc từ chối: không còn việc', () => {
-    assert.equal(quotationWork([view('ISSUED', { validUntil: '2999-01-01T00:00:00+07:00' })]), null)
-    assert.equal(quotationWork([view('ACCEPTED')]), null)
-    assert.equal(quotationWork([view('REJECTED')]), null)
-  })
-
-  test('bản nháp mới nhất thắng bản cũ đã bị thay; việc gấp xếp trước', () => {
-    const list = [view('SUPERSEDED', { version: 1 }), view('DRAFT', { version: 2 })]
-    assert.equal(quotationWork(list).label, 'Bản nháp, chưa gửi khách')
-    assert.ok(quotationWork([view('REVISION_REQUESTED')]).rank < quotationWork([view('DRAFT')]).rank)
-  })
-})
 
 describe('lập hợp đồng từ báo giá', () => {
   test('báo giá ACCEPTED, chưa có hợp đồng: lập được', () => {
@@ -186,15 +156,22 @@ describe('máy trạng thái hợp đồng', () => {
     assert.equal(shortHash('abcdef0123456789abcd'), 'abcd ef01 2345…')
   })
 
-  test('duyệt bản ký: kinh doanh, quản lý được; quản trị không; chỉ khi đang chờ duyệt và có lần gửi chờ', () => {
+  test('duyệt bản ký: quản lý, quản trị được; kinh doanh chỉ xem; chỉ khi đang chờ duyệt và có lần gửi chờ', () => {
     const pending = { submissionId: 's1', fileId: 'f2', officialDocumentSha256: 'AA', outcome: 'PENDING' }
     const underReview = contract('UNDER_REVIEW', { submissions: [pending] })
     assert.equal(pendingSubmission(underReview), pending)
-    assert.equal(canReview(underReview, 'sales'), true)
     assert.equal(canReview(underReview, 'manager'), true)
-    assert.equal(canReview(underReview, 'admin'), false)
-    assert.equal(canReview(contract('AWAITING_SIGNATURE', { submissions: [pending] }), 'sales'), false)
-    assert.equal(canReview(contract('UNDER_REVIEW', { submissions: [] }), 'sales'), false)
+    assert.equal(canReview(underReview, 'admin'), true)
+    assert.equal(canReview(underReview, 'sales'), false, 'kinh doanh bị 403 ở POST .../review')
+    assert.equal(canReview(contract('AWAITING_SIGNATURE', { submissions: [pending] }), 'manager'), false)
+    assert.equal(canReview(contract('UNDER_REVIEW', { submissions: [] }), 'manager'), false)
+  })
+
+  test('mọi lệnh ghi hợp đồng và đọc thanh toán là của quản lý / quản trị', () => {
+    assert.equal(canWriteContract('manager'), true)
+    assert.equal(canWriteContract('admin'), true)
+    assert.equal(canWriteContract('sales'), false)
+    assert.equal(canSeePayments('sales'), false, 'kinh doanh bị 403 ở GET /contracts/{id}/payments')
   })
 
   test('bản ký khớp PDF chính thức theo SHA-256, không phân biệt hoa thường', () => {
@@ -317,123 +294,150 @@ describe('việc nhắc khách của kinh doanh', () => {
   })
 })
 
-describe('PDF báo giá', () => {
-  test('bản nháp gắn / thay được; bản đã gửi chỉ gắn khi chưa có tệp; bản khác thì không', () => {
-    assert.equal(canAttachQuotationDocument(quotation('DRAFT', { documentFileId: 'f' })), true)
-    assert.equal(canAttachQuotationDocument(quotation('ISSUED')), true)
-    assert.equal(canAttachQuotationDocument(quotation('ISSUED', { documentFileId: 'f' })), false)
-    assert.equal(canAttachQuotationDocument(quotation('ACCEPTED')), false)
-  })
-})
-
-describe('Báo giá theo backend v2', () => {
-  const draft = (extra = {}) =>
-    quotation('DRAFT', { surveyChanged: false, pricingReview: null, pricingApproval: null, ...extra })
-  const approval = (status) => ({ status, adjustments: [], fingerprint: 'fp', request: null, decision: null })
-
-  test('lập bản sửa: bản đã gửi, khách yêu cầu sửa, khách từ chối, bản đã đồng ý mà biên bản đổi', () => {
-    assert.equal(canReviseQuotation(quotation('ISSUED', { surveyChanged: false })), true)
-    assert.equal(canReviseQuotation(quotation('REVISION_REQUESTED', { surveyChanged: false })), true)
-    assert.equal(canReviseQuotation(quotation('REJECTED', { surveyChanged: false })), true)
-    assert.equal(canReviseQuotation(quotation('ACCEPTED', { surveyChanged: false })), false)
-    assert.equal(canReviseQuotation(quotation('ACCEPTED', { surveyChanged: true })), true)
-    assert.equal(canReviseQuotation(quotation('CANCELLED', { surveyChanged: false })), false)
-  })
-
-  test('khách chỉ từ chối được bản đang chờ trả lời', () => {
-    assert.equal(canRejectQuotation(quotation('ISSUED')), true)
-    assert.equal(canRejectQuotation(quotation('ACCEPTED')), false)
-  })
-
-  test('xác nhận theo biên bản mới chỉ với bản nháp lập theo biên bản cũ', () => {
-    assert.equal(canConfirmSurveyVersion(draft({ surveyChanged: true })), true)
-    assert.equal(canConfirmSurveyVersion(draft()), false)
-    assert.equal(canConfirmSurveyVersion(quotation('ISSUED', { surveyChanged: true })), false)
-  })
-
-  test('xin duyệt giá khi bộ giá cần duyệt hoặc quản lý đã không duyệt', () => {
-    assert.equal(canRequestPricingApproval(draft({ pricingApproval: approval('REQUIRED') })), true)
-    assert.equal(canRequestPricingApproval(draft({ pricingApproval: approval('REJECTED') })), true)
-    assert.equal(canRequestPricingApproval(draft({ pricingApproval: approval('PENDING') })), false)
-    assert.equal(canRequestPricingApproval(draft({ pricingApproval: approval('NOT_REQUIRED') })), false)
-  })
-
-  test('lý do chưa gửi khách được: biên bản đổi, vấn đề giá phải sửa, chờ duyệt giá', () => {
-    assert.deepEqual(pricingBlockers(draft()), [])
-    const outstanding = [{ code: 'PRICE_MISSING' }, { code: 'CONDITIONS_REQUIRE_REVIEW' }]
-    const reasons = pricingBlockers(
-      draft({
-        surveyChanged: true,
-        pricingReview: { outstanding, noteRequired: true },
-        pricingApproval: approval('PENDING'),
-      }),
-    )
-    assert.equal(reasons.length, 3)
-    assert.match(reasons[1], /^Còn 1 vấn đề/)
-  })
-
-  test('lý do bắt buộc, tối đa 1000 ký tự', () => {
-    assert.equal(reviewReasonError('  '), 'Ghi lý do.')
-    assert.equal(reviewReasonError('x'.repeat(1001)), 'Lý do tối đa 1000 ký tự.')
-    assert.equal(reviewReasonError('Khách lấy số lượng lớn'), null)
-  })
-
-  test('dòng thiết bị lệch biên bản khảo sát được ghi theo mã sản phẩm', () => {
-    assert.equal(
-      bomMismatchText({ mismatches: [{ sku: 'PV-550', surveyQuantity: 20, quotedQuantity: 18 }] }),
-      'PV-550: biên bản 20, báo giá 18',
-    )
-    assert.equal(bomMismatchText({}), null)
-    assert.equal(bomMismatchText(null), null)
-  })
-})
-
-describe('Sửa dòng báo giá theo bảng vật tư của biên bản (BomMismatchesAsync)', () => {
-  const types = { pv: 'SOLAR_PANEL', smaInv: 'INVERTER', huaweiInv: 'inverter ', rail: 'MOUNTING' }
-  const typeOf = (id) => types[id]
-  const line = (lineId, productId, quantity, name = lineId) => ({ lineId, productId, name, quantity })
-
-  test('bảng vật tư rỗng hoặc chưa có thì backend không so', () => {
-    assert.deepEqual(bomLineFixes([line('l1', 'smaInv', 1)], null, typeOf), [])
-    assert.deepEqual(bomLineFixes([line('l1', 'smaInv', 1)], [], typeOf), [])
-  })
-
-  test('đã khớp thì không sửa gì, kể cả hai dòng cùng sản phẩm cộng đủ số lượng', () => {
-    const materials = [{ productId: 'pv', quantity: 15 }]
-    assert.deepEqual(bomLineFixes([line('l1', 'pv', 10), line('l2', 'pv', 5)], materials, typeOf), [])
-  })
-
-  test('inverter khác biên bản: bỏ dòng đang có, thêm inverter của biên bản; dòng tự ghi giữ nguyên', () => {
-    const lines = [line('l1', 'pv', 15), line('l2', null, 1, 'nhân công lắp'), line('l3', 'smaInv', 1, 'SMA STP 50-41')]
-    const materials = [
-      { productId: 'pv', quantity: 15 },
-      { productId: 'huaweiInv', quantity: 1 },
-    ]
-    assert.deepEqual(bomLineFixes(lines, materials, typeOf), [
-      { kind: 'remove', lineId: 'l3', name: 'SMA STP 50-41', quoted: 1 },
-      { kind: 'add', productId: 'huaweiInv', quantity: 1 },
-    ])
-  })
-
-  test('số lượng lệch thì sửa dòng đầu, các dòng trùng sản phẩm bỏ trước', () => {
-    const materials = [{ productId: 'pv', quantity: 20 }]
-    assert.deepEqual(bomLineFixes([line('l1', 'pv', 10), line('l2', 'pv', 4)], materials, typeOf), [
-      { kind: 'remove', lineId: 'l2', name: 'l2', quoted: 4 },
-      { kind: 'update', lineId: 'l1', name: 'l1', quoted: 14, quantity: 20 },
-    ])
-  })
-
-  test('ngoài bảng chỉ bỏ tấm pin, inverter; loại khác và sản phẩm không rõ loại thì để backend xét', () => {
-    const materials = [{ productId: 'pv', quantity: 15 }]
-    const lines = [line('l1', 'pv', 15), line('l2', 'rail', 6), line('l3', 'unknown', 1), line('l4', 'huaweiInv', 1)]
-    assert.deepEqual(bomLineFixes(lines, materials, typeOf), [{ kind: 'remove', lineId: 'l4', name: 'l4', quoted: 1 }])
-  })
-})
-
 describe('Huỷ bản nháp hợp đồng', () => {
   test('chỉ bản nháp đầu tiên, không phải phụ lục nháp', () => {
     assert.equal(canDiscard({ status: 'DRAFT', previousContractId: null }), true)
     assert.equal(canDiscard({ status: 'DRAFT', previousContractId: 'c-1' }), false)
     assert.equal(canDiscard({ status: 'ISSUED', previousContractId: null }), false)
+  })
+})
+
+describe('xác nhận tiền mặt (ConfirmCashAsync)', () => {
+  const awaiting = { paymentState: 'AWAITING_CASH_CONFIRMATION', current: { method: 'CASH', status: 'PENDING' } }
+  const valid = {
+    amount: 32_400_000,
+    receiptReference: ' PT-001 ',
+    evidenceFileId: 'file-1',
+    note: ' Nhận tại công trình ',
+  }
+
+  test('chỉ khi khách đã chọn tiền mặt, và chỉ quản lý / quản trị', () => {
+    assert.equal(awaitingCashConfirmation(awaiting), true)
+    assert.equal(canConfirmCash(awaiting, 'manager'), true)
+    assert.equal(canConfirmCash(awaiting, 'admin'), true)
+    assert.equal(canConfirmCash(awaiting, 'sales'), false)
+    for (const paymentState of ['AWAITING_PAYMENT', 'ONLINE_IN_PROGRESS', 'PAID', 'NOT_PAYABLE'])
+      assert.equal(canConfirmCash({ paymentState, current: null }, 'manager'), false, paymentState)
+    assert.equal(canConfirmCash(undefined, 'manager'), false)
+  })
+
+  test('form hợp lệ: body cắt khoảng trắng, ghi chú trống thành null', () => {
+    assert.deepEqual(cashConfirmErrors(valid, 32_400_000), {})
+    assert.deepEqual(cashConfirmBody(valid), {
+      amount: 32_400_000,
+      receiptReference: 'PT-001',
+      evidenceFileId: 'file-1',
+      note: 'Nhận tại công trình',
+    })
+    assert.equal(cashConfirmBody({ ...valid, note: '  ' }).note, null)
+  })
+
+  test('số tiền phải đúng tổng hợp đồng; thiếu phiếu thu, thiếu tệp, ghi chú dài: báo lỗi', () => {
+    assert.match(cashConfirmErrors({ ...valid, amount: 32_000_000 }, 32_400_000).amount, /đúng bằng tổng/)
+    assert.match(cashConfirmErrors({ ...valid, amount: 32_500_000 }, 32_400_000).amount, /đúng bằng tổng/)
+    assert.ok(cashConfirmErrors({ ...valid, amount: null }, 32_400_000).amount)
+    assert.ok(cashConfirmErrors({ ...valid, amount: 1.5 }, 32_400_000).amount)
+    const errors = cashConfirmErrors(
+      { amount: 32_400_000, receiptReference: '   ', evidenceFileId: null, note: 'x'.repeat(501) },
+      32_400_000,
+    )
+    assert.deepEqual(Object.keys(errors).sort(), ['evidenceFileId', 'note', 'receiptReference'])
+    assert.match(cashConfirmErrors({ ...valid, receiptReference: 'x'.repeat(101) }, 32_400_000).receiptReference, /100/)
+  })
+})
+
+describe('mở hợp đồng theo mã', () => {
+  test('lấy mã cuối cùng, kể cả khi dán cả đường dẫn', () => {
+    const id = '5f007a8c-fdc2-4988-99ed-10f6c49175ee'
+    assert.equal(extractId(id), id)
+    assert.equal(extractId(`https://web/ops/surveys/${id.toUpperCase()}`), id)
+    assert.equal(extractId(`/manage/contracts/0130d042-4c8e-40da-a9a6-d11ff5c22dbd/x/${id}`), id)
+    assert.equal(extractId('HD-20261103'), null)
+  })
+})
+
+describe('giỏ báo giá của kỹ thuật viên (QuotationTechnicianCart)', () => {
+  const q = (status, extra = {}) => ({
+    quotationId: `q-${status}-${extra.version ?? 1}`,
+    status,
+    origin: 'TECHNICIAN',
+    version: 1,
+    previousQuotationId: null,
+    lines: [],
+    totalAmount: 0,
+    ...extra,
+  })
+
+  test('tạo giỏ khi chưa có gì, hoặc chỉ có bản nháp cũ của kinh doanh / bản đã đóng', () => {
+    assert.equal(canCreateCart([], 'FEASIBLE'), true)
+    assert.equal(canCreateCart([q('DRAFT', { origin: 'SALES' })], 'FEASIBLE'), true, 'backend đóng bản nháp cũ')
+    assert.equal(canCreateCart([q('CANCELLED'), q('SUPERSEDED', { version: 2 })], 'FEASIBLE'), true)
+  })
+
+  test('không tạo giỏ khi không lắp được, đã có giỏ nháp, hoặc đã có bản gửi khách (phải lập bản sửa)', () => {
+    assert.equal(canCreateCart([], 'NOT_FEASIBLE'), false)
+    assert.equal(canCreateCart([q('DRAFT')], 'FEASIBLE'), false)
+    for (const status of ['ISSUED', 'ACCEPTED', 'REVISION_REQUESTED', 'REJECTED'])
+      assert.equal(canCreateCart([q(status)], 'FEASIBLE'), false, status)
+  })
+
+  test('bản đang làm: giỏ nháp, rồi bản đang hiệu lực, rồi bản mới nhất', () => {
+    const issued = q('ISSUED', { version: 1 })
+    const draft = q('DRAFT', { version: 2 })
+    assert.equal(workingQuotation([issued, draft]), draft)
+    assert.equal(workingQuotation([q('SUPERSEDED', { version: 1 }), issued]), issued)
+    assert.equal(workingQuotation([]), null)
+    assert.equal(isTechnicianDraft(q('DRAFT', { origin: 'AUTOMATIC' })), false, 'bản nháp cũ không sửa được ở giỏ')
+  })
+
+  test('lập bản sửa: từ bản đã gửi / khách yêu cầu sửa / khách từ chối; bản đã đồng ý là cuối cùng', () => {
+    for (const status of ['ISSUED', 'REVISION_REQUESTED', 'REJECTED']) {
+      const source = q(status)
+      assert.equal(canReviseCart(source, [source]), true, status)
+    }
+    const accepted = q('ACCEPTED')
+    assert.equal(canReviseCart(accepted, [accepted]), false)
+    const asked = q('REVISION_REQUESTED')
+    assert.equal(canReviseCart(asked, [asked, q('DRAFT', { version: 2 })]), false, 'đã có bản nháp')
+    const newer = q('ISSUED', { version: 2, previousQuotationId: asked.quotationId })
+    assert.equal(canReviseCart(asked, [asked, newer]), false, 'đã có bản mới làm từ bản này')
+    assert.equal(canReviseCart(asked, [asked], 'NOT_FEASIBLE'), false)
+  })
+
+  test('gửi khách: giỏ nháp có ít nhất một dòng và khảo sát lắp được', () => {
+    const draft = q('DRAFT', { lines: [{ description: 'SOLAR_PANEL' }], totalAmount: 10 })
+    assert.deepEqual(cartIssueBlockers(draft, 'FEASIBLE'), [])
+    assert.deepEqual(cartIssueBlockers(q('DRAFT'), 'FEASIBLE'), ['Thêm ít nhất một sản phẩm.'])
+    assert.equal(cartIssueBlockers(draft, 'NOT_FEASIBLE').length, 1)
+    // Chuyển không hợp lệ: bản đã gửi không gửi lại được, nên không có lý do chặn nào để hiện (không có nút)
+    assert.deepEqual(cartIssueBlockers(q('ISSUED'), 'FEASIBLE'), [])
+  })
+
+  test('số lượng: > 0, tối đa 100 000, tới 3 chữ số thập phân; thêm lại sản phẩm thì cộng dồn', () => {
+    assert.equal(cartQuantityError(2), null)
+    assert.equal(cartQuantityError(2.125), null)
+    assert.ok(cartQuantityError(0))
+    assert.ok(cartQuantityError(-1))
+    assert.ok(cartQuantityError(Number.NaN))
+    assert.ok(cartQuantityError(100_001))
+    assert.ok(cartQuantityError(1.2345))
+    const lines = [{ productId: 'pv', quantity: 10 }]
+    assert.equal(addedQuantity(lines, 'pv', 4), 14)
+    assert.equal(addedQuantity(lines, 'inv', 1), 1)
+  })
+
+  test('nhắc loại hàng còn thiếu (không chặn gửi); dòng không định giá được lấy từ details.items', () => {
+    assert.deepEqual(missingCartTypes({ lines: [{ description: 'SOLAR_PANEL' }, { description: 'inverter' }] }), [
+      'INSTALLATION_LABOR',
+    ])
+    assert.deepEqual(priceProblemLineIds({ items: [{ lineId: 'l1' }, { lineId: 2 }, null] }), ['l1'])
+    assert.deepEqual(priceProblemLineIds(undefined), [])
+    assert.equal(isStaleQuotationError('QUOTATION_STALE_REVISION'), true)
+    assert.equal(isStaleQuotationError('QUOTATION_PRICE_MISSING'), false)
+  })
+
+  test('khách từ chối được bản đang chờ trả lời', () => {
+    assert.equal(canRejectQuotation(q('ISSUED')), true)
+    assert.equal(canRejectQuotation(q('ACCEPTED')), false)
   })
 })

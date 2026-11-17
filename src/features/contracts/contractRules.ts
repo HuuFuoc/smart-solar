@@ -3,10 +3,14 @@ import type { ContractView, SignatureSubmissionView } from '@/types/res/customer
 import type { WarrantyOptionView } from '@/types/res/salesAfterSalesRes'
 import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 import type { OfficialDocumentRequest } from '@/types/req/salesContractsReq'
+import type { CashConfirmationRequest } from '@/types/req/staffPaymentsReq'
+import type { ContractPaymentView } from '@/types/res/staffPaymentsRes'
 
 // Luật hợp đồng lắp đặt phía nhân viên, bám ContractHandlers của backend (CreateAsync, UpdateTermsAsync, IssueAsync,
-// AttachOfficialDocumentAsync, PublishAsync, ReviewAsync, CreateAmendmentAsync). Chỉ để bật / tắt nút và báo lỗi trước khi
-// gửi; backend vẫn kiểm lại. Không import giá trị qua "@/" để chạy được bằng node --test
+// AttachOfficialDocumentAsync, PublishAsync, ReviewAsync, CreateAmendmentAsync) và PaymentService.ConfirmCashAsync. Từ backend
+// ad10455 mọi lệnh ghi hợp đồng và thanh toán là của quản lý / quản trị; kinh doanh chỉ đọc hợp đồng của yêu cầu mình phụ trách,
+// không đọc được thanh toán. Chỉ để bật / tắt nút và báo lỗi trước khi gửi; backend vẫn kiểm lại. Không import giá trị qua "@/"
+// để chạy được bằng node --test
 
 /** Điều khoản dài hơn bị backend cắt (Trim 8000) */
 export const CONTRACT_TERMS_MAX = 8000
@@ -15,6 +19,12 @@ export const REJECTION_REASON_MAX = 2000
 
 /** Người xem trang hợp đồng phía nhân viên */
 export type ContractViewer = 'sales' | 'manager' | 'admin'
+
+/** Soạn, phát hành, gắn PDF, gửi ký, duyệt bản ký, phụ lục, huỷ nháp, xác nhận tiền mặt: chỉ quản lý / quản trị */
+export const canWriteContract = (viewer: ContractViewer) => viewer === 'manager' || viewer === 'admin'
+
+/** Kinh doanh bị 403 ở GET /contracts/{id}/payments */
+export const canSeePayments = canWriteContract
 
 /** Bản bị phụ lục thay (SUPERSEDED) hoặc bản nháp đã huỷ (DISCARDED, backend từ 31/10) không còn ràng buộc */
 export const isLiveContract = (c: Pick<ContractView, 'status'>) => c.status !== 'SUPERSEDED' && c.status !== 'DISCARDED'
@@ -73,9 +83,9 @@ export function pendingSubmission(c: Pick<ContractView, 'submissions'>): Signatu
   return c.submissions?.find((s) => s.outcome === 'PENDING') ?? null
 }
 
-/** Kinh doanh phụ trách hoặc quản lý duyệt bản ký; quản trị không có quyền duyệt (controller chỉ cho Sales, Manager) */
+/** Quản lý / quản trị duyệt bản ký; kinh doanh chỉ xem */
 export const canReview = (c: Pick<ContractView, 'status' | 'submissions'>, viewer: ContractViewer) =>
-  viewer !== 'admin' && c.status === 'UNDER_REVIEW' && pendingSubmission(c) !== null
+  canWriteContract(viewer) && c.status === 'UNDER_REVIEW' && pendingSubmission(c) !== null
 
 /** Bản ký khách gửi có đúng là bản in từ PDF chính thức hiện tại không (so SHA-256 do backend tính) */
 export function submissionMatchesOfficial(
@@ -162,3 +172,56 @@ export const isAwaitingPayment = (c: Pick<ContractView, 'status'>) => c.status =
 /** Có thể đã có lần thanh toán để xem (chỉ hợp đồng đã ký mới tạo được link) */
 export const hasPaymentStage = (c: Pick<ContractView, 'status' | 'signedAt'>) =>
   c.status === 'SIGNED' || c.status === 'PAID' || (c.status === 'SUPERSEDED' && c.signedAt != null)
+
+/** Số phiếu thu tối đa 100 ký tự, ghi chú tối đa 500 (ConfirmCashAsync) */
+export const CASH_RECEIPT_MAX = 100
+export const CASH_NOTE_MAX = 500
+
+/** Khách đã chọn tiền mặt và chưa có ai xác nhận: quản lý / quản trị ghi nhận được */
+export function awaitingCashConfirmation(
+  view: Pick<ContractPaymentView, 'paymentState' | 'current'> | null | undefined,
+) {
+  if (!view) return false
+  if (view.paymentState) return view.paymentState === 'AWAITING_CASH_CONFIRMATION'
+  return view.current?.method === 'CASH' && view.current.status === 'PENDING'
+}
+
+export const canConfirmCash = (
+  view: Pick<ContractPaymentView, 'paymentState' | 'current'> | null | undefined,
+  viewer: ContractViewer,
+) => canWriteContract(viewer) && awaitingCashConfirmation(view)
+
+export type CashForm = { amount: number | null; receiptReference: string; evidenceFileId: string | null; note: string }
+
+/**
+ * Lỗi của form xác nhận tiền mặt, theo luật backend: số tiền đúng bằng tổng hợp đồng (không ghi nhận trả thiếu / dư), số phiếu thu
+ * bắt buộc, có tệp phiếu thu, ghi chú ngắn. `expected` là tổng hợp đồng
+ */
+export function cashConfirmErrors(form: CashForm, expected: number): Partial<Record<keyof CashForm, string>> {
+  const errors: Partial<Record<keyof CashForm, string>> = {}
+  if (form.amount === null || !Number.isInteger(form.amount) || form.amount <= 0)
+    errors.amount = 'Ghi số tiền là số đồng nguyên.'
+  else if (form.amount !== expected) errors.amount = 'Số tiền phải đúng bằng tổng giá trị hợp đồng.'
+  const receipt = form.receiptReference.trim()
+  if (!receipt) errors.receiptReference = 'Ghi số phiếu thu.'
+  else if (receipt.length > CASH_RECEIPT_MAX) errors.receiptReference = `Số phiếu thu tối đa ${CASH_RECEIPT_MAX} ký tự.`
+  if (!form.evidenceFileId) errors.evidenceFileId = 'Tải ảnh hoặc PDF phiếu thu.'
+  if (form.note.trim().length > CASH_NOTE_MAX) errors.note = `Ghi chú tối đa ${CASH_NOTE_MAX} ký tự.`
+  return errors
+}
+
+/** Body gửi lên khi form đã hợp lệ */
+export const cashConfirmBody = (form: CashForm): CashConfirmationRequest => ({
+  amount: form.amount,
+  receiptReference: form.receiptReference.trim(),
+  evidenceFileId: form.evidenceFileId,
+  note: form.note.trim() || null,
+})
+
+const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi
+
+/** Mở hợp đồng theo mã dán vào: lấy mã cuối cùng trong chuỗi (dán cả đường dẫn trang hợp đồng / yêu cầu cũng được) */
+export function extractId(text: string) {
+  const all = text.match(UUID)
+  return all ? all[all.length - 1]!.toLowerCase() : null
+}

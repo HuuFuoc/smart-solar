@@ -1,21 +1,13 @@
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { BomLineFix } from '@/features/quotations/quotationRules'
+import { useQuery } from '@tanstack/react-query'
 import * as quotationService from '@/services/salesQuotationService'
 import type { ApiError } from '@/services/api/errors'
-import type {
-  InstallationQuotationLineRequest,
-  QuotationHeaderRequest,
-  QuotationLineUpdateRequest,
-} from '@/types/req/salesQuotationsReq'
-import type { AutomaticQuotationResult, QuotationView } from '@/types/res/quotationsRes'
+import type { QuotationView } from '@/types/res/quotationsRes'
 
-// Báo giá lắp đặt của kinh doanh. Lệnh ghi thành công thì thay ngay bản đó trong danh sách; xong (kể cả lỗi 409 vì
-// người khác vừa sửa) thì tải lại danh sách để luôn sửa trên revision mới nhất
+// Báo giá lắp đặt phía kinh doanh, quản lý, quản trị: chỉ đọc
 
 export const salesQuotationKeys = {
   all: ['sales-quotations'] as const,
   list: (surveyRequestId: string) => [...salesQuotationKeys.all, 'list', surveyRequestId] as const,
-  pendingReview: () => [...salesQuotationKeys.all, 'pending-review'] as const,
 }
 
 export function useQuotationsQuery(
@@ -27,144 +19,4 @@ export function useQuotationsQuery(
     queryFn: () => quotationService.listForSurveyRequest(surveyRequestId!),
     enabled: enabled && Boolean(surveyRequestId),
   })
-}
-
-/**
- * Báo giá của nhiều yêu cầu cùng lúc (backend không có danh sách chung): cùng khoá với trang yêu cầu nên mở trang đó
- * không gọi lại. Chỉ truyền yêu cầu đã khảo sát xong
- */
-export function useQuotationsForRequestsQuery(surveyRequestIds: string[]) {
-  return useQueries({
-    queries: surveyRequestIds.map((id) => ({
-      queryKey: salesQuotationKeys.list(id),
-      queryFn: () => quotationService.listForSurveyRequest(id),
-      staleTime: 60_000,
-    })),
-  })
-}
-
-/** Báo giá của mình cần xem lại; tự tải lại để số đỏ trên menu cập nhật. `enabled`: menu chỉ gọi khi đã chắc là kinh doanh */
-export function usePendingReviewQuotationsQuery({ enabled = true }: { enabled?: boolean } = {}) {
-  return useQuery<QuotationView[], ApiError>({
-    queryKey: salesQuotationKeys.pendingReview(),
-    queryFn: quotationService.listPendingReview,
-    refetchInterval: 60_000,
-    enabled,
-  })
-}
-
-function useQuotationWrite<V>(write: (variables: V) => Promise<QuotationView>) {
-  const queryClient = useQueryClient()
-  return useMutation<QuotationView, ApiError, V>({
-    mutationFn: write,
-    onSuccess: (view) =>
-      queryClient.setQueryData<QuotationView[]>(salesQuotationKeys.list(view.surveyRequestId), (list) =>
-        list?.some((q) => q.quotationId === view.quotationId)
-          ? list.map((q) => (q.quotationId === view.quotationId ? view : q))
-          : [...(list ?? []), view],
-      ),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: salesQuotationKeys.all }),
-  })
-}
-
-export function useCreateQuotationMutation() {
-  return useQuotationWrite(({ surveyRequestId, body }: { surveyRequestId: string; body: QuotationHeaderRequest }) =>
-    quotationService.createQuotation(surveyRequestId, body),
-  )
-}
-
-export function useSaveQuotationHeaderMutation() {
-  return useQuotationWrite(({ quotationId, body }: { quotationId: string; body: QuotationHeaderRequest }) =>
-    quotationService.updateHeader(quotationId, body),
-  )
-}
-
-export function useAddQuotationLineMutation() {
-  return useQuotationWrite(({ quotationId, body }: { quotationId: string; body: InstallationQuotationLineRequest }) =>
-    quotationService.addLine(quotationId, body),
-  )
-}
-
-export function useUpdateQuotationLineMutation() {
-  return useQuotationWrite(
-    ({ quotationId, lineId, body }: { quotationId: string; lineId: string; body: QuotationLineUpdateRequest }) =>
-      quotationService.updateLine(quotationId, lineId, body),
-  )
-}
-
-/** Sửa dòng hàng cho khớp bảng vật tư của biên bản: chạy lần lượt, lệnh sau dùng revision mà lệnh trước trả về */
-export function useApplyBomFixesMutation() {
-  return useQuotationWrite(async ({ quotation, fixes }: { quotation: QuotationView; fixes: BomLineFix[] }) => {
-    let view = quotation
-    for (const fix of fixes) {
-      const revision = view.revision
-      if (fix.kind === 'remove') view = await quotationService.removeLine(view.quotationId, fix.lineId, revision)
-      // Đơn giá, mô tả để null là giữ nguyên; dòng mới để trống đơn giá là lấy giá danh mục
-      else if (fix.kind === 'update')
-        view = await quotationService.updateLine(view.quotationId, fix.lineId, {
-          revision,
-          quantity: fix.quantity,
-          unitPrice: null,
-          description: null,
-        })
-      else
-        view = await quotationService.addLine(view.quotationId, {
-          revision,
-          productId: fix.productId,
-          quantity: fix.quantity,
-          unitPrice: null,
-        })
-    }
-    return view
-  })
-}
-
-export function useRemoveQuotationLineMutation() {
-  return useQuotationWrite(
-    ({ quotationId, lineId, revision }: { quotationId: string; lineId: string; revision: number }) =>
-      quotationService.removeLine(quotationId, lineId, revision),
-  )
-}
-
-/** Gửi bản nháp cho khách; `reviewNote` chỉ cần khi bản tự động còn vấn đề về giá chấp nhận được */
-export function useSendQuotationMutation() {
-  return useQuotationWrite(
-    ({ quotationId, revision, reviewNote }: { quotationId: string; revision: number; reviewNote?: string }) =>
-      quotationService.issueQuotation(quotationId, { revision, reviewNote }),
-  )
-}
-
-/** Tạo báo giá tự động từ biên bản khảo sát; kết quả nào cũng tải lại danh sách báo giá của yêu cầu */
-export function useGenerateQuotationMutation() {
-  const queryClient = useQueryClient()
-  return useMutation<AutomaticQuotationResult, ApiError, string>({
-    mutationFn: quotationService.generateQuotation,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: salesQuotationKeys.all }),
-  })
-}
-
-type ReasonVars = { quotationId: string; revision: number; reason: string }
-
-export function useConfirmSurveyVersionMutation() {
-  return useQuotationWrite(({ quotationId, revision, reason }: ReasonVars) =>
-    quotationService.confirmSurveyVersion(quotationId, { revision, reason }),
-  )
-}
-
-export function useRequestPricingApprovalMutation() {
-  return useQuotationWrite(({ quotationId, revision, reason }: ReasonVars) =>
-    quotationService.requestPricingApproval(quotationId, { revision, reason }),
-  )
-}
-
-/** Lập bản sửa từ bản đã gửi */
-export function useReviseQuotationMutation() {
-  return useQuotationWrite((quotationId: string) => quotationService.createRevision(quotationId))
-}
-
-/** Gắn tệp PDF đã tải lên (đã xác minh) vào báo giá */
-export function useAttachQuotationDocumentMutation() {
-  return useQuotationWrite(({ quotationId, fileId }: { quotationId: string; fileId: string }) =>
-    quotationService.attachDocument(quotationId, { fileId }),
-  )
 }

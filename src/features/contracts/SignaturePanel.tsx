@@ -21,8 +21,8 @@ import { ContractDocumentButtons } from '@/features/contracts/ContractDocumentBu
 import { useContractDocumentUrlMutation, useReviewContractMutation } from '@/hooks/useContracts'
 import type { ContractView, SignatureSubmissionView } from '@/types/res/customerContractsRes'
 
-// Bản ký khách gửi và duyệt nội bộ (không phải xác thực chữ ký điện tử). Kinh doanh phụ trách hoặc quản lý duyệt; quản trị
-// chỉ xem. Duyệt thì backend kiểm lại cả PDF chính thức và bản ký trên kho; từ chối bắt buộc lý do, khách gửi lại được
+// Bản ký khách gửi và duyệt nội bộ (không phải xác thực chữ ký điện tử). Quản lý / quản trị duyệt; kinh doanh chỉ xem. Duyệt
+// thì backend kiểm lại cả PDF chính thức và bản ký trên kho; từ chối bắt buộc lý do, khách gửi lại được
 
 function SubmissionRow({ s, contract }: { s: SignatureSubmissionView; contract: ContractView }) {
   const outcome = signatureOutcomeMeta(s.outcome)

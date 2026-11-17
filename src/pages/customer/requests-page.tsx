@@ -152,9 +152,14 @@ export function CustomerRequestsPage() {
           ) : undefined
         }
         actions={
-          <ButtonLink to={ROUTES.customer.assessment} variant="primary" icon="add_location_alt">
-            Đánh giá địa điểm khác
-          </ButtonLink>
+          <>
+            <ButtonLink to={ROUTES.customer.directBooking} variant="soft" icon="event_available">
+              Đặt khảo sát trực tiếp
+            </ButtonLink>
+            <ButtonLink to={ROUTES.customer.assessment} variant="primary" icon="add_location_alt">
+              Đánh giá địa điểm khác
+            </ButtonLink>
+          </>
         }
       />
 
@@ -168,10 +173,16 @@ export function CustomerRequestsPage() {
           ) : requests.length === 0 ? (
             <EmptyState
               title="Chưa có yêu cầu khảo sát"
+              description="Đánh giá sơ bộ để ước tính số tấm và sản lượng trước, hoặc đặt kỹ thuật viên tới khảo sát ngay."
               action={
-                <ButtonLink icon="play_arrow" to={ROUTES.customer.assessment} variant="primary">
-                  Bắt đầu đánh giá sơ bộ
-                </ButtonLink>
+                <span className="flex flex-wrap justify-center gap-3">
+                  <ButtonLink icon="play_arrow" to={ROUTES.customer.assessment} variant="primary">
+                    Bắt đầu đánh giá sơ bộ
+                  </ButtonLink>
+                  <ButtonLink icon="event_available" to={ROUTES.customer.directBooking} variant="soft">
+                    Đặt khảo sát trực tiếp
+                  </ButtonLink>
+                </span>
               }
             />
           ) : (

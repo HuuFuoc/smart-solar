@@ -105,7 +105,13 @@ export type SubscriptionView = {
   entitlements: EntitlementView[]
 }
 
-/** PaymentAttemptView: một link thanh toán PayOS. GET /api/customers/me/after-sales/payments/{attemptId} */
+/** ONLINE: link PayOS; CASH: khách chọn trả tiền mặt, quản lý / quản trị xác nhận đã nhận */
+export type PaymentMethod = 'ONLINE' | 'CASH' | (string & {})
+
+/**
+ * PaymentAttemptView: một lần thanh toán (link PayOS hoặc lựa chọn tiền mặt). GET /api/customers/me/after-sales/payments/{attemptId},
+ * GET .../contracts/{id}/payments. Tiền mặt không có link, mã QR và hạn (`expiresAt` null)
+ */
 export type PaymentAttemptView = {
   paymentAttemptId: string
   /** Có khi link gồm cả tiền hợp đồng */
@@ -118,11 +124,22 @@ export type PaymentAttemptView = {
   checkoutUrl: string | null
   /** Chuỗi VietQR của PayOS (không phải ảnh) */
   qrCode: string | null
-  expiresAt: string
+  /** Hạn của link PayOS; null với tiền mặt */
+  expiresAt: string | null
   paidAt: string | null
+  /** Mã giao dịch PayOS, hoặc số phiếu thu của lần tiền mặt đã xác nhận */
   providerReference: string | null
   failureReason: string | null
   createdAt: string
+  method: PaymentMethod
+  /** Số tiền PayOS báo đã nhận hoặc số tiền mặt đã xác nhận */
+  amountPaid: number | null
+  /** Chỉ nhân viên thấy, lần tiền mặt đã xác nhận: người ghi nhận */
+  confirmedByUserId: string | null
+  /** Chỉ nhân viên thấy: tệp PAYMENT_EVIDENCE (ảnh / PDF phiếu thu) */
+  evidenceFileId: string | null
+  /** Chỉ nhân viên thấy */
+  confirmationNote: string | null
 }
 
 /** POST /api/customers/me/after-sales/purchases */

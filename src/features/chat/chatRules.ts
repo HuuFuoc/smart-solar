@@ -2,7 +2,7 @@ import type { AskChatRequest } from '@/types/req/chatReq'
 import type { ChatAnswerView, ChatSessionDetailView, ChatSessionView } from '@/types/res/chatRes'
 import { CHAT_LIMITS } from '../../common/chat.ts'
 
-// Luật của chatbot, bám ChatController + ChatService của backend `main` (7c79fa8). Chỉ để báo trước khi gửi; backend vẫn kiểm
+// Luật của chatbot, bám ChatController + ChatService của backend `main` (ad10455). Chỉ để báo trước khi gửi; backend vẫn kiểm
 // lại. Không import giá trị qua "@/" để chạy được bằng node --test
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -35,8 +35,8 @@ export type ChatAttempt = { text: string; sessionId: string | null; clientMessag
 
 /**
  * Thân lệnh gửi. Gửi lại đúng câu đó trong đúng phiên vừa lỗi thì dùng lại mã cũ: nếu lần trước backend đã trả lời xong, nó
- * trả lại câu đã lưu thay vì tính lượt lần nữa. Backend chỉ chống lặp khi đã có phiên; câu đầu của phiên mới không được
- * chống lặp
+ * trả lại câu đã lưu thay vì tính lượt lần nữa. Từ backend ad10455 câu đầu của phiên mới (chưa có `sessionId`) cũng được chống
+ * lặp theo mã này
  */
 export function nextAttempt(
   text: string,

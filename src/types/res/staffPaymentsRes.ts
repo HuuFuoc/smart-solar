@@ -1,8 +1,8 @@
-// Viết tay vì swagger của tag StaffPayments chỉ khai "200 OK". Theo record C# của backend `main` (7c79fa8):
+// Viết tay vì swagger của tag StaffPayments chỉ khai "200 OK". Theo record C# của backend `main` (ad10455):
 // Modules.Payments.PaymentService (ContractPaymentView, PaymentEventView); PaymentAttemptView dùng chung với khách
 import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 
-/** Một dòng lịch sử thanh toán. `source`: WEBHOOK | RECONCILIATION | CUSTOMER | SYSTEM */
+/** Một dòng lịch sử thanh toán. `source`: WEBHOOK | RECONCILIATION | CUSTOMER | SYSTEM | STAFF */
 export type PaymentEventView = {
   paymentAttemptId: string
   eventType: string
@@ -14,8 +14,15 @@ export type PaymentEventView = {
 }
 
 /**
- * GET /api/contracts/{contractId}/payments (Sales, Manager, Admin). Chỉ đọc DB, không đối soát với PayOS (chỉ lệnh GET của
- * khách mới đối soát). `current`: link đã trả tiền, nếu không thì link còn trả được; `attempts` mới nhất trước
+ * Trạng thái thanh toán suy ra của hợp đồng (ContractPaymentStates). Hợp đồng vẫn SIGNED khi khách đã chọn tiền mặt: chọn
+ * tiền mặt chưa phải đã trả
+ */
+export type ContractPaymentState =
+  'NOT_PAYABLE' | 'AWAITING_PAYMENT' | 'ONLINE_IN_PROGRESS' | 'AWAITING_CASH_CONFIRMATION' | 'PAID' | (string & {})
+
+/**
+ * GET /api/contracts/{contractId}/payments (Manager, Admin) và GET /api/customers/me/contracts/{id}/payments (khách). Phía nhân
+ * viên chỉ đọc DB, không đối soát với PayOS. `current`: lần đã trả tiền, nếu không thì lần còn trả được; `attempts` mới nhất trước
  */
 export type ContractPaymentView = {
   contractId: string
@@ -26,4 +33,5 @@ export type ContractPaymentView = {
   attempts: PaymentAttemptView[]
   /** Luôn có với nhân viên */
   history: PaymentEventView[] | null
+  paymentState: ContractPaymentState
 }

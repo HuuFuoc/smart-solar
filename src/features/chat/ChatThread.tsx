@@ -3,6 +3,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/common/ui/states'
 import { ChatMessageItem } from '@/features/chat/ChatMessageItem'
 import { ChatWelcomeBanner } from '@/features/chat/ChatWelcomeBanner'
 import type { useChatSessionQuery } from '@/hooks/useChat'
+import type { SolarAdvisorView } from '@/types/res/chatRes'
 import { errorMessage, isApiError } from '@/services/api/errors'
 
 export function ChatThread({
@@ -10,6 +11,7 @@ export function ChatThread({
   badSessionParam,
   detail,
   notices,
+  advisors,
   documentHref,
   pendingQuestion,
   onOpenNew,
@@ -19,6 +21,7 @@ export function ChatThread({
   badSessionParam: boolean
   detail: ReturnType<typeof useChatSessionQuery>
   notices: Record<string, string>
+  advisors: Record<string, SolarAdvisorView>
   documentHref?: (documentId: string) => string
   pendingQuestion: string | null
   onOpenNew: () => void
@@ -64,7 +67,13 @@ export function ChatThread({
       {messages.length === 0 && pendingQuestion === null && <ChatWelcomeBanner onSelectPrompt={onSelectPrompt} />}
       <ol className="space-y-5" aria-label="Nội dung cuộc trò chuyện">
         {messages.map((m) => (
-          <ChatMessageItem key={m.messageId} message={m} notice={notices[m.messageId]} documentHref={documentHref} />
+          <ChatMessageItem
+            key={m.messageId}
+            message={m}
+            notice={notices[m.messageId]}
+            advisor={advisors[m.messageId]}
+            documentHref={documentHref}
+          />
         ))}
         {pendingQuestion !== null && (
           <li className="flex justify-end">

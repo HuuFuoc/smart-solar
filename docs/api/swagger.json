@@ -7829,92 +7829,6 @@
         }
       }
     },
-    "/api/manager/quotations/pricing-approvals": {
-      "get": {
-        "tags": ["ManagerQuotationApprovals"],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": { "schema": { "$ref": "#/components/schemas/QuotationViewIReadOnlyListApiResponse" } },
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/QuotationViewIReadOnlyListApiResponse" }
-              },
-              "text/json": { "schema": { "$ref": "#/components/schemas/QuotationViewIReadOnlyListApiResponse" } }
-            }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/manager/quotations/{quotationId}/pricing-approval": {
-      "post": {
-        "tags": ["ManagerQuotationApprovals"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/PricingApprovalDecisionRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/PricingApprovalDecisionRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/PricingApprovalDecisionRequest" } }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
-              "application/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
-              "text/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } }
-            }
-          },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
     "/api/payments/payos/webhook": {
       "post": {
         "tags": ["PayOsWebhook"],
@@ -9163,55 +9077,6 @@
       }
     },
     "/api/survey-requests/{surveyRequestId}/quotations": {
-      "post": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          {
-            "name": "surveyRequestId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/QuotationHeaderRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/QuotationHeaderRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/QuotationHeaderRequest" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      },
       "get": {
         "tags": ["SalesQuotations"],
         "parameters": [
@@ -9238,90 +9103,6 @@
           },
           "404": {
             "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/survey-requests/{surveyRequestId}/quotations/generate": {
-      "post": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          {
-            "name": "surveyRequestId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": { "schema": { "$ref": "#/components/schemas/AutomaticQuotationResultApiResponse" } },
-              "application/json": { "schema": { "$ref": "#/components/schemas/AutomaticQuotationResultApiResponse" } },
-              "text/json": { "schema": { "$ref": "#/components/schemas/AutomaticQuotationResultApiResponse" } }
-            }
-          },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/quotations/pending-review": {
-      "get": {
-        "tags": ["SalesQuotations"],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": { "schema": { "$ref": "#/components/schemas/QuotationViewIReadOnlyListApiResponse" } },
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/QuotationViewIReadOnlyListApiResponse" }
-              },
-              "text/json": { "schema": { "$ref": "#/components/schemas/QuotationViewIReadOnlyListApiResponse" } }
-            }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
           "429": {
@@ -9357,419 +9138,6 @@
           },
           "404": {
             "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      },
-      "put": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/QuotationHeaderRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/QuotationHeaderRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/QuotationHeaderRequest" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/quotations/{quotationId}/lines": {
-      "post": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/InstallationQuotationLineRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/InstallationQuotationLineRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallationQuotationLineRequest" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/quotations/{quotationId}/lines/{lineId}": {
-      "put": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
-          { "name": "lineId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/QuotationLineUpdateRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/QuotationLineUpdateRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/QuotationLineUpdateRequest" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      },
-      "delete": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
-          { "name": "lineId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
-          { "name": "revision", "in": "query", "schema": { "type": "integer", "format": "int32" } }
-        ],
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/quotations/{quotationId}/issue": {
-      "post": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/InstallationIssueQuotationRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/InstallationIssueQuotationRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallationIssueQuotationRequest" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/quotations/{quotationId}/confirm-survey-version": {
-      "post": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ConfirmSurveyVersionRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/ConfirmSurveyVersionRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/ConfirmSurveyVersionRequest" } }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
-              "application/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
-              "text/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } }
-            }
-          },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/quotations/{quotationId}/pricing-approval-request": {
-      "post": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/PricingApprovalRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/PricingApprovalRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/PricingApprovalRequest" } }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
-              "application/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
-              "text/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } }
-            }
-          },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/quotations/{quotationId}/revisions": {
-      "post": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "429": {
-            "description": "Rate limit or quota reached.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "503": {
-            "description": "A provider, storage or feature is unavailable.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          }
-        }
-      }
-    },
-    "/api/quotations/{quotationId}/document": {
-      "put": {
-        "tags": ["SalesQuotations"],
-        "parameters": [
-          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/FileReferenceRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/FileReferenceRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/FileReferenceRequest" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Validation failed (see error.fieldErrors).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "401": {
-            "description": "Missing, invalid or expired token.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "403": {
-            "description": "The caller's role or ownership does not allow this.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "404": {
-            "description": "Not found (or not visible to the caller).",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
-          },
-          "409": {
-            "description": "State, staleness or duplicate conflict.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
           "429": {
@@ -12414,6 +11782,1023 @@
           }
         }
       }
+    },
+    "/api/technician/survey-requests/{surveyRequestId}/quotation": {
+      "post": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          {
+            "name": "surveyRequestId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/TechnicianCartCreateRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/TechnicianCartCreateRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/TechnicianCartCreateRequest" } }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/survey-requests/{surveyRequestId}/quotations": {
+      "get": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          {
+            "name": "surveyRequestId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/quotations/{quotationId}": {
+      "get": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/quotations/{quotationId}/lines": {
+      "post": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CartLineRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CartLineRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CartLineRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/quotations/{quotationId}/lines/{lineId}": {
+      "put": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "lineId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CartLineQuantityRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CartLineQuantityRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CartLineQuantityRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "lineId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "revision", "in": "query", "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/quotations/{quotationId}/issue": {
+      "post": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RevisionRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/RevisionRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/RevisionRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/quotations/{quotationId}/revisions": {
+      "post": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "201": { "description": "Created" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/survey-requests/direct": {
+      "post": {
+        "tags": ["CustomerSurveyRequests"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/DirectSurveyBookingRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/DirectSurveyBookingRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/DirectSurveyBookingRequest" } }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/contracts/{contractId}/payments/cash": {
+      "post": {
+        "tags": ["CustomerPayments"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/payments/cash/confirm": {
+      "post": {
+        "tags": ["StaffPayments"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CashConfirmationRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CashConfirmationRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CashConfirmationRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technicians/me/installation-schedules": {
+      "get": {
+        "tags": ["TechnicianInstallationSchedules"],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technicians/me/contracts/{contractId}/installation-schedule": {
+      "get": {
+        "tags": ["TechnicianInstallationSchedules"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      },
+      "post": {
+        "tags": ["TechnicianInstallationSchedules"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technicians/me/installation-schedules/{scheduleId}/cancel": {
+      "post": {
+        "tags": ["TechnicianInstallationSchedules"],
+        "parameters": [
+          { "name": "scheduleId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleReasonRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleReasonRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleReasonRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/installation-schedules": {
+      "get": {
+        "tags": ["CustomerInstallationSchedules"],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/contracts/{contractId}/installation-schedule": {
+      "get": {
+        "tags": ["CustomerInstallationSchedules"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/installation-schedules/{scheduleId}/change-request": {
+      "post": {
+        "tags": ["CustomerInstallationSchedules"],
+        "parameters": [
+          { "name": "scheduleId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleChangeRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleChangeRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleChangeRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/manager/installation-schedules": {
+      "get": {
+        "tags": ["ManagerInstallationSchedules"],
+        "parameters": [{ "name": "status", "in": "query", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/manager/contracts/{contractId}/installation-schedule": {
+      "get": {
+        "tags": ["ManagerInstallationSchedules"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      },
+      "post": {
+        "tags": ["ManagerInstallationSchedules"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/manager/contracts/{contractId}/installation-schedule/confirm": {
+      "post": {
+        "tags": ["ManagerInstallationSchedules"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/manager/installation-schedules/{scheduleId}/cancel": {
+      "post": {
+        "tags": ["ManagerInstallationSchedules"],
+        "parameters": [
+          { "name": "scheduleId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleReasonRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleReasonRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallationScheduleReasonRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/chat/advisor": {
+      "post": {
+        "tags": ["Chat"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/SolarAdvisorRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/SolarAdvisorRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/SolarAdvisorRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -12510,7 +12895,8 @@
         "properties": {
           "sessionId": { "type": "string", "format": "uuid", "nullable": true },
           "message": { "type": "string", "nullable": true },
-          "clientMessageId": { "type": "string", "nullable": true }
+          "clientMessageId": { "type": "string", "nullable": true },
+          "advisor": { "$ref": "#/components/schemas/SolarAdvisorRequest" }
         },
         "additionalProperties": false
       },
@@ -12904,14 +13290,6 @@
           "panelCoveredAreaM2": { "type": "number", "format": "double" },
           "totalModuleAreaM2": { "type": "number", "format": "double" },
           "note": { "type": "string", "nullable": true }
-        },
-        "additionalProperties": false
-      },
-      "ConfirmSurveyVersionRequest": {
-        "type": "object",
-        "properties": {
-          "revision": { "type": "integer", "format": "int32" },
-          "reason": { "type": "string", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -13670,27 +14048,6 @@
         },
         "additionalProperties": false
       },
-      "InstallationIssueQuotationRequest": {
-        "type": "object",
-        "properties": {
-          "revision": { "type": "integer", "format": "int32" },
-          "reviewNote": { "type": "string", "nullable": true }
-        },
-        "additionalProperties": false
-      },
-      "InstallationQuotationLineRequest": {
-        "type": "object",
-        "properties": {
-          "revision": { "type": "integer", "format": "int32" },
-          "productId": { "type": "string", "format": "uuid", "nullable": true },
-          "name": { "type": "string", "nullable": true },
-          "unit": { "type": "string", "nullable": true },
-          "quantity": { "type": "number", "format": "double" },
-          "unitPrice": { "type": "number", "format": "double", "nullable": true },
-          "description": { "type": "string", "nullable": true }
-        },
-        "additionalProperties": false
-      },
       "InstallationSpacingRequest": {
         "type": "object",
         "properties": {
@@ -14427,23 +14784,6 @@
         },
         "additionalProperties": false
       },
-      "PricingApprovalDecisionRequest": {
-        "type": "object",
-        "properties": {
-          "revision": { "type": "integer", "format": "int32" },
-          "approve": { "type": "boolean", "nullable": true },
-          "reason": { "type": "string", "nullable": true }
-        },
-        "additionalProperties": false
-      },
-      "PricingApprovalRequest": {
-        "type": "object",
-        "properties": {
-          "revision": { "type": "integer", "format": "int32" },
-          "reason": { "type": "string", "nullable": true }
-        },
-        "additionalProperties": false
-      },
       "PricingApprovalStep": {
         "type": "object",
         "properties": {
@@ -14710,21 +15050,6 @@
         },
         "additionalProperties": false
       },
-      "QuotationHeaderRequest": {
-        "type": "object",
-        "properties": {
-          "revision": { "type": "integer", "format": "int32", "nullable": true },
-          "laborCost": { "type": "number", "format": "double" },
-          "transportCost": { "type": "number", "format": "double" },
-          "otherServiceCost": { "type": "number", "format": "double" },
-          "discountAmount": { "type": "number", "format": "double" },
-          "taxRatePercent": { "type": "number", "format": "double", "nullable": true },
-          "validUntil": { "type": "string", "nullable": true },
-          "terms": { "type": "string", "nullable": true },
-          "notes": { "type": "string", "nullable": true }
-        },
-        "additionalProperties": false
-      },
       "QuotationLineRequest": {
         "type": "object",
         "properties": {
@@ -14732,16 +15057,6 @@
           "description": { "type": "string", "nullable": true },
           "partsAmount": { "type": "number", "format": "double" },
           "laborAmount": { "type": "number", "format": "double" }
-        },
-        "additionalProperties": false
-      },
-      "QuotationLineUpdateRequest": {
-        "type": "object",
-        "properties": {
-          "revision": { "type": "integer", "format": "int32" },
-          "quantity": { "type": "number", "format": "double" },
-          "unitPrice": { "type": "number", "format": "double", "nullable": true },
-          "description": { "type": "string", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -16028,6 +16343,86 @@
           "zoneId": { "type": "string", "format": "uuid" },
           "code": { "type": "string", "nullable": true },
           "name": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "TechnicianCartCreateRequest": {
+        "type": "object",
+        "properties": { "notes": { "type": "string", "nullable": true } },
+        "additionalProperties": false
+      },
+      "CartLineRequest": {
+        "type": "object",
+        "properties": {
+          "revision": { "type": "integer", "format": "int32", "nullable": true },
+          "productId": { "type": "string", "format": "uuid", "nullable": true },
+          "quantity": { "type": "number", "format": "double" }
+        },
+        "additionalProperties": false
+      },
+      "CartLineQuantityRequest": {
+        "type": "object",
+        "properties": {
+          "revision": { "type": "integer", "format": "int32", "nullable": true },
+          "quantity": { "type": "number", "format": "double" }
+        },
+        "additionalProperties": false
+      },
+      "DirectSurveyBookingRequest": {
+        "type": "object",
+        "properties": {
+          "propertySiteId": { "type": "string", "format": "uuid", "nullable": true },
+          "startsAt": { "type": "string", "nullable": true },
+          "contactName": { "type": "string", "nullable": true },
+          "contactPhone": { "type": "string", "nullable": true },
+          "note": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "CashConfirmationRequest": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number", "format": "double", "nullable": true },
+          "receiptReference": { "type": "string", "nullable": true },
+          "evidenceFileId": { "type": "string", "format": "uuid", "nullable": true },
+          "note": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "InstallationScheduleRequest": {
+        "type": "object",
+        "properties": {
+          "startsAt": { "type": "string", "format": "date-time", "nullable": true },
+          "endsAt": { "type": "string", "format": "date-time", "nullable": true },
+          "customerAgreementNote": { "type": "string", "nullable": true },
+          "reason": { "type": "string", "nullable": true },
+          "expectedRevision": { "type": "integer", "format": "int32", "nullable": true },
+          "technicianUserId": { "type": "string", "format": "uuid", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "InstallationScheduleReasonRequest": {
+        "type": "object",
+        "properties": { "reason": { "type": "string", "nullable": true } },
+        "additionalProperties": false
+      },
+      "InstallationScheduleChangeRequest": {
+        "type": "object",
+        "properties": { "note": { "type": "string", "nullable": true } },
+        "additionalProperties": false
+      },
+      "SolarAdvisorRequest": {
+        "type": "object",
+        "properties": {
+          "roofAreaM2": { "type": "number", "format": "double", "nullable": true },
+          "budgetVnd": { "type": "number", "format": "double", "nullable": true },
+          "monthlyConsumptionKwh": { "type": "number", "format": "double", "nullable": true },
+          "propertySiteId": { "type": "string", "format": "uuid", "nullable": true },
+          "latitude": { "type": "number", "format": "double", "nullable": true },
+          "longitude": { "type": "number", "format": "double", "nullable": true },
+          "tiltDegree": { "type": "number", "format": "double", "nullable": true },
+          "azimuthDegree": { "type": "number", "format": "double", "nullable": true },
+          "wantsBattery": { "type": "boolean", "nullable": true }
         },
         "additionalProperties": false
       }

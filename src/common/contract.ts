@@ -3,7 +3,7 @@ import type { Tone } from '@/components/common/ui/badge'
 // Enum và giới hạn của hợp đồng lắp đặt phía nhân viên (Modules.CustomerContracts: ContractStatuses, SignatureOutcomes,
 // ContractHandlers; Modules.Payments: PaymentStatuses). Hợp đồng phía khách đọc lại nhãn ở đây khi có màn của khách
 
-/** Nhãn theo người xem: cùng một trạng thái, việc tiếp theo là của kinh doanh, quản lý hay của khách */
+/** Nhãn theo người xem: cùng một trạng thái, việc tiếp theo là của quản lý / quản trị hay của khách */
 export const CONTRACT_STATUSES: Record<string, { staff: string; customer: string; tone: Tone }> = {
   DRAFT: { staff: 'Bản nháp', customer: 'Bản nháp', tone: 'neutral' },
   ISSUED: { staff: 'Đã phát hành, chưa gửi khách', customer: 'Đang chuẩn bị', tone: 'info' },
@@ -13,13 +13,15 @@ export const CONTRACT_STATUSES: Record<string, { staff: string; customer: string
   SIGNED: { staff: 'Đã ký, chờ thanh toán', customer: 'Chờ thanh toán', tone: 'info' },
   PAID: { staff: 'Đã thanh toán', customer: 'Đã thanh toán', tone: 'ok' },
   SUPERSEDED: { staff: 'Đã có phụ lục thay', customer: 'Đã có bản mới', tone: 'neutral' },
-  /** Chỉ có ở backend từ 31/10/2026: bản nháp đầu bị kinh doanh huỷ */
+  /** Bản nháp đầu bị quản lý / quản trị huỷ */
   DISCARDED: { staff: 'Bản nháp đã huỷ', customer: 'Đã huỷ', tone: 'neutral' },
 }
 
 /** ContractEvent.EventType, cho lịch sử phía nhân viên */
 export const CONTRACT_EVENT_TYPES: Record<string, string> = {
   CREATED: 'Lập hợp đồng',
+  AUTO_DRAFTED: 'Tự lập khi khách đồng ý báo giá',
+  DISCARDED: 'Huỷ bản nháp',
   AMENDMENT_CREATED: 'Lập phụ lục',
   UPDATED: 'Sửa bản nháp',
   STATUS_CHANGED: 'Đổi trạng thái',
@@ -41,8 +43,8 @@ export const CONTRACT_REVIEW_DECISIONS = {
 } as const
 
 /**
- * PaymentStatuses của một link PayOS, nhãn cho nhân viên. Chỉ backend xác nhận đã nhận tiền (webhook có chữ ký hoặc đối
- * soát với PayOS); nhân viên không tự đánh dấu. REVIEW_REQUIRED, REFUND_REQUIRED cần người xử lý tay
+ * PaymentStatuses của một lần thanh toán, nhãn cho nhân viên. PayOS: chỉ backend xác nhận đã nhận tiền (webhook có chữ ký hoặc
+ * đối soát với PayOS). Tiền mặt: quản lý / quản trị ghi nhận kèm phiếu thu. REVIEW_REQUIRED, REFUND_REQUIRED cần người xử lý tay
  */
 export const STAFF_PAYMENT_ATTEMPT_STATUSES: Record<string, { label: string; tone: Tone }> = {
   PENDING: { label: 'Chờ khách trả tiền', tone: 'info' },
@@ -55,9 +57,33 @@ export const STAFF_PAYMENT_ATTEMPT_STATUSES: Record<string, { label: string; ton
   REFUND_REQUIRED: { label: 'Cần hoàn tiền: trả hai lần', tone: 'danger' },
 }
 
+/** Cách thanh toán của một lần thanh toán */
+export const PAYMENT_METHODS: Record<string, string> = {
+  ONLINE: 'PayOS',
+  CASH: 'Tiền mặt',
+}
+
+/**
+ * ContractPaymentStates: trạng thái thanh toán suy ra của hợp đồng. Khách chọn tiền mặt thì hợp đồng vẫn SIGNED; chỉ PAID là đã
+ * nhận tiền. Nhãn theo người xem; đỏ cho nhân viên khi tiền mặt chờ xác nhận (việc của quản lý / quản trị)
+ */
+export const CONTRACT_PAYMENT_STATES: Record<string, { staff: string; customer: string; tone: Tone }> = {
+  NOT_PAYABLE: { staff: 'Chưa tới bước thanh toán', customer: 'Chưa tới bước thanh toán', tone: 'neutral' },
+  AWAITING_PAYMENT: { staff: 'Chờ khách chọn cách thanh toán', customer: 'Chờ bạn thanh toán', tone: 'info' },
+  ONLINE_IN_PROGRESS: { staff: 'Khách đang trả qua PayOS', customer: 'Đang trả qua PayOS', tone: 'info' },
+  AWAITING_CASH_CONFIRMATION: {
+    staff: 'Khách chọn tiền mặt, chờ xác nhận',
+    customer: 'Chờ Smart Solar xác nhận tiền mặt',
+    tone: 'info',
+  },
+  PAID: { staff: 'Đã thanh toán', customer: 'Đã thanh toán', tone: 'ok' },
+}
+
 /** PaymentEvent.EventType (PaymentService) */
 export const PAYMENT_EVENT_TYPES: Record<string, string> = {
   CREATED: 'Khách tạo lần thanh toán',
+  CASH_SELECTED: 'Khách chọn trả tiền mặt',
+  CASH_CONFIRMED: 'Xác nhận đã nhận tiền mặt',
   LINK_CREATED: 'Đã có link PayOS',
   LINK_FAILED: 'Không tạo được link PayOS',
   STATUS_CHANGED: 'Đổi trạng thái',
@@ -73,6 +99,7 @@ export const PAYMENT_EVENT_SOURCES: Record<string, string> = {
   RECONCILIATION: 'Đối soát với PayOS',
   CUSTOMER: 'Khách',
   SYSTEM: 'Hệ thống',
+  STAFF: 'Quản lý / quản trị',
 }
 
 // Nút Xem / Tải về PDF hợp đồng và bản ký (`…/official-document/url`, `…/submissions/{id}/url`). Chạy với backend chưa có
@@ -88,4 +115,7 @@ export const CONTRACT_LIMITS = {
   rejectionReasonLength: 2000,
   /** Mỗi người 10 lệnh ghi / phút, 60 lệnh đọc / phút */
   writesPerMinute: 10,
+  /** Xác nhận tiền mặt: số phiếu thu, ghi chú */
+  receiptReferenceLength: 100,
+  cashNoteLength: 500,
 } as const

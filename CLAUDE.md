@@ -636,95 +636,99 @@ trong DLL; response viết tay ở `types/res/technicianOnSiteSurveyRes.ts`, enu
   /survey-requests/{id}/onsite-survey; chưa có biên bản là 404 `ONSITE_SURVEY_NOT_FOUND`, hook trả null) dưới khối lịch của
   `/ops/surveys/:id`, chỉ đọc (`OnSiteSurveySummary` + `OnSiteSurveyFiles`, link ký sẵn từng tệp).
 
-**Báo giá lắp đặt** (luồng 2, sau khảo sát tại công trình; backend `main` 7c79fa8, `Modules.Quotations`: `QuotationHandlers`,
-`QuotationPricing`; tính năng bật bằng `InstallationWorkflow`). Enum + giới hạn ở `common/quotation.ts`, hiển thị chung ở
-`features/quotations/quotationDisplay.ts` + `QuotationContent.tsx` (dòng hàng, tổng tiền, điều khoản), service / hook tách theo
-vai trò (`salesQuotationService` + `useSalesQuotations`, `customerQuotationService` + `useCustomerQuotations`). Khác báo giá sửa
-chữa của luồng 3 (`features/after-sales/QuotationForm.tsx`). Hợp đồng chỉ lập được từ bản khách đã đồng ý (ACCEPTED), mục dưới.
-Tệp PDF báo giá (`QuotationDocument.tsx`, tạo ngoài hệ thống): tải lên mục đích `QUOTATION_DOCUMENT` xong mới `PUT …/document`;
-bản nháp thay tệp được, bản đã gửi chỉ gắn khi chưa có tệp (`quotationRules.ts`).
+**Luồng thương mại rút gọn** (backend `main` ad10455, tài liệu BE `guides/simplified-commercial-flow.md` +
+`guides/customer-to-installation-flow.md`; nối 17/11/2026). Kỹ thuật viên đã khảo sát lập giỏ báo giá → khách đồng ý thì backend tự
+lập bản nháp hợp đồng → quản lý / quản trị phát hành, gắn PDF, gửi ký, duyệt bản ký → khách trả PayOS hoặc tiền mặt (quản lý / quản
+trị xác nhận) → kỹ thuật viên hẹn ngày thi công từ lúc hợp đồng đã ký, hệ thống xác nhận khi đã thanh toán. Kinh doanh chỉ tư vấn:
+đọc báo giá / hợp đồng của yêu cầu mình phụ trách, không lệnh ghi, không đọc thanh toán (403). Lệnh ghi báo giá cũ của kinh doanh,
+`…/quotations/generate`, `GET /quotations/pending-review`, duyệt giá, `confirm-survey-version`, `PUT …/document` đã bị BE gỡ (410
+`ENDPOINT_RETIRED`, `isEndpointRetired` ở `errors.ts`); FE không còn gọi (màn "Báo giá cần làm" của kinh doanh, "Duyệt giá báo giá"
+của quản lý, `SalesQuotationPanel`, `PendingReviewQuotations`, `QuotationDocument` đã xoá). Path mới bổ sung tay vào
+`docs/api/swagger.json` theo record C# vì image đang deploy chưa có (response viết tay như các mục trên). Luật thuần có test ở
+`tests/ops-contract-rules.test.mjs` và `tests/commercial-flow-rules.test.mjs`.
 
-- Trạng thái: DRAFT → ISSUED → ACCEPTED, hoặc ISSUED → REVISION_REQUESTED → bản mới (DRAFT → ISSUED, bản cũ SUPERSEDED). Mỗi
-  yêu cầu khảo sát tối đa một bản nháp và một bản đang hiệu lực; bản đã gửi không sửa được. Tiền VND nguyên, backend tự tính mọi
-  tổng: cộng = thiết bị + nhân công + vận chuyển + dịch vụ khác; thuế (0–20 %, mặc định 8) tính trên (cộng − giảm giá).
-- Kinh doanh, khối "Báo giá" dưới kết quả khảo sát của `/ops/surveys/:id` (`SalesQuotationPanel`), chỉ hiện khi biên bản
-  `COMPLETED`: "Lập báo giá" tạo bản nháp ngay (chi phí 0, thuế mặc định, hạn 30 ngày) rồi sửa trực tiếp, mỗi thao tác lưu ngay
-  kèm `revision` (409 STALE thì tải lại): thêm / sửa dòng (`QuotationLineDialog`: từ danh mục = sản phẩm đang bán giá VND, bỏ
-  trống đơn giá là lấy giá danh mục; tự ghi = tên, đơn vị, đơn giá; đã thêm chỉ sửa số lượng, đơn giá, mô tả), xoá dòng có
-  "Hoàn tác" (thêm lại vào cuối), "Chi phí, điều khoản" (`QuotationHeaderDialog`, PUT ghi đè cả phần đầu; hạn hiệu lực là cuối
-  ngày theo giờ Việt Nam, tối đa 89 ngày tới vì BE tính 90 ngày từ lúc lưu), "Gửi cho khách" (hỏi xác nhận; khoá khi chưa có
-  dòng, tổng ≤ 0 hoặc hạn đã qua). Bản đã gửi / khách yêu cầu sửa / khách từ chối (bản đã đồng ý chỉ khi biên bản khảo sát đổi
-  sau đó): "Lập bản sửa" chép thành bản nháp mới. Khối Tình hình có thêm bước "Báo giá" và việc tiếp theo theo trạng thái báo
-  giá (đỏ khi kinh doanh phải lập, gửi, sửa).
-- Báo giá theo backend v2 (luật ở `quotationRules.ts`, test trong `tests/ops-contract-rules.test.mjs`; lý do ≤ 1000 =
-  `REVIEW_REASON_MAX`): "Tạo từ biên bản khảo sát" (POST `…/quotations/generate`, backend tự lập từ bảng vật tư, có khi tự gửi
-  khách); báo giá cần xem lại (`GET /quotations/pending-review`: bản tự lập còn vấn đề giá, bản có biên bản đổi) hiện thành khối
-  `PendingReviewQuotations` ở "Của tôi" + số đỏ ở menu. Gửi khách bị chặn tới khi: xác nhận theo biên bản mới nếu biên bản đổi
-  (`surveyChanged`, POST `…/confirm-survey-version`); sửa các vấn đề giá bắt buộc, phần còn lại ghi `reviewNote`; dòng thiết bị
-  khớp biên bản (`QUOTATION_BOM_MISMATCH`, `bomMismatchText`); quản lý duyệt bộ giá có giảm giá / đơn giá dưới danh mục / giá 0
-  (`pricingApproval`, kinh doanh POST `…/pricing-approval-request`; sửa số nào sau khi duyệt là phải xin lại).
-- Quản lý: menu "Duyệt giá báo giá" (`/manage/pricing-approvals`, `pages/pricing-approvals-page.tsx`, hook
-  `useManagerQuotations.ts`; GET `/manager/quotations/pricing-approvals`, POST `…/{id}/pricing-approval`
-  `{ revision, approve, reason }`). Chỉ vai trò Manager quyết định, kinh doanh phụ trách không tự duyệt; số đỏ = số chờ duyệt.
-- Khách: menu "Báo giá" (`/customer/quotations`, mỗi công trình một dòng là bản mới nhất, tên công trình lấy từ yêu cầu khảo sát)
-  và `/customer/quotations/:id` (theo mã từng bản): "Đồng ý báo giá" (hỏi xác nhận, không đổi lại được) và "Yêu cầu sửa" (lý do
-  bắt buộc ≤ 2000) chỉ khi `canAccept` (ISSUED và chưa hết hạn); bản cũ dẫn sang bản mới. Trang yêu cầu khảo sát của khách có
-  khối dẫn sang báo giá (`RequestQuotationPanel`). Khách không thấy bản nháp và giá danh mục.
+**Báo giá lắp đặt** (`Modules.Quotations`: `QuotationTechnicianCart`, `QuotationHandlers`). Enum ở `common/quotation.ts`, luật ở
+`features/quotations/quotationRules.ts`, hiển thị chung ở `quotationDisplay.ts` + `QuotationContent.tsx`. Khác báo giá sửa chữa của
+luồng 3 (`features/after-sales/QuotationForm.tsx`).
 
-**Hợp đồng lắp đặt, phía nhân viên** (03/11/2026; backend `main` 7c79fa8: `ContractHandlers`, `PaymentService`; tính năng
-`InstallationWorkflow`). Enum ở `common/contract.ts`, luật ở `features/contracts/contractRules.ts` (bám handler, test ở
-`tests/ops-contract-rules.test.mjs`), hiển thị ở `contractDisplay.ts`, service `contractService.ts`, hook `useContracts.ts`.
-Kiểm tra tay với backend thật và các chỗ còn chặn: `docs/api/ops-contracts-verification.md`.
+- Trạng thái: DRAFT → ISSUED → ACCEPTED | REJECTED | REVISION_REQUESTED; bản sửa gửi đi thì bản trước SUPERSEDED. `origin`:
+  TECHNICIAN (mới), SALES / AUTOMATIC (cũ, chỉ xem). Báo giá của kỹ thuật viên: mọi dòng vào `equipmentSubtotal`, nhân công / vận
+  chuyển / dịch vụ khác = 0, thuế theo cài đặt, không giảm giá; `description` của dòng là mã loại sản phẩm (hiện thành nhãn loại,
+  không hiện mã).
+- Kỹ thuật viên, khối "Báo giá" (`TechnicianQuotationPanel`) dưới khảo sát của `/tech/jobs/:id`, chỉ khi biên bản `COMPLETED`
+  (service `technicianQuotationService`, hook `useTechnicianQuotations`): "Lập báo giá" (POST `/technician/survey-requests/{id}/quotation`,
+  không khi NOT_FEASIBLE; bản nháp cũ của kinh doanh bị backend đóng), "Thêm sản phẩm" (`CartLineDialog`: chỉ sản phẩm đang bán,
+  có giá VND; số lượng > 0, ≤ 100 000, 3 chữ số lẻ; thêm lại sản phẩm đã có thì cộng dồn), đổi số lượng, bỏ dòng có "Hoàn tác",
+  nhắc thiếu tấm pin / inverter / nhân công (không chặn), "Gửi cho khách" (hỏi xác nhận; backend định giá lại theo danh mục lúc gửi,
+  dòng không định giá được lấy từ `details.items` của 400 `QUOTATION_PRICE_MISSING` và tô đỏ). Khách yêu cầu sửa / từ chối / bản
+  đang gửi: "Lập bản sửa" (`canReviseCart`). Không có ô giá, giảm giá, thuế, hạn hiệu lực, điều khoản. Mọi lệnh gửi `revision` đang
+  xem, 409 thì tải lại, không tự gửi lại.
+- Kinh doanh / quản lý / quản trị: khối "Báo giá" chỉ đọc (`QuotationReadPanel`, GET `/survey-requests/{id}/quotations`). Khối Tình
+  hình của kinh doanh chỉ báo việc của kỹ thuật viên / khách (không đỏ).
+- Khách: menu "Báo giá" (`/customer/quotations(/:id)`): "Đồng ý" (hỏi xác nhận; backend tự lập bản nháp hợp đồng trong cùng lệnh,
+  bấm hai lần vẫn một hợp đồng; FE không gọi lập hợp đồng, chỉ tải lại báo giá + hợp đồng và báo "đang chuẩn bị hợp đồng"),
+  "Yêu cầu sửa" (lý do ≤ 2000), "Từ chối". Khách không thấy bản nháp và giá danh mục.
 
-- Trạng thái: DRAFT → ISSUED (đóng nội dung, có `canonicalHash`) → AWAITING_SIGNATURE (đã gắn PDF chính thức) → UNDER_REVIEW
-  (khách gửi bản ký) → SIGNED | SIGNATURE_REJECTED (khách gửi lại) → PAID (chỉ PayOS qua backend). Đổi sau khi phát hành là phụ
-  lục: phiên bản mới cùng giá, bản cũ thành SUPERSEDED khi phụ lục được phát hành; PAID không sửa được.
-- Kinh doanh: khối "Hợp đồng" (`SalesContractPanel`) dưới báo giá của `/ops/surveys/:id` khi có báo giá ACCEPTED (nút "Lập hợp
-  đồng" và danh sách phiên bản), khối Tình hình thêm bước "Hợp đồng"; trang `/ops/contracts/:id` (menu "Của tôi"; backend không
-  có danh sách mọi hợp đồng nên không có mục menu riêng). Thời hạn bảo hành chọn từ
-  `GET /sales/after-sales/warranty-options?kind=INSTALLATION` (API của kinh doanh, chỉ tuỳ chọn đang bật; "mặc định" gửi null
-  để backend tự lấy); thiếu điều khoản hoặc thời hạn thì khoá "Phát hành" và ghi lý do (`issueBlockers`, backend
-  `CONTRACT_TERMS_REQUIRED` / `CONTRACT_WARRANTY_REQUIRED`). PDF chính thức tạo ngoài hệ thống, ghi mã nội dung lên PDF; `OfficialDocumentDialog` tải lên
-  `CONTRACT_DOCUMENT` rồi gửi `revision` + `canonicalHash` của phiên bản lúc mở hộp thoại (người dùng tick xác nhận), không
-  tự tính hash.
-- Duyệt bản ký (`SignaturePanel`): kinh doanh phụ trách và quản lý (`/manage/contracts/:id`); quản trị
-  (`/admin/contracts/:id`) chỉ xem. Từ chối bắt buộc lý do ≤ 2000. "Xem" / "Tải về" PDF chính thức và từng bản ký
-  (`ContractDocumentButtons`): xin link ký sẵn đúng lúc bấm (`GET /contracts/{id}/official-document/url`,
-  `…/submissions/{sid}/url`, `disposition=inline|attachment`), không lưu link, không ghép link từ mã tệp. Có từ backend `main`
-  facbc5e (kể cả phiên bản SUPERSEDED). Cờ `CONTRACT_DOCUMENT_LINKS` (`common/contract.ts`) mặc định bật; chạy với backend cũ
-  chưa có các API này thì đặt `VITE_CONTRACT_DOCUMENT_LINKS=false`: nút ẩn và khách in hợp đồng từ trang (mục dưới).
-- Thanh toán (`ContractPaymentPanel`, `GET /contracts/{id}/payments`, cả 3 cổng): chỉ đọc, hỏi lại 30 giây / lần khi SIGNED;
-  REVIEW_REQUIRED / REFUND_REQUIRED tô đỏ. PAID: quản lý / quản trị có nút sang "Hợp đồng chờ tạo dự án"; số hợp đồng ở danh
-  sách đó dẫn về trang hợp đồng.
-- Mọi lệnh ghi gửi `revision` đang hiện; 409 thì báo lỗi, tải lại, không tự gửi lại. 429 báo số giây theo Retry-After (10 lệnh
-  ghi / phút). Yêu cầu khảo sát đã có hợp đồng còn hiệu lực thì ẩn "Đóng yêu cầu" (backend 31/10 từ chối).
-- Huỷ bản nháp đầu tiên chưa phát hành (`POST /contracts/{id}/discard`, lý do bắt buộc ≤ 1000): nút "Huỷ bản nháp" ở khối Bản nháp; báo giá đó không lập hợp đồng mới được nữa, nên Tình hình của yêu cầu
-  nhắc đóng yêu cầu (trừ khi biên bản đổi thì lập bản sửa báo giá).
+**Hợp đồng lắp đặt, phía nhân viên** (`ContractHandlers`, `PaymentService`). Enum ở `common/contract.ts`, luật ở
+`features/contracts/contractRules.ts` (`canWriteContract`, `canSeePayments`: chỉ quản lý / quản trị), hiển thị ở `contractDisplay.ts`,
+service `contractService.ts`, hook `useContracts.ts`. Trang dùng chung `pages/contract-page.tsx`.
 
-**Hợp đồng và thanh toán, phía khách** (03/11/2026; `/customer/contracts(/:id)`, menu "Hợp đồng"; backend `main` 7c79fa8:
-`CustomerContractsController`, `ContractHandlers.SubmitSignedDocumentAsync`, `CustomerPaymentsController`, `PaymentService`).
-Luật ở `features/contracts/customerContractRules.ts`, hiển thị ở `customerContractDisplay.ts`, hook `useCustomerContracts.ts`.
-Kiểm tra và các chỗ còn chặn: `docs/api/customer-portal-verification.md`.
+- Trạng thái: DRAFT (tự lập khi khách đồng ý báo giá, sự kiện `AUTO_DRAFTED`) → ISSUED (`canonicalHash`) → AWAITING_SIGNATURE →
+  UNDER_REVIEW → SIGNED | SIGNATURE_REJECTED → PAID. Phụ lục: phiên bản mới cùng giá, bản cũ SUPERSEDED khi phụ lục được phát hành.
+- Quản lý `/manage/contracts/:id`, quản trị `/admin/contracts/:id`: sửa bản nháp, phát hành, gắn PDF chính thức (tải
+  `CONTRACT_DOCUMENT` – nay chỉ quản lý / quản trị tải được), gửi khách ký, duyệt / từ chối bản ký, phụ lục, huỷ bản nháp đầu, khối
+  Thanh toán (kèm xác nhận tiền mặt) và khối Lịch thi công (`StaffContractSchedulePanel`). Kinh doanh `/ops/contracts/:id` chỉ xem
+  (không khối thanh toán). Thời hạn bảo hành: quản trị chọn từ `GET /admin/after-sales/warranty-options`; quản lý không có API đọc
+  danh sách thời hạn nên giữ thời hạn đang có (gửi null), muốn đổi thì nhờ quản trị.
+- Backend không có danh sách mọi hợp đồng: menu "Hợp đồng" (`/manage|admin/contracts`, `pages/contracts-page.tsx`) mở theo mã hợp
+  đồng hoặc mã yêu cầu khảo sát (dán cả đường dẫn cũng được, `extractId`); theo mã yêu cầu thì liệt các phiên bản và, với báo giá cũ
+  đã đồng ý mà chưa có hợp đồng, có "Lập hợp đồng" (POST `/quotations/{id}/contracts`). Hợp đồng đã ký có lịch thì mở từ "Lịch thi công".
+- Thanh toán (`ContractPaymentPanel`, GET `/contracts/{id}/payments`, chỉ quản lý / quản trị): `paymentState`, cột cách trả (PayOS /
+  tiền mặt). Khách chọn tiền mặt (`AWAITING_CASH_CONFIRMATION`) thì báo đỏ "chờ bạn xác nhận" + `CashConfirmDialog`: số tiền điền sẵn
+  tổng hợp đồng nhưng phải đúng bằng tổng, số phiếu thu ≤ 100 (không trùng), ảnh / PDF phiếu thu `PAYMENT_EVIDENCE` (PDF / JPEG / PNG /
+  WebP ≤ 15 MB, chính người xác nhận tải), ghi chú ≤ 500 → POST `/contracts/{id}/payments/cash/confirm`. Lỗi
+  `PAYMENT_CASH_AMOUNT_MISMATCH`, `PAYMENT_CASH_RECEIPT_DUPLICATE`, `PAYMENT_ALREADY_PAID` dịch ở `errors.ts`.
+- Mọi lệnh ghi gửi `revision` đang hiện; 409 thì báo lỗi, tải lại, không tự gửi lại. 429 báo số giây theo Retry-After.
 
-- Ký (`CustomerSignPanel`, `SignContractDialog`): khách xem / tải PDF chính thức và bản ký của mình qua link ký sẵn
-  (`GET /customers/me/contracts/{id}/official-document/url`, `…/submissions/{sid}/url`; chỉ chủ hợp đồng, nút ẩn khi
-  `CONTRACT_DOCUMENT_LINKS` tắt), rồi kiểm tệp đang giữ bằng SHA-256 tính trên máy (không tải lên).
-  Cờ tắt thì khách bấm "In hợp đồng": `features/contracts/contractPrint.ts` dựng hợp đồng từ `ContractView` (cùng mẫu với PDF
-  kinh doanh gắn, mã nội dung ở khung đầu và chân mỗi trang qua ô lề `@page`), phường lấy từ địa điểm của yêu cầu, mở tab mới
-  rồi bật hộp in. Tệp khách in không trùng SHA-256 của PDF đã gắn nên hộp gửi bản ký bỏ bước kiểm tệp, chỉ đối chiếu mã nội dung.
-  SHA-256 của PDF chính thức được chụp lúc mở hộp thoại và gửi đúng mã đó; hợp đồng đổi phiên bản thì khoá nút gửi, lỗi
-  `RESIGN_ERROR_CODES` bắt xem lại và ký lại, không tự gửi lại. Bản ký tải lên `SIGNED_CONTRACT` (PDF ≤ 20 MB).
-- Thanh toán (`CustomerContractPayment`): chỉ khi SIGNED; link tạo khi khách bấm (backend trả lại link còn sống), hỏi lại 5 giây /
-  lần khi có link chờ và tab đang hiện; đếm ngược theo giờ máy chỉ để hiện, hết giờ thì hỏi lại. Link mua gói kèm hợp đồng (tổng >
-  tiền hợp đồng) không huỷ ở đây mà dẫn sang Gói dịch vụ; mua gói gộp hợp đồng khi hợp đồng đang có link riêng thì
-  `PurchaseDialog` dẫn sang trang hợp đồng. Không có mã QR vẽ trên trang (trang PayOS có).
-- PayOS chuyển về `/payments/return` | `/payments/cancel`, hoặc `/return` | `/cancel` (ReturnUrl / CancelUrl của backend đã
-  deploy): `features/payments/payosReturn.ts` nhớ orderCode → trang đã mở link (localStorage, một ngày) rồi đưa khách về đó kèm
-  `?payos=`; không đọc kết quả từ địa chỉ.
-- Trang PayOS mở trong tab đang dùng, không mở tab mới (người dùng 13/11/2026): bấm "Thanh toán qua PayOS" (hợp đồng, báo giá sửa
-  chữa) hoặc mua gói xong là `useCheckoutRedirect` nhớ trang quay về rồi chuyển luôn sang PayOS; nút "Mở trang thanh toán PayOS"
-  của link còn chờ cũng mở cùng tab. Chỉ mở link `https:`; PayOS chưa trả link thì ở lại trang và hiện trạng thái.
-- Trang yêu cầu khảo sát và báo giá đã đồng ý có khối dẫn sang hợp đồng (`ContractLinkPanel`).
+**Hợp đồng và thanh toán, phía khách** (`/customer/contracts(/:id)`). Luật ở `features/contracts/customerContractRules.ts`, hiển thị
+ở `customerContractDisplay.ts`, hook `useCustomerContracts.ts`.
+
+- Ký (`CustomerSignPanel`, `SignContractDialog`): xem / tải PDF chính thức qua link ký sẵn, kiểm SHA-256 tệp đang giữ, gửi bản ký
+  `SIGNED_CONTRACT`. Cờ `CONTRACT_DOCUMENT_LINKS` tắt thì "In hợp đồng" (`contractPrint.ts`).
+- Thanh toán (`CustomerContractPayment`), chỉ khi SIGNED, theo `paymentState`: chờ thanh toán thì hai nút "Thanh toán qua PayOS" /
+  "Trả tiền mặt" (POST `…/payments/cash`, hỏi xác nhận; chọn tiền mặt chưa phải đã trả, hợp đồng vẫn SIGNED); đang có link PayOS thì
+  khối link (hỏi lại 5 giây / lần); chờ xác nhận tiền mặt thì khối "Bạn đã chọn trả tiền mặt" (hỏi lại 60 giây / lần, "Bỏ chọn tiền
+  mặt" = POST `…/payments/cancel`). Hai cách loại trừ nhau (`PAYMENT_CASH_SELECTED`, `PAYMENT_CHECKOUT_IN_PROGRESS`). Chỉ báo đã
+  thanh toán khi backend trả PAID. Link mua gói kèm hợp đồng không huỷ ở đây.
+- PayOS chuyển về `/payments/return` | `/payments/cancel` | `/return` | `/cancel`: `payosReturn.ts` đưa khách về trang đã mở link;
+  không đọc kết quả từ địa chỉ. Trang PayOS mở trong tab đang dùng (`useCheckoutRedirect`).
+- Khối "Lịch thi công" (`CustomerSchedulePanel`) dưới thanh toán khi hợp đồng đã ký: lịch dự kiến ghi "chưa xác nhận" (chờ thanh
+  toán), "Xin đổi ngày" (ghi chú bắt buộc ≤ 500); lịch sử các lần hẹn.
+- Trang yêu cầu khảo sát và báo giá đã đồng ý có khối dẫn sang hợp đồng (`ContractLinkPanel`); chưa có hợp đồng khách thấy thì không
+  hiện (khách chỉ thấy hợp đồng từ lúc gửi ký).
+
+**Lịch thi công đã thống nhất với khách** (`InstallationScheduleHandlers`; enum `common/installationSchedule.ts`, luật
+`features/installation-schedules/scheduleRules.ts`, hiển thị `scheduleDisplay.ts`, service `installationScheduleService.ts`, hook
+`useInstallationSchedules.ts`, response viết tay `types/res/installationSchedulesRes.ts`). PLANNED: dự kiến, không giữ chỗ, KHÔNG bao
+giờ ghi là đã xác nhận (`isConfirmed` chỉ true khi CONFIRMED); CONFIRMED: hợp đồng đã thanh toán, backend tạo dự án thi công và
+phân công; RESCHEDULE_REQUIRED: không xác nhận được (lý do theo `rescheduleReasonCode`); CANCELLED giữ lịch sử. Khác trạng thái dự án
+thi công (tiến độ vẫn ở các màn Thi công / Lắp đặt).
+
+- Kỹ thuật viên: menu "Hẹn lịch thi công" (`/tech/installation-schedules`): hợp đồng đã ký / đã thanh toán của công trình mình khảo
+  sát; "Hẹn ngày" / "Đổi ngày" (`ScheduleDialog`: ngày giờ bắt đầu, kết thúc theo giờ Việt Nam, ghi chú khách đồng ý bắt buộc, đổi
+  thì lý do bắt buộc + `expectedRevision`), "Huỷ lịch" (lịch dự kiến / phải hẹn lại, lý do bắt buộc). Việc cần làm lên đầu.
+- Quản lý / quản trị: menu "Lịch thi công" (`/manage|admin/installation-schedules`, mặc định lọc phải hẹn lại, số đỏ ở menu quản lý),
+  "Xác nhận lại" (lịch dự kiến của hợp đồng đã PAID), "Huỷ lịch", và trên trang hợp đồng ghi lịch thay cho kỹ thuật viên khác.
+- Thông báo của khách `INSTALLATION_SCHEDULE_PLANNED | CHANGED | RESCHEDULE_REQUIRED | CANCELLED` dẫn sang mục Hợp đồng.
+
+**Đặt khảo sát trực tiếp** (`DirectSurveyBookingHandler`): `/customer/requests/new` (`pages/customer/direct-booking-page.tsx`, luật
+`features/scheduling/directBooking.ts`), nút ở trang "Yêu cầu khảo sát". Chọn địa điểm đã lưu hoặc lưu địa điểm mới (`SiteFields`), chọn
+giờ (`SlotPicker`), người gặp + số điện thoại (không bắt buộc, 8–15 chữ số; tài khoản không có số thì backend bắt `CONTACT_PHONE_REQUIRED`),
+ghi chú ≤ 1000 → POST `/customers/me/survey-requests/direct` (201, gửi lại 200). Lỗi có `details.surveyRequestId` (hết chỗ, khu vực,
+`SURVEY_REQUEST_ALREADY_OPEN`): không đặt lại ở đây mà dẫn sang trang yêu cầu đó để chọn giờ khác (không tạo yêu cầu thứ hai). Yêu
+cầu đặt trực tiếp có `preSurveyId = null`, `source = DIRECT_BOOKING`: trang kinh doanh / kỹ thuật viên không có số liệu khách khai và
+mô phỏng, kỹ thuật viên thấy người gặp tại công trình (`onSiteContact`). Khu vực chưa có người nhận: chưa xin xếp người được từ màn
+này (cần có yêu cầu trước).
 
 **Địa điểm cũ thiếu mã phường, xã** (PUT `/customers/me/sites/{id}/administrative-location`, chỉ đổi mã, không đổi toạ độ):
 `SiteLocationDialog` ở chỗ chọn giờ khảo sát khi `coverageStatus = SITE_LOCATION_REQUIRED`; bước Địa điểm của đánh giá sơ bộ dùng
@@ -755,6 +759,11 @@ nhưng không vào lịch sử, lỗi thì giữ câu. Gửi lại đúng câu t
 không đếm; không tự gửi lại. 503 `FEATURE_PENDING_MIGRATION` / `SCHEMA_NOT_READY` → "Trợ lý chưa sẵn sàng" (quản trị có lối sang
 Kho tri thức). Khoá cache có mã người dùng, đăng xuất thì `queryClient.clear()`. Không có API xoá / đổi tên phiên, không streaming.
 Image đang chạy để `Features__KnowledgeBaseEnabled=false` nên chưa thử được câu trả lời thật.
+Trợ lý cấu hình (backend ad10455): câu hỏi về diện tích / ngân sách / điện tiêu thụ được trả lời bằng `advisor` (`SolarAdvisorView`,
+không gọi mô hình); ô "Thêm số liệu để tư vấn cấu hình" (`AdvisorInputs`, luật `advisorRules.ts`) gửi kèm `advisor` ở câu tiếp theo rồi
+xoá. `AdvisorResult` hiện trạng thái READY / NEEDS_INPUT (câu hỏi của backend) / BLOCKED, các cấu hình tham khảo, cách tính, giới hạn,
+nguồn và lời lưu ý "không phải báo giá"; kết quả chỉ giữ trong cache của lần dùng trang (GET phiên không trả). Lỗi `RAG_TIMEOUT`
+(504), `RAG_BUSY`, `RAG_ADVISOR_UNAVAILABLE` (503) có câu riêng, không tự gửi lại; `clientMessageId` nay chống lặp cả câu đầu phiên.
 
 **Lắp đặt, phía kỹ thuật viên** (`/tech/installations(/:id)`, backend nhánh `fix/business-rules-flow-1-2`, tài liệu
 `guides/installation-workflow-api-integration.md` + `installation-workflow-business-flow.md`; response viết tay ở
@@ -916,25 +925,25 @@ pan-y` nên vuốt dọc vẫn cuộn trang. Bóng VSM trên mặt đất trong 
 
 ## Bảng route
 
-| Route                                                        | Layout           | Trang                                                                                                                                                                                                                      |
-| ------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                                                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                                                                                                           |
-| `/login`                                                     | `AuthLayout`     | `LoginPage`                                                                                                                                                                                                                |
-| `/register`                                                  | `AuthLayout`     | `RegisterPage`                                                                                                                                                                                                             |
-| `/forgot-password`                                           | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                                                                                                       |
-| `/reset-password`                                            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                                                                                                        |
-| `/verify-email`                                              | `AuthLayout`     | `VerifyEmailPage`                                                                                                                                                                                                          |
-| `/403`                                                       | `AuthLayout`     | `ForbiddenPage`                                                                                                                                                                                                            |
-| `/coming-soon`                                               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                                                                                              |
-| `/products`, `/products/:id`                                 | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                                                                                                     |
-| `/payments/return`, `/payments/cancel`, `/return`, `/cancel` | –                | PayOS chuyển về; chuyển ngay tới trang đã mở link thanh toán (`PaymentReturnPage`)                                                                                                                                         |
-| `/admin/*`                                                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Thi công, Sản phẩm, Gói dịch vụ, Việc của kinh doanh (giao việc) – bọc `<RequireRole role="admin">`                                                                                              |
-| `/tech/*`                                                    | `TechLayout`     | Việc của tôi, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                                                                     |
-| `/customer/*`                                                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ), Báo giá (đồng ý / yêu cầu sửa), Hợp đồng (ký, PayOS), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói, đặt lượt bảo trì), Thông báo, Sản phẩm – bọc `<RequireRole role="customer">` |
-| `/ops/*`                                                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên, lập báo giá, hợp đồng), Bảo hành / việc nhắc khách – bọc `<RequireRole role="sales">`                                                                                     |
-| `/field/*`                                                   | —                | chuyển về `/tech`                                                                                                                                                                                                          |
-| `/manage/*`                                                  | `ManageLayout`   | Thi công (dự án, phân công, checklist), Duyệt giá báo giá, Bảo hành (quyết định, kết thúc yêu cầu, sửa thiết bị), Việc của kinh doanh (xem), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                  |
-| `/styleguide`                                                | –                | `StyleguidePage`                                                                                                                                                                                                           |
+| Route                                                        | Layout           | Trang                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                          | `PublicLayout`   | `LandingPage` – hero ngày / đêm, giải pháp, quy trình, CTA (mục "Màn công khai")                                                                                                                                                                                    |
+| `/login`                                                     | `AuthLayout`     | `LoginPage`                                                                                                                                                                                                                                                         |
+| `/register`                                                  | `AuthLayout`     | `RegisterPage`                                                                                                                                                                                                                                                      |
+| `/forgot-password`                                           | `AuthLayout`     | `ForgotPasswordPage`                                                                                                                                                                                                                                                |
+| `/reset-password`                                            | `AuthLayout`     | `ResetPasswordPage` (đọc `?token=`)                                                                                                                                                                                                                                 |
+| `/verify-email`                                              | `AuthLayout`     | `VerifyEmailPage`                                                                                                                                                                                                                                                   |
+| `/403`                                                       | `AuthLayout`     | `ForbiddenPage`                                                                                                                                                                                                                                                     |
+| `/coming-soon`                                               | `PublicLayout`   | Trang tạm cho Kinh doanh, Quản lý, Khách hàng                                                                                                                                                                                                                       |
+| `/products`, `/products/:id`                                 | `PublicLayout`   | Danh mục sản phẩm công khai – GET /api/products(/{id})                                                                                                                                                                                                              |
+| `/payments/return`, `/payments/cancel`, `/return`, `/cancel` | –                | PayOS chuyển về; chuyển ngay tới trang đã mở link thanh toán (`PaymentReturnPage`)                                                                                                                                                                                  |
+| `/admin/*`                                                   | `AdminLayout`    | Tài khoản, Kỹ thuật viên, Hợp đồng, Lịch thi công, Thi công, Sản phẩm, Gói dịch vụ, Việc của kinh doanh – bọc `<RequireRole role="admin">`                                                                                                                          |
+| `/tech/*`                                                    | `TechLayout`     | Khảo sát (giỏ báo giá), Hẹn lịch thi công, Lắp đặt, Lịch làm việc, Sản phẩm – bọc `<RequireRole role="technician">`                                                                                                                                                 |
+| `/customer/*`                                                | `CustomerLayout` | Đánh giá sơ bộ, Yêu cầu khảo sát (đặt giờ, đặt trực tiếp), Báo giá (đồng ý / yêu cầu sửa), Hợp đồng (ký, PayOS / tiền mặt, lịch thi công), Lắp đặt (nghiệm thu), Gói dịch vụ (mua gói, đặt lượt bảo trì), Thông báo, Sản phẩm – bọc `<RequireRole role="customer">` |
+| `/ops/*`                                                     | `OpsLayout`      | Yêu cầu khảo sát (nhận, phân công kỹ thuật viên; báo giá, hợp đồng chỉ xem), Bảo hành / việc nhắc khách – bọc `<RequireRole role="sales">`                                                                                                                          |
+| `/field/*`                                                   | —                | chuyển về `/tech`                                                                                                                                                                                                                                                   |
+| `/manage/*`                                                  | `ManageLayout`   | Hợp đồng (soạn, gửi ký, duyệt, tiền mặt), Lịch thi công, Thi công (dự án, phân công, checklist), Bảo hành (quyết định, kết thúc yêu cầu, sửa thiết bị), Việc của kinh doanh (xem), Kỹ thuật viên, Sản phẩm – bọc `<RequireRole role="manager">`                     |
+| `/styleguide`                                                | –                | `StyleguidePage`                                                                                                                                                                                                                                                    |
 
 `/` trả về trang chủ công khai; KHÔNG còn redirect `/` → `/admin`.
 

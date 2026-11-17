@@ -2,12 +2,20 @@ import { useEffect, useRef, useState } from 'react'
 import { Button, ButtonLink, IconButton } from '@/components/common/ui/button'
 import { UnavailableState } from '@/components/common/ui/states'
 import { useAuth } from '@/context/AuthProvider'
+import { AdvisorInputs } from '@/features/chat/AdvisorInputs'
+import { EMPTY_ADVISOR, advisorBody, advisorFormErrors } from '@/features/chat/advisorRules'
 import { ChatComposer } from '@/features/chat/ChatComposer'
 import { ChatSessionList } from '@/features/chat/ChatSessionList'
 import { ChatThread } from '@/features/chat/ChatThread'
 import { CHAT_UNAVAILABLE, CHAT_UNAVAILABLE_ADMIN, chatSendError } from '@/features/chat/chatDisplay'
 import { chatMessageProblem, isSessionId, nextAttempt, type ChatAttempt } from '@/features/chat/chatRules'
-import { useAskChatMutation, useChatNotices, useChatSessionQuery, useChatSessionsQuery } from '@/hooks/useChat'
+import {
+  useAskChatMutation,
+  useChatAdvisors,
+  useChatNotices,
+  useChatSessionQuery,
+  useChatSessionsQuery,
+} from '@/hooks/useChat'
 import { useLatest } from '@/hooks/useLatest'
 import { useRetryCountdown } from '@/hooks/useRetryCountdown'
 import { ROUTES, withId } from '@/routes/paths'
@@ -115,7 +123,9 @@ function ChatPanel({
   const sessions = useChatSessionsQuery()
   const detail = useChatSessionQuery(sessionId)
   const notices = useChatNotices()
+  const advisors = useChatAdvisors()
   const ask = useAskChatMutation()
+  const [advisorForm, setAdvisorForm] = useState(EMPTY_ADVISOR)
   const [view, setView] = useState<'chat' | 'history'>('chat')
   const [draft, setDraft] = useState('')
   const [failure, setFailure] = useState<{ sessionId: string | null; message: string } | null>(null)
@@ -175,13 +185,18 @@ function ChatPanel({
     if (ask.isPending || countdown.secondsLeft > 0) return
     const problem = chatMessageProblem(draft)
     if (problem) return setFailure({ sessionId, message: problem })
+    if (Object.keys(advisorFormErrors(advisorForm)).length > 0)
+      return setFailure({ sessionId, message: 'Sửa số liệu tư vấn cấu hình đang báo lỗi trước khi gửi.' })
     const { attempt, body } = nextAttempt(draft, sessionId, attemptRef.current)
     attemptRef.current = attempt
     setFailure(null)
-    ask.mutate(body, {
+    // Số liệu tư vấn gửi kèm câu này rồi xoá; các câu sau backend tự dùng lại số liệu đã nói trong phiên
+    const advisor = advisorBody(advisorForm)
+    ask.mutate(advisor ? { ...body, advisor } : body, {
       onSuccess: (answer) => {
         attemptRef.current = null
         setDraft((current) => (current.trim() === attempt.text ? '' : current))
+        if (advisor) setAdvisorForm(EMPTY_ADVISOR)
         // Người dùng đã chuyển sang cuộc khác trong lúc chờ thì không kéo họ về
         if (attempt.sessionId === null && viewRef.current === null) onSessionChange(answer.sessionId)
       },
@@ -253,12 +268,16 @@ function ChatPanel({
               badSessionParam={false}
               detail={detail}
               notices={notices}
+              advisors={advisors}
               documentHref={isAdmin ? (id) => withId(ROUTES.admin.knowledgeDocument, id) : undefined}
               pendingQuestion={pendingHere ? (ask.variables?.message ?? '') : null}
               onOpenNew={openNew}
               onSelectPrompt={setDraft}
             />
           </div>
+          {!(sessionId && detail.isError) && (
+            <AdvisorInputs value={advisorForm} onChange={setAdvisorForm} disabled={ask.isPending} />
+          )}
           {!(sessionId && detail.isError) && (
             <ChatComposer
               value={draft}

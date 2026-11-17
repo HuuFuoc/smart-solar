@@ -34,10 +34,12 @@ import {
   canDiscard,
   canEditDraft,
   canPublish,
+  canSeePayments,
   issueBlockers,
   shortHash,
   type ContractViewer,
 } from '@/features/contracts/contractRules'
+import { StaffContractSchedulePanel } from '@/features/installation-schedules/StaffContractSchedulePanel'
 import { OfficialDocumentDialog } from '@/features/contracts/OfficialDocumentDialog'
 import { SignaturePanel } from '@/features/contracts/SignaturePanel'
 import { FileInfo } from '@/features/files/FileInfo'
@@ -57,9 +59,10 @@ import { ROUTES, withId } from '@/routes/paths'
 import { isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
 
-// Chi tiết một phiên bản hợp đồng lắp đặt, dùng chung kinh doanh, quản lý, quản trị theo quyền của backend:
-// kinh doanh phụ trách soạn, phát hành, gắn PDF, gửi ký, duyệt bản ký, lập phụ lục; quản lý duyệt bản ký; quản trị chỉ xem.
-// Nút chỉ hiện ở trạng thái backend nhận lệnh đó; backend vẫn kiểm lại và trả lỗi thì hiện lỗi
+// Chi tiết một phiên bản hợp đồng lắp đặt, dùng chung kinh doanh, quản lý, quản trị theo quyền của backend: bản nháp tự lập khi
+// khách đồng ý báo giá; quản lý / quản trị soạn, phát hành, gắn PDF, gửi ký, duyệt bản ký, lập phụ lục, xác nhận tiền mặt; kinh
+// doanh chỉ xem (không đọc được thanh toán). Nút chỉ hiện ở trạng thái backend nhận lệnh đó; backend vẫn kiểm lại và trả lỗi thì
+// hiện lỗi
 
 type Dialog = 'issue' | 'publish' | 'document' | 'discard' | null
 
@@ -74,8 +77,8 @@ const INSTALLATIONS: Partial<Record<ContractViewer, string>> = {
   admin: `${ROUTES.admin.installations}?muc=hop-dong`,
 }
 
-/** Việc của kinh doanh trước khi gửi khách: sửa / phát hành bản nháp, gắn PDF, gửi ký */
-function SalesActions({ contract: c }: { contract: ContractView }) {
+/** Việc của quản lý / quản trị trước khi gửi khách: sửa / phát hành bản nháp, gắn PDF, gửi ký */
+function StaffActions({ contract: c, viewer }: { contract: ContractView; viewer: 'manager' | 'admin' }) {
   const issue = useIssueContractMutation()
   const publish = usePublishContractMutation()
   const discard = useDiscardContractMutation()
@@ -152,7 +155,9 @@ function SalesActions({ contract: c }: { contract: ContractView }) {
         )}
       </PanelBody>
 
-      {editing && <ContractTermsDialog target={{ mode: 'edit', contract: c }} onClose={() => setEditing(false)} />}
+      {editing && (
+        <ContractTermsDialog target={{ mode: 'edit', contract: c }} viewer={viewer} onClose={() => setEditing(false)} />
+      )}
       {dialog === 'document' && <OfficialDocumentDialog contract={c} onClose={() => setDialog(null)} />}
       <ReasonDialog
         open={dialog === 'discard'}
@@ -214,7 +219,15 @@ function SalesActions({ contract: c }: { contract: ContractView }) {
 }
 
 /** Phụ lục: đổi điều khoản / thời hạn bảo hành sau khi phát hành bằng phiên bản mới cùng giá */
-function AmendmentPanel({ contract: c, versions }: { contract: ContractView; versions: ContractView[] }) {
+function AmendmentPanel({
+  contract: c,
+  versions,
+  viewer,
+}: {
+  contract: ContractView
+  versions: ContractView[]
+  viewer: 'manager' | 'admin'
+}) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const amendable = canAmend(c, versions)
@@ -239,8 +252,9 @@ function AmendmentPanel({ contract: c, versions }: { contract: ContractView; ver
       {open && (
         <ContractTermsDialog
           target={{ mode: 'amend', contract: c }}
+          viewer={viewer}
           onClose={() => setOpen(false)}
-          onDone={(view) => void navigate(withId(ROUTES.ops.contract, view.contractId))}
+          onDone={(view) => void navigate(withId(DETAIL_PATTERNS[viewer], view.contractId))}
         />
       )}
     </Panel>
@@ -368,10 +382,15 @@ function ContractPage({ viewer }: { viewer: ContractViewer }) {
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
-                {viewer === 'sales' && <SalesActions contract={c} />}
+                {viewer !== 'sales' && <StaffActions contract={c} viewer={viewer} />}
                 <SignaturePanel contract={c} viewer={viewer} />
-                <ContractPaymentPanel contract={c} viewer={viewer} installationsPath={INSTALLATIONS[viewer]} />
-                {viewer === 'sales' && <AmendmentPanel contract={c} versions={list} />}
+                {canSeePayments(viewer) && (
+                  <ContractPaymentPanel contract={c} viewer={viewer} installationsPath={INSTALLATIONS[viewer]} />
+                )}
+                {viewer !== 'sales' && (c.status === 'SIGNED' || c.status === 'PAID') && (
+                  <StaffContractSchedulePanel contract={c} />
+                )}
+                {viewer !== 'sales' && <AmendmentPanel contract={c} versions={list} viewer={viewer} />}
                 <ContentPanel contract={c} />
               </div>
               <ContractAside contract={c} viewer={viewer} />

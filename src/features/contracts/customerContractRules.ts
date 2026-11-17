@@ -111,11 +111,20 @@ export const PAYMENT_POLL_MS = 5_000
 /** Chỉ hợp đồng đã duyệt bản ký mới thanh toán được, một lần 100 % */
 export const canPay = (c: Pick<ContractView, 'status'>) => c.status === 'SIGNED'
 
-/** Link còn trả tiền được của hợp đồng (kể cả link mua gói kèm hợp đồng) */
+/** Lần thanh toán còn mở của hợp đồng: link PayOS còn chờ (kể cả link mua gói kèm hợp đồng) hoặc lựa chọn tiền mặt */
 export function liveAttempt(view: Pick<ContractPaymentView, 'current'> | null | undefined): PaymentAttemptView | null {
   const current = view?.current
   return current && isPayableStatus(current.status) ? current : null
 }
+
+export const isCashAttempt = (a: Pick<PaymentAttemptView, 'method'> | null | undefined) => a?.method === 'CASH'
+
+/** Khách đã chọn tiền mặt, chờ quản lý / quản trị xác nhận (hợp đồng vẫn SIGNED) */
+export const awaitingCash = (view: Pick<ContractPaymentView, 'current' | 'paymentState'> | null | undefined) =>
+  view?.paymentState === 'AWAITING_CASH_CONFIRMATION' || isCashAttempt(liveAttempt(view))
+
+/** Hỏi lại thường xuyên khi đang có link PayOS; chờ tiền mặt thì thưa hơn vì nhân viên xác nhận sau khi gặp khách */
+export const CASH_POLL_MS = 60_000
 
 /**
  * Link mua gói kèm hợp đồng: tổng lớn hơn tiền hợp đồng (PaymentService.CreateCheckoutAsync thêm dòng gói vào cùng link).
@@ -126,26 +135,48 @@ export const isCombinedCheckout = (
   view: Pick<ContractPaymentView, 'amount'>,
 ) => attempt.amount > view.amount
 
-/** Hỏi lại trạng thái khi hợp đồng chờ thanh toán và đang có link còn chờ */
+/** Hỏi lại trạng thái khi hợp đồng chờ thanh toán và đang có lần thanh toán còn mở (PayOS hoặc tiền mặt) */
 export const shouldPollPayment = (view: Pick<ContractPaymentView, 'contractStatus' | 'current'> | null | undefined) =>
   view?.contractStatus === 'SIGNED' && liveAttempt(view) !== null
 
-/** Tạo link: hợp đồng đã ký, trạng thái thanh toán đã tải và chưa có link còn chờ (backend vẫn trả lại link cũ nếu có) */
-export const canCreatePayment = (view: ContractPaymentView | null | undefined) =>
-  view != null && view.contractStatus === 'SIGNED' && liveAttempt(view) === null
+/** Khoảng hỏi lại: 5 giây khi có link PayOS, 60 giây khi chờ xác nhận tiền mặt, không hỏi khi không có gì đang mở */
+export function paymentPollMs(view: Pick<ContractPaymentView, 'contractStatus' | 'current'> | null | undefined) {
+  if (!shouldPollPayment(view)) return false
+  return isCashAttempt(liveAttempt(view)) ? CASH_POLL_MS : PAYMENT_POLL_MS
+}
 
-/** Huỷ ở đây chỉ cho link riêng của hợp đồng; link mua gói kèm hợp đồng thì huỷ đơn gói để gói không bị treo */
+/**
+ * Chọn cách thanh toán (PayOS hoặc tiền mặt): hợp đồng đã ký, trạng thái thanh toán đã tải và chưa có lần nào đang mở. Hai cách
+ * loại trừ nhau: backend chỉ giữ một lần thanh toán mở cho mỗi hợp đồng
+ */
+export function canCreatePayment(view: ContractPaymentView | null | undefined) {
+  if (view == null || view.contractStatus !== 'SIGNED') return false
+  if (view.paymentState) return view.paymentState === 'AWAITING_PAYMENT'
+  return liveAttempt(view) === null
+}
+
+export const canSelectCash = canCreatePayment
+
+/**
+ * Huỷ ở đây: link PayOS riêng của hợp đồng, hoặc bỏ lựa chọn tiền mặt. Link mua gói kèm hợp đồng thì huỷ đơn gói để gói không
+ * bị treo
+ */
 export function canCancelPayment(view: ContractPaymentView | null | undefined) {
   const live = liveAttempt(view)
-  return live !== null && !isCombinedCheckout(live, view!)
+  if (live === null) return false
+  return isCashAttempt(live) || !isCombinedCheckout(live, view!)
 }
 
 /** Lần thanh toán đã nhận tiền nhưng cần Smart Solar xử lý tay: số tiền lệch hoặc trả hai lần */
 export const attemptsNeedingStaff = <T extends Pick<PaymentAttemptView, 'status'>>(attempts: T[]) =>
   attempts.filter((a) => a.status === 'REVIEW_REQUIRED' || a.status === 'REFUND_REQUIRED')
 
-/** Giây còn lại tới hạn link theo giờ máy. Chỉ để hiện: hết giờ thì hỏi lại hệ thống, không tự coi là đã huỷ */
-export function secondsLeft(expiresAt: string, now: number) {
+/**
+ * Giây còn lại tới hạn link theo giờ máy. Chỉ để hiện: hết giờ thì hỏi lại hệ thống, không tự coi là đã huỷ. Tiền mặt không có
+ * hạn (null): trả null
+ */
+export function secondsLeft(expiresAt: string | null, now: number): number | null {
+  if (expiresAt === null) return null
   const at = Date.parse(expiresAt)
   return Number.isNaN(at) ? 0 : Math.max(0, Math.floor((at - now) / 1000))
 }

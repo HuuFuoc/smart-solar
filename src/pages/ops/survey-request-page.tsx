@@ -34,7 +34,7 @@ import { useStaffOnSiteSurveyQuery } from '@/hooks/useOnSiteSurvey'
 import { useQuotationsQuery } from '@/hooks/useSalesQuotations'
 import { OnSiteSurveyResultPanel } from '@/features/onsite-survey/OnSiteSurveyResultPanel'
 import { currentQuotation, formatDateVn, quotationStatusMeta } from '@/features/quotations/quotationDisplay'
-import { SalesQuotationPanel } from '@/features/quotations/SalesQuotationPanel'
+import { QuotationReadPanel } from '@/features/quotations/QuotationReadPanel'
 import { SalesContractPanel } from '@/features/contracts/SalesContractPanel'
 import { contractNextStep, contractStatusLabel } from '@/features/contracts/contractDisplay'
 import { acceptedQuotation, currentContract } from '@/features/contracts/contractRules'
@@ -108,7 +108,7 @@ function trackerSteps(
     },
     {
       label: 'Báo giá',
-      detail: quotation ? quotationStatusMeta(quotation, 'sales').label : undefined,
+      detail: quotation ? quotationStatusMeta(quotation, 'staff').label : undefined,
       state: quotation?.status === 'ACCEPTED' ? 'done' : r.status === 'COMPLETED' ? 'current' : 'todo',
     },
     {
@@ -123,50 +123,26 @@ function trackerSteps(
     : steps
 }
 
-// Việc của sales sau khi khảo sát xong: lập, gửi, sửa báo giá tới khi khách đồng ý
+// Sau khi khảo sát xong: kỹ thuật viên lập, gửi, sửa báo giá; khách trả lời. Kinh doanh chỉ tư vấn nên không có việc đỏ
 function quotationNextStep(quotations: QuotationView[]): TrackerNext {
   const q = currentQuotation(quotations)
   if (!q)
     return {
-      tone: 'danger',
-      title: 'Cần bạn lập báo giá',
-      body: 'Khảo sát tại công trình đã xong. Lập báo giá ở khối Báo giá bên dưới.',
-    }
-  if (q.surveyChanged)
-    return {
-      tone: 'danger',
-      title: 'Biên bản khảo sát đã được bổ sung sau khi lập báo giá',
-      body:
-        q.status === 'DRAFT'
-          ? 'Chỉnh dòng hàng rồi xác nhận theo biên bản mới ở khối Báo giá.'
-          : 'Lập bản sửa theo biên bản mới ở khối Báo giá.',
-    }
-  if (q.status === 'DRAFT' && q.pricingApproval?.status === 'PENDING')
-    return {
       tone: 'info',
-      title: 'Chờ quản lý duyệt giá',
-      body: 'Bản nháp có giá thấp hơn danh mục. Quản lý duyệt xong thì gửi cho khách.',
+      title: 'Chờ kỹ thuật viên lập báo giá',
+      body: 'Kỹ thuật viên đã khảo sát lập báo giá từ danh mục sản phẩm.',
     }
+  if (q.status === 'DRAFT') return { tone: 'info', title: 'Kỹ thuật viên đang soạn báo giá' }
   if (q.status === 'REJECTED')
     return {
-      tone: 'danger',
+      tone: 'warn',
       title: 'Khách từ chối báo giá',
-      body: 'Xem lý do ở khối Báo giá rồi lập bản sửa, hoặc đóng yêu cầu.',
-    }
-  if (q.status === 'DRAFT')
-    return {
-      tone: 'danger',
-      title: 'Bản nháp báo giá chưa gửi khách',
-      body: 'Thêm đủ dòng hàng, chi phí rồi gửi cho khách ở khối Báo giá.',
+      body: 'Gọi khách tìm hiểu lý do; kỹ thuật viên có thể lập bản sửa, hoặc đóng yêu cầu nếu khách thôi.',
     }
   if (q.status === 'REVISION_REQUESTED')
-    return { tone: 'danger', title: 'Khách yêu cầu sửa báo giá', body: 'Xem lý do ở khối Báo giá rồi lập bản sửa.' }
+    return { tone: 'info', title: 'Khách yêu cầu sửa, chờ kỹ thuật viên lập bản sửa' }
   if (q.status === 'ISSUED' && q.isExpired)
-    return {
-      tone: 'danger',
-      title: 'Báo giá đã hết hạn mà khách chưa trả lời',
-      body: 'Gọi khách rồi lập bản sửa với hạn mới.',
-    }
+    return { tone: 'warn', title: 'Báo giá đã hết hạn mà khách chưa trả lời', body: 'Gọi khách hỏi ý kiến.' }
   if (q.status === 'ISSUED')
     return {
       tone: 'info',
@@ -177,12 +153,12 @@ function quotationNextStep(quotations: QuotationView[]): TrackerNext {
     return {
       tone: 'ok',
       title: 'Khách đã đồng ý báo giá',
-      body: `Đồng ý lúc ${formatMoment(q.acceptedAt)}. Bước tiếp theo là lập hợp đồng.`,
+      body: `Đồng ý lúc ${formatMoment(q.acceptedAt)}. Hợp đồng được lập tự động, quản lý hoàn thiện và gửi khách ký.`,
     }
   return { tone: 'neutral', title: 'Đã khảo sát xong tại công trình' }
 }
 
-// Sau khi khách đồng ý báo giá: việc của hợp đồng. Thao tác nằm ở trang hợp đồng nên nút chỉ đưa tới khối Hợp đồng
+// Sau khi khách đồng ý báo giá: việc của hợp đồng (quản lý, khách). Kinh doanh chỉ xem
 function contractStep(contracts: ContractView[]): TrackerNext {
   const c = currentContract(contracts)
   // Bản nháp đầu tiên đã huỷ: báo giá này không lập hợp đồng được nữa, việc còn lại là đóng yêu cầu
@@ -192,13 +168,7 @@ function contractStep(contracts: ContractView[]): TrackerNext {
       title: 'Bản nháp hợp đồng đã huỷ, cần đóng yêu cầu',
       body: 'Báo giá này không lập hợp đồng mới được nữa. Bấm Đóng yêu cầu ở đầu trang và ghi lý do.',
     }
-  if (!c)
-    return {
-      tone: 'danger',
-      title: 'Cần bạn lập hợp đồng',
-      body: 'Khách đã đồng ý báo giá. Lập hợp đồng ở khối Hợp đồng bên dưới.',
-      action: { label: 'Lập hợp đồng', icon: 'add', target: 'contracts' },
-    }
+  if (!c) return { tone: 'info', title: 'Hợp đồng đang được chuẩn bị', body: 'Quản lý hoàn thiện hợp đồng từ báo giá.' }
   const next = contractNextStep(c, 'sales')
   return next.action
     ? { ...next, action: { label: 'Mở khối Hợp đồng', icon: 'description', target: 'contracts' } }
@@ -216,7 +186,7 @@ function nextStep(
   if (r.status === 'CANCELLED') return { tone: 'neutral', title: 'Khách đã rút yêu cầu' }
   // Biên bản khảo sát đổi sau khi khách đồng ý thì bản đó không lập hợp đồng được: quay lại việc của báo giá
   const accepted = quotations && acceptedQuotation(quotations)
-  if (accepted && !accepted.surveyChanged && contracts) return contractStep(contracts)
+  if (accepted && contracts) return contractStep(contracts)
   if (r.status === 'COMPLETED' && quotations) return quotationNextStep(quotations)
   if (r.status === 'COMPLETED')
     return {
@@ -259,10 +229,10 @@ function nextStep(
   }
 }
 
-// Mô phỏng khách đã chọn + các lần chạy khác, sales chỉ được xem
-function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
+// Mô phỏng khách đã chọn + các lần chạy khác, sales chỉ được xem. Chỉ có khi khách gửi từ đánh giá sơ bộ
+function SimulationPanel({ request, preSurveyId }: { request: SurveyRequestDetail; preSurveyId: string }) {
   const selected = request.selectedSimulation
-  const list = useSimulationsQuery(request.preSurveyId)
+  const list = useSimulationsQuery(preSurveyId)
   const [viewId, setViewId] = useState<string | null>(null)
   const viewing = viewId ?? selected?.simulationId ?? null
   const others = list.data?.items ?? []
@@ -293,7 +263,7 @@ function SimulationPanel({ request }: { request: SurveyRequestDetail }) {
           )}
           {viewing ? (
             <SimulationViewer
-              preSurveyId={request.preSurveyId}
+              preSurveyId={preSurveyId}
               simulationId={viewing}
               staleNote="Khách đã sửa mặt lắp sau lần chạy này; số liệu có thể không khớp mặt lắp cuối cùng."
             />
@@ -422,62 +392,72 @@ export function OpsSurveyRequestPage() {
                   <OnSiteSurveyResultPanel surveyRequestId={r.surveyRequestId} enabled={onsiteEnabled} />
                 </div>
                 <div className="sv-card">
-                  <SalesQuotationPanel
-                    surveyRequestId={r.surveyRequestId}
-                    enabled={surveyCompleted}
-                    feasibility={onsite.data?.data.installationFeasibility}
-                  />
+                  <QuotationReadPanel surveyRequestId={r.surveyRequestId} enabled={surveyCompleted} />
                 </div>
                 <div className="sv-card">
                   <SalesContractPanel surveyRequestId={r.surveyRequestId} quotations={quotations.data} />
                 </div>
-                <div className="sv-card">
-                  <Panel>
-                    <PanelHeader
-                      title={
-                        <span className="sv-title">
-                          <Icon name="home_work" className="text-[20px] text-accent-fg" />
-                          Số liệu khách khai
-                        </span>
-                      }
-                      action={<span className="text-meta text-fg-3">Tự kê khai qua form web</span>}
-                    />
-                    <PanelBody className="space-y-4">
-                      <div className="sv-tiles">
-                        <SvTile label="Dùng được / tổng" value={formatAreaPair(r.usableAreaM2, r.totalAreaM2)}>
-                          {usedPct != null && (
-                            <>
-                              <span className="sv-bar" role="presentation">
-                                <span style={{ width: `${usedPct}%` }} />
-                              </span>
-                              <span className="text-meta text-fg-2">{usedPct}% diện tích</span>
-                            </>
-                          )}
-                        </SvTile>
-                        <SvTile
-                          label="Độ dốc mái"
-                          value={r.tiltDegree == null ? '—' : `${num.format(r.tiltDegree)} độ`}
-                        />
-                        <SvTile
-                          label="Hướng mái"
-                          value={
-                            r.azimuthDegree == null
-                              ? '—'
-                              : `${num.format(r.azimuthDegree)} độ, ${directionLabel(r.azimuthDegree)}`
-                          }
-                        />
-                        <SvTile
-                          label="Vật cản"
-                          value={r.hasObstruction == null ? '—' : r.hasObstruction ? 'Có' : 'Không có'}
-                        />
-                      </div>
-                      <div className="sv-tiles">
-                        <SvTile label="Bề mặt" value={surfaceTypeLabel(r.installationSurfaceType)} />
-                        <SvTile label="Vật liệu" value={r.surfaceMaterial || '—'} />
-                      </div>
-                    </PanelBody>
-                  </Panel>
-                </div>
+                {!r.preSurveyId ? (
+                  <div className="sv-card">
+                    <Panel>
+                      <PanelHeader title="Số liệu khách khai" />
+                      <PanelBody>
+                        <p className="text-body text-fg-2">
+                          Khách đặt khảo sát trực tiếp, không qua đánh giá sơ bộ nên không có số liệu khai trước và mô
+                          phỏng.
+                        </p>
+                      </PanelBody>
+                    </Panel>
+                  </div>
+                ) : (
+                  <div className="sv-card">
+                    <Panel>
+                      <PanelHeader
+                        title={
+                          <span className="sv-title">
+                            <Icon name="home_work" className="text-[20px] text-accent-fg" />
+                            Số liệu khách khai
+                          </span>
+                        }
+                        action={<span className="text-meta text-fg-3">Tự kê khai qua form web</span>}
+                      />
+                      <PanelBody className="space-y-4">
+                        <div className="sv-tiles">
+                          <SvTile label="Dùng được / tổng" value={formatAreaPair(r.usableAreaM2, r.totalAreaM2)}>
+                            {usedPct != null && (
+                              <>
+                                <span className="sv-bar" role="presentation">
+                                  <span style={{ width: `${usedPct}%` }} />
+                                </span>
+                                <span className="text-meta text-fg-2">{usedPct}% diện tích</span>
+                              </>
+                            )}
+                          </SvTile>
+                          <SvTile
+                            label="Độ dốc mái"
+                            value={r.tiltDegree == null ? '—' : `${num.format(r.tiltDegree)} độ`}
+                          />
+                          <SvTile
+                            label="Hướng mái"
+                            value={
+                              r.azimuthDegree == null
+                                ? '—'
+                                : `${num.format(r.azimuthDegree)} độ, ${directionLabel(r.azimuthDegree)}`
+                            }
+                          />
+                          <SvTile
+                            label="Vật cản"
+                            value={r.hasObstruction == null ? '—' : r.hasObstruction ? 'Có' : 'Không có'}
+                          />
+                        </div>
+                        <div className="sv-tiles">
+                          <SvTile label="Bề mặt" value={surfaceTypeLabel(r.installationSurfaceType)} />
+                          <SvTile label="Vật liệu" value={r.surfaceMaterial || '—'} />
+                        </div>
+                      </PanelBody>
+                    </Panel>
+                  </div>
+                )}
               </div>
 
               <aside aria-label="Khách hàng" className="sv-card min-w-0 space-y-4 self-start">
@@ -538,9 +518,11 @@ export function OpsSurveyRequestPage() {
               </aside>
             </div>
 
-            <div className="sv-card mt-6">
-              <SimulationPanel request={r} />
-            </div>
+            {r.preSurveyId && (
+              <div className="sv-card mt-6">
+                <SimulationPanel request={r} preSurveyId={r.preSurveyId} />
+              </div>
+            )}
 
             {canClose && (
               <CloseRequestDialog

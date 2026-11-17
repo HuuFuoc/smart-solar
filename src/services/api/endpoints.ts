@@ -67,6 +67,8 @@ export const ENDPOINTS = {
   },
   customerSurveyRequests: {
     base: '/customers/me/survey-requests',
+    // Đặt khảo sát thẳng cho một địa điểm của khách, không qua đánh giá sơ bộ
+    direct: '/customers/me/survey-requests/direct',
     byId: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}`,
     booking: (surveyRequestId: string) => `/customers/me/survey-requests/${encode(surveyRequestId)}/booking`,
     bookingCancel: (surveyRequestId: string) =>
@@ -103,10 +105,17 @@ export const ENDPOINTS = {
     submissionUrl: (contractId: string, submissionId: string) =>
       `/customers/me/contracts/${encode(contractId)}/submissions/${encode(submissionId)}/url`,
   },
-  // Thanh toán 100% hợp đồng đã ký qua PayOS
+  // Thanh toán 100% hợp đồng đã ký: PayOS hoặc tiền mặt (quản lý / quản trị xác nhận đã nhận)
   customerPayments: {
     base: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/payments`,
+    cash: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/payments/cash`,
     cancel: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/payments/cancel`,
+  },
+  // Lịch thi công kỹ thuật viên đã thống nhất với khách
+  customerInstallationSchedules: {
+    base: '/customers/me/installation-schedules',
+    byContract: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/installation-schedule`,
+    changeRequest: (scheduleId: string) => `/customers/me/installation-schedules/${encode(scheduleId)}/change-request`,
   },
   // Báo giá lắp đặt: khách không thấy bản nháp
   customerQuotations: {
@@ -173,26 +182,14 @@ export const ENDPOINTS = {
     request: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}`,
     quotations: (requestId: string) => `/sales/after-sales/requests/${encode(requestId)}/quotations`,
   },
-  // Báo giá lắp đặt của yêu cầu khảo sát kinh doanh đã nhận; quản lý / quản trị chỉ đọc
+  // Báo giá lắp đặt, chỉ đọc: kinh doanh xem yêu cầu mình phụ trách, quản lý / quản trị xem mọi yêu cầu. Lệnh ghi cũ của kinh
+  // doanh (lập, sửa, gửi, tự tạo, hàng chờ xem lại, duyệt giá) backend trả 410 ENDPOINT_RETIRED
   salesQuotations: {
     bySurveyRequest: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/quotations`,
     byId: (quotationId: string) => `/quotations/${encode(quotationId)}`,
-    lines: (quotationId: string) => `/quotations/${encode(quotationId)}/lines`,
-    line: (quotationId: string, lineId: string) => `/quotations/${encode(quotationId)}/lines/${encode(lineId)}`,
-    issue: (quotationId: string) => `/quotations/${encode(quotationId)}/issue`,
-    revisions: (quotationId: string) => `/quotations/${encode(quotationId)}/revisions`,
-    document: (quotationId: string) => `/quotations/${encode(quotationId)}/document`,
-    generate: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/quotations/generate`,
-    pendingReview: '/quotations/pending-review',
-    confirmSurveyVersion: (quotationId: string) => `/quotations/${encode(quotationId)}/confirm-survey-version`,
-    pricingApprovalRequest: (quotationId: string) => `/quotations/${encode(quotationId)}/pricing-approval-request`,
   },
-  // Duyệt giá báo giá, chỉ quản lý
-  managerQuotations: {
-    pricingApprovals: '/manager/quotations/pricing-approvals',
-    pricingApproval: (quotationId: string) => `/manager/quotations/${encode(quotationId)}/pricing-approval`,
-  },
-  // Hợp đồng lắp đặt phía nhân viên (tag SalesContracts) và trạng thái thanh toán của hợp đồng (tag StaffPayments)
+  // Hợp đồng lắp đặt phía nhân viên (tag SalesContracts): kinh doanh chỉ đọc, quản lý / quản trị soạn, phát hành, gửi ký, duyệt
+  // bản ký. Thanh toán của hợp đồng (tag StaffPayments) chỉ quản lý / quản trị
   contracts: {
     fromQuotation: (quotationId: string) => `/quotations/${encode(quotationId)}/contracts`,
     bySurveyRequest: (surveyRequestId: string) => `/survey-requests/${encode(surveyRequestId)}/contracts`,
@@ -207,6 +204,7 @@ export const ENDPOINTS = {
     review: (contractId: string) => `/contracts/${encode(contractId)}/review`,
     amendments: (contractId: string) => `/contracts/${encode(contractId)}/amendments`,
     payments: (contractId: string) => `/contracts/${encode(contractId)}/payments`,
+    cashConfirm: (contractId: string) => `/contracts/${encode(contractId)}/payments/cash/confirm`,
   },
 
   // Kỹ thuật viên
@@ -240,6 +238,23 @@ export const ENDPOINTS = {
   },
   technicianSchedule: {
     schedule: (technicianUserId: string) => `/technicians/${encode(technicianUserId)}/schedule`,
+  },
+  // Giỏ báo giá của kỹ thuật viên đã khảo sát xong: sản phẩm danh mục + số lượng, giá và tổng do backend tính
+  technicianQuotations: {
+    create: (surveyRequestId: string) => `/technician/survey-requests/${encode(surveyRequestId)}/quotation`,
+    bySurveyRequest: (surveyRequestId: string) => `/technician/survey-requests/${encode(surveyRequestId)}/quotations`,
+    byId: (quotationId: string) => `/technician/quotations/${encode(quotationId)}`,
+    lines: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/lines`,
+    line: (quotationId: string, lineId: string) =>
+      `/technician/quotations/${encode(quotationId)}/lines/${encode(lineId)}`,
+    issue: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/issue`,
+    revisions: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/revisions`,
+  },
+  // Lịch thi công: kỹ thuật viên đã khảo sát ghi ngày thống nhất với khách sau khi hợp đồng được ký
+  technicianInstallationSchedules: {
+    base: '/technicians/me/installation-schedules',
+    byContract: (contractId: string) => `/technicians/me/contracts/${encode(contractId)}/installation-schedule`,
+    cancel: (scheduleId: string) => `/technicians/me/installation-schedules/${encode(scheduleId)}/cancel`,
   },
   technicianInstallations: {
     base: '/technicians/me/installation-projects',
@@ -290,6 +305,13 @@ export const ENDPOINTS = {
     approveSubstitution: (projectId: string) =>
       `/installation-projects/${encode(projectId)}/equipment-substitution/approve`,
     energyMonitoring: (projectId: string) => `/installation-projects/${encode(projectId)}/energy-monitoring`,
+  },
+  // Lịch thi công phía quản lý / quản trị: hàng chờ hẹn lại, xác nhận lại, ghi lịch cho kỹ thuật viên khác, huỷ
+  managerInstallationSchedules: {
+    base: '/manager/installation-schedules',
+    byContract: (contractId: string) => `/manager/contracts/${encode(contractId)}/installation-schedule`,
+    confirm: (contractId: string) => `/manager/contracts/${encode(contractId)}/installation-schedule/confirm`,
+    cancel: (scheduleId: string) => `/manager/installation-schedules/${encode(scheduleId)}/cancel`,
   },
   // Bảo hành, sửa chữa, bảo trì (quản lý và quản trị)
   managerAfterSales: {
@@ -368,6 +390,8 @@ export const ENDPOINTS = {
   // Chatbot hỏi đáp theo tài liệu đã công bố (mọi người đăng nhập, chỉ đọc phiên của mình)
   chat: {
     messages: '/chat/messages',
+    // Tư vấn cấu hình theo số liệu nhập, không lưu vào phiên
+    advisor: '/chat/advisor',
     sessions: '/chat/sessions',
     session: (sessionId: string) => `/chat/sessions/${encode(sessionId)}`,
   },

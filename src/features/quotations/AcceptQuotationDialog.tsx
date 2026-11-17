@@ -8,7 +8,9 @@ import { useAcceptMyQuotationMutation } from '@/hooks/useCustomerQuotations'
 import { errorMessage } from '@/services/api/errors'
 import type { QuotationView } from '@/types/res/quotationsRes'
 
-// Khách xác nhận đồng ý báo giá. Đồng ý rồi thì không đổi lại được; hợp đồng lập theo đúng bản này
+// Khách xác nhận đồng ý báo giá. Đồng ý rồi thì không đổi lại được; backend tự lập bản nháp hợp đồng theo đúng bản này trong
+// cùng lệnh (FE không gọi lập hợp đồng). Khách chỉ thấy hợp đồng khi Smart Solar gửi ký, nên trước đó báo "đang chuẩn bị"
+// Bấm hai lần backend vẫn chỉ đồng ý một lần
 
 type Props = { open: boolean; quotation: QuotationView; onClose: () => void }
 
@@ -24,7 +26,7 @@ export function AcceptQuotationDialog({ open, quotation: q, onClose }: Props) {
     setError(null)
     try {
       await accept.mutateAsync(q.quotationId)
-      toast.success('Đã đồng ý báo giá.')
+      toast.success('Đã đồng ý báo giá. Smart Solar đang chuẩn bị hợp đồng và sẽ báo khi sẵn sàng để ký.')
       close()
     } catch (e) {
       setError(errorMessage(e))
@@ -46,8 +48,8 @@ export function AcceptQuotationDialog({ open, quotation: q, onClose }: Props) {
           VAT.
         </p>
         <p>
-          Đồng ý rồi thì không đổi lại được. Smart Solar lập hợp đồng theo đúng báo giá này. Cần đổi hạng mục hay giá,
-          chọn Yêu cầu sửa thay vì đồng ý.
+          Đồng ý rồi thì không đổi lại được. Hợp đồng được lập theo đúng báo giá này; Smart Solar gửi bạn ký khi hợp
+          đồng sẵn sàng. Cần đổi hạng mục hay giá, chọn Yêu cầu sửa thay vì đồng ý.
         </p>
       </div>
       {error && (

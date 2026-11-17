@@ -15,7 +15,7 @@ import { useAttachOfficialDocumentMutation } from '@/hooks/useContracts'
 import { useFileUpload } from '@/hooks/useFiles'
 import type { ContractView } from '@/types/res/customerContractsRes'
 
-// Gắn PDF hợp đồng chính thức. PDF do kinh doanh tạo ngoài hệ thống từ đúng phiên bản đã phát hành; ở đây chỉ tải lên
+// Gắn PDF hợp đồng chính thức. PDF do quản lý / quản trị tạo ngoài hệ thống từ đúng phiên bản đã phát hành; ở đây chỉ tải lên
 // (mục đích CONTRACT_DOCUMENT) rồi xác nhận PDF đó thuộc phiên bản có mã nội dung đang hiện. Mã nội dung và revision lấy
 // lúc mở hộp thoại: hợp đồng đổi trong lúc đó thì backend từ chối, người dùng mở lại để xác nhận với mã mới
 

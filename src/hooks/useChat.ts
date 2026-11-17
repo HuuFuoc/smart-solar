@@ -4,7 +4,7 @@ import { isSessionId, mergeExchange } from '@/features/chat/chatRules'
 import * as chatService from '@/services/chatService'
 import type { ApiError } from '@/services/api/errors'
 import type { AskChatRequest } from '@/types/req/chatReq'
-import type { ChatAnswerView, ChatSessionDetailView, ChatSessionView } from '@/types/res/chatRes'
+import type { ChatAnswerView, ChatSessionDetailView, ChatSessionView, SolarAdvisorView } from '@/types/res/chatRes'
 
 // Chatbot. Khoá cache kèm mã người đăng nhập để tài khoản khác không bao giờ đọc nhầm phiên; đăng xuất / đăng nhập lại thì
 // AuthProvider xoá cả cache. Câu trả lời chỉ vào lịch sử khi backend đã trả về, không thêm tin tạm
@@ -15,6 +15,8 @@ export const chatKeys = {
   session: (userId: string, sessionId: string) => [...chatKeys.all(userId), 'session', sessionId] as const,
   /** `notice` backend trả kèm từng câu trả lời (GET phiên không có), theo mã tin nhắn */
   notices: (userId: string) => [...chatKeys.all(userId), 'notices'] as const,
+  /** Kết quả trợ lý cấu hình kèm câu trả lời (GET phiên không có), theo mã tin nhắn */
+  advisors: (userId: string) => [...chatKeys.all(userId), 'advisors'] as const,
 }
 
 // Như mặc định (4xx không thử lại), thêm 503: chức năng đang tắt hoặc dịch vụ trả lời đang lỗi thì gọi lại vẫn vậy
@@ -61,6 +63,20 @@ export function useChatNotices() {
   }).data
 }
 
+/** Kết quả trợ lý cấu hình đã nhận trong lần dùng trang này, theo mã câu trả lời */
+export function useChatAdvisors() {
+  const queryClient = useQueryClient()
+  const userKey = useUserKey()
+  const queryKey = chatKeys.advisors(userKey ?? '')
+  return useQuery<Record<string, SolarAdvisorView>>({
+    queryKey,
+    queryFn: () => queryClient.getQueryData<Record<string, SolarAdvisorView>>(queryKey) ?? {},
+    initialData: {},
+    staleTime: Infinity,
+    gcTime: Infinity,
+  }).data
+}
+
 /** Không tự gửi lại khi lỗi: người dùng bấm Gửi lại (cùng clientMessageId nếu cùng câu, cùng phiên) */
 export function useAskChatMutation() {
   const queryClient = useQueryClient()
@@ -87,6 +103,12 @@ export function useAskChatMutation() {
         ...map,
         [answer.answer.messageId]: answer.notice,
       }))
+      const advisor = answer.advisor
+      if (advisor)
+        queryClient.setQueryData<Record<string, SolarAdvisorView>>(chatKeys.advisors(userKey), (map) => ({
+          ...map,
+          [answer.answer.messageId]: advisor,
+        }))
       queryClient.setQueryData<ChatSessionView[]>(chatKeys.sessions(userKey), (old) => {
         const title =
           answer.question.content.length <= 80 ? answer.question.content : answer.question.content.slice(0, 80) + '…'

@@ -1,6 +1,7 @@
-// Viết tay vì swagger của tag SalesQuotations và CustomerQuotations chỉ khai "200 OK". Theo record C# của backend `main`
-// (58f9635): Modules.Quotations (QuotationView, QuotationLineView, QuotationEventView, PricingApprovalView). Kinh doanh, quản
-// lý và khách nhận cùng một view; khách không bao giờ thấy bản nháp, giá danh mục, phần duyệt giá và phần rà giá
+// Viết tay vì swagger của tag TechnicianQuotations, SalesQuotations và CustomerQuotations chỉ khai "200 OK". Theo record C# của
+// backend `main` (ad10455): Modules.Quotations (QuotationView, QuotationLineView, QuotationEventView). Kỹ thuật viên, kinh doanh,
+// quản lý và khách nhận cùng một view; khách không bao giờ thấy bản nháp và giá danh mục. `pricingBasis`, `pricingReview`,
+// `pricingApproval` chỉ còn ở báo giá cũ (SALES / AUTOMATIC), báo giá của kỹ thuật viên luôn null
 
 /** REJECTED (khách từ chối) và CANCELLED (yêu cầu khảo sát bị rút / đóng khi báo giá còn mở) là trạng thái cuối */
 export type QuotationStatus =
@@ -99,16 +100,10 @@ export type PricingApprovalView = {
   decision: PricingApprovalStep | null
 }
 
-/** POST /survey-requests/{id}/quotations/generate. `outcome`: AutomaticQuotationOutcomes; `quotation` null khi không tạo */
-export type AutomaticQuotationResult = {
-  outcome: string
-  quotation: QuotationView | null
-  issues: PricingIssue[]
-}
-
 /**
- * GET /survey-requests/{id}/quotations, /quotations/{id}, /quotations/pending-review, /manager/quotations/pricing-approvals và
- * mọi lệnh ghi của kinh doanh, quản lý; GET /customers/me/quotations(/{id}), accept, reject, revision-request của khách.
+ * GET /technician/survey-requests/{id}/quotations, /technician/quotations/{id} và mọi lệnh ghi giỏ báo giá của kỹ thuật viên;
+ * GET /survey-requests/{id}/quotations, /quotations/{id} (kinh doanh phụ trách, quản lý, quản trị chỉ đọc);
+ * GET /customers/me/quotations(/{id}), accept, reject, revision-request của khách.
  * Tiền là VND nguyên, backend tự tính mọi tổng:
  * cộng = thiết bị + nhân công + vận chuyển + dịch vụ khác; thuế tính trên (cộng − giảm giá); tổng = (cộng − giảm giá) + thuế
  */
@@ -147,8 +142,11 @@ export type QuotationView = {
   /** Gửi làm `revision` khi sửa bản nháp / gửi khách */
   revision: number
   events: QuotationEventView[] | null
-  /** SALES: kinh doanh lập; AUTOMATIC: hệ thống tính từ danh sách thiết bị của biên bản khảo sát */
-  origin: 'SALES' | 'AUTOMATIC' | (string & {})
+  /**
+   * TECHNICIAN: kỹ thuật viên đã khảo sát lập từ danh mục (cách duy nhất từ backend ad10455). SALES / AUTOMATIC là báo giá cũ,
+   * chỉ còn để xem
+   */
+  origin: 'TECHNICIAN' | 'SALES' | 'AUTOMATIC' | (string & {})
   /** Chỉ bản tự động, không gửi cho khách */
   pricingBasis: PricingBasis | null
   currentSurveyVersion: number | null

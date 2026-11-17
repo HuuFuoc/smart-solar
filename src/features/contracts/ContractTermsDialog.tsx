@@ -18,13 +18,14 @@ import {
   useCreateContractMutation,
   useUpdateContractDraftMutation,
 } from '@/hooks/useContracts'
-import { useInstallationWarrantyOptionsQuery } from '@/hooks/useSalesAfterSales'
+import { useWarrantyOptionsQuery } from '@/hooks/useAdminAfterSales'
 import { isFeatureUnavailable } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
 import type { QuotationView } from '@/types/res/quotationsRes'
 
-// Lập hợp đồng từ báo giá đã đồng ý, sửa bản nháp, hoặc lập phụ lục. Giá do backend chép từ báo giá nên ở đây chỉ có
-// điều khoản và thời hạn bảo hành lắp đặt (chọn trong các tuỳ chọn quản trị đang bật, không tự đặt số)
+// Lập hợp đồng từ báo giá đã đồng ý (chỉ báo giá cũ chưa có hợp đồng; bình thường backend tự lập khi khách đồng ý), sửa bản nháp,
+// hoặc lập phụ lục. Giá do backend chép từ báo giá nên ở đây chỉ có điều khoản và thời hạn bảo hành lắp đặt (chọn trong các tuỳ
+// chọn quản trị đang bật, không tự đặt số). Chỉ quản trị đọc được danh sách thời hạn; quản lý giữ thời hạn đang có (gửi null)
 
 export type TermsTarget =
   | { mode: 'create'; quotation: QuotationView }
@@ -35,10 +36,13 @@ const TITLES = { create: 'Lập hợp đồng', edit: 'Sửa bản nháp hợp �
 
 export function ContractTermsDialog({
   target,
+  viewer,
   onClose,
   onDone,
 }: {
   target: TermsTarget
+  /** Người soạn hợp đồng; quản lý không có API đọc danh sách thời hạn bảo hành */
+  viewer: 'manager' | 'admin'
   onClose: () => void
   /** Chạy sau khi lưu xong, với phiên bản backend trả về */
   onDone?: (view: ContractView) => void
@@ -46,7 +50,8 @@ export function ContractTermsDialog({
   const create = useCreateContractMutation()
   const update = useUpdateContractDraftMutation()
   const amend = useCreateAmendmentMutation()
-  const options = useInstallationWarrantyOptionsQuery()
+  const canChooseWarranty = viewer === 'admin'
+  const options = useWarrantyOptionsQuery({ enabled: canChooseWarranty })
   const busy = create.isPending || update.isPending || amend.isPending
   const initialTerms = target.mode === 'create' ? (target.quotation.terms ?? '') : (target.contract.terms ?? '')
   const [terms, setTerms] = useState(initialTerms)
@@ -128,18 +133,28 @@ export function ContractTermsDialog({
           label="Thời hạn bảo hành lắp đặt"
           htmlFor="contract-warranty"
           hint={
-            options.isError
-              ? undefined
-              : 'Chọn trong các thời hạn quản trị đang dùng. Thời hạn được chép vào hợp đồng lúc phát hành.'
+            !canChooseWarranty
+              ? 'Giữ thời hạn đang có (bản nháp tự lập dùng thời hạn mặc định). Muốn đổi thời hạn thì nhờ quản trị.'
+              : options.isError
+                ? undefined
+                : 'Chọn trong các thời hạn quản trị đang dùng. Thời hạn được chép vào hợp đồng lúc phát hành.'
           }
         >
           <Select
             id="contract-warranty"
             value={warranty}
-            disabled={busy || options.isPending}
+            disabled={busy || !canChooseWarranty || options.isPending}
             onChange={(e) => setWarranty(e.target.value)}
           >
-            <option value="">{options.isPending ? 'Đang tải thời hạn…' : keepLabel}</option>
+            <option value="">
+              {!canChooseWarranty
+                ? current != null
+                  ? `Giữ ${warrantyText(current)}`
+                  : 'Theo mặc định'
+                : options.isPending
+                  ? 'Đang tải thời hạn…'
+                  : keepLabel}
+            </option>
             {active.map((o) => (
               <option key={o.optionId} value={String(o.months)}>
                 {warrantyText(o.months)}
@@ -148,7 +163,7 @@ export function ContractTermsDialog({
             ))}
           </Select>
         </Field>
-        {options.isError ? (
+        {!canChooseWarranty ? null : options.isError ? (
           <Notice tone="warn">
             {isFeatureUnavailable(options.error)
               ? 'Chưa đọc được danh sách thời hạn bảo hành vì chức năng chưa sẵn sàng.'

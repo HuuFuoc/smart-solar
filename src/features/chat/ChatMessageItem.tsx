@@ -1,9 +1,10 @@
 import { Link } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
 import { CHAT_ROLES } from '@/common/chat'
+import { AdvisorResult } from '@/features/chat/AdvisorResult'
 import { answerStateMeta, citationMeta } from '@/features/chat/chatDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
-import type { ChatMessageView, CitationView } from '@/types/res/chatRes'
+import type { ChatMessageView, CitationView, SolarAdvisorView } from '@/types/res/chatRes'
 import { cx } from '@/utils/cx'
 
 // Một tin nhắn trong cuộc trò chuyện. Trợ lý trả lời kèm biểu tượng, nhãn trạng thái và danh sách nguồn RAG.
@@ -11,10 +12,13 @@ import { cx } from '@/utils/cx'
 export function ChatMessageItem({
   message,
   notice,
+  advisor,
   documentHref,
 }: {
   message: ChatMessageView
   notice?: string
+  /** Kết quả trợ lý cấu hình, chỉ có với câu trả lời nhận trong lần dùng trang này */
+  advisor?: SolarAdvisorView
   documentHref?: (documentId: string) => string
 }) {
   const isUser = message.role === CHAT_ROLES.USER
@@ -37,7 +41,9 @@ export function ChatMessageItem({
           {message.content}
         </div>
 
-        {state && (
+        {!isUser && advisor && <AdvisorResult advisor={advisor} />}
+
+        {state && !advisor && (
           <div className="mt-2 text-left">
             <Badge tone={state.tone}>{state.label}</Badge>
           </div>

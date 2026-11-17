@@ -43,7 +43,8 @@ export type TechnicianJobProperty = {
 }
 
 export type TechnicianJobPreSurvey = {
-  preSurveyId: string
+  /** Null với yêu cầu khách đặt trực tiếp: các số liệu dưới đây đều null */
+  preSurveyId: string | null
   totalAreaM2: number | null
   usableAreaM2: number | null
   surfaceLengthM: number | null
@@ -74,6 +75,15 @@ export type TechnicianJobView = {
   simulationDetailPath: string | null
   /** Đã qua giờ kết thúc mà chưa khảo sát xong */
   isOverdue: boolean
+  /** PRE_SURVEY | DIRECT_BOOKING */
+  source: string
+  /** Người gặp kỹ thuật viên tại công trình khi khác chủ tài khoản (đặt trực tiếp); null = khách ở trên */
+  onSiteContact: TechnicianJobContact | null
+}
+
+export type TechnicianJobContact = {
+  name: string | null
+  phone: string | null
 }
 
 /**

@@ -25,7 +25,8 @@ export type SurveyRequestAppointmentItem = {
 
 export type PendingSurveyRequestItem = {
   surveyRequestId: string
-  preSurveyId: string
+  /** Null khi khách đặt khảo sát trực tiếp, không qua đánh giá sơ bộ */
+  preSurveyId: string | null
   customerName: string | null
   propertyName: string | null
   province: string | null
@@ -43,7 +44,8 @@ export type PendingSurveyRequestItem = {
 
 export type MySurveyRequestItem = {
   surveyRequestId: string
-  preSurveyId: string
+  /** Null khi khách đặt khảo sát trực tiếp */
+  preSurveyId: string | null
   customerName: string | null
   propertyName: string | null
   province: string | null
@@ -60,7 +62,8 @@ export type MySurveyRequestItem = {
 
 export type SurveyRequestDetail = {
   surveyRequestId: string
-  preSurveyId: string
+  /** Null khi khách đặt khảo sát trực tiếp: không có số liệu khách khai, mô phỏng */
+  preSurveyId: string | null
   assignedSaleId: string | null
   customerName: string | null
   customerPhone: string | null

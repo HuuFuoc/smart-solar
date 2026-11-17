@@ -8,3 +8,12 @@ export type BookSurveyAppointmentRequest = {
 export type CancelSurveyAppointmentRequest = {
   reason?: string | null
 }
+
+export type DirectSurveyBookingRequest = {
+  /** Format: uuid */
+  propertySiteId?: string | null
+  startsAt?: string | null
+  contactName?: string | null
+  contactPhone?: string | null
+  note?: string | null
+}

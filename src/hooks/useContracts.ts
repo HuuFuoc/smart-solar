@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { installationScheduleKeys } from '@/hooks/useInstallationSchedules'
 import * as contractService from '@/services/contractService'
 import type { ApiError } from '@/services/api/errors'
 import type {
@@ -6,7 +7,9 @@ import type {
   ContractTermsRequest,
   OfficialDocumentRequest,
 } from '@/types/req/salesContractsReq'
+import type { CashConfirmationRequest } from '@/types/req/staffPaymentsReq'
 import type { ContractDocumentTarget } from '@/services/contractService'
+import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 import type { ContractDocumentUrlView, ContractView } from '@/types/res/customerContractsRes'
 import type { ContractPaymentView } from '@/types/res/staffPaymentsRes'
 
@@ -120,6 +123,22 @@ export function useCreateAmendmentMutation() {
     ({ contractId, body }: { contractId: string; body: Omit<ContractTermsRequest, 'revision'> }) =>
       contractService.createAmendment(contractId, body),
   )
+}
+
+/**
+ * Quản lý / quản trị ghi nhận tiền mặt. Không cập nhật lạc quan: xong (kể cả lỗi) thì tải lại hợp đồng, thanh toán và lịch thi
+ * công (đã thanh toán thì backend xác nhận lịch thi công)
+ */
+export function useConfirmCashPaymentMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<PaymentAttemptView, ApiError, { contractId: string; body: CashConfirmationRequest }>({
+    mutationFn: ({ contractId, body }) => contractService.confirmCashPayment(contractId, body),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: contractKeys.all }),
+        queryClient.invalidateQueries({ queryKey: installationScheduleKeys.all }),
+      ]),
+  })
 }
 
 /** Xin link ký sẵn của PDF chính thức / một bản ký khi người dùng bấm. Không lưu link vào cache: link hết hạn sau vài phút */

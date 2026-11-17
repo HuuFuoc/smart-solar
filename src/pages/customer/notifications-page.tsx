@@ -27,7 +27,8 @@ function target(n: NotificationView) {
   if (n.subscriptionId) return { to: ROUTES.customer.packages, text: 'Xem gói dịch vụ' }
   if (n.type.startsWith('SURVEY_')) return { to: ROUTES.customer.requests, text: 'Xem lịch khảo sát' }
   if (n.type === 'INSTALLATION_QUOTATION_ISSUED') return { to: ROUTES.customer.quotations, text: 'Xem báo giá' }
-  if (n.type.startsWith('CONTRACT_')) return { to: ROUTES.customer.contracts, text: 'Xem hợp đồng' }
+  if (n.type.startsWith('CONTRACT_') || n.type.startsWith('INSTALLATION_SCHEDULE_'))
+    return { to: ROUTES.customer.contracts, text: 'Xem hợp đồng' }
   if (n.type.startsWith('INSTALLATION_') || n.type === 'EQUIPMENT_SUBSTITUTION_APPROVAL_REQUIRED')
     return { to: ROUTES.customer.projects, text: 'Xem công trình' }
   return null

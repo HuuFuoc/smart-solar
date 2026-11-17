@@ -11,17 +11,22 @@ import {
 import type { QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
 import { cx } from '@/utils/cx'
 
-// Các khối chỉ để xem của một báo giá lắp đặt: dòng hàng, tổng tiền, điều khoản. Kinh doanh và khách dùng chung
+// Các khối chỉ để xem của một báo giá lắp đặt: dòng hàng, tổng tiền, điều khoản. Nhân viên và khách dùng chung
 
-/** Bảng dòng hàng. `actions` thêm cột thao tác cho bản nháp; `showCatalogPrice` cho kinh doanh thấy giá đã đổi so với danh mục */
+/**
+ * Bảng dòng hàng. `actions` thêm cột thao tác cho giỏ nháp; `showCatalogPrice` cho nhân viên thấy giá đã đổi so với danh mục
+ * (báo giá cũ của kinh doanh); `flaggedLineIds` tô đỏ dòng backend không định giá được
+ */
 export function QuotationLines({
   quotation,
   actions,
   showCatalogPrice,
+  flaggedLineIds,
 }: {
   quotation: QuotationView
   actions?: (line: QuotationLineView) => ReactNode
   showCatalogPrice?: boolean
+  flaggedLineIds?: string[]
 }) {
   const money = (amount: number) => formatQuotationMoney(amount, quotation.currency)
   return (
@@ -51,6 +56,11 @@ export function QuotationLines({
               <Td label="Hạng mục">
                 <p className="font-medium text-fg">{line.name}</p>
                 {identity && <p className="text-meta text-fg-2">{identity}</p>}
+                {flaggedLineIds?.includes(line.lineId) && (
+                  <p className="text-meta text-danger">
+                    Chưa định giá được: bỏ dòng này hoặc nhờ quản trị cập nhật giá.
+                  </p>
+                )}
                 {lineDescription(line) && (
                   <p className="mt-1 text-meta whitespace-pre-line text-fg-2">{lineDescription(line)}</p>
                 )}
@@ -93,15 +103,19 @@ function TotalRow({ label, value, strong }: { label: ReactNode; value: string; s
   )
 }
 
-/** Cách tính do backend: cộng = thiết bị + nhân công + vận chuyển + dịch vụ khác; thuế tính trên (cộng − giảm giá) */
+/**
+ * Cách tính do backend: cộng = thiết bị + nhân công + vận chuyển + dịch vụ khác; thuế tính trên (cộng − giảm giá). Báo giá của kỹ
+ * thuật viên gộp mọi dòng (thiết bị và dịch vụ trong danh mục) vào khoản thiết bị, ba khoản còn lại luôn 0
+ */
 export function QuotationTotals({ quotation, className }: { quotation: QuotationView; className?: string }) {
   const money = (amount: number) => formatQuotationMoney(amount, quotation.currency)
   const q = quotation
+  const cart = q.origin === 'TECHNICIAN'
   return (
     <dl className={cx('w-full max-w-md', className)}>
-      <TotalRow label="Thiết bị, vật tư" value={money(q.equipmentSubtotal)} />
-      <TotalRow label="Nhân công lắp đặt" value={money(q.laborCost)} />
-      <TotalRow label="Vận chuyển" value={money(q.transportCost)} />
+      <TotalRow label={cart ? 'Thiết bị, dịch vụ' : 'Thiết bị, vật tư'} value={money(q.equipmentSubtotal)} />
+      {(!cart || q.laborCost > 0) && <TotalRow label="Nhân công lắp đặt" value={money(q.laborCost)} />}
+      {(!cart || q.transportCost > 0) && <TotalRow label="Vận chuyển" value={money(q.transportCost)} />}
       {q.otherServiceCost > 0 && <TotalRow label="Dịch vụ khác" value={money(q.otherServiceCost)} />}
       <TotalRow label="Cộng" value={money(q.subtotal)} />
       {q.discountAmount > 0 && <TotalRow label="Giảm giá" value={`−${money(q.discountAmount)}`} />}

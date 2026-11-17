@@ -25,6 +25,7 @@ import {
   weekdayOf,
 } from '@/features/scheduling/schedulingDisplay'
 import { OnSiteSurveyPanel } from '@/features/onsite-survey/OnSiteSurveyPanel'
+import { TechnicianQuotationPanel } from '@/features/quotations/TechnicianQuotationPanel'
 import { surveyStartOpensAt } from '@/features/onsite-survey/onSiteSurveyDisplay'
 import { useMyOnSiteSurveyQuery, useStartOnSiteSurveyMutation } from '@/hooks/useOnSiteSurvey'
 import { useMyAppointmentQuery, useReleaseAppointmentMutation } from '@/hooks/useTechnicianJobs'
@@ -463,6 +464,15 @@ export function TechJobPage() {
                   WORKING_STATUSES.has(job.status) && <OnSiteSurveyPanel job={job} />
                 )}
 
+                {isSurveyCompleted && survey?.status === 'COMPLETED' && (
+                  <div className="rounded-container border border-line bg-canvas p-4">
+                    <TechnicianQuotationPanel
+                      surveyRequestId={job.surveyRequestId}
+                      feasibility={survey.data.installationFeasibility}
+                    />
+                  </div>
+                )}
+
                 {/* Khối Thông tin công trình */}
                 <div className="rounded-container border border-line bg-canvas p-5 space-y-4">
                   <div className="flex items-center justify-between border-b border-line pb-3">
@@ -514,51 +524,59 @@ export function TechJobPage() {
                   </div>
                 </div>
 
-                {/* Khối Số liệu khách khai */}
-                <div className="rounded-container border border-line bg-canvas p-5 space-y-4">
-                  <div className="border-b border-line pb-3">
+                {!s.preSurveyId ? (
+                  <div className="rounded-container border border-line bg-canvas p-4">
                     <h2 className="text-title font-bold text-fg">Số liệu khách khai</h2>
-                    <p className="text-meta text-fg-3">Thông số đối chiếu khảo sát sơ bộ</p>
+                    <p className="mt-1 text-body text-fg-2">
+                      Khách đặt khảo sát trực tiếp, không qua đánh giá sơ bộ nên không có số liệu khai trước. Đo toàn bộ
+                      tại công trình.
+                    </p>
                   </div>
+                ) : (
+                  <div className="rounded-container border border-line bg-canvas p-5 space-y-4">
+                    <div className="border-b border-line pb-3">
+                      <h2 className="text-title font-bold text-fg">Số liệu khách khai</h2>
+                      <p className="text-meta text-fg-3">Thông số đối chiếu khảo sát sơ bộ</p>
+                    </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div>
-                      <p className="text-meta text-fg-3">Kích thước mặt lắp</p>
-                      <p className="mt-0.5 text-body font-semibold text-fg">
-                        {s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)} m`}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-meta text-fg-3">Diện tích khả dụng / tổng</p>
-                      <p className="mt-0.5 text-body font-semibold text-fg">
-                        {formatAreaPair(s.usableAreaM2, s.totalAreaM2)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-meta text-fg-3">Độ dốc mái</p>
-                      <p className="mt-0.5 text-body font-semibold text-fg">
-                        {s.surfaceTiltDegree == null ? '—' : `${n(s.surfaceTiltDegree)} độ`}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-meta text-fg-3">Hướng mái</p>
-                      <p className="mt-0.5 text-body font-semibold text-fg">
-                        {s.surfaceAzimuthDegree == null
-                          ? '—'
-                          : `${n(s.surfaceAzimuthDegree)} độ (${directionLabel(s.surfaceAzimuthDegree)})`}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-meta text-fg-3">Vật cản trên mái</p>
-                      <p className="mt-0.5 text-body font-semibold text-fg">
-                        {s.obstacleCount > 0 ? `${s.obstacleCount} vật cản` : s.hasObstruction ? 'Có' : 'Không có'}
-                      </p>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-meta text-fg-3">Kích thước mặt lắp</p>
+                        <p className="mt-0.5 text-body font-semibold text-fg">
+                          {s.surfaceWidthM == null ? '—' : `${n(s.surfaceWidthM)} × ${n(s.surfaceLengthM)} m`}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-meta text-fg-3">Diện tích khả dụng / tổng</p>
+                        <p className="mt-0.5 text-body font-semibold text-fg">
+                          {formatAreaPair(s.usableAreaM2, s.totalAreaM2)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-meta text-fg-3">Độ dốc mái</p>
+                        <p className="mt-0.5 text-body font-semibold text-fg">
+                          {s.surfaceTiltDegree == null ? '—' : `${n(s.surfaceTiltDegree)} độ`}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-meta text-fg-3">Hướng mái</p>
+                        <p className="mt-0.5 text-body font-semibold text-fg">
+                          {s.surfaceAzimuthDegree == null
+                            ? '—'
+                            : `${n(s.surfaceAzimuthDegree)} độ (${directionLabel(s.surfaceAzimuthDegree)})`}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-meta text-fg-3">Vật cản trên mái</p>
+                        <p className="mt-0.5 text-body font-semibold text-fg">
+                          {s.obstacleCount > 0 ? `${s.obstacleCount} vật cản` : s.hasObstruction ? 'Có' : 'Không có'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
-                {/* Mô phỏng khách chọn nếu có */}
-                {sim && (
+                {sim && s.preSurveyId && (
                   <div className="rounded-container border border-line bg-canvas p-5 space-y-4">
                     <div className="border-b border-line pb-3">
                       <h2 className="text-title font-bold text-fg">Mô phỏng khách chọn</h2>
@@ -592,7 +610,6 @@ export function TechJobPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-body font-bold text-fg">{job.customer.fullName || 'Khách hàng'}</p>
-                      <p className="text-meta text-fg-3">Chủ đầu tư biệt thự</p>
                     </div>
                   </div>
 
@@ -634,19 +651,24 @@ export function TechJobPage() {
                     </p>
                   </div>
 
-                  {/* Khung Ghi chú của khách hàng */}
-                  <div className="rounded-control border border-warn/30 bg-warn-soft/30 p-3 space-y-1.5">
-                    <div className="flex items-center gap-1.5 text-meta font-semibold text-warn">
-                      <Icon name="edit_note" className="text-[16px]" />
-                      <span>Ghi chú của khách hàng</span>
+                  {job.onSiteContact && (
+                    <div className="rounded-control border border-line bg-surface-2 p-3">
+                      <p className="text-meta text-fg-3">Người gặp tại công trình</p>
+                      <p className="mt-1 text-body font-medium text-fg">{job.onSiteContact.name || 'Chưa ghi tên'}</p>
+                      {job.onSiteContact.phone && (
+                        <a className="tnum ui-link text-body" href={`tel:${job.onSiteContact.phone}`}>
+                          {job.onSiteContact.phone}
+                        </a>
+                      )}
                     </div>
-                    <p className="text-body italic text-fg-2">
-                      "
-                      {job.customerNote ||
-                        'Không có ghi chú thêm về kỹ thuật. Vui lòng bấm chuông cửa sắt bên hông khi tới nơi (chú ý có chó giữ nhà trong sân).'}
-                      "
-                    </p>
-                  </div>
+                  )}
+
+                  {job.customerNote && (
+                    <div className="rounded-control border border-line bg-surface-2 p-3 space-y-1.5">
+                      <p className="text-meta text-fg-3">Ghi chú của khách hàng</p>
+                      <p className="text-body whitespace-pre-line text-fg-2">{job.customerNote}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

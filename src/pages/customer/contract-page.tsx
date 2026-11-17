@@ -20,6 +20,7 @@ import { customerContractNext, customerContractSteps } from '@/features/contract
 import { newerVersion } from '@/features/contracts/customerContractRules'
 import { CustomerContractPayment } from '@/features/contracts/CustomerContractPayment'
 import { CustomerSignPanel } from '@/features/contracts/CustomerSignPanel'
+import { CustomerSchedulePanel } from '@/features/installation-schedules/CustomerSchedulePanel'
 import { PAYOS_RETURN_PARAM } from '@/features/payments/payosReturn'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
@@ -150,6 +151,7 @@ export function CustomerContractPage() {
               <div className="min-w-0 space-y-4 lg:col-span-2">
                 <CustomerSignPanel contract={c} />
                 <CustomerContractPayment contract={c} returned={returned} />
+                <CustomerSchedulePanel contract={c} />
                 <ContentPanel contract={c} />
               </div>
               <ContractAside contract={c} />

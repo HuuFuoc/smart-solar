@@ -27,6 +27,8 @@ export const ROUTES = {
     assessment: '/customer/assessment',
     /** Yêu cầu khảo sát đã gửi: đặt / đổi / huỷ giờ */
     requests: '/customer/requests',
+    /** Đặt khảo sát tại công trình cho một địa điểm, không qua đánh giá sơ bộ */
+    directBooking: '/customer/requests/new',
     request: '/customer/requests/:id',
     /** Công trình lắp đặt: tiến độ, ảnh thi công, nghiệm thu, bàn giao */
     projects: '/customer/projects',
@@ -55,9 +57,7 @@ export const ROUTES = {
     /** Tab "Của tôi" có đường dẫn riêng để menu đánh dấu đúng */
     surveysMine: '/ops/surveys/mine',
     survey: '/ops/surveys/:id',
-    /** Yêu cầu đã khảo sát xong còn việc báo giá; làm việc ở trang yêu cầu */
-    quotations: '/ops/quotations',
-    /** Một phiên bản hợp đồng lắp đặt; mở từ khối Hợp đồng của yêu cầu khảo sát (backend không có danh sách mọi hợp đồng) */
+    /** Một phiên bản hợp đồng lắp đặt, chỉ xem; mở từ khối Hợp đồng của yêu cầu khảo sát (backend không có danh sách mọi hợp đồng) */
     contract: '/ops/contracts/:id',
     /** Việc báo giá sửa chữa, bảo trì, việc nhắc khách; chi tiết theo mã yêu cầu */
     afterSales: '/ops/after-sales',
@@ -76,6 +76,8 @@ export const ROUTES = {
     /** Công trình lắp đặt quản lý giao */
     installations: '/tech/installations',
     installation: '/tech/installations/:id',
+    /** Hợp đồng đã ký của công trình mình khảo sát: ghi ngày thi công đã thống nhất với khách */
+    installationSchedules: '/tech/installation-schedules',
     /** Buổi hẹn bảo hành, sửa chữa, bảo trì; chi tiết theo mã buổi hẹn */
     afterSales: '/tech/after-sales',
     afterSalesVisit: '/tech/after-sales/:id',
@@ -94,8 +96,12 @@ export const ROUTES = {
     /** Dự án thi công + hợp đồng chờ tạo dự án (quản lý dùng chung trang với quản trị) */
     installations: '/manage/installations',
     installation: '/manage/installations/:id',
-    /** Một phiên bản hợp đồng: thanh toán, duyệt bản ký (quản lý dùng chung trang với kinh doanh, quản trị) */
+    /** Mở hợp đồng theo mã yêu cầu khảo sát / mã hợp đồng (backend không có danh sách mọi hợp đồng) */
+    contracts: '/manage/contracts',
+    /** Một phiên bản hợp đồng: soạn, phát hành, gửi ký, duyệt bản ký, xác nhận tiền mặt (dùng chung trang với quản trị) */
     contract: '/manage/contracts/:id',
+    /** Lịch thi công kỹ thuật viên đã thống nhất với khách: cần hẹn lại, xác nhận lại, huỷ */
+    installationSchedules: '/manage/installation-schedules',
     /** Yêu cầu bảo hành, sửa chữa, bảo trì (quản lý dùng chung trang với quản trị) */
     afterSales: '/manage/after-sales',
     afterSalesRequest: '/manage/after-sales/:id',
@@ -104,8 +110,6 @@ export const ROUTES = {
     dispatchRequest: '/manage/dispatch/:id',
     /** Hàng việc sau bán của kinh doanh: xem, lọc (quản lý dùng chung trang với quản trị) */
     salesTasks: '/manage/sales-tasks',
-    /** Báo giá có giá thấp hơn danh mục chờ quản lý duyệt */
-    pricingApprovals: '/manage/pricing-approvals',
   },
 
   admin: {
@@ -119,8 +123,10 @@ export const ROUTES = {
     product: '/admin/products/:id',
     installations: '/admin/installations',
     installation: '/admin/installations/:id',
-    /** Một phiên bản hợp đồng, chỉ xem (thanh toán, bản ký) */
+    contracts: '/admin/contracts',
+    /** Một phiên bản hợp đồng: soạn, phát hành, gửi ký, duyệt bản ký, xác nhận tiền mặt */
     contract: '/admin/contracts/:id',
+    installationSchedules: '/admin/installation-schedules',
     packages: '/admin/packages',
     afterSales: '/admin/after-sales',
     afterSalesRequest: '/admin/after-sales/:id',

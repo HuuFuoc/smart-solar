@@ -30,25 +30,6 @@ async function reject(id, role, method, path, body, label) {
   return r
 }
 
-/** Ghi lại kết quả của một lời gọi lẽ ra bị từ chối nhưng backend cho qua (phát hiện, báo cáo riêng); không khẳng định */
-async function observe(id, role, method, path, body, label) {
-  const r = await S.call(role, method, path, body)
-  evidence.push({
-    at: new Date().toISOString(),
-    actor: role,
-    id,
-    via: 'api',
-    case: `${label} (phát hiện: backend cho qua)`,
-    method,
-    path: `/api${path}`.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '{id}'),
-    status: r.status,
-    traceId: r.traceId ?? null,
-    code: r.error?.code ?? null,
-  })
-  state.findings = { ...state.findings, [`${id} ${label}`]: r.status }
-  return r
-}
-
 describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () => {
   test('quản trị: thời hạn bảo hành, khu vực, ảnh sản phẩm', async () => {
     await reject(
@@ -266,7 +247,7 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
     assert.equal(c.status, 'PAID')
     await reject(
       'S01',
-      'SALES',
+      'MANAGER',
       'POST',
       `/quotations/${state.quotationId}/contracts`,
       { terms: null, warrantyMonths: 60 },
@@ -274,7 +255,7 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
     )
     await reject(
       'S04',
-      'SALES',
+      'MANAGER',
       'PUT',
       `/contracts/${state.contractId}`,
       { revision: c.revision, terms: 'Sửa sau khi trả tiền', warrantyMonths: null },
@@ -282,14 +263,14 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
     )
     await reject(
       'S05',
-      'SALES',
+      'MANAGER',
       'POST',
       `/contracts/${state.contractId}/issue`,
       { revision: c.revision },
       'phát hành hợp đồng PAID',
     )
     const pdf = await S.uploadFile(
-      'SALES',
+      'MANAGER',
       'CONTRACT_DOCUMENT',
       'ca-sai.pdf',
       'application/pdf',
@@ -297,7 +278,7 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
     )
     await reject(
       'S06',
-      'SALES',
+      'MANAGER',
       'PUT',
       `/contracts/${state.contractId}/official-document`,
       { revision: c.revision, fileId: pdf, canonicalHash: c.canonicalHash },
@@ -305,7 +286,7 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
     )
     await reject(
       'S07',
-      'SALES',
+      'MANAGER',
       'POST',
       `/contracts/${state.contractId}/publish`,
       { revision: c.revision },
@@ -325,24 +306,24 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
       'POST',
       `/contracts/${state.supersededContractId}/review`,
       { revision: 0, decision: 'APPROVE', reason: null },
-      'kinh doanh không phụ trách',
+      'kinh doanh không được duyệt bản ký',
     )
     await reject(
       'S09',
-      'SALES',
+      'MANAGER',
       'POST',
       `/contracts/${state.contractId}/amendments`,
       { terms: 'Phụ lục sau khi trả tiền', warrantyMonths: null },
       'phụ lục hợp đồng PAID',
     )
-    // GetForStaffAsync(contractId) không nhận người gọi: mọi kinh doanh đọc được thanh toán của mọi hợp đồng (GET /contracts/{id} thì có kiểm)
-    await observe(
+    // Từ backend ad10455 thanh toán của hợp đồng chỉ quản lý / quản trị đọc được
+    await reject(
       'S10',
-      'SALES2',
+      'SALES',
       'GET',
       `/contracts/${state.contractId}/payments`,
       undefined,
-      'kinh doanh không phụ trách',
+      'kinh doanh không đọc thanh toán',
     )
     await reject('S10', 'CUSTOMER', 'GET', `/contracts/${state.contractId}/payments`, undefined, 'sai vai trò')
     await reject(
@@ -367,7 +348,7 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
       'PUT',
       `/quotations/${state.quotationId}/document`,
       { fileId: doc },
-      'thay PDF của báo giá đã đồng ý',
+      'gắn PDF báo giá: chức năng đã gỡ (410)',
     )
     const signed = await S.uploadFile(
       'CUSTOMER',

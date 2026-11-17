@@ -40,7 +40,7 @@ function describe(q: QuotationView) {
   if (q.status === 'ISSUED')
     return `Báo giá đã hết hạn ngày ${formatDateVn(q.validUntil)}. Liên hệ nhân viên kinh doanh để nhận bản mới.`
   if (q.status === 'ACCEPTED')
-    return `Bạn đã đồng ý lúc ${formatMoment(q.acceptedAt)}. Smart Solar sẽ lập hợp đồng theo đúng báo giá này.`
+    return `Bạn đã đồng ý lúc ${formatMoment(q.acceptedAt)}. Hợp đồng đang được chuẩn bị theo đúng báo giá này; Smart Solar gửi bạn ký khi sẵn sàng.`
   if (q.status === 'REVISION_REQUESTED')
     return 'Nhân viên kinh doanh đang sửa báo giá theo yêu cầu của bạn và sẽ gửi bản mới.'
   if (q.status === 'SUPERSEDED') return 'Bản này đã được thay bằng bản mới.'

@@ -5,7 +5,6 @@ import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
 import { MyRequestList } from '@/features/pre-surveys/SurveyRequestLists'
-import { PendingReviewQuotations } from '@/features/quotations/PendingReviewQuotations'
 import { useEscalatedAppointmentsQuery, useMySurveyRequestsQuery } from '@/hooks/useSurveyRequests'
 import { ROUTES } from '@/routes/paths'
 
@@ -39,10 +38,7 @@ export function OpsMySurveysPage() {
               }
             />
           ) : (
-            <div className="space-y-4">
-              <PendingReviewQuotations requests={rows} />
-              <MyRequestList rows={rows} needAssign={needAssign} />
-            </div>
+            <MyRequestList rows={rows} needAssign={needAssign} />
           )
         }
       </QueryBoundary>

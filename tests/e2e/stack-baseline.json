@@ -74,5 +74,8 @@
   ["G02", "Chung", "GET", "/api/chat/sessions"],
   ["G03", "Chung", "GET", "/api/chat/sessions/{sessionId}"],
   ["G04", "Chung", "GET", "/api/administrative-units/provinces"],
-  ["G05", "Chung", "GET", "/api/administrative-units/legacy-lookup"]
+  ["G05", "Chung", "GET", "/api/administrative-units/legacy-lookup"],
+  ["K01", "Kỹ thuật viên", "POST", "/api/technician/survey-requests/{surveyRequestId}/quotation"],
+  ["K02", "Kỹ thuật viên", "POST", "/api/technician/quotations/{quotationId}/lines"],
+  ["K03", "Kỹ thuật viên", "POST", "/api/technician/quotations/{quotationId}/issue"]
 ]

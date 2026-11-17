@@ -374,40 +374,35 @@ export async function paidContract(customer, label, productId) {
     revision: att.revision,
   })
 
-  await S.call('SALES', 'POST', `/survey-requests/${surveyRequestId}/claim`)
-  let q = await S.must('SALES', 'POST', `/survey-requests/${surveyRequestId}/quotations`, {
-    revision: null,
-    laborCost: 3_000_000,
-    transportCost: 300_000,
-    otherServiceCost: 0,
-    discountAmount: 0,
-    taxRatePercent: 8,
-    validUntil: `${vnDate(20)}T23:59:59+07:00`,
-    terms: 'Bảo hành theo hợp đồng.',
-    notes: null,
-  })
-  q = await S.must('SALES', 'POST', `/quotations/${q.quotationId}/lines`, {
+  // Luồng rút gọn (backend ad10455): kỹ thuật viên đã khảo sát lập giỏ báo giá, khách đồng ý thì backend tự lập bản nháp hợp
+  // đồng; quản lý phát hành, gắn PDF, gửi ký
+  let q = await S.must('TECH', 'POST', `/technician/survey-requests/${surveyRequestId}/quotation`, { notes: null })
+  q = await S.must('TECH', 'POST', `/technician/quotations/${q.quotationId}/lines`, {
     revision: q.revision,
     productId,
-    name: null,
-    unit: null,
     quantity: 8,
-    unitPrice: null,
-    description: null,
   })
-  q = await S.must('SALES', 'POST', `/quotations/${q.quotationId}/issue`, { revision: q.revision, reviewNote: null })
+  q = await S.must('TECH', 'POST', `/technician/quotations/${q.quotationId}/issue`, { revision: q.revision })
   await S.must(customer, 'POST', `/customers/me/quotations/${q.quotationId}/accept`)
 
-  let c = await S.must('SALES', 'POST', `/quotations/${q.quotationId}/contracts`, { terms: null, warrantyMonths: 60 })
-  c = await S.must('SALES', 'POST', `/contracts/${c.contractId}/issue`, { revision: c.revision })
+  const drafts = await S.must('MANAGER', 'GET', `/survey-requests/${surveyRequestId}/contracts`)
+  let c = drafts.find((x) => x.quotationId === q.quotationId && x.status === 'DRAFT')
+  if (!c) throw new Error('Đồng ý báo giá mà không có bản nháp hợp đồng tự lập')
+  if (!c.terms || c.warrantyMonths == null)
+    c = await S.must('MANAGER', 'PUT', `/contracts/${c.contractId}`, {
+      revision: c.revision,
+      terms: c.terms ?? 'Bảo hành theo hợp đồng.',
+      warrantyMonths: null,
+    })
+  c = await S.must('MANAGER', 'POST', `/contracts/${c.contractId}/issue`, { revision: c.revision })
   const official = S.tinyPdf(`Hop dong ${label}`)
-  const officialId = await S.uploadFile('SALES', 'CONTRACT_DOCUMENT', 'hop-dong.pdf', 'application/pdf', official)
-  c = await S.must('SALES', 'PUT', `/contracts/${c.contractId}/official-document`, {
+  const officialId = await S.uploadFile('MANAGER', 'CONTRACT_DOCUMENT', 'hop-dong.pdf', 'application/pdf', official)
+  c = await S.must('MANAGER', 'PUT', `/contracts/${c.contractId}/official-document`, {
     revision: c.revision,
     fileId: officialId,
     canonicalHash: c.canonicalHash,
   })
-  c = await S.must('SALES', 'POST', `/contracts/${c.contractId}/publish`, { revision: c.revision })
+  c = await S.must('MANAGER', 'POST', `/contracts/${c.contractId}/publish`, { revision: c.revision })
   const signedId = await S.uploadFile(
     customer,
     'SIGNED_CONTRACT',

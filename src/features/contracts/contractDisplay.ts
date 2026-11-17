@@ -10,7 +10,7 @@ import {
   STAFF_PAYMENT_ATTEMPT_STATUSES,
 } from '@/common/contract'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
-import { issueBlockers, type ContractViewer } from '@/features/contracts/contractRules'
+import { canWriteContract, issueBlockers, type ContractViewer } from '@/features/contracts/contractRules'
 import { isApiError, messageForCode } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
 import { formatMoney } from '@/utils/format'
@@ -106,13 +106,13 @@ export function contractTrackerSteps(c: ContractView): TrackerStep[] {
   }))
 }
 
-/** Việc tiếp theo của một phiên bản hợp đồng và của ai. Đỏ chỉ khi người đang xem phải làm */
+/** Việc tiếp theo của một phiên bản hợp đồng và của ai. Đỏ chỉ khi người đang xem phải làm (quản lý / quản trị soạn và duyệt) */
 export function contractNextStep(c: ContractView, viewer: ContractViewer): TrackerNext {
-  const sales = viewer === 'sales'
+  const staff = canWriteContract(viewer)
   switch (c.status) {
     case 'DRAFT': {
       const blockers = issueBlockers(c)
-      return sales
+      return staff
         ? {
             tone: 'danger',
             title: c.previousContractId ? 'Phụ lục nháp chưa phát hành' : 'Bản nháp hợp đồng chưa phát hành',
@@ -121,19 +121,19 @@ export function contractNextStep(c: ContractView, viewer: ContractViewer): Track
               : 'Kiểm tra điều khoản, thời hạn bảo hành rồi phát hành để có mã nội dung cho PDF chính thức.',
             action: { label: 'Mở bản nháp', icon: 'edit', target: 'contract-actions' },
           }
-        : { tone: 'info', title: 'Kinh doanh đang soạn hợp đồng' }
+        : { tone: 'info', title: 'Quản lý đang hoàn thiện hợp đồng' }
     }
     case 'ISSUED':
       if (!c.officialDocument)
-        return sales
+        return staff
           ? {
               tone: 'danger',
               title: 'Cần gắn PDF hợp đồng chính thức',
               body: 'Tạo PDF từ đúng phiên bản này (ghi mã nội dung trên PDF), tải lên rồi xác nhận.',
               action: { label: 'Gắn PDF', icon: 'upload_file', target: 'contract-actions' },
             }
-          : { tone: 'info', title: 'Kinh doanh đang chuẩn bị PDF hợp đồng' }
-      return sales
+          : { tone: 'info', title: 'Quản lý đang chuẩn bị PDF hợp đồng' }
+      return staff
         ? {
             tone: 'danger',
             title: 'Đã gắn PDF, chưa gửi khách ký',
@@ -142,7 +142,7 @@ export function contractNextStep(c: ContractView, viewer: ContractViewer): Track
               : 'Gửi khách ký để khách in hợp đồng từ cổng khách hàng, ký tay và gửi lại bản ký.',
             action: { label: 'Gửi khách ký', icon: 'send', target: 'contract-actions' },
           }
-        : { tone: 'info', title: 'Kinh doanh chưa gửi hợp đồng cho khách ký' }
+        : { tone: 'info', title: 'Quản lý chưa gửi hợp đồng cho khách ký' }
     case 'AWAITING_SIGNATURE':
       return {
         tone: 'info',
@@ -150,8 +150,8 @@ export function contractNextStep(c: ContractView, viewer: ContractViewer): Track
         body: `Gửi khách lúc ${formatMoment(c.publishedAt)}. Gọi khách nếu cần hướng dẫn.`,
       }
     case 'UNDER_REVIEW':
-      return viewer === 'admin'
-        ? { tone: 'info', title: 'Khách đã gửi bản ký, chờ kinh doanh hoặc quản lý duyệt' }
+      return !staff
+        ? { tone: 'info', title: 'Khách đã gửi bản ký, chờ quản lý duyệt' }
         : {
             tone: 'danger',
             title: 'Khách đã gửi bản ký, cần duyệt',
@@ -168,15 +168,17 @@ export function contractNextStep(c: ContractView, viewer: ContractViewer): Track
       return {
         tone: 'info',
         title: 'Đã ký, chờ khách thanh toán',
-        body: 'Khách thanh toán qua PayOS trên cổng khách hàng. Chỉ hệ thống xác nhận đã nhận tiền.',
+        body: staff
+          ? 'Khách trả qua PayOS (hệ thống tự xác nhận) hoặc chọn tiền mặt (bạn ghi nhận ở khối Thanh toán khi nhận tiền).'
+          : 'Khách trả qua PayOS hoặc tiền mặt; quản lý ghi nhận tiền mặt. Kỹ thuật viên hẹn ngày thi công với khách.',
       }
     case 'PAID':
       return {
         tone: 'ok',
         title: 'Khách đã thanh toán đủ',
-        body: sales
-          ? `Thanh toán lúc ${formatMoment(c.paidAt)}. Quản lý tạo dự án thi công từ hợp đồng này.`
-          : `Thanh toán lúc ${formatMoment(c.paidAt)}. Tạo dự án thi công ở mục Thi công.`,
+        body: staff
+          ? `Thanh toán lúc ${formatMoment(c.paidAt)}. Lịch thi công đã hẹn được xác nhận tự động; chưa có lịch thì tạo dự án ở mục Thi công.`
+          : `Thanh toán lúc ${formatMoment(c.paidAt)}. Quản lý theo dõi thi công từ hợp đồng này.`,
       }
     case 'SUPERSEDED':
       return {

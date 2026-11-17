@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { customerContractKeys } from '@/hooks/useCustomerContracts'
 import * as quotationService from '@/services/customerQuotationService'
 import type { ApiError } from '@/services/api/errors'
 import type { QuotationView } from '@/types/res/quotationsRes'
 
-// Báo giá lắp đặt của khách. Trả lời xong (kể cả lỗi vì báo giá vừa được thay) thì tải lại danh sách và chi tiết
+// Báo giá lắp đặt của khách. Trả lời xong (kể cả lỗi vì báo giá vừa được thay) thì tải lại danh sách và chi tiết. Đồng ý thì
+// backend tự lập bản nháp hợp đồng trong cùng giao dịch: FE không gọi lập hợp đồng, chỉ tải lại danh sách hợp đồng
 
 export const customerQuotationKeys = {
   all: ['customer-quotations'] as const,
@@ -34,7 +36,11 @@ export function useAcceptMyQuotationMutation() {
   const queryClient = useQueryClient()
   return useMutation<QuotationView, ApiError, string>({
     mutationFn: quotationService.acceptQuotation,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: customerQuotationKeys.all }),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: customerQuotationKeys.all }),
+        queryClient.invalidateQueries({ queryKey: customerContractKeys.all }),
+      ]),
   })
 }
 

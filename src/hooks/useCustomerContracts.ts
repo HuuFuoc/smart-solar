@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
-import { PAYMENT_POLL_MS, shouldPollPayment } from '@/features/contracts/customerContractRules'
+import { paymentPollMs } from '@/features/contracts/customerContractRules'
 import * as contractService from '@/services/customerContractService'
 import type { ApiError } from '@/services/api/errors'
 import type { SignedDocumentRequest } from '@/types/req/customerContractsReq'
@@ -45,8 +45,8 @@ export function useSubmitSignedDocumentMutation() {
 
 /**
  * Trạng thái thanh toán của một hợp đồng (backend đối soát với PayOS mỗi lần gọi khi link còn chờ). Hỏi lại mỗi 5 giây khi
- * đang có link chờ trả tiền và tab đang hiện; dừng khi đã có kết quả, khi lỗi, hoặc khi rời trang. Hợp đồng đổi trạng thái
- * (đã nhận tiền) thì tải lại hợp đồng
+ * đang có link PayOS chờ, mỗi phút khi chờ xác nhận tiền mặt, chỉ khi tab đang hiện; dừng khi đã có kết quả, khi lỗi, hoặc khi
+ * rời trang. Hợp đồng đổi trạng thái (đã nhận tiền) thì tải lại hợp đồng
  */
 export function useContractPaymentsQuery(contractId: string, { enabled = true }: { enabled?: boolean } = {}) {
   const queryClient = useQueryClient()
@@ -54,7 +54,7 @@ export function useContractPaymentsQuery(contractId: string, { enabled = true }:
     queryKey: customerContractKeys.payments(contractId),
     queryFn: () => contractService.getContractPayments(contractId),
     enabled,
-    refetchInterval: (q) => (q.state.status !== 'error' && shouldPollPayment(q.state.data) ? PAYMENT_POLL_MS : false),
+    refetchInterval: (q) => (q.state.status !== 'error' ? paymentPollMs(q.state.data) : false),
     refetchIntervalInBackground: false,
   })
   const reported = query.data?.contractStatus
@@ -85,6 +85,16 @@ export function useMyContractDocumentUrlMutation() {
       submissionId
         ? contractService.getSubmissionUrl(contractId, submissionId, disposition)
         : contractService.getOfficialDocumentUrl(contractId, disposition),
+  })
+}
+
+/** Chọn trả tiền mặt; xong (kể cả lỗi) thì tải lại trạng thái thanh toán */
+export function useSelectCashPaymentMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<PaymentAttemptView, ApiError, string>({
+    mutationFn: contractService.selectCashPayment,
+    onSettled: (_data, _error, contractId) =>
+      queryClient.invalidateQueries({ queryKey: customerContractKeys.payments(contractId) }),
   })
 }
 

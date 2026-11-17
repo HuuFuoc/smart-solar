@@ -1,3 +1,5 @@
+import type { CashConfirmationRequest } from '@/types/req/staffPaymentsReq'
+import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 import type {
   ContractReviewRequest,
   ContractTermsRequest,
@@ -75,9 +77,17 @@ export function createAmendment(contractId: string, body: Omit<ContractTermsRequ
   return post<ContractView>(api.amendments(contractId), body)
 }
 
-/** Trạng thái thanh toán của hợp đồng phía nhân viên (Sales, Manager, Admin), kèm lịch sử */
+/** Trạng thái thanh toán của hợp đồng phía nhân viên (chỉ Manager, Admin; kinh doanh 403), kèm lịch sử */
 export function getContractPayments(contractId: string) {
   return get<ContractPaymentView>(api.payments(contractId))
+}
+
+/**
+ * Ghi nhận khách đã trả tiền mặt: đúng tổng hợp đồng, số phiếu thu chưa dùng, tệp PAYMENT_EVIDENCE đã xác minh do chính người xác
+ * nhận tải lên. Hợp đồng thành PAID; xác nhận lần hai thì 409 PAYMENT_ALREADY_PAID
+ */
+export function confirmCashPayment(contractId: string, body: CashConfirmationRequest) {
+  return post<PaymentAttemptView>(api.cashConfirm(contractId), body)
 }
 
 /**

@@ -24,9 +24,13 @@ export type CustomerAppointmentView = {
   canCustomerChange: boolean
 }
 
+/** PRE_SURVEY: gửi từ đánh giá sơ bộ; DIRECT_BOOKING: khách đặt khảo sát thẳng cho một địa điểm */
+export type SurveyRequestSource = 'PRE_SURVEY' | 'DIRECT_BOOKING' | (string & {})
+
 export type CustomerSurveyRequestView = {
   surveyRequestId: string
-  preSurveyId: string
+  /** Null với yêu cầu đặt trực tiếp */
+  preSurveyId: string | null
   propertySiteId: string
   propertyName: string
   status: CustomerSurveyRequestStatus
@@ -35,6 +39,7 @@ export type CustomerSurveyRequestView = {
   scheduledAt: string | null
   /** Lịch hẹn đang hiệu lực; null khi chưa đặt hoặc đã huỷ. */
   appointment: CustomerAppointmentView | null
+  source: SurveyRequestSource
 }
 
 export type CustomerAppointmentHistoryItem = {
@@ -63,4 +68,16 @@ export type BookingConfirmation = {
   acceptanceDeadlineAt: string | null
   created: boolean
   message: string
+}
+
+/**
+ * POST /api/customers/me/survey-requests/direct (DirectSurveyBookingView): 201 khi vừa đặt giữ được chỗ, 200 khi gửi lại.
+ * `requestCreated` false: dùng lại yêu cầu đặt trực tiếp đang mở của địa điểm. Lỗi chỗ / khu vực (409) không có view này mà
+ * trả `details.surveyRequestId` để đặt lại giờ trên yêu cầu đó
+ */
+export type DirectSurveyBookingView = {
+  surveyRequestId: string
+  source: SurveyRequestSource
+  requestCreated: boolean
+  booking: BookingConfirmation
 }

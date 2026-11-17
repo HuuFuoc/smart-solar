@@ -76,6 +76,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   PRE_SURVEY_INCOMPLETE: 'Bản đánh giá còn thiếu số liệu. Điền đủ các ô ở bước số liệu mặt lắp rồi gửi lại.',
   SURVEY_REQUEST_UNAVAILABLE: 'Yêu cầu này đã có người nhận hoặc không còn chờ xử lý.',
   SURVEY_REQUEST_NOT_FOUND: 'Không tìm thấy yêu cầu khảo sát.',
+  // Đặt khảo sát trực tiếp (không qua đánh giá sơ bộ)
+  SURVEY_REQUEST_ALREADY_OPEN:
+    'Địa điểm này đang có một yêu cầu khảo sát gửi từ đánh giá sơ bộ. Đặt giờ trên yêu cầu đó, hoặc rút yêu cầu đó trước.',
+  CONTACT_PHONE_REQUIRED: 'Tài khoản chưa có số điện thoại. Ghi số điện thoại để kỹ thuật viên liên hệ.',
   SURVEY_REQUEST_NOT_ASSIGNED: 'Yêu cầu này không do bạn phụ trách nên không xem được chi tiết.',
   // Rút / đóng yêu cầu (khách rút, kinh doanh đóng). Đã đóng thì không mở lại
   SURVEY_REQUEST_CLOSED: 'Yêu cầu này đã đóng nên không thay đổi được nữa.',
@@ -287,31 +291,21 @@ const ERROR_MESSAGES: Record<string, string> = {
   QUOTATION_ACTIVE_EXISTS: 'Yêu cầu này đã có báo giá đang gửi khách. Lập bản sửa từ báo giá đó.',
   QUOTATION_NOT_DRAFT: 'Báo giá đã gửi khách nên không sửa được nữa. Lập bản sửa để đổi nội dung.',
   QUOTATION_NOT_ISSUED: 'Báo giá này không còn chờ trả lời (đã có bản mới hoặc vừa thay đổi). Đã tải lại.',
-  QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Liên hệ nhân viên kinh doanh để nhận bản mới.',
+  QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Liên hệ Smart Solar để nhận bản mới.',
   QUOTATION_INVALID_LINE:
     'Số liệu báo giá chưa hợp lệ: số lượng phải lớn hơn 0, đơn giá không âm, giảm giá không quá số tiền trước giảm và tổng phải lớn hơn 0.',
   QUOTATION_EMPTY: 'Thêm ít nhất một dòng trước khi gửi khách.',
   QUOTATION_STALE_REVISION: 'Báo giá vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
-  QUOTATION_PRODUCT_UNAVAILABLE:
-    'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác hoặc ghi dòng tự ghi.',
+  QUOTATION_PRODUCT_UNAVAILABLE: 'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác.',
   QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này.',
   QUOTATION_CANNOT_REVISE: 'Không lập bản sửa được vì khách vừa đồng ý hoặc báo giá vừa thay đổi. Đã tải lại.',
-  QUOTATION_SALES_OWNER_REQUIRED: 'Yêu cầu chưa có nhân viên kinh doanh phụ trách nên chưa lập báo giá được.',
   QUOTATION_SURVEY_CHANGED:
     'Biên bản khảo sát được bổ sung sau khi lập báo giá này nên báo giá không dùng tiếp được. Đã tải lại.',
   QUOTATION_SURVEY_NOT_FEASIBLE: 'Kỹ thuật viên kết luận công trình không lắp được nên không lập báo giá.',
   QUOTATION_REQUEST_CLOSED: 'Yêu cầu khảo sát đã đóng hoặc khách đã rút nên không làm tiếp báo giá được.',
-  QUOTATION_PRICE_MISSING: 'Sản phẩm này chưa có giá trong danh mục. Nhập đơn giá cho dòng.',
-  QUOTATION_BOM_MISMATCH:
-    'Dòng thiết bị chưa khớp danh sách thiết bị của biên bản khảo sát. Sửa số lượng cho khớp hoặc nhờ kỹ thuật viên bổ sung biên bản.',
-  QUOTATION_PRICING_REVIEW_REQUIRED:
-    'Bản tự động còn vấn đề về giá. Xử lý các vấn đề phải sửa, phần còn lại ghi lý do vẫn gửi.',
-  QUOTATION_PRICING_APPROVAL_REQUIRED: 'Báo giá có giá thấp hơn danh mục. Quản lý duyệt giá xong mới gửi khách được.',
-  QUOTATION_PRICING_APPROVAL_PENDING: 'Bộ giá này đang chờ quản lý duyệt.',
-  QUOTATION_PRICING_APPROVAL_NOT_REQUIRED: 'Báo giá dùng giá danh mục và không giảm giá nên không cần duyệt giá.',
-  QUOTATION_PRICING_APPROVAL_NOT_PENDING:
-    'Không còn yêu cầu duyệt giá nào chờ cho bộ giá này (đã quyết định hoặc giá vừa đổi). Đã tải lại.',
-  QUOTATION_SELF_APPROVAL_NOT_ALLOWED: 'Bạn là người lập báo giá này nên không tự duyệt giá được.',
+  QUOTATION_PRICE_MISSING: 'Sản phẩm này chưa có giá trong danh mục nên chưa báo giá được. Nhờ quản trị cập nhật giá.',
+  QUOTATION_SURVEY_NOT_FOUND:
+    'Không tìm thấy yêu cầu khảo sát, hoặc bạn không phải kỹ thuật viên đã khảo sát yêu cầu này.',
   // Hợp đồng lắp đặt (phía nhân viên)
   CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng, hoặc bạn không phụ trách yêu cầu khảo sát này.',
   CONTRACT_QUOTATION_NOT_ACCEPTED: 'Chỉ lập được hợp đồng từ báo giá khách đã đồng ý.',
@@ -349,6 +343,31 @@ const ERROR_MESSAGES: Record<string, string> = {
   PAYMENT_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
   PAYMENT_CONTRACT_NOT_SIGNED: 'Hợp đồng chưa được duyệt bản ký nên chưa thanh toán được.',
   PAYMENT_ALREADY_PAID: 'Hợp đồng này đã được thanh toán. Danh sách đã được tải lại.',
+  PAYMENT_CASH_SELECTED: 'Bạn đã chọn trả tiền mặt cho hợp đồng này. Bỏ chọn tiền mặt trước nếu muốn trả qua PayOS.',
+  PAYMENT_CASH_NOT_SELECTED: 'Khách chưa chọn trả tiền mặt cho hợp đồng này, hoặc vừa bỏ chọn. Đã tải lại.',
+  PAYMENT_CASH_AMOUNT_MISMATCH:
+    'Số tiền xác nhận phải đúng bằng tổng giá trị hợp đồng; không ghi nhận trả thiếu hay trả dư.',
+  PAYMENT_CASH_RECEIPT_DUPLICATE: 'Số phiếu thu này đã dùng cho một lần thanh toán khác. Kiểm tra lại số phiếu thu.',
+  // Lịch thi công đã thống nhất với khách
+  INSTALLATION_SCHEDULE_NOT_FOUND: 'Không tìm thấy lịch thi công này.',
+  INSTALLATION_SCHEDULE_CONTRACT_NOT_FOUND:
+    'Không tìm thấy hợp đồng, hoặc bạn không phải kỹ thuật viên đã khảo sát công trình này.',
+  INSTALLATION_SCHEDULE_CONTRACT_NOT_SIGNED: 'Chỉ hẹn được ngày thi công sau khi hợp đồng đã được ký.',
+  INSTALLATION_SCHEDULE_AGREEMENT_REQUIRED: 'Ghi khách đã đồng ý ngày này thế nào và lúc nào.',
+  INSTALLATION_SCHEDULE_REASON_REQUIRED: 'Ghi lý do.',
+  INSTALLATION_SCHEDULE_INVALID:
+    'Khoảng thời gian chưa hợp lệ: giờ bắt đầu phải ở tương lai, trước giờ kết thúc và trong giới hạn hẹn trước.',
+  INSTALLATION_SCHEDULE_TECHNICIAN_INELIGIBLE:
+    'Kỹ thuật viên không nhận được khoảng thời gian này (ngoài giờ làm, đang nghỉ, đã có việc khác hoặc ngoài khu vực).',
+  INSTALLATION_SCHEDULE_INSTALLATION_STARTED:
+    'Công trình đã bắt đầu thi công hoặc đã huỷ nên không đổi lịch ở đây được.',
+  INSTALLATION_SCHEDULE_ASSIGNED_TO_OTHER_TECHNICIAN: 'Quản lý đã giao công trình này cho kỹ thuật viên khác.',
+  INSTALLATION_SCHEDULE_STALE_REVISION: 'Lịch thi công vừa được đổi ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  INSTALLATION_SCHEDULE_NOT_LIVE: 'Lịch này đã được thay hoặc đã huỷ. Đã tải lại.',
+  INSTALLATION_SCHEDULE_COVERAGE_UNAVAILABLE:
+    'Khu vực của công trình hiện chưa có kỹ thuật viên phục vụ; quản lý sẽ sắp xếp lịch thi công.',
+  // Báo giá, duyệt giá, sinh tự động kiểu cũ đã bỏ
+  ENDPOINT_RETIRED: 'Chức năng này đã đổi cách làm. Tải lại trang để dùng cách mới.',
   // Khu vực phục vụ
   ZONE_NOT_FOUND: 'Không tìm thấy khu vực này.',
   ZONE_MANAGEMENT_FORBIDDEN: 'Chỉ quản trị viên đang hoạt động mới tạo hoặc sửa khu vực.',
@@ -369,6 +388,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   RAG_INVALID_STATE: 'Tài liệu vừa đổi trạng thái nên không làm được thao tác này. Đã tải lại để xem trạng thái mới.',
   RAG_STALE_REVISION: 'Tài liệu vừa được sửa ở nơi khác. Đã tải lại, kiểm tra rồi làm lại.',
   RAG_SERVICE_UNAVAILABLE: 'Dịch vụ chatbot tạm thời không phản hồi. Thử lại sau ít phút.',
+  RAG_TIMEOUT: 'Trợ lý trả lời quá lâu nên đã dừng. Thử lại, câu hỏi ngắn hơn sẽ nhanh hơn.',
+  RAG_BUSY: 'Trợ lý đang bận trả lời câu hỏi khác. Thử lại sau vài giây.',
+  RAG_ADVISOR_UNAVAILABLE: 'Phần tư vấn cấu hình tạm thời chưa dùng được. Thử lại sau; các câu hỏi khác vẫn hỏi được.',
   RAG_SESSION_NOT_FOUND: 'Không tìm thấy cuộc trò chuyện này. Mở cuộc trò chuyện mới để hỏi tiếp.',
   RAG_MESSAGE_TOO_LONG: 'Câu hỏi phải có từ 1 đến 8.000 ký tự.',
   // Hạn mức theo ngày của từng người hoặc của cả hệ thống, backend không nói là hạn mức nào
@@ -416,11 +438,13 @@ const STATUS_MESSAGES: Record<number, string> = {
   403: 'Bạn không có quyền thực hiện thao tác này.',
   404: 'Nội dung có thể đã bị xoá, hoặc đường dẫn không đúng.',
   409: 'Dữ liệu đã tồn tại trên hệ thống.',
+  410: 'Chức năng này đã đổi cách làm. Tải lại trang để dùng cách mới.',
   422: 'Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại.',
   429: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.',
   500: 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.',
   502: 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.',
   503: 'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
+  504: 'Hệ thống phản hồi quá lâu. Vui lòng thử lại.',
 }
 
 /** Mất mạng / không gọi được server (status = 0). */
@@ -540,6 +564,17 @@ export function pendingMigrationsOf(error: unknown): string[] {
   if (!isApiError(error) || !isRecord(error.details)) return []
   const list = error.details.pendingMigrations
   return Array.isArray(list) ? list.filter((m): m is string => typeof m === 'string') : []
+}
+
+/** Chức năng cũ đã bị backend gỡ (410 ENDPOINT_RETIRED); `details.replacement` ghi cách làm mới (tiếng Anh, không hiện) */
+export function isEndpointRetired(error: unknown) {
+  return isApiError(error) && (error.code === 'ENDPOINT_RETIRED' || error.status === 410)
+}
+
+/** Một trường trong `details` của lỗi (vd. `surveyRequestId` của 409 khi đặt khảo sát trực tiếp) */
+export function detailOf(error: unknown, key: string): unknown {
+  if (!isApiError(error) || !isRecord(error.details)) return undefined
+  return error.details[key]
 }
 
 /** Câu lỗi kèm số giây phải chờ khi bị giới hạn số lần (429 + Retry-After) */

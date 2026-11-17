@@ -1,5 +1,6 @@
-// Giai đoạn 3 trên backend thật (xem stack-harness.mjs): lịch khảo sát chờ nhận → bổ sung biên bản → PDF báo giá → hợp đồng (lập, sửa,
-// phát hành, gắn PDF, gửi ký) → khách tải PDF chính thức, gửi bản ký → quản lý duyệt → thanh toán.
+// Giai đoạn 3 trên backend thật (xem stack-harness.mjs): lịch khảo sát chờ nhận → bổ sung biên bản → kỹ thuật viên lập giỏ báo giá →
+// khách đồng ý (backend tự lập bản nháp hợp đồng) → quản lý sửa, phát hành, gắn PDF, gửi ký → khách tải PDF chính thức, gửi bản ký →
+// quản lý duyệt → thanh toán. Luồng theo backend `main` ad10455; kinh doanh chỉ đọc.
 // Thanh toán dùng PayOS GIẢ LẬP của stack (local-test/fake-payos.mjs, cùng giao thức + webhook có chữ ký): PAID ở đây là do backend thật
 // xác nhận theo phụ thuộc giả lập, KHÔNG phải bằng chứng thanh toán PayOS thật (payOS không có sandbox: https://payos.vn/docs/moi-truong-test).
 import assert from 'node:assert/strict'
@@ -12,7 +13,6 @@ const { skip, state, as, mark, until, expectCall, url } = await setupStack('3-co
 const tag = new Date().toISOString().slice(11, 19).replace(/:/g, '')
 const OFFICIAL_PDF = S.tinyPdf(`Hop dong lap dat ${tag}`)
 const SIGNED_PDF = S.tinyPdf(`Ban da ky ${tag}`)
-const QUOTE_PDF = S.tinyPdf(`Bao gia ${tag}`)
 
 describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { skip }, () => {
   test('tiền đề (API, ngoài 76): hồ sơ, địa điểm ở Bến Thành, đánh giá sơ bộ, khách đặt lịch sáng mai', async () => {
@@ -152,56 +152,57 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     assert.ok(report.amendments.length >= 1, 'có lịch sử bổ sung')
   })
 
-  test('S11: báo giá (tiền đề API) đã gửi → kinh doanh tải PDF báo giá và gắn qua giao diện', async () => {
-    const sr = state.surveyRequestId
-    await S.call('SALES', 'POST', `/survey-requests/${sr}/claim`)
-    const validUntil = `${new Date(Date.now() + 20 * 86_400_000).toISOString().slice(0, 10)}T23:59:59+07:00`
-    let q = await S.must('SALES', 'POST', `/survey-requests/${sr}/quotations`, {
-      revision: null,
-      laborCost: 5_000_000,
-      transportCost: 500_000,
-      otherServiceCost: 0,
-      discountAmount: 0,
-      taxRatePercent: 8,
-      validUntil,
-      terms: 'Bảo hành theo hợp đồng.',
-      notes: null,
-    })
-    q = await S.must('SALES', 'POST', `/quotations/${q.quotationId}/lines`, {
-      revision: q.revision,
-      productId: state.productId,
-      name: null,
-      unit: null,
-      quantity: 10,
-      unitPrice: null,
-      description: null,
-    })
-    q = await S.must('SALES', 'POST', `/quotations/${q.quotationId}/issue`, { revision: q.revision, reviewNote: null })
-    state.quotationId = q.quotationId
-    const page = await as('SALES', `/ops/surveys/${sr}`)
-    const t = mark()
-    const section = page.getByRole('region', { name: 'Tệp PDF báo giá' })
-    await section
-      .locator('input[type=file]')
-      .setInputFiles({ name: 'bao-gia.pdf', mimeType: 'application/pdf', buffer: QUOTE_PDF })
-    await section.getByRole('button', { name: 'Gắn vào báo giá' }).click()
-    await expectCall('S11', t)
-    await section.getByText('bao-gia.pdf').waitFor()
-    const after = await S.must('SALES', 'GET', `/quotations/${state.quotationId}`)
-    assert.ok(after.documentFileId ?? after.document?.fileId, 'báo giá đã gắn tệp')
-    await S.must('CUSTOMER', 'POST', `/customers/me/quotations/${state.quotationId}/accept`)
+  test('K01–K03: kỹ thuật viên lập giỏ báo giá từ danh mục, gửi khách; khách đồng ý thì hợp đồng tự lập đúng một bản', async () => {
+    const product = await S.must(null, 'GET', `/products/${state.productId}`)
+    const page = await as('TECH', `/tech/jobs/${state.appointmentId}`)
+    const quotation = page.locator('#quotation')
+    let t = mark()
+    await quotation.getByRole('button', { name: 'Lập báo giá' }).click()
+    await expectCall('K01', t, 201)
+
+    t = mark()
+    await quotation.getByRole('button', { name: 'Thêm sản phẩm' }).click()
+    const add = page.getByRole('dialog', { name: 'Thêm sản phẩm vào báo giá' })
+    await add.locator('#cart-line-product').fill(product.sku ? `${product.name} (${product.sku})` : product.name)
+    await add.locator('#cart-line-quantity').fill('10')
+    await add.getByRole('button', { name: 'Thêm vào báo giá' }).click()
+    await expectCall('K02', t)
+
+    t = mark()
+    await quotation.getByRole('button', { name: 'Gửi cho khách' }).click()
+    await page
+      .getByRole('dialog', { name: 'Gửi báo giá cho khách?' })
+      .getByRole('button', { name: 'Gửi cho khách' })
+      .click()
+    await expectCall('K03', t)
+    const list = await S.must('TECH', 'GET', `/technician/survey-requests/${state.surveyRequestId}/quotations`)
+    const issued = list.find((q) => q.status === 'ISSUED')
+    assert.equal(issued.origin, 'TECHNICIAN')
+    assert.ok(issued.totalAmount > 0, 'giá và tổng do backend tính')
+    state.quotationId = issued.quotationId
+
+    // Kinh doanh không còn lệnh ghi báo giá: backend trả 410 ENDPOINT_RETIRED
+    const retired = await S.call('SALES', 'POST', `/survey-requests/${state.surveyRequestId}/quotations/generate`)
+    assert.equal(retired.status, 410)
+    assert.equal(retired.error?.code, 'ENDPOINT_RETIRED')
+
+    // Bấm đồng ý hai lần cùng lúc (nháy đúp): chỉ một hợp đồng được lập
+    const accept = `/customers/me/quotations/${state.quotationId}/accept`
+    await Promise.all([S.call('CUSTOMER', 'POST', accept), S.call('CUSTOMER', 'POST', accept)])
+    const contracts = await S.must('MANAGER', 'GET', `/survey-requests/${state.surveyRequestId}/contracts`)
+    const drafted = contracts.filter((c) => c.quotationId === state.quotationId)
+    assert.equal(drafted.length, 1, 'đúng một hợp đồng cho báo giá đã đồng ý')
+    assert.equal(drafted[0].status, 'DRAFT')
+    state.contractId = drafted[0].contractId
   })
 
-  test('S01–S07 + S09: lập, sửa, phát hành, gắn PDF, gửi ký, lập phụ lục rồi phát hành lại', async () => {
-    const page = await as('SALES', `/ops/surveys/${state.surveyRequestId}`)
+  test('S02–S07 + S09: quản lý mở bản nháp tự lập, sửa, phát hành, gắn PDF, gửi ký, lập phụ lục rồi phát hành lại', async () => {
+    // Kinh doanh chỉ đọc hợp đồng
+    const salesWrite = await S.call('SALES', 'POST', `/contracts/${state.contractId}/issue`, { revision: 0 })
+    assert.equal(salesWrite.status, 403, `kinh doanh phát hành hợp đồng: ${salesWrite.status}`)
+
     let t = mark()
-    await page.locator('#contracts').getByRole('button', { name: 'Lập hợp đồng' }).click()
-    const create = page.getByRole('dialog', { name: 'Lập hợp đồng' })
-    await create.getByLabel('Thời hạn bảo hành lắp đặt').selectOption('60')
-    await create.getByRole('button', { name: 'Lập hợp đồng' }).click()
-    await expectCall('S01', t, 201)
-    await page.waitForURL(/\/ops\/contracts\/[0-9a-f-]{36}$/)
-    state.contractId = page.url().split('/').pop()
+    const page = await as('MANAGER', `/manage/contracts/${state.contractId}`)
     await page.getByRole('heading', { name: /^Hợp đồng / }).waitFor()
     await expectCall('S03', t)
     await expectCall('S02', t)
@@ -225,16 +226,16 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
       .fill(`Điều 1. Lắp đặt hệ 5,5 kWp tại 12 Lê Lợi (${tag}). Phụ lục: đổi vị trí inverter.`)
     await amend.getByRole('button', { name: 'Lập phụ lục' }).click()
     await expectCall('S09', t, 201)
-    await page.waitForURL((u) => u.pathname.startsWith('/ops/contracts/') && !u.pathname.endsWith(v1))
+    await page.waitForURL((u) => u.pathname.startsWith('/manage/contracts/') && !u.pathname.endsWith(v1))
     state.contractId = page.url().split('/').pop()
     state.supersededContractId = v1
     await page.getByRole('heading', { name: /^Hợp đồng / }).waitFor()
     // lập phụ lục lần hai khi đã có bản nháp: backend từ chối (CONTRACT_ALREADY_EXISTS)
-    const again = await S.call('SALES', 'POST', `/contracts/${v1}/amendments`, { terms: null, warrantyMonths: null })
+    const again = await S.call('MANAGER', 'POST', `/contracts/${v1}/amendments`, { terms: null, warrantyMonths: null })
     assert.equal(again.error?.code, 'CONTRACT_ALREADY_EXISTS', `phụ lục thứ hai: ${again.status}`)
     await issueAttachSend(page)
-    assert.equal((await S.must('SALES', 'GET', `/contracts/${v1}`)).status, 'SUPERSEDED')
-    const c = await S.must('SALES', 'GET', `/contracts/${state.contractId}`)
+    assert.equal((await S.must('MANAGER', 'GET', `/contracts/${v1}`)).status, 'SUPERSEDED')
+    const c = await S.must('MANAGER', 'GET', `/contracts/${state.contractId}`)
     assert.equal(c.status, 'AWAITING_SIGNATURE')
     assert.equal(c.officialDocument.sha256, S.sha256(OFFICIAL_PDF))
   })

@@ -58,14 +58,14 @@ export function customerContractNext(c: ContractView): TrackerNext {
       return {
         tone: 'danger',
         title: 'Bạn cần thanh toán hợp đồng',
-        body: `Thanh toán một lần ${formatContractMoney(c)} qua PayOS.`,
+        body: `Thanh toán một lần ${formatContractMoney(c)} qua PayOS hoặc tiền mặt. Đã chọn tiền mặt thì chờ Smart Solar xác nhận.`,
         action: { label: 'Thanh toán', icon: 'payments', target: 'contract-payment' },
       }
     case 'PAID':
       return {
         tone: 'ok',
         title: 'Đã thanh toán đủ',
-        body: 'Smart Solar sẽ lập dự án thi công; lịch lắp đặt hiện ở mục Lắp đặt.',
+        body: 'Lịch thi công đã hẹn được xác nhận tự động; tiến độ lắp đặt hiện ở mục Lắp đặt.',
       }
     case 'SUPERSEDED':
       return {

@@ -6,10 +6,12 @@ const MB = 1024 * 1024
 export const FILE_PURPOSES = {
   /** Kỹ thuật viên, khảo sát tại công trình */
   ONSITE_SURVEY_EVIDENCE: { types: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'], maxBytes: 15 * MB },
-  /** Kinh doanh */
+  /** Kinh doanh (báo giá cũ; báo giá của kỹ thuật viên không có tệp) */
   QUOTATION_DOCUMENT: { types: ['application/pdf'], maxBytes: 20 * MB },
-  /** Kinh doanh */
+  /** Quản lý, quản trị: PDF hợp đồng chính thức */
   CONTRACT_DOCUMENT: { types: ['application/pdf'], maxBytes: 20 * MB },
+  /** Quản lý, quản trị: ảnh / PDF phiếu thu khi khách trả tiền mặt */
+  PAYMENT_EVIDENCE: { types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'], maxBytes: 15 * MB },
   /** Khách hàng, hợp đồng đã ký */
   SIGNED_CONTRACT: { types: ['application/pdf'], maxBytes: 20 * MB },
   /** Kỹ thuật viên, ảnh thi công */

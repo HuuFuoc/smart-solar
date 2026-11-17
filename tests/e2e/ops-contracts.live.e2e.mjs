@@ -92,7 +92,22 @@ describe('cổng kinh doanh với backend thật (chỉ đọc)', { skip }, () =
         const id = page.url().split('/').pop()
         await until(() => last('GET', `/contracts/${id}`), 'GET hợp đồng')
         assert.equal(last('GET', `/contracts/${id}`).status, 200)
+        // Từ backend ad10455 kinh doanh không đọc thanh toán (403): trang của kinh doanh không được gọi
+        assert.equal(last('GET', `/contracts/${id}/payments`), undefined)
       }
     },
   )
+
+  test('không gọi API báo giá / duyệt giá đã gỡ (410) và không có lệnh ghi hợp đồng nào', () => {
+    const retired = responses.filter(
+      (r) =>
+        r.status === 410 ||
+        /\/quotations\/pending-review$|\/quotations\/generate$|\/pricing-approval|\/confirm-survey-version$/.test(
+          r.path,
+        ),
+    )
+    assert.deepEqual(retired, [])
+    const writes = responses.filter((r) => r.method !== 'GET' && /^\/(contracts|quotations)\//.test(r.path))
+    assert.deepEqual(writes, [])
+  })
 })

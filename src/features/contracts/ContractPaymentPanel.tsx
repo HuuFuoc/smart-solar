@@ -1,11 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { CONTRACT_PAYMENT_STATES, PAYMENT_METHODS } from '@/common/contract'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, UnavailableState } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
+import { CashConfirmDialog } from '@/features/contracts/CashConfirmDialog'
+import { FileInfo } from '@/features/files/FileInfo'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
@@ -15,6 +18,7 @@ import {
   paymentStatusMeta,
 } from '@/features/contracts/contractDisplay'
 import {
+  canConfirmCash,
   hasPaymentStage,
   isAwaitingPayment,
   paymentsNeedingAttention,
@@ -26,8 +30,9 @@ import type { ContractView } from '@/types/res/customerContractsRes'
 import type { ContractPaymentView } from '@/types/res/staffPaymentsRes'
 import { formatMoney } from '@/utils/format'
 
-// Trạng thái thanh toán của hợp đồng phía nhân viên (GET /contracts/{id}/payments). Chỉ đọc: hệ thống xác nhận đã nhận
-// tiền qua PayOS, nhân viên không tự đánh dấu. Lần thanh toán cần xử lý tay (số tiền lệch, trả hai lần) tô đỏ
+// Trạng thái thanh toán của hợp đồng phía quản lý / quản trị (GET /contracts/{id}/payments; kinh doanh bị 403 nên trang của
+// kinh doanh không vẽ khối này). PayOS: hệ thống tự xác nhận đã nhận tiền. Tiền mặt: khách chọn trên cổng khách hàng, quản lý /
+// quản trị ghi nhận khi đã nhận tiền kèm phiếu thu. Lần thanh toán cần xử lý tay (số tiền lệch, trả hai lần) tô đỏ
 
 export function ContractPaymentPanel({
   contract,
@@ -71,7 +76,7 @@ export function ContractPaymentPanel({
       <PanelBody className="space-y-4">
         {!enabled ? (
           <p className="text-body text-fg-2">
-            Khách thanh toán 100% qua PayOS sau khi bản ký được duyệt. Hiện chưa tới bước này.
+            Khách thanh toán 100% qua PayOS hoặc tiền mặt sau khi bản ký được duyệt. Hiện chưa tới bước này.
           </p>
         ) : query.isPending ? (
           <p className="text-body text-fg-2">Đang tải trạng thái thanh toán…</p>
@@ -109,8 +114,23 @@ function PaymentBody({
 }) {
   const attention = paymentsNeedingAttention(view.attempts)
   const paid = view.contractStatus === 'PAID'
+  const [confirming, setConfirming] = useState(false)
+  const cashToConfirm = canConfirmCash(view, viewer)
+  const state = CONTRACT_PAYMENT_STATES[view.paymentState]
+  const paidCash = paid && view.current?.method === 'CASH' ? view.current : null
   return (
     <>
+      {cashToConfirm && (
+        <Notice tone="danger" title="Khách chọn trả tiền mặt, chờ bạn xác nhận">
+          Nhận đúng {formatMoney(view.amount, view.currency)} và giao phiếu thu cho khách, rồi ghi nhận ở đây kèm ảnh /
+          PDF phiếu thu. Khách chọn lúc {formatMoment(view.current?.createdAt)}.
+          <span className="mt-3 flex">
+            <Button size="sm" variant="primary" icon="task_alt" onClick={() => setConfirming(true)}>
+              Xác nhận đã nhận tiền
+            </Button>
+          </span>
+        </Notice>
+      )}
       {attention.length > 0 && (
         <Notice tone="danger" title={`${attention.length} lần thanh toán cần xử lý tay`}>
           <ul className="list-disc pl-5">
@@ -124,29 +144,27 @@ function PaymentBody({
       )}
       {paid ? (
         <Notice tone="ok" title={`Đã thanh toán đủ lúc ${formatMoment(view.current?.paidAt ?? contract.paidAt)}`}>
-          {viewer === 'sales' ? (
-            'Quản lý tạo dự án thi công từ hợp đồng này.'
-          ) : (
-            <>
-              Tạo dự án thi công ở mục Thi công.
-              {installationsPath && (
-                <span className="mt-3 flex">
-                  <ButtonLink to={installationsPath} size="sm" variant="info" icon="construction">
-                    Hợp đồng chờ tạo dự án
-                  </ButtonLink>
-                </span>
-              )}
-            </>
+          {paidCash ? 'Tiền mặt đã được ghi nhận. ' : ''}Lịch thi công kỹ thuật viên đã hẹn được hệ thống tự xác nhận;
+          hợp đồng chưa có lịch thì tạo dự án ở mục Thi công.
+          {installationsPath && (
+            <span className="mt-3 flex">
+              <ButtonLink to={installationsPath} size="sm" variant="info" icon="construction">
+                Hợp đồng chờ tạo dự án
+              </ButtonLink>
+            </span>
           )}
         </Notice>
       ) : (
         view.current === null &&
-        view.contractStatus === 'SIGNED' && <p className="text-body text-fg-2">Khách chưa mở link thanh toán nào.</p>
+        view.contractStatus === 'SIGNED' && (
+          <p className="text-body text-fg-2">Khách chưa chọn cách thanh toán (PayOS hoặc tiền mặt).</p>
+        )
       )}
       <Facts
         items={[
           { k: 'Số tiền phải trả', v: formatMoney(view.amount, view.currency) },
           { k: 'Trạng thái hợp đồng', v: contractStatusLabel(view.contractStatus) },
+          ...(state ? [{ k: 'Thanh toán', v: <Badge tone={state.tone}>{state.staff}</Badge> }] : []),
           ...(view.current
             ? [
                 {
@@ -159,7 +177,16 @@ function PaymentBody({
                 },
               ]
             : []),
-          ...(view.current?.providerReference ? [{ k: 'Mã giao dịch', v: view.current.providerReference }] : []),
+          ...(view.current?.providerReference
+            ? [
+                {
+                  k: view.current.method === 'CASH' ? 'Số phiếu thu' : 'Mã giao dịch',
+                  v: view.current.providerReference,
+                },
+              ]
+            : []),
+          ...(paidCash?.evidenceFileId ? [{ k: 'Phiếu thu', v: <FileInfo fileId={paidCash.evidenceFileId} /> }] : []),
+          ...(paidCash?.confirmationNote ? [{ k: 'Ghi chú xác nhận', v: paidCash.confirmationNote }] : []),
         ]}
       />
       {view.attempts.length > 0 && (
@@ -167,6 +194,7 @@ function PaymentBody({
           <thead>
             <tr>
               <Th>Mã đơn</Th>
+              <Th>Cách trả</Th>
               <Th className="text-right">Số tiền</Th>
               <Th>Trạng thái</Th>
               <Th>Tạo lúc</Th>
@@ -181,6 +209,7 @@ function PaymentBody({
                   <Td label="Mã đơn" className="tnum">
                     {a.orderCode}
                   </Td>
+                  <Td label="Cách trả">{PAYMENT_METHODS[a.method] ?? a.method}</Td>
                   <Td label="Số tiền" className="tnum lg:text-right">
                     {formatMoney(a.amount, a.currency)}
                   </Td>
@@ -191,7 +220,11 @@ function PaymentBody({
                     {formatMoment(a.createdAt)}
                   </Td>
                   <Td label="Hết hạn / trả lúc" className="tnum">
-                    {a.paidAt ? `Trả ${formatMoment(a.paidAt)}` : `Hết hạn ${formatMoment(a.expiresAt)}`}
+                    {a.paidAt
+                      ? `Trả ${formatMoment(a.paidAt)}`
+                      : a.expiresAt
+                        ? `Hết hạn ${formatMoment(a.expiresAt)}`
+                        : 'Không có hạn'}
                   </Td>
                 </Tr>
               )
@@ -214,6 +247,7 @@ function PaymentBody({
           </ol>
         </details>
       )}
+      {confirming && <CashConfirmDialog contract={contract} onClose={() => setConfirming(false)} />}
     </>
   )
 }

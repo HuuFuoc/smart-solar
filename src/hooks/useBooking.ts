@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as bookingService from '@/services/bookingService'
 import type { ApiError } from '@/services/api/errors'
-import type { BookSurveyAppointmentRequest } from '@/types/req/customerSurveyRequestsReq'
+import type { BookSurveyAppointmentRequest, DirectSurveyBookingRequest } from '@/types/req/customerSurveyRequestsReq'
 import type {
   BookingConfirmation,
   CustomerAppointmentView,
+  DirectSurveyBookingView,
   CustomerSurveyRequestDetailView,
   CustomerSurveyRequestView,
 } from '@/types/res/customerSurveyRequestsRes'
@@ -62,6 +63,15 @@ function useInvalidateBooking() {
       queryClient.invalidateQueries({ queryKey: bookingKeys.all }),
       queryClient.invalidateQueries({ queryKey: bookingKeys.slotsAll }),
     ])
+}
+
+/** Đặt khảo sát trực tiếp; xong (kể cả lỗi: yêu cầu có thể đã được mở) thì tải lại danh sách yêu cầu và giờ trống */
+export function useDirectBookingMutation() {
+  const invalidate = useInvalidateBooking()
+  return useMutation<DirectSurveyBookingView, ApiError, DirectSurveyBookingRequest>({
+    mutationFn: bookingService.bookDirectSurvey,
+    onSettled: invalidate,
+  })
 }
 
 export function useBookAppointmentMutation() {
