@@ -19,6 +19,7 @@ import {
 } from '@/features/quotations/quotationDisplay'
 import {
   CART_MAX_LINES,
+  bomCartPlan,
   canCreateCart,
   canReviseCart,
   cartIssueBlockers,
@@ -36,8 +37,10 @@ import {
   useReviseCartMutation,
   useTechnicianQuotationsQuery,
 } from '@/hooks/useTechnicianQuotations'
+import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import { isApiError, isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 import type { QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
+import type { OnSiteSurveyBillOfMaterials } from '@/types/res/technicianOnSiteSurveyRes'
 
 // Báo giá lắp đặt do kỹ thuật viên đã khảo sát lập, như một giỏ hàng: chọn sản phẩm danh mục và số lượng, backend tính giá, thuế,
 // tổng. Chỉ hiện khi biên bản khảo sát đã hoàn thành. Khách trả lời (đồng ý / yêu cầu sửa / từ chối) trên cổng khách hàng;
@@ -47,9 +50,11 @@ type Props = {
   surveyRequestId: string
   /** Kết luận lắp đặt của biên bản khảo sát (FEASIBLE, FEASIBLE_WITH_CONDITIONS, NOT_FEASIBLE) */
   feasibility: string | null | undefined
+  /** Bảng vật tư và dịch vụ của biên bản khảo sát, để lấy sang giỏ */
+  billOfMaterials?: OnSiteSurveyBillOfMaterials | null
 }
 
-export function TechnicianQuotationPanel({ surveyRequestId, feasibility }: Props) {
+export function TechnicianQuotationPanel({ surveyRequestId, feasibility, billOfMaterials }: Props) {
   const query = useTechnicianQuotationsQuery(surveyRequestId)
   const create = useCreateCartMutation()
   const list = query.data ?? []
@@ -96,7 +101,7 @@ export function TechnicianQuotationPanel({ surveyRequestId, feasibility }: Props
             Không lập báo giá lắp đặt cho công trình này. Kết luận sai thì bổ sung biên bản khảo sát trước.
           </Notice>
         ) : working && isTechnicianDraft(working) ? (
-          <CartEditor quotation={working} feasibility={feasibility} />
+          <CartEditor quotation={working} feasibility={feasibility} billOfMaterials={billOfMaterials} />
         ) : working &&
           working.status !== 'CANCELLED' &&
           working.status !== 'SUPERSEDED' &&
@@ -133,20 +138,53 @@ export function TechnicianQuotationPanel({ surveyRequestId, feasibility }: Props
 function CartEditor({
   quotation: q,
   feasibility,
+  billOfMaterials,
 }: {
   quotation: QuotationView
   feasibility: string | null | undefined
+  billOfMaterials: OnSiteSurveyBillOfMaterials | null | undefined
 }) {
   const remove = useRemoveCartLineMutation()
   const add = useAddCartLineMutation()
   const issue = useIssueCartMutation()
+  const catalog = useCatalogPickerQuery()
   const [dialog, setDialog] = useState<{ line: QuotationLineView | null } | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [flagged, setFlagged] = useState<string[]>([])
+  const [filling, setFilling] = useState(false)
   const blockers = cartIssueBlockers(q, feasibility)
   const missing = missingCartTypes(q)
-  const busy = remove.isPending || add.isPending || issue.isPending
+  const busy = remove.isPending || add.isPending || issue.isPending || filling
   const full = q.lines.length >= CART_MAX_LINES
+  const plan = catalog.data ? bomCartPlan(billOfMaterials, q.lines, catalog.data.items ?? []) : null
+
+  // Thêm lần lượt vì mỗi lệnh cần revision mới nhất do lệnh trước trả về; lỗi thì dừng, dòng đã thêm vẫn giữ
+  async function fillFromSurvey() {
+    if (!plan || plan.items.length === 0) return
+    setFilling(true)
+    let revision = q.revision
+    let added = 0
+    try {
+      for (const item of plan.items) {
+        const view = await add.mutateAsync({ quotationId: q.quotationId, revision, ...item })
+        revision = view.revision
+        added += 1
+      }
+      const notes = [
+        plan.skipped.length > 0 && `Bỏ qua ${plan.skipped.join(', ')} vì chưa bán hoặc chưa có giá.`,
+        plan.overflow > 0 && `Còn ${plan.overflow} dòng không vừa giới hạn ${CART_MAX_LINES} dòng.`,
+      ].filter(Boolean)
+      toast.success(`Đã lấy ${added} dòng từ biên bản khảo sát.`, {
+        description: notes.length > 0 ? notes.join(' ') : undefined,
+      })
+    } catch (e) {
+      toast.error(
+        added > 0 ? `Đã lấy ${added}/${plan.items.length} dòng. ${quotationErrorMessage(e)}` : quotationErrorMessage(e),
+      )
+    } finally {
+      setFilling(false)
+    }
+  }
 
   async function removeLine(line: QuotationLineView) {
     try {
@@ -177,7 +215,14 @@ function CartEditor({
   return (
     <>
       {q.lines.length === 0 ? (
-        <EmptyState title="Báo giá chưa có sản phẩm" description="Thêm tấm pin, inverter, vật tư và dịch vụ lắp đặt." />
+        <EmptyState
+          title="Báo giá chưa có sản phẩm"
+          description={
+            plan && plan.items.length > 0
+              ? `Biên bản khảo sát có ${plan.items.length} dòng vật tư và dịch vụ. Lấy sang rồi chỉnh số lượng nếu cần.`
+              : 'Thêm tấm pin, inverter, vật tư và dịch vụ lắp đặt.'
+          }
+        />
       ) : (
         <>
           <QuotationLines
@@ -217,7 +262,21 @@ function CartEditor({
       )}
       {blockers.length > 0 && <p className="text-meta text-fg-2">{blockers.join(' ')}</p>}
       {full && <p className="text-meta text-fg-2">Báo giá đã đủ {CART_MAX_LINES} dòng.</p>}
+      {plan && plan.items.length === 0 && plan.skipped.length > 0 && q.lines.length === 0 && (
+        <p className="text-meta text-fg-2">
+          Không lấy được từ biên bản khảo sát: {plan.skipped.join(', ')} chưa bán hoặc chưa có giá.
+        </p>
+      )}
       <div className="flex flex-wrap gap-3">
+        {plan && plan.items.length > 0 && !full && (
+          <Button icon="playlist_add" variant="soft" disabled={busy} onClick={() => void fillFromSurvey()}>
+            {filling
+              ? 'Đang lấy…'
+              : q.lines.length === 0
+                ? 'Lấy từ biên bản khảo sát'
+                : `Lấy thêm ${plan.items.length} dòng từ biên bản`}
+          </Button>
+        )}
         <Button icon="add" variant="soft" disabled={busy || full} onClick={() => setDialog({ line: null })}>
           Thêm sản phẩm
         </Button>

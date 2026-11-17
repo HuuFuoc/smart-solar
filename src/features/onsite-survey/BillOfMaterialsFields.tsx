@@ -43,6 +43,7 @@ export function BillOfMaterialsFields({
   const services = products.filter((p) => isServiceType(p.productType))
   const gaps = catalog.data ? bomGaps(value.materials, value.serviceItems, (id) => byId.get(id)?.productType) : []
   const total = value.materials.length + value.serviceItems.length
+  const loaded = catalog.isSuccess
 
   return (
     <>
@@ -57,6 +58,7 @@ export function BillOfMaterialsFields({
         byId={byId}
         errors={errors}
         loading={catalog.isPending}
+        catalogEmpty={loaded && equipment.length === 0}
         canAdd={total < BOM_LIMITS.maxItems}
         disabled={disabled}
         onChange={(materials) => onChange({ materials })}
@@ -70,6 +72,7 @@ export function BillOfMaterialsFields({
         byId={byId}
         errors={errors}
         loading={catalog.isPending}
+        catalogEmpty={loaded && services.length === 0}
         canAdd={total < BOM_LIMITS.maxItems}
         disabled={disabled}
         onChange={(serviceItems) => onChange({ serviceItems })}
@@ -99,6 +102,7 @@ function BomRows({
   byId,
   errors,
   loading,
+  catalogEmpty,
   canAdd,
   disabled,
   onChange,
@@ -111,6 +115,8 @@ function BomRows({
   byId: Map<string, ProductResponse>
   errors: OnSiteSurveyErrors
   loading: boolean
+  /** Danh mục đã tải nhưng không có sản phẩm đang bán nào thuộc nhóm này */
+  catalogEmpty: boolean
   canAdd: boolean
   disabled?: boolean
   onChange: (rows: BomRow[]) => void
@@ -123,7 +129,11 @@ function BomRows({
       <h4 className="text-body font-medium text-fg">
         {title} ({rows.length})
       </h4>
-      {rows.length === 0 && <p className="text-body text-fg-2">Chưa ghi {title.toLowerCase()} nào.</p>}
+      {catalogEmpty ? (
+        <p className="text-body text-fg-2">Danh mục chưa có {title.toLowerCase()} nào đang bán.</p>
+      ) : (
+        rows.length === 0 && <p className="text-body text-fg-2">Chưa ghi {title.toLowerCase()} nào.</p>
+      )}
       {rows.map((row, i) => {
         const id = `os-bom-${row.key}`
         const error = errors[bomErrorKey(list, i)]
@@ -185,7 +195,7 @@ function BomRows({
           </div>
         )
       })}
-      {canAdd && (
+      {canAdd && !catalogEmpty && (
         <Button
           variant="soft"
           size="sm"

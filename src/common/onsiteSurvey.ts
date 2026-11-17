@@ -48,6 +48,18 @@ export const ONSITE_OBSTACLE_KINDS = [
 export const ROOF_TYPE_SUGGESTIONS = ['Mái bằng', 'Sân thượng', 'Mái dốc một mặt', 'Mái dốc hai mặt', 'Mái nhiều mặt']
 export const ROOF_MATERIAL_SUGGESTIONS = ['Tôn', 'Ngói', 'Bê tông', 'Fibro xi măng', 'Kính']
 
+/** Lựa chọn của các ô tủ điện; giá trị chính là chữ ghi vào `electricalCabinetNotes` */
+export const CABINET_LOCATION_SUGGESTIONS = [
+  'Trong nhà, tầng trệt',
+  'Trong nhà, trên lầu',
+  'Nhà xe, gara',
+  'Ngoài trời, mặt tiền',
+  'Cạnh công tơ điện',
+]
+export const CABINET_PHASES = ['1 pha', '3 pha']
+export const MAIN_BREAKER_SUGGESTIONS = ['32 A', '40 A', '50 A', '63 A', '80 A', '100 A', '125 A']
+export const CABINET_SPARE_SPACES = ['Còn chỗ lắp thêm aptomat', 'Hết chỗ, cần lắp tủ phụ']
+
 /** Giới hạn của backend (Validate, Trim, OnSiteSurveyOptions) */
 export const ONSITE_SURVEY_LIMITS = {
   maxSideM: 500,

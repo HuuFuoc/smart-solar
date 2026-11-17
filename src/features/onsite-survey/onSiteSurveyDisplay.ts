@@ -32,6 +32,8 @@ export function feasibilityTone(value: string | null | undefined): Tone {
 
 /** Giờ sớm nhất bấm được "Bắt đầu khảo sát" (backend vẫn kiểm lại theo cài đặt của quản trị) */
 export function surveyStartOpensAt(startsAt: string) {
+  // `?.` vì unit test chạy bằng node, không có import.meta.env
+  if (import.meta.env?.DEV && import.meta.env?.VITE_SKIP_SURVEY_START_WINDOW === 'true') return new Date(0)
   return new Date(new Date(startsAt).getTime() - ONSITE_SURVEY_LIMITS.earlyStartMinutes * 60_000)
 }
 

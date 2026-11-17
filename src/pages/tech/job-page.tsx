@@ -469,6 +469,7 @@ export function TechJobPage() {
                     <TechnicianQuotationPanel
                       surveyRequestId={job.surveyRequestId}
                       feasibility={survey.data.installationFeasibility}
+                      billOfMaterials={survey.data.billOfMaterials}
                     />
                   </div>
                 )}

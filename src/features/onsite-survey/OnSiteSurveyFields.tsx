@@ -13,6 +13,7 @@ import { Combobox } from '@/components/common/ui/combobox'
 import { Field, Input, Radio, Select, Textarea, WithUnit, fieldMessageId } from '@/components/common/ui/field'
 import { Segmented } from '@/components/common/ui/segmented'
 import { BillOfMaterialsFields } from '@/features/onsite-survey/BillOfMaterialsFields'
+import { ElectricalCabinetFields } from '@/features/onsite-survey/ElectricalCabinetFields'
 import { directionLabel } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatCoordinates } from '@/features/onsite-survey/onSiteSurveyDisplay'
 import {
@@ -257,15 +258,12 @@ export function OnSiteSurveyFields({
       </Section>
 
       <Section title="Điện">
-        <Field
-          label="Tủ điện"
-          htmlFor="os-electricalCabinetNotes"
-          required
-          hint="Vị trí, loại tủ, aptomat tổng, chỗ còn trống."
+        <ElectricalCabinetFields
+          value={value.electricalCabinetNotes}
           error={errors.electricalCabinetNotes}
-        >
-          {textArea('electricalCabinetNotes', 'os-electricalCabinetNotes', LIMITS.longNoteLength)}
-        </Field>
+          disabled={disabled}
+          onChange={(electricalCabinetNotes) => onChange({ electricalCabinetNotes })}
+        />
       </Section>
 
       <Section title="Phương án lắp đặt">

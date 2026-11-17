@@ -45,6 +45,7 @@ import {
 } from '../src/features/after-sales/salesTaskRules.ts'
 import {
   addedQuantity,
+  bomCartPlan,
   canCreateCart,
   canRejectQuotation,
   canReviseCart,
@@ -439,5 +440,56 @@ describe('giỏ báo giá của kỹ thuật viên (QuotationTechnicianCart)', (
   test('khách từ chối được bản đang chờ trả lời', () => {
     assert.equal(canRejectQuotation(q('ISSUED')), true)
     assert.equal(canRejectQuotation(q('ACCEPTED')), false)
+  })
+})
+
+describe('Lấy bảng vật tư của biên bản khảo sát sang giỏ báo giá', () => {
+  const catalog = [
+    { id: 'pin', name: 'Pin', status: 'ACTIVE', unitPrice: 3_000_000, currency: 'VND' },
+    { id: 'inv', name: 'Inverter', status: 'ACTIVE', unitPrice: 20_000_000, currency: 'VND' },
+    { id: 'cong', name: 'Nhân công', status: 'ACTIVE', unitPrice: 1_000_000, currency: 'VND' },
+    { id: 'ngung', name: 'Pin cũ', status: 'INACTIVE', unitPrice: 2_000_000, currency: 'VND' },
+    { id: 'khonggia', name: 'Dây', status: 'ACTIVE', unitPrice: 0, currency: 'VND' },
+  ]
+  const bom = {
+    materials: [
+      { productId: 'pin', quantity: 20 },
+      { productId: 'inv', quantity: 2 },
+      { productId: 'ngung', quantity: 1 },
+      { productId: 'khonggia', quantity: 5 },
+      { productId: 'mat', quantity: 1 },
+    ],
+    serviceItems: [{ productId: 'cong', quantity: 1 }],
+  }
+
+  test('giỏ trống: lấy các dòng bán được, báo tên dòng bỏ qua', () => {
+    const plan = bomCartPlan(bom, [], catalog)
+    assert.deepEqual(
+      plan.items.map((i) => i.productId),
+      ['pin', 'inv', 'cong'],
+    )
+    assert.deepEqual(plan.skipped, ['Pin cũ', 'Dây', 'Sản phẩm không còn trong danh mục'])
+    assert.equal(plan.overflow, 0)
+  })
+
+  test('không thêm lại sản phẩm đã có trong giỏ (backend sẽ cộng dồn số lượng)', () => {
+    const plan = bomCartPlan(bom, [{ productId: 'pin' }], catalog)
+    assert.deepEqual(
+      plan.items.map((i) => i.productId),
+      ['inv', 'cong'],
+    )
+  })
+
+  test('gộp sản phẩm trùng, không có bảng thì không có gì để lấy', () => {
+    const dup = { materials: [{ productId: 'pin', quantity: 1.5 }], serviceItems: [{ productId: 'pin', quantity: 2 }] }
+    assert.deepEqual(bomCartPlan(dup, [], catalog).items, [{ productId: 'pin', quantity: 3.5 }])
+    assert.deepEqual(bomCartPlan(null, [], catalog), { items: [], skipped: [], overflow: 0 })
+  })
+
+  test('giữ trong số dòng còn trống của giỏ', () => {
+    const lines = Array.from({ length: 99 }, (_, i) => ({ productId: `x${i}` }))
+    const plan = bomCartPlan(bom, lines, catalog)
+    assert.equal(plan.items.length, 1)
+    assert.equal(plan.overflow, 2)
   })
 })

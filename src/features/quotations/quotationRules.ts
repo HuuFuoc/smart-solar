@@ -107,3 +107,46 @@ export function priceProblemLineIds(details: unknown): string[] {
 /** Lỗi do bản vừa đổi ở nơi khác: tải lại rồi để người dùng tự làm lại, không gửi lại lệnh cũ */
 export const isStaleQuotationError = (code: string | null | undefined) =>
   code === 'QUOTATION_STALE_REVISION' || code === 'QUOTATION_NOT_DRAFT' || code === 'QUOTATION_DRAFT_EXISTS'
+
+type BomLine = { productId: string; quantity: number }
+type SellableProduct = {
+  id?: string | null
+  name?: string | null
+  status?: string | null
+  unitPrice?: number | null
+  currency?: string | null
+}
+
+/** Sản phẩm vào giỏ được: đang bán, có giá VND (backend: QUOTATION_PRODUCT_UNAVAILABLE, QUOTATION_PRICE_MISSING) */
+export const isCartSellable = (p: SellableProduct) =>
+  (p.status ?? '').trim().toUpperCase() === 'ACTIVE' &&
+  (p.currency ?? 'VND').toUpperCase() === 'VND' &&
+  (p.unitPrice ?? 0) > 0
+
+/**
+ * Dòng lấy từ bảng vật tư và dịch vụ của biên bản khảo sát sang giỏ. Bỏ sản phẩm đã có trong giỏ (thêm lại thì backend cộng dồn,
+ * làm sai số lượng kỹ thuật viên đã chỉnh), gộp sản phẩm trùng, giữ trong số dòng còn trống. `skipped`: tên sản phẩm không vào
+ * giỏ được (ngừng bán, chưa có giá, không còn trong danh mục)
+ */
+export function bomCartPlan(
+  bom: { materials?: BomLine[] | null; serviceItems?: BomLine[] | null } | null | undefined,
+  lines: Pick<QuotationView['lines'][number], 'productId'>[],
+  catalog: SellableProduct[],
+) {
+  const inCart = new Set(lines.map((l) => l.productId).filter(Boolean))
+  const byId = new Map(catalog.filter((p) => p.id).map((p) => [p.id!, p]))
+  const merged = new Map<string, number>()
+  for (const item of [...(bom?.materials ?? []), ...(bom?.serviceItems ?? [])]) {
+    if (!item.productId || !(item.quantity > 0) || inCart.has(item.productId)) continue
+    merged.set(item.productId, (merged.get(item.productId) ?? 0) + item.quantity)
+  }
+  const items: BomLine[] = []
+  const skipped: string[] = []
+  for (const [productId, quantity] of merged) {
+    const product = byId.get(productId)
+    if (product && isCartSellable(product)) items.push({ productId, quantity: Math.round(quantity * 1000) / 1000 })
+    else skipped.push(product?.name || 'Sản phẩm không còn trong danh mục')
+  }
+  const room = Math.max(0, CART_MAX_LINES - lines.length)
+  return { items: items.slice(0, room), skipped, overflow: Math.max(0, items.length - room) }
+}
