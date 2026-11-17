@@ -57,6 +57,11 @@ export function buttonClass(variant: Variant = 'secondary', size: Size = 'md', c
   return cx(base, variants[variant], variant === 'ghost' && bleed ? ghostSizes[size] : sizes[size], className)
 }
 
+/** Lớp của nút chỉ có icon, cho nút cần tự xử lý tooltip / popover (IconButton đã gắn sẵn tooltip một dòng) */
+export function iconButtonClass(variant: Variant = 'ghost', size: Size = 'md', className?: string) {
+  return cx(base, variants[variant], iconSizes[size], className)
+}
+
 // Icon trước nhãn: tên Material Symbols hoặc node
 function ButtonIcon({ icon }: { icon?: ReactNode | string }) {
   if (!icon) return null
@@ -128,7 +133,7 @@ export function IconButtonLink({
   return (
     <WithTooltip label={tooltip ?? label}>
       {(tip) => (
-        <Link aria-label={label} className={cx(base, variants[variant], iconSizes[size], className)} {...rest} {...tip}>
+        <Link aria-label={label} className={iconButtonClass(variant, size, className)} {...rest} {...tip}>
           <Icon name={icon} className="text-[20px]" />
         </Link>
       )}
@@ -157,13 +162,7 @@ export function IconButton({
   return (
     <WithTooltip label={tooltip ?? label}>
       {(tip) => (
-        <button
-          type={type}
-          aria-label={label}
-          className={cx(base, variants[variant], iconSizes[size], className)}
-          {...rest}
-          {...tip}
-        >
+        <button type={type} aria-label={label} className={iconButtonClass(variant, size, className)} {...rest} {...tip}>
           <Icon name={icon} className="text-[20px]" />
         </button>
       )}

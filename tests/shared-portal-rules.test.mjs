@@ -5,9 +5,15 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, test } from 'node:test'
 import {
+  activeBlock,
+  chatBlockOf,
+  chatLimitState,
   chatMessageProblem,
+  inProgressRetryDelay,
+  isLimitWarning,
   isSessionId,
   mergeExchange,
+  messageMaxAfter,
   newClientMessageId,
   nextAttempt,
   sortSessions,
@@ -34,14 +40,25 @@ const message = (id, role, createdAt, extra = {}) => ({
 })
 
 describe('chat: câu hỏi trước khi gửi', () => {
-  test('đúng: câu bình thường và đúng 8000 ký tự (không tính khoảng trắng hai đầu) thì gửi được', () => {
+  test('đúng: câu bình thường, 999 và đúng 1000 ký tự (không tính khoảng trắng hai đầu) thì gửi được', () => {
     assert.equal(chatMessageProblem('Tấm pin bảo hành bao lâu?'), null)
-    assert.equal(chatMessageProblem(`  ${'a'.repeat(8000)}  `), null)
+    assert.equal(chatMessageProblem('a'.repeat(999)), null)
+    assert.equal(chatMessageProblem(`  ${'a'.repeat(1000)}  `), null)
   })
-  test('quy tắc: rỗng / chỉ khoảng trắng / quá 8000 ký tự thì không gửi', () => {
+  test('quy tắc: rỗng / chỉ khoảng trắng / 1001 ký tự thì không gửi; ngưỡng thấp hơn do backend báo thì theo ngưỡng đó', () => {
     assert.equal(chatMessageProblem(''), 'Nhập câu hỏi.')
     assert.equal(chatMessageProblem(' \n\t '), 'Nhập câu hỏi.')
-    assert.match(chatMessageProblem('a'.repeat(8001)), /8\.001 ký tự, tối đa 8\.000/)
+    assert.match(chatMessageProblem('a'.repeat(1001)), /1\.001 ký tự, tối đa 1\.000/)
+    assert.match(chatMessageProblem('dòng 1\nđường dẫn ☀️ '.repeat(30), 500), /tối đa 500/)
+  })
+  test('ngưỡng ký tự: chỉ hạ theo details.maxCharacters của RAG_MESSAGE_TOO_LONG, số lạ thì giữ', () => {
+    const tooLong = (maxCharacters) => ({ code: 'RAG_MESSAGE_TOO_LONG', details: { maxCharacters } })
+    assert.equal(messageMaxAfter(tooLong(500), 1000), 500)
+    assert.equal(messageMaxAfter(tooLong(2000), 1000), 1000)
+    for (const bad of ['500', -1, 0, Number.NaN, Number.POSITIVE_INFINITY, null])
+      assert.equal(messageMaxAfter(tooLong(bad), 1000), 1000)
+    assert.equal(messageMaxAfter({ code: 'RAG_QUOTA_EXCEEDED', details: { maxCharacters: 10 } }, 1000), 1000)
+    assert.equal(messageMaxAfter(new Error('mạng'), 1000), 1000)
   })
   test('quyền: mã phiên trên địa chỉ phải là GUID, mã lạ không được gửi lên', () => {
     assert.equal(isSessionId(S1), true)
@@ -68,6 +85,78 @@ describe('chat: clientMessageId chống lặp', () => {
   })
   test('cuộc trò chuyện mới gửi sessionId null (backend tự mở phiên)', () => {
     assert.equal(nextAttempt('Xin chào', null, null).body.sessionId, null)
+  })
+  test('AI_REQUEST_IN_PROGRESS: tự gửi lại sau retryAfterSeconds (1–30 giây), tối đa 3 lần; lỗi khác không tự gửi', () => {
+    const inProgress = (details) => ({ code: 'AI_REQUEST_IN_PROGRESS', details })
+    assert.equal(inProgressRetryDelay(inProgress({ retryAfterSeconds: 3 }), 0), 3)
+    assert.equal(inProgressRetryDelay(inProgress({ retryAfterSeconds: 0.2 }), 0), 1)
+    assert.equal(inProgressRetryDelay(inProgress({ retryAfterSeconds: 600 }), 2), 30)
+    assert.equal(inProgressRetryDelay(inProgress(undefined), 1), 2)
+    assert.equal(inProgressRetryDelay(inProgress({ retryAfterSeconds: 3 }), 3), null)
+    assert.equal(inProgressRetryDelay({ code: 'RAG_QUOTA_EXCEEDED', details: { retryAfterSeconds: 3 } }, 0), null)
+  })
+})
+
+describe('chat: giới hạn backend báo khi gửi', () => {
+  const NOW = Date.parse('2026-11-17T10:00:00Z')
+  test('đúng: mỗi mã về đúng loại, giờ hỏi lại lấy từ details.retryAfterSeconds (giới hạn mỗi phút lấy Retry-After)', () => {
+    assert.deepEqual(chatBlockOf({ code: 'AUTH_TOO_MANY_REQUESTS', retryAfter: 12, details: null }, NOW), {
+      kind: 'cooldown',
+      until: NOW + 12_000,
+    })
+    assert.deepEqual(chatBlockOf({ code: 'RAG_QUOTA_EXCEEDED', details: { retryAfterSeconds: 3600 } }, NOW), {
+      kind: 'quota-exceeded',
+      until: NOW + 3_600_000,
+    })
+    assert.equal(chatBlockOf({ code: 'AI_USER_QUOTA_EXCEEDED', details: {} }, NOW).kind, 'quota-exceeded')
+    assert.equal(chatBlockOf({ code: 'RAG_TOO_MANY_CONCURRENT_REQUESTS', details: {} }, NOW).kind, 'cooldown')
+    assert.equal(
+      chatBlockOf({ code: 'AI_GLOBAL_CONCURRENCY_LIMIT', details: { retryAfterSeconds: 5 } }, NOW).kind,
+      'global-busy',
+    )
+    assert.deepEqual(chatBlockOf({ code: 'AI_BUDGET_EXCEEDED', details: {} }, NOW), {
+      kind: 'budget-exceeded',
+      until: null,
+    })
+    assert.deepEqual(chatBlockOf({ code: 'AI_GENERATION_DISABLED', details: { retryAfterSeconds: 9 } }, NOW), {
+      kind: 'generation-disabled',
+      until: null,
+    })
+  })
+  test('ngoại lệ: lỗi không phải giới hạn và số giây lạ (âm, chuỗi, vô hạn) không thành giờ hỏi lại', () => {
+    assert.equal(chatBlockOf({ code: 'RAG_TIMEOUT' }, NOW), null)
+    assert.equal(chatBlockOf(new Error('mạng'), NOW), null)
+    assert.equal(chatBlockOf(null, NOW), null)
+    for (const bad of [-5, '30', Number.POSITIVE_INFINITY])
+      assert.equal(chatBlockOf({ code: 'RAG_QUOTA_EXCEEDED', details: { retryAfterSeconds: bad } }, NOW).until, null)
+  })
+  test('lưu qua tải trang: chỉ giữ hết lượt / hết hạn mức / tạm ngưng còn hiệu lực; dạng lạ thì bỏ', () => {
+    assert.deepEqual(activeBlock({ kind: 'quota-exceeded', until: NOW + 1 }, NOW), {
+      kind: 'quota-exceeded',
+      until: NOW + 1,
+    })
+    assert.deepEqual(activeBlock({ kind: 'generation-disabled', until: null }, NOW), {
+      kind: 'generation-disabled',
+      until: null,
+    })
+    assert.equal(activeBlock({ kind: 'quota-exceeded', until: NOW }, NOW), null)
+    assert.equal(activeBlock({ kind: 'cooldown', until: NOW + 5000 }, NOW), null)
+    for (const bad of [null, 'x', { kind: 'hack', until: null }, { kind: 'budget-exceeded', until: '1' }])
+      assert.equal(activeBlock(bad, NOW), null)
+  })
+  test('dấu "!": tạm ngưng > hết hạn mức / lượt > đang chờ > quá / sắp chạm số ký tự > bình thường', () => {
+    const state = (block, text = '', waitSeconds = 0) => chatLimitState({ text, max: 1000, block, waitSeconds }).kind
+    const long = 'a'.repeat(1001)
+    assert.equal(state({ kind: 'generation-disabled', until: null }, long, 30), 'generation-disabled')
+    assert.equal(state({ kind: 'budget-exceeded', until: null }, long, 30), 'budget-exceeded')
+    assert.equal(state({ kind: 'quota-exceeded', until: NOW }, long), 'quota-exceeded')
+    assert.equal(state({ kind: 'global-busy', until: null }, long), 'global-busy')
+    assert.equal(state({ kind: 'cooldown', until: NOW }, long, 8), 'cooldown')
+    assert.equal(state({ kind: 'cooldown', until: NOW }, long, 0), 'over-character-limit')
+    assert.equal(state(null, 'a'.repeat(900)), 'near-character-limit')
+    assert.equal(state(null, 'a'.repeat(899)), 'normal')
+    assert.equal(isLimitWarning(chatLimitState({ text: 'a', max: 1000, block: null, waitSeconds: 0 })), false)
+    assert.equal(isLimitWarning(chatLimitState({ text: long, max: 1000, block: null, waitSeconds: 0 })), true)
   })
 })
 
