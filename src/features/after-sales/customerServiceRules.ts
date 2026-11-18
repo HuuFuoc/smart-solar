@@ -188,3 +188,7 @@ export function incidentTimeError(at: string, coverageStartsAt: string | null, n
     return 'Gói chưa bảo vệ vào lúc này. Chọn "Không" ở ô thiên tai để báo lỗi thường.'
   return null
 }
+
+/** Công trình báo lỗi / bảo trì được: đã bàn giao (backend AFTER_SALES_NOT_HANDED_OVER cho mọi trường hợp khác) */
+export const handedOverProjects = <T extends { status: string; handoverAt: string | null }>(projects: T[]) =>
+  projects.filter((p) => p.status === 'COMPLETED' && p.handoverAt)

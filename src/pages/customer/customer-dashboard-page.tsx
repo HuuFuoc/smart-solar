@@ -136,7 +136,7 @@ export function CustomerDashboardPage() {
             <ButtonLink to={ROUTES.customer.requests} variant="soft" icon="calendar_month">
               Đặt giờ khảo sát
             </ButtonLink>
-            <ButtonLink to={ROUTES.customer.afterSales} variant="danger" icon="report">
+            <ButtonLink to={`${ROUTES.customer.afterSales}?bao-loi=1`} variant="danger" icon="report">
               Báo lỗi
             </ButtonLink>
           </>

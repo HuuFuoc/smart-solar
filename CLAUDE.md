@@ -332,7 +332,8 @@ cổng; nhãn trạng thái ở `common/afterSales.ts`, điều kiện + nhãn �
 BE vẫn kiểm lại), response viết tay (`customerAfterSalesRes`, `technicianAfterSalesRes`, `salesAfterSalesRes`) vì swagger
 chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
 
-- Khách: khối "Bảo hành, sửa chữa" trên `/customer/projects/:id` khi đã bàn giao (hạn bảo hành, Báo lỗi, Đặt bảo trì lẻ – đặt
+- Khách: nút "Báo lỗi" ở `/customer/after-sales` (và nút ở Tổng quan, dẫn tới `?bao-loi=1`) mở thẳng hộp báo lỗi cho công trình đã
+  bàn giao (`FaultReportFlow`: nhiều công trình thì hỏi chọn trước; chưa có công trình bàn giao thì báo vàng). Khối "Bảo hành, sửa chữa" trên `/customer/projects/:id` khi đã bàn giao (hạn bảo hành, Báo lỗi, Đặt bảo trì lẻ – đặt
   trước 7 ngày, BE tính đủ 7 × 24 giờ nên mở từ ngày thứ 8), `/customer/after-sales` + `/:id`: xác nhận giờ hẹn khác giờ đã
   chọn, duyệt / từ chối báo giá, thanh toán PayOS (`useQuotationPaymentQuery` hỏi lại link 10 giây một lần), nghiệm thu
   (không đạt thì bắt buộc lý do), huỷ khi chưa bắt đầu làm.

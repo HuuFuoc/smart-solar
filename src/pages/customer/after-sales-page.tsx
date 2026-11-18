@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
@@ -15,6 +16,9 @@ import {
 } from '@/features/after-sales/customerAfterSalesDisplay'
 import { CustomerServiceRequestGrid } from '@/features/after-sales/CustomerServiceRequestGrid'
 import { CustomerServiceRequestTable } from '@/features/after-sales/CustomerServiceRequestTable'
+import { FaultReportFlow } from '@/features/after-sales/FaultReportFlow'
+import { handedOverProjects } from '@/features/after-sales/customerServiceRules'
+import { Notice } from '@/components/common/ui/lists'
 import { byRequestRank, isTodo } from '@/features/after-sales/serviceDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
@@ -22,10 +26,20 @@ import { useMyServiceRequestsQuery } from '@/hooks/useCustomerServiceRequests'
 import { ROUTES } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 
-// Mọi yêu cầu bảo hành, sửa chữa, bảo trì lẻ của khách. Gửi yêu cầu mới từ trang công trình đã bàn giao
+// Mọi yêu cầu bảo hành, sửa chữa, bảo trì lẻ của khách. "Báo lỗi" mở thẳng hộp báo lỗi cho công trình đã bàn giao (trang Tổng
+// quan dẫn tới đây với ?bao-loi=1); đặt bảo trì lẻ vẫn ở trang công trình
 export function CustomerAfterSalesPage() {
   const query = useMyServiceRequestsQuery()
   const installations = useMyInstallationsQuery()
+  const [params, setParams] = useSearchParams()
+  const [reporting, setReporting] = useState(false)
+  const handed = handedOverProjects(installations.data ?? [])
+  const askedToReport = params.get('bao-loi') === '1'
+  // Tới từ nút "Báo lỗi" ở trang khác: mở hộp ngay khi đã biết công trình nào bàn giao
+  if (askedToReport && installations.data && handed.length > 0 && !reporting) {
+    setReporting(true)
+    setParams({}, { replace: true })
+  }
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<ServiceRequestFilterStatus>('ALL')
   const [sort, setSort] = useState<ServiceRequestTimeSort>('ALL')
@@ -62,6 +76,11 @@ export function CustomerAfterSalesPage() {
         }
         actions={
           <>
+            {handed.length > 0 && (
+              <Button variant="danger" icon="report" onClick={() => setReporting(true)}>
+                Báo lỗi
+              </Button>
+            )}
             <Button variant="secondary" icon="sync" disabled={syncing} onClick={() => void sync()}>
               {syncing ? 'Đang đồng bộ…' : 'Đồng bộ tiến độ'}
             </Button>
@@ -71,6 +90,13 @@ export function CustomerAfterSalesPage() {
           </>
         }
       />
+      {askedToReport && installations.data && handed.length === 0 && (
+        <Notice tone="warn" className="mb-4" title="Chưa có công trình đã bàn giao">
+          Chỉ báo lỗi được cho công trình đã bàn giao. Công trình đang lắp mà có vấn đề thì ghi ở bước nghiệm thu, kỹ
+          thuật viên sẽ làm lại.
+        </Notice>
+      )}
+      {reporting && <FaultReportFlow projects={handed} onClose={() => setReporting(false)} />}
       <QueryBoundary query={query}>
         {() =>
           rows.length === 0 ? (
