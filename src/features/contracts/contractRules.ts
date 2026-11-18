@@ -201,7 +201,7 @@ export function cashConfirmErrors(form: CashForm, expected: number): Partial<Rec
   const errors: Partial<Record<keyof CashForm, string>> = {}
   if (form.amount === null || !Number.isInteger(form.amount) || form.amount <= 0)
     errors.amount = 'Ghi số tiền là số đồng nguyên.'
-  else if (form.amount !== expected) errors.amount = 'Số tiền phải đúng bằng tổng giá trị hợp đồng.'
+  else if (form.amount !== expected) errors.amount = 'Số tiền phải đúng bằng tổng cần thu.'
   const receipt = form.receiptReference.trim()
   if (!receipt) errors.receiptReference = 'Ghi số phiếu thu.'
   else if (receipt.length > CASH_RECEIPT_MAX) errors.receiptReference = `Số phiếu thu tối đa ${CASH_RECEIPT_MAX} ký tự.`
@@ -224,4 +224,22 @@ const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi
 export function extractId(text: string) {
   const all = text.match(UUID)
   return all ? all[all.length - 1]!.toLowerCase() : null
+}
+
+/** Ghi chú của bản ký giấy: backend giữ tối đa 300 ký tự */
+export const PAPER_NOTE_MAX = 300
+
+/**
+ * Nhân viên tải bản quét hợp đồng giấy khi hợp đồng đang chờ ký hoặc bản ký trước bị từ chối, và đã có PDF chính thức (bản ký
+ * phải là của đúng PDF đó). Kinh doanh không phụ trách yêu cầu thì backend trả 404
+ */
+export const canUploadPaperScan = (c: Pick<ContractView, 'status' | 'officialDocument'>) =>
+  (c.status === 'AWAITING_SIGNATURE' || c.status === 'SIGNATURE_REJECTED') && Boolean(c.officialDocument?.sha256)
+
+/** Ngày ký ghi trên giấy: không bắt buộc, không sau hôm nay (giờ Việt Nam); ghi chú ≤ 300 */
+export function paperScanErrors(signedOn: string, note: string, today: string) {
+  const errors: { signedOn?: string; note?: string } = {}
+  if (signedOn && signedOn > today) errors.signedOn = 'Ngày ký không được sau hôm nay.'
+  if (note.trim().length > PAPER_NOTE_MAX) errors.note = `Tối đa ${PAPER_NOTE_MAX} ký tự.`
+  return errors
 }

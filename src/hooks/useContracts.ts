@@ -6,6 +6,7 @@ import type {
   ContractReviewRequest,
   ContractTermsRequest,
   OfficialDocumentRequest,
+  PaperSignedDocumentRequest,
 } from '@/types/req/salesContractsReq'
 import type { CashConfirmationRequest } from '@/types/req/staffPaymentsReq'
 import type { ContractDocumentTarget } from '@/services/contractService'
@@ -115,6 +116,12 @@ export function useDiscardContractMutation() {
 export function useReviewContractMutation() {
   return useContractWrite(({ contractId, body }: { contractId: string; body: ContractReviewRequest }) =>
     contractService.reviewSignature(contractId, body),
+  )
+}
+
+export function usePaperSignedDocumentMutation() {
+  return useContractWrite(({ contractId, body }: { contractId: string; body: PaperSignedDocumentRequest }) =>
+    contractService.submitPaperSignedDocument(contractId, body),
   )
 }
 

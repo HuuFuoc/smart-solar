@@ -97,3 +97,47 @@ export function changeNoteError(text: string) {
 /** Lỗi do lịch vừa đổi ở nơi khác: tải lại rồi để người dùng tự làm lại */
 export const isStaleScheduleError = (code: string | null | undefined) =>
   code === 'INSTALLATION_SCHEDULE_STALE_REVISION' || code === 'INSTALLATION_SCHEDULE_NOT_LIVE'
+
+/** Bám InstallationScheduleHandlers.MaxOffers / MaxAvailabilityDays của backend */
+export const SLOT_OFFER_MAX = 5
+export const AVAILABILITY_MAX_DAYS = 31
+export const OFFER_DURATION_MAX_DAYS = 60
+
+const dayNumber = (date: string) => Date.parse(`${date}T00:00:00Z`) / 86_400_000
+
+/** Lỗi của khoảng ngày xem khung trống: from ≤ to, tối đa 31 ngày, số ngày thi công 1–60 */
+export function availabilityRangeErrors(from: string, to: string, durationDays: number) {
+  const errors: { range?: string; duration?: string } = {}
+  if (!from || !to) errors.range = 'Chọn từ ngày và đến ngày.'
+  else if (dayNumber(to) < dayNumber(from)) errors.range = 'Đến ngày phải sau hoặc bằng từ ngày.'
+  else if (dayNumber(to) - dayNumber(from) + 1 > AVAILABILITY_MAX_DAYS)
+    errors.range = `Xem tối đa ${AVAILABILITY_MAX_DAYS} ngày một lần.`
+  if (!Number.isInteger(durationDays) || durationDays < 1 || durationDays > OFFER_DURATION_MAX_DAYS)
+    errors.duration = `Số ngày thi công từ 1 đến ${OFFER_DURATION_MAX_DAYS}.`
+  return errors
+}
+
+type Interval = { startsAt: string; endsAt: string }
+
+/** Vì sao chưa gửi được các khung đã chọn (null là gửi được): 1–5 khung khác nhau, ghi chú ≤ 500 */
+export function offerSlotsProblem(slots: Interval[], note = '') {
+  if (slots.length === 0) return 'Chọn ít nhất một khung.'
+  if (slots.length > SLOT_OFFER_MAX) return `Chọn tối đa ${SLOT_OFFER_MAX} khung.`
+  const keys = new Set(slots.map((s) => `${Date.parse(s.startsAt)}-${Date.parse(s.endsAt)}`))
+  if (keys.size !== slots.length) return 'Các khung phải khác nhau.'
+  if (note.trim().length > SCHEDULE_NOTE_MAX) return `Ghi chú tối đa ${SCHEDULE_NOTE_MAX} ký tự.`
+  return null
+}
+
+type Offer = Interval & { status: string; available: boolean }
+
+/** Khung khách thấy: chỉ khung đang mở, sớm nhất trước; `choosable` khi backend báo còn trống */
+export function customerOfferChoices<T extends Offer>(offers: T[]) {
+  return offers
+    .filter((o) => o.status === 'OPEN')
+    .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))
+    .map((offer) => ({ offer, choosable: offer.available }))
+}
+
+/** Đề xuất của lần gửi mới nhất còn mở (kỹ thuật viên thấy để biết gửi lại sẽ thay những khung nào) */
+export const openOffers = <T extends { status: string }>(offers: T[]) => offers.filter((o) => o.status === 'OPEN')

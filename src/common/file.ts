@@ -12,7 +12,7 @@ export const FILE_PURPOSES = {
   CONTRACT_DOCUMENT: { types: ['application/pdf'], maxBytes: 20 * MB },
   /** Quản lý, quản trị: ảnh / PDF phiếu thu khi khách trả tiền mặt */
   PAYMENT_EVIDENCE: { types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'], maxBytes: 15 * MB },
-  /** Khách hàng, hợp đồng đã ký */
+  /** Hợp đồng đã ký: khách, hoặc kinh doanh phụ trách / quản lý / quản trị tải bản ký giấy */
   SIGNED_CONTRACT: { types: ['application/pdf'], maxBytes: 20 * MB },
   /** Kỹ thuật viên, ảnh thi công */
   INSTALLATION_EVIDENCE: { types: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 15 * MB },

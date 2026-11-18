@@ -1,5 +1,13 @@
-import type { InstallationScheduleRequest } from '@/types/req/technicianInstallationSchedulesReq'
-import type { InstallationScheduleView, TechnicianScheduleContractView } from '@/types/res/installationSchedulesRes'
+import type {
+  InstallationScheduleRequest,
+  InstallationSlotOffersRequest,
+} from '@/types/req/technicianInstallationSchedulesReq'
+import type {
+  InstallationScheduleView,
+  InstallationSlotAvailabilityView,
+  InstallationSlotOfferView,
+  TechnicianScheduleContractView,
+} from '@/types/res/installationSchedulesRes'
 import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
@@ -32,6 +40,33 @@ export function proposeTechnicianSchedule(contractId: string, body: Installation
 /** Huỷ lịch PLANNED / RESCHEDULE_REQUIRED của mình, lý do bắt buộc. Lịch đã xác nhận thì quản lý xử lý trên dự án thi công */
 export function cancelTechnicianSchedule(scheduleId: string, reason: string) {
   return post<InstallationScheduleView>(tech.cancel(scheduleId), { reason })
+}
+
+/** Các khung có thể đề xuất, mỗi ngày bắt đầu trong [from, to] (≤ 31 ngày) một khung kéo dài `durationDays` ngày làm việc */
+export function getTechnicianAvailability(contractId: string, from: string, to: string, durationDays: number) {
+  return get<InstallationSlotAvailabilityView[]>(tech.availability(contractId), {
+    params: { from, to, durationDays },
+  })
+}
+
+/** Mọi lần đề xuất của hợp đồng (cả đã thay, đã chọn) */
+export function listTechnicianOffers(contractId: string) {
+  return get<InstallationSlotOfferView[]>(tech.offers(contractId))
+}
+
+/** Gửi 1–5 khung cho khách chọn; các khung còn mở trước đó bị thay. Không đổi lịch đang hiệu lực */
+export function publishTechnicianOffers(contractId: string, body: InstallationSlotOffersRequest) {
+  return post<InstallationSlotOfferView[]>(tech.offers(contractId), body)
+}
+
+/** Khung đang mở của hợp đồng của khách, `available` tính lại lúc đọc */
+export function listCustomerOffers(contractId: string) {
+  return get<InstallationSlotOfferView[]>(customer.offers(contractId))
+}
+
+/** Khách chọn một khung: thành lịch dự kiến (đã thanh toán thì xác nhận luôn), các khung khác bị rút */
+export function selectCustomerOffer(offerId: string) {
+  return post<InstallationScheduleView>(customer.selectOffer(offerId))
 }
 
 /** Lịch đang hiệu lực của khách (mỗi hợp đồng nhiều nhất một) */

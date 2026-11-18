@@ -9,6 +9,7 @@ import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { contractStatusMeta } from '@/features/contracts/contractDisplay'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { ScheduleDialog } from '@/features/installation-schedules/ScheduleDialog'
+import { SlotOfferDialog } from '@/features/installation-schedules/SlotOfferDialog'
 import {
   rescheduleReasonText,
   scheduleErrorMessage,
@@ -45,6 +46,7 @@ export function TechInstallationSchedulesPage() {
   const query = useTechnicianSchedulesQuery()
   const cancel = useCancelTechnicianScheduleMutation()
   const [planning, setPlanning] = useState<TechnicianScheduleContractView | null>(null)
+  const [offering, setOffering] = useState<TechnicianScheduleContractView | null>(null)
   const [cancelling, setCancelling] = useState<InstallationScheduleView | null>(null)
   const todo = query.data?.filter(needsAction).length ?? 0
 
@@ -112,6 +114,11 @@ export function TechInstallationSchedulesPage() {
                         <Td>
                           <div className="flex flex-wrap gap-2 xl:justify-end">
                             {!locked && (
+                              <Button size="sm" icon="date_range" variant="soft" onClick={() => setOffering(row)}>
+                                Đề xuất khung giờ
+                              </Button>
+                            )}
+                            {!locked && (
                               <Button
                                 size="sm"
                                 icon={s ? 'edit_calendar' : 'event_available'}
@@ -137,6 +144,13 @@ export function TechInstallationSchedulesPage() {
         }
       </QueryBoundary>
 
+      {offering && (
+        <SlotOfferDialog
+          contractId={offering.contractId}
+          title={`${offering.propertyName || 'Công trình'}, hợp đồng ${offering.contractNumber}, khách ${offering.customerName}`}
+          onClose={() => setOffering(null)}
+        />
+      )}
       {planning && (
         <ScheduleDialog
           contractId={planning.contractId}

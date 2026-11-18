@@ -5,6 +5,7 @@ import type {
   ContractTermsRequest,
   DiscardContractRequest,
   OfficialDocumentRequest,
+  PaperSignedDocumentRequest,
 } from '@/types/req/salesContractsReq'
 import type { RevisionRequest } from '@/types/req/salesQuotationsReq'
 import type { ContractDocumentUrlView, ContractView } from '@/types/res/customerContractsRes'
@@ -70,6 +71,14 @@ export function discardContract(contractId: string, body: DiscardContractRequest
 /** Duyệt bản khách đã ký: APPROVE thành ĐÃ KÝ, REJECT (bắt buộc lý do) thành BẢN KÝ BỊ TỪ CHỐI */
 export function reviewSignature(contractId: string, body: ContractReviewRequest) {
   return post<ContractView>(api.review(contractId), body)
+}
+
+/**
+ * Bản quét hợp đồng giấy khách ký trước mặt nhân viên (PDF `SIGNED_CONTRACT` chính người gọi tải lên). Chỉ chuyển sang chờ duyệt;
+ * quản lý / quản trị vẫn duyệt bằng `review`. Kinh doanh không phụ trách yêu cầu này thì 404
+ */
+export function submitPaperSignedDocument(contractId: string, body: PaperSignedDocumentRequest) {
+  return post<ContractView>(api.signedDocument(contractId), body)
 }
 
 /** Phụ lục: phiên bản nháp mới cùng giá; bản cũ chỉ bị thay khi phụ lục được phát hành */

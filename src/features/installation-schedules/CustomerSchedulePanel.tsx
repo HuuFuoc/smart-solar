@@ -12,7 +12,13 @@ import {
   scheduleStatusMeta,
   scheduleWhen,
 } from '@/features/installation-schedules/scheduleDisplay'
-import { SCHEDULE_NOTE_MAX, canRequestChange, liveSchedule } from '@/features/installation-schedules/scheduleRules'
+import { CustomerSlotOffers } from '@/features/installation-schedules/CustomerSlotOffers'
+import {
+  SCHEDULE_NOTE_MAX,
+  canRequestChange,
+  liveSchedule,
+  projectLocksSchedule,
+} from '@/features/installation-schedules/scheduleRules'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useCustomerContractScheduleQuery, useRequestScheduleChangeMutation } from '@/hooks/useInstallationSchedules'
 import type { ContractView } from '@/types/res/customerContractsRes'
@@ -42,6 +48,9 @@ export function CustomerSchedulePanel({ contract }: { contract: ContractView }) 
         description={live ? scheduleWhen(live) : undefined}
       />
       <PanelBody className="space-y-4">
+        {!projectLocksSchedule(live?.projectStatus) && (
+          <CustomerSlotOffers contractId={contract.contractId} paid={contract.status === 'PAID'} />
+        )}
         {query.isPending ? (
           <p className="text-body text-fg-2">Đang tải lịch thi công…</p>
         ) : query.data === undefined ? (
@@ -52,7 +61,7 @@ export function CustomerSchedulePanel({ contract }: { contract: ContractView }) 
           />
         ) : !live ? (
           <p className="text-body text-fg-2">
-            Kỹ thuật viên đã khảo sát sẽ gọi bạn để thống nhất ngày thi công rồi ghi lên đây.
+            Kỹ thuật viên đã khảo sát sẽ đề xuất vài khung để bạn chọn, hoặc gọi bạn để thống nhất ngày thi công.
           </p>
         ) : (
           <>

@@ -12,17 +12,20 @@ import { ContractConfirmDialog } from '@/features/contracts/ContractConfirmDialo
 import { contractErrorMessage, signatureOutcomeMeta } from '@/features/contracts/contractDisplay'
 import {
   canReview,
+  canUploadPaperScan,
   REJECTION_REASON_MAX,
   shortHash,
   submissionMatchesOfficial,
   type ContractViewer,
 } from '@/features/contracts/contractRules'
 import { ContractDocumentButtons } from '@/features/contracts/ContractDocumentButtons'
+import { PaperScanDialog } from '@/features/contracts/PaperScanDialog'
 import { useContractDocumentUrlMutation, useReviewContractMutation } from '@/hooks/useContracts'
 import type { ContractView, SignatureSubmissionView } from '@/types/res/customerContractsRes'
 
-// Bản ký khách gửi và duyệt nội bộ (không phải xác thực chữ ký điện tử). Quản lý / quản trị duyệt; kinh doanh chỉ xem. Duyệt
-// thì backend kiểm lại cả PDF chính thức và bản ký trên kho; từ chối bắt buộc lý do, khách gửi lại được
+// Bản ký hợp đồng giấy và duyệt nội bộ (không phải xác thực chữ ký điện tử). Khách tự gửi bản quét, hoặc kinh doanh phụ trách /
+// quản lý / quản trị tải bản quét khi khách ký trước mặt; chỉ quản lý / quản trị duyệt. Duyệt thì backend kiểm lại cả PDF chính
+// thức và bản ký trên kho; từ chối bắt buộc lý do, gửi lại được
 
 function SubmissionRow({ s, contract }: { s: SignatureSubmissionView; contract: ContractView }) {
   const outcome = signatureOutcomeMeta(s.outcome)
@@ -63,14 +66,31 @@ export function SignaturePanel({ contract, viewer }: { contract: ContractView; v
   const review = useReviewContractMutation()
   const [approving, setApproving] = useState(false)
   const [rejecting, setRejecting] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const submissions = [...(contract.submissions ?? [])].reverse()
   const reviewable = canReview(contract, viewer)
-  if (submissions.length === 0) return null
+  const uploadable = canUploadPaperScan(contract)
+  if (submissions.length === 0 && !uploadable) return null
 
   return (
     <Panel id="contract-review" className="scroll-mt-6">
-      <PanelHeader title="Bản khách đã ký" description={`${submissions.length} lần gửi, mới nhất trước.`} />
+      <PanelHeader
+        title="Bản hợp đồng đã ký"
+        description={submissions.length > 0 ? `${submissions.length} lần gửi, mới nhất trước.` : undefined}
+      />
       <PanelBody className="space-y-4">
+        {uploadable && (
+          <div className="flex flex-wrap items-center gap-3">
+            <Button icon="upload_file" variant="soft" onClick={() => setUploading(true)}>
+              Tải bản hợp đồng giấy đã ký
+            </Button>
+            {submissions.length === 0 && (
+              <span className="text-body text-fg-2">
+                Khách chưa gửi bản ký. Khách ký giấy trước mặt bạn thì tải bản quét ở đây.
+              </span>
+            )}
+          </div>
+        )}
         {reviewable && (
           <>
             <Notice tone="info">
@@ -94,6 +114,7 @@ export function SignaturePanel({ contract, viewer }: { contract: ContractView; v
         </ul>
       </PanelBody>
 
+      {uploading && <PaperScanDialog contract={contract} onClose={() => setUploading(false)} />}
       {approving && (
         <ContractConfirmDialog
           title="Duyệt bản ký?"

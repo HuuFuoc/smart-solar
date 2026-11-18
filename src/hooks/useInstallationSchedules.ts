@@ -1,8 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as scheduleService from '@/services/installationScheduleService'
 import type { ApiError } from '@/services/api/errors'
-import type { InstallationScheduleRequest } from '@/types/req/technicianInstallationSchedulesReq'
-import type { InstallationScheduleView, TechnicianScheduleContractView } from '@/types/res/installationSchedulesRes'
+import type {
+  InstallationScheduleRequest,
+  InstallationSlotOffersRequest,
+} from '@/types/req/technicianInstallationSchedulesReq'
+import type {
+  InstallationScheduleView,
+  InstallationSlotAvailabilityView,
+  InstallationSlotOfferView,
+  TechnicianScheduleContractView,
+} from '@/types/res/installationSchedulesRes'
 
 // Lịch thi công đã thống nhất với khách. Mọi lệnh ghi xong (kể cả lỗi lịch vừa đổi) đều tải lại mọi khoá của lịch thi công,
 // để lần sau luôn gửi đúng revision mới. Không cập nhật lạc quan: trạng thái lịch do backend quyết định
@@ -15,6 +23,10 @@ export const installationScheduleKeys = {
   customerContract: (contractId: string) => [...installationScheduleKeys.all, 'customer', contractId] as const,
   staff: (status: string | null) => [...installationScheduleKeys.all, 'staff', status ?? 'ALL'] as const,
   staffContract: (contractId: string) => [...installationScheduleKeys.all, 'staff-contract', contractId] as const,
+  technicianOffers: (contractId: string) => [...installationScheduleKeys.all, 'technician-offers', contractId] as const,
+  customerOffers: (contractId: string) => [...installationScheduleKeys.all, 'customer-offers', contractId] as const,
+  availability: (contractId: string, from: string, to: string, durationDays: number) =>
+    [...installationScheduleKeys.all, 'availability', contractId, from, to, durationDays] as const,
 }
 
 export function useTechnicianSchedulesQuery({ enabled = true }: { enabled?: boolean } = {}) {
@@ -71,6 +83,40 @@ export function useStaffContractScheduleQuery(contractId: string | undefined, { 
   })
 }
 
+/** Chỉ gọi khi kỹ thuật viên bấm "Xem khung trống" (`args` khác null): backend cho 15 lần / phút */
+export function useTechnicianAvailabilityQuery(
+  contractId: string,
+  args: { from: string; to: string; durationDays: number } | null,
+) {
+  return useQuery<InstallationSlotAvailabilityView[], ApiError>({
+    queryKey: installationScheduleKeys.availability(
+      contractId,
+      args?.from ?? '',
+      args?.to ?? '',
+      args?.durationDays ?? 0,
+    ),
+    queryFn: () => scheduleService.getTechnicianAvailability(contractId, args!.from, args!.to, args!.durationDays),
+    enabled: args !== null,
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
+}
+
+export function useTechnicianOffersQuery(contractId: string) {
+  return useQuery<InstallationSlotOfferView[], ApiError>({
+    queryKey: installationScheduleKeys.technicianOffers(contractId),
+    queryFn: () => scheduleService.listTechnicianOffers(contractId),
+  })
+}
+
+export function useCustomerOffersQuery(contractId: string | undefined, { enabled = true } = {}) {
+  return useQuery<InstallationSlotOfferView[], ApiError>({
+    queryKey: installationScheduleKeys.customerOffers(contractId ?? ''),
+    queryFn: () => scheduleService.listCustomerOffers(contractId!),
+    enabled: enabled && Boolean(contractId),
+  })
+}
+
 function useScheduleWrite<V, R>(write: (variables: V) => Promise<R>) {
   const queryClient = useQueryClient()
   return useMutation<R, ApiError, V>({
@@ -111,4 +157,14 @@ export function useCancelStaffScheduleMutation() {
   return useScheduleWrite(({ scheduleId, reason }: { scheduleId: string; reason: string }) =>
     scheduleService.cancelStaffSchedule(scheduleId, reason),
   )
+}
+
+export function usePublishOffersMutation() {
+  return useScheduleWrite(({ contractId, body }: { contractId: string; body: InstallationSlotOffersRequest }) =>
+    scheduleService.publishTechnicianOffers(contractId, body),
+  )
+}
+
+export function useSelectOfferMutation() {
+  return useScheduleWrite((offerId: string) => scheduleService.selectCustomerOffer(offerId))
 }
