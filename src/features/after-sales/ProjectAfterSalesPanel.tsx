@@ -4,7 +4,6 @@ import { Button, ButtonLink } from '@/components/common/ui/button'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { MaintenanceDialog } from '@/features/after-sales/MaintenanceDialog'
-import { ReportFaultDialog } from '@/features/after-sales/ReportFaultDialog'
 import {
   byRequestRank,
   groupEquipmentWarranty,
@@ -32,7 +31,7 @@ function warrantyText(w: WarrantyView) {
 export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
   const warranty = useWarrantyQuery(projectId)
   const requests = useMyServiceRequestsQuery()
-  const [dialog, setDialog] = useState<'fault' | 'maintenance' | null>(null)
+  const [dialog, setDialog] = useState<'maintenance' | null>(null)
   const mine = (requests.data ?? []).filter((r) => r.projectId === projectId).sort(byRequestRank('customer'))
   const open = mine.filter((r) => !isFinalRequest(r.status))
 
@@ -43,9 +42,6 @@ export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
         description={warranty.data ? warrantyText(warranty.data) : undefined}
         action={
           <div className="flex flex-wrap gap-2">
-            <Button icon="report" size="sm" variant="danger" onClick={() => setDialog('fault')}>
-              Báo lỗi
-            </Button>
             <Button icon="event" size="sm" variant="soft" onClick={() => setDialog('maintenance')}>
               Đặt bảo trì lẻ
             </Button>
@@ -69,7 +65,7 @@ export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
         {open.length === 0 ? (
           <p className="text-body text-fg-2">
             {mine.length === 0
-              ? 'Chưa có yêu cầu nào. Thiết bị có vấn đề thì bấm Báo lỗi.'
+              ? 'Chưa có yêu cầu nào. Thiết bị có vấn đề thì bấm Báo lỗi ở đầu trang.'
               : 'Không có yêu cầu nào đang xử lý.'}
           </p>
         ) : (
@@ -124,13 +120,6 @@ export function ProjectAfterSalesPanel({ projectId }: { projectId: string }) {
           </ButtonLink>
         )}
       </PanelBody>
-      <ReportFaultDialog
-        open={dialog === 'fault'}
-        projectId={projectId}
-        assets={warranty.data?.assets ?? []}
-        subscriptions={warranty.data?.subscriptions ?? []}
-        onClose={() => setDialog(null)}
-      />
       <MaintenanceDialog open={dialog === 'maintenance'} projectId={projectId} onClose={() => setDialog(null)} />
     </Panel>
   )

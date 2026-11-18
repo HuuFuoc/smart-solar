@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
+import { Button } from '@/components/common/ui/button'
+import { FaultReportFlow } from '@/features/after-sales/FaultReportFlow'
+import { handedOverProjects } from '@/features/after-sales/customerServiceRules'
 import { SearchInput } from '@/components/common/ui/field'
 import { PagedList } from '@/components/common/ui/pagination'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
@@ -23,6 +26,7 @@ export function CustomerProjectsPage() {
   const [search, setSearch] = useState('')
   const [timeSort, setTimeSort] = useState<ProjectTimeSort>('ALL')
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
+  const [reporting, setReporting] = useState(false)
 
   return (
     <div className="space-y-6">
@@ -30,6 +34,7 @@ export function CustomerProjectsPage() {
         {(rawItems) => {
           const waiting = rawItems.filter(awaitsCustomerDecision).length
           const displayedItems = filterCustomerProjects(rawItems, statusFilter, search, timeSort)
+          const handed = handedOverProjects(rawItems)
 
           return (
             <>
@@ -45,7 +50,13 @@ export function CustomerProjectsPage() {
                   </div>
                   <p className="mt-0.5 text-meta text-fg-2">Quản lý và theo dõi các công trình lắp đặt</p>
                 </div>
+                {handed.length > 0 && (
+                  <Button className="ml-auto" variant="danger" icon="report" onClick={() => setReporting(true)}>
+                    Báo lỗi
+                  </Button>
+                )}
               </div>
+              {reporting && <FaultReportFlow projects={handed} onClose={() => setReporting(false)} />}
 
               {/* 4 thẻ thống kê và lọc trạng thái nhanh */}
               <CustomerInstallationCards items={rawItems} selected={statusFilter} onSelect={setStatusFilter} />

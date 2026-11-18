@@ -12,6 +12,7 @@ import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { ProjectAfterSalesPanel } from '@/features/after-sales/ProjectAfterSalesPanel'
+import { FaultReportFlow } from '@/features/after-sales/FaultReportFlow'
 import { toast } from 'sonner'
 import { Notice } from '@/components/common/ui/lists'
 import { AcceptanceDialog } from '@/features/installations/AcceptanceDialog'
@@ -428,6 +429,7 @@ export function CustomerProjectPage() {
   const energy = useEnergyMonitoringQuery(id ?? '')
   // Giữ cả số lần trong state: tải lại sau lỗi có thể làm mất lần đang chờ khi hộp thoại còn mở
   const [dialog, setDialog] = useState<{ choice: AcceptanceChoice; round: number } | null>(null)
+  const [reporting, setReporting] = useState(false)
   usePageCrumb(query.data ? `Công trình ${shortCode(query.data.projectId)}` : null)
 
   return (
@@ -452,7 +454,15 @@ export function CustomerProjectPage() {
                   Công trình <span className="tnum">{shortCode(p.projectId)}</span>
                 </>
               }
+              actions={
+                completed && (
+                  <Button variant="danger" icon="report" onClick={() => setReporting(true)}>
+                    Báo lỗi
+                  </Button>
+                )
+              }
             />
+            {reporting && <FaultReportFlow projects={[p]} onClose={() => setReporting(false)} />}
 
             <div className="space-y-6">
               <ProgressTracker steps={trackerSteps(p)} next={next} />
