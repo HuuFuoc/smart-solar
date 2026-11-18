@@ -115,7 +115,7 @@ export function AppShell({
         Bỏ qua, tới nội dung chính
       </a>
 
-      <header className="sticky top-0 z-20 flex h-12 items-center justify-between gap-4 border-b border-line bg-rail px-4 md:px-6 lg:hidden">
+      <header className="rail-dark sticky top-0 z-20 flex h-12 items-center justify-between gap-4 border-b border-line bg-rail px-4 text-fg md:px-6 lg:hidden">
         <span className="flex items-center gap-2 text-body font-semibold">
           <BrandMark className="size-6" />
           Smart Solar
@@ -195,7 +195,11 @@ function Rail({
     <>
       {open && <div className="fixed inset-0 z-30 bg-scrim lg:hidden" aria-hidden onClick={onClose} />}
       {/* Ba phần: đầu (thương hiệu + cổng), menu (tự cuộn), chân (thu gọn + tài khoản) */}
-      <aside id="rail" className={sidebarAsideClass(compact, open)} aria-label="Điều hướng chính">
+      <aside
+        id="rail"
+        className={cx('rail-dark text-fg', sidebarAsideClass(compact, open))}
+        aria-label="Điều hướng chính"
+      >
         <SidebarBrand
           compact={compact}
           portalName={portal.name}

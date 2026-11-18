@@ -179,6 +179,48 @@
   --scrim: oklch(0% 0 0 / 0.6);
 }
 
+/*
+  Sidebar tối của 4 cổng nhân viên (app-shell): gán lại token cho riêng vùng này nên mọi component bên trong (mục menu, số
+  đếm, menu tài khoản) tự đổi màu. Nền xanh mực của GreenShift, không đen tuyền; giống nhau ở cả giao diện sáng và tối.
+  Cổng khách hàng giữ sidebar sáng
+*/
+.rail-dark {
+  color-scheme: dark;
+
+  --rail: #172a23;
+  --canvas: #172a23;
+  --surface: #1f362b;
+  --surface-2: #213a2e;
+  --surface-3: #2a4638;
+  --field: #1d3328;
+  --field-focus: #1d3328;
+  --line: #2d4438;
+  --line-2: #6f8478;
+
+  --fg: oklch(95% 0.008 120);
+  --fg-2: oklch(80% 0.014 140);
+  --fg-3: oklch(74% 0.014 140);
+
+  --accent: oklch(55% 0.085 158);
+  --accent-hover: oklch(59% 0.085 158);
+  --accent-soft: #24412f;
+  --accent-muted: #2b4c38;
+  --accent-line: oklch(60% 0.07 140);
+  --accent-fg: oklch(84% 0.08 145);
+  --on-accent: oklch(98.5% 0.008 120);
+
+  --ok: oklch(78% 0.1 150);
+  --warn: oklch(84% 0.12 80);
+  --danger: oklch(78% 0.15 25);
+  --danger-fill: oklch(56% 0.17 27);
+  --danger-hover: oklch(52% 0.17 27);
+  --on-danger: oklch(98.5% 0.01 25);
+  --info: oklch(80% 0.1 250);
+
+  --ring: oklch(72% 0.09 150);
+  --shadow-pop: 0 8px 24px -6px oklch(0% 0 0 / 0.6), 0 1px 2px oklch(0% 0 0 / 0.4);
+}
+
 @theme inline {
   /* Be Vietnam Pro đủ dấu tiếng Việt (ơ, ư, ạ, ộ…) cho mọi cổng */
   --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;

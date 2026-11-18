@@ -119,7 +119,7 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
   công khai (nạp trong `globals.css`; 300 nạp thêm ở `PublicLayout`, `AuthLayout`). Chỉ trang chủ dùng serif Lora
   (`@fontsource-variable/lora`, nạp trong `PublicLayout`) cho tiêu đề hero và tiêu đề section (utility `ld-serif`).
 - Bảng màu GreenShift (18/11/2026): nền trang ngà `canvas` #f7f6f0, khối nổi trắng `surface` (Tailwind `bg-panel`: `Panel
-  raised`, hộp thoại, menu, toast, khung trợ lý, nút viền, thẻ `.sv-*`), xanh rừng `accent` #234b39, viền `line` #dde5db,
+raised`, hộp thoại, menu, toast, khung trợ lý, nút viền, thẻ `.sv-*`), xanh rừng `accent` #234b39, viền `line` #dde5db,
   `sun` (vàng nắng) chỉ cho số liệu năng lượng. Thẻ / control có viền dùng `bg-panel`, thanh dính mức trang giữ `bg-canvas`.
 - Icon: Material Symbols Outlined – link Google Fonts trong `index.html`; giữ đúng tên icon như trong file thiết kế (`grid_view`, `solar_power`, `manage_accounts`…)
 - State/data: mọi màn gọi API thật. Không dùng mock (dữ liệu giả, màn giả, test với API giả) ở chỗ có thể có dữ liệu
@@ -925,7 +925,9 @@ thông báo, chip trạng thái): người dùng lấy từ `useAuth`.
     Chuông thông báo (không có trong menu): dưới lg ở cuối thanh trên, từ lg nằm tuyệt đối ở góc phải `<main>` (phần tử cuối của
     main); `PageHeader` đứng đầu main được chừa `lg:pr-28` để chuông có số 2 chữ số không đè nút. Số = thông báo chưa đọc (`readAt`).
 
-Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 16px. Đầu rail là biểu tượng
+Khung nhân viên (`app-shell.tsx`): rail cố định bên trái `w-52` (208px) trên nền `rail`, `<main>` lề 16px. Từ 18/11/2026 rail và thanh
+trên điện thoại của 4 cổng nhân viên tối (lớp `rail-dark` ở `globals.css` gán lại token cho riêng vùng đó, nền xanh mực `#172a23`,
+chữ / mục đang chọn đo ≥ 4,5:1); cổng khách hàng giữ rail sáng. Đầu rail là biểu tượng
 thương hiệu (`public/images/mark-96.png`, nền trong suốt) + "Smart Solar" + tên portal (ngắt dòng cân bằng `text-balance`); mỗi mục
 menu có icon (`icon` trong `config/portals.ts`, bắt buộc). Mục menu bo đủ 4 góc, thẳng mép với mọi hàng khác của rail; mục đang mở
 có nền `accent-muted` + vạch accent 3px nằm trong mép trái + icon tô đặc; nhóm chứa nó đậm lên. Rail chia ba phần: đầu, menu
