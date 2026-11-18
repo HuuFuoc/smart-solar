@@ -733,6 +733,42 @@ thi công (tiến độ vẫn ở các màn Thi công / Lắp đặt).
   "Xác nhận lại" (lịch dự kiến của hợp đồng đã PAID), "Huỷ lịch", và trên trang hợp đồng ghi lịch thay cho kỹ thuật viên khác.
 - Thông báo của khách `INSTALLATION_SCHEDULE_PLANNED | CHANGED | RESCHEDULE_REQUIRED | CANCELLED` dẫn sang mục Hợp đồng.
 
+**Bản vá nghiệp vụ backend 8f70cb2** (nhánh `feat/backend-business-remediation`, tài liệu BE
+`guides/remediation-20261118/API_FE_INTEGRATION_HANDOFF.md` + `ADMIN_DASHBOARD_METRICS.md`; server chung đã chạy bản này 18/11/2026).
+Response mới viết tay theo record C# (swagger chỉ khai "200 OK").
+
+- Khung thi công (`InstallationSlotOfferHandlers`): kỹ thuật viên đã khảo sát bấm "Đề xuất khung giờ" ở `/tech/installation-schedules`
+  (`SlotOfferDialog`: khoảng ngày ≤ 31, số ngày thi công 1–60 → GET `…/installation-availability`, giới hạn 15 lần / phút nên chỉ gọi khi
+  bấm "Xem khung trống"; chọn 1–5 khung → POST `…/installation-slot-offers`, gửi lại là thay mọi khung còn mở). Khách chọn một khung trong khối
+  Lịch thi công của trang hợp đồng (`CustomerSlotOffers`, POST `/customers/me/installation-slot-offers/{id}/select`): khung `available = false`
+  khoá; chọn xong là lịch PLANNED (đã thanh toán thì CONFIRMED), không bao giờ ghi PLANNED là đã xác nhận. Luật + test:
+  `scheduleRules.ts` (`availabilityRangeErrors`, `offerSlotsProblem`, `customerOfferChoices`), `tests/installation-slot-offer-rules.test.mjs`.
+  Lý do không nhận được khung là mã / câu tiếng Anh, dịch ở `slotReasonText`. Thông báo `INSTALLATION_SLOTS_OFFERED` dẫn sang Hợp đồng.
+- Hợp đồng giấy: kinh doanh phụ trách / quản lý / quản trị tải bản quét khi khách ký trước mặt (`PaperScanDialog` trong `SignaturePanel`, POST
+  `/contracts/{id}/signed-document` `{ fileId, officialDocumentSha256, signedOn?, note ≤ 300 }`, SHA-256 là của PDF chính thức lúc mở hộp thoại).
+  Chỉ chuyển sang chờ duyệt; quản lý / quản trị vẫn duyệt bằng `review`.
+- Mua gói bằng tiền mặt (`PurchaseDialog`, `paymentMethod: ONLINE | CASH`, cả khi mua riêng gói cho hợp đồng đã thanh toán): tiền mặt trả lần
+  thanh toán CASH PENDING không có link; `PaymentDialog` hiện "Chờ xác nhận thu tiền" (hỏi lại 60 giây / lần). Không có luật
+  `cashPurchaseAllowed`.
+- Bàn thu tiền `/manage|admin/payments` (`pages/payments-page.tsx`, menu "Thu tiền", số đỏ = lần tiền mặt chờ thu): GET `/manager/payments`
+  (luôn phân trang, lọc cách trả / trạng thái / ngày tạo trên địa chỉ), "Xác nhận đã thu" dùng chung `CashConfirmDialog` (nhận `target`: số tiền
+  phải đúng bằng `amount` của lần thanh toán) → POST `/manager/payments/{attemptId}/cash/confirm`. Tab "Tiền chưa áp" là sổ chỉ đọc
+  GET `/manager/after-sales/unapplied-money`: không nút duyệt / hoàn.
+- Báo giá sửa chữa do kỹ thuật viên lập (`RepairQuotationDialog` trên `/tech/after-sales/:id`, khi `canQuoteRepair`): mỗi hạng mục
+  CHARGEABLE / DISASTER_PROTECTION còn mở chọn 1–20 sản phẩm danh mục + số lượng (≤ 10.000), không có ô giá → POST
+  `/technicians/me/after-sales/requests/{requestId}/quotations`. Lỗi `SERVICE_QUOTATION_PRICE_MISSING` tô đỏ đúng sản phẩm (`details.items`).
+  Luật + test: `technicianVisitRules.ts`, `tests/repair-quotation-rules.test.mjs`. Báo giá có `issuedByRole`, dòng có `components[]`
+  (hiện trong `QuotationDetail`).
+- Khách trả tiền mặt cho báo giá sau bán (`CustomerQuotationPanel`: "Trả tiền mặt" / "Bỏ chọn tiền mặt", POST `…/quotations/{id}/cash` và
+  `…/cash/cancel`); chọn tiền mặt không kéo dài hạn báo giá nên luôn ghi hạn.
+- Bảo trì lẻ mặc định kiểm tra trước (`inspectionRequired` bỏ trống = true): SUBMITTED → quản lý xếp buổi INSPECTION → kỹ thuật viên báo giá →
+  trả tiền → buổi MAINTENANCE (`visitToSchedule`, các bước "Kiểm tra / Báo giá, thanh toán / Bảo trì / Nghiệm thu").
+- Báo cáo quản trị `/admin/reports`: tab "Tổng quan vận hành" (GET `/admin/after-sales/dashboard/overview`, `features/admin-dashboard/AdminOverview.tsx`,
+  nhãn ở `overviewDisplay.ts`; chỉ hiện số backend trả, khối "hiện tại" tách khối "trong kỳ") và tab "Thu tiền, sau bán" (báo cáo cũ, thêm
+  `collected_unapplied` "Tiền chưa áp (không tính doanh thu)").
+- Chưa chuyển sang phân trang các danh sách "opt-in" (`page`/`pageSize`): các màn đó nhóm theo trạng thái và đếm số đỏ trên cả danh sách;
+  backend vẫn trả mảng khi không gửi tham số.
+
 **Đặt khảo sát trực tiếp** (`DirectSurveyBookingHandler`): `/customer/requests/new` (`pages/customer/direct-booking-page.tsx`, luật
 `features/scheduling/directBooking.ts`), nút ở trang "Yêu cầu khảo sát". Chọn địa điểm đã lưu hoặc lưu địa điểm mới (`SiteFields`), chọn
 giờ (`SlotPicker`), người gặp + số điện thoại (không bắt buộc, 8–15 chữ số; tài khoản không có số thì backend bắt `CONTACT_PHONE_REQUIRED`),
