@@ -12,9 +12,14 @@ import { formatMoney } from '@/utils/format'
 
 // Câu theo trạng thái link do backend trả. Không suy ra "đã thanh toán" từ việc tạo link hay từ trang PayOS chuyển về
 function Outcome({ attempt }: { attempt: PaymentAttemptView }) {
+  const cash = attempt.method === 'CASH'
   switch (attempt.status) {
     case 'PAID':
-      return <Notice tone="ok">PayOS đã xác nhận nhận tiền. Gói của bạn đã cập nhật.</Notice>
+      return (
+        <Notice tone="ok">
+          {cash ? 'Smart Solar đã xác nhận thu tiền mặt.' : 'PayOS đã xác nhận nhận tiền.'} Gói của bạn đã cập nhật.
+        </Notice>
+      )
     case 'FAILED':
       return (
         <Notice tone="danger">
@@ -23,7 +28,12 @@ function Outcome({ attempt }: { attempt: PaymentAttemptView }) {
       )
     case 'CANCELLED':
     case 'EXPIRED':
-      return <Notice>Link này không còn dùng được. Nếu vẫn cần gói, mua lại ở mục Gói đang bán.</Notice>
+      return (
+        <Notice>
+          {cash ? 'Lần trả tiền mặt này đã huỷ.' : 'Link này không còn dùng được.'} Nếu vẫn cần gói, mua lại ở mục Gói
+          đang bán.
+        </Notice>
+      )
     case 'REVIEW_REQUIRED':
     case 'REFUND_REQUIRED':
       return (
@@ -74,7 +84,22 @@ function Payable({
   )
 }
 
-/** Một link thanh toán PayOS của khách: số tiền, hạn, trạng thái đọc từ backend */
+/** Lần trả tiền mặt chưa xác nhận: không có link hay mã QR, chỉ chờ nhân viên ghi nhận đã thu */
+function CashPending({ checking, onCheck }: { checking: boolean; onCheck: () => void }) {
+  return (
+    <div className="mt-4 space-y-4">
+      <p className="text-body text-fg-2">
+        Trả tiền mặt cho nhân viên Smart Solar và giữ phiếu thu. Trạng thái tự cập nhật khi Smart Solar xác nhận đã thu
+        tiền.
+      </p>
+      <Button variant="secondary" icon="refresh" disabled={checking} onClick={onCheck}>
+        {checking ? 'Đang kiểm tra…' : 'Kiểm tra lại'}
+      </Button>
+    </div>
+  )
+}
+
+/** Một lần thanh toán của khách (PayOS hoặc tiền mặt): số tiền, hạn, trạng thái đọc từ backend */
 export function PaymentDialog({
   attemptId,
   onClose,
@@ -87,15 +112,17 @@ export function PaymentDialog({
 }) {
   const query = usePaymentQuery(attemptId)
   const attempt = query.data
+  const cash = attempt?.method === 'CASH'
+  const title = cash ? 'Trả tiền mặt' : 'Thanh toán qua PayOS'
 
   return (
     <ModalDialog
       open={attemptId !== null}
       onOpenChange={(open) => !open && onClose()}
-      aria-label="Thanh toán qua PayOS"
+      aria-label={title}
       className="max-w-lg"
     >
-      <DialogTitle>Thanh toán qua PayOS</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       {query.isPending ? (
         <Skeleton className="mt-4 h-32" />
       ) : attempt === undefined ? (
@@ -120,17 +147,25 @@ export function PaymentDialog({
                   </span>
                 ),
               },
-              { k: 'Mã đơn PayOS', v: <span className="tnum">{attempt.orderCode}</span> },
-              { k: 'Hạn thanh toán', v: <span className="tnum">{formatMoment(attempt.expiresAt)}</span> },
+              ...(cash
+                ? [{ k: 'Cách trả', v: 'Tiền mặt' }]
+                : [
+                    { k: 'Mã đơn PayOS', v: <span className="tnum">{attempt.orderCode}</span> },
+                    { k: 'Hạn thanh toán', v: <span className="tnum">{formatMoment(attempt.expiresAt)}</span> },
+                  ]),
               {
                 k: 'Trạng thái',
                 v: (
-                  <Badge tone={paymentStatusMeta(attempt.status).tone}>{paymentStatusMeta(attempt.status).label}</Badge>
+                  <Badge tone={paymentStatusMeta(attempt.status, attempt.method).tone}>
+                    {paymentStatusMeta(attempt.status, attempt.method).label}
+                  </Badge>
                 ),
               },
             ]}
           />
-          {isPayableAttempt(attempt.status) ? (
+          {isPayableAttempt(attempt.status) && cash ? (
+            <CashPending checking={query.isFetching} onCheck={() => void query.refetch()} />
+          ) : isPayableAttempt(attempt.status) ? (
             <Payable
               attempt={attempt}
               checking={query.isFetching}

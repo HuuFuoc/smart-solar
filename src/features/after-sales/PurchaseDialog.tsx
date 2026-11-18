@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { Field, Select } from '@/components/common/ui/field'
+import { Segmented } from '@/components/common/ui/segmented'
+import { PURCHASE_METHODS } from '@/common/afterSales'
 import { Notice } from '@/components/common/ui/lists'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { purchasableContracts, type PurchasableContract, isMaintenance } from '@/features/after-sales/afterSalesDisplay'
@@ -21,9 +23,12 @@ function contractLabel({ contract, includeContract }: PurchasableContract) {
   return `Hợp đồng ${contract.contractNumber} (${includeContract ? 'đã ký, chưa thanh toán' : 'đã thanh toán'})`
 }
 
+type Method = (typeof PURCHASE_METHODS)[number]['value']
+
 /**
- * Mua một gói (thiên tai hoặc bảo trì) cho một hợp đồng. Chỉ gửi khi khách bấm xác nhận; thành công thì trả link thanh toán cho trang
- * chuyển sang PayOS. Không tự đánh dấu đã mua: gói chỉ được ghi nhận khi PayOS xác nhận đã nhận tiền
+ * Mua một gói (thiên tai hoặc bảo trì) cho một hợp đồng, trả qua PayOS hoặc tiền mặt (cả khi mua riêng gói cho hợp đồng đã thanh
+ * toán). Chỉ gửi khi khách bấm xác nhận; PayOS thì trang chuyển sang link thanh toán, tiền mặt thì chờ quản lý xác nhận đã thu.
+ * Không tự đánh dấu đã mua: gói chỉ được ghi nhận khi backend báo đã nhận tiền
  */
 export function PurchaseDialog({
   pkg,
@@ -36,6 +41,7 @@ export function PurchaseDialog({
   onPurchased: (checkout: PaymentAttemptView) => void
 }) {
   const [contractId, setContractId] = useState('')
+  const [method, setMethod] = useState<Method>('ONLINE')
   const [error, setError] = useState<string | null>(null)
   // Hợp đồng đang có link thanh toán riêng (mở ở trang hợp đồng) nên không gộp vào link mua gói được
   const [busyContractId, setBusyContractId] = useState<string | null>(null)
@@ -51,6 +57,7 @@ export function PurchaseDialog({
   function close() {
     if (purchase.isPending) return
     setContractId('')
+    setMethod('ONLINE')
     setError(null)
     setBusyContractId(null)
     onClose()
@@ -68,11 +75,22 @@ export function PurchaseDialog({
         disasterPackageId: maintenance ? null : pkg.packageId,
         maintenancePackageId: maintenance ? pkg.packageId : null,
         includeContract: selected.includeContract,
+        paymentMethod: method,
       })
       setContractId('')
+      setMethod('ONLINE')
       onPurchased(view.checkout)
     } catch (e) {
       const linkFailed = isApiError(e) && e.code !== null && LINK_FAILED.has(e.code)
+      if (isApiError(e) && e.code === 'PAYMENT_CASH_SELECTED') {
+        setError(
+          selected.includeContract
+            ? `Bạn đã chọn trả tiền mặt cho hợp đồng ${selected.contract.contractNumber}. Chờ Smart Solar xác nhận đã thu, hoặc bỏ chọn tiền mặt ở trang hợp đồng rồi mua lại.`
+            : 'Bạn đã chọn trả tiền mặt cho một gói cùng loại. Chờ Smart Solar xác nhận đã thu, hoặc huỷ đơn đó ở mục Gói của bạn.',
+        )
+        if (selected.includeContract) setBusyContractId(selected.contract.contractId)
+        return
+      }
       if (isApiError(e) && e.code === 'PAYMENT_CHECKOUT_IN_PROGRESS' && selected.includeContract) {
         setBusyContractId(selected.contract.contractId)
         setError(
@@ -134,12 +152,30 @@ export function PurchaseDialog({
             )}
           </div>
 
+          {selected && (
+            <Field label="Cách trả" className="mt-4">
+              <Segmented
+                label="Cách trả"
+                options={[...PURCHASE_METHODS]}
+                value={method}
+                onChange={setMethod}
+                className="w-fit"
+              />
+            </Field>
+          )}
+
           {selected?.includeContract && (
             <Notice tone="info" title="Thanh toán cùng hợp đồng" className="mt-4">
-              Hợp đồng {selected.contract.contractNumber} chưa thanh toán, nên link PayOS gồm cả tiền hợp đồng (
+              Hợp đồng {selected.contract.contractNumber} chưa thanh toán, nên{' '}
+              {method === 'CASH' ? 'số tiền mặt' : 'link PayOS'} gồm cả tiền hợp đồng (
               <span className="tnum">{formatMoney(selected.contract.totalAmount, selected.contract.currency)}</span>) và
               tiền gói (<span className="tnum">{formatMoney(pkg.price, 'VND')}</span>).
             </Notice>
+          )}
+          {selected && method === 'CASH' && (
+            <p className="mt-4 text-body text-fg-2">
+              Bạn trả tiền mặt cho nhân viên Smart Solar. Gói chỉ được ghi nhận khi Smart Solar xác nhận đã thu tiền.
+            </p>
           )}
 
           <p className="mt-4 text-body text-fg-2">
@@ -176,7 +212,7 @@ export function PurchaseDialog({
               disabled={!selected || purchase.isPending}
               onClick={() => void confirm()}
             >
-              {purchase.isPending ? 'Đang tạo link thanh toán…' : 'Mua và thanh toán'}
+              {purchase.isPending ? 'Đang gửi…' : method === 'CASH' ? 'Mua, trả tiền mặt' : 'Mua và thanh toán'}
             </Button>
           </DialogFooter>
         </>

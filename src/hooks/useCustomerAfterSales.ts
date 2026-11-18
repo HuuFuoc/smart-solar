@@ -85,7 +85,9 @@ export function usePaymentQuery(attemptId: string | null) {
     queryKey: customerAfterSalesKeys.payment(attemptId ?? ''),
     queryFn: () => afterSalesService.getPayment(attemptId!),
     enabled: Boolean(attemptId),
-    refetchInterval: (q) => (isPayable(q.state.data?.status) ? PAYMENT_POLL_MS : false),
+    // Tiền mặt chỉ đổi khi nhân viên xác nhận, hỏi thưa hơn để không tốn hạn mức gọi
+    refetchInterval: (q) =>
+      isPayable(q.state.data?.status) ? (q.state.data?.method === 'CASH' ? 60_000 : PAYMENT_POLL_MS) : false,
   })
   const status = query.data?.status
   const settled = status !== undefined && !isPayable(status)

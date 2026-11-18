@@ -59,6 +59,19 @@ export const PAYMENT_ATTEMPT_STATUSES: Record<string, { label: string; tone: Ton
   REFUND_REQUIRED: { label: 'Chờ Smart Solar hoàn tiền', tone: 'warn' },
 }
 
+/** Lần trả tiền mặt: chỉ thành đã trả khi quản lý / quản trị xác nhận đã thu */
+export const CASH_ATTEMPT_STATUSES: Record<string, { label: string; tone: Tone }> = {
+  PENDING: { label: 'Chờ xác nhận thu tiền', tone: 'info' },
+  PAID: { label: 'Đã xác nhận thu tiền', tone: 'ok' },
+  CANCELLED: { label: 'Đã bỏ chọn tiền mặt', tone: 'neutral' },
+}
+
+/** Cách trả khi mua gói: ONLINE là PayOS (mặc định), CASH là trả tiền mặt cho nhân viên */
+export const PURCHASE_METHODS = [
+  { value: 'ONLINE', label: 'PayOS' },
+  { value: 'CASH', label: 'Tiền mặt' },
+] as const
+
 /** Link còn trả tiền được (PaymentStatuses.Payable); backend chỉ đối soát với PayOS khi link ở các trạng thái này */
 export const PAYABLE_ATTEMPT_STATUSES: readonly string[] = ['PENDING', 'PROCESSING']
 
@@ -241,7 +254,8 @@ export const DASHBOARD_METRICS: Record<string, { label: string; money?: boolean 
   collected_contracts: { label: 'Tiền hợp đồng lắp đặt', money: true },
   collected_packages: { label: 'Tiền gói dịch vụ', money: true },
   collected_services: { label: 'Tiền sửa chữa, bảo trì lẻ', money: true },
-  collected_total: { label: 'Tổng thu', money: true },
+  collected_unapplied: { label: 'Tiền chưa áp (không tính doanh thu)', money: true },
+  collected_total: { label: 'Tổng tiền đã nhận', money: true },
   total_customers: { label: 'Khách hàng (cuối kỳ)' },
   new_customers: { label: 'Khách hàng mới' },
   installation_projects: { label: 'Dự án thi công mới' },
@@ -323,6 +337,7 @@ export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
   INSTALLATION_SCHEDULE_CHANGED: 'Ngày thi công dự kiến đã đổi',
   INSTALLATION_SCHEDULE_RESCHEDULE_REQUIRED: 'Ngày thi công không xác nhận được, sẽ hẹn lại',
   INSTALLATION_SCHEDULE_CANCELLED: 'Lịch thi công dự kiến đã bị huỷ',
+  INSTALLATION_SLOTS_OFFERED: 'Kỹ thuật viên đề xuất ngày thi công, mời bạn chọn',
   INSTALLATION_SCHEDULED: 'Công trình đã có lịch lắp đặt',
   INSTALLATION_STARTED: 'Kỹ thuật viên đã bắt đầu lắp đặt',
   INSTALLATION_ACCEPTANCE_REQUIRED: 'Lắp đặt xong, mời bạn nghiệm thu',
@@ -336,6 +351,7 @@ export const DASHBOARD_MONEY_KEYS: readonly string[] = [
   'collected_contracts',
   'collected_packages',
   'collected_services',
+  'collected_unapplied',
   'collected_total',
 ]
 

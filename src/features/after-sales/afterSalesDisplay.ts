@@ -4,6 +4,7 @@ import {
   SERVICE_PACKAGE_KIND_LABELS,
   SERVICE_PACKAGE_KINDS,
   PAYABLE_ATTEMPT_STATUSES,
+  CASH_ATTEMPT_STATUSES,
   PAYMENT_ATTEMPT_STATUSES,
   PURCHASABLE_CONTRACT_STATUSES,
   SUBSCRIPTION_CANCEL_MODES,
@@ -20,7 +21,8 @@ export function subscriptionStatusMeta(status: string): { label: string; tone: T
   return SUBSCRIPTION_STATUSES[status] ?? { label: status, tone: 'neutral' }
 }
 
-export function paymentStatusMeta(status: string): { label: string; tone: Tone } {
+export function paymentStatusMeta(status: string, method?: string | null): { label: string; tone: Tone } {
+  if (method === 'CASH' && CASH_ATTEMPT_STATUSES[status]) return CASH_ATTEMPT_STATUSES[status]
   return PAYMENT_ATTEMPT_STATUSES[status] ?? { label: status, tone: 'neutral' }
 }
 
