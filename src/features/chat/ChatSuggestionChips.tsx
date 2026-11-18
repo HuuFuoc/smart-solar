@@ -55,7 +55,7 @@ export function ChatSuggestionChips({
           type="button"
           disabled={disabled}
           onClick={() => onSelect(s.prompt)}
-          className="press inline-flex min-h-11 items-center gap-2 rounded-control border border-line bg-canvas px-3 text-body text-fg hover:border-accent-line hover:bg-accent-soft hover:text-accent-fg disabled:opacity-60 lg:min-h-9"
+          className="press inline-flex min-h-11 items-center gap-2 rounded-control border border-line bg-panel px-3 text-body text-fg hover:border-accent-line hover:bg-accent-soft hover:text-accent-fg disabled:opacity-60 lg:min-h-9"
         >
           <Icon name={s.icon} className="text-[20px] text-accent-fg" />
           <span>{s.label}</span>

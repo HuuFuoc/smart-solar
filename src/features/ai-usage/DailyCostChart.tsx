@@ -141,7 +141,7 @@ export function DailyCostChart({ days }: { days: AiUsageDayView[] }) {
         {current && (
           <div
             aria-hidden
-            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-container border border-line bg-canvas px-3 py-2 shadow-pop"
+            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-container border border-line bg-panel px-3 py-2 shadow-pop"
             style={{
               left: Math.min(Math.max(cx(active!), 96), width - 96),
               top: Math.max(0, y(current.costUsd) - 8),

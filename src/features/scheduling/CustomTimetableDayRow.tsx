@@ -40,7 +40,7 @@ export function CustomTimetableDayRow({ dayLabel, periods, onUpdate, onCopyAll }
   }
 
   return (
-    <tr className="transition-colors hover:bg-surface-2/40">
+    <tr className="transition-colors hover:bg-hover">
       {/* Cột 1: Thứ & Trạng thái ngày (Cố định w-40) */}
       <td className="w-40 border-r border-line px-4 py-3 align-top">
         <div className="flex flex-col gap-1.5">
@@ -91,7 +91,7 @@ export function CustomTimetableDayRow({ dayLabel, periods, onUpdate, onCopyAll }
                     value={p.start}
                     onChange={(e) => handlePeriodChange(i, { start: e.target.value })}
                     aria-label={`${dayLabel}, Ca ${i + 1}, giờ bắt đầu`}
-                    className="tnum h-8 w-32 rounded-control border border-line-2 bg-canvas px-2 text-body text-fg"
+                    className="tnum h-8 w-32 rounded-control border border-line-2 bg-panel px-2 text-body text-fg"
                   />
                   <span className="text-fg-2">–</span>
                   <input
@@ -100,7 +100,7 @@ export function CustomTimetableDayRow({ dayLabel, periods, onUpdate, onCopyAll }
                     value={p.end}
                     onChange={(e) => handlePeriodChange(i, { end: e.target.value })}
                     aria-label={`${dayLabel}, Ca ${i + 1}, giờ kết thúc`}
-                    className="tnum h-8 w-32 rounded-control border border-line-2 bg-canvas px-2 text-body text-fg"
+                    className="tnum h-8 w-32 rounded-control border border-line-2 bg-panel px-2 text-body text-fg"
                   />
                 </div>
                 <IconButton

@@ -48,7 +48,7 @@ export function AdminSettingsPage() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-h2 font-semibold text-fg-1">Cài đặt hệ thống</h1>
+            <h1 className="text-h2 font-semibold text-fg">Cài đặt hệ thống</h1>
             <Badge tone="accent">
               v{schedulingData.version} {schedulingData.bootstrap ? '(Mặc định)' : ''}
             </Badge>
@@ -63,7 +63,7 @@ export function AdminSettingsPage() {
           className={`border-b-2 px-4 py-2.5 text-body font-medium transition-colors ${
             activeTab === 'scheduling'
               ? 'border-accent text-accent-fg font-semibold'
-              : 'border-transparent text-fg-3 hover:text-fg-1'
+              : 'border-transparent text-fg-3 hover:text-fg'
           }`}
         >
           Lịch hẹn & Khảo sát
@@ -74,7 +74,7 @@ export function AdminSettingsPage() {
           className={`border-b-2 px-4 py-2.5 text-body font-medium transition-colors ${
             activeTab === 'afterSales'
               ? 'border-accent text-accent-fg font-semibold'
-              : 'border-transparent text-fg-3 hover:text-fg-1'
+              : 'border-transparent text-fg-3 hover:text-fg'
           }`}
         >
           Điều phối & Sau bán
@@ -85,7 +85,7 @@ export function AdminSettingsPage() {
           className={`border-b-2 px-4 py-2.5 text-body font-medium transition-colors ${
             activeTab === 'rag'
               ? 'border-accent text-accent-fg font-semibold'
-              : 'border-transparent text-fg-3 hover:text-fg-1'
+              : 'border-transparent text-fg-3 hover:text-fg'
           }`}
         >
           Cấu hình AI / RAG
@@ -96,7 +96,7 @@ export function AdminSettingsPage() {
           className={`border-b-2 px-4 py-2.5 text-body font-medium transition-colors ${
             activeTab === 'audit'
               ? 'border-accent text-accent-fg font-semibold'
-              : 'border-transparent text-fg-3 hover:text-fg-1'
+              : 'border-transparent text-fg-3 hover:text-fg'
           }`}
         >
           Nhật ký thay đổi

@@ -27,7 +27,7 @@ export function TechnicianChoiceList({
           <label
             key={t.technicianUserId}
             className={cx(
-              'press flex cursor-pointer gap-3 rounded-control border border-line-2 bg-canvas px-4 py-3',
+              'press flex cursor-pointer gap-3 rounded-control border border-line-2 bg-panel px-4 py-3',
               '[&:not(:has(:checked)):hover]:border-fg-3 has-checked:border-accent-line has-checked:bg-accent-soft',
               'has-focus-visible:outline-2 has-focus-visible:outline-offset-1 has-focus-visible:outline-ring',
             )}

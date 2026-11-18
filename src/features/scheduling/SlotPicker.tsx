@@ -25,7 +25,7 @@ import { cx } from '@/utils/cx'
 
 const choice = cx(
   'press flex cursor-pointer items-center justify-center rounded-control border text-body',
-  'border-line-2 bg-canvas text-fg [&:not(:has(:checked)):not(:has(:disabled)):hover]:border-fg-3 [&:not(:has(:checked)):not(:has(:disabled)):hover]:bg-hover',
+  'border-line-2 bg-panel text-fg [&:not(:has(:checked)):not(:has(:disabled)):hover]:border-fg-3 [&:not(:has(:checked)):not(:has(:disabled)):hover]:bg-hover',
   'has-checked:border-accent-line has-checked:bg-accent-soft has-checked:font-semibold has-checked:text-accent-fg',
   'has-focus-visible:outline-2 has-focus-visible:outline-offset-1 has-focus-visible:outline-ring',
   'has-disabled:cursor-not-allowed has-disabled:border-line has-disabled:bg-surface-2 has-disabled:text-fg-3',

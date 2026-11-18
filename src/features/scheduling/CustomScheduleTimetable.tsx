@@ -123,7 +123,7 @@ export function CustomScheduleTimetable({ initial, technicianUserId, onSaved }: 
   return (
     <div className="space-y-4">
       {/* Thanh công cụ mẫu lịch nhanh */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-canvas p-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-line bg-panel p-3.5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-meta font-medium text-fg-2">Mẫu lịch nhanh:</span>
           <Button size="sm" variant="soft" type="button" icon="work" onClick={applyStandardWeek}>
@@ -147,11 +147,11 @@ export function CustomScheduleTimetable({ initial, technicianUserId, onSaved }: 
       </div>
 
       {/* Bảng Thời khóa biểu tuần cố định cột */}
-      <div className="overflow-hidden rounded-container border border-line bg-canvas">
+      <div className="overflow-hidden rounded-container border border-line bg-panel">
         <div className="overflow-x-auto">
           <table className="w-full table-fixed border-collapse text-body">
             <thead>
-              <tr className="border-b border-line-2 bg-surface-2/30 text-left text-meta font-semibold text-fg-2">
+              <tr className="border-b border-line-2 bg-surface-2 text-left text-meta font-semibold text-fg-2">
                 <th className="w-40 border-r border-line px-4 py-2.5">Thứ trong tuần</th>
                 <th className="border-r border-line px-4 py-2.5">Thời khóa biểu các ca làm việc</th>
                 <th className="w-24 border-r border-line px-3 py-2.5 text-center">Thời lượng</th>
@@ -173,7 +173,7 @@ export function CustomScheduleTimetable({ initial, technicianUserId, onSaved }: 
         </div>
 
         {/* Footer lưu cấu hình */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/40 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2 px-4 py-3">
           <div className="flex items-center gap-3">
             <Button icon="save" variant="primary" disabled={save.isPending} onClick={() => void submit()}>
               {save.isPending ? 'Đang lưu…' : 'Lưu thời khóa biểu riêng'}

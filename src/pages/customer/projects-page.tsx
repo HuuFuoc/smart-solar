@@ -69,7 +69,7 @@ export function CustomerProjectsPage() {
                     value={statusFilter}
                     aria-label="Lọc theo trạng thái"
                     onChange={(e) => setStatusFilter(e.target.value as ProjectFilterStatus)}
-                    className="h-10 cursor-pointer rounded-control border border-line bg-canvas pl-8 pr-8 text-meta text-fg hover:border-fg-3 focus:border-primary focus:outline-none"
+                    className="h-10 cursor-pointer rounded-control border border-line bg-panel pl-8 pr-8 text-meta text-fg hover:border-fg-3 focus:border-primary focus:outline-none"
                   >
                     <option value="ALL">Trạng thái: Tất cả</option>
                     <option value="IN_PROGRESS">Đang lắp đặt</option>
@@ -87,7 +87,7 @@ export function CustomerProjectsPage() {
                     value={timeSort}
                     aria-label="Sắp xếp thời gian"
                     onChange={(e) => setTimeSort(e.target.value as ProjectTimeSort)}
-                    className="h-10 cursor-pointer rounded-control border border-line bg-canvas pl-8 pr-8 text-meta text-fg hover:border-fg-3 focus:border-primary focus:outline-none"
+                    className="h-10 cursor-pointer rounded-control border border-line bg-panel pl-8 pr-8 text-meta text-fg hover:border-fg-3 focus:border-primary focus:outline-none"
                   >
                     <option value="ALL">Thời gian: Tất cả</option>
                     <option value="NEWEST">Thời gian: Mới nhất</option>
@@ -106,7 +106,7 @@ export function CustomerProjectsPage() {
                       'flex h-10 w-10 items-center justify-center rounded-control transition-colors',
                       viewMode === 'table'
                         ? 'bg-primary text-on-accent'
-                        : 'border border-line bg-canvas text-fg-2 hover:bg-surface-2',
+                        : 'border border-line bg-panel text-fg-2 hover:bg-surface-2',
                     )}
                   >
                     <Icon name="format_list_bulleted" className="text-[20px]" />
@@ -119,7 +119,7 @@ export function CustomerProjectsPage() {
                       'flex h-10 w-10 items-center justify-center rounded-control transition-colors',
                       viewMode === 'grid'
                         ? 'bg-primary text-on-accent'
-                        : 'border border-line bg-canvas text-fg-2 hover:bg-surface-2',
+                        : 'border border-line bg-panel text-fg-2 hover:bg-surface-2',
                     )}
                   >
                     <Icon name="grid_view" className="text-[20px]" />

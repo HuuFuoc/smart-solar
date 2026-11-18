@@ -87,7 +87,7 @@ export function CustomerPackagesPage() {
           />
         ) : (
           mine.length > 0 && (
-            <section aria-labelledby="my-packages" className="rounded-container border border-line bg-canvas p-4">
+            <section aria-labelledby="my-packages" className="rounded-container border border-line bg-panel p-4">
               <h2 id="my-packages" className="mb-3 text-title font-semibold text-fg">
                 Gói của bạn
               </h2>

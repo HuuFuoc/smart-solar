@@ -82,7 +82,7 @@ export function SchedulingAuditTable() {
               setSelectedKey(e.target.value)
               setPage(1)
             }}
-            className="w-80 rounded-control border border-line bg-canvas px-3 py-1.5 text-body text-fg-1 outline-none focus:border-accent"
+            className="w-80 rounded-control border border-line bg-panel px-3 py-1.5 text-body text-fg outline-none focus:border-accent"
           >
             <option value="">
               -- Tất cả cài đặt ({SETTING_GROUPS.reduce((acc, g) => acc + g.items.length, 0)}) --
@@ -108,7 +108,7 @@ export function SchedulingAuditTable() {
           <button
             type="button"
             onClick={toggleSort}
-            className="flex items-center gap-1.5 rounded-control border border-line bg-canvas px-3 py-1.5 text-meta font-medium text-fg-1 transition-colors hover:border-accent"
+            className="flex items-center gap-1.5 rounded-control border border-line bg-panel px-3 py-1.5 text-meta font-medium text-fg transition-colors hover:border-accent"
           >
             <span>Sắp xếp thời gian:</span>
             <span className="font-semibold text-accent-fg">
@@ -119,15 +119,15 @@ export function SchedulingAuditTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-control border border-line bg-canvas">
+      <div className="overflow-x-auto rounded-control border border-line bg-panel">
         <table className="w-full text-left text-body">
-          <thead className="border-b border-line bg-canvas text-meta font-medium text-fg-3">
+          <thead className="border-b border-line bg-panel text-meta font-medium text-fg-3">
             <tr>
               <th className="px-4 py-3">
                 <button
                   type="button"
                   onClick={toggleSort}
-                  className="inline-flex items-center gap-1 font-semibold text-fg-1 hover:text-accent-fg"
+                  className="inline-flex items-center gap-1 font-semibold text-fg hover:text-accent-fg"
                 >
                   <span>Thời gian</span>
                   <span className="text-accent-fg">{sortOrder === 'desc' ? '↓' : '↑'}</span>
@@ -154,12 +154,12 @@ export function SchedulingAuditTable() {
               </tr>
             ) : (
               sortedItems.map((r) => (
-                <tr key={r.id} className="hover:bg-canvas/50">
+                <tr key={r.id} className="hover:bg-hover">
                   <td className="whitespace-nowrap px-4 py-3 text-fg-2">
                     {new Date(r.changedAt).toLocaleString('vi-VN')}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-fg-1">{KEY_LABEL_MAP.get(r.key) || r.key}</div>
+                    <div className="font-medium text-fg">{KEY_LABEL_MAP.get(r.key) || r.key}</div>
                     <div className="font-mono text-meta text-fg-3">{r.key}</div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
@@ -170,9 +170,9 @@ export function SchedulingAuditTable() {
                   <td className="px-4 py-3">
                     <Badge tone="neutral">{r.unit}</Badge>
                   </td>
-                  <td className="max-w-md px-4 py-3 text-fg-1">
+                  <td className="max-w-md px-4 py-3 text-fg">
                     {r.reason ? (
-                      <span className="font-medium text-fg-1">{r.reason}</span>
+                      <span className="font-medium text-fg">{r.reason}</span>
                     ) : (
                       <span className="italic text-fg-3">Không có lý do</span>
                     )}

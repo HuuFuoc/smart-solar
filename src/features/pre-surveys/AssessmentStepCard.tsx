@@ -22,7 +22,7 @@ export function AssessmentStepCard({ steps, index, hint, headingRef, footer, chi
   return (
     <section
       aria-labelledby={headingId}
-      className={cx('-mx-4 border-y border-line bg-canvas sm:mx-0 sm:rounded-container sm:border-x', className)}
+      className={cx('-mx-4 border-y border-line bg-panel sm:mx-0 sm:rounded-container sm:border-x', className)}
     >
       <header className="border-b border-line px-4 pt-4 pb-4 sm:px-6 sm:pt-5">
         <h2 ref={headingRef} id={headingId} tabIndex={-1} className="text-title font-semibold outline-none">
@@ -40,7 +40,7 @@ export function AssessmentStepCard({ steps, index, hint, headingRef, footer, chi
       {/* Bo theo góc dưới của khung để nền không đè lên viền */}
       <footer
         data-sticky-bottom
-        className="sticky bottom-0 z-10 border-t border-line bg-canvas px-4 py-3 sm:rounded-b-[calc(var(--radius-container)-1px)] sm:px-6"
+        className="sticky bottom-0 z-10 border-t border-line bg-panel px-4 py-3 sm:rounded-b-[calc(var(--radius-container)-1px)] sm:px-6"
       >
         {footer}
       </footer>

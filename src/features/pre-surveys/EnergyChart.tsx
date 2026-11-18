@@ -106,7 +106,7 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
                     {active === i && (
                       <rect x={cx(i) - band / 2} y={MARGIN.top} width={band} height={plotH} className="fill-hover" />
                     )}
-                    <path d={columnPath(cx(i) - barW / 2, y(m.energyKwh), barW, h)} className="fill-chart-1" />
+                    <path d={columnPath(cx(i) - barW / 2, y(m.energyKwh), barW, h)} className="fill-sun" />
                     <text
                       x={cx(i)}
                       y={MARGIN.top + plotH + 18}
@@ -139,7 +139,7 @@ export function EnergyChart({ monthly }: { monthly: MonthlyPvEnergy[] }) {
         {current && (
           <div
             aria-hidden
-            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-container border border-line bg-canvas px-3 py-2 shadow-pop"
+            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-container border border-line bg-panel px-3 py-2 shadow-pop"
             style={{
               left: Math.min(Math.max(cx(active!), 72), width - 72),
               top: Math.max(0, y(current.energyKwh) - 8),

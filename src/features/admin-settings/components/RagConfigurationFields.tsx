@@ -223,8 +223,8 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
         />
       </div>
 
-      <div className="rounded-control border border-line bg-canvas p-3.5">
-        <label htmlFor="rag-notes-input" className="text-body font-medium text-fg-1">
+      <div className="rounded-control border border-line bg-panel p-3.5">
+        <label htmlFor="rag-notes-input" className="text-body font-medium text-fg">
           Ghi chú bản nháp (Notes)
         </label>
         <textarea
@@ -235,7 +235,7 @@ export function RagConfigurationFields({ form, notes, modelCatalog, isSaving, on
           maxLength={500}
           onChange={(e) => onNotesChange(e.target.value)}
           placeholder="Ví dụ: Tăng kích thước chunk và topK để cải thiện độ chi tiết câu trả lời quy trình kỹ thuật..."
-          className="mt-2 w-full rounded-control border border-line bg-canvas p-2.5 text-body text-fg-1 outline-none focus:border-accent"
+          className="mt-2 w-full rounded-control border border-line bg-panel p-2.5 text-body text-fg outline-none focus:border-accent"
         />
       </div>
     </div>

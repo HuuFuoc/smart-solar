@@ -76,10 +76,7 @@ export function ProjectTable({ rows, detailPattern }: { rows: InstallationProjec
                     >
                       Dự án {shortCode(p.projectId)}
                     </Link>
-                    <span className="tnum mt-0.5 flex items-center gap-1 text-meta text-fg-3">
-                      <Icon name="schedule" className="text-[16px]" />
-                      Tạo lúc {formatMoment(p.createdAt)}
-                    </span>
+                    <span className="tnum mt-0.5 block text-meta text-fg-2">Tạo lúc {formatMoment(p.createdAt)}</span>
                   </span>
                 </span>
               </Td>
@@ -89,7 +86,6 @@ export function ProjectTable({ rows, detailPattern }: { rows: InstallationProjec
                   data-tone={TAG_TONES.find((t) => t === status.tone) ?? 'neutral'}
                   data-shape="pill"
                 >
-                  {live && <span className="size-1.5 rounded-full bg-ok" aria-hidden />}
                   {status.label}
                 </span>
               </Td>

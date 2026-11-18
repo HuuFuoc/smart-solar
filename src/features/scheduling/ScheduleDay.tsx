@@ -65,7 +65,7 @@ function AppointmentItem({
 }) {
   const status = appointmentStatusMeta(item.status, viewer)
   return (
-    <li className="grid gap-x-6 gap-y-3 rounded-container border border-line bg-canvas p-4 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start">
+    <li className="grid gap-x-6 gap-y-3 rounded-container border border-line bg-panel p-4 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start">
       <p className="tnum text-title font-semibold text-fg">{formatTimeRange(item.startsAt, item.endsAt)}</p>
       <div className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-center gap-2">

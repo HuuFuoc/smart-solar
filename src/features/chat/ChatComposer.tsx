@@ -44,7 +44,7 @@ export function ChatComposer({
   else if (waitSeconds > 0) label = `Chờ ${waitSeconds} giây`
 
   return (
-    <form onSubmit={submit} className="shrink-0 border-t border-line bg-canvas p-3">
+    <form onSubmit={submit} className="shrink-0 border-t border-line bg-panel p-3">
       <label htmlFor="chat-message" className="sr-only">
         Câu hỏi cho trợ lý
       </label>

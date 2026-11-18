@@ -1,5 +1,8 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource/be-vietnam-pro/400.css';
+@import '@fontsource/be-vietnam-pro/500.css';
+@import '@fontsource/be-vietnam-pro/600.css';
+@import '@fontsource/be-vietnam-pro/700.css';
 @import './landing.css';
 @import './survey-detail.css';
 
@@ -26,96 +29,104 @@
 :root {
   color-scheme: light;
 
-  --canvas: oklch(98.6% 0.003 110);
-  --surface-2: oklch(95.6% 0.006 110);
+  /* Nền trang ngà, khối nổi (thẻ có khung, hộp thoại, menu, nút viền) trắng */
+  --canvas: #f7f6f0;
+  --surface: #ffffff;
+  --surface-2: #efeee6;
   /* Nền ô nhập: khác nền khung để nhìn là biết chỗ gõ; đang gõ thì sáng lên */
-  --field: oklch(96.6% 0.005 110);
-  --field-focus: oklch(100% 0 0);
-  --surface-3: oklch(92.5% 0.008 110);
-  --rail: oklch(96% 0.012 155);
-  --line: oklch(87% 0.01 110);
-  /* Control boundary: 3.5:1 on canvas, 3.2:1 on surface-2 (WCAG 1.4.11). */
-  --line-2: oklch(62% 0.014 120);
+  --field: #f2f1ea;
+  --field-focus: #ffffff;
+  --surface-3: #e6e5dc;
+  --rail: #eef1e8;
+  --line: #dde5db;
+  /* Viền control >= 3:1 trên canvas, surface và surface-2 (WCAG 1.4.11) */
+  --line-2: #7f8b83;
 
-  --fg: oklch(20% 0.012 130);
-  --fg-2: oklch(44% 0.014 130);
-  --fg-3: oklch(52% 0.012 130);
+  --fg: #172a23;
+  --fg-2: #4d5b54;
+  --fg-3: #56645d;
 
-  --accent: #0d5c3a;
-  --accent-hover: #0a4a2f;
-  --accent-soft: oklch(94.5% 0.035 160);
-  --accent-muted: oklch(91.5% 0.05 160);
-  --accent-line: oklch(62% 0.1 160);
-  --accent-fg: oklch(38% 0.09 160);
-  --on-accent: oklch(98.5% 0.01 150);
+  --accent: #234b39;
+  --accent-hover: #193d2d;
+  --accent-soft: #e8efe3;
+  --accent-muted: #dbe6d3;
+  --accent-line: #6b8a5d;
+  --accent-fg: #2b5c45;
+  --on-accent: #fbfaf5;
 
-  --ok: oklch(46% 0.11 155);
-  --ok-soft: oklch(94.5% 0.04 155);
-  --warn: oklch(52% 0.13 70);
-  --warn-soft: oklch(95.5% 0.05 80);
+  --ok: oklch(46% 0.1 150);
+  --ok-soft: oklch(94.5% 0.035 145);
+  --warn: oklch(50% 0.12 70);
+  --warn-soft: oklch(95.5% 0.045 85);
   --danger: oklch(50% 0.18 27);
   --danger-fill: oklch(50% 0.18 27);
   --danger-hover: oklch(44% 0.17 27);
   --danger-soft: oklch(95.5% 0.03 25);
   --on-danger: oklch(98.5% 0.01 25);
-  --info: oklch(48% 0.14 255);
-  --info-soft: oklch(95% 0.03 255);
+  --info: oklch(48% 0.13 250);
+  --info-soft: oklch(95% 0.025 250);
 
-  --ring: oklch(55% 0.12 160);
-  --shadow-pop: 0 4px 16px -4px oklch(30% 0.03 155 / 0.18), 0 1px 2px oklch(30% 0.03 155 / 0.08);
+  --ring: #4c7a5c;
+  --shadow-pop: 0 4px 16px -4px oklch(28% 0.03 160 / 0.16), 0 1px 2px oklch(28% 0.03 160 / 0.08);
 
   /* Màu tấm pin trên mặt bằng 2D */
   --pv-glass: oklch(31% 0.045 262);
   --pv-frame: oklch(84% 0.01 250);
   /* Cột biểu đồ một chuỗi */
-  --chart-1: oklch(55% 0.11 160);
+  --chart-1: #5f8052;
+  /* Ánh nắng: chỉ cho số liệu năng lượng (sản lượng điện), không dùng cho trạng thái */
+  --sun: #a47a1e;
+  --sun-soft: #f6ecd3;
   /* Lớp phủ sau dialog / drawer, luôn làm tối trang */
-  --scrim: oklch(20% 0.012 130 / 0.4);
+  --scrim: oklch(20% 0.02 160 / 0.4);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --canvas: oklch(17% 0.006 130);
-    --surface-2: oklch(22% 0.008 130);
-    --field: oklch(21% 0.008 130);
-    --field-focus: oklch(21% 0.008 130);
-    --surface-3: oklch(27% 0.009 130);
-    --rail: oklch(20.5% 0.01 150);
-    --line: oklch(30% 0.01 130);
-    --line-2: oklch(52% 0.012 130);
+    --canvas: oklch(17.5% 0.01 160);
+    --surface: oklch(20.5% 0.012 160);
+    --surface-2: oklch(22.5% 0.012 160);
+    --field: oklch(21.5% 0.012 160);
+    --field-focus: oklch(21.5% 0.012 160);
+    --surface-3: oklch(27.5% 0.013 160);
+    --rail: oklch(20% 0.014 158);
+    --line: oklch(30.5% 0.014 160);
+    --line-2: oklch(53% 0.014 160);
 
-    --fg: oklch(95% 0.006 150);
-    --fg-2: oklch(74% 0.012 150);
-    --fg-3: oklch(68% 0.012 150);
+    --fg: oklch(95% 0.008 120);
+    --fg-2: oklch(76% 0.014 140);
+    --fg-3: oklch(70% 0.014 140);
 
-    --accent: oklch(50% 0.11 160);
-    --accent-hover: oklch(54% 0.11 160);
-    --accent-soft: oklch(28% 0.045 160);
-    --accent-muted: oklch(32% 0.06 160);
-    --accent-line: oklch(52% 0.09 160);
-    --accent-fg: oklch(78% 0.1 160);
-    --on-accent: oklch(98.5% 0.01 150);
+    --accent: oklch(49% 0.085 158);
+    --accent-hover: oklch(53% 0.085 158);
+    --accent-soft: oklch(27.5% 0.035 155);
+    --accent-muted: oklch(31.5% 0.045 155);
+    --accent-line: oklch(55% 0.07 140);
+    --accent-fg: oklch(80% 0.08 145);
+    --on-accent: oklch(98.5% 0.008 120);
 
-    --ok: oklch(76% 0.1 155);
-    --ok-soft: oklch(28% 0.05 155);
-    --warn: oklch(82% 0.13 80);
-    --warn-soft: oklch(28% 0.045 75);
+    --ok: oklch(76% 0.1 150);
+    --ok-soft: oklch(28% 0.045 150);
+    --warn: oklch(82% 0.12 80);
+    --warn-soft: oklch(28% 0.04 75);
     --danger: oklch(76% 0.15 25);
     --danger-fill: oklch(56% 0.17 27);
     --danger-hover: oklch(52% 0.17 27);
     --danger-soft: oklch(27% 0.05 25);
     --on-danger: oklch(98.5% 0.01 25);
-    --info: oklch(78% 0.11 255);
-    --info-soft: oklch(30% 0.06 255);
+    --info: oklch(78% 0.1 250);
+    --info-soft: oklch(30% 0.055 250);
 
-    --ring: oklch(66% 0.11 160);
+    --ring: oklch(68% 0.09 150);
     --shadow-pop: 0 8px 24px -6px oklch(0% 0 0 / 0.6), 0 1px 2px oklch(0% 0 0 / 0.4);
 
     --pv-glass: oklch(40% 0.06 262);
     --pv-frame: oklch(72% 0.012 250);
-    --chart-1: oklch(60% 0.11 160);
+    --chart-1: oklch(64% 0.08 140);
+    --sun: oklch(78% 0.12 80);
+    --sun-soft: oklch(29% 0.04 80);
     --scrim: oklch(0% 0 0 / 0.6);
   }
 }
@@ -123,53 +134,58 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --canvas: oklch(17% 0.006 130);
-  --surface-2: oklch(22% 0.008 130);
-  --field: oklch(21% 0.008 130);
-  --field-focus: oklch(21% 0.008 130);
-  --surface-3: oklch(27% 0.009 130);
-  --rail: oklch(20.5% 0.01 150);
-  --line: oklch(30% 0.01 130);
-  --line-2: oklch(52% 0.012 130);
+  --canvas: oklch(17.5% 0.01 160);
+  --surface: oklch(20.5% 0.012 160);
+  --surface-2: oklch(22.5% 0.012 160);
+  --field: oklch(21.5% 0.012 160);
+  --field-focus: oklch(21.5% 0.012 160);
+  --surface-3: oklch(27.5% 0.013 160);
+  --rail: oklch(20% 0.014 158);
+  --line: oklch(30.5% 0.014 160);
+  --line-2: oklch(53% 0.014 160);
 
-  --fg: oklch(95% 0.006 150);
-  --fg-2: oklch(74% 0.012 150);
-  --fg-3: oklch(68% 0.012 150);
+  --fg: oklch(95% 0.008 120);
+  --fg-2: oklch(76% 0.014 140);
+  --fg-3: oklch(70% 0.014 140);
 
-  --accent: oklch(50% 0.11 160);
-  --accent-hover: oklch(54% 0.11 160);
-  --accent-soft: oklch(28% 0.045 160);
-  --accent-muted: oklch(32% 0.06 160);
-  --accent-line: oklch(52% 0.09 160);
-  --accent-fg: oklch(78% 0.1 160);
-  --on-accent: oklch(98.5% 0.01 150);
+  --accent: oklch(49% 0.085 158);
+  --accent-hover: oklch(53% 0.085 158);
+  --accent-soft: oklch(27.5% 0.035 155);
+  --accent-muted: oklch(31.5% 0.045 155);
+  --accent-line: oklch(55% 0.07 140);
+  --accent-fg: oklch(80% 0.08 145);
+  --on-accent: oklch(98.5% 0.008 120);
 
-  --ok: oklch(76% 0.1 155);
-  --ok-soft: oklch(28% 0.05 155);
-  --warn: oklch(82% 0.13 80);
-  --warn-soft: oklch(28% 0.045 75);
+  --ok: oklch(76% 0.1 150);
+  --ok-soft: oklch(28% 0.045 150);
+  --warn: oklch(82% 0.12 80);
+  --warn-soft: oklch(28% 0.04 75);
   --danger: oklch(76% 0.15 25);
   --danger-fill: oklch(56% 0.17 27);
   --danger-hover: oklch(52% 0.17 27);
   --danger-soft: oklch(27% 0.05 25);
   --on-danger: oklch(98.5% 0.01 25);
-  --info: oklch(78% 0.11 255);
-  --info-soft: oklch(30% 0.06 255);
+  --info: oklch(78% 0.1 250);
+  --info-soft: oklch(30% 0.055 250);
 
-  --ring: oklch(66% 0.11 160);
+  --ring: oklch(68% 0.09 150);
   --shadow-pop: 0 8px 24px -6px oklch(0% 0 0 / 0.6), 0 1px 2px oklch(0% 0 0 / 0.4);
 
   --pv-glass: oklch(40% 0.06 262);
   --pv-frame: oklch(72% 0.012 250);
-  --chart-1: oklch(60% 0.11 160);
+  --chart-1: oklch(64% 0.08 140);
+  --sun: oklch(78% 0.12 80);
+  --sun-soft: oklch(29% 0.04 80);
   --scrim: oklch(0% 0 0 / 0.6);
 }
 
 @theme inline {
-  --font-sans: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  /* Be Vietnam Pro đủ dấu tiếng Việt (ơ, ư, ạ, ộ…) cho mọi cổng */
+  --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
 
   --color-canvas: var(--canvas);
+  --color-panel: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-field: var(--field);
   --color-field-focus: var(--field-focus);
@@ -202,6 +218,8 @@
   --color-pv-glass: var(--pv-glass);
   --color-pv-frame: var(--pv-frame);
   --color-chart-1: var(--chart-1);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
   --color-scrim: var(--scrim);
   /* Lớp phủ khi hover / nhấn, tính từ màu chữ nên đúng trên mọi nền */
   --color-hover: oklch(from var(--fg) l c h / 0.06);
@@ -469,7 +487,7 @@
   --color-surface: var(--canvas);
   --color-surface-dim: var(--surface-3);
   --color-surface-bright: var(--canvas);
-  --color-surface-container-lowest: var(--canvas);
+  --color-surface-container-lowest: var(--surface);
   --color-surface-container-low: var(--surface-2);
   --color-surface-container: var(--surface-2);
   --color-surface-container-high: var(--surface-3);

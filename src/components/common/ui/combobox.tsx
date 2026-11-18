@@ -152,7 +152,7 @@ export function Combobox({
         role="listbox"
         aria-label={listLabel}
         hidden={!open}
-        className="absolute inset-x-0 top-full z-30 mt-1 max-h-64 overflow-y-auto overscroll-contain rounded-container border border-line bg-canvas p-1 shadow-pop scrollbar-thin"
+        className="absolute inset-x-0 top-full z-30 mt-1 max-h-64 overflow-y-auto overscroll-contain rounded-container border border-line bg-panel p-1 shadow-pop scrollbar-thin"
       >
         {shown.length === 0 ? (
           <li role="presentation" className="px-3 py-2 text-body text-fg-3">

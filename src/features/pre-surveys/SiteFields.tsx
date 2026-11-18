@@ -169,7 +169,7 @@ function SurfaceTypeCard({
         'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring',
         checked
           ? 'border-accent bg-accent-soft'
-          : cx('bg-canvas hover:border-fg-3', invalid ? 'border-danger' : 'border-line-2'),
+          : cx('bg-panel hover:border-fg-3', invalid ? 'border-danger' : 'border-line-2'),
       )}
     >
       <input

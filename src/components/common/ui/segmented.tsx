@@ -6,8 +6,8 @@ export type SegmentedOption<T extends string> = { value: T; label: string; icon?
 
 const sizes = {
   /* Hẹp (rail): chữ nhỏ, đệm ít để ba lựa chọn vừa 150px. */
-  sm: 'h-11 px-1.5 text-meta lg:h-7',
-  md: 'h-11 px-3 text-body lg:h-8',
+  sm: 'min-h-11 px-1.5 text-meta lg:min-h-7',
+  md: 'min-h-11 px-3 text-body lg:min-h-8',
 } as const
 
 // Chọn một trong vài lựa chọn ngang hàng. Dùng radio ẩn để phím mũi tên hoạt động
@@ -31,14 +31,14 @@ export function Segmented<T extends string>({
     <div
       role="radiogroup"
       aria-label={label}
-      className={cx('flex gap-0.5 rounded-control border border-line-2 bg-canvas p-0.5', className)}
+      className={cx('flex gap-0.5 rounded-control border border-line-2 bg-panel p-0.5', className)}
     >
       {options.map((option) => (
         <label
           key={option.value}
           className={cx(
             // Bo 3px bên trong để song song với khung bo 6px
-            'press flex flex-auto cursor-pointer items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-3px)] whitespace-nowrap text-fg-2',
+            'press flex flex-auto cursor-pointer items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-3px)] min-w-0 text-center text-fg-2',
             'has-checked:bg-accent-soft has-checked:font-semibold has-checked:text-accent-fg',
             'has-focus-visible:outline-2 has-focus-visible:outline-offset-1 has-focus-visible:outline-ring',
             '[&:not(:has(:checked)):hover]:bg-hover [&:not(:has(:checked)):hover]:text-fg',

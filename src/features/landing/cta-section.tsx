@@ -15,7 +15,7 @@ export function CtaSection() {
     <section id={cta.id} aria-labelledby="cta-title" className="mt-24 bg-accent py-16 text-on-accent lg:mt-40 lg:py-24">
       <div className={cx(LANDING_CONTAINER, PAGE_GRID, 'gap-y-8')}>
         <Reveal className="col-span-4 lg:col-span-7">
-          <h2 id="cta-title" className="ld-h2">
+          <h2 id="cta-title" className="ld-h2 ld-serif">
             {cta.title}
           </h2>
           <p className="mt-4 max-w-xl ld-lede opacity-90">{cta.lede}</p>

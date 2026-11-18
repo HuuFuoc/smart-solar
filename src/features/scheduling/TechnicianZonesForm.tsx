@@ -60,8 +60,8 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
 
   return (
     <form noValidate onSubmit={submit} className="space-y-6">
-      <div className="overflow-hidden rounded-container border border-line bg-canvas">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/40 px-4 py-3">
+      <div className="overflow-hidden rounded-container border border-line bg-panel">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2 px-4 py-3">
           <div>
             <h3 className="font-semibold text-fg">Phân công khu vực địa bàn</h3>
             <p className="text-meta text-fg-2">
@@ -92,7 +92,7 @@ export function TechnicianZonesForm({ technician }: { technician: TechnicianProf
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2/30 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-2 px-4 py-3">
           <div className="flex items-center gap-3">
             <Button icon="save" type="submit" variant="primary" disabled={save.isPending}>
               {save.isPending ? 'Đang lưu…' : `Lưu khu vực phục vụ (${selected.size})`}

@@ -20,7 +20,7 @@ export function HeroSection() {
       <div
         className={cx(LANDING_CONTAINER, 'relative z-10 pt-10 text-center md:pt-14 lg:pt-[clamp(2.5rem,7svh,5.5rem)]')}
       >
-        <h1 id="hero-title" className="mx-auto max-w-4xl ld-display text-fg ld-rise">
+        <h1 id="hero-title" className="mx-auto max-w-4xl ld-display ld-serif text-fg ld-rise">
           {hero.title}
         </h1>
         <p className="mx-auto mt-4 max-w-xl ld-lede text-balance text-fg-2 ld-rise ld-delay-1 lg:mt-5">{hero.lede}</p>

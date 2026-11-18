@@ -76,7 +76,7 @@ function CandidateList({
               <label
                 key={c.technicianUserId}
                 className={cx(
-                  'flex gap-3 rounded-control border border-line-2 bg-canvas px-4 py-3',
+                  'flex gap-3 rounded-control border border-line-2 bg-panel px-4 py-3',
                   c.isEligible
                     ? 'press cursor-pointer [&:not(:has(:checked)):hover]:border-fg-3 has-checked:border-accent-line has-checked:bg-accent-soft has-focus-visible:outline-2 has-focus-visible:outline-offset-1 has-focus-visible:outline-ring'
                     : 'cursor-not-allowed bg-surface-2',

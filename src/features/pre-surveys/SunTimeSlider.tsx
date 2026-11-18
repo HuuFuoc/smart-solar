@@ -33,7 +33,7 @@ export function SunTimeSlider({ value, onChange, shade }: Props) {
   const id = useId()
   const note = shadeText(shade)
   return (
-    <div className="absolute inset-x-3 bottom-3 rounded-container border border-line bg-canvas px-3 py-2 shadow-pop">
+    <div className="absolute inset-x-3 bottom-3 rounded-container border border-line bg-panel px-3 py-2 shadow-pop">
       <div className="flex items-center gap-3">
         <label htmlFor={id} className="flex shrink-0 items-center gap-1.5 text-meta font-semibold text-fg min-w-[75px]">
           <Icon name="sunny" className="text-[20px] text-warn" />

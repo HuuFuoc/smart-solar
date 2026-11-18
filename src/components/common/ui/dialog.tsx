@@ -12,7 +12,7 @@ export function Dialog({
     <dialog
       ref={ref}
       className={cx(
-        'm-auto w-[calc(100%-2rem)] rounded-container border border-line bg-canvas p-6 text-fg shadow-pop backdrop:bg-scrim',
+        'm-auto w-[calc(100%-2rem)] rounded-container border border-line bg-panel p-6 text-fg shadow-pop backdrop:bg-scrim',
         // cx không gộp class: chỉ đặt bề rộng mặc định khi nơi gọi không tự đặt max-w-*.
         !/(^|\s)max-w-/.test(className ?? '') && 'max-w-md',
         className,

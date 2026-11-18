@@ -5,6 +5,7 @@ import { Badge, Count } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
 import { DateField, SearchInput, Select } from '@/components/common/ui/field'
+import { FilterMore } from '@/components/common/ui/filter-bar'
 import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
@@ -213,7 +214,7 @@ function KanbanBoard({ rows }: { rows: View[] }) {
                 const to = withId(ROUTES.tech.installation, item.projectId)
                 const name = item.site?.propertyName ?? 'Công trình'
                 return (
-                  <div key={item.projectId} className="space-y-2 rounded-control border border-line bg-canvas p-3">
+                  <div key={item.projectId} className="space-y-2 rounded-control border border-line bg-panel p-3">
                     <p className="font-mono text-meta text-fg-2">{projectCode(item.projectId)}</p>
                     <Link to={to} className="line-clamp-1 block text-body font-semibold text-fg hover:text-accent-fg">
                       {name}
@@ -352,29 +353,31 @@ export function TechInstallationsPage() {
               onClear={() => setSearch('')}
             />
           </label>
-          <DateField label="Lọc theo ngày" value={date} onChange={setDate} />
-          <Select
-            aria-label="Khung giờ"
-            active={slot !== ''}
-            value={slot}
-            onChange={(e) => setSlot(e.target.value as TimeSlot)}
-          >
-            <option value="">Tất cả khung giờ</option>
-            <option value="morning">Bắt đầu buổi sáng</option>
-            <option value="afternoon">Bắt đầu buổi chiều</option>
-          </Select>
-          <Select
-            aria-label="Công đoạn"
-            active={stage !== ''}
-            value={stage}
-            onChange={(e) => setStage(e.target.value as Stage)}
-          >
-            <option value="">Mọi công đoạn</option>
-            <option value="pending">Chờ bạn nhận</option>
-            <option value="scheduled">Đã nhận, chờ bắt đầu</option>
-            <option value="in_progress">Đang lắp đặt, sửa lại</option>
-            <option value="acceptance">Chờ khách nghiệm thu</option>
-          </Select>
+          <FilterMore active={(date ? 1 : 0) + (slot ? 1 : 0) + (stage ? 1 : 0)}>
+            <DateField label="Lọc theo ngày" value={date} onChange={setDate} />
+            <Select
+              aria-label="Khung giờ"
+              active={slot !== ''}
+              value={slot}
+              onChange={(e) => setSlot(e.target.value as TimeSlot)}
+            >
+              <option value="">Tất cả khung giờ</option>
+              <option value="morning">Bắt đầu buổi sáng</option>
+              <option value="afternoon">Bắt đầu buổi chiều</option>
+            </Select>
+            <Select
+              aria-label="Công đoạn"
+              active={stage !== ''}
+              value={stage}
+              onChange={(e) => setStage(e.target.value as Stage)}
+            >
+              <option value="">Mọi công đoạn</option>
+              <option value="pending">Chờ bạn nhận</option>
+              <option value="scheduled">Đã nhận, chờ bắt đầu</option>
+              <option value="in_progress">Đang lắp đặt, sửa lại</option>
+              <option value="acceptance">Chờ khách nghiệm thu</option>
+            </Select>
+          </FilterMore>
         </div>
         {viewMode === 'list' && (
           <div className="border-t border-line pt-3">

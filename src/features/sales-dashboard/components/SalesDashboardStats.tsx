@@ -63,7 +63,13 @@ export function SalesDashboardStats({
         icon="calendar_month"
         tone="info"
       />
-      <Kpi label="Khảo sát xong, chờ báo giá" value={completedSurveys} note="Cần xử lý" icon="task_alt" tone="ok" />
+      <Kpi
+        label="Khảo sát xong"
+        value={completedSurveys}
+        note={`${pct(completedSurveys)}% tổng hồ sơ`}
+        icon="task_alt"
+        tone="ok"
+      />
     </dl>
   )
 }

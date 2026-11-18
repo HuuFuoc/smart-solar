@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
+import { FilterMore } from '@/components/common/ui/filter-bar'
 import { DateField, SearchInput, Select, TimeSelect } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { ListPager } from '@/components/common/ui/pagination'
@@ -363,30 +364,32 @@ export function TechJobsPage() {
               onClear={() => filtered(setSearch)('')}
             />
           </label>
-          <DateField value={date} onChange={filtered(setDate)} label="Lọc theo ngày" />
-          <TimeSelect
-            value={time}
-            onChange={filtered(setTime)}
-            from="07:00"
-            to="18:00"
-            step={30}
-            emptyLabel="Tất cả khung giờ"
-            aria-label="Lọc theo giờ bắt đầu"
-            active={time !== ''}
-          />
-          <Select
-            aria-label="Trạng thái"
-            active={statusFilter !== 'all'}
-            disabled={tab === 'open' || tab === 'urgent'}
-            value={statusFilter}
-            onChange={(e) => filtered(setStatusFilter)(e.target.value as StatusFilter)}
-          >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="overdue">Quá giờ, chưa khảo sát</option>
-            <option value="upcoming">Sắp tới</option>
-            <option value="in_progress">Đang trong giờ hẹn</option>
-            <option value="completed">Đã khảo sát</option>
-          </Select>
+          <FilterMore active={(date ? 1 : 0) + (time ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0)}>
+            <DateField value={date} onChange={filtered(setDate)} label="Lọc theo ngày" />
+            <TimeSelect
+              value={time}
+              onChange={filtered(setTime)}
+              from="07:00"
+              to="18:00"
+              step={30}
+              emptyLabel="Tất cả khung giờ"
+              aria-label="Lọc theo giờ bắt đầu"
+              active={time !== ''}
+            />
+            <Select
+              aria-label="Trạng thái"
+              active={statusFilter !== 'all'}
+              disabled={tab === 'open' || tab === 'urgent'}
+              value={statusFilter}
+              onChange={(e) => filtered(setStatusFilter)(e.target.value as StatusFilter)}
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="overdue">Quá giờ, chưa khảo sát</option>
+              <option value="upcoming">Sắp tới</option>
+              <option value="in_progress">Đang trong giờ hẹn</option>
+              <option value="completed">Đã khảo sát</option>
+            </Select>
+          </FilterMore>
         </div>
         <div className="flex flex-col justify-between gap-3 border-t border-line pt-3 sm:flex-row sm:items-end">
           <FilterChips
@@ -402,9 +405,13 @@ export function TechJobsPage() {
             ]}
           />
           {tab !== 'open' && (
-            <label className="flex shrink-0 items-center gap-2 text-meta text-fg-2">
+            <label className="flex shrink-0 items-center gap-2 text-meta whitespace-nowrap text-fg-2">
               Sắp xếp
-              <Select value={sortBy} className="w-56" onChange={(e) => filtered(setSortBy)(e.target.value as SortBy)}>
+              <Select
+                value={sortBy}
+                className="w-full sm:w-56"
+                onChange={(e) => filtered(setSortBy)(e.target.value as SortBy)}
+              >
                 <option value="nearest">Giờ hẹn gần nhất</option>
                 <option value="newest">Mới giao gần nhất</option>
                 <option value="urgent">Quá giờ lên trước</option>

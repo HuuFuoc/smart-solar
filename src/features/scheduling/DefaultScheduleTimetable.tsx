@@ -10,7 +10,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
   const activeDaysCount = WEEK_DAYS.filter((d) => week[d.value].length > 0).length
 
   return (
-    <div className="overflow-hidden rounded-container border border-line bg-canvas">
+    <div className="overflow-hidden rounded-container border border-line bg-panel">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2 px-4 py-2">
         <div>
           <h3 className="font-semibold text-fg">Giờ làm chung</h3>
@@ -21,7 +21,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
       <div className="overflow-x-auto">
         <table className="w-full table-fixed border-collapse text-body">
           <thead>
-            <tr className="border-b border-line-2 bg-surface-2/30 text-left text-meta font-semibold text-fg-2">
+            <tr className="border-b border-line-2 bg-surface-2 text-left text-meta font-semibold text-fg-2">
               <th className="w-40 border-r border-line px-4 py-2.5">Thứ trong tuần</th>
               <th className="border-r border-line px-4 py-2.5">Khung giờ làm việc (Các ca trong ngày)</th>
               <th className="w-24 border-r border-line px-3 py-2.5 text-center">Thời lượng</th>
@@ -34,7 +34,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
               const hours = calculateDayHours(periods)
               const isWorking = periods.length > 0
               return (
-                <tr key={d.value} className="transition-colors hover:bg-surface-2/50">
+                <tr key={d.value} className="transition-colors hover:bg-hover">
                   <td className="w-40 border-r border-line px-4 py-3 font-medium text-fg">
                     <div className="flex items-center gap-2">
                       <Icon name="calendar_today" className="text-accent-fg text-[16px]" />
@@ -76,7 +76,7 @@ export function DefaultScheduleTimetable({ schedule }: { schedule: WorkingSchedu
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line bg-surface-2/30 px-4 py-2.5 text-meta text-fg-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line bg-surface-2 px-4 py-2.5 text-meta text-fg-3">
         <span>Tiêu chuẩn: {activeDaysCount} ngày làm việc mỗi tuần</span>
       </div>
     </div>

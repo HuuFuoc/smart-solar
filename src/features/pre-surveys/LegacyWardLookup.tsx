@@ -184,7 +184,7 @@ function LegacyResults({
       )}
       <ul className="max-h-80 space-y-3 overflow-y-auto pr-1">
         {groups.map((g) => (
-          <li key={g.key} className="rounded-control border border-line bg-canvas p-3">
+          <li key={g.key} className="rounded-control border border-line bg-panel p-3">
             <p className="text-body font-medium text-fg">{g.title}</p>
             {g.province && <p className="text-meta text-fg-2">Trước thuộc {g.province}</p>}
             <ul className="mt-2 divide-y divide-line">

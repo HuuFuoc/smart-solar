@@ -105,9 +105,12 @@ export function SidebarAccountMenu({ compact, showRole = true }: { compact: bool
               {!compact && (
                 <>
                   <span className="min-w-0 flex-1 text-left">
-                    <span className="block truncate text-body leading-tight font-medium" title={label}>
-                      {label}
-                    </span>
+                    {name ? (
+                      <span className="block truncate text-body leading-tight font-medium">{name}</span>
+                    ) : (
+                      // Chưa có họ tên thì ghi đủ email, xuống dòng ở bất kỳ ký tự nào
+                      <span className="block text-meta leading-tight font-medium break-all">{email}</span>
+                    )}
                     {showRole && role && <span className="block truncate text-meta text-fg-2">{role}</span>}
                   </span>
                   <Icon name={open ? 'expand_more' : 'expand_less'} className="shrink-0 text-[20px] text-fg-3" />
@@ -122,7 +125,7 @@ export function SidebarAccountMenu({ compact, showRole = true }: { compact: bool
             <div
               ref={panelRef}
               id={panelId}
-              className="fixed z-50 max-h-[calc(100dvh-1rem)] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-container border border-line bg-canvas p-2 shadow-pop"
+              className="fixed z-50 max-h-[calc(100dvh-1rem)] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-container border border-line bg-panel p-2 shadow-pop"
               style={{ left: position.left, top: position.top, transform: 'translateY(-100%)' }}
             >
               <AccountActions

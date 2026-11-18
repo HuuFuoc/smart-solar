@@ -129,14 +129,14 @@ export function SubscriptionList({
   onBook: (entitlement: EntitlementView, subscription: SubscriptionView) => void
 }) {
   return (
-    <ul className="space-y-3">
+    <ul className="divide-y divide-line border-y border-line">
       {[...items].sort(bySubscriptionRank).map((s) => {
         const status = subscriptionStatusMeta(s.status)
         const mode = cancelMode(s.status)
         const term = termText(s)
         const payAttempt = s.status === 'AWAITING_PAYMENT' ? s.currentPaymentAttemptId : null
         return (
-          <li key={s.subscriptionId} className="rounded-container border border-line bg-surface-2 p-4">
+          <li key={s.subscriptionId} className="py-4">
             <div className="grid gap-x-6 gap-y-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.8fr)_auto] lg:items-center">
               <div className="min-w-0">
                 <h3 className="text-body font-semibold text-fg">{s.packageName}</h3>

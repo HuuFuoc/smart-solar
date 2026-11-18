@@ -4,7 +4,7 @@
    Các lớp này nằm ngoài layer của Tailwind nên thắng utility cùng phần tử. */
 
 .sv-card {
-  background: var(--canvas);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-container);
   padding: 1rem;
@@ -153,7 +153,7 @@
   padding: 0.75rem 1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-container);
-  background: var(--canvas);
+  background: var(--surface);
   color: var(--fg);
   text-align: left;
 }
@@ -209,7 +209,7 @@ button.sv-dtile:hover {
 }
 
 .sv-job {
-  background: var(--canvas);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-container);
   padding: 0.75rem 1rem;
@@ -248,7 +248,7 @@ button.sv-dtile:hover {
   padding: 0.75rem 1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-control);
-  background: var(--canvas);
+  background: var(--surface);
   text-align: left;
   cursor: pointer;
 }
@@ -260,7 +260,7 @@ button.sv-dtile:hover {
 .sv-cal {
   border: 1px solid var(--line);
   border-radius: var(--radius-container);
-  background: var(--canvas);
+  background: var(--surface);
   overflow: hidden;
 }
 
@@ -356,7 +356,7 @@ button.sv-cal-chip:hover {
   padding: 1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-container);
-  background: var(--canvas);
+  background: var(--surface);
 }
 
 .sv-work-box {

@@ -1,6 +1,4 @@
 import '@fontsource/be-vietnam-pro/300.css'
-import '@fontsource/be-vietnam-pro/400.css'
-import '@fontsource/be-vietnam-pro/600.css'
 import { Link, Outlet, useLocation } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ROUTES } from '@/routes/paths'

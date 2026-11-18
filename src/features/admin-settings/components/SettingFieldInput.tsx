@@ -32,10 +32,10 @@ export function SettingFieldInput({
   const isChanged = defaultValue !== undefined && value !== defaultValue
 
   return (
-    <div className="flex flex-col justify-between rounded-control border border-line bg-canvas p-3.5 transition-colors hover:border-fg-3/40">
+    <div className="flex flex-col justify-between rounded-control border border-line bg-panel p-3.5 transition-colors hover:border-fg-3/40">
       <div>
         <div className="flex items-center justify-between gap-2">
-          <label htmlFor={id} className="text-body font-medium text-fg-1">
+          <label htmlFor={id} className="text-body font-medium text-fg">
             {label}
           </label>
           <Badge tone={isChanged ? 'accent' : 'neutral'}>{unit}</Badge>
@@ -57,7 +57,7 @@ export function SettingFieldInput({
             className={`h-11 w-full rounded-control border px-3 text-body text-fg outline-none transition-colors lg:h-9 ${
               hasError
                 ? 'border-danger bg-danger-soft focus:border-danger'
-                : 'border-line-2 bg-canvas focus:border-accent'
+                : 'border-line-2 bg-panel focus:border-accent'
             }`}
           />
           {defaultValue !== undefined && value !== defaultValue && (

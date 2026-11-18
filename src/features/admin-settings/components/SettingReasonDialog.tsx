@@ -52,12 +52,12 @@ export function SettingReasonDialog({
     <ModalDialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <h3 className="text-h3 font-semibold text-fg-1">{title}</h3>
+          <h3 className="text-h3 font-semibold text-fg">{title}</h3>
           <p className="mt-1 text-body text-fg-2">{description}</p>
         </div>
 
         <div>
-          <label htmlFor="setting-reason-input" className="block text-meta font-medium text-fg-1">
+          <label htmlFor="setting-reason-input" className="block text-meta font-medium text-fg">
             Lý do điều chỉnh <span className="text-err">*</span>
           </label>
           <textarea
@@ -70,7 +70,7 @@ export function SettingReasonDialog({
               if (error) setError(null)
             }}
             placeholder="Ví dụ: Tăng thời hạn phản hồi đề xuất theo yêu cầu vận hành quý 4..."
-            className="mt-1.5 w-full rounded-control border border-line bg-canvas p-2.5 text-body text-fg-1 outline-none focus:border-accent"
+            className="mt-1.5 w-full rounded-control border border-line bg-panel p-2.5 text-body text-fg outline-none focus:border-accent"
           />
           {error ? (
             <p className="mt-1 text-meta text-err">{error}</p>

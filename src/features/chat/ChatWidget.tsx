@@ -297,7 +297,7 @@ function ChatPanel({
       tabIndex={-1}
       className={cx(
         hidden ? 'hidden' : 'flex',
-        'fixed inset-x-2 top-14 bottom-2 z-30 flex-col overflow-hidden rounded-container border border-line bg-canvas shadow-pop',
+        'fixed inset-x-2 top-14 bottom-2 z-30 flex-col overflow-hidden rounded-container border border-line bg-panel shadow-pop',
         'sm:inset-auto sm:right-4 sm:bottom-4 sm:h-[min(40rem,calc(100dvh-2rem))] sm:w-104',
       )}
     >

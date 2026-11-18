@@ -11,7 +11,7 @@ type SectionProps = {
 export function DispatchSlaSection({ getValue, getDef, isSaving, onChange }: SectionProps) {
   return (
     <div className="space-y-3">
-      <h4 className="border-b border-line pb-2 text-body font-semibold text-fg-1">SLA Xử lý & Điều phối yêu cầu</h4>
+      <h4 className="border-b border-line pb-2 text-body font-semibold text-fg">SLA Xử lý & Điều phối yêu cầu</h4>
       <div className="grid gap-4 md:grid-cols-2">
         <SettingFieldInput
           id="dispatchReviewSlaMinutes"

@@ -5,6 +5,7 @@ import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink } from '@/components/common/ui/button'
 import { FilterChips } from '@/components/common/ui/chips'
 import { DateField, SearchInput, TimeSelect } from '@/components/common/ui/field'
+import { FilterMore } from '@/components/common/ui/filter-bar'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { Skeleton } from '@/components/common/ui/states'
@@ -195,17 +196,19 @@ export function TechAfterSalesPage() {
               onClear={() => setSearch('')}
             />
           </label>
-          <DateField value={date} onChange={setDate} label="Lọc theo ngày" />
-          <TimeSelect
-            value={time}
-            onChange={setTime}
-            from="07:00"
-            to="18:00"
-            step={30}
-            emptyLabel="Tất cả giờ"
-            aria-label="Lọc theo giờ bắt đầu"
-            active={time !== ''}
-          />
+          <FilterMore active={(date ? 1 : 0) + (time ? 1 : 0)}>
+            <DateField value={date} onChange={setDate} label="Lọc theo ngày" />
+            <TimeSelect
+              value={time}
+              onChange={setTime}
+              from="07:00"
+              to="18:00"
+              step={30}
+              emptyLabel="Tất cả giờ"
+              aria-label="Lọc theo giờ bắt đầu"
+              active={time !== ''}
+            />
+          </FilterMore>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-meta text-fg-2">Lọc nhanh</span>

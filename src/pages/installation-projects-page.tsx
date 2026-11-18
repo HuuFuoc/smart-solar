@@ -74,10 +74,7 @@ function InstallationProjectsPage({
 
   return (
     <div className="sv-list">
-      <PageHeader
-        title="Thi công"
-        description="Theo dõi tiến độ triển khai dự án, phân công kỹ thuật viên và giám sát hợp đồng."
-      />
+      <PageHeader title="Thi công" />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryTile
@@ -171,9 +168,9 @@ function InstallationProjectsPage({
                   onClear={() => setKeyword('')}
                 />
               </div>
-              <label className="flex items-center gap-2 text-meta text-fg-2">
-                Sắp xếp:
-                <Select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="w-40">
+              <label className="flex items-center gap-2 text-meta whitespace-nowrap text-fg-2">
+                Sắp xếp
+                <Select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="w-48">
                   <option value="newest">Mới nhất trước</option>
                   <option value="oldest">Cũ nhất trước</option>
                 </Select>

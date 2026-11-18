@@ -40,7 +40,7 @@ export function StatusTableSection({
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <section className="overflow-hidden rounded-container border border-line bg-canvas">
+    <section className="overflow-hidden rounded-container border border-line bg-panel">
       <h2 className="bg-surface-2">
         <button
           type="button"

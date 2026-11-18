@@ -57,7 +57,7 @@ export function RagVersionAuditTable() {
         <button
           type="button"
           onClick={toggleSort}
-          className="flex items-center gap-1.5 rounded-control border border-line bg-canvas px-3 py-1.5 text-meta font-medium text-fg-1 transition-colors hover:border-accent"
+          className="flex items-center gap-1.5 rounded-control border border-line bg-panel px-3 py-1.5 text-meta font-medium text-fg transition-colors hover:border-accent"
         >
           <span>Sắp xếp thời gian:</span>
           <span className="font-semibold text-accent-fg">
@@ -67,9 +67,9 @@ export function RagVersionAuditTable() {
         <span className="text-meta text-fg-3">Tổng cộng: {totalItems} phiên bản</span>
       </div>
 
-      <div className="overflow-x-auto rounded-control border border-line bg-canvas">
+      <div className="overflow-x-auto rounded-control border border-line bg-panel">
         <table className="w-full text-left text-body">
-          <thead className="border-b border-line bg-canvas text-meta font-medium text-fg-3">
+          <thead className="border-b border-line bg-panel text-meta font-medium text-fg-3">
             <tr>
               <th className="px-4 py-3">Phiên bản</th>
               <th className="px-4 py-3">Trạng thái</th>
@@ -80,7 +80,7 @@ export function RagVersionAuditTable() {
                 <button
                   type="button"
                   onClick={toggleSort}
-                  className="inline-flex items-center gap-1 font-semibold text-fg-1 hover:text-accent-fg"
+                  className="inline-flex items-center gap-1 font-semibold text-fg hover:text-accent-fg"
                 >
                   <span>Thời điểm</span>
                   <span className="text-accent-fg">{sortOrder === 'desc' ? '↓' : '↑'}</span>
@@ -107,14 +107,14 @@ export function RagVersionAuditTable() {
               </tr>
             ) : (
               sortedItems.map((v) => (
-                <tr key={v.version} className="hover:bg-canvas/50">
-                  <td className="px-4 py-3 font-semibold text-fg-1">v{v.version}</td>
+                <tr key={v.version} className="hover:bg-hover">
+                  <td className="px-4 py-3 font-semibold text-fg">v{v.version}</td>
                   <td className="px-4 py-3">
                     <Badge tone={v.status === 'ACTIVE' ? 'ok' : v.status === 'DRAFT' ? 'warn' : 'neutral'}>
                       {STATUS_LABELS[v.status] ?? v.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 font-mono text-fg-1">{v.generationModel}</td>
+                  <td className="px-4 py-3 font-mono text-fg">{v.generationModel}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-fg-2">
                     {v.chunkCharacters} / {v.chunkOverlap} ký tự
                   </td>

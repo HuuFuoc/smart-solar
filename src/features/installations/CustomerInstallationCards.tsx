@@ -45,9 +45,7 @@ export function CustomerInstallationCards({
             onClick={() => onSelect(isSelected && c.key !== 'ALL' ? 'ALL' : c.key)}
             className={cx(
               'flex items-center gap-3.5 rounded-container p-3.5 text-left transition-colors',
-              isSelected
-                ? 'border-2 border-primary bg-accent-soft/20'
-                : 'border border-line bg-canvas hover:bg-surface-2/60',
+              isSelected ? 'border-2 border-primary bg-accent-soft/20' : 'border border-line bg-panel hover:bg-hover',
             )}
           >
             <div

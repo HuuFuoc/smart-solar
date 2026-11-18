@@ -38,7 +38,7 @@ export function SalesPipelineFunnel({ total, pending, scheduled, completed }: Sa
           </div>
           <div className="flex items-center gap-1.5">
             <span className="size-2 shrink-0 rounded-full bg-ok" aria-hidden />
-            <span className="text-fg-2">Sẵn sàng báo giá:</span>
+            <span className="text-fg-2">Khảo sát xong:</span>
             <span className="tnum font-medium text-fg">
               {completed} <span className="text-fg-3">({completedPct}%)</span>
             </span>

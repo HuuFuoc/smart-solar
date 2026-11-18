@@ -28,7 +28,7 @@ export function SessionExpiredModal() {
         <DialogPrimitive.Overlay className="fixed inset-0 z-60 bg-scrim data-[state=open]:animate-[dialog-fade-in_150ms_ease-out]" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 z-70 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-container border border-line bg-canvas p-6 text-fg shadow-pop focus:outline-none data-[state=open]:animate-[dialog-pop-in_180ms_ease-out]"
+          className="fixed top-1/2 left-1/2 z-70 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-container border border-line bg-panel p-6 text-fg shadow-pop focus:outline-none data-[state=open]:animate-[dialog-pop-in_180ms_ease-out]"
         >
           <div className="flex items-start gap-3">
             <Icon name="timer_off" className="mt-0.5 shrink-0 text-[24px] text-danger" />

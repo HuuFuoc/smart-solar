@@ -74,7 +74,7 @@ function PackageCard({ pkg: p, onBuy }: { pkg: PackageView; onBuy: (pkg: Package
   const kindTitle = packageKindLabel(p.kind)
   const subtitle = [p.name !== kindTitle ? p.name : null, p.description].filter(Boolean).join(': ')
   return (
-    <article className="rounded-container border border-line bg-canvas p-4">
+    <article className="rounded-container border border-line bg-panel p-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-4">
           <PackageCover url={p.imageUrl} />

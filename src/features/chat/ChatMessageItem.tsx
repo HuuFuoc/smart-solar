@@ -35,7 +35,7 @@ export function ChatMessageItem({
         <div
           className={cx(
             'inline-block max-w-full rounded-container px-4 py-3 text-left text-body break-words whitespace-pre-wrap',
-            isUser ? 'bg-accent text-on-accent' : 'border border-line bg-canvas text-fg',
+            isUser ? 'bg-accent text-on-accent' : 'border border-line bg-panel text-fg',
           )}
         >
           {message.content}
@@ -87,7 +87,7 @@ function Citations({
                 <summary className="tap inline-flex min-h-11 cursor-pointer items-center text-fg-2 hover:text-fg lg:min-h-0">
                   Trích đoạn
                 </summary>
-                <p className="mt-1 rounded-control border border-line bg-canvas px-3 py-2 break-words whitespace-pre-wrap text-fg-2">
+                <p className="mt-1 rounded-control border border-line bg-panel px-3 py-2 break-words whitespace-pre-wrap text-fg-2">
                   {c.snippet}
                 </p>
               </details>

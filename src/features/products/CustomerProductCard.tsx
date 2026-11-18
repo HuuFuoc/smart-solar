@@ -24,7 +24,7 @@ export function CustomerProductCard({
   return (
     <Link
       to={detailPath(product.id ?? '')}
-      className="group flex h-full flex-col overflow-hidden rounded-container border border-line bg-canvas no-underline hover:border-line-2"
+      className="group flex h-full flex-col overflow-hidden rounded-container border border-line bg-panel no-underline hover:border-line-2"
     >
       <div className="flex aspect-4/3 w-full items-center justify-center overflow-hidden bg-surface-2 p-4">
         {imageUrl && !imgError ? (
@@ -41,7 +41,7 @@ export function CustomerProductCard({
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-4">
-        <p className="truncate text-meta text-fg-2">{brandModel || '—'}</p>
+        <p className="text-meta break-words text-fg-2">{brandModel || '—'}</p>
         <h3 className="line-clamp-2 text-body font-semibold text-fg group-hover:text-accent-fg">{product.name}</h3>
         {specs && <p className="tnum text-meta text-fg-2">{specs}</p>}
         <p className="tnum mt-auto border-t border-line pt-3">

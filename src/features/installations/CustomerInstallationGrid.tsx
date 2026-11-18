@@ -23,7 +23,7 @@ export function CustomerInstallationGrid({ items }: { items: InstallationCustome
         return (
           <div
             key={p.projectId}
-            className="flex flex-col justify-between rounded-container border border-line bg-canvas p-4 transition-colors hover:bg-surface-2/30"
+            className="flex flex-col justify-between rounded-container border border-line bg-panel p-4 transition-colors hover:bg-hover"
           >
             <div>
               {/* Card Header: Icon + Project ID + Status Badge */}
@@ -55,7 +55,7 @@ export function CustomerInstallationGrid({ items }: { items: InstallationCustome
               </div>
 
               {/* Card Meta details */}
-              <div className="mt-4 space-y-2 border-t border-line/60 pt-3 text-meta text-fg">
+              <div className="mt-4 space-y-2 border-t border-line pt-3 text-meta text-fg">
                 <div className="flex items-center gap-2">
                   <Icon name="description" className="text-[16px] text-fg-2 shrink-0" />
                   <span className="text-fg-2">Hợp đồng:</span>

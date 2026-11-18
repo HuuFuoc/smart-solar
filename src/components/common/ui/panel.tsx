@@ -7,7 +7,9 @@ export function Panel({ raised, className, children, ...rest }: HTMLAttributes<H
   return (
     <section
       className={cx(
-        raised ? 'rounded-container border border-line p-4' : 'border-t border-line pt-4 first:border-t-0 first:pt-0',
+        raised
+          ? 'rounded-container border border-line bg-panel p-4'
+          : 'border-t border-line pt-4 first:border-t-0 first:pt-0',
         className,
       )}
       {...rest}

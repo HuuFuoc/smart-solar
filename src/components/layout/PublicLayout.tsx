@@ -1,6 +1,5 @@
 import '@fontsource/be-vietnam-pro/300.css'
-import '@fontsource/be-vietnam-pro/400.css'
-import '@fontsource/be-vietnam-pro/600.css'
+import '@fontsource-variable/lora'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, type To } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'

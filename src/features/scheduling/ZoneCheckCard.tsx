@@ -25,15 +25,15 @@ export function ZoneCheckCard({ zone, checked, onToggle }: ZoneCheckCardProps) {
       }}
       className={`relative flex cursor-pointer select-none items-start gap-3 rounded-container border p-3.5 transition-all ${
         isDisabled
-          ? 'cursor-not-allowed border-line bg-surface-2/30 opacity-50'
+          ? 'cursor-not-allowed border-line bg-surface-2 opacity-50'
           : checked
             ? 'border-accent-line bg-accent-soft hover:border-accent'
-            : 'border-line bg-canvas hover:border-fg-3 hover:bg-surface-2/50'
+            : 'border-line bg-panel hover:border-fg-3 hover:bg-hover'
       }`}
     >
       <div
         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-control border transition-colors ${
-          checked ? 'border-accent bg-accent text-on-accent' : 'border-fg-3 bg-canvas'
+          checked ? 'border-accent bg-accent text-on-accent' : 'border-fg-3 bg-panel'
         }`}
       >
         {checked && <Icon name="check" className="text-[16px] text-on-accent" />}

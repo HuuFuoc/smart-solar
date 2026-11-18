@@ -32,20 +32,20 @@ export function AdminActionAlertsCard({
 }: AdminActionAlertsCardProps) {
   if (isLoading) {
     return (
-      <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 space-y-3">
+      <div className="space-y-3 rounded-container bg-surface-2 p-4">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <Skeleton className="h-5 w-44" />
           <Skeleton className="h-5 w-16 rounded-full" />
         </div>
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="p-3.5 rounded-control border border-line bg-canvas space-y-2.5">
+            <div key={i} className="space-y-2 border-t border-line pt-3 first:border-t-0 first:pt-0">
               <div className="flex justify-between">
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-16" />
               </div>
               <Skeleton className="h-3 w-full" />
-              <div className="pt-2 border-t border-line/50 flex justify-end">
+              <div className="pt-2 border-t border-line flex justify-end">
                 <Skeleton className="h-6 w-24" />
               </div>
             </div>
@@ -61,7 +61,7 @@ export function AdminActionAlertsCard({
     alerts.push({
       id: 'ready-contracts',
       title: 'Hợp đồng chờ khởi tạo dự án thi công',
-      description: `Có ${readyContractsCount} hợp đồng đã thanh toán đủ, đang chờ quản trị viên tạo dự án lắp đặt và phân bổ vật tư.`,
+      description: `${readyContractsCount} hợp đồng đã thanh toán, chưa có dự án thi công.`,
       count: readyContractsCount,
       tone: 'danger',
       badgeText: 'Cần khởi tạo',
@@ -74,13 +74,13 @@ export function AdminActionAlertsCard({
   if (missingBaseTechCount > 0) {
     alerts.push({
       id: 'missing-tech-base',
-      title: 'Kỹ thuật viên chưa gán khu vực cơ sở (Base Zone)',
-      description: `Có ${missingBaseTechCount} kỹ thuật viên chưa được chỉ định địa bàn hoạt động hoặc chưa cấu hình ca trực.`,
+      title: 'Kỹ thuật viên chưa thuộc khu vực phục vụ nào',
+      description: `${missingBaseTechCount} kỹ thuật viên chưa nhận được lịch khảo sát theo khu vực.`,
       count: missingBaseTechCount,
       tone: 'warn',
-      badgeText: 'Chưa có Zone',
+      badgeText: 'Chưa có khu vực',
       icon: 'person_alert',
-      actionLabel: 'Phân bổ kỹ thuật viên',
+      actionLabel: 'Gán khu vực',
       actionTo: ROUTES.admin.technicians,
     })
   }

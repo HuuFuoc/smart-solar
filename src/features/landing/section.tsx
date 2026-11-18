@@ -36,7 +36,7 @@ export function Section({
 
 export function SectionTitle({ id, className, children }: { id: string; className?: string; children: ReactNode }) {
   return (
-    <h2 id={id} className={cx('ld-h2 max-w-3xl text-fg', className)}>
+    <h2 id={id} className={cx('ld-h2 ld-serif max-w-3xl text-fg', className)}>
       {children}
     </h2>
   )

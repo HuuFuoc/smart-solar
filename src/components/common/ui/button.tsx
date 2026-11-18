@@ -22,13 +22,13 @@ const base =
 const variants: Record<Variant, string> = {
   primary: 'bg-accent text-on-accent not-disabled:hover:bg-accent-hover disabled:bg-surface-3',
   soft: 'border border-accent-line/50 bg-accent-soft text-accent-fg not-disabled:hover:border-accent-line not-disabled:hover:bg-accent-muted disabled:border-line disabled:bg-surface-2',
-  info: 'border border-info/45 bg-canvas text-info not-disabled:hover:border-info not-disabled:hover:bg-info-soft disabled:border-line',
+  info: 'border border-info/45 bg-panel text-info not-disabled:hover:border-info not-disabled:hover:bg-info-soft disabled:border-line',
   secondary:
-    'border border-line-2 bg-canvas text-fg not-disabled:hover:border-fg-3 not-disabled:hover:bg-surface-2 disabled:border-line',
+    'border border-line-2 bg-panel text-fg not-disabled:hover:border-fg-3 not-disabled:hover:bg-surface-2 disabled:border-line',
   ghost: 'text-fg-2 not-disabled:hover:bg-hover not-disabled:hover:text-fg not-disabled:active:bg-pressed',
-  warn: 'border border-warn/75 bg-canvas text-warn not-disabled:hover:border-warn not-disabled:hover:bg-warn-soft disabled:border-line',
+  warn: 'border border-warn/75 bg-panel text-warn not-disabled:hover:border-warn not-disabled:hover:bg-warn-soft disabled:border-line',
   danger:
-    'border border-danger/45 bg-canvas text-danger not-disabled:hover:border-danger not-disabled:hover:bg-danger-soft disabled:border-line',
+    'border border-danger/45 bg-panel text-danger not-disabled:hover:border-danger not-disabled:hover:bg-danger-soft disabled:border-line',
   'danger-quiet':
     'text-fg-2 not-disabled:hover:bg-danger-soft not-disabled:hover:text-danger focus-visible:text-danger',
   'danger-solid': 'bg-danger-fill text-on-danger not-disabled:hover:bg-danger-hover disabled:bg-surface-3',

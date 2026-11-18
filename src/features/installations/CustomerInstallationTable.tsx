@@ -13,11 +13,11 @@ import { cx } from '@/utils/cx'
 
 export function CustomerInstallationTable({ items }: { items: InstallationCustomerView[] }) {
   return (
-    <div className="overflow-hidden rounded-container border border-line bg-canvas">
+    <div className="overflow-hidden rounded-container border border-line bg-panel">
       <div className="overflow-x-auto [scrollbar-width:thin]">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-line bg-surface-2/40 text-meta font-semibold text-fg-2">
+            <tr className="border-b border-line bg-surface-2 text-meta font-semibold text-fg-2">
               <th scope="col" className="px-4 py-3 font-semibold">
                 Công trình
               </th>
@@ -46,7 +46,7 @@ export function CustomerInstallationTable({ items }: { items: InstallationCustom
               const statusBadge = customerProjectStatusBadge(p)
 
               return (
-                <tr key={p.projectId} className="transition-colors hover:bg-surface-2/40">
+                <tr key={p.projectId} className="transition-colors hover:bg-hover">
                   {/* Cột Công trình */}
                   <td className="px-4 py-3.5 align-middle">
                     <div className="flex items-center gap-3">

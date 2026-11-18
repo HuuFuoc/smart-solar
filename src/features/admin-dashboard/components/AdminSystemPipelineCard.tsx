@@ -1,5 +1,7 @@
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { ButtonLink } from '@/components/common/ui/button'
+import { Panel, PanelHeader } from '@/components/common/ui/panel'
+import { StackedBar, type StackedPart } from '@/components/common/ui/stacked-bar'
+import { Stat } from '@/components/common/ui/stat'
 import { Skeleton } from '@/components/common/ui/states'
 import { ROUTES } from '@/routes/paths'
 import type { InstallationProjectSummary } from '@/types/res/managerInstallationsRes'
@@ -22,7 +24,7 @@ export function AdminSystemPipelineCard({
 }: AdminSystemPipelineCardProps) {
   if (isLoading) {
     return (
-      <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 space-y-4">
+      <div className="space-y-4 rounded-container border border-line bg-panel p-4">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <Skeleton className="h-5 w-48" />
           <Skeleton className="h-5 w-24" />
@@ -47,131 +49,52 @@ export function AdminSystemPipelineCard({
   ).length
   const completed = projects.filter((p) => p.status === 'COMPLETED').length
 
-  const pendingPct = projects.length > 0 ? Math.round((pendingAssign / totalProjects) * 100) : 0
-  const inProgressPct = projects.length > 0 ? Math.round((inProgress / totalProjects) * 100) : 0
-  const acceptancePct = projects.length > 0 ? Math.round((awaitingAcceptance / totalProjects) * 100) : 0
-  const completedPct = projects.length > 0 ? Math.round((completed / totalProjects) * 100) : 0
-
   // Thống kê sự cố & bảo hành thực tế
   const totalServices = serviceRequests.length || 1
   const openServices = serviceRequests.filter((s) => s.status !== 'COMPLETED' && s.status !== 'CANCELLED').length
   const completedServices = serviceRequests.filter((s) => s.status === 'COMPLETED').length
   const resolutionRate = Math.round((completedServices / totalServices) * 100)
 
+  const pct = (n: number) => (projects.length > 0 ? Math.round((n / totalProjects) * 100) : 0)
+  const parts: StackedPart[] = [
+    {
+      key: 'pending',
+      label: 'Chờ gán kỹ thuật viên',
+      value: pendingAssign,
+      percent: pct(pendingAssign),
+      color: 'var(--warn)',
+    },
+    { key: 'progress', label: 'Đang thi công', value: inProgress, percent: pct(inProgress), color: 'var(--accent)' },
+    {
+      key: 'acceptance',
+      label: 'Chờ nghiệm thu',
+      value: awaitingAcceptance,
+      percent: pct(awaitingAcceptance),
+      color: 'var(--info)',
+    },
+    { key: 'done', label: 'Hoàn thành', value: completed, percent: pct(completed), color: 'var(--fg-3)' },
+  ]
+
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 space-y-4">
-      {/* Header với đường ngăn cách */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
-        <div>
-          <h2 className="text-title font-semibold">Tiến độ thi công</h2>
-        </div>
-        <ButtonLink to={ROUTES.admin.installations} variant="ghost" size="sm" className="text-accent-fg gap-1">
-          <Icon name="list" className="text-[16px]" />
-          <span>Xem chi tiết thi công</span>
-        </ButtonLink>
-      </div>
-
-      {/* Bảng con 1: Khối tiến trình vòng đời dự án lắp đặt có viền riêng biệt */}
-      <div className="rounded-control border border-line bg-canvas p-3.5 sm:p-4 space-y-3">
-        <div className="flex items-center justify-between text-meta">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-fg">Tiến trình vòng đời dự án</span>
-            <span className="tnum text-meta text-fg-2">{projects.length} công trình</span>
-          </div>
-          <span className="text-fg-muted text-meta">Phân bổ theo giai đoạn</span>
-        </div>
-
-        {/* Thanh bar phân đoạn */}
-        <div className="flex h-3 w-full overflow-hidden rounded-full bg-surface-3 border border-line/40">
-          {projects.length === 0 ? (
-            // Thanh rỗng; "0 công trình" đã ghi ở tiêu đề dòng nên không nhét chữ vào thanh 12px
-            <div className="w-full bg-surface-3" />
-          ) : (
-            <>
-              {pendingPct > 0 && (
-                <div style={{ width: `${pendingPct}%` }} className="bg-warn transition-all duration-300" />
-              )}
-              {inProgressPct > 0 && (
-                <div style={{ width: `${inProgressPct}%` }} className="bg-accent transition-all duration-300" />
-              )}
-              {acceptancePct > 0 && (
-                <div style={{ width: `${acceptancePct}%` }} className="bg-info transition-all duration-300" />
-              )}
-              {completedPct > 0 && (
-                <div style={{ width: `${completedPct}%` }} className="bg-ok transition-all duration-300" />
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Chú giải các phân đoạn với đường ngăn cách mờ */}
-        <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-line/60 text-meta sm:grid-cols-4">
-          <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-fg-2 text-meta truncate">Chờ gán kỹ thuật viên</span>
-            </div>
-            <span className="font-semibold text-fg text-meta pl-1">{pendingAssign}</span>
-          </div>
-
-          <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-fg-2 text-meta truncate">Đang thi công</span>
-            </div>
-            <span className="font-semibold text-fg text-meta pl-1">{inProgress}</span>
-          </div>
-
-          <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-fg-2 text-meta truncate">Nghiệm thu</span>
-            </div>
-            <span className="font-semibold text-fg text-meta pl-1">{awaitingAcceptance}</span>
-          </div>
-
-          <div className="flex items-center justify-between rounded-control bg-surface-2/60 px-2.5 py-1.5 border border-line/50">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-fg-2 text-meta truncate">Hoàn thành</span>
-            </div>
-            <span className="font-semibold text-fg text-meta pl-1">{completed}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Bảng con 2: Grid chỉ số nghiệp vụ sau bán & kho thiết bị */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Box Sau bán & Sự cố */}
-        <div className="p-3.5 rounded-control border border-line bg-canvas flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-meta font-medium text-fg-2 flex items-center gap-1.5">
-              <Icon name="handyman" className="text-accent-fg text-[16px]" />
-              Xử lý sự cố & Bảo hành
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-title font-bold text-fg">{openServices}</span>
-              <span className="text-meta text-fg-muted">đang mở / {serviceRequests.length} tổng</span>
-            </div>
-          </div>
-          <div className="text-right">
-            <span className="tnum text-meta text-fg-2">{resolutionRate}% giải quyết</span>
-          </div>
-        </div>
-
-        {/* Box Danh mục & Địa bàn */}
-        <div className="p-3.5 rounded-control border border-line bg-canvas flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-meta font-medium text-fg-2 flex items-center gap-1.5">
-              <Icon name="inventory_2" className="text-accent-fg text-[16px]" />
-              Danh mục thiết bị & Phủ sóng
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-title font-bold text-fg">{totalProducts}</span>
-              <span className="text-meta text-fg-muted">sản phẩm trong hệ thống</span>
-            </div>
-          </div>
-          <div className="text-right">
-            <span className="tnum text-meta text-fg-2">{totalZones} khu vực</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Panel raised>
+      <PanelHeader
+        title="Tiến độ thi công"
+        description={`${projects.length} công trình`}
+        action={
+          <ButtonLink to={ROUTES.admin.installations} variant="info" size="sm" icon="list">
+            Xem thi công
+          </ButtonLink>
+        }
+      />
+      <StackedBar parts={parts} />
+      <dl className="mt-4 grid grid-cols-2 content-start gap-x-8 gap-y-6 border-t border-line pt-4">
+        <Stat
+          label="Bảo hành, sửa chữa đang mở"
+          value={openServices}
+          note={`${serviceRequests.length} yêu cầu, ${resolutionRate}% đã xong`}
+        />
+        <Stat label="Sản phẩm trong danh mục" value={totalProducts} note={`${totalZones} khu vực phục vụ`} />
+      </dl>
+    </Panel>
   )
 }

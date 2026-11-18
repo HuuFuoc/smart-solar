@@ -1,6 +1,3 @@
-import '@fontsource/be-vietnam-pro/400.css'
-import '@fontsource/be-vietnam-pro/500.css'
-import '@fontsource/be-vietnam-pro/600.css'
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'

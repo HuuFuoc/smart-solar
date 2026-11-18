@@ -115,9 +115,12 @@ Rút ra từ 4 lượt audit giao diện; áp cho CẢ HAI bộ component.
 - Vite + React + TypeScript, react-router (giữ nguyên như package.json hiện tại – KHÔNG chuyển sang Next.js)
 - Tailwind CSS v4 qua `@tailwindcss/vite` (`@theme` trong `src/styles/globals.css`)
 - shadcn/ui cho primitives (dialog, dropdown, tabs, checkbox…) – restyle theo token bên dưới
-- Font: portal nhân viên dùng Schibsted Grotesk (`globals.css`); tệp font thiếu glyph ơ / ư (U+01A0, U+01A1, U+01AF, U+01B0)
-  và cả khoảng U+1EA0–1EF1 (ạ ả ấ ộ ợ ữ…), các chữ này rơi về font hệ thống (đo bằng trình duyệt 06/11/2026; người dùng
-  giữ font này); trang công khai, xác thực và khung khách hàng dùng Be Vietnam Pro (`@fontsource/be-vietnam-pro`, nạp trong `PublicLayout`). Plus Jakarta Sans đã bỏ.
+- Font (18/11/2026, thay Schibsted Grotesk vì thiếu glyph ơ / ư / ạ…): Be Vietnam Pro 400/500/600/700 cho mọi cổng và trang
+  công khai (nạp trong `globals.css`; 300 nạp thêm ở `PublicLayout`, `AuthLayout`). Chỉ trang chủ dùng serif Lora
+  (`@fontsource-variable/lora`, nạp trong `PublicLayout`) cho tiêu đề hero và tiêu đề section (utility `ld-serif`).
+- Bảng màu GreenShift (18/11/2026): nền trang ngà `canvas` #f7f6f0, khối nổi trắng `surface` (Tailwind `bg-panel`: `Panel
+  raised`, hộp thoại, menu, toast, khung trợ lý, nút viền, thẻ `.sv-*`), xanh rừng `accent` #234b39, viền `line` #dde5db,
+  `sun` (vàng nắng) chỉ cho số liệu năng lượng. Thẻ / control có viền dùng `bg-panel`, thanh dính mức trang giữ `bg-canvas`.
 - Icon: Material Symbols Outlined – link Google Fonts trong `index.html`; giữ đúng tên icon như trong file thiết kế (`grid_view`, `solar_power`, `manage_accounts`…)
 - State/data: mọi màn gọi API thật. Không dùng mock (dữ liệu giả, màn giả, test với API giả) ở chỗ có thể có dữ liệu
   động; người dùng chốt 10/11/2026, các màn mock và test API giả cũ đã xoá (xem "Chỉ hiện màn có dữ liệu thật")

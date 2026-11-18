@@ -25,7 +25,7 @@ export function CustomerServiceRequestGrid({
         return (
           <li
             key={r.requestId}
-            className="flex flex-col justify-between rounded-container border border-line bg-canvas p-4"
+            className="flex flex-col justify-between rounded-container border border-line bg-panel p-4"
           >
             <div>
               <div className="flex items-start justify-between gap-3">

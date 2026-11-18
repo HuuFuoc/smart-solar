@@ -1,8 +1,9 @@
 /* Trang công khai (PublicLayout). Chỉ thêm token mới (font-vn, max-w-landing, ld-*), màu dùng lại token của portal */
 
 @theme {
-  /* Be Vietnam Pro có subset vietnamese; Schibsted Grotesk của portal thiếu U+1EA0-1EF1. */
   --font-vn: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  /* Chỉ cho tiêu đề hero và tiêu đề section của trang chủ; Lora đủ dấu tiếng Việt */
+  --font-serif: 'Lora Variable', Georgia, 'Times New Roman', serif;
 
   /* 12 cột x 78px + gutter 24px. */
   --container-landing: 75rem;
@@ -47,6 +48,12 @@
     font-size: 44px;
     line-height: 58px;
   }
+}
+/* Tiêu đề kiểu tạp chí: serif, đậm vừa, giãn chữ ít hơn sans */
+@utility ld-serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 @utility ld-h1 {
   font-size: 32px;

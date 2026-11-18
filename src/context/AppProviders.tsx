@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
 
 // Toast theo màu của token: thành công xanh, thông tin xanh dương, lỗi / cảnh báo nền đỏ / vàng nhạt
 // Nền và viền chỉ đặt trong class theo loại vì cx không gộp class
-const toastSurface = 'border-line bg-canvas'
+const toastSurface = 'border-line bg-panel'
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
@@ -46,7 +46,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
               icon: 'mt-px flex shrink-0',
               // unstyled: sonner không tô nút hành động ("Hoàn tác"), phải tự đặt; cùng kiểu nút secondary.
               actionButton:
-                'press ml-auto shrink-0 rounded-control border border-line-2 bg-canvas px-3 py-1 text-meta font-semibold text-fg hover:bg-surface-2',
+                'press ml-auto shrink-0 rounded-control border border-line-2 bg-panel px-3 py-1 text-meta font-semibold text-fg hover:bg-surface-2',
             },
           }}
         />

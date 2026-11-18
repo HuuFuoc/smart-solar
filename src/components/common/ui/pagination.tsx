@@ -21,7 +21,7 @@ export function Pagination({
     'inline-flex gap-1 text-fg-2 not-disabled:hover:bg-hover not-disabled:hover:text-fg disabled:text-fg-3',
   )
   return (
-    <nav aria-label="Phân trang" className={cx('flex items-center gap-1', className)}>
+    <nav aria-label="Phân trang" className={cx('flex min-w-0 flex-wrap items-center gap-1', className)}>
       <button type="button" className={cx(step, 'pr-3 pl-1')} disabled={page <= 1} onClick={() => onChange?.(page - 1)}>
         <Icon name="chevron_left" className="text-[20px]" />
         Trước

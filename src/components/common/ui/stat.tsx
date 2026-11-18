@@ -17,7 +17,7 @@ export function StatRow({
       className={cx(
         'grid grid-cols-2 content-start md:grid-cols-4',
         framed
-          ? 'gap-px overflow-hidden rounded-container border border-line bg-line *:bg-canvas *:px-4 *:py-3'
+          ? 'gap-px overflow-hidden rounded-container border border-line bg-line *:bg-panel *:px-4 *:py-3'
           : 'gap-x-8 gap-y-6',
         className,
       )}

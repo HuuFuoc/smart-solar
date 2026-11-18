@@ -398,7 +398,7 @@ function PackageForm({
         </div>
       )}
 
-      <DialogFooter className="sticky -bottom-6 -mx-6 -mb-6 border-t border-line bg-canvas px-6 py-4">
+      <DialogFooter className="sticky -bottom-6 -mx-6 -mb-6 border-t border-line bg-panel px-6 py-4">
         {checked && (hasErrors(errors) || imageError) && (
           <p className="mr-auto flex items-center gap-1.5 text-body text-danger">
             <Icon name="error" className="shrink-0 text-[20px]" />

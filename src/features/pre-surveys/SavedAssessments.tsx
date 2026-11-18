@@ -88,7 +88,7 @@ export function SavedDrafts({
     )
   if (items.length === 0) return null
   return (
-    <details className="group rounded-container border border-line bg-canvas">
+    <details className="group rounded-container border border-line bg-panel">
       <summary className="tap flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 text-body font-medium text-fg [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2">
           Tiếp tục bản nháp đã lưu <Count value={items.length} />

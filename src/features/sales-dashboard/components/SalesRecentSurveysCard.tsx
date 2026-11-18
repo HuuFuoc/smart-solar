@@ -117,7 +117,6 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
               <thead>
                 <tr>
                   <Th>Khách hàng & Công trình</Th>
-                  <Th>Khu vực</Th>
                   <Th>Trạng thái</Th>
                   <Th>Thời gian</Th>
                   <Th className="text-right">Thao tác</Th>
@@ -133,10 +132,9 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                     <Tr key={item.surveyRequestId} className="transition-colors">
                       <Td className="py-2.5">
                         <div className="font-semibold text-fg">{item.customerName || 'Khách hàng'}</div>
-                        <div className="text-meta text-fg-2">{item.propertyName || 'Công trình'}</div>
-                      </Td>
-                      <Td label="Khu vực" className="py-2.5">
-                        <div className="text-meta text-fg-2">{locationText}</div>
+                        <div className="text-meta text-fg-2">
+                          {item.propertyName || 'Công trình'}, {locationText}
+                        </div>
                       </Td>
                       <Td label="Trạng thái" className="py-2.5 whitespace-nowrap">
                         <Badge tone={statusInfo.tone}>{statusInfo.label}</Badge>
@@ -155,11 +153,11 @@ export function SalesRecentSurveysCard({ surveys }: SalesRecentSurveysCardProps)
                         <ButtonLink
                           to={withId(ROUTES.ops.survey, item.surveyRequestId)}
                           size="sm"
-                          // Nút trên dòng không đặc: lập báo giá và mở chi tiết đều là info
+                          // Báo giá do kỹ thuật viên lập; kinh doanh chỉ xem trên trang yêu cầu
                           variant="info"
                           icon={isCompleted ? 'request_quote' : 'visibility'}
                         >
-                          {isCompleted ? 'Lập báo giá' : 'Mở'}
+                          {isCompleted ? 'Xem báo giá' : 'Xem'}
                         </ButtonLink>
                       </Td>
                     </Tr>

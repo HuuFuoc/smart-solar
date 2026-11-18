@@ -248,7 +248,7 @@ export function SidebarFooter({
         </WithTooltip>
       </div>
       {user && (
-        <div className={cx(!compact && 'rounded-container border border-line bg-canvas p-1')}>
+        <div className={cx(!compact && 'rounded-container border border-line bg-panel p-1')}>
           <SidebarAccountMenu compact={compact} showRole />
         </div>
       )}

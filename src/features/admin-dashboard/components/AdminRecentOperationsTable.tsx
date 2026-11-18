@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { ButtonLink } from '@/components/common/ui/button'
+import { FilterChips } from '@/components/common/ui/chips'
+import { Panel, PanelHeader } from '@/components/common/ui/panel'
+import { EmptyState } from '@/components/common/ui/states'
+import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { requestKindLabel, requestStatusMeta } from '@/features/after-sales/serviceDisplay'
 import { dispatchStatusMeta } from '@/features/dispatch/dispatchDisplay'
 import { projectStatusMeta } from '@/features/installation-projects/projectDisplay'
@@ -11,7 +14,6 @@ import { ROUTES } from '@/routes/paths'
 import type { InstallationProjectSummary } from '@/types/res/managerInstallationsRes'
 import type { ServiceRequestSummary } from '@/types/res/customerAfterSalesRes'
 import type { DispatchQueueItemView } from '@/types/res/dispatchRes'
-import { cx } from '@/utils/cx'
 
 type AdminRecentOperationsTableProps = {
   projects: InstallationProjectSummary[]
@@ -21,11 +23,25 @@ type AdminRecentOperationsTableProps = {
 
 type TabType = 'installations' | 'afterSales' | 'dispatch'
 
+const SHOWN = 6
+
 function formatDateTimeText(iso: string | null | undefined) {
   if (!iso) return '—'
-  const day = formatDay(vnDate(iso))
-  const time = formatTime(iso)
-  return `${time}, ${day}`
+  return `${formatTime(iso)}, ${formatDay(vnDate(iso))}`
+}
+
+const ALL_LINKS: Record<TabType, { to: string; label: string }> = {
+  installations: { to: ROUTES.admin.installations, label: 'Xem tất cả thi công' },
+  afterSales: { to: ROUTES.admin.afterSales, label: 'Xem tất cả bảo hành' },
+  dispatch: { to: ROUTES.admin.dispatch, label: 'Xem tất cả điều phối' },
+}
+
+function ShownCount({ shown, total, noun }: { shown: number; total: number; noun: string }) {
+  return (
+    <p className="tnum mt-3 text-meta text-fg-2">
+      Hiển thị {shown} trên {total} {noun}
+    </p>
+  )
 }
 
 export function AdminRecentOperationsTable({
@@ -34,320 +50,200 @@ export function AdminRecentOperationsTable({
   dispatchItems,
 }: AdminRecentOperationsTableProps) {
   const [activeTab, setActiveTab] = useState<TabType>('installations')
+  const all = ALL_LINKS[activeTab]
 
   return (
-    <div className="rounded-container border border-line bg-surface-2 p-4 sm:p-5 space-y-4">
-      {/* Header & Link tất cả */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-3">
-        <div>
-          <h2 className="text-title font-semibold">Việc gần đây</h2>
-        </div>
+    <Panel raised>
+      <PanelHeader
+        title="Việc gần đây"
+        action={
+          <ButtonLink to={all.to} variant="info" size="sm" icon="list">
+            {all.label}
+          </ButtonLink>
+        }
+      />
+      <FilterChips
+        label="Loại việc"
+        className="mb-3"
+        value={activeTab}
+        onChange={setActiveTab}
+        chips={[
+          { value: 'installations', label: 'Dự án thi công', count: projects.length },
+          { value: 'afterSales', label: 'Bảo hành, sửa chữa', count: serviceRequests.length },
+          { value: 'dispatch', label: 'Chờ điều phối', count: dispatchItems.length },
+        ]}
+      />
 
-        {/* View all link */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {activeTab === 'installations' && (
-            <ButtonLink to={ROUTES.admin.installations} variant="ghost" size="sm" className="text-accent-fg gap-1">
-              <Icon name="list" className="text-[16px]" />
-              <span>Xem tất cả thi công</span>
-            </ButtonLink>
-          )}
-          {activeTab === 'afterSales' && (
-            <ButtonLink to={ROUTES.admin.afterSales} variant="ghost" size="sm" className="text-accent-fg gap-1">
-              <Icon name="list" className="text-[16px]" />
-              <span>Xem tất cả bảo hành</span>
-            </ButtonLink>
-          )}
-          {activeTab === 'dispatch' && (
-            <ButtonLink to={ROUTES.admin.dispatch} variant="ghost" size="sm" className="text-accent-fg gap-1">
-              <Icon name="list" className="text-[16px]" />
-              <span>Xem tất cả điều phối</span>
-            </ButtonLink>
-          )}
-        </div>
-      </div>
+      {activeTab === 'installations' &&
+        (projects.length === 0 ? (
+          <EmptyState title="Chưa có dự án thi công" />
+        ) : (
+          <>
+            <Table stack="xl">
+              <thead>
+                <tr>
+                  <Th>Dự án</Th>
+                  <Th>Kỹ thuật viên</Th>
+                  <Th>Lịch thi công</Th>
+                  <Th>Trạng thái</Th>
+                  <Th className="text-right">
+                    <span className="sr-only">Thao tác</span>
+                  </Th>
+                </tr>
+              </thead>
+              <tbody>
+                {projects.slice(0, SHOWN).map((project) => {
+                  const meta = projectStatusMeta(project.status)
+                  const detailUrl = ROUTES.admin.installation.replace(':id', project.projectId)
+                  return (
+                    <Tr key={project.projectId}>
+                      <Td>
+                        <Link
+                          to={detailUrl}
+                          className="tnum font-semibold text-fg hover:text-accent-fg hover:underline"
+                        >
+                          {project.projectId.slice(0, 8).toUpperCase()}
+                        </Link>
+                        <p className="tnum text-meta text-fg-2">
+                          Hợp đồng {project.contractId.slice(0, 8).toUpperCase()}
+                        </p>
+                      </Td>
+                      <Td label="Kỹ thuật viên">{project.responsibleTechnicianName || 'Chưa có kỹ thuật viên'}</Td>
+                      <Td label="Lịch thi công" className="tnum">
+                        {project.scheduledStartsAt ? (
+                          formatDateTimeText(project.scheduledStartsAt)
+                        ) : (
+                          <span className="text-fg-2">Tạo lúc {formatDateTimeText(project.createdAt)}</span>
+                        )}
+                      </Td>
+                      <Td label="Trạng thái" className="whitespace-nowrap">
+                        <Badge tone={meta.tone}>{meta.label}</Badge>
+                      </Td>
+                      <Td className="text-right whitespace-nowrap">
+                        <ButtonLink to={detailUrl} variant="info" size="sm" icon="visibility">
+                          Xem
+                        </ButtonLink>
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </tbody>
+            </Table>
+            <ShownCount shown={Math.min(SHOWN, projects.length)} total={projects.length} noun="dự án" />
+          </>
+        ))}
 
-      {/* Tab Switcher với viền ngăn cách */}
-      <div className="flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => setActiveTab('installations')}
-          className={cx(
-            'flex min-h-11 items-center gap-2 px-3 py-1.5 rounded-control lg:min-h-0 text-meta font-medium transition-colors whitespace-nowrap',
-            activeTab === 'installations'
-              ? 'bg-primary/15 text-accent-fg border border-primary/30 font-semibold'
-              : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
-          )}
-        >
-          <Icon name="engineering" className="text-[20px]" />
-          <span>Dự án thi công</span>
-          <span className="tnum ml-1 text-meta text-fg-2">{projects.length}</span>
-        </button>
+      {activeTab === 'afterSales' &&
+        (serviceRequests.length === 0 ? (
+          <EmptyState title="Chưa có yêu cầu bảo hành, sửa chữa" />
+        ) : (
+          <>
+            <Table stack="xl">
+              <thead>
+                <tr>
+                  <Th>Yêu cầu</Th>
+                  <Th>Loại, mô tả</Th>
+                  <Th>Tạo lúc</Th>
+                  <Th>Trạng thái</Th>
+                  <Th className="text-right">
+                    <span className="sr-only">Thao tác</span>
+                  </Th>
+                </tr>
+              </thead>
+              <tbody>
+                {serviceRequests.slice(0, SHOWN).map((req) => {
+                  const meta = requestStatusMeta(req.status, 'manager')
+                  const detailUrl = ROUTES.admin.afterSalesRequest.replace(':id', req.requestId)
+                  return (
+                    <Tr key={req.requestId}>
+                      <Td>
+                        <Link
+                          to={detailUrl}
+                          className="tnum font-semibold text-fg hover:text-accent-fg hover:underline"
+                        >
+                          {req.requestNumber || req.requestId.slice(0, 8).toUpperCase()}
+                        </Link>
+                        <p className="tnum text-meta text-fg-2">Dự án {req.projectId.slice(0, 8).toUpperCase()}</p>
+                      </Td>
+                      <Td label="Loại, mô tả" className="max-w-80">
+                        <span className="font-medium text-fg">{requestKindLabel(req.kind)}</span>
+                        {req.description && <p className="line-clamp-2 text-meta text-fg-2">{req.description}</p>}
+                      </Td>
+                      <Td label="Tạo lúc" className="tnum text-fg-2">
+                        {formatDateTimeText(req.createdAt)}
+                      </Td>
+                      <Td label="Trạng thái" className="whitespace-nowrap">
+                        <Badge tone={meta.tone}>{meta.label}</Badge>
+                      </Td>
+                      <Td className="text-right whitespace-nowrap">
+                        <ButtonLink to={detailUrl} variant="info" size="sm" icon="open_in_new">
+                          Xử lý
+                        </ButtonLink>
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </tbody>
+            </Table>
+            <ShownCount shown={Math.min(SHOWN, serviceRequests.length)} total={serviceRequests.length} noun="yêu cầu" />
+          </>
+        ))}
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('afterSales')}
-          className={cx(
-            'flex min-h-11 items-center gap-2 px-3 py-1.5 rounded-control lg:min-h-0 text-meta font-medium transition-colors whitespace-nowrap',
-            activeTab === 'afterSales'
-              ? 'bg-primary/15 text-accent-fg border border-primary/30 font-semibold'
-              : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
-          )}
-        >
-          <Icon name="handyman" className="text-[20px]" />
-          <span>Sự cố & Bảo hành</span>
-          <span className="tnum ml-1 text-meta text-fg-2">{serviceRequests.length}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('dispatch')}
-          className={cx(
-            'flex min-h-11 items-center gap-2 px-3 py-1.5 rounded-control lg:min-h-0 text-meta font-medium transition-colors whitespace-nowrap',
-            activeTab === 'dispatch'
-              ? 'bg-primary/15 text-accent-fg border border-primary/30 font-semibold'
-              : 'text-fg-2 hover:text-fg hover:bg-surface-3 border border-transparent',
-          )}
-        >
-          <Icon name="calendar_month" className="text-[20px]" />
-          <span>Hàng chờ điều phối kỹ thuật viên</span>
-          <span className="tnum ml-1 text-meta text-fg-2">{dispatchItems.length}</span>
-        </button>
-      </div>
-
-      {/* Tab Content 1: Installations Table */}
-      {activeTab === 'installations' && (
-        <div className="overflow-hidden rounded-control border border-line bg-canvas">
-          {projects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
-              <Icon name="assignment" className="text-[24px] text-fg-3 mb-2" />
-              <p className="text-body font-medium text-fg">Chưa có dự án thi công nào</p>
-              <p className="text-meta text-fg-2">Hệ thống sẽ cập nhật khi hợp đồng thanh toán được duyệt khởi tạo.</p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-meta border-collapse">
-                  <thead>
-                    <tr className="border-b border-line bg-surface-3/50 text-fg-2 font-medium">
-                      <th className="py-2.5 px-3.5">Mã dự án</th>
-                      <th className="py-2.5 px-3.5">Kỹ thuật viên phụ trách</th>
-                      <th className="py-2.5 px-3.5">Khởi tạo / Lịch hẹn</th>
-                      <th className="py-2.5 px-3.5">Trạng thái</th>
-                      <th className="py-2.5 px-3.5 text-right">Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-line/70">
-                    {projects.slice(0, 6).map((project) => {
-                      const meta = projectStatusMeta(project.status)
-                      const detailUrl = ROUTES.admin.installation.replace(':id', project.projectId)
-                      return (
-                        <tr key={project.projectId} className="hover:bg-surface-2/60 transition-colors">
-                          <td className="py-3 px-3.5">
-                            <Link to={detailUrl} className="font-semibold text-accent-fg hover:underline">
-                              #{project.projectId.slice(0, 8)}
-                            </Link>
-                            <p className="text-meta text-fg-muted">HĐ: #{project.contractId.slice(0, 8)}</p>
-                          </td>
-                          <td className="py-3 px-3.5">
-                            {project.responsibleTechnicianName ? (
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-fg">{project.responsibleTechnicianName}</span>
-                              </div>
-                            ) : (
-                              <span className="text-fg-muted italic">Chưa chỉ định kỹ thuật viên</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-3.5 text-fg-2">
-                            {project.scheduledStartsAt ? (
-                              <div>
-                                <span className="text-accent-fg font-medium">
-                                  {formatDateTimeText(project.scheduledStartsAt)}
-                                </span>
-                                <p className="text-meta text-fg-muted">Lịch hẹn thi công</p>
-                              </div>
-                            ) : (
-                              <div>
-                                <span>{formatDateTimeText(project.createdAt)}</span>
-                                <p className="text-meta text-fg-muted">Ngày tạo</p>
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-3 px-3.5">
-                            <Badge tone={meta.tone}>{meta.label}</Badge>
-                          </td>
-                          <td className="py-3 px-3.5 text-right">
-                            <Link
-                              to={detailUrl}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-accent-fg hover:bg-primary/10 transition-colors"
-                            >
-                              <Icon name="visibility" className="text-[16px]" />
-                              <span>Chi tiết</span>
-                            </Link>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-meta text-fg-muted bg-surface-2/40">
-                <span>
-                  Hiển thị {Math.min(6, projects.length)} trên {projects.length} dự án
-                </span>
-                <Link to={ROUTES.admin.installations} className="text-accent-fg hover:underline font-medium">
-                  Xem tất cả danh sách &rarr;
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Tab Content 2: After-sales Table */}
-      {activeTab === 'afterSales' && (
-        <div className="overflow-hidden rounded-control border border-line bg-canvas">
-          {serviceRequests.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
-              <Icon name="handyman" className="text-[24px] text-fg-3 mb-2" />
-              <p className="text-body font-medium text-fg">Chưa có yêu cầu sự cố hoặc bảo hành</p>
-              <p className="text-meta text-fg-2">Các yêu cầu phản hồi từ khách hàng sẽ hiển thị tại đây.</p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-meta border-collapse">
-                  <thead>
-                    <tr className="border-b border-line bg-surface-3/50 text-fg-2 font-medium">
-                      <th className="py-2.5 px-3.5">Mã yêu cầu</th>
-                      <th className="py-2.5 px-3.5">Loại dịch vụ & Mô tả</th>
-                      <th className="py-2.5 px-3.5">Thời gian tạo</th>
-                      <th className="py-2.5 px-3.5">Trạng thái</th>
-                      <th className="py-2.5 px-3.5 text-right">Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-line/70">
-                    {serviceRequests.slice(0, 6).map((req) => {
-                      const meta = requestStatusMeta(req.status, 'manager')
-                      const detailUrl = ROUTES.admin.afterSalesRequest.replace(':id', req.requestId)
-                      return (
-                        <tr key={req.requestId} className="hover:bg-surface-2/60 transition-colors">
-                          <td className="py-3 px-3.5">
-                            <Link to={detailUrl} className="font-semibold text-accent-fg hover:underline">
-                              {req.requestNumber || `#${req.requestId.slice(0, 8)}`}
-                            </Link>
-                            <p className="text-meta text-fg-muted">Dự án: #{req.projectId.slice(0, 8)}</p>
-                          </td>
-                          <td className="py-3 px-3.5 max-w-[280px]">
-                            <span className="font-medium text-fg">{requestKindLabel(req.kind)}</span>
-                            <p className="text-meta text-fg-2 line-clamp-1 truncate">
-                              {req.description || 'Không có mô tả chi tiết'}
-                            </p>
-                          </td>
-                          <td className="py-3 px-3.5 text-fg-2">{formatDateTimeText(req.createdAt)}</td>
-                          <td className="py-3 px-3.5">
-                            <Badge tone={meta.tone}>{meta.label}</Badge>
-                          </td>
-                          <td className="py-3 px-3.5 text-right">
-                            <Link
-                              to={detailUrl}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-accent-fg hover:bg-primary/10 transition-colors"
-                            >
-                              <Icon name="arrow_forward" className="text-[16px]" />
-                              <span>Xử lý</span>
-                            </Link>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-meta text-fg-muted bg-surface-2/40">
-                <span>
-                  Hiển thị {Math.min(6, serviceRequests.length)} trên {serviceRequests.length} yêu cầu
-                </span>
-                <Link to={ROUTES.admin.afterSales} className="text-accent-fg hover:underline font-medium">
-                  Xem tất cả danh sách &rarr;
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Tab Content 3: Dispatch Queue Table */}
-      {activeTab === 'dispatch' && (
-        <div className="overflow-hidden rounded-control border border-line bg-canvas">
-          {dispatchItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center text-fg-muted">
-              <Icon name="check_circle" className="text-[24px] text-ok mb-2" />
-              <p className="text-body font-medium text-fg">Hàng chờ điều phối kỹ thuật viên hiện đang trống</p>
-              <p className="text-meta text-fg-2">
-                Mọi lịch hẹn khảo sát đã được gán kỹ thuật viên hoặc chưa có yêu cầu mới.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-meta border-collapse">
-                  <thead>
-                    <tr className="border-b border-line bg-surface-3/50 text-fg-2 font-medium">
-                      <th className="py-2.5 px-3.5">Mã điều phối</th>
-                      <th className="py-2.5 px-3.5">Khách hàng & Công trình</th>
-                      <th className="py-2.5 px-3.5">Khu vực phục vụ</th>
-                      <th className="py-2.5 px-3.5">Trạng thái</th>
-                      <th className="py-2.5 px-3.5 text-right">Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-line/70">
-                    {dispatchItems.slice(0, 6).map((item) => {
-                      const meta = dispatchStatusMeta(item.status)
-                      const detailUrl = ROUTES.admin.dispatchRequest.replace(':id', item.dispatchRequestId)
-                      return (
-                        <tr key={item.dispatchRequestId} className="hover:bg-surface-2/60 transition-colors">
-                          <td className="py-3 px-3.5">
-                            <Link to={detailUrl} className="font-semibold text-accent-fg hover:underline">
-                              #{item.dispatchRequestId.slice(0, 8)}
-                            </Link>
-                            <p className="text-meta text-fg-muted">{formatDateTimeText(item.createdAt)}</p>
-                          </td>
-                          <td className="py-3 px-3.5">
-                            <p className="font-medium text-fg">{item.customerName}</p>
-                            <p className="text-meta text-fg-2 truncate max-w-[220px]">
-                              {item.propertyName} ({item.province})
-                            </p>
-                          </td>
-                          <td className="py-3 px-3.5 text-fg-2">{item.zone?.name || item.province || '—'}</td>
-                          <td className="py-3 px-3.5">
-                            <Badge tone={meta.tone}>{meta.label}</Badge>
-                          </td>
-                          <td className="py-3 px-3.5 text-right">
-                            <Link
-                              to={detailUrl}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control text-meta font-medium text-accent-fg hover:bg-primary/10 transition-colors"
-                            >
-                              <Icon name="support_agent" className="text-[16px]" />
-                              <span>Điều phối</span>
-                            </Link>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex items-center justify-between border-t border-line px-3.5 py-2.5 text-meta text-fg-muted bg-surface-2/40">
-                <span>
-                  Hiển thị {Math.min(6, dispatchItems.length)} trên {dispatchItems.length} yêu cầu
-                </span>
-                <Link to={ROUTES.admin.dispatch} className="text-accent-fg hover:underline font-medium">
-                  Xem tất cả danh sách &rarr;
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-    </div>
+      {activeTab === 'dispatch' &&
+        (dispatchItems.length === 0 ? (
+          <EmptyState title="Không có yêu cầu nào chờ điều phối" />
+        ) : (
+          <>
+            <Table stack="xl">
+              <thead>
+                <tr>
+                  <Th>Yêu cầu</Th>
+                  <Th>Khách hàng, công trình</Th>
+                  <Th>Khu vực</Th>
+                  <Th>Trạng thái</Th>
+                  <Th className="text-right">
+                    <span className="sr-only">Thao tác</span>
+                  </Th>
+                </tr>
+              </thead>
+              <tbody>
+                {dispatchItems.slice(0, SHOWN).map((item) => {
+                  const meta = dispatchStatusMeta(item.status)
+                  const detailUrl = ROUTES.admin.dispatchRequest.replace(':id', item.dispatchRequestId)
+                  return (
+                    <Tr key={item.dispatchRequestId}>
+                      <Td>
+                        <Link
+                          to={detailUrl}
+                          className="tnum font-semibold text-fg hover:text-accent-fg hover:underline"
+                        >
+                          {item.dispatchRequestId.slice(0, 8).toUpperCase()}
+                        </Link>
+                        <p className="tnum text-meta text-fg-2">{formatDateTimeText(item.createdAt)}</p>
+                      </Td>
+                      <Td label="Khách hàng, công trình">
+                        <span className="font-medium text-fg">{item.customerName}</span>
+                        <p className="text-meta text-fg-2">{item.propertyName}</p>
+                      </Td>
+                      <Td label="Khu vực" className="text-fg-2">
+                        {item.zone?.name || item.province || '—'}
+                      </Td>
+                      <Td label="Trạng thái" className="whitespace-nowrap">
+                        <Badge tone={meta.tone}>{meta.label}</Badge>
+                      </Td>
+                      <Td className="text-right whitespace-nowrap">
+                        <ButtonLink to={detailUrl} variant="info" size="sm" icon="support_agent">
+                          Điều phối
+                        </ButtonLink>
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </tbody>
+            </Table>
+            <ShownCount shown={Math.min(SHOWN, dispatchItems.length)} total={dispatchItems.length} noun="yêu cầu" />
+          </>
+        ))}
+    </Panel>
   )
 }

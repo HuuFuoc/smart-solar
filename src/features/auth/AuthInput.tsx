@@ -23,7 +23,7 @@ export function AuthInput({ leadingIcon, trailing, size = 'lg', className, ...re
       )}
       <input
         className={cn(
-          'w-full rounded-control border border-line-2 bg-canvas text-body-md text-on-surface transition-colors placeholder:text-outline',
+          'w-full rounded-control border border-line-2 bg-panel text-body-md text-on-surface transition-colors placeholder:text-outline',
           'hover:border-fg-3 focus:border-accent focus-visible:outline-1 focus-visible:outline-offset-0 focus-visible:outline-accent',
           'aria-invalid:border-danger aria-invalid:outline-danger',
           size === 'lg' ? 'h-12' : 'h-11',

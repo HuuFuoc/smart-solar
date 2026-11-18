@@ -57,7 +57,7 @@ export function ChatLimitHint({ state }: { state: ChatLimitState }) {
         id={id}
         role="tooltip"
         hidden={!open}
-        className="absolute right-0 bottom-full z-10 mb-2 w-72 rounded-container border border-line bg-canvas p-3 text-meta text-fg shadow-pop"
+        className="absolute right-0 bottom-full z-10 mb-2 w-72 rounded-container border border-line bg-panel p-3 text-meta text-fg shadow-pop"
       >
         {chatLimitText(state)}
       </div>
