@@ -516,7 +516,8 @@ nhập làm nguồn chính + kéo thả vật cản.
   luật ở `packageForm.ts` bám `ValidatePackage`): tên ≤ 150, mô tả ≤ 2000, giá nguyên VND > 0, thời hạn 1–120 tháng; gói bảo
   trì cần các tháng có lượt (khác nhau, trong thời hạn); gói thiên tai cần ≥ 1 loại thiên tai, tỷ lệ 0 < x ≤ 100, hạn mức mỗi
   sự cố > 0 và mỗi kỳ ≥ mỗi sự cố (đều nguyên VND). Ảnh bìa (không bắt buộc): link https (`imageUrl`) hoặc tệp
-  `PACKAGE_IMAGE` tải lên lúc lưu (`imageFileId`), không gửi cả hai; khách thấy ảnh ở thẻ gói (`PackageView.imageUrl`). Ngừng bán /
+  `PACKAGE_IMAGE` tải lên lúc lưu (`imageFileId`), không gửi cả hai; khách thấy ảnh ở thẻ gói (`PackageView.imageUrl`); gói chưa có ảnh hoặc ảnh lỗi thì thẻ của khách dùng ảnh mặc định theo loại
+  (`public/images/packages/maintenance.webp`, `disaster.webp`, 576 × 384). Ngừng bán /
   mở bán gửi lại `imageUrl` đang có, vì PUT ghi đè cả gói. Loại gói chọn lúc tạo, không đổi được. PUT ghi đè cả gói kèm `revision`
   lúc mở form (lệch thì 409, không ghi đè). Không có API xoá: "Ngừng bán" (hỏi xác nhận, có "Hoàn tác") = PUT với `isActive` là false. Gói đã mua lưu bản chụp điều kiện lúc mua nên sửa / ngừng bán chỉ áp cho lần mua sau. Đầu trang báo đỏ khi không còn gói thiên tai nào đang bán; số cạnh menu = số gói đang bán.
 - `/tech/products(/:id)`, `/manage/products(/:id)`: danh mục sản phẩm thật (GET /api/products, bản portal kit) cho kỹ

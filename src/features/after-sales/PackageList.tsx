@@ -40,19 +40,26 @@ export function PackageFacts({ pkg, columns, className }: { pkg: PackageView; co
   return <KeyValueList columns={columns} className={className} items={packageFacts(pkg)} />
 }
 
-/** Ảnh bìa của gói; không có ảnh hoặc ảnh không tải được thì bỏ hẳn, không thay bằng ô biểu tượng */
-function PackageCover({ url }: { url: string | null }) {
-  const [broken, setBroken] = useState(false)
-  if (!url || broken) return null
+/** Ảnh mặc định theo loại gói, cho gói quản trị chưa gắn ảnh hoặc ảnh không tải được */
+const DEFAULT_COVERS: Record<string, string> = {
+  MAINTENANCE: '/images/packages/maintenance.webp',
+  DISASTER_PROTECTION: '/images/packages/disaster.webp',
+}
+
+/** Ảnh bìa của gói: ảnh quản trị gắn, không có hoặc lỗi thì ảnh mặc định của loại gói; cả hai lỗi thì bỏ hẳn */
+function PackageCover({ url, kind }: { url: string | null; kind: string }) {
+  const fallback = DEFAULT_COVERS[kind] ?? null
+  const [src, setSrc] = useState(url || fallback)
+  if (!src) return null
   return (
     <img
-      src={url}
+      src={src}
       alt=""
       loading="lazy"
       width={96}
       height={64}
       className="h-16 w-24 shrink-0 rounded-container border border-line object-cover"
-      onError={() => setBroken(true)}
+      onError={() => setSrc(src !== fallback ? fallback : null)}
     />
   )
 }
@@ -77,7 +84,7 @@ function PackageCard({ pkg: p, onBuy }: { pkg: PackageView; onBuy: (pkg: Package
     <article className="rounded-container border border-line bg-panel p-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-4">
-          <PackageCover url={p.imageUrl} />
+          <PackageCover key={p.imageUrl ?? p.kind} url={p.imageUrl} kind={p.kind} />
           <div className="min-w-0">
             <h3 className="text-title font-semibold text-fg">{kindTitle}</h3>
             {subtitle && <p className="mt-0.5 max-w-[72ch] text-meta whitespace-pre-line text-fg-2">{subtitle}</p>}
