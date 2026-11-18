@@ -9,6 +9,7 @@ import {
   SERVICE_REQUEST_STATUSES,
 } from '@/common/afterSales'
 import { Button } from '@/components/common/ui/button'
+import { FilterChips } from '@/components/common/ui/chips'
 import { DateField, Field, Select } from '@/components/common/ui/field'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelHeader } from '@/components/common/ui/panel'
@@ -23,7 +24,12 @@ import {
   type DashboardFilter,
 } from '@/features/after-sales/adminAfterSalesRules'
 import { formatDay, todayVn } from '@/features/scheduling/schedulingDisplay'
-import { useAfterSalesDashboardQuery, useExportDashboardMutation } from '@/hooks/useAdminAfterSales'
+import { AdminOverview } from '@/features/admin-dashboard/AdminOverview'
+import {
+  useAdminOverviewQuery,
+  useAfterSalesDashboardQuery,
+  useExportDashboardMutation,
+} from '@/hooks/useAdminAfterSales'
 import { useOperationalZonesQuery } from '@/hooks/useTechnicianAdmin'
 import { errorMessage, isFeatureUnavailable, pendingMigrationsOf, rateLimitedMessage } from '@/services/api/errors'
 import type { DashboardMetric } from '@/types/res/adminAfterSalesRes'
@@ -68,7 +74,90 @@ function download(csv: string, name: string) {
   URL.revokeObjectURL(url)
 }
 
+type Tab = '' | 'thu-tien'
+const TABS: { value: Tab; label: string }[] = [
+  { value: '', label: 'Tổng quan vận hành' },
+  { value: 'thu-tien', label: 'Thu tiền, sau bán' },
+]
+
 export function AdminReportsPage() {
+  const [search, setSearch] = useSearchParams()
+  const tab: Tab = search.get('muc') === 'thu-tien' ? 'thu-tien' : ''
+  return (
+    <>
+      <PageHeader title="Báo cáo" />
+      <FilterChips
+        className="mb-4"
+        label="Báo cáo"
+        chips={TABS}
+        value={tab}
+        onChange={(next) => setSearch(next ? { muc: next } : {}, { replace: true })}
+      />
+      {tab === 'thu-tien' ? <AfterSalesReport /> : <OverviewReport />}
+    </>
+  )
+}
+
+// Tổng quan: một khoảng ngày (mặc định tháng này như backend, tối đa 366 ngày) cho các khối "trong kỳ"
+function OverviewReport() {
+  const [search, setSearch] = useSearchParams()
+  const defaults = useMemo(() => defaultDashboardRanges(todayVn()), [])
+  const from = search.get('tu') ?? defaults.from
+  const to = search.get('den') ?? defaults.to
+  const error =
+    !from || !to ? 'Chọn đủ hai ngày.' : to < from ? 'Ngày kết thúc phải từ ngày bắt đầu trở đi.' : undefined
+  const query = useAdminOverviewQuery(from, to, { enabled: !error })
+  const set = (key: 'tu' | 'den', value: string) =>
+    setSearch(
+      (prev) => {
+        const p = new URLSearchParams(prev)
+        if (value) p.set(key, value)
+        else p.delete(key)
+        return p
+      },
+      { replace: true },
+    )
+
+  return (
+    <>
+      <fieldset className="mb-6 flex flex-col gap-2">
+        <legend className="mb-2 text-body font-medium text-fg">Kỳ xem (cho các khối trong kỳ)</legend>
+        <div className="flex flex-wrap items-center gap-2">
+          <DateField className="w-40" label="Từ ngày" value={from} onChange={(v) => set('tu', v)} />
+          <span aria-hidden className="text-fg-3">
+            –
+          </span>
+          <DateField className="w-40" label="Đến ngày" value={to} onChange={(v) => set('den', v)} />
+        </div>
+        {error && (
+          <p className="text-meta text-danger" role="alert">
+            {error}
+          </p>
+        )}
+      </fieldset>
+      <section aria-busy={query.isFetching} className={cx(query.isPlaceholderData && 'opacity-70')}>
+        {error ? null : query.isPending ? (
+          <div aria-label="Đang tải" className="space-y-4">
+            <Skeleton className="h-24" />
+            <Skeleton className="h-64" />
+          </div>
+        ) : query.isError && isFeatureUnavailable(query.error) ? (
+          <UnavailableState
+            title="Tổng quan chưa sẵn sàng."
+            message={errorMessage(query.error)}
+            pendingMigrations={pendingMigrationsOf(query.error)}
+          />
+        ) : query.data ? (
+          <AdminOverview view={query.data} />
+        ) : (
+          <ErrorState message={rateLimitedMessage(query.error)} onRetry={() => void query.refetch()} />
+        )}
+      </section>
+    </>
+  )
+}
+
+function AfterSalesReport() {
   const [search, setSearch] = useSearchParams()
   const defaults = useMemo(() => defaultDashboardRanges(todayVn()), [])
   const filter: DashboardFilter = {
@@ -101,7 +190,7 @@ export function AdminReportsPage() {
       },
       { replace: true },
     )
-  const reset = () => setSearch(new URLSearchParams(), { replace: true })
+  const reset = () => setSearch(new URLSearchParams({ muc: 'thu-tien' }), { replace: true })
   const isDefault =
     filter.from === defaults.from &&
     filter.to === defaults.to &&
@@ -136,18 +225,16 @@ export function AdminReportsPage() {
 
   return (
     <>
-      <PageHeader
-        title="Báo cáo sau bán"
-        actions={
-          <Button
-            icon="download"
-            disabled={!showingCurrent || exporter.isPending || query.isFetching}
-            onClick={() => void exportCsv()}
-          >
-            {exporter.isPending ? 'Đang tạo tệp…' : 'Tải CSV'}
-          </Button>
-        }
-      />
+      <div className="mb-4 flex justify-end">
+        <Button
+          icon="download"
+          variant="secondary"
+          disabled={!showingCurrent || exporter.isPending || query.isFetching}
+          onClick={() => void exportCsv()}
+        >
+          {exporter.isPending ? 'Đang tạo tệp…' : 'Tải CSV'}
+        </Button>
+      </div>
 
       <form
         aria-label="Bộ lọc báo cáo"

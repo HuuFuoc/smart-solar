@@ -3,7 +3,7 @@ import * as adminAfterSalesService from '@/services/adminAfterSalesService'
 import type { DashboardParams } from '@/services/adminAfterSalesService'
 import type { ApiError } from '@/services/api/errors'
 import type { PackageRequest, WarrantyOptionRequest } from '@/types/req/adminAfterSalesReq'
-import type { DashboardView, WarrantyOptionView } from '@/types/res/adminAfterSalesRes'
+import type { AdminOverviewView, DashboardView, WarrantyOptionView } from '@/types/res/adminAfterSalesRes'
 import type { PackageView } from '@/types/res/customerAfterSalesRes'
 
 export const adminAfterSalesKeys = {
@@ -11,6 +11,7 @@ export const adminAfterSalesKeys = {
   packages: () => [...adminAfterSalesKeys.all, 'packages'] as const,
   warrantyOptions: () => [...adminAfterSalesKeys.all, 'warranty-options'] as const,
   dashboard: (params: DashboardParams) => [...adminAfterSalesKeys.all, 'dashboard', params] as const,
+  overview: (from: string, to: string) => [...adminAfterSalesKeys.all, 'overview', from, to] as const,
 }
 
 type Options = { enabled?: boolean }
@@ -81,5 +82,14 @@ export function useAfterSalesDashboardQuery(params: DashboardParams, { enabled =
 export function useExportDashboardMutation() {
   return useMutation<string, ApiError, DashboardParams>({
     mutationFn: (params) => adminAfterSalesService.exportDashboard(params),
+  })
+}
+
+export function useAdminOverviewQuery(from: string, to: string, { enabled = true }: Options = {}) {
+  return useQuery<AdminOverviewView, ApiError>({
+    queryKey: adminAfterSalesKeys.overview(from, to),
+    queryFn: () => adminAfterSalesService.getOverview(from, to),
+    placeholderData: keepPreviousData,
+    enabled,
   })
 }

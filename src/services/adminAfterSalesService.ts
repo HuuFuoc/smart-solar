@@ -1,5 +1,5 @@
 import type { PackageRequest, WarrantyOptionRequest } from '@/types/req/adminAfterSalesReq'
-import type { DashboardView, WarrantyOptionView } from '@/types/res/adminAfterSalesRes'
+import type { AdminOverviewView, DashboardView, WarrantyOptionView } from '@/types/res/adminAfterSalesRes'
 import type { PackageView, ServicePackageKind } from '@/types/res/customerAfterSalesRes'
 import { get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
@@ -53,4 +53,9 @@ export async function exportDashboard(params: DashboardParams) {
   const csv = await get<unknown>(api.dashboardExport, { params })
   if (typeof csv !== 'string') throw new Error('Không đọc được tệp CSV.')
   return csv
+}
+
+/** Tổng quan vận hành: ngày theo giờ Việt Nam (yyyy-MM-dd), mặc định tháng này, tối đa 366 ngày */
+export function getOverview(from: string, to: string) {
+  return get<AdminOverviewView>(api.overview, { params: { from, to } })
 }
