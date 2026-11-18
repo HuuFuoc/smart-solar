@@ -375,7 +375,7 @@ export function TechInstallationsPage() {
               <option value="pending">Chờ bạn nhận</option>
               <option value="scheduled">Đã nhận, chờ bắt đầu</option>
               <option value="in_progress">Đang lắp đặt, sửa lại</option>
-              <option value="acceptance">Chờ khách nghiệm thu</option>
+              <option value="acceptance">Chờ nghiệm thu</option>
             </Select>
           </FilterMore>
         </div>

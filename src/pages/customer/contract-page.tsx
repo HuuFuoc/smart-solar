@@ -17,7 +17,7 @@ import {
 } from '@/features/contracts/contractDisplay'
 import { ContractVersionList } from '@/features/contracts/ContractVersionList'
 import { customerContractNext, customerContractSteps } from '@/features/contracts/customerContractDisplay'
-import { newerVersion } from '@/features/contracts/customerContractRules'
+import { isPrepaid, newerVersion, paidMoment } from '@/features/contracts/customerContractRules'
 import { CustomerContractPayment } from '@/features/contracts/CustomerContractPayment'
 import { CustomerSignPanel } from '@/features/contracts/CustomerSignPanel'
 import { CustomerSchedulePanel } from '@/features/installation-schedules/CustomerSchedulePanel'
@@ -29,13 +29,17 @@ import { ROUTES, withId } from '@/routes/paths'
 import { isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
 
-// Chi tiết một phiên bản hợp đồng của khách: tình hình, ký (gửi bản ký tay), thanh toán PayOS, nội dung. Nút chỉ hiện khi
-// trạng thái cho phép; backend vẫn kiểm lại. Quay về từ PayOS (?payos=) chỉ làm hiện câu "đang kiểm tra", không đổi trạng thái
+// Chi tiết một phiên bản hợp đồng của khách: tình hình, ký, thanh toán, lịch thi công, nội dung. Hợp đồng lập từ báo giá đã trả
+// tiền tại công trình thì khách chỉ theo dõi (trạng thái hợp đồng và trạng thái thanh toán hiện riêng); hợp đồng cũ vẫn ký và
+// thanh toán ở đây. Quay về từ PayOS (?payos=) chỉ làm hiện câu "đang kiểm tra", không đổi trạng thái
 
 function ContentPanel({ contract: c }: { contract: ContractView }) {
   return (
     <Panel>
-      <PanelHeader title="Nội dung" description={`Giá theo báo giá phiên bản ${c.quotationVersion} bạn đã đồng ý.`} />
+      <PanelHeader
+        title="Nội dung"
+        description={`Giá theo báo giá phiên bản ${c.quotationVersion} bạn đã đồng ý với kỹ thuật viên.`}
+      />
       <PanelBody className="space-y-4">
         <Facts
           items={[
@@ -49,9 +53,6 @@ function ContentPanel({ contract: c }: { contract: ContractView }) {
             {c.terms || 'Chưa có điều khoản.'}
           </p>
         </section>
-        <ButtonLink to={withId(ROUTES.customer.quotation, c.quotationId)} size="sm" variant="info" icon="request_quote">
-          Xem báo giá
-        </ButtonLink>
       </PanelBody>
     </Panel>
   )
@@ -76,9 +77,9 @@ function ContractAside({ contract: c }: { contract: ContractView }) {
                   </Link>
                 ),
               },
-              { k: 'Gửi bạn ký', v: formatMoment(c.publishedAt) },
+              { k: 'Thanh toán', v: c.paymentCompleted ? `Đã nhận đủ ${formatMoment(paidMoment(c))}` : 'Chưa' },
+              { k: isPrepaid(c) ? 'Lập hồ sơ ký' : 'Gửi bạn ký', v: formatMoment(c.publishedAt) },
               { k: 'Duyệt bản ký', v: formatMoment(c.signedAt) },
-              { k: 'Thanh toán đủ', v: formatMoment(c.paidAt) },
             ]}
           />
         </PanelBody>

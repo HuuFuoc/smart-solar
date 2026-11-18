@@ -77,5 +77,10 @@
   ["G05", "Chung", "GET", "/api/administrative-units/legacy-lookup"],
   ["K01", "Kỹ thuật viên", "POST", "/api/technician/survey-requests/{surveyRequestId}/quotation"],
   ["K02", "Kỹ thuật viên", "POST", "/api/technician/quotations/{quotationId}/lines"],
-  ["K03", "Kỹ thuật viên", "POST", "/api/technician/quotations/{quotationId}/issue"]
+  ["K03", "Kỹ thuật viên", "POST", "/api/technician/quotations/{quotationId}/issue"],
+  ["K04", "Kỹ thuật viên", "POST", "/api/technician/quotations/{quotationId}/on-site-decision"],
+  ["K05", "Kỹ thuật viên", "POST", "/api/technician/quotations/{quotationId}/payment"],
+  ["K06", "Kỹ thuật viên", "GET", "/api/technician/quotations/{quotationId}/payment"],
+  ["K07", "Kỹ thuật viên", "POST", "/api/technician/quotations/{quotationId}/payment/cancel"],
+  ["M11", "Quản lý", "POST", "/api/installation-projects/{projectId}/acceptance"]
 ]

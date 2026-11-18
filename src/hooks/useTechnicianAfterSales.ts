@@ -10,7 +10,8 @@ import type {
   InspectionReportRequest,
   WorkReportRequest,
 } from '@/types/req/technicianAfterSalesReq'
-import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
+import type { ServiceQuotationPaymentView, TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
+import { serviceQuotationPollMs } from '@/features/after-sales/technicianVisitRules'
 
 // Buổi hẹn bảo hành, sửa chữa, bảo trì của kỹ thuật viên. Thao tác xong (kể cả lỗi) thì tải lại từ server
 
@@ -18,6 +19,8 @@ export const technicianAfterSalesKeys = {
   all: ['technician-after-sales'] as const,
   visits: () => [...technicianAfterSalesKeys.all, 'visits'] as const,
   visit: (visitId: string) => [...technicianAfterSalesKeys.visits(), visitId] as const,
+  quotationPayment: (quotationId: string) =>
+    [...technicianAfterSalesKeys.all, 'quotation-payment', quotationId] as const,
 }
 
 /** `enabled`: menu chỉ gọi khi đã chắc là kỹ thuật viên */
@@ -97,4 +100,55 @@ export function useIssueRepairQuotationMutation() {
     mutationFn: ({ requestId, body }) => visitService.issueRepairQuotation(requestId, body),
     onSettled: () => queryClient.invalidateQueries({ queryKey: technicianAfterSalesKeys.visits() }),
   })
+}
+
+/**
+ * Trạng thái báo giá + thanh toán của một báo giá trên buổi hẹn (view buổi hẹn không có báo giá, chỉ có mã báo giá trên hạng
+ * mục). Đang có link PayOS thì hỏi lại 5 giây / lần, chờ tiền mặt 1 phút / lần (backend cho 30 lần xem / phút)
+ */
+export function useServiceQuotationPaymentQuery(quotationId: string) {
+  return useQuery<ServiceQuotationPaymentView, ApiError>({
+    queryKey: technicianAfterSalesKeys.quotationPayment(quotationId),
+    queryFn: () => visitService.getQuotationPayment(quotationId),
+    refetchInterval: (query) => serviceQuotationPollMs(query.state.data),
+    refetchOnWindowFocus: false,
+  })
+}
+
+function useOnSiteWrite<V, R>(write: (variables: V) => Promise<R>) {
+  const queryClient = useQueryClient()
+  return useMutation<R, ApiError, V>({
+    mutationFn: write,
+    onSettled: () => queryClient.invalidateQueries({ queryKey: technicianAfterSalesKeys.all }),
+  })
+}
+
+export function useServiceQuotationDecisionMutation() {
+  return useOnSiteWrite(
+    ({ quotationId, decision, note }: { quotationId: string; decision: 'AGREED' | 'DECLINED'; note: string | null }) =>
+      visitService.recordQuotationDecision(quotationId, decision, note),
+  )
+}
+
+/** Mở / huỷ thanh toán: backend cho 5 lần / 10 phút, chỉ gọi khi bấm */
+export function useStartServicePaymentMutation() {
+  return useOnSiteWrite(({ quotationId, method }: { quotationId: string; method: 'ONLINE' | 'CASH' }) =>
+    visitService.startQuotationPayment(quotationId, method),
+  )
+}
+
+export function useCancelServicePaymentMutation() {
+  return useOnSiteWrite((quotationId: string) => visitService.cancelQuotationPayment(quotationId))
+}
+
+export function useConfirmCompletionOnSiteMutation() {
+  return useOnSiteWrite(({ requestId, note, files }: { requestId: string; note: string; files: File[] }) =>
+    // Ảnh tải lần lượt rồi mới gắn: lệnh ghi tệp bị giới hạn số lần mỗi phút
+    files
+      .reduce<Promise<string[]>>(
+        (ids, file) => ids.then(async (list) => [...list, (await uploadFile(file, 'SERVICE_EVIDENCE')).fileId]),
+        Promise.resolve([]),
+      )
+      .then((evidenceFileIds) => visitService.confirmCompletionOnSite(requestId, { note, evidenceFileIds })),
+  )
 }

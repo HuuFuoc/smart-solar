@@ -26,14 +26,15 @@ function target(n: NotificationView) {
   if (n.requestId) return { to: withId(ROUTES.customer.afterSalesRequest, n.requestId), text: 'Xem yêu cầu' }
   if (n.subscriptionId) return { to: ROUTES.customer.packages, text: 'Xem gói dịch vụ' }
   if (n.type.startsWith('SURVEY_')) return { to: ROUTES.customer.requests, text: 'Xem lịch khảo sát' }
-  if (n.type === 'INSTALLATION_QUOTATION_ISSUED') return { to: ROUTES.customer.quotations, text: 'Xem báo giá' }
+  // Báo giá lắp đặt không còn xem được trong ứng dụng: thông báo báo giá cũ dẫn sang hợp đồng
   if (
     n.type.startsWith('CONTRACT_') ||
     n.type.startsWith('INSTALLATION_SCHEDULE_') ||
-    n.type === 'INSTALLATION_SLOTS_OFFERED'
+    n.type === 'INSTALLATION_SLOTS_OFFERED' ||
+    n.type === 'INSTALLATION_QUOTATION_ISSUED'
   )
     return { to: ROUTES.customer.contracts, text: 'Xem hợp đồng' }
-  if (n.type.startsWith('INSTALLATION_') || n.type === 'EQUIPMENT_SUBSTITUTION_APPROVAL_REQUIRED')
+  if (n.type.startsWith('INSTALLATION_') || n.type.startsWith('EQUIPMENT_SUBSTITUTION_'))
     return { to: ROUTES.customer.projects, text: 'Xem công trình' }
   return null
 }

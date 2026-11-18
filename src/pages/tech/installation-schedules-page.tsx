@@ -9,7 +9,6 @@ import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { contractStatusMeta } from '@/features/contracts/contractDisplay'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { ScheduleDialog } from '@/features/installation-schedules/ScheduleDialog'
-import { SlotOfferDialog } from '@/features/installation-schedules/SlotOfferDialog'
 import {
   rescheduleReasonText,
   scheduleErrorMessage,
@@ -19,14 +18,15 @@ import {
 import {
   SCHEDULE_NOTE_MAX,
   canCancelSchedule,
+  plannedWaitReason,
   projectLocksSchedule,
 } from '@/features/installation-schedules/scheduleRules'
 import { useCancelTechnicianScheduleMutation, useTechnicianSchedulesQuery } from '@/hooks/useInstallationSchedules'
 import type { InstallationScheduleView, TechnicianScheduleContractView } from '@/types/res/installationSchedulesRes'
 
-// Hợp đồng đã ký / đã thanh toán của công trình kỹ thuật viên đã khảo sát. Kỹ thuật viên gọi khách thống nhất ngày thi công rồi
-// ghi lên đây (lịch dự kiến, không giữ chỗ); hợp đồng thanh toán xong thì hệ thống tự tạo dự án thi công và xác nhận lịch. Việc
-// cần làm (chưa hẹn, phải hẹn lại, khách xin đổi) lên đầu
+// Hợp đồng của công trình kỹ thuật viên đã khảo sát, hẹn được ngày: lập từ báo giá đã trả tiền tại công trình (chưa cần ký) hoặc
+// hợp đồng cũ đã ký. Kỹ thuật viên thống nhất ngày trực tiếp với khách rồi ghi lên đây (lịch dự kiến, không giữ chỗ); hợp đồng
+// đã trả và đã ký thì hệ thống tự tạo dự án thi công và xác nhận lịch. Việc cần làm (chưa hẹn, phải hẹn lại, khách xin đổi) lên đầu
 
 const rank = (row: TechnicianScheduleContractView) => {
   const s = row.schedule
@@ -46,7 +46,6 @@ export function TechInstallationSchedulesPage() {
   const query = useTechnicianSchedulesQuery()
   const cancel = useCancelTechnicianScheduleMutation()
   const [planning, setPlanning] = useState<TechnicianScheduleContractView | null>(null)
-  const [offering, setOffering] = useState<TechnicianScheduleContractView | null>(null)
   const [cancelling, setCancelling] = useState<InstallationScheduleView | null>(null)
   const todo = query.data?.filter(needsAction).length ?? 0
 
@@ -62,8 +61,8 @@ export function TechInstallationSchedulesPage() {
         {(rows) =>
           rows.length === 0 ? (
             <EmptyState
-              title="Chưa có hợp đồng nào đã ký"
-              description="Khi hợp đồng của công trình bạn khảo sát được ký, gọi khách hẹn ngày thi công rồi ghi ở đây."
+              title="Chưa có hợp đồng nào để hẹn ngày"
+              description="Khách trả tiền báo giá xong thì hợp đồng hiện ở đây; thống nhất ngày thi công với khách rồi ghi lại."
             />
           ) : (
             <Table stack="xl">
@@ -103,6 +102,12 @@ export function TechInstallationSchedulesPage() {
                               {s.status === 'RESCHEDULE_REQUIRED' && (
                                 <p className="text-meta text-fg-2">{rescheduleReasonText(s.rescheduleReasonCode)}</p>
                               )}
+                              {plannedWaitReason(s) === 'signature' && (
+                                <p className="text-meta text-fg-2">Đã trả tiền, chờ duyệt bản ký hợp đồng</p>
+                              )}
+                              {plannedWaitReason(s) === 'payment' && (
+                                <p className="text-meta text-fg-2">Chờ khách thanh toán hợp đồng</p>
+                              )}
                               {s.customerChangeRequestNote && (
                                 <p className="text-meta text-fg-2">Khách xin đổi: {s.customerChangeRequestNote}</p>
                               )}
@@ -113,11 +118,6 @@ export function TechInstallationSchedulesPage() {
                         </Td>
                         <Td>
                           <div className="flex flex-wrap gap-2 xl:justify-end">
-                            {!locked && (
-                              <Button size="sm" icon="date_range" variant="soft" onClick={() => setOffering(row)}>
-                                Đề xuất khung giờ
-                              </Button>
-                            )}
                             {!locked && (
                               <Button
                                 size="sm"
@@ -144,13 +144,6 @@ export function TechInstallationSchedulesPage() {
         }
       </QueryBoundary>
 
-      {offering && (
-        <SlotOfferDialog
-          contractId={offering.contractId}
-          title={`${offering.propertyName || 'Công trình'}, hợp đồng ${offering.contractNumber}, khách ${offering.customerName}`}
-          onClose={() => setOffering(null)}
-        />
-      )}
       {planning && (
         <ScheduleDialog
           contractId={planning.contractId}

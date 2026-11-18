@@ -8,9 +8,10 @@ import type {
   WorkReportRequest,
 } from '@/types/req/technicianAfterSalesReq'
 import type { EvidenceRequest } from '@/types/req/technicianInstallationsReq'
-import type { TechnicianQuotationRequest } from '@/types/req/technicianAfterSalesQuotationsReq'
-import type { ServiceEvidenceUrlView } from '@/types/res/customerAfterSalesRes'
-import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
+import type { OnSiteCompletionRequest, TechnicianQuotationRequest } from '@/types/req/technicianAfterSalesQuotationsReq'
+import type { ServicePaymentMethodRequest } from '@/types/req/technicianAfterSalesOnSiteReq'
+import type { PaymentAttemptView, ServiceEvidenceUrlView, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
+import type { ServiceQuotationPaymentView, TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
@@ -86,4 +87,31 @@ export function reportWork(visitId: string, body: WorkReportRequest) {
 /** Khách vắng hoặc không làm được: không tính tiền, quản lý hẹn lại */
 export function reportAbsence(visitId: string, body: AbsenceRequest) {
   return post<TechnicianVisitView>(api.absence(visitId), body)
+}
+
+/**
+ * Ghi khách đồng ý / không đồng ý báo giá tại công trình (ghi chú bắt buộc khi không đồng ý, ≤ 1000). Không có gì phải trả thì
+ * đồng ý là được làm ngay. Trả về yêu cầu bản nhân viên
+ */
+export function recordQuotationDecision(quotationId: string, decision: 'AGREED' | 'DECLINED', note: string | null) {
+  return post<ServiceRequestView>(api.quotationOnSiteDecision(quotationId), { decision, note })
+}
+
+/** Mở thanh toán báo giá đã đồng ý: ONLINE (QR PayOS trên máy kỹ thuật viên) hoặc CASH (quản lý / quản trị xác nhận đã thu) */
+export function startQuotationPayment(quotationId: string, method: ServicePaymentMethodRequest['method']) {
+  return post<PaymentAttemptView>(api.quotationPayment(quotationId), { method })
+}
+
+/** Thanh toán của báo giá; link đang mở được backend hỏi thẳng PayOS */
+export function getQuotationPayment(quotationId: string) {
+  return get<ServiceQuotationPaymentView>(api.quotationPayment(quotationId))
+}
+
+export function cancelQuotationPayment(quotationId: string) {
+  return post<PaymentAttemptView>(api.quotationPaymentCancel(quotationId))
+}
+
+/** Khách kiểm tra kết quả cùng kỹ thuật viên tại công trình: ghi chú bắt buộc, ảnh SERVICE_EVIDENCE đã xác minh không bắt buộc */
+export function confirmCompletionOnSite(requestId: string, body: OnSiteCompletionRequest) {
+  return post<ServiceRequestView>(api.completionConfirmation(requestId), body)
 }

@@ -1,15 +1,12 @@
 import type { QuotationView } from '@/types/res/quotationsRes'
 
-// Luật báo giá lắp đặt bám QuotationTechnicianCart của backend (CreateCartAsync, AddCartLineAsync, UpdateCartLineAsync,
-// IssueCartAsync, CreateCartRevisionAsync) và RejectAsync của khách. Chỉ để bật / tắt nút; backend vẫn kiểm lại.
-// Không import giá trị qua "@/" để chạy được bằng node --test
+// Luật báo giá lắp đặt bám QuotationTechnicianCart (CreateCartAsync, AddCartLineAsync, UpdateCartLineAsync, IssueCartAsync,
+// CreateCartRevisionAsync), QuotationOnSiteDecisions (RecordOnSiteDecisionAsync) và OnSiteQuotationPayments của backend
+// 462733c. Chỉ để bật / tắt nút; backend vẫn kiểm lại. Không import giá trị qua "@/" để chạy được bằng node --test
 
 /** Giới hạn một dòng của giỏ (ValidQuantity) */
 export const CART_MAX_QUANTITY = 100_000
 export const CART_MAX_LINES = 100
-
-/** Khách từ chối được bản đang chờ trả lời, kể cả bản đã hết hạn */
-export const canRejectQuotation = (q: Pick<QuotationView, 'status'>) => q.status === 'ISSUED'
 
 type Cart = Pick<QuotationView, 'quotationId' | 'status' | 'origin' | 'version' | 'previousQuotationId'>
 
@@ -150,3 +147,57 @@ export function bomCartPlan(
   const room = Math.max(0, CART_MAX_LINES - lines.length)
   return { items: items.slice(0, room), skipped, overflow: Math.max(0, items.length - room) }
 }
+
+// ---------- Trình bày và chốt tại công trình ----------
+
+type Decidable = Pick<QuotationView, 'status' | 'isExpired' | 'surveyChanged' | 'canAccept'>
+
+/** Ghi "khách đồng ý": bản đã chốt (ISSUED), còn hạn, biên bản khảo sát chưa đổi sau khi lập (`canAccept` của backend) */
+export const canRecordAgreed = (q: Decidable) => q.status === 'ISSUED' && q.canAccept
+
+/**
+ * Ghi "khách không đồng ý" / "khách muốn sửa": bản đã chốt, hoặc bản khách đã đồng ý mà chưa mở thanh toán (khách đổi ý trước khi
+ * trả tiền). Đã mở hoặc đã có tiền thì backend từ chối (QUOTATION_PAYMENT_STARTED): huỷ lần đang mở trước
+ */
+export function canRecordWithdrawal(q: Pick<QuotationView, 'status'>, paymentState?: string | null) {
+  if (q.status === 'ISSUED') return true
+  if (q.status !== 'ACCEPTED') return false
+  return paymentState === 'AWAITING_PAYMENT' || paymentState === 'NOT_PAYABLE'
+}
+
+/** Ghi chú của quyết định: bắt buộc khi không đồng ý / muốn sửa, tối đa 1000 ký tự */
+export function decisionNoteError(decision: string, note: string): string | null {
+  const text = note.trim()
+  if (text.length > 1000) return 'Tối đa 1000 ký tự.'
+  if (decision !== 'AGREED' && !text) return 'Ghi điều khách nói để lần sau làm đúng ý khách.'
+  return null
+}
+
+/** "DECLINED_ON_SITE: khách thấy đắt" → "khách thấy đắt" */
+export const declineNote = (closeReason: string | null | undefined) =>
+  closeReason ? closeReason.replace(/^DECLINED_ON_SITE:\s*/, '') : null
+
+/** Mở thanh toán khi khách đã đồng ý, còn hạn và chưa có lần nào đang mở */
+export const canStartPayment = (paymentState: string | null | undefined) => paymentState === 'AWAITING_PAYMENT'
+
+/** Huỷ lần đang mở: mã QR còn chờ, hoặc lựa chọn tiền mặt chưa được xác nhận */
+export const canCancelPayment = (paymentState: string | null | undefined) =>
+  paymentState === 'ONLINE_IN_PROGRESS' || paymentState === 'AWAITING_CASH_CONFIRMATION'
+
+/** Backend cho 30 lần xem trạng thái / phút: QR 5 giây một lần (12 lần), tiền mặt 1 phút một lần */
+export const QR_POLL_MS = 5_000
+export const CASH_CONFIRM_POLL_MS = 60_000
+
+export function quotationPaymentPollMs(paymentState: string | null | undefined): number | false {
+  if (paymentState === 'ONLINE_IN_PROGRESS') return QR_POLL_MS
+  if (paymentState === 'AWAITING_CASH_CONFIRMATION') return CASH_CONFIRM_POLL_MS
+  return false
+}
+
+/** Chỉ hiện "đã thanh toán" khi backend báo PAID kèm hợp đồng; trang PayOS chuyển về hay mã QR đã quét đều không đủ */
+export const isVerifiedPaid = (view: { paymentState: string; contractId: string | null } | null | undefined) =>
+  view?.paymentState === 'PAID' && view.contractId != null
+
+/** Lỗi chuyển cách trả: phải huỷ lần đang mở trước (PAYMENT_CASH_SELECTED / PAYMENT_CHECKOUT_IN_PROGRESS) */
+export const isSwitchMethodError = (code: string | null | undefined) =>
+  code === 'PAYMENT_CASH_SELECTED' || code === 'PAYMENT_CHECKOUT_IN_PROGRESS'

@@ -10,7 +10,8 @@ export const INSTALLATION_STATUS_LABELS: Record<string, string> = {
   PENDING_TECHNICIAN_ACCEPTANCE: 'Chờ kỹ thuật viên nhận việc',
   SCHEDULED: 'Đã lên lịch lắp đặt',
   IN_PROGRESS: 'Đang lắp đặt',
-  PENDING_CUSTOMER_ACCEPTANCE: 'Chờ khách nghiệm thu',
+  // Tên mã giữ từ trước, nghĩa nay là chờ quản lý / quản trị nghiệm thu nội bộ
+  PENDING_CUSTOMER_ACCEPTANCE: 'Chờ nghiệm thu nội bộ',
   REWORK_REQUIRED: 'Cần sửa lại',
   COMPLETED: 'Đã bàn giao',
   CANCELLED: 'Đã huỷ',
@@ -19,19 +20,19 @@ export const INSTALLATION_STATUS_LABELS: Record<string, string> = {
 // Khách xem công trình của chính mình nên gọi là "bạn"
 export const CUSTOMER_INSTALLATION_LABELS: Record<string, string> = {
   PENDING_ASSIGNMENT: 'Đang xếp kỹ thuật viên',
-  PENDING_CUSTOMER_ACCEPTANCE: 'Chờ bạn nghiệm thu',
+  PENDING_CUSTOMER_ACCEPTANCE: 'Smart Solar đang nghiệm thu',
   REWORK_REQUIRED: 'Đang sửa lại theo yêu cầu',
 }
 
-// Đỏ là việc người xem phải làm: khách thấy chờ nghiệm thu, kỹ thuật viên thấy việc chờ nhận / cần sửa lại,
-// quản lý thấy dự án chưa có kỹ thuật viên
+// Đỏ là việc người xem phải làm: kỹ thuật viên thấy việc chờ nhận / cần sửa lại, quản lý thấy dự án chưa có kỹ thuật viên và
+// báo cáo hoàn thành chờ nghiệm thu. Khách không còn bước duyệt nào nên không có đỏ
 export const INSTALLATION_STATUS_TONES: Record<InstallationViewer, Record<string, Tone>> = {
   customer: {
     PENDING_ASSIGNMENT: 'info',
     PENDING_TECHNICIAN_ACCEPTANCE: 'info',
     SCHEDULED: 'ok',
     IN_PROGRESS: 'info',
-    PENDING_CUSTOMER_ACCEPTANCE: 'danger',
+    PENDING_CUSTOMER_ACCEPTANCE: 'info',
     REWORK_REQUIRED: 'info',
     COMPLETED: 'neutral',
     CANCELLED: 'neutral',
@@ -51,7 +52,7 @@ export const INSTALLATION_STATUS_TONES: Record<InstallationViewer, Record<string
     PENDING_TECHNICIAN_ACCEPTANCE: 'info',
     SCHEDULED: 'ok',
     IN_PROGRESS: 'info',
-    PENDING_CUSTOMER_ACCEPTANCE: 'info',
+    PENDING_CUSTOMER_ACCEPTANCE: 'danger',
     REWORK_REQUIRED: 'info',
     COMPLETED: 'neutral',
     CANCELLED: 'neutral',
@@ -74,20 +75,11 @@ export const ACCEPTANCE_DECISIONS: Record<string, { label: string; tone: Tone }>
   REWORK_REQUESTED: { label: 'Yêu cầu sửa lại', tone: 'neutral' },
 }
 
-/** Ai đóng lần nghiệm thu (acceptances[].decidedBy). STAFF: quản lý trả báo cáo về để sửa */
+/** Ai đóng lần nghiệm thu (acceptances[].decidedBy). CUSTOMER chỉ còn ở dữ liệu cũ (khách nghiệm thu trong ứng dụng) */
 export const ACCEPTANCE_DECIDERS: Record<string, string> = {
   CUSTOMER: 'Khách hàng',
   STAFF: 'Quản lý',
 }
-
-// `decision` của POST /customers/me/installation-projects/{id}/acceptance. Swagger chỉ khai string,
-// backend nhận đúng hai giá trị này (không phân biệt hoa thường); yêu cầu sửa lại thì bắt buộc lý do
-export const ACCEPTANCE_CHOICES = {
-  accept: 'ACCEPT',
-  requestRework: 'REQUEST_REWORK',
-} as const
-
-export type AcceptanceChoice = (typeof ACCEPTANCE_CHOICES)[keyof typeof ACCEPTANCE_CHOICES]
 
 // Kỹ thuật viên xem việc của chính mình nên gọi là "bạn"
 export const TECHNICIAN_INSTALLATION_LABELS: Record<string, string> = {
@@ -158,8 +150,9 @@ export const INSTALLATION_EVENT_TYPES: Record<string, string> = {
   EVIDENCE_ADDED: 'Thêm ảnh nghiệm thu',
   ASSETS_REGISTERED: 'Ghi thiết bị đã lắp',
   COMPLETION_REPORTED: 'Gửi báo cáo hoàn thành',
-  CUSTOMER_ACCEPTED: 'Khách nghiệm thu',
-  REWORK_REQUESTED: 'Khách yêu cầu sửa lại',
+  INTERNALLY_ACCEPTED: 'Quản lý nghiệm thu',
+  CUSTOMER_ACCEPTED: 'Khách nghiệm thu (cách cũ)',
+  REWORK_REQUESTED: 'Khách yêu cầu sửa lại (cách cũ)',
   RETURNED_TO_REWORK: 'Quản lý trả về làm lại',
   CHECKLIST_UPDATED: 'Cập nhật checklist',
   PROJECT_CANCELLED: 'Huỷ dự án',

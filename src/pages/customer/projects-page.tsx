@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
-import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { FaultReportFlow } from '@/features/after-sales/FaultReportFlow'
 import { handedOverProjects } from '@/features/after-sales/customerServiceRules'
@@ -16,7 +15,6 @@ import {
   type ProjectFilterStatus,
   type ProjectTimeSort,
 } from '@/features/installations/customerInstallationDisplay'
-import { awaitsCustomerDecision } from '@/features/installations/installationDisplay'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
 import { cx } from '@/utils/cx'
 
@@ -32,7 +30,6 @@ export function CustomerProjectsPage() {
     <div className="space-y-6">
       <QueryBoundary query={query}>
         {(rawItems) => {
-          const waiting = rawItems.filter(awaitsCustomerDecision).length
           const displayedItems = filterCustomerProjects(rawItems, statusFilter, search, timeSort)
           const handed = handedOverProjects(rawItems)
 
@@ -46,7 +43,6 @@ export function CustomerProjectsPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-3">
                     <h1 className="text-figure font-bold text-fg">Công trình lắp đặt</h1>
-                    {waiting > 0 && <Badge tone="danger">{waiting} công trình chờ bạn nghiệm thu</Badge>}
                   </div>
                   <p className="mt-0.5 text-meta text-fg-2">Quản lý và theo dõi các công trình lắp đặt</p>
                 </div>

@@ -8,6 +8,7 @@ import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { isPayableAttempt, paymentStatusMeta } from '@/features/after-sales/afterSalesDisplay'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { QuotationDetail } from '@/features/after-sales/ServiceRequestParts'
+import { isDecidedOnSite } from '@/features/after-sales/customerServiceRules'
 import { formatVnd } from '@/features/after-sales/serviceDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { isCheckoutUrl, rememberCheckout } from '@/features/payments/payosReturn'
@@ -23,8 +24,69 @@ import { errorMessage } from '@/services/api/errors'
 import type { ServiceQuotationView } from '@/types/res/customerAfterSalesRes'
 
 // Báo giá đang chờ khách: đồng ý hoặc từ chối, rồi thanh toán qua PayOS hoặc chọn trả tiền mặt (quản lý xác nhận đã thu).
-// "Đã thanh toán" chỉ hiện khi backend xác nhận, không dựa vào trang PayOS chuyển về. Chọn tiền mặt không kéo dài hạn báo giá
+// "Đã thanh toán" chỉ hiện khi backend xác nhận, không dựa vào trang PayOS chuyển về. Chọn tiền mặt không kéo dài hạn báo giá.
+// Báo giá kỹ thuật viên lập thì khách trả lời và trả tiền tại công trình: trang chỉ cho xem, cùng link PayOS đang mở (nếu có)
 export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotationView }) {
+  if (isDecidedOnSite(quotation)) return <OnSiteQuotationPanel quotation={quotation} />
+  return <InAppQuotationPanel quotation={quotation} />
+}
+
+function OnSiteQuotationPanel({ quotation }: { quotation: ServiceQuotationView }) {
+  const payment = useQuotationPaymentQuery(quotation.currentPaymentAttemptId)
+  const { pathname } = useLocation()
+  const attempt = payment.data
+  const payable = attempt && isPayableAttempt(attempt.status) ? attempt : null
+  return (
+    <Panel id="quotation" className="scroll-mt-6">
+      <PanelHeader title="Báo giá của kỹ thuật viên" description={`Số tiền ${formatVnd(quotation.customerAmount)}`} />
+      <PanelBody className="space-y-4">
+        <QuotationDetail quotation={quotation} />
+        {quotation.status === 'ISSUED' ? (
+          <p className="text-body text-fg-2">
+            Kỹ thuật viên trình bày báo giá này tại công trình và ghi lại câu trả lời của bạn. Bạn không cần làm gì
+            trong ứng dụng.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-body text-fg-2">
+              Bạn đã đồng ý với kỹ thuật viên. Thanh toán bằng mã QR trên máy kỹ thuật viên hoặc trả tiền mặt; kỹ thuật
+              viên làm tiếp khi Smart Solar xác nhận đã nhận tiền.
+            </p>
+            {attempt && (
+              <p className="flex flex-wrap items-center gap-2 text-body text-fg-2">
+                Thanh toán:
+                <Badge tone={paymentStatusMeta(attempt.status, attempt.method).tone}>
+                  {paymentStatusMeta(attempt.status, attempt.method).label}
+                </Badge>
+              </p>
+            )}
+            {payable && isCheckoutUrl(payable.checkoutUrl) && (
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={payable.checkoutUrl}
+                  className={buttonClass('primary')}
+                  onClick={() => rememberCheckout(payable.orderCode, pathname)}
+                >
+                  Mở trang thanh toán PayOS
+                </a>
+                <Button
+                  icon="refresh"
+                  variant="secondary"
+                  disabled={payment.isFetching}
+                  onClick={() => void payment.refetch()}
+                >
+                  {payment.isFetching ? 'Đang kiểm tra…' : 'Kiểm tra lại'}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </PanelBody>
+    </Panel>
+  )
+}
+
+function InAppQuotationPanel({ quotation }: { quotation: ServiceQuotationView }) {
   const accept = useAcceptQuotationMutation()
   const reject = useRejectQuotationMutation()
   const checkout = useCheckoutQuotationMutation()

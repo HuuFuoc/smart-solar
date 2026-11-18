@@ -1,15 +1,17 @@
-// Giai đoạn 3 trên backend thật (xem stack-harness.mjs): lịch khảo sát chờ nhận → bổ sung biên bản → kỹ thuật viên lập giỏ báo giá →
-// khách đồng ý (backend tự lập bản nháp hợp đồng) → quản lý sửa, phát hành, gắn PDF, gửi ký → khách tải PDF chính thức, gửi bản ký →
-// quản lý duyệt → thanh toán. Luồng theo backend `main` ad10455; kinh doanh chỉ đọc.
+// Giai đoạn 3 trên backend thật (xem stack-harness.mjs): lịch khảo sát chờ nhận → bổ sung biên bản → kỹ thuật viên lập giỏ, chốt giá,
+// trình bày, ghi khách đồng ý tại công trình, mở QR → khách trả (PayOS giả lập) → backend tự lập bản nháp hợp đồng đã trả → quản lý
+// sửa, phát hành, gắn PDF, gửi ký → khách gửi bản ký → quản lý duyệt → PAID, không thu lần hai. Luồng theo backend `main` 462733c;
+// kinh doanh chỉ đọc, khách chỉ theo dõi.
 // Thanh toán dùng PayOS GIẢ LẬP của stack (local-test/fake-payos.mjs, cùng giao thức + webhook có chữ ký): PAID ở đây là do backend thật
 // xác nhận theo phụ thuộc giả lập, KHÔNG phải bằng chứng thanh toán PayOS thật (payOS không có sandbox: https://payos.vn/docs/moi-truong-test).
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { describe, test } from 'node:test'
+import { payFake } from './stack-flows.mjs'
 import { setupStack } from './stack-harness.mjs'
 import * as S from './stack-api.mjs'
 
-const { skip, state, as, mark, until, expectCall, url } = await setupStack('3-contract')
+const { skip, state, as, mark, expectCall } = await setupStack('3-contract')
 const tag = new Date().toISOString().slice(11, 19).replace(/:/g, '')
 const OFFICIAL_PDF = S.tinyPdf(`Hop dong lap dat ${tag}`)
 const SIGNED_PDF = S.tinyPdf(`Ban da ky ${tag}`)
@@ -152,7 +154,7 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     assert.ok(report.amendments.length >= 1, 'có lịch sử bổ sung')
   })
 
-  test('K01–K03: kỹ thuật viên lập giỏ báo giá từ danh mục, gửi khách; khách đồng ý thì hợp đồng tự lập đúng một bản', async () => {
+  test('K01–K03: kỹ thuật viên lập giỏ báo giá từ danh mục rồi chốt giá; khách không nhận gì trong ứng dụng', async () => {
     const product = await S.must(null, 'GET', `/products/${state.productId}`)
     const page = await as('TECH', `/tech/jobs/${state.appointmentId}`)
     const quotation = page.locator('#quotation')
@@ -169,11 +171,8 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     await expectCall('K02', t)
 
     t = mark()
-    await quotation.getByRole('button', { name: 'Gửi cho khách' }).click()
-    await page
-      .getByRole('dialog', { name: 'Gửi báo giá cho khách?' })
-      .getByRole('button', { name: 'Gửi cho khách' })
-      .click()
+    await quotation.getByRole('button', { name: 'Chốt báo giá' }).click()
+    await page.getByRole('dialog', { name: 'Chốt báo giá?' }).getByRole('button', { name: 'Chốt báo giá' }).click()
     await expectCall('K03', t)
     const list = await S.must('TECH', 'GET', `/technician/survey-requests/${state.surveyRequestId}/quotations`)
     const issued = list.find((q) => q.status === 'ISSUED')
@@ -186,13 +185,76 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     assert.equal(retired.status, 410)
     assert.equal(retired.error?.code, 'ENDPOINT_RETIRED')
 
-    // Bấm đồng ý hai lần cùng lúc (nháy đúp): chỉ một hợp đồng được lập
-    const accept = `/customers/me/quotations/${state.quotationId}/accept`
-    await Promise.all([S.call('CUSTOMER', 'POST', accept), S.call('CUSTOMER', 'POST', accept)])
+    // Khách không còn đọc / duyệt báo giá trong ứng dụng
+    for (const path of ['/customers/me/quotations', `/customers/me/quotations/${state.quotationId}`]) {
+      const gone = await S.call('CUSTOMER', 'GET', path)
+      assert.equal(gone.status, 410, path)
+    }
+    const accept = await S.call('CUSTOMER', 'POST', `/customers/me/quotations/${state.quotationId}/accept`)
+    assert.equal(accept.status, 410)
+  })
+
+  test('K04–K06: trình bày, khách đồng ý tại công trình, mở QR, khách trả → hợp đồng tự lập đúng một bản (đã trả)', async () => {
+    const page = await as('TECH', `/tech/jobs/${state.appointmentId}`)
+    const quotation = page.locator('#quotation')
+    const before = await S.must('TECH', 'GET', `/technician/quotations/${state.quotationId}`)
+
+    let t = mark()
+    await quotation.getByRole('button', { name: 'Trình bày cho khách' }).click()
+    await page.getByRole('dialog', { name: 'Báo giá lắp đặt' }).getByRole('button', { name: 'Khách đồng ý' }).click()
+    await page
+      .getByRole('dialog', { name: 'Khách đồng ý báo giá?' })
+      .getByRole('button', { name: 'Khách đồng ý' })
+      .click()
+    await expectCall('K04', t)
+
+    // Ghi lần hai với revision cũ (nháy đúp, máy khác): 409, không có quyết định thứ hai
+    const again = await S.call('TECH', 'POST', `/technician/quotations/${state.quotationId}/on-site-decision`, {
+      decision: 'AGREED',
+      revision: before.revision,
+      note: null,
+    })
+    assert.equal(again.status, 409, `ghi lại quyết định: ${again.status} ${again.error?.code}`)
+    // Đồng ý chưa phải trả tiền: chưa có hợp đồng, lập tay cũng bị từ chối
+    const none = await S.must('MANAGER', 'GET', `/survey-requests/${state.surveyRequestId}/contracts`)
+    assert.equal(none.filter((c) => c.quotationId === state.quotationId).length, 0, 'chưa trả thì chưa có hợp đồng')
+    const manual = await S.call('MANAGER', 'POST', `/quotations/${state.quotationId}/contracts`, {
+      terms: null,
+      warrantyMonths: null,
+    })
+    assert.equal(manual.error?.code, 'CONTRACT_PAYMENT_REQUIRED', `lập hợp đồng khi chưa trả: ${manual.status}`)
+
+    t = mark()
+    await page.locator('#quotation-payment').getByRole('button', { name: 'Hiện mã QR' }).click()
+    await expectCall('K05', t)
+    await page.getByRole('img', { name: /^Mã QR thanh toán/ }).waitFor()
+    // Đổi sang tiền mặt khi QR còn mở: backend bắt huỷ trước
+    const switched = await S.call('TECH', 'POST', `/technician/quotations/${state.quotationId}/payment`, {
+      method: 'CASH',
+    })
+    assert.equal(switched.error?.code, 'PAYMENT_CHECKOUT_IN_PROGRESS')
+
+    const open = await S.must('TECH', 'GET', `/technician/quotations/${state.quotationId}/payment`)
+    assert.equal(open.paymentState, 'ONLINE_IN_PROGRESS')
+    assert.equal(open.contractId, null, 'QR đang mở không phải là đã trả')
+    t = mark()
+    await payFake(open.current.orderCode)
+    // Trang tự hỏi lại trạng thái; chỉ hiện "đã nhận" khi backend báo PAID kèm hợp đồng
+    await expectCall('K06', t)
+    await page
+      .getByText(/^Đã nhận /)
+      .first()
+      .waitFor({ timeout: 120_000 })
+    const paid = await S.must('TECH', 'GET', `/technician/quotations/${state.quotationId}/payment`)
+    assert.equal(paid.paymentState, 'PAID')
+    assert.ok(paid.contractId)
+
     const contracts = await S.must('MANAGER', 'GET', `/survey-requests/${state.surveyRequestId}/contracts`)
     const drafted = contracts.filter((c) => c.quotationId === state.quotationId)
-    assert.equal(drafted.length, 1, 'đúng một hợp đồng cho báo giá đã đồng ý')
+    assert.equal(drafted.length, 1, 'đúng một hợp đồng cho báo giá đã trả')
     assert.equal(drafted[0].status, 'DRAFT')
+    assert.equal(drafted[0].paymentCompleted, true)
+    assert.equal(drafted[0].paymentAttemptId, paid.current.paymentAttemptId)
     state.contractId = drafted[0].contractId
   })
 
@@ -326,7 +388,7 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     assert.equal(S.sha256(fs.readFileSync(await download.path())), S.sha256(SIGNED_PDF))
   })
 
-  test('S08: quản lý mở hợp đồng, tải bản ký, duyệt; trạng thái SIGNED sau tải lại', async () => {
+  test('S08: quản lý mở hợp đồng, tải bản ký, duyệt; hợp đồng đã trả trước thành PAID ngay', async () => {
     const page = await as('MANAGER', `/manage/contracts/${state.contractId}`)
     const [download] = await Promise.all([
       page.waitForEvent('download'),
@@ -341,47 +403,23 @@ describe('3. Khảo sát → báo giá → hợp đồng → thanh toán', { ski
     await page.getByRole('dialog', { name: 'Duyệt bản ký?' }).getByRole('button', { name: 'Duyệt bản ký' }).click()
     await expectCall('S08', t)
     await page.reload({ waitUntil: 'domcontentloaded' })
-    await page.getByText('Đã ký, chờ khách thanh toán').first().waitFor()
+    await page.getByText('Đã thanh toán và đã duyệt bản ký').first().waitFor()
     await expectCall('S10', t)
+    assert.equal((await S.must('MANAGER', 'GET', `/contracts/${state.contractId}`)).status, 'PAID')
   })
 
-  test('C03/C04/C05: tạo link, huỷ link, tạo link mới, trả tiền trên trang PayOS giả lập → backend xác nhận PAID', async () => {
+  test('C04: hợp đồng trả trước không thu lần hai; khách thấy đã thanh toán, không có nút trả tiền', async () => {
+    const t = mark()
     const page = await as('CUSTOMER', `/customer/contracts/${state.contractId}`)
-    const pay = page.locator('#contract-payment')
-    const contractUrl = url(`/customer/contracts/${state.contractId}`)
-    const onPayos = (u) => !u.pathname.startsWith('/customer/')
-    let t = mark()
-    // Có link là trang chuyển ngay sang PayOS (giả lập) trong cùng tab; mở lại trang hợp đồng để huỷ link vừa tạo
-    await pay.getByRole('button', { name: 'Thanh toán qua PayOS' }).click()
-    await expectCall('C03', t)
-    await page.waitForURL(onPayos, { timeout: 30_000 })
-    await page.goto(contractUrl, { waitUntil: 'domcontentloaded' })
-    await pay.getByText('Mã đơn PayOS').waitFor()
+    await page.getByRole('heading', { name: /^Hợp đồng / }).waitFor()
     await expectCall('C04', t)
-    t = mark()
-    await pay.getByRole('button', { name: 'Huỷ link' }).click()
-    await page.getByRole('dialog', { name: 'Huỷ link thanh toán?' }).getByRole('button', { name: 'Huỷ link' }).click()
-    await expectCall('C05', t)
-    // Trang PayOS giả chuyển về Payments__ReturnUrl của stack (cổng dev 3000); E2E chạy Vite ở cổng khác nên mở cùng query tại đây
-    const back = page.waitForRequest((r) => r.url().includes('/payments/return'), { timeout: 60_000 })
-    await pay.getByRole('button', { name: 'Thanh toán qua PayOS' }).click()
-    await page.waitForURL(onPayos, { timeout: 30_000 })
-    await page.getByRole('button', { name: /Đã chuyển khoản/ }).click()
-    const returned = new URL((await back).url())
-    assert.ok(returned.searchParams.get('orderCode'), 'PayOS trả orderCode')
-    await page.goto(url(`/payments/return${returned.search}`), { waitUntil: 'domcontentloaded' })
-    await page.waitForURL(/\/customer\/contracts\//, { timeout: 60_000 })
-    await until(
-      async () => (await S.must('CUSTOMER', 'GET', `/customers/me/contracts/${state.contractId}`)).status === 'PAID',
-      'PAID',
-      60_000,
-      2000,
-    )
-    await page.reload({ waitUntil: 'domcontentloaded' })
     await page
       .getByText(/Đã thanh toán đủ lúc/)
       .first()
       .waitFor()
+    assert.equal(await page.getByRole('button', { name: 'Thanh toán qua PayOS' }).count(), 0)
+    const second = await S.call('CUSTOMER', 'POST', `/customers/me/contracts/${state.contractId}/payments`)
+    assert.equal(second.error?.code, 'PAYMENT_ALREADY_PAID', `thu lần hai: ${second.status}`)
     const staff = await S.must('MANAGER', 'GET', `/contracts/${state.contractId}/payments`)
     assert.equal(staff.contractStatus, 'PAID')
   })

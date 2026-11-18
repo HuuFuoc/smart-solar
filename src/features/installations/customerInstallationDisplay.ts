@@ -1,4 +1,4 @@
-import { awaitsCustomerDecision, installationStatusMeta } from '@/features/installations/installationDisplay'
+import { installationStatusMeta } from '@/features/installations/installationDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatDateVn, formatTime, vnDate } from '@/features/scheduling/schedulingDisplay'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
@@ -19,7 +19,7 @@ function weekdayName(iso: string): string {
 /** Tên giai đoạn ngắn kèm vị trí mốc thời gian hiển thị dưới tên công trình */
 export function formatProjectPhaseLabel(p: InstallationCustomerView): string {
   if (p.status === 'COMPLETED') return 'Bàn giao'
-  if (p.status === 'PENDING_CUSTOMER_ACCEPTANCE' || awaitsCustomerDecision(p)) return 'Chờ nghiệm thu'
+  if (p.status === 'PENDING_CUSTOMER_ACCEPTANCE') return 'Chờ nghiệm thu'
   if (p.status === 'CANCELLED') return 'Đã huỷ'
   if (p.scheduledStartsAt) {
     const day = weekdayName(p.scheduledStartsAt)
@@ -73,7 +73,7 @@ export function customerProjectStatusBadge(p: InstallationCustomerView): StatusB
       className: 'border border-info/30 bg-info-soft text-info',
     }
   }
-  if (p.status === 'PENDING_CUSTOMER_ACCEPTANCE' || awaitsCustomerDecision(p)) {
+  if (p.status === 'PENDING_CUSTOMER_ACCEPTANCE') {
     return {
       label: 'Chờ bàn giao',
       icon: 'handshake',
@@ -122,7 +122,7 @@ export function filterCustomerProjects(
       (p) => p.status === 'IN_PROGRESS' || p.status === 'SCHEDULED' || p.status === 'REWORK_REQUIRED',
     )
   } else if (statusFilter === 'AWAITING_HANDOVER') {
-    filtered = filtered.filter((p) => p.status === 'PENDING_CUSTOMER_ACCEPTANCE' || awaitsCustomerDecision(p))
+    filtered = filtered.filter((p) => p.status === 'PENDING_CUSTOMER_ACCEPTANCE')
   } else if (statusFilter === 'COMPLETED') {
     filtered = filtered.filter((p) => p.status === 'COMPLETED')
   } else if (statusFilter === 'CANCELLED') {

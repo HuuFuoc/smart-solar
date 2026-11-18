@@ -47,7 +47,6 @@ import {
   addedQuantity,
   bomCartPlan,
   canCreateCart,
-  canRejectQuotation,
   canReviseCart,
   cartIssueBlockers,
   cartQuantityError,
@@ -435,11 +434,6 @@ describe('giỏ báo giá của kỹ thuật viên (QuotationTechnicianCart)', (
     assert.deepEqual(priceProblemLineIds(undefined), [])
     assert.equal(isStaleQuotationError('QUOTATION_STALE_REVISION'), true)
     assert.equal(isStaleQuotationError('QUOTATION_PRICE_MISSING'), false)
-  })
-
-  test('khách từ chối được bản đang chờ trả lời', () => {
-    assert.equal(canRejectQuotation(q('ISSUED')), true)
-    assert.equal(canRejectQuotation(q('ACCEPTED')), false)
   })
 })
 

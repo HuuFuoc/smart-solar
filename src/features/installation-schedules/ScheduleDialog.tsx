@@ -2,24 +2,40 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
-import { DateField, Field, Select, Textarea, TimeSelect, fieldMessageId } from '@/components/common/ui/field'
+import {
+  DateField,
+  Field,
+  Input,
+  Select,
+  Textarea,
+  TimeSelect,
+  WithUnit,
+  fieldMessageId,
+} from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import { ErrorLine } from '@/features/installation-projects/formParts'
-import { scheduleErrorMessage, scheduleWhen } from '@/features/installation-schedules/scheduleDisplay'
+import { scheduleErrorMessage, scheduleWhen, slotReasonText } from '@/features/installation-schedules/scheduleDisplay'
 import {
   SCHEDULE_NOTE_MAX,
+  availabilityRangeErrors,
   scheduleBody,
   scheduleFormErrors,
+  slotToForm,
   type ScheduleForm,
 } from '@/features/installation-schedules/scheduleRules'
 import { addDays, todayVn } from '@/features/scheduling/schedulingDisplay'
-import { useProposeStaffScheduleMutation, useProposeTechnicianScheduleMutation } from '@/hooks/useInstallationSchedules'
+import {
+  useProposeStaffScheduleMutation,
+  useProposeTechnicianScheduleMutation,
+  useTechnicianAvailabilityQuery,
+} from '@/hooks/useInstallationSchedules'
 import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
 import type { InstallationScheduleView } from '@/types/res/installationSchedulesRes'
 
-// Ghi hoặc đổi ngày thi công đã thống nhất với khách. Kỹ thuật viên ghi cho chính mình; quản lý / quản trị ghi thay khi kỹ thuật
-// viên khảo sát không làm được (chọn người khác, bỏ trống là kỹ thuật viên đã khảo sát). Lịch chỉ là dự kiến, không giữ chỗ; hệ
-// thống xác nhận khi hợp đồng đã thanh toán. Đổi lịch đang có thì bắt buộc lý do và gửi revision của lịch đó
+// Ghi hoặc đổi ngày thi công đã thống nhất trực tiếp với khách. Kỹ thuật viên ghi cho chính mình (xem khung trống của mình rồi
+// chọn, hoặc gõ ngày giờ); quản lý / quản trị ghi thay khi kỹ thuật viên khảo sát không làm được (chọn người khác, bỏ trống là kỹ
+// thuật viên đã khảo sát). Lịch chỉ là dự kiến, không giữ chỗ; hệ thống xác nhận khi hợp đồng đã trả tiền và đã ký. Đổi lịch
+// đang có thì bắt buộc lý do và gửi revision của lịch đó
 
 type Props = {
   contractId: string
@@ -29,6 +45,103 @@ type Props = {
   live: InstallationScheduleView | null
   by: 'technician' | 'staff'
   onClose: () => void
+}
+
+type Slot = { startsAt: string; endsAt: string }
+
+/**
+ * Khung trống của chính kỹ thuật viên (giờ làm, lịch nghỉ, khu vực, việc khác, lịch đã hẹn khác). Chỉ gọi khi bấm "Xem khung
+ * trống" vì backend giới hạn 15 lần / phút; chọn một khung thì đổ vào ô ngày giờ bên dưới, khách không chọn gì trong ứng dụng
+ */
+function FreeSlots({
+  contractId,
+  disabled,
+  onPick,
+}: {
+  contractId: string
+  disabled: boolean
+  onPick: (slot: Slot) => void
+}) {
+  const today = todayVn()
+  const [from, setFrom] = useState(() => addDays(today, 1))
+  const [to, setTo] = useState(() => addDays(today, 14))
+  const [days, setDays] = useState('1')
+  const [args, setArgs] = useState<{ from: string; to: string; durationDays: number } | null>(null)
+  const [picked, setPicked] = useState<string | null>(null)
+  const [rangeErrors, setRangeErrors] = useState<ReturnType<typeof availabilityRangeErrors>>({})
+  const availability = useTechnicianAvailabilityQuery(contractId, args)
+
+  function search() {
+    const durationDays = Number(days)
+    const next = availabilityRangeErrors(from, to, durationDays)
+    setRangeErrors(next)
+    if (Object.keys(next).length > 0) return
+    setPicked(null)
+    setArgs({ from, to, durationDays })
+  }
+
+  return (
+    <details className="rounded-container border border-line p-3" open={args !== null || undefined}>
+      <summary className="tap cursor-pointer text-body font-medium text-fg">Xem khung trống của bạn</summary>
+      <div className="mt-3 space-y-3">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_8rem] sm:items-start">
+          <Field label="Từ ngày" htmlFor="slot-from" error={rangeErrors.range}>
+            <DateField id="slot-from" value={from} min={today} disabled={disabled} onChange={setFrom} />
+          </Field>
+          <Field label="Đến ngày" htmlFor="slot-to">
+            <DateField id="slot-to" value={to} min={from || today} disabled={disabled} onChange={setTo} />
+          </Field>
+          <Field label="Thi công trong" htmlFor="slot-days" error={rangeErrors.duration}>
+            <WithUnit unit="ngày">
+              <Input
+                id="slot-days"
+                inputMode="numeric"
+                value={days}
+                disabled={disabled}
+                aria-invalid={Boolean(rangeErrors.duration) || undefined}
+                aria-describedby={fieldMessageId('slot-days')}
+                onChange={(e) => setDays(e.target.value.replace(/\D/g, ''))}
+              />
+            </WithUnit>
+          </Field>
+        </div>
+        <Button icon="search" variant="info" size="sm" disabled={disabled || availability.isFetching} onClick={search}>
+          {availability.isFetching ? 'Đang tìm…' : 'Xem khung trống'}
+        </Button>
+        {args && availability.isError && <ErrorLine message={scheduleErrorMessage(availability.error)} />}
+        {args && availability.data?.length === 0 && (
+          <p className="text-body text-fg-2">Không có ngày làm việc nào trong khoảng này.</p>
+        )}
+        {availability.data && availability.data.length > 0 && (
+          <ul className="max-h-60 divide-y divide-line overflow-y-auto border-y border-line">
+            {availability.data.map((slot) => (
+              <li key={slot.startsAt} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2">
+                <span className="min-w-0">
+                  <span className="tnum block text-body text-fg">{scheduleWhen(slot)}</span>
+                  {!slot.available && <span className="block text-meta text-fg-2">{slotReasonText(slot.reason)}</span>}
+                </span>
+                {slot.available && (
+                  <Button
+                    size="sm"
+                    variant={picked === slot.startsAt ? 'soft' : 'secondary'}
+                    icon={picked === slot.startsAt ? 'check' : 'event_available'}
+                    disabled={disabled}
+                    aria-pressed={picked === slot.startsAt}
+                    onClick={() => {
+                      setPicked(slot.startsAt)
+                      onPick(slot)
+                    }}
+                  >
+                    {picked === slot.startsAt ? 'Đã chọn' : 'Chọn'}
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </details>
+  )
 }
 
 function initialForm(): ScheduleForm {
@@ -61,10 +174,12 @@ export function ScheduleDialog({ contractId, title, live, by, onClose }: Props) 
           : await staffWrite.mutateAsync({ contractId, body })
       toast.success(
         view.status === 'CONFIRMED'
-          ? 'Đã ghi lịch và xác nhận (hợp đồng đã thanh toán).'
+          ? 'Đã ghi lịch và xác nhận (hợp đồng đã hoàn tất).'
           : view.status === 'RESCHEDULE_REQUIRED'
             ? 'Đã ghi lịch nhưng chưa xác nhận được; xem lý do ở lịch.'
-            : 'Đã ghi lịch dự kiến. Lịch được xác nhận khi hợp đồng đã thanh toán.',
+            : view.awaitingContractSignature
+              ? 'Đã ghi lịch dự kiến. Lịch được xác nhận tự động khi hợp đồng được duyệt bản ký.'
+              : 'Đã ghi lịch dự kiến. Lịch được xác nhận khi hợp đồng đã thanh toán.',
       )
       onClose()
     } catch (e) {
@@ -89,6 +204,9 @@ export function ScheduleDialog({ contractId, title, live, by, onClose }: Props) 
           <Notice tone="warn" title="Khách xin đổi ngày">
             <span className="whitespace-pre-line">{live.customerChangeRequestNote}</span>
           </Notice>
+        )}
+        {by === 'technician' && (
+          <FreeSlots contractId={contractId} disabled={busy} onPick={(slot) => set(slotToForm(slot))} />
         )}
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]">
           <Field label="Ngày bắt đầu" htmlFor="schedule-date" required error={errors.date}>
@@ -192,7 +310,7 @@ export function ScheduleDialog({ contractId, title, live, by, onClose }: Props) 
           </Field>
         )}
         <p className="text-meta text-fg-2">
-          Lịch chỉ là dự kiến và chưa giữ chỗ; hệ thống xác nhận khi hợp đồng đã thanh toán.
+          Lịch chỉ là dự kiến và chưa giữ chỗ; hệ thống xác nhận khi hợp đồng đã thanh toán và đã được duyệt bản ký.
         </p>
       </div>
 

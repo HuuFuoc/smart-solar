@@ -1,6 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import type { AcceptanceChoice } from '@/common/installation'
 import * as installationService from '@/services/customerInstallationService'
 import type { ApiError } from '@/services/api/errors'
 import type {
@@ -72,24 +71,5 @@ export function useEnergyMonitoringQuery(projectId: string) {
     queryKey: customerInstallationKeys.energy(projectId),
     queryFn: () => installationService.getEnergyMonitoring(projectId),
     enabled: Boolean(projectId),
-  })
-}
-
-export function useApproveSubstitutionMutation() {
-  const queryClient = useQueryClient()
-  return useMutation<InstallationCustomerView, ApiError, string>({
-    mutationFn: installationService.approveSubstitution,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: customerInstallationKeys.all }),
-  })
-}
-
-type DecideVars = { projectId: string; decision: AcceptanceChoice; reason: string | null }
-
-export function useDecideAcceptanceMutation() {
-  const queryClient = useQueryClient()
-  return useMutation<InstallationCustomerView, ApiError, DecideVars>({
-    mutationFn: ({ projectId, decision, reason }) =>
-      installationService.decideAcceptance(projectId, { decision, reason }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: customerInstallationKeys.all }),
   })
 }

@@ -87,8 +87,8 @@ export function CustomerProjectPanel({
             ]}
           />
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
-            <ButtonLink to={ROUTES.customer.quotations} size="sm" variant="ghost" icon="request_quote">
-              Báo giá, hợp đồng
+            <ButtonLink to={ROUTES.customer.contracts} size="sm" variant="ghost" icon="history_edu">
+              Hợp đồng
             </ButtonLink>
             <ButtonLink
               to={withId(ROUTES.customer.project, project.projectId)}
@@ -115,8 +115,8 @@ export function CustomerProjectPanel({
               : 'Chưa đặt giờ khảo sát.'}
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
-            <ButtonLink to={ROUTES.customer.quotations} size="sm" variant="ghost" icon="request_quote">
-              Báo giá
+            <ButtonLink to={ROUTES.customer.contracts} size="sm" variant="ghost" icon="history_edu">
+              Hợp đồng
             </ButtonLink>
             <ButtonLink
               to={withId(ROUTES.customer.request, survey.surveyRequestId)}

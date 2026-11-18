@@ -45,9 +45,6 @@ export const ROUTES = {
     afterSalesRequest: '/customer/after-sales/:id',
     products: '/customer/products',
     product: '/customer/products/:id',
-    /** Báo giá lắp đặt; chi tiết theo mã báo giá (mỗi bản một mã) */
-    quotations: '/customer/quotations',
-    quotation: '/customer/quotations/:id',
   },
 
   ops: {

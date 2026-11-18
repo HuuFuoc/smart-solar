@@ -109,8 +109,9 @@ export async function inverterProductId() {
 }
 
 /**
- * Hợp đồng đã thanh toán → dự án → phân công → checklist → kỹ thuật viên lắp, ghi thiết bị → quản lý và khách đồng ý thiết bị khác hợp
- * đồng (inverter không có trong báo giá) → báo cáo → khách nghiệm thu → bàn giao. Trả { projectId, assets }
+ * Hợp đồng đã thanh toán → dự án (backend tự tạo cho hợp đồng trả trước) → phân công → checklist → kỹ thuật viên lắp, ghi thiết bị →
+ * quản lý duyệt thiết bị khác hợp đồng (inverter không có trong báo giá) → báo cáo → quản lý nghiệm thu nội bộ → bàn giao.
+ * Trả { projectId, assets }
  */
 export async function installAndHandOver(contractId, panelProductId) {
   const tech = await S.userId('TECH')
@@ -210,11 +211,13 @@ export async function installAndHandOver(contractId, panelProductId) {
     completionReport: 'Lắp đặt hoàn tất, chạy thử đạt.',
     expectedRevision: tv2.revision,
   })
-  if (approve.status < 300)
-    await S.must('CUSTOMER', 'POST', `/customers/me/installation-projects/${projectId}/equipment-substitution/approve`)
-  await S.must('CUSTOMER', 'POST', `/customers/me/installation-projects/${projectId}/acceptance`, {
-    decision: 'ACCEPT',
-    reason: null,
+  // Không lệch thiết bị thì lệnh duyệt bị từ chối, không sao; khách không còn đồng ý / nghiệm thu trong ứng dụng (410)
+  void approve
+  const reported = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
+  await S.must('MANAGER', 'POST', `/installation-projects/${projectId}/acceptance`, {
+    expectedRevision: reported.revision,
+    note: 'Kiểm thử: đã bàn giao trực tiếp với khách tại công trình.',
+    evidenceFileId: null,
   })
   await S.must('CUSTOMER', 'GET', `/customers/me/installation-projects/${projectId}/handover`)
   const view = await S.must('CUSTOMER', 'GET', `/customers/me/installation-projects/${projectId}`)
@@ -374,8 +377,8 @@ export async function paidContract(customer, label, productId) {
     revision: att.revision,
   })
 
-  // Luồng rút gọn (backend ad10455): kỹ thuật viên đã khảo sát lập giỏ báo giá, khách đồng ý thì backend tự lập bản nháp hợp
-  // đồng; quản lý phát hành, gắn PDF, gửi ký
+  // Luồng kỹ thuật viên tại công trình (backend 462733c): kỹ thuật viên lập giỏ, chốt giá, ghi khách đồng ý, mở QR; tiền được xác
+  // minh thì backend tự lập bản nháp hợp đồng (đã trả); quản lý phát hành, gắn PDF, gửi ký, duyệt bản ký → PAID, không thu lại
   let q = await S.must('TECH', 'POST', `/technician/survey-requests/${surveyRequestId}/quotation`, { notes: null })
   q = await S.must('TECH', 'POST', `/technician/quotations/${q.quotationId}/lines`, {
     revision: q.revision,
@@ -383,11 +386,21 @@ export async function paidContract(customer, label, productId) {
     quantity: 8,
   })
   q = await S.must('TECH', 'POST', `/technician/quotations/${q.quotationId}/issue`, { revision: q.revision })
-  await S.must(customer, 'POST', `/customers/me/quotations/${q.quotationId}/accept`)
+  q = await S.must('TECH', 'POST', `/technician/quotations/${q.quotationId}/on-site-decision`, {
+    decision: 'AGREED',
+    revision: q.revision,
+    note: 'Kiểm thử: khách đồng ý tại nhà',
+  })
+  const checkout = await S.must('TECH', 'POST', `/technician/quotations/${q.quotationId}/payment`, { method: 'ONLINE' })
+  await payFake(checkout.current.orderCode)
+  const settled = await poll(async () => {
+    const view = await S.must('TECH', 'GET', `/technician/quotations/${q.quotationId}/payment`)
+    return view.paymentState === 'PAID' && view.contractId ? view : null
+  }, 'thanh toán báo giá được xác minh và hợp đồng tự lập')
 
-  const drafts = await S.must('MANAGER', 'GET', `/survey-requests/${surveyRequestId}/contracts`)
-  let c = drafts.find((x) => x.quotationId === q.quotationId && x.status === 'DRAFT')
-  if (!c) throw new Error('Đồng ý báo giá mà không có bản nháp hợp đồng tự lập')
+  let c = await S.must('MANAGER', 'GET', `/contracts/${settled.contractId}`)
+  if (c.status !== 'DRAFT' || !c.paymentCompleted)
+    throw new Error('Hợp đồng lập từ báo giá đã trả phải là bản nháp đã thanh toán')
   if (!c.terms || c.warrantyMonths == null)
     c = await S.must('MANAGER', 'PUT', `/contracts/${c.contractId}`, {
       revision: c.revision,
@@ -415,13 +428,12 @@ export async function paidContract(customer, label, productId) {
     officialDocumentSha256: S.sha256(official),
   })
   c = await S.must('MANAGER', 'GET', `/contracts/${c.contractId}`)
+  // Đã trả trước: duyệt bản ký là thành PAID ngay, không có lần thu thứ hai
   await S.must('MANAGER', 'POST', `/contracts/${c.contractId}/review`, {
     revision: c.revision,
     decision: 'APPROVE',
     reason: null,
   })
-  const link = await S.must(customer, 'POST', `/customers/me/contracts/${c.contractId}/payments`)
-  await payFake(link.orderCode)
   await poll(
     async () => (await S.must(customer, 'GET', `/customers/me/contracts/${c.contractId}`)).status === 'PAID',
     'hợp đồng thứ hai đã thanh toán',

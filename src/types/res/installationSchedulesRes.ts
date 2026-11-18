@@ -1,5 +1,5 @@
 // Viết tay vì swagger của tag TechnicianInstallationSchedules, CustomerInstallationSchedules, ManagerInstallationSchedules
-// chỉ khai "200 OK". Theo record C# của backend `main` (ad10455): Modules.Installations.InstallationScheduleHandlers
+// chỉ khai "200 OK". Theo record C# của backend `main` (462733c): Modules.Installations.InstallationScheduleHandlers
 // (InstallationScheduleView, TechnicianScheduleContractView). Giờ trả về theo giờ Việt Nam (+07:00)
 
 /**
@@ -13,7 +13,8 @@ export type InstallationRescheduleReason = string
 
 /**
  * Một lịch thi công. `isConfirmed` chỉ true khi CONFIRMED: PLANNED không bao giờ hiện như đã xác nhận. `awaitingPayment`: PLANNED
- * của hợp đồng chưa thanh toán. `revision` gửi làm `expectedRevision` khi đổi lịch đang hiệu lực
+ * của hợp đồng cũ chưa thanh toán; `awaitingContractSignature`: PLANNED của hợp đồng đã trả tiền tại công trình, chờ duyệt bản ký.
+ * `revision` gửi làm `expectedRevision` khi đổi lịch đang hiệu lực
  */
 export type InstallationScheduleView = {
   scheduleId: string
@@ -47,9 +48,13 @@ export type InstallationScheduleView = {
   createdAt: string
   revision: number
   awaitingPayment: boolean
+  awaitingContractSignature: boolean
 }
 
-/** GET /api/technicians/me/installation-schedules: hợp đồng đã ký / đã thanh toán mình đã khảo sát, kèm lịch đang hiệu lực */
+/**
+ * GET /api/technicians/me/installation-schedules: hợp đồng mình đã khảo sát hẹn được ngày (đã ký / đã thanh toán, kể cả hợp đồng
+ * lập từ báo giá đã trả tiền mà chưa ký), kèm lịch đang hiệu lực
+ */
 export type TechnicianScheduleContractView = {
   contractId: string
   contractNumber: string
@@ -68,30 +73,4 @@ export type InstallationSlotAvailabilityView = {
   endsAt: string
   available: boolean
   reason: string | null
-}
-
-/** OPEN: khách chọn được; SELECTED: khách đã chọn (thành lịch dự kiến); WITHDRAWN: bị thay hoặc khách chọn khung khác */
-export type InstallationSlotOfferStatus = 'OPEN' | 'SELECTED' | 'WITHDRAWN' | (string & {})
-
-/**
- * Một khung kỹ thuật viên đề xuất (InstallationSlotOfferView). `available` được tính lại mỗi lần đọc, khung không giữ chỗ.
- * `withdrawnReason` chỉ có ở kỹ thuật viên: REPLACED_BY_NEW_OFFERS | ANOTHER_OFFER_SELECTED
- */
-export type InstallationSlotOfferView = {
-  offerId: string
-  contractId: string
-  technicianUserId: string
-  technicianName: string
-  startsAt: string
-  endsAt: string
-  status: InstallationSlotOfferStatus
-  available: boolean
-  unavailableReason: string | null
-  note: string | null
-  createdAt: string
-  selectedAt: string | null
-  selectedScheduleId: string | null
-  withdrawnAt: string | null
-  withdrawnReason: string | null
-  revision: number
 }

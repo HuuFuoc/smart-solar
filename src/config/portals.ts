@@ -41,7 +41,6 @@ export const PORTALS: Record<PortalKey, Portal> = {
             icon: 'event_available',
             alsoActiveOn: [ROUTES.customer.directBooking],
           },
-          { label: 'Báo giá', to: ROUTES.customer.quotations, icon: 'request_quote' },
           { label: 'Hợp đồng', to: ROUTES.customer.contracts, icon: 'history_edu' },
           { label: 'Lắp đặt', to: ROUTES.customer.projects, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.customer.afterSales, icon: 'build' },

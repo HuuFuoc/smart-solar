@@ -79,6 +79,9 @@
   --sun-soft: #f6ecd3;
   /* Lớp phủ sau dialog / drawer, luôn làm tối trang */
   --scrim: oklch(20% 0.02 160 / 0.4);
+  /* Mã QR thanh toán: mô-đun tối trên nền sáng ở mọi giao diện, vì app ngân hàng không chắc đọc được mã đảo màu */
+  --qr-bg: oklch(100% 0 0);
+  --qr-fg: oklch(0% 0 0);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -128,6 +131,8 @@
     --sun: oklch(78% 0.12 80);
     --sun-soft: oklch(29% 0.04 80);
     --scrim: oklch(0% 0 0 / 0.6);
+    --qr-bg: oklch(100% 0 0);
+    --qr-fg: oklch(0% 0 0);
   }
 }
 
@@ -177,6 +182,8 @@
   --sun: oklch(78% 0.12 80);
   --sun-soft: oklch(29% 0.04 80);
   --scrim: oklch(0% 0 0 / 0.6);
+  --qr-bg: oklch(100% 0 0);
+  --qr-fg: oklch(0% 0 0);
 }
 
 /*
@@ -263,6 +270,8 @@
   --color-sun: var(--sun);
   --color-sun-soft: var(--sun-soft);
   --color-scrim: var(--scrim);
+  --color-qr-bg: var(--qr-bg);
+  --color-qr-fg: var(--qr-fg);
   /* Lớp phủ khi hover / nhấn, tính từ màu chữ nên đúng trên mọi nền */
   --color-hover: oklch(from var(--fg) l c h / 0.06);
   --color-pressed: oklch(from var(--fg) l c h / 0.1);

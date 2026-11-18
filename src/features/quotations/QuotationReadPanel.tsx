@@ -17,7 +17,7 @@ import { useQuotationsQuery } from '@/hooks/useSalesQuotations'
 import { isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 
 // Báo giá lắp đặt của một yêu cầu, chỉ xem, cho kinh doanh phụ trách (tư vấn khách). Kỹ thuật viên đã khảo sát lập và gửi báo
-// giá; khách trả lời trên cổng khách hàng. Bản nháp vẫn hiện để kinh doanh biết kỹ thuật viên đang soạn
+// giá; khách quyết định và thanh toán tại công trình với kỹ thuật viên. Bản nháp vẫn hiện để kinh doanh biết kỹ thuật viên đang soạn
 
 export function QuotationReadPanel({ surveyRequestId, enabled }: { surveyRequestId: string; enabled: boolean }) {
   const query = useQuotationsQuery(surveyRequestId, { enabled })
@@ -58,7 +58,7 @@ export function QuotationReadPanel({ surveyRequestId, enabled }: { surveyRequest
             {q.status === 'DRAFT' && <p className="text-body text-fg-2">Kỹ thuật viên đang soạn, khách chưa thấy.</p>}
             {q.status === 'ISSUED' && (
               <p className="text-body text-fg-2">
-                Gửi khách lúc {formatMoment(q.issuedAt)}, hiệu lực đến hết ngày {formatDateVn(q.validUntil)}.
+                Chốt giá lúc {formatMoment(q.issuedAt)}, hiệu lực đến hết ngày {formatDateVn(q.validUntil)}.
               </p>
             )}
             {q.status === 'REVISION_REQUESTED' && (

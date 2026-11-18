@@ -70,6 +70,15 @@ export type ContractView = {
   warrantyMonths: number | null
   /** Chỉ nhân viên thấy, khi bản nháp đã bị kinh doanh huỷ (DISCARDED) */
   discard?: { discardedAt: string; discardedByUserId: string; reason: string } | null
+  /**
+   * Đã nhận đủ tiền, tách khỏi `status`: hợp đồng lập từ báo giá đã thanh toán tại công trình (backend 462733c) là true ngay từ
+   * DRAFT; hợp đồng cũ true khi PAID
+   */
+  paymentCompleted: boolean
+  /** Lần thanh toán báo giá đã lập ra hợp đồng này; null với hợp đồng cũ */
+  paymentAttemptId: string | null
+  /** Lúc tiền được xác minh (PayOS hoặc quản lý xác nhận tiền mặt) */
+  paymentConfirmedAt: string | null
 }
 
 /**

@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { OnSiteDecision } from '@/common/quotation'
+import { quotationPaymentPollMs } from '@/features/quotations/quotationRules'
 import * as quotationService from '@/services/technicianQuotationService'
 import type { ApiError } from '@/services/api/errors'
-import type { QuotationView } from '@/types/res/quotationsRes'
+import type { QuotationPaymentView, QuotationView } from '@/types/res/quotationsRes'
 
 // Giỏ báo giá của kỹ thuật viên. Lệnh ghi thành công thì thay ngay bản đó trong danh sách; xong (kể cả lỗi 409 vì bản vừa đổi ở
 // nơi khác) thì tải lại để lệnh sau luôn dùng revision mới nhất của backend. Không tự gửi lại lệnh cũ
@@ -9,6 +11,7 @@ import type { QuotationView } from '@/types/res/quotationsRes'
 export const technicianQuotationKeys = {
   all: ['technician-quotations'] as const,
   list: (surveyRequestId: string) => [...technicianQuotationKeys.all, 'list', surveyRequestId] as const,
+  payment: (quotationId: string) => [...technicianQuotationKeys.all, 'payment', quotationId] as const,
 }
 
 export function useTechnicianQuotationsQuery(
@@ -86,4 +89,49 @@ export function useIssueCartMutation() {
 
 export function useReviseCartMutation() {
   return useCartWrite((quotationId: string) => quotationService.createRevision(quotationId))
+}
+
+type DecisionVars = { quotationId: string; decision: OnSiteDecision; revision: number; note: string | null }
+
+export function useOnSiteDecisionMutation() {
+  return useCartWrite(({ quotationId, decision, revision, note }: DecisionVars) =>
+    quotationService.recordOnSiteDecision(quotationId, decision, revision, note),
+  )
+}
+
+/**
+ * Thanh toán của một báo giá đã đồng ý. Đang hiện QR thì hỏi lại 5 giây / lần, chờ tiền mặt thì 1 phút / lần (backend cho 30
+ * lần xem / phút); đã trả hoặc không còn gì mở thì thôi hỏi. Không tự tải lại khi quay lại tab vì đã có hỏi lại theo giờ
+ */
+export function useQuotationPaymentQuery(
+  quotationId: string | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
+  return useQuery<QuotationPaymentView, ApiError>({
+    queryKey: technicianQuotationKeys.payment(quotationId ?? ''),
+    queryFn: () => quotationService.getPayment(quotationId!),
+    enabled: enabled && Boolean(quotationId),
+    refetchInterval: (query) => quotationPaymentPollMs(query.state.data?.paymentState),
+    refetchOnWindowFocus: false,
+  })
+}
+
+// Mở / huỷ thanh toán: backend cho 5 lần / 10 phút nên chỉ gọi khi bấm, không bao giờ tự gọi lại
+function usePaymentWrite<V>(write: (variables: V) => Promise<QuotationPaymentView>) {
+  const queryClient = useQueryClient()
+  return useMutation<QuotationPaymentView, ApiError, V>({
+    mutationFn: write,
+    onSuccess: (view) => queryClient.setQueryData(technicianQuotationKeys.payment(view.quotationId), view),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: technicianQuotationKeys.all }),
+  })
+}
+
+export function useStartQuotationPaymentMutation() {
+  return usePaymentWrite(({ quotationId, method }: { quotationId: string; method: 'ONLINE' | 'CASH' }) =>
+    quotationService.startPayment(quotationId, method),
+  )
+}
+
+export function useCancelQuotationPaymentMutation() {
+  return usePaymentWrite((quotationId: string) => quotationService.cancelPayment(quotationId))
 }

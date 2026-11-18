@@ -10,7 +10,12 @@ import {
   STAFF_PAYMENT_ATTEMPT_STATUSES,
 } from '@/common/contract'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
-import { canWriteContract, issueBlockers, type ContractViewer } from '@/features/contracts/contractRules'
+import {
+  canWriteContract,
+  type ContractViewer,
+  isPrepaidContract,
+  issueBlockers,
+} from '@/features/contracts/contractRules'
 import { isApiError, messageForCode } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
 import { formatMoney } from '@/utils/format'
@@ -91,6 +96,7 @@ const STEP_RANK: Record<string, number> = {
 
 /** Các bước của một phiên bản. Bản bị thay / đã huỷ không còn bước đang làm, bước đã qua suy từ các mốc thời gian */
 export function contractTrackerSteps(c: ContractView): TrackerStep[] {
+  if (isPrepaidContract(c)) return prepaidTrackerSteps(c)
   const ended = !(c.status in STEP_RANK)
   const rank = ended ? (c.signedAt ? 4 : c.publishedAt ? 2 : c.issuedAt ? 1 : 0) : STEP_RANK[c.status]!
   const steps: { label: string; detail?: string }[] = [
@@ -106,9 +112,46 @@ export function contractTrackerSteps(c: ContractView): TrackerStep[] {
   }))
 }
 
+/** Hợp đồng trả trước: tiền đã xác minh trước khi có hợp đồng, nên bước thanh toán đứng đầu và đã xong */
+function prepaidTrackerSteps(c: ContractView): TrackerStep[] {
+  const ended = !(c.status in STEP_RANK)
+  const rank = ended ? (c.signedAt ? 4 : c.publishedAt ? 2 : c.issuedAt ? 1 : 0) : Math.min(STEP_RANK[c.status]!, 4)
+  const steps: { label: string; detail?: string }[] = [
+    { label: 'Bản nháp' },
+    { label: 'Phát hành, gắn PDF', detail: c.issuedAt ? formatMoment(c.issuedAt) : undefined },
+    { label: 'Ký bản giấy', detail: c.publishedAt ? `Lập hồ sơ ${formatMoment(c.publishedAt)}` : undefined },
+    { label: 'Duyệt bản ký', detail: c.signedAt ? formatMoment(c.signedAt) : undefined },
+  ]
+  return [
+    { label: 'Đã thanh toán', detail: formatMoment(c.paymentConfirmedAt), state: 'done' as const },
+    ...steps.map((step, i) => ({
+      ...step,
+      state: (c.status === 'PAID' || i < rank
+        ? 'done'
+        : i === rank && !ended
+          ? 'current'
+          : 'todo') as TrackerStep['state'],
+    })),
+  ]
+}
+
 /** Việc tiếp theo của một phiên bản hợp đồng và của ai. Đỏ chỉ khi người đang xem phải làm (quản lý / quản trị soạn và duyệt) */
 export function contractNextStep(c: ContractView, viewer: ContractViewer): TrackerNext {
   const staff = canWriteContract(viewer)
+  if (isPrepaidContract(c) && (c.status === 'AWAITING_SIGNATURE' || c.status === 'SIGNATURE_REJECTED'))
+    return staff
+      ? {
+          tone: 'danger',
+          title: 'Cần tải bản giấy khách đã ký',
+          body: `Khách đã trả ${formatContractMoney(c)} lúc ${formatMoment(c.paymentConfirmedAt)}. In PDF chính thức, khách ký tại công trình, rồi tải bản quét lên và duyệt; duyệt xong hợp đồng thành đã thanh toán, không thu lại.`,
+          action: { label: 'Tải bản ký', icon: 'upload_file', target: 'contract-review' },
+        }
+      : {
+          tone: 'info',
+          title: 'Chờ bản giấy khách ký tại công trình',
+          body: 'Khách đã thanh toán. Bạn tải được bản quét nếu là người phụ trách yêu cầu.',
+          action: { label: 'Tải bản ký', icon: 'upload_file', target: 'contract-review' },
+        }
   switch (c.status) {
     case 'DRAFT': {
       const blockers = issueBlockers(c)
@@ -116,9 +159,11 @@ export function contractNextStep(c: ContractView, viewer: ContractViewer): Track
         ? {
             tone: 'danger',
             title: c.previousContractId ? 'Phụ lục nháp chưa phát hành' : 'Bản nháp hợp đồng chưa phát hành',
-            body: blockers.length
-              ? `${blockers.join(' ')} Sửa bản nháp rồi phát hành.`
-              : 'Kiểm tra điều khoản, thời hạn bảo hành rồi phát hành để có mã nội dung cho PDF chính thức.',
+            body: `${isPrepaidContract(c) ? `Khách đã trả đủ lúc ${formatMoment(c.paymentConfirmedAt)}. ` : ''}${
+              blockers.length
+                ? `${blockers.join(' ')} Sửa bản nháp rồi phát hành.`
+                : 'Kiểm tra điều khoản, thời hạn bảo hành rồi phát hành để có mã nội dung cho PDF chính thức.'
+            }`,
             action: { label: 'Mở bản nháp', icon: 'edit', target: 'contract-actions' },
           }
         : { tone: 'info', title: 'Quản lý đang hoàn thiện hợp đồng' }
@@ -175,9 +220,9 @@ export function contractNextStep(c: ContractView, viewer: ContractViewer): Track
     case 'PAID':
       return {
         tone: 'ok',
-        title: 'Khách đã thanh toán đủ',
+        title: isPrepaidContract(c) ? 'Đã thanh toán và đã duyệt bản ký' : 'Khách đã thanh toán đủ',
         body: staff
-          ? `Thanh toán lúc ${formatMoment(c.paidAt)}. Lịch thi công đã hẹn được xác nhận tự động; chưa có lịch thì tạo dự án ở mục Thi công.`
+          ? `Thanh toán lúc ${formatMoment(c.paymentConfirmedAt ?? c.paidAt)}. Lịch thi công đã hẹn được xác nhận tự động; chưa có lịch thì tạo dự án ở mục Thi công.`
           : `Thanh toán lúc ${formatMoment(c.paidAt)}. Quản lý theo dõi thi công từ hợp đồng này.`,
       }
     case 'SUPERSEDED':

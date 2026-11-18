@@ -9,6 +9,8 @@ export const PAYMENT_ITEM_TYPES: Record<string, string> = {
   DISASTER_PACKAGE: 'Gói bảo vệ thiên tai',
   REPAIR_QUOTATION: 'Báo giá sửa chữa',
   MAINTENANCE_QUOTATION: 'Báo giá bảo trì lẻ',
+  // Báo giá lắp đặt khách đồng ý tại công trình, trả trước khi có hợp đồng; áp xong thì hợp đồng tự lập
+  INSTALLATION_QUOTATION: 'Báo giá lắp đặt (tại công trình)',
 }
 
 export const PAYMENT_ITEM_STATUSES: Record<string, { label: string; tone: Tone }> = {

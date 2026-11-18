@@ -235,7 +235,9 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
             })`,
             amount: confirming.attempt.amount,
             currency: confirming.attempt.currency,
-            successText: 'Đã ghi nhận khách trả tiền mặt.',
+            successText: confirming.lines.some((l) => l.itemType === 'INSTALLATION_QUOTATION')
+              ? 'Đã ghi nhận khách trả tiền mặt. Hợp đồng được lập từ báo giá đã thanh toán.'
+              : 'Đã ghi nhận khách trả tiền mặt.',
             confirm: (body) => confirm.mutateAsync({ attemptId: confirming.attempt.paymentAttemptId, body }),
           }}
           onClose={() => setConfirming(null)}

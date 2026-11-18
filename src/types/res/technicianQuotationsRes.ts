@@ -1,4 +1,5 @@
 /* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
+import type { PaymentAttemptView } from '@/types/res/customerPaymentsRes'
 
 export type PriceAdjustment = {
   kind?: string | null
@@ -104,6 +105,23 @@ export type QuotationLineView = {
   /** Format: double */
   lineTotal?: number
   description?: string | null
+}
+
+export type QuotationPaymentView = {
+  /** Format: uuid */
+  quotationId?: string
+  quoteNumber?: string | null
+  /** Format: int32 */
+  quotationVersion?: number
+  quotationStatus?: string | null
+  /** Format: double */
+  amount?: number
+  currency?: string | null
+  paymentState?: string | null
+  current?: PaymentAttemptView
+  attempts?: PaymentAttemptView[] | null
+  /** Format: uuid */
+  contractId?: string | null
 }
 
 export type QuotationView = {

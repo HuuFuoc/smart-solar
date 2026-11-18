@@ -188,7 +188,7 @@ function LineForm({
         <p className="tnum text-body text-fg-2">
           Thành tiền dự kiến: <span className="font-semibold text-fg">{preview == null ? '—' : money(preview)}</span>
         </p>
-        <p className="text-meta text-fg-2">Giá tính lại theo danh mục lúc gửi khách; thuế do hệ thống tính.</p>
+        <p className="text-meta text-fg-2">Giá tính lại theo danh mục lúc chốt báo giá; thuế do hệ thống tính.</p>
 
         {error && (
           <div role="alert">

@@ -2,11 +2,11 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   availabilityRangeErrors,
-  customerOfferChoices,
-  offerSlotsProblem,
+  canPlanForContract,
+  plannedWaitReason,
+  slotToForm,
+  vnDateTime,
 } from '../src/features/installation-schedules/scheduleRules.ts'
-
-const slot = (d, s = '08:00', e = '17:00') => ({ startsAt: `${d}T${s}:00+07:00`, endsAt: `${d}T${e}:00+07:00` })
 
 test('khoảng ngày xem khung trống: tối đa 31 ngày, số ngày thi công 1–60', () => {
   assert.deepEqual(availabilityRangeErrors('2026-12-01', '2026-12-31', 1), {})
@@ -18,26 +18,33 @@ test('khoảng ngày xem khung trống: tối đa 31 ngày, số ngày thi công
   assert.ok(availabilityRangeErrors('2026-12-01', '2026-12-02', 1.5).duration)
 })
 
-test('khung gửi khách: 1–5 khung khác nhau', () => {
-  assert.equal(offerSlotsProblem([slot('2026-12-01')]), null)
-  assert.ok(offerSlotsProblem([]))
-  assert.ok(offerSlotsProblem(['01', '02', '03', '04', '05', '06'].map((d) => slot(`2026-12-${d}`))))
-  assert.ok(offerSlotsProblem([slot('2026-12-01'), slot('2026-12-01')]))
-  assert.ok(offerSlotsProblem([slot('2026-12-01')], 'x'.repeat(501)))
+test('khung trống chọn được đổ vào ô ngày giờ theo giờ Việt Nam, bất kể múi giờ của chuỗi', () => {
+  assert.deepEqual(slotToForm({ startsAt: '2026-11-25T08:00:00+07:00', endsAt: '2026-11-26T17:00:00+07:00' }), {
+    date: '2026-11-25',
+    startTime: '08:00',
+    endDate: '2026-11-26',
+    endTime: '17:00',
+  })
+  // 23:30 UTC là 06:30 sáng hôm sau ở Việt Nam
+  assert.deepEqual(vnDateTime('2026-11-24T23:30:00Z'), { date: '2026-11-25', time: '06:30' })
 })
 
-test('khách chỉ thấy khung đang mở, sớm nhất trước; khung hết chỗ không chọn được', () => {
-  const offers = [
-    { ...slot('2026-12-03'), status: 'OPEN', available: false, offerId: 'c' },
-    { ...slot('2026-12-01'), status: 'WITHDRAWN', available: false, offerId: 'a' },
-    { ...slot('2026-12-02'), status: 'OPEN', available: true, offerId: 'b' },
-  ]
-  const choices = customerOfferChoices(offers)
-  assert.deepEqual(
-    choices.map((c) => [c.offer.offerId, c.choosable]),
-    [
-      ['b', true],
-      ['c', false],
-    ],
-  )
+test('hẹn ngày: hợp đồng cũ khi đã ký / đã trả; hợp đồng trả trước ở mọi trạng thái còn hiệu lực', () => {
+  assert.equal(canPlanForContract('SIGNED'), true)
+  assert.equal(canPlanForContract('PAID'), true)
+  assert.equal(canPlanForContract('DRAFT'), false)
+  assert.equal(canPlanForContract('AWAITING_SIGNATURE'), false)
+  for (const status of ['DRAFT', 'ISSUED', 'AWAITING_SIGNATURE', 'UNDER_REVIEW', 'SIGNATURE_REJECTED'])
+    assert.equal(canPlanForContract(status, true), true, status)
+  assert.equal(canPlanForContract('SUPERSEDED', true), false)
+  assert.equal(canPlanForContract('DISCARDED', true), false)
+})
+
+test('lịch dự kiến không bao giờ là đã xác nhận: chờ ký (đã trả) khác chờ thanh toán (hợp đồng cũ)', () => {
+  const s = (status, extra = {}) => ({ status, awaitingPayment: false, awaitingContractSignature: false, ...extra })
+  assert.equal(plannedWaitReason(s('PLANNED', { awaitingContractSignature: true })), 'signature')
+  assert.equal(plannedWaitReason(s('PLANNED', { awaitingPayment: true })), 'payment')
+  assert.equal(plannedWaitReason(s('PLANNED')), 'confirming')
+  assert.equal(plannedWaitReason(s('CONFIRMED', { awaitingPayment: true })), null)
+  assert.equal(plannedWaitReason(s('RESCHEDULE_REQUIRED')), null)
 })

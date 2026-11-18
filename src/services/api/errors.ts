@@ -179,9 +179,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_ASSET_QUANTITY_VALIDATION_FAILED:
     'Số lượng hoặc số serial của một dòng chưa hợp lệ. Kiểm tra các dòng được đánh dấu.',
   INSTALLATION_SUBSTITUTION_APPROVAL_REQUIRED:
-    'Thiết bị đã lắp khác với hợp đồng. Quản lý cần duyệt thay đổi thiết bị trước khi gửi báo cáo hoàn thành.',
-  INSTALLATION_SUBSTITUTION_CUSTOMER_APPROVAL_REQUIRED:
-    'Khách hàng chưa đồng ý thay đổi thiết bị nên chưa bàn giao được.',
+    'Thiết bị đã lắp khác với hợp đồng. Quản lý cần duyệt thay đổi thiết bị (ghi lý do) trước khi báo cáo hoặc nghiệm thu.',
   INSTALLATION_NO_SUBSTITUTION: 'Thiết bị đã lắp khớp với hợp đồng nên không cần duyệt thay đổi.',
   RAG_DOCUMENT_AUDIENCE_UNCHANGED: 'Tài liệu đã ở đúng đối tượng này.',
   INSTALLATION_PREREQUISITE_MANDATORY: 'Hạng mục bắt buộc trước thi công không thể bỏ qua.',
@@ -240,6 +238,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   SERVICE_ITEM_NOT_FOUND: 'Không tìm thấy hạng mục này. Đã tải lại, kiểm tra rồi thử lại.',
   SERVICE_VISIT_NOT_FOUND: 'Không tìm thấy buổi hẹn, hoặc buổi hẹn không còn giao cho bạn.',
   SERVICE_QUOTATION_NOT_FOUND: 'Không tìm thấy báo giá.',
+  SERVICE_QUOTATION_DECIDED_ON_SITE:
+    'Báo giá này do kỹ thuật viên lập và chốt tại công trình. Kỹ thuật viên ghi câu trả lời của bạn, bạn không cần làm gì.',
   SERVICE_QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Liên hệ Smart Solar để nhận báo giá mới.',
   SERVICE_QUOTATION_PRICE_MISSING:
     'Có sản phẩm chưa có giá trong danh mục nên chưa lập được báo giá. Đổi sản phẩm khác hoặc nhờ quản trị đặt giá.',
@@ -291,16 +291,20 @@ const ERROR_MESSAGES: Record<string, string> = {
   QUOTATION_NOT_FOUND: 'Không tìm thấy báo giá.',
   QUOTATION_SURVEY_NOT_COMPLETED: 'Kỹ thuật viên chưa hoàn thành khảo sát tại công trình nên chưa lập báo giá được.',
   QUOTATION_DRAFT_EXISTS: 'Yêu cầu này đã có một bản nháp báo giá. Đã tải lại, sửa tiếp bản đó.',
-  QUOTATION_ACTIVE_EXISTS: 'Yêu cầu này đã có báo giá đang gửi khách. Lập bản sửa từ báo giá đó.',
-  QUOTATION_NOT_DRAFT: 'Báo giá đã gửi khách nên không sửa được nữa. Lập bản sửa để đổi nội dung.',
-  QUOTATION_NOT_ISSUED: 'Báo giá này không còn chờ trả lời (đã có bản mới hoặc vừa thay đổi). Đã tải lại.',
-  QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Liên hệ Smart Solar để nhận bản mới.',
+  QUOTATION_ACTIVE_EXISTS: 'Yêu cầu này đã có báo giá đã chốt. Lập bản sửa từ báo giá đó.',
+  QUOTATION_NOT_DRAFT: 'Báo giá đã chốt nên không sửa được nữa. Lập bản sửa để đổi nội dung.',
+  QUOTATION_NOT_ISSUED:
+    'Báo giá này chưa chốt hoặc không còn chờ khách quyết định (đã có bản mới hoặc vừa thay đổi). Đã tải lại.',
+  QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Lập bản sửa để lấy giá danh mục hiện tại.',
   QUOTATION_INVALID_LINE:
     'Số liệu báo giá chưa hợp lệ: số lượng phải lớn hơn 0, đơn giá không âm, giảm giá không quá số tiền trước giảm và tổng phải lớn hơn 0.',
-  QUOTATION_EMPTY: 'Thêm ít nhất một dòng trước khi gửi khách.',
+  QUOTATION_EMPTY: 'Thêm ít nhất một dòng trước khi chốt báo giá.',
   QUOTATION_STALE_REVISION: 'Báo giá vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
   QUOTATION_PRODUCT_UNAVAILABLE: 'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác.',
-  QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này.',
+  QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này. Mở thanh toán cho khách.',
+  QUOTATION_PAYMENT_STARTED:
+    'Đã mở thanh toán cho báo giá này nên chưa ghi khách đổi ý được. Huỷ mã QR / bỏ chọn tiền mặt trước; tiền đã nhận thì không rút được.',
+  QUOTATION_NOT_AGREED: 'Ghi khách đồng ý trước rồi mới mở thanh toán.',
   QUOTATION_CANNOT_REVISE: 'Không lập bản sửa được vì khách vừa đồng ý hoặc báo giá vừa thay đổi. Đã tải lại.',
   QUOTATION_SURVEY_CHANGED:
     'Biên bản khảo sát được bổ sung sau khi lập báo giá này nên báo giá không dùng tiếp được. Đã tải lại.',
@@ -312,6 +316,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   // Hợp đồng lắp đặt (phía nhân viên)
   CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng, hoặc bạn không phụ trách yêu cầu khảo sát này.',
   CONTRACT_QUOTATION_NOT_ACCEPTED: 'Chỉ lập được hợp đồng từ báo giá khách đã đồng ý.',
+  CONTRACT_PAYMENT_REQUIRED:
+    'Hợp đồng chỉ lập khi báo giá đã được thanh toán (tiền được xác minh thì hệ thống tự lập). Báo giá này chưa có thanh toán đã xác minh.',
+  SURVEY_REQUEST_PAYMENT_IN_PROGRESS:
+    'Yêu cầu này đang có thanh toán báo giá mở hoặc đã nhận tiền nên không rút / đóng được. Liên hệ Smart Solar.',
   CONTRACT_ALREADY_EXISTS: 'Báo giá này đã có hợp đồng hoặc đang có phụ lục nháp. Đã tải lại, làm tiếp trên bản đó.',
   CONTRACT_INVALID_STATE:
     'Hợp đồng vừa đổi trạng thái nên không làm được thao tác này. Đã tải lại để xem trạng thái mới.',

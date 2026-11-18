@@ -16,15 +16,3 @@ export type InstallationScheduleRequest = {
   /** Format: uuid */
   technicianUserId?: string | null
 }
-
-export type InstallationSlotOffersRequest = {
-  slots?: InstallationSlotRequest[] | null
-  note?: string | null
-}
-
-export type InstallationSlotRequest = {
-  /** Format: date-time */
-  startsAt?: string | null
-  /** Format: date-time */
-  endsAt?: string | null
-}

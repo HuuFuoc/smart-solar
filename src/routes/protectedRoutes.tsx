@@ -20,8 +20,6 @@ const CustomerDirectBookingPage = page(
   () => import('@/pages/customer/direct-booking-page'),
   'CustomerDirectBookingPage',
 )
-const CustomerQuotationsPage = page(() => import('@/pages/customer/quotations-page'), 'CustomerQuotationsPage')
-const CustomerQuotationPage = page(() => import('@/pages/customer/quotation-page'), 'CustomerQuotationPage')
 const CustomerProjectsPage = page(() => import('@/pages/customer/projects-page'), 'CustomerProjectsPage')
 const CustomerProjectPage = page(() => import('@/pages/customer/project-page'), 'CustomerProjectPage')
 const CustomerContractsPage = page(() => import('@/pages/customer/contracts-page'), 'CustomerContractsPage')
@@ -187,8 +185,6 @@ export const protectedRoutes: RouteObject[] = [
       { path: customer.requests, lazy: CustomerRequestsPage },
       { path: customer.directBooking, lazy: CustomerDirectBookingPage },
       { path: customer.request, lazy: CustomerRequestPage },
-      { path: customer.quotations, lazy: CustomerQuotationsPage },
-      { path: customer.quotation, lazy: CustomerQuotationPage },
       { path: customer.projects, lazy: CustomerProjectsPage },
       { path: customer.project, lazy: CustomerProjectPage },
       { path: customer.contracts, lazy: CustomerContractsPage },

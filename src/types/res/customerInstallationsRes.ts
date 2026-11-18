@@ -75,7 +75,6 @@ export type EquipmentComparisonView = {
     | 'MATCHES'
     | 'NOT_COMPARABLE'
     | 'SUBSTITUTION_APPROVAL_REQUIRED'
-    | 'CUSTOMER_APPROVAL_REQUIRED'
     | 'SUBSTITUTION_APPROVED'
     | 'NOT_CHECKED_AT_HANDOVER'
     | (string & {})

@@ -47,8 +47,9 @@ export function acceptedQuotation(quotations: QuotationView[]): QuotationView | 
 }
 
 /**
- * Lập được hợp đồng từ báo giá: báo giá ACCEPTED và chưa có phiên bản nào khác SUPERSEDED từ báo giá đó
- * (backend: CONTRACT_QUOTATION_NOT_ACCEPTED, CONTRACT_ALREADY_EXISTS; từ 31/10 bản nháp đã huỷ cũng chặn)
+ * Lập hợp đồng tay từ báo giá (đường khôi phục): báo giá ACCEPTED và chưa có phiên bản nào khác SUPERSEDED từ báo giá đó
+ * (backend: CONTRACT_QUOTATION_NOT_ACCEPTED, CONTRACT_ALREADY_EXISTS; từ 31/10 bản nháp đã huỷ cũng chặn). Từ backend 462733c còn
+ * cần thanh toán đã xác minh (409 CONTRACT_PAYMENT_REQUIRED); bình thường chính thanh toán đó đã tự lập hợp đồng
  */
 export function canCreateContract(quotation: QuotationView | null, contracts: ContractView[]) {
   if (!quotation || quotation.status !== 'ACCEPTED') return false
@@ -167,11 +168,24 @@ export function paymentsNeedingAttention(attempts: PaymentAttemptView[]) {
 }
 
 /** Hợp đồng chờ khách trả tiền: hỏi lại trạng thái thanh toán định kỳ */
-export const isAwaitingPayment = (c: Pick<ContractView, 'status'>) => c.status === 'SIGNED'
+export const isAwaitingPayment = (c: Pick<ContractView, 'status' | 'paymentCompleted'>) =>
+  c.status === 'SIGNED' && !c.paymentCompleted
 
-/** Có thể đã có lần thanh toán để xem (chỉ hợp đồng đã ký mới tạo được link) */
-export const hasPaymentStage = (c: Pick<ContractView, 'status' | 'signedAt'>) =>
-  c.status === 'SIGNED' || c.status === 'PAID' || (c.status === 'SUPERSEDED' && c.signedAt != null)
+/**
+ * Hợp đồng lập từ báo giá khách đã trả tiền với kỹ thuật viên (backend 462733c): trả trước, ký sau. Trạng thái hợp đồng đi DRAFT →
+ * … → SIGNED rồi thành PAID ngay khi duyệt bản ký, không thu lại. Hợp đồng cũ không có `paymentAttemptId`
+ */
+export const isPrepaidContract = (c: Pick<ContractView, 'paymentCompleted' | 'paymentAttemptId'>) =>
+  c.paymentCompleted === true && c.paymentAttemptId != null
+
+/** Có thể đã có lần thanh toán để xem: hợp đồng cũ đã ký, hoặc hợp đồng đã trả trước */
+export const hasPaymentStage = (
+  c: Pick<ContractView, 'status' | 'signedAt' | 'paymentCompleted' | 'paymentAttemptId'>,
+) =>
+  isPrepaidContract(c) ||
+  c.status === 'SIGNED' ||
+  c.status === 'PAID' ||
+  (c.status === 'SUPERSEDED' && c.signedAt != null)
 
 /** Số phiếu thu tối đa 100 ký tự, ghi chú tối đa 500 (ConfirmCashAsync) */
 export const CASH_RECEIPT_MAX = 100

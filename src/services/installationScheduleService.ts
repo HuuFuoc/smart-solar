@@ -1,25 +1,21 @@
-import type {
-  InstallationScheduleRequest,
-  InstallationSlotOffersRequest,
-} from '@/types/req/technicianInstallationSchedulesReq'
+import type { InstallationScheduleRequest } from '@/types/req/technicianInstallationSchedulesReq'
 import type {
   InstallationScheduleView,
   InstallationSlotAvailabilityView,
-  InstallationSlotOfferView,
   TechnicianScheduleContractView,
 } from '@/types/res/installationSchedulesRes'
 import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
-// Lịch thi công đã thống nhất với khách. Kỹ thuật viên khảo sát ghi ngày sau khi hợp đồng được ký (PLANNED, không giữ chỗ);
-// hợp đồng thanh toán xong thì backend tự tạo dự án thi công và xác nhận lịch (CONFIRMED) hoặc báo phải hẹn lại
-// (RESCHEDULE_REQUIRED). FE không tự đổi trạng thái lịch
+// Lịch thi công đã thống nhất trực tiếp với khách. Kỹ thuật viên khảo sát ghi ngày khi hợp đồng đã có và đã trả tiền (hoặc đã ký
+// với hợp đồng cũ): PLANNED, không giữ chỗ. Hợp đồng thành PAID (đã trả và đã ký) thì backend tự tạo dự án thi công và xác nhận
+// lịch (CONFIRMED) hoặc báo phải hẹn lại (RESCHEDULE_REQUIRED). FE không tự đổi trạng thái lịch. Gửi khung cho khách chọn đã bỏ
 
 const tech = ENDPOINTS.technicianInstallationSchedules
 const customer = ENDPOINTS.customerInstallationSchedules
 const manager = ENDPOINTS.managerInstallationSchedules
 
-/** Hợp đồng đã ký / đã thanh toán của công trình mình khảo sát, kèm lịch đang hiệu lực */
+/** Hợp đồng của công trình mình khảo sát hẹn được ngày (đã trả tiền hoặc đã ký), kèm lịch đang hiệu lực */
 export function listTechnicianSchedules() {
   return get<TechnicianScheduleContractView[]>(tech.base)
 }
@@ -42,31 +38,11 @@ export function cancelTechnicianSchedule(scheduleId: string, reason: string) {
   return post<InstallationScheduleView>(tech.cancel(scheduleId), { reason })
 }
 
-/** Các khung có thể đề xuất, mỗi ngày bắt đầu trong [from, to] (≤ 31 ngày) một khung kéo dài `durationDays` ngày làm việc */
+/** Khung trống để chọn ngày, mỗi ngày bắt đầu trong [from, to] (≤ 31 ngày) một khung kéo dài `durationDays` ngày làm việc */
 export function getTechnicianAvailability(contractId: string, from: string, to: string, durationDays: number) {
   return get<InstallationSlotAvailabilityView[]>(tech.availability(contractId), {
     params: { from, to, durationDays },
   })
-}
-
-/** Mọi lần đề xuất của hợp đồng (cả đã thay, đã chọn) */
-export function listTechnicianOffers(contractId: string) {
-  return get<InstallationSlotOfferView[]>(tech.offers(contractId))
-}
-
-/** Gửi 1–5 khung cho khách chọn; các khung còn mở trước đó bị thay. Không đổi lịch đang hiệu lực */
-export function publishTechnicianOffers(contractId: string, body: InstallationSlotOffersRequest) {
-  return post<InstallationSlotOfferView[]>(tech.offers(contractId), body)
-}
-
-/** Khung đang mở của hợp đồng của khách, `available` tính lại lúc đọc */
-export function listCustomerOffers(contractId: string) {
-  return get<InstallationSlotOfferView[]>(customer.offers(contractId))
-}
-
-/** Khách chọn một khung: thành lịch dự kiến (đã thanh toán thì xác nhận luôn), các khung khác bị rút */
-export function selectCustomerOffer(offerId: string) {
-  return post<InstallationScheduleView>(customer.selectOffer(offerId))
 }
 
 /** Lịch đang hiệu lực của khách (mỗi hợp đồng nhiều nhất một) */

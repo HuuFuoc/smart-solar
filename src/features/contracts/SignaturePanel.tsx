@@ -13,6 +13,7 @@ import { contractErrorMessage, signatureOutcomeMeta } from '@/features/contracts
 import {
   canReview,
   canUploadPaperScan,
+  isPrepaidContract,
   REJECTION_REASON_MAX,
   shortHash,
   submissionMatchesOfficial,
@@ -120,7 +121,11 @@ export function SignaturePanel({ contract, viewer }: { contract: ContractView; v
           title="Duyệt bản ký?"
           confirmLabel="Duyệt bản ký"
           icon="task_alt"
-          successText="Đã duyệt bản ký. Khách thanh toán được trên cổng khách hàng."
+          successText={
+            isPrepaidContract(contract)
+              ? 'Đã duyệt bản ký. Hợp đồng đã trả trước nên thành đã thanh toán, không thu lại.'
+              : 'Đã duyệt bản ký. Khách thanh toán được trên cổng khách hàng.'
+          }
           run={() =>
             review.mutateAsync({
               contractId: contract.contractId,

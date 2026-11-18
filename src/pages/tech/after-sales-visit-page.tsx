@@ -25,12 +25,14 @@ import {
 } from '@/features/after-sales/technicianVisitDisplay'
 import {
   canAddSupplementary,
+  canConfirmCompletionOnSite,
   canQuoteRepair,
   canReportInspection,
   canReportWork,
   quotableItems,
 } from '@/features/after-sales/technicianVisitRules'
 import { RepairQuotationDialog } from '@/features/after-sales/RepairQuotationDialog'
+import { CompletionConfirmation, ServiceQuotationsOnSite } from '@/features/after-sales/ServiceOnSitePanel'
 import { InspectionReportForm, WorkReportForm } from '@/features/after-sales/VisitReportForms'
 import { OnSiteWaitPanel } from '@/features/after-sales/OnSiteWaitPanel'
 import { SupplementaryItemDialog } from '@/features/after-sales/SupplementaryItemDialog'
@@ -380,6 +382,17 @@ export function TechAfterSalesVisitPage() {
                           )}
                         </PanelBody>
                       </Panel>
+                    </div>
+                  )}
+
+                  {v.items.some((i) => i.quotationId) && (
+                    <div className="sv-card">
+                      <ServiceQuotationsOnSite visit={v} />
+                    </div>
+                  )}
+                  {canConfirmCompletionOnSite(v) && (
+                    <div className="sv-card">
+                      <CompletionConfirmation visit={v} />
                     </div>
                   )}
 

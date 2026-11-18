@@ -1,6 +1,6 @@
 import type { TrackerNext, TrackerStep } from '@/components/common/ui/progress-tracker'
 import { formatContractMoney } from '@/features/contracts/contractDisplay'
-import { lastRejection } from '@/features/contracts/customerContractRules'
+import { isPrepaid, lastRejection, paidMoment } from '@/features/contracts/customerContractRules'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { isApiError } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
@@ -15,7 +15,32 @@ const STEP_RANK: Record<string, number> = {
   PAID: 3,
 }
 
+// Hợp đồng trả trước: thanh toán xong rồi mới hoàn tất hồ sơ, ký bản giấy tại công trình
+const PREPAID_RANK: Record<string, number> = {
+  AWAITING_SIGNATURE: 1,
+  SIGNATURE_REJECTED: 1,
+  UNDER_REVIEW: 2,
+  SIGNED: 3,
+  PAID: 3,
+}
+
+function prepaidSteps(c: ContractView): TrackerStep[] {
+  const ended = !(c.status in PREPAID_RANK)
+  const rank = ended ? (c.signedAt ? 3 : 1) : PREPAID_RANK[c.status]!
+  const steps = [
+    { label: 'Thanh toán', detail: formatMoment(paidMoment(c)) },
+    { label: 'Ký hợp đồng', detail: c.publishedAt ? `Lập lúc ${formatMoment(c.publishedAt)}` : undefined },
+    { label: 'Duyệt bản ký', detail: c.signedAt ? formatMoment(c.signedAt) : undefined },
+    { label: 'Thi công' },
+  ]
+  return steps.map((step, i) => ({
+    ...step,
+    state: i < rank ? 'done' : i === rank && !ended ? 'current' : 'todo',
+  }))
+}
+
 export function customerContractSteps(c: ContractView): TrackerStep[] {
+  if (isPrepaid(c)) return prepaidSteps(c)
   const ended = !(c.status in STEP_RANK)
   const rank = ended ? (c.paidAt ? 3 : c.signedAt ? 2 : 0) : STEP_RANK[c.status]!
   const steps = [
@@ -31,6 +56,15 @@ export function customerContractSteps(c: ContractView): TrackerStep[] {
 }
 
 export function customerContractNext(c: ContractView): TrackerNext {
+  if (isPrepaid(c) && c.status !== 'PAID' && c.status !== 'SUPERSEDED')
+    return {
+      tone: 'info',
+      title:
+        c.status === 'UNDER_REVIEW' || c.status === 'SIGNED'
+          ? 'Smart Solar đang kiểm tra bản ký'
+          : 'Smart Solar đang hoàn tất hồ sơ hợp đồng',
+      body: `Bạn đã thanh toán ${formatContractMoney(c)} lúc ${formatMoment(paidMoment(c))}. Bản hợp đồng ký tại công trình do nhân viên gửi lên, bạn không cần làm gì thêm.`,
+    }
   switch (c.status) {
     case 'AWAITING_SIGNATURE':
       return {
@@ -89,7 +123,7 @@ const CUSTOMER_CONTRACT_ERRORS: Record<string, string> = {
   FILE_ALREADY_LINKED: 'Tệp này đã được gửi trước đó. Chọn tệp bản ký mới.',
   FILE_NOT_OWNED: 'Tệp này không phải do tài khoản của bạn tải lên. Chọn lại tệp.',
   PAYMENT_CONTRACT_NOT_SIGNED: 'Hợp đồng chưa được duyệt bản ký nên chưa thanh toán được.',
-  PAYMENT_ALREADY_PAID: 'Hợp đồng đã được thanh toán. Trang đã tải lại.',
+  PAYMENT_ALREADY_PAID: 'Hợp đồng đã được thanh toán (có thể qua báo giá tại công trình). Trang đã tải lại.',
   PAYMENT_TOO_MANY_ATTEMPTS: 'Hợp đồng này đã có nhiều link thanh toán trong 10 phút qua. Chờ vài phút rồi thử lại.',
   PAYMENT_ATTEMPT_NOT_FOUND: 'Không còn link nào đang chờ thanh toán. Trang đã tải lại.',
   PAYMENT_CHECKOUT_IN_PROGRESS:

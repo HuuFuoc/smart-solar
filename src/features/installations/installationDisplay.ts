@@ -56,11 +56,6 @@ export function pendingAcceptance(p: Pick<InstallationCustomerView, 'acceptances
   return p.acceptances.find((a) => a.decision === 'PENDING') ?? null
 }
 
-/** Khách gửi được quyết định: dự án đang chờ nghiệm thu và còn một báo cáo chưa quyết (cùng điều kiện với backend) */
-export function awaitsCustomerDecision(p: Pick<InstallationCustomerView, 'status' | 'acceptances'>) {
-  return p.status === 'PENDING_CUSTOMER_ACCEPTANCE' && pendingAcceptance(p) !== null
-}
-
 /**
  * Khung giờ lắp đặt. Trong một ngày: "Thứ Ba, 21/10/2026, 08:00–17:00";
  * nhiều ngày: "Thứ Ba, 21/10 08:00 – Thứ Tư, 22/10/2026 17:00". Thiếu giờ thì null

@@ -4,24 +4,19 @@ import { isTodo, requestStatusMeta } from '@/features/after-sales/serviceDisplay
 import { contractStatusMeta } from '@/features/contracts/contractDisplay'
 import { isCustomerTodo } from '@/features/contracts/customerContractRules'
 import { customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
-import { awaitsCustomerDecision } from '@/features/installations/installationDisplay'
-import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { ROUTES, withId } from '@/routes/paths'
 import type { ServiceRequestSummary, SubscriptionView } from '@/types/res/customerAfterSalesRes'
 import type { ContractView } from '@/types/res/customerContractsRes'
-import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 import type { CustomerDispatchView } from '@/types/res/dispatchRes'
-import type { QuotationView } from '@/types/res/quotationsRes'
 
-export type TodoKind = 'survey' | 'quotation' | 'contract' | 'project' | 'service' | 'package'
+// Báo giá lắp đặt và nghiệm thu công trình làm tại công trình với kỹ thuật viên / quản lý, không còn là việc của khách
+export type TodoKind = 'survey' | 'contract' | 'service' | 'package'
 
 /** Tên nhóm trên tab "Việc cần làm", theo thứ tự khách đi qua */
 export const TODO_KINDS: { kind: TodoKind; label: string }[] = [
   { kind: 'survey', label: 'Khảo sát' },
-  { kind: 'quotation', label: 'Báo giá' },
   { kind: 'contract', label: 'Hợp đồng' },
-  { kind: 'project', label: 'Lắp đặt' },
   { kind: 'service', label: 'Bảo hành, sửa chữa' },
   { kind: 'package', label: 'Gói dịch vụ' },
 ]
@@ -43,10 +38,7 @@ const contractAction = (status: string) =>
 export type TodoSources = {
   requests: CustomerSurveyRequestView[]
   dispatches: Map<string, CustomerDispatchView>
-  /** Mỗi yêu cầu khảo sát chỉ bản báo giá mới nhất */
-  quotations: QuotationView[]
   contracts: ContractView[]
-  installations: InstallationCustomerView[]
   serviceRequests: ServiceRequestSummary[]
   subscriptions: SubscriptionView[]
 }
@@ -67,15 +59,6 @@ export function customerTodos(s: TodoSources): TodoItem[] {
       action: proposal ? { label: 'Trả lời', icon: 'event_available' } : { label: 'Chọn giờ', icon: 'calendar_month' },
     })
   }
-  for (const q of s.quotations.filter((q) => q.canAccept))
-    items.push({
-      key: `quote-${q.quotationId}`,
-      kind: 'quotation',
-      label: 'Trả lời báo giá',
-      detail: q.quoteNumber,
-      to: withId(ROUTES.customer.quotation, q.quotationId),
-      action: { label: 'Xem báo giá', icon: 'request_quote' },
-    })
   for (const c of s.contracts.filter(isCustomerTodo))
     items.push({
       key: `contract-${c.contractId}`,
@@ -84,15 +67,6 @@ export function customerTodos(s: TodoSources): TodoItem[] {
       detail: `Hợp đồng ${c.contractNumber}`,
       to: withId(ROUTES.customer.contract, c.contractId),
       action: contractAction(c.status),
-    })
-  for (const p of s.installations.filter(awaitsCustomerDecision))
-    items.push({
-      key: `project-${p.projectId}`,
-      kind: 'project',
-      label: 'Nghiệm thu công trình',
-      detail: `Công trình ${shortCode(p.projectId)}`,
-      to: withId(ROUTES.customer.project, p.projectId),
-      action: { label: 'Nghiệm thu', icon: 'fact_check' },
     })
   for (const r of s.serviceRequests.filter((r) => isTodo(r.status, 'customer')))
     items.push({

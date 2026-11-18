@@ -94,6 +94,14 @@ const CART_ERROR_OVERRIDES: Record<string, string> = {
   QUOTATION_PRODUCT_UNAVAILABLE: 'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác.',
   QUOTATION_SURVEY_NOT_FOUND: 'Bạn không phải kỹ thuật viên đã khảo sát yêu cầu này nên không làm báo giá được.',
   QUOTATION_INVALID_LINE: 'Dòng hàng chưa hợp lệ: số lượng lớn hơn 0, tối đa 100.000, hoặc giỏ đã đủ 100 dòng.',
+  QUOTATION_NOT_FOUND: 'Không tìm thấy báo giá, hoặc bạn không phải kỹ thuật viên đã khảo sát yêu cầu này.',
+  QUOTATION_ACTIVE_EXISTS: 'Yêu cầu này đã có báo giá đã chốt. Lập bản sửa từ báo giá đó.',
+  QUOTATION_NOT_DRAFT: 'Báo giá đã chốt nên không sửa được nữa. Lập bản sửa để đổi nội dung.',
+  PAYMENT_CASH_SELECTED: 'Đã ghi khách trả tiền mặt. Bỏ chọn tiền mặt trước nếu khách muốn quét QR.',
+  PAYMENT_CHECKOUT_IN_PROGRESS: 'Đang có mã QR chờ khách quét. Huỷ mã QR trước nếu khách muốn trả tiền mặt.',
+  PAYMENT_ALREADY_PAID: 'Báo giá này đã được thanh toán. Trang đã tải lại.',
+  PAYMENT_ATTEMPT_NOT_FOUND: 'Không còn lần thanh toán nào đang mở. Trang đã tải lại.',
+  PAYMENT_TOO_MANY_ATTEMPTS: 'Đã mở thanh toán nhiều lần trong ít phút. Chờ vài phút rồi thử lại.',
 }
 
 /** Câu lỗi của lệnh báo giá, kèm số giây phải chờ khi bị giới hạn số lần */
@@ -103,6 +111,7 @@ export function quotationErrorMessage(error: unknown) {
       return error.retryAfter
         ? `Bạn thao tác quá nhanh. Thử lại sau ${error.retryAfter} giây.`
         : 'Bạn thao tác quá nhanh. Chờ một lát rồi thử lại.'
+    if (error.status === 410) return messageForCode('ENDPOINT_RETIRED') ?? error.message
     const override = error.code ? CART_ERROR_OVERRIDES[error.code] : undefined
     return override ?? messageForCode(error.code) ?? error.message
   }

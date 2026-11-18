@@ -250,3 +250,58 @@ export function addComponent(components: RepairQuoteLine['components'], productI
     ? components.map((c) => (c.productId === productId ? { ...c, quantity: c.quantity + quantity } : c))
     : [...components, { productId, quantity }]
 }
+
+// ---------- Báo giá, thanh toán và xác nhận hoàn thành tại công trình (backend 462733c) ----------
+
+/** Mã các báo giá gắn với hạng mục của buổi hẹn (view buổi hẹn không có danh sách báo giá) */
+export function visitQuotationIds(v: Pick<TechnicianVisitView, 'items'>): string[] {
+  return [...new Set(v.items.map((i) => i.quotationId).filter((id): id is string => Boolean(id)))]
+}
+
+type OnSiteQuote = {
+  quotationStatus: string
+  nothingToPay: boolean
+  current: { status: string; method: string } | null
+}
+
+const LIVE_ATTEMPT = ['PENDING', 'PROCESSING']
+
+/**
+ * Bước của một báo giá tại công trình: `decide` chờ khách đồng ý / không; `pay` đã đồng ý, chưa mở thanh toán; `online` mã QR đang
+ * chờ; `cash` chờ quản lý xác nhận tiền mặt; `authorized` đã trả hoặc không phải trả, làm được; `closed` báo giá đã đóng
+ */
+export function serviceQuoteStage(q: OnSiteQuote | null | undefined) {
+  if (!q) return null
+  if (q.quotationStatus === 'ISSUED') return 'decide' as const
+  if (q.quotationStatus === 'PAID' || (q.quotationStatus === 'ACCEPTED' && q.nothingToPay)) return 'authorized' as const
+  if (q.quotationStatus !== 'ACCEPTED') return 'closed' as const
+  if (q.current && LIVE_ATTEMPT.includes(q.current.status))
+    return q.current.method === 'CASH' ? ('cash' as const) : ('online' as const)
+  return 'pay' as const
+}
+
+/** QR 5 giây một lần, tiền mặt 1 phút một lần, không có gì đang mở thì thôi hỏi (backend cho 30 lần xem / phút) */
+export function serviceQuotationPollMs(q: OnSiteQuote | null | undefined): number | false {
+  const stage = serviceQuoteStage(q)
+  return stage === 'online' ? 5_000 : stage === 'cash' ? 60_000 : false
+}
+
+export const ON_SITE_NOTE_MAX = 1000
+
+/** Ghi chú khi khách không đồng ý (bắt buộc) hoặc khi ghi khách xác nhận hoàn thành (bắt buộc); tối đa 1000 ký tự */
+export function onSiteNoteError(note: string, required: boolean): string | null {
+  const text = note.trim()
+  if (text.length > ON_SITE_NOTE_MAX) return `Tối đa ${ON_SITE_NOTE_MAX} ký tự.`
+  if (required && !text) return 'Ghi điều khách nói.'
+  return null
+}
+
+/** Ảnh kèm lúc khách xác nhận hoàn thành: tối đa 10 tệp */
+export const COMPLETION_PHOTOS_MAX = 10
+
+/**
+ * Ghi khách xác nhận hoàn thành: buổi sửa / bảo trì / làm lại đã gửi báo cáo công việc. View buổi hẹn không có trạng thái yêu cầu
+ * nên backend còn kiểm yêu cầu đang chờ khách xác nhận (AFTER_SALES_INVALID_STATE khi đã xong hoặc khách tự nghiệm thu)
+ */
+export const canConfirmCompletionOnSite = (v: Pick<TechnicianVisitView, 'purpose' | 'status'>) =>
+  v.purpose !== 'INSPECTION' && v.status === 'REPORTED'

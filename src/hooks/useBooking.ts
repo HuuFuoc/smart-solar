@@ -11,7 +11,6 @@ import type {
 } from '@/types/res/customerSurveyRequestsRes'
 import type { SalesOutcomeView } from '@/types/res/surveyRequestsRes'
 import type { SurveySlotsView } from '@/types/res/surveySlotsRes'
-import { customerQuotationKeys } from '@/hooks/useCustomerQuotations'
 
 // Đặt lịch khảo sát của khách. Giờ trống có thể bị người khác lấy bất cứ lúc nào
 // nên sau mỗi lần đặt / đổi / huỷ (kể cả lỗi) đều tải lại. Không cập nhật lạc quan
@@ -98,13 +97,11 @@ export function useCancelAppointmentMutation() {
   })
 }
 
-/** Báo giá chưa gửi của yêu cầu bị huỷ theo nên tải lại cả báo giá */
+/** Đang có thanh toán báo giá mở hoặc đã trả thì backend từ chối rút (409 SURVEY_REQUEST_PAYMENT_IN_PROGRESS) */
 export function useWithdrawRequestMutation() {
   const invalidate = useInvalidateBooking()
-  const queryClient = useQueryClient()
   return useMutation<SalesOutcomeView, ApiError, { id: string; reason: string | null }>({
     mutationFn: ({ id, reason }) => bookingService.withdrawRequest(id, reason),
-    onSettled: () =>
-      Promise.all([invalidate(), queryClient.invalidateQueries({ queryKey: customerQuotationKeys.all })]),
+    onSettled: () => invalidate(),
   })
 }

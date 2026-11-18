@@ -5,7 +5,6 @@ import {
   formatProjectDateTime,
   formatProjectPhaseLabel,
 } from '@/features/installations/customerInstallationDisplay'
-import { awaitsCustomerDecision } from '@/features/installations/installationDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { ROUTES, withId } from '@/routes/paths'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
@@ -15,7 +14,6 @@ export function CustomerInstallationGrid({ items }: { items: InstallationCustome
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((p) => {
-        const decide = awaitsCustomerDecision(p)
         const phaseLabel = formatProjectPhaseLabel(p)
         const timeInfo = formatProjectDateTime(p)
         const statusBadge = customerProjectStatusBadge(p)
@@ -91,7 +89,7 @@ export function CustomerInstallationGrid({ items }: { items: InstallationCustome
                 icon="visibility"
                 className="w-full justify-center rounded-control border-primary font-medium text-primary hover:bg-accent-soft"
               >
-                {decide ? 'Xem và nghiệm thu' : 'Xem tiến độ'}
+                Xem tiến độ
               </ButtonLink>
             </div>
           </div>

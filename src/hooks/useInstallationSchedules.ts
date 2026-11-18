@@ -1,14 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as scheduleService from '@/services/installationScheduleService'
 import type { ApiError } from '@/services/api/errors'
-import type {
-  InstallationScheduleRequest,
-  InstallationSlotOffersRequest,
-} from '@/types/req/technicianInstallationSchedulesReq'
+import type { InstallationScheduleRequest } from '@/types/req/technicianInstallationSchedulesReq'
 import type {
   InstallationScheduleView,
   InstallationSlotAvailabilityView,
-  InstallationSlotOfferView,
   TechnicianScheduleContractView,
 } from '@/types/res/installationSchedulesRes'
 
@@ -23,8 +19,6 @@ export const installationScheduleKeys = {
   customerContract: (contractId: string) => [...installationScheduleKeys.all, 'customer', contractId] as const,
   staff: (status: string | null) => [...installationScheduleKeys.all, 'staff', status ?? 'ALL'] as const,
   staffContract: (contractId: string) => [...installationScheduleKeys.all, 'staff-contract', contractId] as const,
-  technicianOffers: (contractId: string) => [...installationScheduleKeys.all, 'technician-offers', contractId] as const,
-  customerOffers: (contractId: string) => [...installationScheduleKeys.all, 'customer-offers', contractId] as const,
   availability: (contractId: string, from: string, to: string, durationDays: number) =>
     [...installationScheduleKeys.all, 'availability', contractId, from, to, durationDays] as const,
 }
@@ -102,21 +96,6 @@ export function useTechnicianAvailabilityQuery(
   })
 }
 
-export function useTechnicianOffersQuery(contractId: string) {
-  return useQuery<InstallationSlotOfferView[], ApiError>({
-    queryKey: installationScheduleKeys.technicianOffers(contractId),
-    queryFn: () => scheduleService.listTechnicianOffers(contractId),
-  })
-}
-
-export function useCustomerOffersQuery(contractId: string | undefined, { enabled = true } = {}) {
-  return useQuery<InstallationSlotOfferView[], ApiError>({
-    queryKey: installationScheduleKeys.customerOffers(contractId ?? ''),
-    queryFn: () => scheduleService.listCustomerOffers(contractId!),
-    enabled: enabled && Boolean(contractId),
-  })
-}
-
 function useScheduleWrite<V, R>(write: (variables: V) => Promise<R>) {
   const queryClient = useQueryClient()
   return useMutation<R, ApiError, V>({
@@ -157,14 +136,4 @@ export function useCancelStaffScheduleMutation() {
   return useScheduleWrite(({ scheduleId, reason }: { scheduleId: string; reason: string }) =>
     scheduleService.cancelStaffSchedule(scheduleId, reason),
   )
-}
-
-export function usePublishOffersMutation() {
-  return useScheduleWrite(({ contractId, body }: { contractId: string; body: InstallationSlotOffersRequest }) =>
-    scheduleService.publishTechnicianOffers(contractId, body),
-  )
-}
-
-export function useSelectOfferMutation() {
-  return useScheduleWrite((offerId: string) => scheduleService.selectCustomerOffer(offerId))
 }

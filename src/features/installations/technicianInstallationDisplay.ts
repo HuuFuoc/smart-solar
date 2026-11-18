@@ -97,7 +97,7 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
       state: reported ? 'done' : 'todo',
     },
     {
-      label: 'Khách nghiệm thu',
+      label: 'Nghiệm thu',
       detail: completed ? formatDateTime(v.completedAt) : undefined,
       state: completed ? 'done' : v.status === 'PENDING_CUSTOMER_ACCEPTANCE' ? 'current' : 'todo',
     },
@@ -165,7 +165,7 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
         ? {
             tone: 'danger',
             title: 'Gửi báo cáo hoàn thành',
-            body: 'Đã có ảnh, tấm pin và inverter. Viết báo cáo rồi gửi để khách nghiệm thu.',
+            body: 'Đã có ảnh, tấm pin và inverter. Viết báo cáo rồi gửi để quản lý nghiệm thu.',
             action: { label: 'Viết báo cáo', icon: 'edit_note', target: 'installation-report' },
           }
         : {
@@ -192,11 +192,14 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
       steps,
       next: {
         tone: 'info',
-        title: 'Chờ khách nghiệm thu',
-        body: `Bạn đã gửi báo cáo lúc ${formatDateTime(v.acceptanceRequestedAt)}. Khách nghiệm thu thì công trình hoàn tất.`,
+        title: 'Chờ quản lý nghiệm thu',
+        body: `Bạn đã gửi báo cáo lúc ${formatDateTime(v.acceptanceRequestedAt)}. Quản lý nghiệm thu nội bộ thì công trình hoàn tất; báo cáo thiếu thì quản lý trả về làm lại.`,
       },
     }
   if (completed)
-    return { steps, next: { tone: 'neutral', title: 'Khách đã nghiệm thu', body: formatDateTime(v.completedAt) } }
+    return {
+      steps,
+      next: { tone: 'neutral', title: 'Đã nghiệm thu, đã bàn giao', body: formatDateTime(v.completedAt) },
+    }
   return { steps, next: { tone: 'neutral', title: technicianStatusMeta(v).label } }
 }

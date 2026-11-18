@@ -17,10 +17,21 @@ export const CUSTOMER_VISIBLE_STATUSES: readonly string[] = [
   'SUPERSEDED',
 ]
 
-/** Việc của khách: ký (hoặc ký lại) và thanh toán */
+/** Việc của khách với hợp đồng cũ (chưa trả tiền trước): ký (hoặc ký lại) và thanh toán */
 export const CUSTOMER_TODO_CONTRACT_STATUSES: readonly string[] = ['AWAITING_SIGNATURE', 'SIGNATURE_REJECTED', 'SIGNED']
 
-export const isCustomerTodo = (c: Pick<ContractView, 'status'>) => CUSTOMER_TODO_CONTRACT_STATUSES.includes(c.status)
+/**
+ * Hợp đồng lập từ báo giá khách đã trả tiền với kỹ thuật viên: bản giấy ký tại công trình do nhân viên tải lên, khách chỉ theo
+ * dõi, không còn việc nào chờ khách. Không có cờ (dữ liệu cũ) là chưa trả trước
+ */
+export const isPrepaid = (c: Pick<ContractView, 'paymentCompleted' | 'paymentAttemptId'>) =>
+  c.paymentCompleted === true && c.paymentAttemptId != null
+
+export const isCustomerTodo = (c: Pick<ContractView, 'status' | 'paymentCompleted' | 'paymentAttemptId'>) =>
+  !isPrepaid(c) && CUSTOMER_TODO_CONTRACT_STATUSES.includes(c.status)
+
+/** Lúc nhận đủ tiền: hợp đồng trả trước lấy lúc xác minh thanh toán báo giá, hợp đồng cũ lấy lúc thành PAID */
+export const paidMoment = (c: Pick<ContractView, 'paymentConfirmedAt' | 'paidAt'>) => c.paymentConfirmedAt ?? c.paidAt
 
 // ---------- Ký ----------
 
@@ -108,8 +119,9 @@ export const isPayableStatus = (status: string | null | undefined) =>
 /** Backend giới hạn 30 lần xem trạng thái mỗi phút; 5 giây một lần là 12 lần */
 export const PAYMENT_POLL_MS = 5_000
 
-/** Chỉ hợp đồng đã duyệt bản ký mới thanh toán được, một lần 100 % */
-export const canPay = (c: Pick<ContractView, 'status'>) => c.status === 'SIGNED'
+/** Chỉ hợp đồng cũ đã duyệt bản ký mới thanh toán được, một lần 100 %; hợp đồng đã trả trước không thu lại */
+export const canPay = (c: Pick<ContractView, 'status' | 'paymentCompleted'>) =>
+  c.status === 'SIGNED' && !c.paymentCompleted
 
 /** Lần thanh toán còn mở của hợp đồng: link PayOS còn chờ (kể cả link mua gói kèm hợp đồng) hoặc lựa chọn tiền mặt */
 export function liveAttempt(view: Pick<ContractPaymentView, 'current'> | null | undefined): PaymentAttemptView | null {

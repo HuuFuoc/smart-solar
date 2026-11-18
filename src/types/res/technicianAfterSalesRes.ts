@@ -1,5 +1,6 @@
 import type {
   InstalledAssetView,
+  PaymentAttemptView,
   ServiceEvidenceView,
   ServiceItemView,
   ServiceRequestKind,
@@ -32,4 +33,18 @@ export type TechnicianVisitView = {
   waitingOnSite: boolean
   /** Ảnh đã gắn vào buổi hẹn này */
   evidence: ServiceEvidenceView[]
+}
+
+/**
+ * GET /api/technicians/me/after-sales/quotations/{id}/payment (backend 462733c, ServiceQuotationPaymentView). `quotationStatus`:
+ * ISSUED | ACCEPTED | PAID | REJECTED | SUPERSEDED | EXPIRED | CANCELLED. `nothingToPay`: gói / bảo hành chịu hết (`customerAmount`
+ * = 0), đồng ý là được làm ngay, không có thanh toán 0 đồng. `current`: lần đang mở hoặc đã trả, null khi chưa mở
+ */
+export type ServiceQuotationPaymentView = {
+  quotationId: string
+  version: number
+  quotationStatus: string
+  customerAmount: number
+  nothingToPay: boolean
+  current: PaymentAttemptView | null
 }

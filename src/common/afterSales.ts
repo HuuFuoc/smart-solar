@@ -329,7 +329,9 @@ export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
   SURVEY_APPOINTMENT_RESCHEDULED: 'Lịch khảo sát đã được đổi giờ',
   SURVEY_TECHNICIAN_RELEASED: 'Kỹ thuật viên trả lại lịch khảo sát, đang tìm người khác',
   SURVEY_APPOINTMENT_CANCELLED: 'Lịch khảo sát đã bị huỷ',
-  INSTALLATION_QUOTATION_ISSUED: 'Có báo giá lắp đặt chờ bạn trả lời',
+  // Ba loại dưới chỉ còn ở thông báo cũ: báo giá, chọn ngày và nghiệm thu nay làm tại công trình với kỹ thuật viên
+  INSTALLATION_QUOTATION_ISSUED: 'Có báo giá lắp đặt (thông báo cũ)',
+  CONTRACT_CREATED_AFTER_PAYMENT: 'Đã nhận đủ tiền, hợp đồng đã được lập',
   CONTRACT_AWAITING_SIGNATURE: 'Hợp đồng đã sẵn sàng, mời bạn ký',
   CONTRACT_SIGNED: 'Bản ký hợp đồng đã được duyệt, mời bạn thanh toán',
   CONTRACT_SIGNATURE_REJECTED: 'Bản ký hợp đồng chưa được duyệt, mời bạn ký lại',
@@ -337,13 +339,16 @@ export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
   INSTALLATION_SCHEDULE_CHANGED: 'Ngày thi công dự kiến đã đổi',
   INSTALLATION_SCHEDULE_RESCHEDULE_REQUIRED: 'Ngày thi công không xác nhận được, sẽ hẹn lại',
   INSTALLATION_SCHEDULE_CANCELLED: 'Lịch thi công dự kiến đã bị huỷ',
-  INSTALLATION_SLOTS_OFFERED: 'Kỹ thuật viên đề xuất ngày thi công, mời bạn chọn',
+  INSTALLATION_SLOTS_OFFERED: 'Kỹ thuật viên đề xuất ngày thi công (thông báo cũ)',
   INSTALLATION_SCHEDULED: 'Công trình đã có lịch lắp đặt',
   INSTALLATION_STARTED: 'Kỹ thuật viên đã bắt đầu lắp đặt',
-  INSTALLATION_ACCEPTANCE_REQUIRED: 'Lắp đặt xong, mời bạn nghiệm thu',
+  INSTALLATION_ACCEPTANCE_REQUIRED: 'Lắp đặt xong (thông báo cũ)',
+  INSTALLATION_COMPLETION_REPORTED: 'Kỹ thuật viên đã báo hoàn thành, Smart Solar đang nghiệm thu',
+  INSTALLATION_COMPLETED: 'Công trình đã nghiệm thu và bàn giao',
   INSTALLATION_REWORK_REQUIRED: 'Công trình được làm lại theo yêu cầu',
   INSTALLATION_CANCELLED: 'Công trình lắp đặt đã bị huỷ',
-  EQUIPMENT_SUBSTITUTION_APPROVAL_REQUIRED: 'Có đề xuất đổi thiết bị chờ bạn đồng ý',
+  EQUIPMENT_SUBSTITUTION_APPROVAL_REQUIRED: 'Có đề xuất đổi thiết bị (thông báo cũ)',
+  EQUIPMENT_SUBSTITUTION_RECORDED: 'Thiết bị lắp khác hợp đồng đã được Smart Solar duyệt',
 }
 
 /** Thứ tự các chỉ số tiền trên báo cáo: các nguồn thu rồi tổng */

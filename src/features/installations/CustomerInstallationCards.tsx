@@ -1,5 +1,4 @@
 import { Icon } from '@/components/common/stitch-ui/Icon'
-import { awaitsCustomerDecision } from '@/features/installations/installationDisplay'
 import type { ProjectFilterStatus } from '@/features/installations/customerInstallationDisplay'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 import { cx } from '@/utils/cx'
@@ -24,7 +23,7 @@ export function CustomerInstallationCards({
   const inProgress = items.filter(
     (p) => p.status === 'IN_PROGRESS' || p.status === 'SCHEDULED' || p.status === 'REWORK_REQUIRED',
   ).length
-  const awaiting = items.filter((p) => p.status === 'PENDING_CUSTOMER_ACCEPTANCE' || awaitsCustomerDecision(p)).length
+  const awaiting = items.filter((p) => p.status === 'PENDING_CUSTOMER_ACCEPTANCE').length
   const completed = items.filter((p) => p.status === 'COMPLETED').length
 
   const cards: CardItem[] = [

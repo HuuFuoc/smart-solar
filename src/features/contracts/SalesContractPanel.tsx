@@ -9,7 +9,7 @@ import { ROUTES } from '@/routes/paths'
 import { errorMessage, isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 import type { QuotationView } from '@/types/res/quotationsRes'
 
-// Hợp đồng trên trang yêu cầu khảo sát của kinh doanh, chỉ xem. Khách đồng ý báo giá thì backend tự lập bản nháp; quản lý / quản
+// Hợp đồng trên trang yêu cầu khảo sát của kinh doanh, chỉ xem. Khách trả tiền báo giá thì backend tự lập bản nháp; quản lý / quản
 // trị hoàn thiện, phát hành, gửi ký, duyệt bản ký. Chỉ hiện khi đã có báo giá ACCEPTED (trước đó chưa có hợp đồng)
 
 export function SalesContractPanel({
@@ -55,7 +55,7 @@ export function SalesContractPanel({
         ) : query.data.length === 0 ? (
           <EmptyState
             title="Hợp đồng đang được chuẩn bị"
-            description={`Khách đã đồng ý báo giá ${accepted.quoteNumber}. Quản lý hoàn thiện hợp đồng và gửi khách ký.`}
+            description={`Khách đã đồng ý báo giá ${accepted.quoteNumber} với kỹ thuật viên. Hợp đồng tự lập khi tiền được xác minh; quản lý hoàn thiện hồ sơ để khách ký.`}
           />
         ) : (
           <ContractVersionList versions={query.data} detailPattern={ROUTES.ops.contract} />

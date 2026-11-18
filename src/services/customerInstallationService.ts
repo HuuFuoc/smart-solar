@@ -1,4 +1,3 @@
-import type { AcceptanceDecisionRequest } from '@/types/req/customerInstallationsReq'
 import type {
   EnergyMonitoringView,
   EvidenceDisposition,
@@ -7,10 +6,11 @@ import type {
   InstallationEvidenceFileView,
   InstallationEvidenceUrlView,
 } from '@/types/res/customerInstallationsRes'
-import { get, post } from '@/services/api/client'
+import { get } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
-// Khách theo dõi dự án lắp đặt của mình: tiến độ, ảnh thi công, nghiệm thu và bàn giao
+// Khách theo dõi dự án lắp đặt của mình: tiến độ, ảnh thi công, bàn giao. Nghiệm thu và đồng ý thay thiết bị trong ứng dụng
+// đã bỏ (410): quản lý / quản trị nghiệm thu nội bộ
 // Dự án của người khác backend trả 404 INSTALLATION_PROJECT_NOT_FOUND (không lộ là có tồn tại)
 
 /** GET /api/customers/me/installation-projects */
@@ -33,19 +33,6 @@ export function getEvidenceUrl(projectId: string, evidenceId: string, dispositio
   return get<InstallationEvidenceUrlView>(ENDPOINTS.customerInstallations.evidenceUrl(projectId, evidenceId), {
     params: { disposition },
   })
-}
-
-/**
- * POST .../acceptance khi dự án chờ khách nghiệm thu. ACCEPT: COMPLETED và bàn giao; REQUEST_REWORK (bắt buộc lý do):
- * REWORK_REQUIRED. Quyết định không sửa được. Trả về view mới của dự án
- */
-export function decideAcceptance(projectId: string, body: AcceptanceDecisionRequest) {
-  return post<InstallationCustomerView>(ENDPOINTS.customerInstallations.acceptance(projectId), body)
-}
-
-/** Đồng ý thay thiết bị quản lý đã duyệt, khi công trình chờ nghiệm thu; xong mới nghiệm thu được */
-export function approveSubstitution(projectId: string) {
-  return post<InstallationCustomerView>(ENDPOINTS.customerInstallations.approveSubstitution(projectId))
 }
 
 /** Sản lượng dự kiến theo mô phỏng đã chọn, không phải số đo */

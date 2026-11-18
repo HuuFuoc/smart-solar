@@ -142,23 +142,27 @@ function quotationNextStep(quotations: QuotationView[]): TrackerNext {
   if (q.status === 'REVISION_REQUESTED')
     return { tone: 'info', title: 'Khách yêu cầu sửa, chờ kỹ thuật viên lập bản sửa' }
   if (q.status === 'ISSUED' && q.isExpired)
-    return { tone: 'warn', title: 'Báo giá đã hết hạn mà khách chưa trả lời', body: 'Gọi khách hỏi ý kiến.' }
+    return {
+      tone: 'warn',
+      title: 'Báo giá đã hết hạn mà khách chưa quyết định',
+      body: 'Gọi khách hỏi ý kiến; kỹ thuật viên lập bản sửa theo giá mới.',
+    }
   if (q.status === 'ISSUED')
     return {
       tone: 'info',
-      title: 'Chờ khách trả lời báo giá',
+      title: 'Kỹ thuật viên đã chốt giá, chờ khách quyết định tại công trình',
       body: `Hiệu lực đến hết ngày ${formatDateVn(q.validUntil)}. Gọi khách nếu cần giải thích.`,
     }
   if (q.status === 'ACCEPTED')
     return {
       tone: 'ok',
       title: 'Khách đã đồng ý báo giá',
-      body: `Đồng ý lúc ${formatMoment(q.acceptedAt)}. Hợp đồng được lập tự động, quản lý hoàn thiện và gửi khách ký.`,
+      body: `Đồng ý lúc ${formatMoment(q.acceptedAt)}. Khách trả bằng QR hoặc tiền mặt với kỹ thuật viên; tiền được xác minh thì hợp đồng tự lập.`,
     }
   return { tone: 'neutral', title: 'Đã khảo sát xong tại công trình' }
 }
 
-// Sau khi khách đồng ý báo giá: việc của hợp đồng (quản lý, khách). Kinh doanh chỉ xem
+// Sau khi khách trả tiền báo giá: việc của hợp đồng (quản lý). Kinh doanh chỉ xem
 function contractStep(contracts: ContractView[]): TrackerNext {
   const c = currentContract(contracts)
   // Bản nháp đầu tiên đã huỷ: báo giá này không lập hợp đồng được nữa, việc còn lại là đóng yêu cầu

@@ -12,23 +12,23 @@ import {
   scheduleStatusMeta,
   scheduleWhen,
 } from '@/features/installation-schedules/scheduleDisplay'
-import { CustomerSlotOffers } from '@/features/installation-schedules/CustomerSlotOffers'
 import {
   SCHEDULE_NOTE_MAX,
+  canPlanForContract,
   canRequestChange,
   liveSchedule,
-  projectLocksSchedule,
+  plannedWaitReason,
 } from '@/features/installation-schedules/scheduleRules'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useCustomerContractScheduleQuery, useRequestScheduleChangeMutation } from '@/hooks/useInstallationSchedules'
 import type { ContractView } from '@/types/res/customerContractsRes'
 
-// Lịch thi công khách đã thống nhất với kỹ thuật viên, trên trang hợp đồng của khách. Lịch dự kiến không bao giờ ghi là đã xác
-// nhận: chỉ xác nhận khi hợp đồng đã thanh toán. Khách xin ngày khác bằng ghi chú; lịch giữ nguyên tới khi kỹ thuật viên ghi
-// ngày mới
+// Lịch thi công khách đã thống nhất trực tiếp với kỹ thuật viên, trên trang hợp đồng của khách (chỉ theo dõi, khách không chọn
+// khung nào). Lịch dự kiến không bao giờ ghi là đã xác nhận: chỉ xác nhận khi hợp đồng đã trả tiền và đã ký. Khách xin ngày khác
+// bằng ghi chú (không bắt buộc); lịch giữ nguyên tới khi kỹ thuật viên ghi ngày mới
 
 export function CustomerSchedulePanel({ contract }: { contract: ContractView }) {
-  const enabled = contract.status === 'SIGNED' || contract.status === 'PAID'
+  const enabled = canPlanForContract(contract.status, contract.paymentCompleted)
   const query = useCustomerContractScheduleQuery(contract.contractId, { enabled })
   const change = useRequestScheduleChangeMutation()
   const [asking, setAsking] = useState(false)
@@ -48,9 +48,6 @@ export function CustomerSchedulePanel({ contract }: { contract: ContractView }) 
         description={live ? scheduleWhen(live) : undefined}
       />
       <PanelBody className="space-y-4">
-        {!projectLocksSchedule(live?.projectStatus) && (
-          <CustomerSlotOffers contractId={contract.contractId} paid={contract.status === 'PAID'} />
-        )}
         {query.isPending ? (
           <p className="text-body text-fg-2">Đang tải lịch thi công…</p>
         ) : query.data === undefined ? (
@@ -61,15 +58,17 @@ export function CustomerSchedulePanel({ contract }: { contract: ContractView }) 
           />
         ) : !live ? (
           <p className="text-body text-fg-2">
-            Kỹ thuật viên đã khảo sát sẽ đề xuất vài khung để bạn chọn, hoặc gọi bạn để thống nhất ngày thi công.
+            Kỹ thuật viên đã khảo sát sẽ thống nhất ngày thi công trực tiếp với bạn rồi ghi lại ở đây.
           </p>
         ) : (
           <>
             {live.status === 'PLANNED' && (
               <p className="text-body text-fg-2">
-                {live.awaitingPayment
-                  ? 'Ngày dự kiến, chưa xác nhận. Lịch được xác nhận sau khi hợp đồng được thanh toán.'
-                  : 'Hợp đồng đã thanh toán, hệ thống đang xác nhận lịch với kỹ thuật viên.'}
+                {plannedWaitReason(live) === 'signature'
+                  ? 'Ngày dự kiến, chưa xác nhận. Bạn đã thanh toán; lịch được xác nhận tự động khi hồ sơ hợp đồng hoàn tất.'
+                  : plannedWaitReason(live) === 'payment'
+                    ? 'Ngày dự kiến, chưa xác nhận. Lịch được xác nhận sau khi hợp đồng được thanh toán.'
+                    : 'Hợp đồng đã hoàn tất, hệ thống đang xác nhận lịch với kỹ thuật viên.'}
               </p>
             )}
             {live.status === 'CONFIRMED' && (

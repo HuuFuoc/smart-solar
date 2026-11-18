@@ -15,13 +15,11 @@ import { isCustomerTodo } from '@/features/contracts/customerContractRules'
 import { CustomerTodoList } from '@/features/customer-dashboard/CustomerTodoList'
 import { customerTodos } from '@/features/customer-dashboard/customerTodos'
 import { isUpcomingAppointment } from '@/features/customer-dashboard/services/dashboardChartService'
-import { latestPerRequest } from '@/features/quotations/quotationDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useSubscriptionsQuery } from '@/hooks/useCustomerAfterSales'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
-import { useMyQuotationsQuery } from '@/hooks/useCustomerQuotations'
 import { useMyServiceRequestsQuery } from '@/hooks/useCustomerServiceRequests'
 import { useMyDispatchesQuery } from '@/hooks/useDispatch'
 import { ROUTES } from '@/routes/paths'
@@ -30,8 +28,8 @@ import { ROUTES } from '@/routes/paths'
 const STAGES = [
   { id: 'ASSESSMENT', label: 'Đánh giá sơ bộ', meta: 'Khai mái nhà, xem mô phỏng' },
   { id: 'SURVEY', label: 'Khảo sát tại nhà', meta: 'Kỹ thuật viên đo đạc' },
-  { id: 'QUOTATION', label: 'Báo giá, hợp đồng', meta: 'Đồng ý báo giá, ký hợp đồng' },
-  { id: 'INSTALLATION', label: 'Lắp đặt', meta: 'Thi công, nghiệm thu' },
+  { id: 'QUOTATION', label: 'Báo giá, hợp đồng', meta: 'Chốt và thanh toán với kỹ thuật viên' },
+  { id: 'INSTALLATION', label: 'Lắp đặt', meta: 'Thi công, Smart Solar nghiệm thu' },
   { id: 'HANDOVER', label: 'Bàn giao, bảo hành', meta: 'Bảo hành, bảo trì' },
 ] as const
 type StageId = (typeof STAGES)[number]['id']
@@ -45,7 +43,6 @@ export function CustomerDashboardPage() {
   const installationsQuery = useMyInstallationsQuery()
   const requestsQuery = useMyRequestsQuery()
   const servicesQuery = useMyServiceRequestsQuery()
-  const quotationsQuery = useMyQuotationsQuery()
   const subscriptionsQuery = useSubscriptionsQuery()
   const contractsQuery = useMyContractsQuery()
   const { dispatches } = useMyDispatchesQuery(requestsQuery.data)
@@ -53,7 +50,6 @@ export function CustomerDashboardPage() {
   const installations = useMemo(() => installationsQuery.data ?? [], [installationsQuery.data])
   const surveyRequests = useMemo(() => requestsQuery.data ?? [], [requestsQuery.data])
   const serviceRequests = useMemo(() => servicesQuery.data ?? [], [servicesQuery.data])
-  const quotations = useMemo(() => quotationsQuery.data ?? [], [quotationsQuery.data])
   const subscriptions = useMemo(() => subscriptionsQuery.data ?? [], [subscriptionsQuery.data])
   const contracts = useMemo(() => contractsQuery.data ?? [], [contractsQuery.data])
 
@@ -62,13 +58,11 @@ export function CustomerDashboardPage() {
       customerTodos({
         requests: surveyRequests,
         dispatches,
-        quotations: latestPerRequest(quotations),
         contracts,
-        installations,
         serviceRequests,
         subscriptions,
       }),
-    [surveyRequests, dispatches, quotations, contracts, installations, serviceRequests, subscriptions],
+    [surveyRequests, dispatches, contracts, serviceRequests, subscriptions],
   )
 
   const activeProjects = installations.filter((p) => isOpenProject(p.status)).length
@@ -77,7 +71,6 @@ export function CustomerDashboardPage() {
     (r) => r.status !== 'COMPLETED' && r.status !== 'CANCELLED' && r.status !== 'CLOSED',
   ).length
   const toBook = todos.filter((t) => t.kind === 'survey').length
-  const quotesToAnswer = todos.filter((t) => t.kind === 'quotation').length
   const contractsToDo = contracts.filter(isCustomerTodo)
   const toPay = contractsToDo.filter((c) => c.status === 'SIGNED').length
   const upcoming = surveyRequests
@@ -89,7 +82,7 @@ export function CustomerDashboardPage() {
       ? 'HANDOVER'
       : activeProjects > 0
         ? 'INSTALLATION'
-        : quotations.length > 0 || surveyRequests.some((r) => r.status === 'COMPLETED')
+        : contracts.length > 0 || surveyRequests.some((r) => r.status === 'COMPLETED')
           ? 'QUOTATION'
           : surveyRequests.length > 0
             ? 'SURVEY'
@@ -101,12 +94,12 @@ export function CustomerDashboardPage() {
     state: i < stageIndex ? 'done' : i === stageIndex ? 'active' : 'upcoming',
   }))
 
-  const loading = [installationsQuery, requestsQuery, servicesQuery, quotationsQuery, subscriptionsQuery].every(
+  const loading = [installationsQuery, requestsQuery, servicesQuery, contractsQuery, subscriptionsQuery].every(
     (q) => q.isPending,
   )
   const allFailed = [installationsQuery, requestsQuery, servicesQuery].every((q) => q.isError)
   const hasAnyData =
-    installations.length > 0 || surveyRequests.length > 0 || serviceRequests.length > 0 || quotations.length > 0
+    installations.length > 0 || surveyRequests.length > 0 || serviceRequests.length > 0 || contracts.length > 0
 
   if (loading) return <PageSkeleton />
   if (allFailed)
@@ -117,7 +110,7 @@ export function CustomerDashboardPage() {
           void installationsQuery.refetch()
           void requestsQuery.refetch()
           void servicesQuery.refetch()
-          void quotationsQuery.refetch()
+          void contractsQuery.refetch()
           void subscriptionsQuery.refetch()
         }}
       />
@@ -161,7 +154,7 @@ export function CustomerDashboardPage() {
               value={openSurveys}
               note={toBook > 0 ? `${toBook} chờ bạn chọn giờ` : undefined}
             />
-            <Stat label="Báo giá chờ bạn trả lời" value={quotesToAnswer} />
+            <Stat label="Công trình đang lắp" value={activeProjects} />
             <Stat
               label="Hợp đồng chờ ký, thanh toán"
               value={contractsToDo.length}

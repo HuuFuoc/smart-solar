@@ -90,10 +90,7 @@ export const ENDPOINTS = {
     evidence: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/evidence`,
     evidenceUrl: (projectId: string, evidenceId: string) =>
       `/customers/me/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
-    acceptance: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/acceptance`,
     handover: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/handover`,
-    approveSubstitution: (projectId: string) =>
-      `/customers/me/installation-projects/${encode(projectId)}/equipment-substitution/approve`,
     energyMonitoring: (projectId: string) =>
       `/customers/me/installation-projects/${encode(projectId)}/energy-monitoring`,
   },
@@ -116,17 +113,6 @@ export const ENDPOINTS = {
     base: '/customers/me/installation-schedules',
     byContract: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/installation-schedule`,
     changeRequest: (scheduleId: string) => `/customers/me/installation-schedules/${encode(scheduleId)}/change-request`,
-    // Khung giờ kỹ thuật viên đề xuất: khách chọn một, thành lịch dự kiến
-    offers: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/installation-slot-offers`,
-    selectOffer: (offerId: string) => `/customers/me/installation-slot-offers/${encode(offerId)}/select`,
-  },
-  // Báo giá lắp đặt: khách không thấy bản nháp
-  customerQuotations: {
-    base: '/customers/me/quotations',
-    byId: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}`,
-    accept: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/accept`,
-    reject: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/reject`,
-    revisionRequest: (quotationId: string) => `/customers/me/quotations/${encode(quotationId)}/revision-request`,
   },
   customerAfterSales: {
     packages: '/customers/me/after-sales/packages',
@@ -247,7 +233,8 @@ export const ENDPOINTS = {
   technicianSchedule: {
     schedule: (technicianUserId: string) => `/technicians/${encode(technicianUserId)}/schedule`,
   },
-  // Giỏ báo giá của kỹ thuật viên đã khảo sát xong: sản phẩm danh mục + số lượng, giá và tổng do backend tính
+  // Báo giá lắp đặt do kỹ thuật viên đã khảo sát lập, trình bày và chốt tại công trình: giỏ (sản phẩm danh mục + số lượng, giá
+  // và tổng do backend tính), chốt giá, ghi quyết định của khách, mở thanh toán QR / tiền mặt
   technicianQuotations: {
     create: (surveyRequestId: string) => `/technician/survey-requests/${encode(surveyRequestId)}/quotation`,
     bySurveyRequest: (surveyRequestId: string) => `/technician/survey-requests/${encode(surveyRequestId)}/quotations`,
@@ -257,14 +244,17 @@ export const ENDPOINTS = {
       `/technician/quotations/${encode(quotationId)}/lines/${encode(lineId)}`,
     issue: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/issue`,
     revisions: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/revisions`,
+    onSiteDecision: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/on-site-decision`,
+    payment: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/payment`,
+    paymentCancel: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/payment/cancel`,
   },
-  // Lịch thi công: kỹ thuật viên đã khảo sát ghi ngày thống nhất với khách sau khi hợp đồng được ký
+  // Lịch thi công: kỹ thuật viên đã khảo sát ghi ngày thống nhất trực tiếp với khách khi hợp đồng đã có và đã trả tiền (hoặc đã
+  // ký với hợp đồng cũ). Khung trống chỉ để chọn ngày; gửi khung cho khách chọn đã bỏ (410)
   technicianInstallationSchedules: {
     base: '/technicians/me/installation-schedules',
     byContract: (contractId: string) => `/technicians/me/contracts/${encode(contractId)}/installation-schedule`,
     cancel: (scheduleId: string) => `/technicians/me/installation-schedules/${encode(scheduleId)}/cancel`,
     availability: (contractId: string) => `/technicians/me/contracts/${encode(contractId)}/installation-availability`,
-    offers: (contractId: string) => `/technicians/me/contracts/${encode(contractId)}/installation-slot-offers`,
   },
   technicianInstallations: {
     base: '/technicians/me/installation-projects',
@@ -296,6 +286,15 @@ export const ENDPOINTS = {
     absence: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/absence`,
     // Kỹ thuật viên của buổi hẹn lập báo giá sửa chữa / bảo trì lẻ đã kiểm tra từ sản phẩm danh mục
     quotations: (requestId: string) => `/technicians/me/after-sales/requests/${encode(requestId)}/quotations`,
+    // Khách xác nhận kết quả tại công trình, kỹ thuật viên ghi bằng tài khoản của mình
+    completionConfirmation: (requestId: string) =>
+      `/technicians/me/after-sales/requests/${encode(requestId)}/completion-confirmation`,
+    // Báo giá do kỹ thuật viên lập: ghi quyết định của khách tại chỗ, mở / xem / huỷ thanh toán QR hoặc tiền mặt
+    quotationOnSiteDecision: (quotationId: string) =>
+      `/technicians/me/after-sales/quotations/${encode(quotationId)}/on-site-decision`,
+    quotationPayment: (quotationId: string) => `/technicians/me/after-sales/quotations/${encode(quotationId)}/payment`,
+    quotationPaymentCancel: (quotationId: string) =>
+      `/technicians/me/after-sales/quotations/${encode(quotationId)}/payment/cancel`,
   },
 
   // Thi công, phía quản lý và quản trị
@@ -310,6 +309,8 @@ export const ENDPOINTS = {
       `/installation-projects/${encode(projectId)}/checklist/${encode(itemId)}`,
     cancel: (projectId: string) => `/installation-projects/${encode(projectId)}/cancel`,
     returnToRework: (projectId: string) => `/installation-projects/${encode(projectId)}/return-to-rework`,
+    // Nghiệm thu nội bộ của quản lý / quản trị, thay cho bước khách nghiệm thu trong ứng dụng
+    acceptance: (projectId: string) => `/installation-projects/${encode(projectId)}/acceptance`,
     evidence: (projectId: string) => `/installation-projects/${encode(projectId)}/evidence`,
     evidenceUrl: (projectId: string, evidenceId: string) =>
       `/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,

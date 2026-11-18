@@ -1,5 +1,10 @@
 /* Sinh tự động từ docs/api/swagger.json bằng `npm run gen:api`, KHÔNG sửa tay. */
 
+export type OnSiteCompletionRequest = {
+  note?: string | null
+  evidenceFileIds?: string[] | null
+}
+
 export type QuotationComponentRequest = {
   /** Format: uuid */
   productId?: string | null

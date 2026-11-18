@@ -7,6 +7,7 @@ import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState, UnavailableState } from '@/components/common/ui/states'
 import { ContractConfirmDialog } from '@/features/contracts/ContractConfirmDialog'
 import { CartLineDialog } from '@/features/quotations/CartLineDialog'
+import { DecisionDialog, PresentQuotationDialog, QuotationPaymentPanel } from '@/features/quotations/OnSiteQuotation'
 import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
 import {
   formatDateVn,
@@ -21,8 +22,10 @@ import {
   CART_MAX_LINES,
   bomCartPlan,
   canCreateCart,
+  canRecordAgreed,
   canReviseCart,
   cartIssueBlockers,
+  declineNote,
   isTechnicianDraft,
   missingCartTypes,
   priceProblemLineIds,
@@ -39,12 +42,13 @@ import {
 } from '@/hooks/useTechnicianQuotations'
 import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import { isApiError, isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
+import type { OnSiteDecision } from '@/common/quotation'
 import type { QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
 import type { OnSiteSurveyBillOfMaterials } from '@/types/res/technicianOnSiteSurveyRes'
 
 // Báo giá lắp đặt do kỹ thuật viên đã khảo sát lập, như một giỏ hàng: chọn sản phẩm danh mục và số lượng, backend tính giá, thuế,
-// tổng. Chỉ hiện khi biên bản khảo sát đã hoàn thành. Khách trả lời (đồng ý / yêu cầu sửa / từ chối) trên cổng khách hàng;
-// đồng ý thì backend tự lập bản nháp hợp đồng cho quản lý
+// tổng. Chỉ hiện khi biên bản khảo sát đã hoàn thành. Chốt giá rồi trình bày cho khách trên máy này, ghi khách đồng ý / không /
+// muốn sửa, mở thanh toán QR hoặc tiền mặt. Khách không nhận gì trong ứng dụng; tiền được xác minh thì backend tự lập hợp đồng
 
 type Props = {
   surveyRequestId: string
@@ -64,7 +68,7 @@ export function TechnicianQuotationPanel({ surveyRequestId, feasibility, billOfM
   async function startCart() {
     try {
       await create.mutateAsync(surveyRequestId)
-      toast.success('Đã lập báo giá nháp. Thêm sản phẩm rồi gửi cho khách.')
+      toast.success('Đã lập báo giá nháp. Thêm sản phẩm rồi chốt báo giá.')
     } catch (e) {
       toast.error(quotationErrorMessage(e))
     }
@@ -281,22 +285,22 @@ function CartEditor({
           Thêm sản phẩm
         </Button>
         <Button
-          icon="send"
+          icon="task_alt"
           variant="primary"
           disabled={busy || blockers.length > 0}
           onClick={() => setConfirming(true)}
         >
-          Gửi cho khách
+          Chốt báo giá
         </Button>
       </div>
 
       {dialog && <CartLineDialog open quotation={q} line={dialog.line} onClose={() => setDialog(null)} />}
       {confirming && (
         <ContractConfirmDialog
-          title="Gửi báo giá cho khách?"
-          confirmLabel="Gửi cho khách"
-          icon="send"
-          successText="Đã gửi báo giá cho khách."
+          title="Chốt báo giá?"
+          confirmLabel="Chốt báo giá"
+          icon="task_alt"
+          successText="Đã chốt báo giá. Trình bày cho khách để ghi quyết định."
           formatError={quotationErrorMessage}
           run={async () => {
             try {
@@ -311,9 +315,9 @@ function CartEditor({
         >
           <p>
             {q.lines.length} dòng, tạm tính {formatQuotationMoney(q.totalAmount, q.currency)}. Hệ thống tính lại giá
-            theo danh mục lúc gửi, cộng thuế và đặt hạn hiệu lực.
+            theo danh mục lúc chốt, cộng thuế và đặt hạn hiệu lực. Không gửi gì vào ứng dụng của khách.
           </p>
-          <p>Gửi rồi thì không sửa được; muốn đổi phải lập bản sửa.</p>
+          <p>Chốt rồi thì không sửa được; muốn đổi phải lập bản sửa.</p>
         </ContractConfirmDialog>
       )}
     </>
@@ -331,11 +335,13 @@ function IssuedQuotation({
 }) {
   const revise = useReviseCartMutation()
   const revisable = canReviseCart(q, list, feasibility)
+  const [presenting, setPresenting] = useState(false)
+  const [deciding, setDeciding] = useState<OnSiteDecision | null>(null)
 
   async function startRevision() {
     try {
       await revise.mutateAsync(q.quotationId)
-      toast.success('Đã lập bản sửa. Chỉnh sản phẩm rồi gửi lại cho khách.')
+      toast.success('Đã lập bản sửa. Chỉnh sản phẩm rồi chốt lại.')
     } catch (e) {
       toast.error(quotationErrorMessage(e))
     }
@@ -355,24 +361,34 @@ function IssuedQuotation({
   return (
     <>
       {q.status === 'REVISION_REQUESTED' && (
-        <Notice tone="danger" title="Khách yêu cầu sửa báo giá">
-          <span className="whitespace-pre-line">{q.revisionReason || 'Khách không ghi lý do.'}</span>
+        <Notice tone="danger" title="Khách muốn sửa báo giá">
+          <span className="whitespace-pre-line">{q.revisionReason || 'Không có ghi chú.'}</span>
         </Notice>
       )}
       {q.status === 'REJECTED' && (
-        <Notice tone="warn" title={`Khách từ chối lúc ${formatMoment(q.closedAt)}`}>
-          {q.closeReason ? <span className="whitespace-pre-line">{q.closeReason}</span> : 'Khách không ghi lý do.'}
-        </Notice>
-      )}
-      {q.status === 'ACCEPTED' && (
-        <Notice tone="ok" title={`Khách đã đồng ý lúc ${formatMoment(q.acceptedAt)}`}>
-          Hợp đồng được lập tự động; quản lý hoàn thiện và gửi khách ký. Khi hợp đồng đã ký, hẹn ngày thi công với khách
-          ở mục Hẹn lịch thi công.
+        <Notice tone="warn" title={`Khách không đồng ý lúc ${formatMoment(q.closedAt)}`}>
+          {declineNote(q.closeReason) ? (
+            <span className="whitespace-pre-line">{declineNote(q.closeReason)}</span>
+          ) : (
+            'Không có ghi chú.'
+          )}
         </Notice>
       )}
       {q.status === 'ISSUED' && (
+        <Notice tone={canRecordAgreed(q) ? 'info' : 'warn'} title="Trình bày báo giá cho khách">
+          Chốt giá lúc {formatMoment(q.issuedAt)}, hiệu lực đến hết ngày {formatDateVn(q.validUntil)}. Mở màn trình bày
+          để khách xem, rồi ghi khách đồng ý, không đồng ý hay muốn sửa.
+          <span className="mt-3 flex flex-wrap gap-3">
+            <Button icon="present_to_all" variant="primary" onClick={() => setPresenting(true)}>
+              Trình bày cho khách
+            </Button>
+          </span>
+        </Notice>
+      )}
+      {q.status === 'ACCEPTED' && (
         <p className="text-body text-fg-2">
-          Gửi khách lúc {formatMoment(q.issuedAt)}, hiệu lực đến hết ngày {formatDateVn(q.validUntil)}.
+          Khách đồng ý lúc {formatMoment(q.acceptedAt)}. Giá không đổi nữa; muốn đổi thì ghi khách muốn sửa trước khi mở
+          thanh toán.
         </p>
       )}
       {q.origin !== 'TECHNICIAN' && <p className="text-meta text-fg-2">{quotationOriginLabel(q.origin)}.</p>}
@@ -380,6 +396,19 @@ function IssuedQuotation({
       <QuotationTotals quotation={q} className="ml-auto" />
       <QuotationTerms quotation={q} />
       {reviseButton && <div className="flex flex-wrap gap-3">{reviseButton}</div>}
+      {q.status === 'ACCEPTED' && <QuotationPaymentPanel quotation={q} onWithdraw={setDeciding} />}
+
+      {presenting && (
+        <PresentQuotationDialog
+          quotation={q}
+          onClose={() => setPresenting(false)}
+          onDecide={(decision) => {
+            setPresenting(false)
+            setDeciding(decision)
+          }}
+        />
+      )}
+      {deciding && <DecisionDialog quotation={q} decision={deciding} onClose={() => setDeciding(null)} />}
     </>
   )
 }

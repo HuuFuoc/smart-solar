@@ -5,7 +5,6 @@ import {
   formatProjectDateTime,
   formatProjectPhaseLabel,
 } from '@/features/installations/customerInstallationDisplay'
-import { awaitsCustomerDecision } from '@/features/installations/installationDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { ROUTES, withId } from '@/routes/paths'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
@@ -40,7 +39,6 @@ export function CustomerInstallationTable({ items }: { items: InstallationCustom
           </thead>
           <tbody className="divide-y divide-line">
             {items.map((p) => {
-              const decide = awaitsCustomerDecision(p)
               const phaseLabel = formatProjectPhaseLabel(p)
               const timeInfo = formatProjectDateTime(p)
               const statusBadge = customerProjectStatusBadge(p)
@@ -119,7 +117,7 @@ export function CustomerInstallationTable({ items }: { items: InstallationCustom
                         icon="visibility"
                         className="rounded-control border-primary font-medium text-primary hover:bg-accent-soft"
                       >
-                        {decide ? 'Xem và nghiệm thu' : 'Xem tiến độ'}
+                        Xem tiến độ
                       </ButtonLink>
                       <IconButton
                         icon="more_vert"

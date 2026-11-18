@@ -36,7 +36,10 @@ export type ContractPaymentView = {
   paymentState: ContractPaymentState
 }
 
-/** Một dòng của lần thanh toán (backend 8f70cb2, PaymentLineView). `itemType`: CONTRACT | MAINTENANCE_PACKAGE | DISASTER_PACKAGE | REPAIR_QUOTATION | MAINTENANCE_QUOTATION */
+/**
+ * Một dòng của lần thanh toán (backend 462733c, PaymentLineView). `itemType`: CONTRACT | MAINTENANCE_PACKAGE | DISASTER_PACKAGE |
+ * REPAIR_QUOTATION | MAINTENANCE_QUOTATION | INSTALLATION_QUOTATION (báo giá lắp đặt trả trước, `installationQuotationId`)
+ */
 export type PaymentLineView = {
   itemType: string
   amount: number
@@ -44,6 +47,8 @@ export type PaymentLineView = {
   contractId: string | null
   subscriptionId: string | null
   quotationId: string | null
+  /** Báo giá lắp đặt khách đồng ý tại công trình; áp xong thì hợp đồng tự lập (`contractId` của lần thanh toán) */
+  installationQuotationId?: string | null
 }
 
 /** GET /api/manager/payments (Manager, Admin, luôn phân trang): lần thanh toán kèm các dòng, mới nhất trước */

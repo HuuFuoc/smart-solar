@@ -14,7 +14,6 @@ import { Facts } from '@/features/pre-surveys/Facts'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useMyContractDocumentUrlMutation } from '@/hooks/useCustomerContracts'
-import { useMyQuotationsQuery } from '@/hooks/useCustomerQuotations'
 import { useMySitesQuery } from '@/hooks/usePreSurveys'
 import type { DocumentDisposition } from '@/services/contractService'
 import type { ContractView } from '@/types/res/customerContractsRes'
@@ -25,19 +24,17 @@ import type { ContractView } from '@/types/res/customerContractsRes'
 
 function PrintContractButton({ contract: c }: { contract: ContractView }) {
   const [blocked, setBlocked] = useState(false)
-  // Phường (hợp đồng không chụp phường) và ngày đồng ý báo giá chỉ để in cho đủ, thiếu thì vẫn in được
+  // Phường (hợp đồng không chụp phường) chỉ để in cho đủ, thiếu thì vẫn in được. Khách không còn đọc được báo giá nên không in
+  // ngày đồng ý báo giá
   const requests = useMyRequestsQuery()
   const sites = useMySitesQuery()
-  const quotations = useMyQuotationsQuery()
   const siteId = requests.data?.find((r) => r.surveyRequestId === c.surveyRequestId)?.propertySiteId
   const site = sites.data?.items.find((s) => s.siteId === siteId)
-  const quotation = quotations.data?.find((q) => q.quotationId === c.quotationId)
 
   function print() {
     const opened = openContractPrint({
       contract: c,
       ward: site?.communeName ?? site?.ward,
-      quotationAcceptedAt: quotation?.acceptedAt,
     })
     setBlocked(!opened)
   }

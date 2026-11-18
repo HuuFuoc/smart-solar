@@ -21,6 +21,7 @@ import {
   canConfirmCash,
   hasPaymentStage,
   isAwaitingPayment,
+  isPrepaidContract,
   paymentsNeedingAttention,
   type ContractViewer,
 } from '@/features/contracts/contractRules'
@@ -32,8 +33,9 @@ import type { ContractPaymentView } from '@/types/res/staffPaymentsRes'
 import { formatMoney } from '@/utils/format'
 
 // Trạng thái thanh toán của hợp đồng phía quản lý / quản trị (GET /contracts/{id}/payments; kinh doanh bị 403 nên trang của
-// kinh doanh không vẽ khối này). PayOS: hệ thống tự xác nhận đã nhận tiền. Tiền mặt: khách chọn trên cổng khách hàng, quản lý /
-// quản trị ghi nhận khi đã nhận tiền kèm phiếu thu. Lần thanh toán cần xử lý tay (số tiền lệch, trả hai lần) tô đỏ
+// kinh doanh không vẽ khối này). Hợp đồng lập từ báo giá đã trả tiền tại công trình: tiền đã xác minh trước khi có hợp đồng,
+// trạng thái hợp đồng và trạng thái thanh toán hiện riêng, không thu lại. Hợp đồng cũ: PayOS hệ thống tự xác nhận; tiền mặt khách
+// chọn trên cổng khách hàng, quản lý / quản trị ghi nhận kèm phiếu thu. Lần thanh toán cần xử lý tay (số tiền lệch, trả hai lần) tô đỏ
 
 export function ContractPaymentPanel({
   contract,
@@ -114,6 +116,7 @@ function PaymentBody({
   installationsPath?: string
 }) {
   const attention = paymentsNeedingAttention(view.attempts)
+  const prepaid = isPrepaidContract(contract)
   const paid = view.contractStatus === 'PAID'
   const [confirming, setConfirming] = useState(false)
   const confirmCash = useConfirmCashPaymentMutation()
@@ -144,6 +147,15 @@ function PaymentBody({
           </ul>
         </Notice>
       )}
+      {prepaid && !paid && (
+        <Notice
+          tone="ok"
+          title={`Đã thanh toán trước khi lập hợp đồng, lúc ${formatMoment(contract.paymentConfirmedAt)}`}
+        >
+          Khách đã trả {formatMoney(contract.totalAmount, contract.currency)} cho báo giá đã đồng ý tại công trình.
+          Duyệt bản ký xong là hợp đồng thành đã thanh toán, không thu lần hai.
+        </Notice>
+      )}
       {paid ? (
         <Notice tone="ok" title={`Đã thanh toán đủ lúc ${formatMoment(view.current?.paidAt ?? contract.paidAt)}`}>
           {paidCash ? 'Tiền mặt đã được ghi nhận. ' : ''}Lịch thi công kỹ thuật viên đã hẹn được hệ thống tự xác nhận;
@@ -166,7 +178,11 @@ function PaymentBody({
         items={[
           { k: 'Số tiền phải trả', v: formatMoney(view.amount, view.currency) },
           { k: 'Trạng thái hợp đồng', v: contractStatusLabel(view.contractStatus) },
-          ...(state ? [{ k: 'Thanh toán', v: <Badge tone={state.tone}>{state.staff}</Badge> }] : []),
+          ...(prepaid && !paid
+            ? [{ k: 'Thanh toán', v: <Badge tone="ok">Đã nhận đủ</Badge> }]
+            : state
+              ? [{ k: 'Thanh toán', v: <Badge tone={state.tone}>{state.staff}</Badge> }]
+              : []),
           ...(view.current
             ? [
                 {

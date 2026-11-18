@@ -1,9 +1,14 @@
-// Viết tay vì swagger của tag TechnicianQuotations, SalesQuotations và CustomerQuotations chỉ khai "200 OK". Theo record C# của
-// backend `main` (ad10455): Modules.Quotations (QuotationView, QuotationLineView, QuotationEventView). Kỹ thuật viên, kinh doanh,
-// quản lý và khách nhận cùng một view; khách không bao giờ thấy bản nháp và giá danh mục. `pricingBasis`, `pricingReview`,
-// `pricingApproval` chỉ còn ở báo giá cũ (SALES / AUTOMATIC), báo giá của kỹ thuật viên luôn null
+// Viết tay vì swagger của tag TechnicianQuotations, SalesQuotations chỉ khai "200 OK". Theo record C# của backend `main`
+// (462733c): Modules.Quotations (QuotationView, QuotationLineView, QuotationEventView, QuotationPaymentView). Kỹ thuật viên, kinh
+// doanh, quản lý nhận cùng một view. Khách không còn đọc báo giá (GET /customers/me/quotations trả 410). `pricingBasis`,
+// `pricingReview`, `pricingApproval` chỉ còn ở báo giá cũ (SALES / AUTOMATIC), báo giá của kỹ thuật viên luôn null
+import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 
-/** REJECTED (khách từ chối) và CANCELLED (yêu cầu khảo sát bị rút / đóng khi báo giá còn mở) là trạng thái cuối */
+/**
+ * ISSUED: kỹ thuật viên đã chốt giá để trình bày tại công trình; ACCEPTED: kỹ thuật viên ghi khách đồng ý (giá không đổi nữa);
+ * REVISION_REQUESTED: khách muốn sửa; REJECTED (khách không đồng ý) và CANCELLED (yêu cầu khảo sát bị rút / đóng khi báo giá còn
+ * mở) là trạng thái cuối
+ */
 export type QuotationStatus =
   'DRAFT' | 'ISSUED' | 'ACCEPTED' | 'REVISION_REQUESTED' | 'SUPERSEDED' | 'REJECTED' | 'CANCELLED' | (string & {})
 
@@ -25,7 +30,7 @@ export type QuotationLineView = {
   description: string | null
 }
 
-/** CREATED | UPDATED | ISSUED | ACCEPTED | REVISION_REQUESTED | REVISION_CREATED | SUPERSEDED | DOCUMENT_ATTACHED */
+/** CREATED | UPDATED | ISSUED | AGREED_ON_SITE | DECLINED_ON_SITE | REVISION_REQUESTED_ON_SITE | REVISION_CREATED | SUPERSEDED …; ACCEPTED, REJECTED, REVISION_REQUESTED là dữ liệu cũ (khách trả lời trong ứng dụng) */
 export type QuotationEventView = {
   eventType: string
   actorUserId: string
@@ -128,7 +133,7 @@ export type QuotationView = {
   totalAmount: number
   validUntil: string | null
   isExpired: boolean
-  /** ISSUED, chưa hết hạn và biên bản khảo sát chưa đổi sau khi lập */
+  /** ISSUED, chưa hết hạn và biên bản khảo sát chưa đổi sau khi lập: kỹ thuật viên ghi được "khách đồng ý" */
   canAccept: boolean
   terms: string | null
   notes: string | null
@@ -137,7 +142,7 @@ export type QuotationView = {
   onSiteSurveyVersion: number
   issuedAt: string | null
   acceptedAt: string | null
-  /** Lý do khách yêu cầu sửa (trên bản khách gửi lại) */
+  /** Khách muốn sửa gì (kỹ thuật viên ghi lúc chọn "Khách muốn sửa") */
   revisionReason: string | null
   /** Gửi làm `revision` khi sửa bản nháp / gửi khách */
   revision: number
@@ -158,5 +163,37 @@ export type QuotationView = {
   pricingApproval: PricingApprovalView | null
   /** Lúc khách từ chối (REJECTED) hoặc lúc bị đóng theo yêu cầu khảo sát (CANCELLED) */
   closedAt: string | null
+  /** Ghi tại công trình thì bắt đầu bằng "DECLINED_ON_SITE: " rồi tới điều khách nói */
   closeReason: string | null
+}
+
+/**
+ * Trạng thái thanh toán của báo giá đã đồng ý (backend tính từ các lần thanh toán). PAID: tiền đã xác minh và hợp đồng đã lập
+ * (`contractId`); REVIEW_REQUIRED: tiền về nhưng không áp được (sai số tiền, báo giá đã đóng…), quản lý xử lý, không có hợp đồng
+ */
+export type QuotationPaymentState =
+  | 'NOT_PAYABLE'
+  | 'AWAITING_PAYMENT'
+  | 'ONLINE_IN_PROGRESS'
+  | 'AWAITING_CASH_CONFIRMATION'
+  | 'PAID'
+  | 'REVIEW_REQUIRED'
+  | (string & {})
+
+/**
+ * POST / GET /technician/quotations/{id}/payment và POST .../payment/cancel. `current`: lần đã trả, không thì lần đang mở; null
+ * khi chưa mở lần nào. `attempts` mới nhất trước. Số tiền đúng bằng tổng báo giá, do backend quyết định
+ */
+export type QuotationPaymentView = {
+  quotationId: string
+  quoteNumber: string
+  quotationVersion: number
+  quotationStatus: QuotationStatus
+  amount: number
+  currency: string
+  paymentState: QuotationPaymentState
+  current: PaymentAttemptView | null
+  attempts: PaymentAttemptView[]
+  /** Hợp đồng lập từ báo giá đã trả; null tới khi tiền được xác minh */
+  contractId: string | null
 }

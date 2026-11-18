@@ -46,7 +46,7 @@ export type ContractPrintInput = {
   contract: ContractView
   /** Tên phường của yêu cầu khảo sát: customerSnapshot không có phường */
   ward?: string | null
-  /** Lúc khách đồng ý báo giá */
+  /** Lúc khách đồng ý báo giá (khách không còn đọc được báo giá nên thường để trống) */
   quotationAcceptedAt?: string | null
 }
 
@@ -262,23 +262,24 @@ export function contractPrintHtml({ contract: c, ward, quotationAcceptedAt }: Co
   <p>2.3. Giá trị hợp đồng không thay đổi trong suốt thời gian thực hiện hợp đồng, kể cả khi lập phụ lục.</p>
 
   <h2>Điều 3. Thanh toán</h2>
-  <p>3.1. Bên A thanh toán một lần toàn bộ giá trị hợp đồng sau khi Bên B xác nhận bản hợp đồng có chữ ký của Bên A trên
-  hệ thống Smart Solar.</p>
-  <p>3.2. Bên A chuyển khoản qua cổng thanh toán PayOS tại mục “Hợp đồng” trên cổng khách hàng Smart Solar. Nghĩa vụ
-  thanh toán hoàn thành khi hệ thống ghi nhận Bên B đã nhận đủ tiền.</p>
+  <p>3.1. Bên A thanh toán một lần toàn bộ giá trị hợp đồng theo báo giá đã đồng ý, bằng mã QR PayOS hoặc tiền mặt khi
+  kỹ thuật viên của Bên B trình bày báo giá tại công trình. Khoản đã thanh toán trước khi ký được tính là thanh toán của hợp
+  đồng này; Bên B không thu thêm lần nào khác.</p>
+  <p>3.2. Nghĩa vụ thanh toán hoàn thành khi hệ thống Smart Solar ghi nhận Bên B đã nhận đủ tiền (PayOS xác nhận, hoặc
+  Bên B xác nhận phiếu thu tiền mặt).</p>
   <p>3.3. Bên B xuất hoá đơn giá trị gia tăng cho Bên A theo quy định của pháp luật.</p>
 
   <h2>Điều 4. Thi công</h2>
-  <p>4.1. Sau khi nhận đủ thanh toán, Bên B lập dự án thi công, phân công kỹ thuật viên và thông báo thời gian thi công
-  cho Bên A trên cổng khách hàng.</p>
+  <p>4.1. Kỹ thuật viên của Bên B thống nhất ngày thi công trực tiếp với Bên A. Lịch được xác nhận khi hợp đồng đã thanh
+  toán và đã ký; Bên A theo dõi lịch và tiến độ trên cổng khách hàng.</p>
   <p>4.2. Bên A bố trí mặt bằng, lối đi và điện thi công tại công trình trong thời gian thi công đã thông báo. Thời gian
   thi công chỉ thay đổi khi hai bên cùng đồng ý.</p>
 
   <h2>Điều 5. Nghiệm thu và bàn giao</h2>
-  <p>5.1. Lắp đặt xong, Bên B gửi báo cáo hoàn thành kèm ảnh thi công lên hệ thống. Bên A kiểm tra hệ thống rồi chọn
-  “Đồng ý nghiệm thu” hoặc “Yêu cầu làm lại” (ghi rõ lý do) trên cổng khách hàng.</p>
-  <p>5.2. Khi Bên A yêu cầu làm lại, Bên B khắc phục các nội dung Bên A nêu bằng chi phí của mình rồi gửi nghiệm thu
-  lại.</p>
+  <p>5.1. Lắp đặt xong, Bên B gửi báo cáo hoàn thành kèm ảnh thi công lên hệ thống và cùng Bên A kiểm tra, bàn giao tại công
+  trình. Bên B nghiệm thu trên hệ thống theo kết quả bàn giao đó; Bên A xem báo cáo, ảnh và hồ sơ bàn giao trên cổng khách
+  hàng.</p>
+  <p>5.2. Khi kết quả chưa đạt, Bên B khắc phục bằng chi phí của mình rồi nghiệm thu lại.</p>
   <p>5.3. Sau khi Bên A đồng ý nghiệm thu, Bên B bàn giao hệ thống kèm danh sách thiết bị đã lắp (hãng, model, số serial)
   và thời hạn bảo hành của từng thiết bị. Ngày bàn giao ghi trên hệ thống là ngày bắt đầu tính bảo hành.</p>
 

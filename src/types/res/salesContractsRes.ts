@@ -67,6 +67,11 @@ export type ContractView = {
   /** Format: int32 */
   warrantyMonths?: number | null
   discard?: ContractDiscardView
+  paymentCompleted?: boolean
+  /** Format: uuid */
+  paymentAttemptId?: string | null
+  /** Format: date-time */
+  paymentConfirmedAt?: string | null
 }
 
 export type SignatureSubmissionView = {

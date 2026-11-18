@@ -1,5 +1,4 @@
 import { Badge } from '@/components/common/ui/badge'
-import { ButtonLink } from '@/components/common/ui/button'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState, UnavailableState } from '@/components/common/ui/states'
@@ -7,7 +6,6 @@ import { CustomerContractTables } from '@/features/contracts/CustomerContractTab
 import { isCustomerTodo, latestPerContract } from '@/features/contracts/customerContractRules'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
-import { ROUTES } from '@/routes/paths'
 import { isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 
 // Hợp đồng lắp đặt của khách, mỗi số hợp đồng một dòng (phiên bản mới nhất). Việc của khách (ký, ký lại, thanh toán) lên đầu.
@@ -43,12 +41,7 @@ export function CustomerContractsPage() {
           return rows.length === 0 ? (
             <EmptyState
               title="Chưa có hợp đồng"
-              description="Hợp đồng hiện ở đây khi bạn đồng ý báo giá và Smart Solar gửi hợp đồng để ký."
-              action={
-                <ButtonLink to={ROUTES.customer.quotations} variant="info" icon="visibility">
-                  Xem báo giá
-                </ButtonLink>
-              }
+              description="Khi bạn đồng ý và thanh toán báo giá với kỹ thuật viên tại công trình, Smart Solar lập hợp đồng; hợp đồng hiện ở đây khi hồ sơ sẵn sàng."
             />
           ) : (
             <CustomerContractTables contracts={rows} propertyNames={names} />

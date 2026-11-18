@@ -11,6 +11,7 @@ import { ProgressTracker, type TrackerNext } from '@/components/common/ui/progre
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { CustomerQuotationPanel } from '@/features/after-sales/CustomerQuotationPanel'
+import { isDecidedOnSite } from '@/features/after-sales/customerServiceRules'
 import {
   BOOKING_LEAD_DAYS,
   CHANGE_LEAD_HOURS,
@@ -87,6 +88,20 @@ function nextStep(r: ServiceRequestView): TrackerNext {
       body: 'Giờ hẹn khác giờ bạn chọn.',
       action: { label: 'Xem lịch hẹn', icon: 'event', target: 'confirm-visit' },
     }
+  if (quotation && isDecidedOnSite(quotation) && (quotation.status === 'ISSUED' || quotation.status === 'ACCEPTED'))
+    return quotation.status === 'ISSUED'
+      ? {
+          tone: 'info',
+          title: 'Kỹ thuật viên đang trình bày báo giá',
+          body: 'Bạn trả lời trực tiếp với kỹ thuật viên tại công trình.',
+          action: { label: 'Xem báo giá', icon: 'request_quote', target: 'quotation' },
+        }
+      : {
+          tone: 'info',
+          title: 'Chờ xác nhận thanh toán',
+          body: 'Thanh toán bằng QR trên máy kỹ thuật viên hoặc tiền mặt; Smart Solar xác nhận rồi kỹ thuật viên làm tiếp.',
+          action: { label: 'Xem báo giá', icon: 'request_quote', target: 'quotation' },
+        }
   if (quotation?.status === 'ISSUED')
     return {
       tone: 'danger',
@@ -106,7 +121,7 @@ function nextStep(r: ServiceRequestView): TrackerNext {
       return {
         tone: 'danger',
         title: 'Bạn cần nghiệm thu',
-        body: 'Đọc báo cáo của kỹ thuật viên rồi chọn Đồng ý kết quả hoặc Chưa đạt.',
+        body: 'Kỹ thuật viên ghi xác nhận khi bạn kiểm tra cùng tại công trình. Chưa xác nhận thì đọc báo cáo rồi chọn Đồng ý kết quả hoặc Chưa đạt.',
         action: { label: 'Nghiệm thu', icon: 'fact_check', target: 'acceptance' },
       }
     case 'SUBMITTED':

@@ -17,8 +17,30 @@ export const isLiveSchedule = (s: Schedule) =>
 /** Lịch đang hiệu lực trong lịch sử của một hợp đồng (backend trả mới nhất trước) */
 export const liveSchedule = <T extends Schedule>(history: T[]): T | null => history.find(isLiveSchedule) ?? null
 
-/** Hẹn ngày được khi hợp đồng đã ký hoặc đã thanh toán */
-export const canPlanForContract = (contractStatus: string) => contractStatus === 'SIGNED' || contractStatus === 'PAID'
+/** Hợp đồng còn hiệu lực (không bị thay bằng phụ lục, không bị huỷ bản nháp) */
+const LIVE_CONTRACT = ['DRAFT', 'ISSUED', 'AWAITING_SIGNATURE', 'UNDER_REVIEW', 'SIGNATURE_REJECTED', 'SIGNED', 'PAID']
+
+/**
+ * Hẹn ngày được khi hợp đồng đã ký / đã thanh toán (luồng cũ), hoặc hợp đồng lập từ báo giá đã thanh toán tại công trình
+ * (`paymentCompleted`) ở bất kỳ trạng thái còn hiệu lực nào: trả tiền trước, ký sau
+ */
+export const canPlanForContract = (contractStatus: string, paymentCompleted = false) =>
+  contractStatus === 'SIGNED' ||
+  contractStatus === 'PAID' ||
+  (paymentCompleted && LIVE_CONTRACT.includes(contractStatus))
+
+/**
+ * Vì sao lịch dự kiến chưa xác nhận. `awaitingContractSignature`: đã thanh toán, chờ duyệt bản ký giấy; `awaitingPayment`: hợp
+ * đồng cũ chưa thanh toán. Hai cờ do backend tính; không có cờ nào là hợp đồng đã xong, hệ thống đang xác nhận
+ */
+export function plannedWaitReason(
+  s: Pick<InstallationScheduleView, 'status' | 'awaitingPayment' | 'awaitingContractSignature'>,
+) {
+  if (s.status !== 'PLANNED') return null
+  if (s.awaitingContractSignature) return 'signature' as const
+  if (s.awaitingPayment) return 'payment' as const
+  return 'confirming' as const
+}
 
 /** Dự án thi công đã bắt đầu / đã huỷ thì không đổi lịch ở đây (INSTALLATION_SCHEDULE_INSTALLATION_STARTED) */
 const STARTED_PROJECT = ['IN_PROGRESS', 'REWORK_REQUIRED', 'PENDING_CUSTOMER_ACCEPTANCE', 'COMPLETED', 'CANCELLED']
@@ -98,10 +120,9 @@ export function changeNoteError(text: string) {
 export const isStaleScheduleError = (code: string | null | undefined) =>
   code === 'INSTALLATION_SCHEDULE_STALE_REVISION' || code === 'INSTALLATION_SCHEDULE_NOT_LIVE'
 
-/** Bám InstallationScheduleHandlers.MaxOffers / MaxAvailabilityDays của backend */
-export const SLOT_OFFER_MAX = 5
+/** Bám InstallationScheduleHandlers.MaxAvailabilityDays của backend */
 export const AVAILABILITY_MAX_DAYS = 31
-export const OFFER_DURATION_MAX_DAYS = 60
+export const AVAILABILITY_DURATION_MAX_DAYS = 60
 
 const dayNumber = (date: string) => Date.parse(`${date}T00:00:00Z`) / 86_400_000
 
@@ -112,32 +133,33 @@ export function availabilityRangeErrors(from: string, to: string, durationDays: 
   else if (dayNumber(to) < dayNumber(from)) errors.range = 'Đến ngày phải sau hoặc bằng từ ngày.'
   else if (dayNumber(to) - dayNumber(from) + 1 > AVAILABILITY_MAX_DAYS)
     errors.range = `Xem tối đa ${AVAILABILITY_MAX_DAYS} ngày một lần.`
-  if (!Number.isInteger(durationDays) || durationDays < 1 || durationDays > OFFER_DURATION_MAX_DAYS)
-    errors.duration = `Số ngày thi công từ 1 đến ${OFFER_DURATION_MAX_DAYS}.`
+  if (!Number.isInteger(durationDays) || durationDays < 1 || durationDays > AVAILABILITY_DURATION_MAX_DAYS)
+    errors.duration = `Số ngày thi công từ 1 đến ${AVAILABILITY_DURATION_MAX_DAYS}.`
   return errors
 }
 
-type Interval = { startsAt: string; endsAt: string }
+const vnParts = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Ho_Chi_Minh',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
 
-/** Vì sao chưa gửi được các khung đã chọn (null là gửi được): 1–5 khung khác nhau, ghi chú ≤ 500 */
-export function offerSlotsProblem(slots: Interval[], note = '') {
-  if (slots.length === 0) return 'Chọn ít nhất một khung.'
-  if (slots.length > SLOT_OFFER_MAX) return `Chọn tối đa ${SLOT_OFFER_MAX} khung.`
-  const keys = new Set(slots.map((s) => `${Date.parse(s.startsAt)}-${Date.parse(s.endsAt)}`))
-  if (keys.size !== slots.length) return 'Các khung phải khác nhau.'
-  if (note.trim().length > SCHEDULE_NOTE_MAX) return `Ghi chú tối đa ${SCHEDULE_NOTE_MAX} ký tự.`
-  return null
+/** "2026-11-25" và "08:00" theo giờ Việt Nam của một mốc ISO, bất kể múi giờ của máy */
+export function vnDateTime(iso: string) {
+  const parts = Object.fromEntries(vnParts.formatToParts(new Date(iso)).map((p) => [p.type, p.value]))
+  return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` }
 }
 
-type Offer = Interval & { status: string; available: boolean }
-
-/** Khung khách thấy: chỉ khung đang mở, sớm nhất trước; `choosable` khi backend báo còn trống */
-export function customerOfferChoices<T extends Offer>(offers: T[]) {
-  return offers
-    .filter((o) => o.status === 'OPEN')
-    .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))
-    .map((offer) => ({ offer, choosable: offer.available }))
+/** Khung trống đã chọn đổ vào các ô ngày giờ của form hẹn ngày (khung không giữ chỗ, backend kiểm lại lúc ghi) */
+export function slotToForm(slot: {
+  startsAt: string
+  endsAt: string
+}): Pick<ScheduleForm, 'date' | 'startTime' | 'endDate' | 'endTime'> {
+  const start = vnDateTime(slot.startsAt)
+  const end = vnDateTime(slot.endsAt)
+  return { date: start.date, startTime: start.time, endDate: end.date, endTime: end.time }
 }
-
-/** Đề xuất của lần gửi mới nhất còn mở (kỹ thuật viên thấy để biết gửi lại sẽ thay những khung nào) */
-export const openOffers = <T extends { status: string }>(offers: T[]) => offers.filter((o) => o.status === 'OPEN')

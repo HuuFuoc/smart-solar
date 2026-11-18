@@ -28,6 +28,7 @@ import {
   scheduleExpired,
   siteMapUrl,
 } from '@/features/installation-projects/projectDisplay'
+import { internalAcceptanceBlockers } from '@/features/installation-projects/acceptanceRules'
 import { EnergyEstimatePanel } from '@/features/installations/EnergyEstimatePanel'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useEnergyMonitoringQuery, useInstallationProjectQuery } from '@/hooks/useManagerInstallations'
@@ -35,7 +36,7 @@ import type { InstallationStaffView } from '@/types/res/managerInstallationsRes'
 
 const projectTitle = (p: InstallationStaffView) => p.site?.propertyName || `Dự án ${shortCode(p.projectId)}`
 
-/** Vị trí trên dải các bước: 0 phân công, 1 kỹ thuật viên nhận, 2 thi công, 3 khách nghiệm thu, 4 bàn giao */
+/** Vị trí trên dải các bước: 0 phân công, 1 kỹ thuật viên nhận, 2 thi công, 3 nghiệm thu nội bộ, 4 bàn giao */
 function stepIndex(p: InstallationStaffView) {
   // Đổi người khi đã thi công thì người mới phải nhận việc trước
   const waitingAcceptance = p.responsibleTechnician?.assignmentStatus === 'PENDING'
@@ -80,7 +81,7 @@ function trackerSteps(p: InstallationStaffView): TrackerStep[] {
       state: state(2),
     },
     {
-      label: 'Khách nghiệm thu',
+      label: 'Nghiệm thu nội bộ',
       detail: p.acceptanceRequestedAt ? `Báo cáo ${formatMoment(p.acceptanceRequestedAt)}` : undefined,
       state: state(3),
     },
@@ -102,7 +103,7 @@ function nextStep(p: InstallationStaffView, isManager: boolean): TrackerNext {
         .join(' '),
     }
   if (p.status === 'COMPLETED')
-    return { tone: 'neutral', title: 'Khách đã nghiệm thu, dự án đã bàn giao', body: formatMoment(p.handoverAt) }
+    return { tone: 'neutral', title: 'Đã nghiệm thu, dự án đã bàn giao', body: formatMoment(p.handoverAt) }
   if (equipmentComparable(p.status) && p.equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED')
     return isManager
       ? {
@@ -112,12 +113,6 @@ function nextStep(p: InstallationStaffView, isManager: boolean): TrackerNext {
           action: { label: 'Xem thiết bị', icon: 'fact_check', target: 'equipment' },
         }
       : { tone: 'info', title: 'Thiết bị đã lắp khác hợp đồng, chờ quản lý duyệt' }
-  if (p.equipment?.status === 'CUSTOMER_APPROVAL_REQUIRED' && p.status === 'PENDING_CUSTOMER_ACCEPTANCE')
-    return {
-      tone: 'info',
-      title: 'Chờ khách đồng ý thay thiết bị rồi nghiệm thu',
-      body: 'Khách không phản hồi thì gọi khách.',
-    }
   if (p.status === 'PENDING_ASSIGNMENT')
     return {
       tone: 'danger',
@@ -155,12 +150,17 @@ function nextStep(p: InstallationStaffView, isManager: boolean): TrackerNext {
     return {
       tone: 'info',
       title: `${name} đang sửa lại`,
-      body: 'Kỹ thuật viên thêm ảnh mới rồi gửi báo cáo lượt sau cho khách nghiệm thu.',
+      body: 'Kỹ thuật viên thêm ảnh mới rồi gửi báo cáo lượt sau để nghiệm thu lại.',
     }
+  const blockers = internalAcceptanceBlockers(p)
   return {
-    tone: 'info',
-    title: 'Chờ khách nghiệm thu',
-    body: 'Báo cáo sai hoặc thiếu thì trả về làm lại ở khối Báo cáo hoàn thành. Khách không phản hồi thì gọi khách.',
+    tone: 'danger',
+    title: 'Cần nghiệm thu báo cáo hoàn thành',
+    body:
+      blockers.length > 0
+        ? `${blockers.join(' ')} Xong rồi mới nghiệm thu được; báo cáo sai hoặc thiếu thì trả về làm lại.`
+        : 'Xem ảnh, thiết bị và báo cáo rồi nghiệm thu kèm căn cứ (biên bản bàn giao nếu có), hoặc trả về làm lại.',
+    action: { label: 'Nghiệm thu', icon: 'verified', target: 'completion' },
   }
 }
 
@@ -311,7 +311,7 @@ function InstallationProjectPage() {
                 <div id="equipment" className="sv-card scroll-mt-6">
                   <EquipmentPanel project={p} canApprove={isManager} />
                 </div>
-                <div className="sv-card">
+                <div id="completion" className="sv-card scroll-mt-6">
                   <CompletionPanel project={p} />
                 </div>
                 <div className="sv-card">

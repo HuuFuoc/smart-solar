@@ -29,6 +29,14 @@ export type ChecklistRequest = {
   note?: string | null
 }
 
+export type InternalAcceptanceRequest = {
+  /** Format: int32 */
+  expectedRevision?: number | null
+  note?: string | null
+  /** Format: uuid */
+  evidenceFileId?: string | null
+}
+
 export type ReturnToReworkRequest = {
   reason?: string | null
   /** Format: int32 */

@@ -13,9 +13,9 @@ import type { InstallationTechnicianView } from '@/types/res/technicianInstallat
 /** Giới hạn của backend sau khi bỏ khoảng trắng đầu cuối */
 const REPORT_MAX = 8000
 
-// Báo cáo hoàn thành gửi cho khách nghiệm thu. Backend bắt buộc ít nhất một ảnh của lượt hiện tại và, khi công trình yêu
+// Báo cáo hoàn thành gửi để quản lý / quản trị nghiệm thu nội bộ. Backend bắt buộc ít nhất một ảnh của lượt hiện tại và, khi công trình yêu
 // cầu, ít nhất một dòng tấm pin và một dòng inverter: thiếu thì khoá nút và ghi rõ loại còn thiếu.
-// Gửi xong công trình chờ khách; kỹ thuật viên không tự đánh dấu hoàn tất
+// Gửi xong công trình chờ nghiệm thu nội bộ; kỹ thuật viên không tự đánh dấu hoàn tất
 export function CompletionReportForm({ view }: { view: InstallationTechnicianView }) {
   const report = useReportCompletionMutation()
   const [text, setText] = useState('')
@@ -40,7 +40,7 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
     try {
       await report.mutateAsync({ id: view.projectId, report: text.trim(), revision: view.revision })
       setConfirming(false)
-      toast.success('Đã gửi báo cáo. Công trình chờ khách nghiệm thu.')
+      toast.success('Đã gửi báo cáo. Công trình chờ quản lý nghiệm thu.')
     } catch (e) {
       setConfirming(false)
       const lacking = isApiError(e) && e.code === 'INSTALLATION_ASSETS_REQUIRED' ? missingFromDetails(e.details) : []
@@ -102,9 +102,9 @@ export function CompletionReportForm({ view }: { view: InstallationTechnicianVie
       </span>
 
       <ModalDialog open={confirming} onOpenChange={setConfirming} dismissible={!report.isPending}>
-        <DialogTitle>Gửi báo cáo cho khách nghiệm thu?</DialogTitle>
+        <DialogTitle>Gửi báo cáo hoàn thành?</DialogTitle>
         <p className="mt-2 text-body text-fg-2">
-          Sau khi gửi, bạn không thêm ảnh hay thiết bị được nữa, trừ khi khách hoặc quản lý yêu cầu sửa lại.
+          Sau khi gửi, bạn không thêm ảnh hay thiết bị được nữa, trừ khi quản lý trả về làm lại.
         </p>
         <DialogFooter>
           <Button icon="close" variant="secondary" disabled={report.isPending} onClick={() => setConfirming(false)}>

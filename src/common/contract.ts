@@ -20,7 +20,8 @@ export const CONTRACT_STATUSES: Record<string, { staff: string; customer: string
 /** ContractEvent.EventType, cho lịch sử phía nhân viên */
 export const CONTRACT_EVENT_TYPES: Record<string, string> = {
   CREATED: 'Lập hợp đồng',
-  AUTO_DRAFTED: 'Tự lập khi khách đồng ý báo giá',
+  AUTO_DRAFTED: 'Tự lập khi khách đồng ý báo giá (cách cũ)',
+  PAID_BEFORE_CONTRACT: 'Đã thanh toán báo giá trước khi lập hợp đồng',
   DISCARDED: 'Huỷ bản nháp',
   AMENDMENT_CREATED: 'Lập phụ lục',
   UPDATED: 'Sửa bản nháp',
@@ -98,6 +99,7 @@ export const PAYMENT_EVENT_SOURCES: Record<string, string> = {
   WEBHOOK: 'PayOS báo về',
   RECONCILIATION: 'Đối soát với PayOS',
   CUSTOMER: 'Khách',
+  TECHNICIAN: 'Kỹ thuật viên tại công trình',
   SYSTEM: 'Hệ thống',
   STAFF: 'Quản lý / quản trị',
 }

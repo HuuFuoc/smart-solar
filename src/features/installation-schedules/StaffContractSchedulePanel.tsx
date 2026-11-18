@@ -96,6 +96,11 @@ export function StaffContractSchedulePanel({ contract }: { contract: ContractVie
                 Lịch dự kiến, chưa giữ chỗ. Hệ thống xác nhận khi hợp đồng đã thanh toán.
               </p>
             )}
+            {live?.status === 'PLANNED' && live.awaitingContractSignature && (
+              <p className="text-body text-fg-2">
+                Lịch dự kiến, chưa giữ chỗ. Khách đã thanh toán; hệ thống xác nhận khi bản ký hợp đồng được duyệt.
+              </p>
+            )}
             {live?.customerChangeRequestedAt && (
               <Notice tone="warn" title={`Khách xin đổi ngày lúc ${formatMoment(live.customerChangeRequestedAt)}`}>
                 <span className="whitespace-pre-line">{live.customerChangeRequestNote}</span>

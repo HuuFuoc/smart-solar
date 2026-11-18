@@ -16,8 +16,9 @@ import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 
 // Mở hợp đồng lắp đặt (quản lý và quản trị dùng chung). Hệ thống chưa có danh sách mọi hợp đồng nên mở theo mã hợp đồng, hoặc
-// theo mã yêu cầu khảo sát (kinh doanh phụ trách thấy mã này) để xem mọi phiên bản. Bình thường bản nháp tự lập khi khách đồng ý
-// báo giá; báo giá cũ đã đồng ý mà chưa có hợp đồng thì lập ở đây. Hợp đồng đã ký có lịch thi công thì mở từ mục Lịch thi công
+// theo mã yêu cầu khảo sát (kinh doanh phụ trách thấy mã này) để xem mọi phiên bản. Bản nháp tự lập khi thanh toán báo giá được
+// xác minh; "Lập hợp đồng" chỉ còn là đường khôi phục (backend từ chối khi chưa có thanh toán đã xác minh). Hợp đồng có lịch thi
+// công thì mở từ mục Lịch thi công
 
 type Kind = 'contract' | 'request'
 
@@ -59,8 +60,8 @@ function RequestContracts({
             title="Yêu cầu chưa có hợp đồng"
             description={
               creatable
-                ? `Khách đã đồng ý báo giá ${accepted!.quoteNumber} trước khi hệ thống tự lập hợp đồng. Lập bản nháp từ báo giá đó.`
-                : 'Hợp đồng được lập tự động khi khách đồng ý báo giá.'
+                ? `Khách đã đồng ý báo giá ${accepted!.quoteNumber}. Hợp đồng tự lập khi thanh toán của báo giá được xác minh; chỉ lập tay khi đã thanh toán mà hợp đồng chưa có.`
+                : 'Hợp đồng được lập tự động khi khách thanh toán báo giá đã đồng ý với kỹ thuật viên.'
             }
             action={
               creatable ? (

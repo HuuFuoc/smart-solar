@@ -192,3 +192,10 @@ export function incidentTimeError(at: string, coverageStartsAt: string | null, n
 /** Công trình báo lỗi / bảo trì được: đã bàn giao (backend AFTER_SALES_NOT_HANDED_OVER cho mọi trường hợp khác) */
 export const handedOverProjects = <T extends { status: string; handoverAt: string | null }>(projects: T[]) =>
   projects.filter((p) => p.status === 'COMPLETED' && p.handoverAt)
+
+/**
+ * Báo giá do kỹ thuật viên lập được trình bày và chốt tại công trình: kỹ thuật viên ghi đồng ý / không đồng ý và mở thanh toán QR
+ * hoặc tiền mặt. Khách đồng ý / từ chối trong ứng dụng thì backend trả 409 SERVICE_QUOTATION_DECIDED_ON_SITE. Báo giá của kinh
+ * doanh (bảo trì lẻ không qua kiểm tra) khách vẫn tự duyệt và trả tiền
+ */
+export const isDecidedOnSite = (q: { issuedByRole?: string | null }) => q.issuedByRole === 'TECHNICIAN'

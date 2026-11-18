@@ -44,12 +44,13 @@ export function scheduleErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Đã xảy ra lỗi. Vui lòng thử lại.'
 }
 
-/** Vì sao kỹ thuật viên không nhận được một khung: backend trả mã khả năng nhận lịch hoặc câu tiếng Anh, không hiện nguyên văn */
+/** Vì sao kỹ thuật viên không nhận được một khung trống: backend trả mã khả năng nhận lịch hoặc câu tiếng Anh, không hiện nguyên văn */
 export function slotReasonText(reason: string | null | undefined) {
   if (!reason) return null
   const code = INELIGIBLE_REASONS[reason]
   if (code) return code.charAt(0).toUpperCase() + code.slice(1)
-  if (/already has an installation planned/i.test(reason)) return 'Bạn đã có lịch thi công khác trong khoảng này'
+  if (/already has (an|another) installation (planned|agreed)/i.test(reason))
+    return 'Bạn đã có lịch thi công khác trong khoảng này'
   if (/must be in the future/i.test(reason)) return 'Đã qua giờ bắt đầu'
   const horizon = /within (\d+) days/i.exec(reason)
   if (horizon) return `Chỉ hẹn được trong ${horizon[1]} ngày tới`
@@ -57,18 +58,3 @@ export function slotReasonText(reason: string | null | undefined) {
   if (span) return `Một lần thi công dài tối đa ${span[1]} ngày`
   return 'Không nhận được khung này'
 }
-
-const OFFER_STATUSES: Record<string, { label: string; tone: Tone }> = {
-  OPEN: { label: 'Đang chờ khách chọn', tone: 'info' },
-  SELECTED: { label: 'Khách đã chọn', tone: 'ok' },
-  WITHDRAWN: { label: 'Đã rút', tone: 'neutral' },
-}
-
-export const offerStatusMeta = (status: string) => OFFER_STATUSES[status] ?? { label: status, tone: 'neutral' as Tone }
-
-export const withdrawnReasonText = (reason: string | null | undefined) =>
-  reason === 'REPLACED_BY_NEW_OFFERS'
-    ? 'Thay bằng lần đề xuất mới'
-    : reason === 'ANOTHER_OFFER_SELECTED'
-      ? 'Khách chọn khung khác'
-      : null

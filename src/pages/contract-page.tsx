@@ -35,10 +35,12 @@ import {
   canEditDraft,
   canPublish,
   canSeePayments,
+  type ContractViewer,
+  isPrepaidContract,
   issueBlockers,
   shortHash,
-  type ContractViewer,
 } from '@/features/contracts/contractRules'
+import { canPlanForContract } from '@/features/installation-schedules/scheduleRules'
 import { StaffContractSchedulePanel } from '@/features/installation-schedules/StaffContractSchedulePanel'
 import { OfficialDocumentDialog } from '@/features/contracts/OfficialDocumentDialog'
 import { SignaturePanel } from '@/features/contracts/SignaturePanel'
@@ -211,6 +213,9 @@ function StaffActions({ contract: c, viewer }: { contract: ContractView; viewer:
               ? 'Khách thấy hợp đồng trên cổng khách hàng, tải PDF chính thức, in, ký tay rồi gửi lại bản ký.'
               : 'Khách thấy hợp đồng trên cổng khách hàng, in hợp đồng từ trang, ký tay rồi gửi lại bản ký.'}
           </p>
+          {isPrepaidContract(c) && (
+            <p>Khách đã thanh toán: in PDF để khách ký bản giấy tại công trình, rồi tải bản quét lên ở khối Bản ký.</p>
+          )}
           <p>Sau khi gửi, PDF chính thức không thay được; muốn đổi nội dung phải lập phụ lục.</p>
         </ContractConfirmDialog>
       )}
@@ -319,9 +324,12 @@ function ContractAside({ contract: c, viewer }: { contract: ContractView; viewer
                 k: 'PDF chính thức',
                 v: c.officialDocument ? <FileInfo fileId={c.officialDocument.fileId} /> : 'Chưa gắn',
               },
+              {
+                k: 'Thanh toán',
+                v: c.paymentCompleted ? `Đã nhận đủ ${formatMoment(c.paymentConfirmedAt ?? c.paidAt)}` : 'Chưa',
+              },
               { k: 'Gửi khách ký', v: formatMoment(c.publishedAt) },
               { k: 'Duyệt bản ký', v: formatMoment(c.signedAt) },
-              { k: 'Thanh toán đủ', v: formatMoment(c.paidAt) },
             ]}
           />
           {c.officialDocument && (
@@ -364,6 +372,8 @@ function ContractPage({ viewer }: { viewer: ContractViewer }) {
               meta={
                 <>
                   <Badge tone={status.tone}>{status.label}</Badge>
+                  {/* Trạng thái thanh toán tách khỏi trạng thái hợp đồng: hợp đồng trả trước đã có tiền từ lúc còn nháp */}
+                  {c.paymentCompleted && c.status !== 'PAID' && <Badge tone="ok">Đã thanh toán</Badge>}
                   <span className="tnum">{versionLabel(c)}</span>
                 </>
               }
@@ -387,7 +397,7 @@ function ContractPage({ viewer }: { viewer: ContractViewer }) {
                 {canSeePayments(viewer) && (
                   <ContractPaymentPanel contract={c} viewer={viewer} installationsPath={INSTALLATIONS[viewer]} />
                 )}
-                {viewer !== 'sales' && (c.status === 'SIGNED' || c.status === 'PAID') && (
+                {viewer !== 'sales' && canPlanForContract(c.status, c.paymentCompleted) && (
                   <StaffContractSchedulePanel contract={c} />
                 )}
                 {viewer !== 'sales' && <AmendmentPanel contract={c} versions={list} viewer={viewer} />}
