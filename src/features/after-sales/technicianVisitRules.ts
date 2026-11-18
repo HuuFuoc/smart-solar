@@ -189,3 +189,57 @@ export function supplementaryErrors(d: ItemDraft): SupplementaryErrors {
 }
 
 export const supplementaryBody = (d: ItemDraft): DiagnosedItemRequest => itemBody(d)
+
+// ---- báo giá kỹ thuật viên lập từ danh mục (ServiceQuotationTechnicianPricing của backend 8f70cb2)
+
+export const REPAIR_QUOTE_MAX_COMPONENTS = 20
+export const REPAIR_QUOTE_MAX_QUANTITY = 10_000
+export const REPAIR_QUOTE_DESCRIPTION_MAX = 300
+export const REPAIR_QUOTE_NOTE_MAX = 1000
+
+/** Hạng mục khách phải trả (quản lý đã xét là CHARGEABLE / DISASTER_PROTECTION) và chưa được duyệt làm: phải có trong báo giá */
+export const quotableItems = <T extends Pick<ServiceItemView, 'coverage' | 'status'>>(items: T[]) =>
+  items.filter(
+    (i) =>
+      (i.coverage === 'CHARGEABLE' || i.coverage === 'DISASTER_PROTECTION') &&
+      (i.status === 'OPEN' || i.status === 'QUOTED'),
+  )
+
+/** Báo giá được khi yêu cầu không phải bảo trì của gói, buổi hẹn chưa bị từ chối và còn hạng mục khách phải trả */
+export const canQuoteRepair = (v: Pick<TechnicianVisitView, 'requestKind' | 'status' | 'items'>) =>
+  v.requestKind !== 'MAINTENANCE' && v.status !== 'DECLINED' && quotableItems(v.items).length > 0
+
+export type RepairQuoteLine = {
+  itemId: string
+  description: string
+  components: { productId: string; quantity: number }[]
+}
+
+/** Lỗi theo hạng mục (khoá itemId): mỗi hạng mục 1–20 sản phẩm khác nhau, số lượng > 0 và ≤ 10.000, mô tả ≤ 300 */
+export function repairQuoteErrors(lines: RepairQuoteLine[], note: string) {
+  const errors: Record<string, string> = {}
+  for (const l of lines) {
+    if (l.components.length === 0) errors[l.itemId] = 'Thêm ít nhất một sản phẩm hoặc dịch vụ.'
+    else if (l.components.length > REPAIR_QUOTE_MAX_COMPONENTS)
+      errors[l.itemId] = `Tối đa ${REPAIR_QUOTE_MAX_COMPONENTS} sản phẩm mỗi hạng mục.`
+    else if (new Set(l.components.map((c) => c.productId)).size !== l.components.length)
+      errors[l.itemId] = 'Mỗi sản phẩm chỉ một dòng; cộng số lượng vào dòng đã có.'
+    else if (l.components.some((c) => !(c.quantity > 0) || c.quantity > REPAIR_QUOTE_MAX_QUANTITY))
+      errors[l.itemId] = `Số lượng lớn hơn 0 và tối đa ${REPAIR_QUOTE_MAX_QUANTITY.toLocaleString('vi-VN')}.`
+    else if (l.description.trim().length > REPAIR_QUOTE_DESCRIPTION_MAX)
+      errors[l.itemId] = `Mô tả tối đa ${REPAIR_QUOTE_DESCRIPTION_MAX} ký tự.`
+  }
+  if (note.trim().length > REPAIR_QUOTE_NOTE_MAX) errors.note = `Ghi chú tối đa ${REPAIR_QUOTE_NOTE_MAX} ký tự.`
+  return errors
+}
+
+/** Không gửi số tiền: backend lấy giá danh mục. Bảo hành phần sửa để trống là mặc định của hệ thống */
+export const repairQuoteBody = (lines: RepairQuoteLine[], note: string) => ({
+  lines: lines.map((l) => ({
+    itemId: l.itemId,
+    description: l.description.trim() || null,
+    components: l.components.map((c) => ({ productId: c.productId, quantity: c.quantity })),
+  })),
+  repairWarrantyMonths: null,
+  note: note.trim() || null,
+})

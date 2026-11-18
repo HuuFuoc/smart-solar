@@ -154,6 +154,8 @@ export function visitToSchedule(request: ServiceRequestView): string | null {
   if (request.kind === 'FAULT' && request.status === 'SUBMITTED') return 'INSPECTION'
   if (request.kind === 'FAULT' && request.status === 'READY_FOR_WORK') return 'REPAIR'
   if (request.kind === 'MAINTENANCE' && request.status === 'SUBMITTED') return 'MAINTENANCE'
+  // Bảo trì lẻ: kiểm tra trước, kỹ thuật viên báo giá, trả tiền xong mới bảo trì
+  if (request.kind === 'ONE_TIME_MAINTENANCE' && request.status === 'SUBMITTED') return 'INSPECTION'
   if (request.kind === 'ONE_TIME_MAINTENANCE' && request.status === 'READY_FOR_WORK') return 'MAINTENANCE'
   return null
 }
@@ -177,7 +179,7 @@ function requestStage(r: ServiceRequestView) {
       return 0
     case 'SCHEDULED':
     case 'IN_PROGRESS':
-      return r.kind === 'FAULT' && visit?.purpose === 'INSPECTION' ? 0 : 2
+      return r.kind !== 'MAINTENANCE' && visit?.purpose === 'INSPECTION' ? 0 : 2
     case 'AWAITING_DECISION':
     case 'AWAITING_QUOTATION':
     case 'AWAITING_CUSTOMER':
@@ -200,6 +202,8 @@ export function requestTrackerSteps(r: ServiceRequestView): TrackerStep[] {
   const labels =
     r.kind === 'FAULT'
       ? ['Kiểm tra', 'Xét bảo hành, báo giá', 'Sửa chữa', 'Nghiệm thu']
-      : ['Gửi yêu cầu', 'Báo giá', 'Bảo trì', 'Nghiệm thu']
+      : r.kind === 'ONE_TIME_MAINTENANCE'
+        ? ['Kiểm tra', 'Báo giá, thanh toán', 'Bảo trì', 'Nghiệm thu']
+        : ['Gửi yêu cầu', 'Báo giá', 'Bảo trì', 'Nghiệm thu']
   return labels.map((label, i) => ({ label, state: now > i ? 'done' : now === i ? 'current' : 'todo' }))
 }

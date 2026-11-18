@@ -9,33 +9,37 @@ import { isPayableAttempt, paymentStatusMeta } from '@/features/after-sales/afte
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { QuotationDetail } from '@/features/after-sales/ServiceRequestParts'
 import { formatVnd } from '@/features/after-sales/serviceDisplay'
+import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { isCheckoutUrl, rememberCheckout } from '@/features/payments/payosReturn'
 import { useCheckoutRedirect } from '@/hooks/useCheckoutRedirect'
 import {
   useAcceptQuotationMutation,
   useCheckoutQuotationMutation,
+  useQuotationCashMutation,
   useQuotationPaymentQuery,
   useRejectQuotationMutation,
 } from '@/hooks/useCustomerServiceRequests'
 import { errorMessage } from '@/services/api/errors'
 import type { ServiceQuotationView } from '@/types/res/customerAfterSalesRes'
 
-// Báo giá đang chờ khách: đồng ý hoặc từ chối, rồi thanh toán qua PayOS
-// "Đã thanh toán" chỉ hiện khi backend xác nhận (hỏi lại 10 giây một lần), không dựa vào trang PayOS chuyển về
+// Báo giá đang chờ khách: đồng ý hoặc từ chối, rồi thanh toán qua PayOS hoặc chọn trả tiền mặt (quản lý xác nhận đã thu).
+// "Đã thanh toán" chỉ hiện khi backend xác nhận, không dựa vào trang PayOS chuyển về. Chọn tiền mặt không kéo dài hạn báo giá
 export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotationView }) {
   const accept = useAcceptQuotationMutation()
   const reject = useRejectQuotationMutation()
   const checkout = useCheckoutQuotationMutation()
+  const cash = useQuotationCashMutation()
   const payment = useQuotationPaymentQuery(quotation.currentPaymentAttemptId)
   // PayOS chuyển về thì đưa khách lại trang yêu cầu này
   const { pathname } = useLocation()
   const [rejecting, setRejecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const redirect = useCheckoutRedirect()
-  const busy = accept.isPending || checkout.isPending || redirect.leaving
+  const busy = accept.isPending || checkout.isPending || cash.isPending || redirect.leaving
   const attempt = payment.data
   // Link còn trả được thì mở lại link đó; hết hạn hoặc chưa có thì tạo link mới
   const payable = attempt && isPayableAttempt(attempt.status) ? attempt : null
+  const cashChosen = payable?.method === 'CASH'
 
   async function run(action: () => Promise<unknown>, done: string) {
     setError(null)
@@ -81,16 +85,56 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
             </Button>
           </div>
         )}
-        {quotation.status === 'ACCEPTED' && (
+        {quotation.status === 'ACCEPTED' && cashChosen && (
+          <div className="space-y-3">
+            <p className="flex flex-wrap items-center gap-2 text-body text-fg-2">
+              Bạn đã chọn trả tiền mặt:
+              <Badge tone={paymentStatusMeta(payable.status, payable.method).tone}>
+                {paymentStatusMeta(payable.status, payable.method).label}
+              </Badge>
+            </p>
+            <p className="text-body text-fg-2">
+              Trả {formatVnd(quotation.customerAmount)} cho nhân viên Smart Solar trước{' '}
+              <span className="tnum">{formatMoment(quotation.expiresAt)}</span> (hạn báo giá). Quá hạn mà chưa xác nhận
+              thu thì lựa chọn tiền mặt tự huỷ.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                icon="refresh"
+                variant="secondary"
+                disabled={payment.isFetching}
+                onClick={() => void payment.refetch()}
+              >
+                {payment.isFetching ? 'Đang kiểm tra…' : 'Kiểm tra lại'}
+              </Button>
+              <Button
+                icon="undo"
+                variant="warn"
+                disabled={busy}
+                onClick={() =>
+                  void run(
+                    () => cash.mutateAsync({ quotationId: quotation.quotationId, cancel: true }),
+                    'Đã bỏ chọn tiền mặt.',
+                  )
+                }
+              >
+                Bỏ chọn tiền mặt
+              </Button>
+            </div>
+          </div>
+        )}
+        {quotation.status === 'ACCEPTED' && !cashChosen && (
           <div className="space-y-3">
             <p className="text-body text-fg-2">
-              Thanh toán xong, Smart Solar xếp lịch cho kỹ thuật viên tới làm. Trạng thái tự cập nhật khi PayOS xác nhận
-              đã nhận tiền.
+              Thanh toán xong, Smart Solar xếp lịch cho kỹ thuật viên tới làm. Trả qua PayOS trước{' '}
+              <span className="tnum">{formatMoment(quotation.expiresAt)}</span>, hoặc chọn trả tiền mặt cho nhân viên.
             </p>
             {attempt && (
               <p className="flex flex-wrap items-center gap-2 text-body text-fg-2">
-                Link thanh toán:
-                <Badge tone={paymentStatusMeta(attempt.status).tone}>{paymentStatusMeta(attempt.status).label}</Badge>
+                Lần thanh toán gần nhất:
+                <Badge tone={paymentStatusMeta(attempt.status, attempt.method).tone}>
+                  {paymentStatusMeta(attempt.status, attempt.method).label}
+                </Badge>
               </p>
             )}
             <div className="flex flex-wrap gap-3">
@@ -115,6 +159,21 @@ export function CustomerQuotationPanel({ quotation }: { quotation: ServiceQuotat
                   onClick={() => void payment.refetch()}
                 >
                   {payment.isFetching ? 'Đang kiểm tra…' : 'Kiểm tra lại'}
+                </Button>
+              )}
+              {!payable && (
+                <Button
+                  icon="payments"
+                  variant="soft"
+                  disabled={busy}
+                  onClick={() =>
+                    void run(
+                      () => cash.mutateAsync({ quotationId: quotation.quotationId, cancel: false }),
+                      'Đã chọn trả tiền mặt. Smart Solar xác nhận khi nhận tiền.',
+                    )
+                  }
+                >
+                  {cash.isPending ? 'Đang gửi…' : 'Trả tiền mặt'}
                 </Button>
               )}
               <Button icon="block" variant="danger" disabled={busy} onClick={() => setRejecting(true)}>

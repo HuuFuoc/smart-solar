@@ -66,7 +66,7 @@ function MaintenanceForm({
         preferredStartsAt: vnTimestamp(date, time),
         note: note.trim() || null,
       })
-      toast.success('Đã gửi yêu cầu bảo trì. Smart Solar sẽ gửi báo giá để bạn duyệt.')
+      toast.success('Đã gửi yêu cầu bảo trì. Smart Solar sẽ hẹn kỹ thuật viên tới kiểm tra.')
       onClose()
       void navigate(withId(ROUTES.customer.afterSalesRequest, created.requestId))
     } catch (e) {
@@ -78,8 +78,8 @@ function MaintenanceForm({
     <>
       <DialogTitle>Đặt bảo trì lẻ</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Vệ sinh tấm pin, kiểm tra đấu nối và inverter. Bạn chọn giờ; đồng ý báo giá và thanh toán xong thì kỹ thuật viên
-        tới làm.
+        Vệ sinh tấm pin, kiểm tra đấu nối và inverter. Kỹ thuật viên tới kiểm tra trước rồi báo giá; bạn đồng ý và thanh
+        toán xong thì kỹ thuật viên tới bảo trì.
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <Field label="Ngày muốn hẹn" htmlFor="maintenance-date" hint={`Đặt trước ít nhất ${LEAD_DAYS} ngày.`} required>

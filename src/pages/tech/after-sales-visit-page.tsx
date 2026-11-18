@@ -23,7 +23,14 @@ import {
   startBlocker,
   technicianVisitMeta,
 } from '@/features/after-sales/technicianVisitDisplay'
-import { canAddSupplementary, canReportInspection, canReportWork } from '@/features/after-sales/technicianVisitRules'
+import {
+  canAddSupplementary,
+  canQuoteRepair,
+  canReportInspection,
+  canReportWork,
+  quotableItems,
+} from '@/features/after-sales/technicianVisitRules'
+import { RepairQuotationDialog } from '@/features/after-sales/RepairQuotationDialog'
 import { InspectionReportForm, WorkReportForm } from '@/features/after-sales/VisitReportForms'
 import { OnSiteWaitPanel } from '@/features/after-sales/OnSiteWaitPanel'
 import { SupplementaryItemDialog } from '@/features/after-sales/SupplementaryItemDialog'
@@ -189,7 +196,7 @@ export function TechAfterSalesVisitPage() {
   const query = useMyVisitQuery(id)
   const respond = useRespondVisitMutation()
   const absence = useAbsenceMutation()
-  const [dialog, setDialog] = useState<'decline' | 'absent' | 'supplementary' | null>(null)
+  const [dialog, setDialog] = useState<'decline' | 'absent' | 'supplementary' | 'quote' | null>(null)
   const getUrl = useCallback((evidenceId: string) => getEvidenceUrl(id ?? '', evidenceId), [id])
   usePageCrumb(query.data ? query.data.requestNumber : null)
 
@@ -356,8 +363,18 @@ export function TechAfterSalesVisitPage() {
                     <div className="sv-card">
                       <Panel>
                         <PanelHeader title="Hạng mục" description={`${v.items.length} hạng mục`} />
-                        <PanelBody>
+                        <PanelBody className="space-y-4">
                           <ServiceItemList items={v.items} />
+                          {canQuoteRepair(v) && (
+                            <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
+                              <Button icon="request_quote" variant="soft" onClick={() => setDialog('quote')}>
+                                Lập báo giá cho khách
+                              </Button>
+                              <span className="text-body text-fg-2">
+                                {quotableItems(v.items).length} hạng mục khách phải trả
+                              </span>
+                            </div>
+                          )}
                         </PanelBody>
                       </Panel>
                     </div>
@@ -421,6 +438,7 @@ export function TechAfterSalesVisitPage() {
               onClose={() => setDialog(null)}
             />
             <SupplementaryItemDialog visit={v} open={dialog === 'supplementary'} onClose={() => setDialog(null)} />
+            {dialog === 'quote' && <RepairQuotationDialog visit={v} onClose={() => setDialog(null)} />}
             <ReasonDialog
               open={dialog === 'absent'}
               title="Báo khách vắng?"

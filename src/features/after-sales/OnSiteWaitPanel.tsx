@@ -31,7 +31,8 @@ import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 
 const READINESS_TEXT: Record<Readiness, (count: number) => string> = {
   decision: (n) => `Còn ${n} hạng mục chờ quản lý quyết định chi phí.`,
-  quotation: (n) => `Còn ${n} hạng mục khách phải trả tiền đang chờ kinh doanh lập báo giá.`,
+  quotation: (n) =>
+    `Còn ${n} hạng mục khách phải trả tiền chưa có báo giá. Bấm "Lập báo giá cho khách" ở khối Hạng mục.`,
   payment: (n) => `Còn ${n} hạng mục đã báo giá, chờ khách đồng ý và thanh toán.`,
   ready: (n) => `${n} hạng mục đã được phép làm. Ước tính thời gian rồi bấm Sửa luôn.`,
   none: () => 'Không còn hạng mục nào được làm. Kết thúc buổi chờ.',

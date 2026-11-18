@@ -19,7 +19,7 @@ import { useSupplementaryItemMutation } from '@/hooks/useTechnicianAfterSales'
 import { isApiError, rateLimitedMessage } from '@/services/api/errors'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 
-// Lỗi khác phát hiện trong lúc sửa. Hạng mục mới chờ quản lý quyết định chi phí, khách phải trả thì kinh doanh lập báo giá
+// Lỗi khác phát hiện trong lúc sửa. Hạng mục mới chờ quản lý quyết định chi phí, khách phải trả thì kỹ thuật viên (hoặc kinh doanh) lập báo giá
 // bổ sung; việc đã được duyệt vẫn làm tiếp, báo giá đã trả không đổi. Hạng mục mới chỉ báo kết quả được khi đã được phép làm
 
 export function SupplementaryItemDialog({
@@ -91,8 +91,8 @@ function SupplementaryForm({
     <>
       <DialogTitle>Báo hạng mục phát sinh</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Lỗi khác bạn thấy khi đang sửa. Quản lý quyết định chi phí; nếu khách phải trả, kinh doanh gửi báo giá bổ sung.
-        Việc đã được duyệt vẫn làm tiếp bình thường.
+        Lỗi khác bạn thấy khi đang sửa. Quản lý quyết định chi phí; nếu khách phải trả, bạn lập báo giá bổ sung ở khối
+        Hạng mục. Việc đã được duyệt vẫn làm tiếp bình thường.
       </p>
       <div className="mt-4 grid gap-4">
         <Field

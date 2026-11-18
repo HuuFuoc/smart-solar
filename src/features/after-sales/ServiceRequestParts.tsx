@@ -8,6 +8,7 @@ import {
   visitPurposeLabel,
   visitStatusMeta,
 } from '@/features/after-sales/serviceDisplay'
+import { formatQuantity } from '@/features/quotations/quotationDisplay'
 import { formatAppointment, formatMoment } from '@/features/scheduling/schedulingDisplay'
 import type { ServiceItemView, ServiceQuotationView, ServiceVisitView } from '@/types/res/customerAfterSalesRes'
 
@@ -81,7 +82,12 @@ export function QuotationDetail({ quotation }: { quotation: ServiceQuotationView
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-body font-medium text-fg">Báo giá lần {quotation.version}</p>
+        <p className="text-body font-medium text-fg">
+          Báo giá lần {quotation.version}
+          {quotation.issuedByRole === 'TECHNICIAN' && (
+            <span className="font-normal text-fg-2">, kỹ thuật viên lập</span>
+          )}
+        </p>
         <Badge tone={status.tone}>{status.label}</Badge>
       </div>
       <Table stack>
@@ -98,6 +104,15 @@ export function QuotationDetail({ quotation }: { quotation: ServiceQuotationView
             <Tr key={line.itemId ?? index}>
               <Td label="Hạng mục" className="text-fg">
                 {line.description}
+                {line.components && line.components.length > 0 && (
+                  <ul className="mt-1 space-y-0.5 text-meta text-fg-2">
+                    {line.components.map((c) => (
+                      <li key={c.productId} className="tnum">
+                        {c.name}: {formatQuantity(c.quantity)} {c.unit} × {formatVnd(c.unitPrice)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </Td>
               <Td label="Vật tư" className="tnum lg:text-right">
                 {formatVnd(line.partsAmount)}

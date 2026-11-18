@@ -8,6 +8,7 @@ import type {
   WorkReportRequest,
 } from '@/types/req/technicianAfterSalesReq'
 import type { EvidenceRequest } from '@/types/req/technicianInstallationsReq'
+import type { TechnicianQuotationRequest } from '@/types/req/technicianAfterSalesQuotationsReq'
 import type { ServiceEvidenceUrlView } from '@/types/res/customerAfterSalesRes'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 import { get, post } from '@/services/api/client'
@@ -65,6 +66,14 @@ export function finishOnSite(visitId: string, body: FinishOnSiteRequest) {
 }
 
 /** Hạng mục phát hiện thêm trong lúc sửa: chờ quản lý quyết định chi phí, có thể cần báo giá bổ sung */
+/**
+ * Kỹ thuật viên của buổi hẹn lập báo giá từ sản phẩm danh mục (mỗi hạng mục khách trả đúng một dòng). Không gửi số tiền:
+ * backend lấy giá danh mục, chụp lại sản phẩm, tính hỗ trợ thiên tai rồi gửi khách. Bản đang mở bị thay
+ */
+export function issueRepairQuotation(requestId: string, body: TechnicianQuotationRequest) {
+  return post<unknown>(api.quotations(requestId), body)
+}
+
 export function addSupplementaryItem(visitId: string, body: DiagnosedItemRequest) {
   return post<TechnicianVisitView>(api.supplementaryItems(visitId), body)
 }

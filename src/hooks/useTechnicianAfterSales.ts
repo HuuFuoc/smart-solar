@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { uploadFile } from '@/services/fileService'
 import * as visitService from '@/services/technicianAfterSalesService'
+import type { TechnicianQuotationRequest } from '@/types/req/technicianAfterSalesQuotationsReq'
 import type { ApiError } from '@/services/api/errors'
 import type {
   ContinueRepairRequest,
@@ -88,4 +89,12 @@ export function useWorkReportMutation() {
 
 export function useAbsenceMutation() {
   return useVisitMutation<{ note: string }>(visitService.reportAbsence)
+}
+
+export function useIssueRepairQuotationMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<unknown, ApiError, { requestId: string; body: TechnicianQuotationRequest }>({
+    mutationFn: ({ requestId, body }) => visitService.issueRepairQuotation(requestId, body),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: technicianAfterSalesKeys.visits() }),
+  })
 }

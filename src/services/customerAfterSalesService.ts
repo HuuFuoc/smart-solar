@@ -118,6 +118,16 @@ export function checkoutQuotation(quotationId: string) {
   return post<PaymentAttemptView>(api.checkoutQuotation(quotationId))
 }
 
+/** Chọn trả tiền mặt cho báo giá đã đồng ý: một lần thanh toán CASH chờ thu, chưa phải đã trả. Gọi lại trả lần đó */
+export function selectQuotationCash(quotationId: string) {
+  return post<PaymentAttemptView>(api.cashQuotation(quotationId))
+}
+
+/** Bỏ chọn tiền mặt (lần thanh toán thành CANCELLED) để trả qua PayOS */
+export function cancelQuotationCash(quotationId: string) {
+  return post<PaymentAttemptView>(api.cancelCashQuotation(quotationId))
+}
+
 /**
  * Đặt một lượt bảo trì của gói (201): giờ muốn hẹn cách lúc gửi ít nhất số ngày backend cấu hình (mặc định 7), không trước
  * kỳ của lượt và trước khi gói hết hạn. Tạo một yêu cầu MAINTENANCE gắn với lượt đó

@@ -127,6 +127,17 @@ export function useCheckoutQuotationMutation() {
   })
 }
 
+export function useQuotationCashMutation() {
+  const queryClient = useQueryClient()
+  const refresh = useRefreshRequests()
+  return useMutation<PaymentAttemptView, ApiError, { quotationId: string; cancel: boolean }>({
+    mutationFn: ({ quotationId, cancel }) =>
+      cancel ? afterSalesService.cancelQuotationCash(quotationId) : afterSalesService.selectQuotationCash(quotationId),
+    onSuccess: (attempt) => queryClient.setQueryData(customerAfterSalesKeys.payment(attempt.paymentAttemptId), attempt),
+    onSettled: refresh,
+  })
+}
+
 /** Link thanh toán của báo giá (hỏi lại 10 giây một lần khi còn chờ). PayOS xác nhận xong thì tải lại yêu cầu */
 export function useQuotationPaymentQuery(attemptId: string | null) {
   const queryClient = useQueryClient()
