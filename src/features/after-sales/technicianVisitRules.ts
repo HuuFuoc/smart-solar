@@ -243,3 +243,10 @@ export const repairQuoteBody = (lines: RepairQuoteLine[], note: string) => ({
   repairWarrantyMonths: null,
   note: note.trim() || null,
 })
+
+/** Thêm sản phẩm vào dòng báo giá; đã có thì cộng số lượng (backend không nhận hai dòng một sản phẩm trong một hạng mục) */
+export function addComponent(components: RepairQuoteLine['components'], productId: string, quantity: number) {
+  return components.some((c) => c.productId === productId)
+    ? components.map((c) => (c.productId === productId ? { ...c, quantity: c.quantity + quantity } : c))
+    : [...components, { productId, quantity }]
+}

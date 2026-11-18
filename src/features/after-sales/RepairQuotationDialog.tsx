@@ -8,6 +8,7 @@ import { formatVnd } from '@/features/after-sales/serviceDisplay'
 import {
   REPAIR_QUOTE_DESCRIPTION_MAX,
   REPAIR_QUOTE_NOTE_MAX,
+  addComponent as addToLine,
   quotableItems,
   repairQuoteBody,
   repairQuoteErrors,
@@ -55,17 +56,21 @@ export function RepairQuotationDialog({ visit, onClose }: { visit: TechnicianVis
   const update = (itemId: string, patch: Partial<Draft>) =>
     setDrafts((ds) => ds.map((d) => (d.itemId === itemId ? { ...d, ...patch } : d)))
 
-  function addComponent(d: Draft) {
+  /** Đưa sản phẩm đang chọn ở ô tìm vào dòng; cùng sản phẩm thì cộng số lượng (backend không nhận hai dòng một sản phẩm) */
+  function withPick(d: Draft): Draft | null {
     const product = products.get(d.pickText.trim())
     const qty = readQuantity(d.pickQty)
-    if (!product?.id) return setErrors((e) => ({ ...e, [d.itemId]: 'Chọn sản phẩm trong danh sách.' }))
-    if (!(qty > 0)) return setErrors((e) => ({ ...e, [d.itemId]: 'Ghi số lượng lớn hơn 0.' }))
-    const existing = d.components.find((c) => c.productId === product.id)
-    // Cùng sản phẩm thì cộng số lượng vào dòng đã có (backend không nhận hai dòng một sản phẩm)
-    const components = existing
-      ? d.components.map((c) => (c.productId === product.id ? { ...c, quantity: c.quantity + qty } : c))
-      : [...d.components, { productId: product.id, quantity: qty }]
-    update(d.itemId, { components, pickText: '', pickQty: '1' })
+    if (!product?.id || !(qty > 0)) return null
+    const components = addToLine(d.components, product.id, qty)
+    return { ...d, components, pickText: '', pickQty: '1' }
+  }
+
+  function addComponent(d: Draft) {
+    if (!products.get(d.pickText.trim())?.id)
+      return setErrors((e) => ({ ...e, [d.itemId]: 'Chọn sản phẩm trong danh sách.' }))
+    const next = withPick(d)
+    if (!next) return setErrors((e) => ({ ...e, [d.itemId]: 'Ghi số lượng lớn hơn 0.' }))
+    update(d.itemId, next)
     setErrors((e) => Object.fromEntries(Object.entries(e).filter(([key]) => key !== d.itemId)))
   }
 
@@ -76,11 +81,16 @@ export function RepairQuotationDialog({ visit, onClose }: { visit: TechnicianVis
 
   async function submit() {
     setError(null)
-    const next = repairQuoteErrors(drafts, note)
+    // Đã chọn sản phẩm mà chưa bấm "Thêm" thì vẫn tính vào báo giá
+    const ready = drafts.map((d) => (d.pickText.trim() ? (withPick(d) ?? d) : d))
+    setDrafts(ready)
+    const next = repairQuoteErrors(ready, note)
+    for (const d of ready)
+      if (d.pickText.trim() && !next[d.itemId]) next[d.itemId] = 'Chọn sản phẩm trong danh sách hoặc xoá chữ đã gõ.'
     setErrors(next)
     if (Object.keys(next).length > 0) return
     try {
-      await issue.mutateAsync({ requestId: visit.requestId, body: repairQuoteBody(drafts, note) })
+      await issue.mutateAsync({ requestId: visit.requestId, body: repairQuoteBody(ready, note) })
       toast.success('Đã gửi báo giá cho khách.')
       onClose()
     } catch (e) {

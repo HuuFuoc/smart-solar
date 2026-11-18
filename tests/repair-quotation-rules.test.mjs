@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  addComponent,
   canQuoteRepair,
   quotableItems,
   repairQuoteBody,
@@ -47,4 +48,14 @@ test('body không có số tiền, mô tả trống gửi null', () => {
     repairWarrantyMonths: null,
     note: null,
   })
+})
+
+test('thêm sản phẩm đã có thì cộng số lượng, sản phẩm mới thì thêm dòng', () => {
+  const one = addComponent([], 'p1', 2)
+  assert.deepEqual(one, [{ productId: 'p1', quantity: 2 }])
+  assert.deepEqual(addComponent(one, 'p1', 3), [{ productId: 'p1', quantity: 5 }])
+  assert.deepEqual(addComponent(one, 'p2', 1), [
+    { productId: 'p1', quantity: 2 },
+    { productId: 'p2', quantity: 1 },
+  ])
 })
