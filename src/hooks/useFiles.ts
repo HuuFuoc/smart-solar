@@ -24,10 +24,19 @@ export function useFileQuery(id: string | null | undefined) {
 /** Tải một tệp lên kho, trả tệp đã xác minh. `progress`: phần đã gửi lên kho (0 đến 1), null khi không tải */
 export function useFileUpload(purpose: FilePurpose) {
   const [progress, setProgress] = useState<number | null>(null)
+  // Kho trả lỗi sớm (403) thì trình duyệt vẫn có thể báo tiến độ sau khi lượt tải đã hỏng: bỏ qua để nút không kẹt "Đang tải 0%"
+  const active = useRef(false)
   const mutation = useMutation<FileView, ApiError, File>({
-    mutationFn: (file) => fileService.uploadFile(file, purpose, { onProgress: setProgress }),
-    onMutate: () => setProgress(0),
-    onSettled: () => setProgress(null),
+    mutationFn: (file) =>
+      fileService.uploadFile(file, purpose, { onProgress: (fraction) => active.current && setProgress(fraction) }),
+    onMutate: () => {
+      active.current = true
+      setProgress(0)
+    },
+    onSettled: () => {
+      active.current = false
+      setProgress(null)
+    },
   })
   return { upload: mutation.mutateAsync, uploading: mutation.isPending, progress }
 }
