@@ -8,7 +8,7 @@ import { Progress } from '@/components/common/ui/lists'
 import { acceptFor, fileProblem, fileTypesText, maxSizeText } from '@/features/files/fileDisplay'
 import { ErrorLine } from '@/features/installation-projects/formParts'
 import { formatFileSize } from '@/features/installations/installationDisplay'
-import { contractErrorMessage, contractTitle } from '@/features/contracts/contractDisplay'
+import { contractErrorMessage } from '@/features/contracts/contractDisplay'
 import {
   CASH_NOTE_MAX,
   CASH_RECEIPT_MAX,
@@ -16,22 +16,31 @@ import {
   cashConfirmErrors,
   type CashForm,
 } from '@/features/contracts/contractRules'
-import { useConfirmCashPaymentMutation } from '@/hooks/useContracts'
 import { useFileUpload } from '@/hooks/useFiles'
-import type { ContractView } from '@/types/res/customerContractsRes'
+import type { CashConfirmationRequest } from '@/types/req/staffPaymentsReq'
 import { formatMoney } from '@/utils/format'
 import { readGroupedNumber } from '@/utils/number'
 
-// Quản lý / quản trị ghi nhận khách đã trả tiền mặt. Số tiền điền sẵn tổng hợp đồng nhưng người xác nhận phải tự kiểm lại;
-// tải ảnh / PDF phiếu thu (PAYMENT_EVIDENCE) do chính người xác nhận tải lên, xong mới gửi. Tải lên được mà gửi lỗi thì lần sau
-// chỉ gửi lại, không tải lại. Không cập nhật lạc quan: hợp đồng chỉ thành đã thanh toán khi backend trả về
+// Quản lý / quản trị ghi nhận khách đã trả tiền mặt (một hợp đồng, hoặc một lần thanh toán ở bàn thu tiền). Số tiền điền sẵn
+// số cần thu nhưng người xác nhận phải tự kiểm lại; tải ảnh / PDF phiếu thu (PAYMENT_EVIDENCE) do chính người xác nhận tải lên,
+// xong mới gửi. Tải lên được mà gửi lỗi thì lần sau chỉ gửi lại, không tải lại. Không cập nhật lạc quan: chỉ thành đã thanh toán
+// khi backend trả về
 
 const PURPOSE = 'PAYMENT_EVIDENCE'
 
-export function CashConfirmDialog({ contract, onClose }: { contract: ContractView; onClose: () => void }) {
-  const confirm = useConfirmCashPaymentMutation()
+export type CashTarget = {
+  /** "Hợp đồng HD-… phiên bản 1" hoặc "Lần thanh toán #123456" */
+  title: string
+  amount: number
+  currency: string
+  successText: string
+  confirm: (body: CashConfirmationRequest) => Promise<unknown>
+}
+
+export function CashConfirmDialog({ target, onClose }: { target: CashTarget; onClose: () => void }) {
+  const [pending, setPending] = useState(false)
   const upload = useFileUpload(PURPOSE)
-  const [amountText, setAmountText] = useState(new Intl.NumberFormat('vi-VN').format(contract.totalAmount))
+  const [amountText, setAmountText] = useState(new Intl.NumberFormat('vi-VN').format(target.amount))
   const [receipt, setReceipt] = useState('')
   const [note, setNote] = useState('')
   const [chosen, setChosen] = useState<File | null>(null)
@@ -39,7 +48,7 @@ export function CashConfirmDialog({ contract, onClose }: { contract: ContractVie
   const [fileError, setFileError] = useState<string | null>(null)
   const [errors, setErrors] = useState<Partial<Record<keyof CashForm, string>>>({})
   const [error, setError] = useState<string | null>(null)
-  const busy = upload.uploading || confirm.isPending
+  const busy = upload.uploading || pending
   const uploadPercent = upload.progress === null ? null : Math.round(upload.progress * 100)
   const amount = amountText.trim() ? readGroupedNumber(amountText) : null
 
@@ -55,7 +64,7 @@ export function CashConfirmDialog({ contract, onClose }: { contract: ContractVie
     setError(null)
     // Tệp được tính là có khi đã chọn hợp lệ; mã tệp chỉ có sau khi tải lên
     const form: CashForm = { amount, receiptReference: receipt, evidenceFileId: chosen ? 'chosen' : null, note }
-    const next = cashConfirmErrors(form, contract.totalAmount)
+    const next = cashConfirmErrors(form, target.amount)
     setErrors(next)
     if (Object.keys(next).length > 0 || fileError || !chosen) return
     let fileId = uploadedId
@@ -67,15 +76,15 @@ export function CashConfirmDialog({ contract, onClose }: { contract: ContractVie
     } catch (e) {
       return setError(`Chưa tải được phiếu thu lên: ${contractErrorMessage(e)}`)
     }
+    setPending(true)
     try {
-      await confirm.mutateAsync({
-        contractId: contract.contractId,
-        body: cashConfirmBody({ ...form, evidenceFileId: fileId }),
-      })
-      toast.success('Đã ghi nhận khách trả tiền mặt. Hợp đồng đã thanh toán.')
+      await target.confirm(cashConfirmBody({ ...form, evidenceFileId: fileId }))
+      toast.success(target.successText)
       onClose()
     } catch (e) {
       setError(contractErrorMessage(e))
+    } finally {
+      setPending(false)
     }
   }
 
@@ -89,8 +98,8 @@ export function CashConfirmDialog({ contract, onClose }: { contract: ContractVie
     >
       <DialogTitle>Xác nhận đã nhận tiền mặt</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        {contractTitle(contract)}, tổng {formatMoney(contract.totalAmount, contract.currency)}. Chỉ xác nhận khi đã nhận
-        đủ tiền và có phiếu thu; xác nhận xong không đổi lại được.
+        {target.title}, cần thu {formatMoney(target.amount, target.currency)}. Chỉ xác nhận khi đã nhận đủ tiền và có
+        phiếu thu; xác nhận xong không đổi lại được.
       </p>
 
       <div className="mt-4 space-y-4">
@@ -99,7 +108,7 @@ export function CashConfirmDialog({ contract, onClose }: { contract: ContractVie
           htmlFor="cash-amount"
           required
           error={errors.amount}
-          hint="Đúng bằng tổng hợp đồng; không ghi nhận trả thiếu hay trả dư."
+          hint="Đúng bằng số cần thu; không ghi nhận trả thiếu hay trả dư."
         >
           <Input
             id="cash-amount"
@@ -179,7 +188,7 @@ export function CashConfirmDialog({ contract, onClose }: { contract: ContractVie
         <Button icon="task_alt" variant="primary" disabled={busy} onClick={() => void submit()}>
           {uploadPercent !== null
             ? `Đang tải phiếu thu ${uploadPercent}%`
-            : confirm.isPending
+            : pending
               ? 'Đang xác nhận…'
               : 'Xác nhận đã nhận tiền'}
         </Button>

@@ -24,7 +24,8 @@ import {
   paymentsNeedingAttention,
   type ContractViewer,
 } from '@/features/contracts/contractRules'
-import { contractKeys, useContractPaymentsQuery } from '@/hooks/useContracts'
+import { contractKeys, useConfirmCashPaymentMutation, useContractPaymentsQuery } from '@/hooks/useContracts'
+import { contractTitle } from '@/features/contracts/contractDisplay'
 import { errorMessage, isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
 import type { ContractPaymentView } from '@/types/res/staffPaymentsRes'
@@ -115,6 +116,7 @@ function PaymentBody({
   const attention = paymentsNeedingAttention(view.attempts)
   const paid = view.contractStatus === 'PAID'
   const [confirming, setConfirming] = useState(false)
+  const confirmCash = useConfirmCashPaymentMutation()
   const cashToConfirm = canConfirmCash(view, viewer)
   const state = CONTRACT_PAYMENT_STATES[view.paymentState]
   const paidCash = paid && view.current?.method === 'CASH' ? view.current : null
@@ -247,7 +249,18 @@ function PaymentBody({
           </ol>
         </details>
       )}
-      {confirming && <CashConfirmDialog contract={contract} onClose={() => setConfirming(false)} />}
+      {confirming && (
+        <CashConfirmDialog
+          target={{
+            title: contractTitle(contract),
+            amount: contract.totalAmount,
+            currency: contract.currency,
+            successText: 'Đã ghi nhận khách trả tiền mặt. Hợp đồng đã thanh toán.',
+            confirm: (body) => confirmCash.mutateAsync({ contractId: contract.contractId, body }),
+          }}
+          onClose={() => setConfirming(false)}
+        />
+      )}
     </>
   )
 }

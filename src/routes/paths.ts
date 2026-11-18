@@ -110,6 +110,8 @@ export const ROUTES = {
     dispatchRequest: '/manage/dispatch/:id',
     /** Hàng việc sau bán của kinh doanh: xem, lọc (quản lý dùng chung trang với quản trị) */
     salesTasks: '/manage/sales-tasks',
+    /** Bàn thu tiền: xác nhận tiền mặt theo lần thanh toán, sổ tiền chưa áp (chỉ đọc) */
+    payments: '/manage/payments',
   },
 
   admin: {
@@ -127,6 +129,7 @@ export const ROUTES = {
     /** Một phiên bản hợp đồng: soạn, phát hành, gửi ký, duyệt bản ký, xác nhận tiền mặt */
     contract: '/admin/contracts/:id',
     installationSchedules: '/admin/installation-schedules',
+    payments: '/admin/payments',
     packages: '/admin/packages',
     afterSales: '/admin/after-sales',
     afterSalesRequest: '/admin/after-sales/:id',

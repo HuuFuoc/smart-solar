@@ -78,6 +78,8 @@ const ManageInstallationProjectPage = page(
 )
 const ManageContractPage = page(() => import('@/pages/contract-page'), 'ManageContractPage')
 const ManageContractsPage = page(() => import('@/pages/contracts-page'), 'ManageContractsPage')
+const ManagePaymentsPage = page(() => import('@/pages/payments-page'), 'ManagePaymentsPage')
+const AdminPaymentsPage = page(() => import('@/pages/payments-page'), 'AdminPaymentsPage')
 const ManageInstallationSchedulesPage = page(
   () => import('@/pages/installation-schedules-page'),
   'ManageInstallationSchedulesPage',
@@ -250,6 +252,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.contracts, lazy: ManageContractsPage },
       { path: manage.contract, lazy: ManageContractPage },
       { path: manage.installationSchedules, lazy: ManageInstallationSchedulesPage },
+      { path: manage.payments, lazy: ManagePaymentsPage },
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
       { path: manage.afterSalesRequest, lazy: ManageAfterSalesRequestPage },
       { path: manage.salesTasks, lazy: ManageSalesTasksPage },
@@ -280,6 +283,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.contracts, lazy: AdminContractsPage },
       { path: admin.contract, lazy: AdminContractPage },
       { path: admin.installationSchedules, lazy: AdminInstallationSchedulesPage },
+      { path: admin.payments, lazy: AdminPaymentsPage },
       { path: admin.packages, lazy: AdminPackagesPage },
       { path: admin.afterSales, lazy: AdminAfterSalesPage },
       { path: admin.dispatch, lazy: AdminDispatchRequestsPage },
