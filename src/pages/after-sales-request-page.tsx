@@ -90,11 +90,11 @@ function nextStep(r: ServiceRequestView): TrackerNext {
       return {
         tone: 'danger',
         title: 'Xét bảo hành từng hạng mục',
-        body: 'Hạng mục khách trả tiền sẽ sang kinh doanh báo giá.',
+        body: 'Hạng mục khách trả tiền sẽ chờ kỹ thuật viên (hoặc kinh doanh) báo giá.',
         action: { label: 'Xét bảo hành', icon: 'gavel', target: 'coverage' },
       }
     case 'AWAITING_QUOTATION':
-      return { tone: 'info', title: 'Kinh doanh đang lập báo giá' }
+      return { tone: 'info', title: 'Chờ kỹ thuật viên hoặc kinh doanh lập báo giá' }
     case 'AWAITING_CUSTOMER':
       return { tone: 'info', title: 'Chờ khách duyệt và thanh toán báo giá' }
     case 'PENDING_CUSTOMER_ACCEPTANCE':

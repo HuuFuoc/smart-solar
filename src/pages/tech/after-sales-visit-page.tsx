@@ -94,6 +94,9 @@ function nextStep(v: TechnicianVisitView): TrackerNext {
       body: 'Quản lý duyệt hết hạng mục và khách trả phần phải trả thì bấm Sửa luôn. Không chờ được nữa thì kết thúc buổi chờ.',
       action: { label: 'Xem điều kiện', icon: 'visibility', target: 'visit-onsite' },
     }
+  // Buổi đã có ảnh (kể cả ảnh chụp lúc kiểm tra rồi sửa luôn) thì chỉ còn gửi báo cáo
+  if (v.status === 'IN_PROGRESS' && v.evidence.length > 0)
+    return { tone: 'danger', title: v.purpose === 'INSPECTION' ? 'Gửi kết quả kiểm tra' : 'Gửi báo cáo công việc' }
   if (v.status === 'IN_PROGRESS')
     return {
       tone: 'danger',
