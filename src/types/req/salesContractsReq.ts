@@ -28,3 +28,12 @@ export type OfficialDocumentRequest = {
   fileId?: string
   canonicalHash?: string | null
 }
+
+export type PaperSignedDocumentRequest = {
+  /** Format: uuid */
+  fileId?: string
+  officialDocumentSha256?: string | null
+  /** Format: date */
+  signedOn?: string | null
+  note?: string | null
+}

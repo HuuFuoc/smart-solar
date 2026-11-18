@@ -34,6 +34,7 @@ export type OneTimeMaintenanceRequest = {
   /** Format: date-time */
   preferredStartsAt?: string
   note?: string | null
+  inspectionRequired?: boolean | null
 }
 
 export type PreferredTimeRequest = {
@@ -50,6 +51,7 @@ export type PurchaseRequest = {
   /** Format: uuid */
   disasterPackageId?: string | null
   includeContract?: boolean
+  paymentMethod?: string | null
 }
 
 export type ReconsiderationRequest = {

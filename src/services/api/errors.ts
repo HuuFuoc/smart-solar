@@ -241,6 +241,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   SERVICE_VISIT_NOT_FOUND: 'Không tìm thấy buổi hẹn, hoặc buổi hẹn không còn giao cho bạn.',
   SERVICE_QUOTATION_NOT_FOUND: 'Không tìm thấy báo giá.',
   SERVICE_QUOTATION_EXPIRED: 'Báo giá đã hết hạn. Liên hệ Smart Solar để nhận báo giá mới.',
+  SERVICE_QUOTATION_PRICE_MISSING:
+    'Có sản phẩm chưa có giá trong danh mục nên chưa lập được báo giá. Đổi sản phẩm khác hoặc nhờ quản trị đặt giá.',
+  SERVICE_QUOTATION_PRODUCT_UNAVAILABLE: 'Có sản phẩm đã ngừng bán hoặc không tính giá bằng VND. Chọn sản phẩm khác.',
   AFTER_SALES_ASSET_NOT_FOUND: 'Thiết bị đã chọn không thuộc công trình này.',
   AFTER_SALES_MANUFACTURER_WARRANTY_POLICY_PENDING:
     'Chưa xét theo bảo hành của hãng được vì quy định xử lý chưa ban hành. Chọn hình thức khác.',
@@ -342,11 +345,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   PAYMENT_ATTEMPT_NOT_FOUND: 'Không tìm thấy lần thanh toán này.',
   PAYMENT_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
   PAYMENT_CONTRACT_NOT_SIGNED: 'Hợp đồng chưa được duyệt bản ký nên chưa thanh toán được.',
-  PAYMENT_ALREADY_PAID: 'Hợp đồng này đã được thanh toán. Danh sách đã được tải lại.',
-  PAYMENT_CASH_SELECTED: 'Bạn đã chọn trả tiền mặt cho hợp đồng này. Bỏ chọn tiền mặt trước nếu muốn trả qua PayOS.',
-  PAYMENT_CASH_NOT_SELECTED: 'Khách chưa chọn trả tiền mặt cho hợp đồng này, hoặc vừa bỏ chọn. Đã tải lại.',
-  PAYMENT_CASH_AMOUNT_MISMATCH:
-    'Số tiền xác nhận phải đúng bằng tổng giá trị hợp đồng; không ghi nhận trả thiếu hay trả dư.',
+  PAYMENT_ALREADY_PAID: 'Khoản này đã được thanh toán. Danh sách đã được tải lại.',
+  PAYMENT_CASH_SELECTED: 'Đã chọn trả tiền mặt cho khoản này. Bỏ chọn tiền mặt trước nếu muốn trả qua PayOS.',
+  PAYMENT_CASH_NOT_SELECTED: 'Khách chưa chọn trả tiền mặt cho khoản này, hoặc vừa bỏ chọn. Đã tải lại.',
+  PAYMENT_CASH_AMOUNT_MISMATCH: 'Số tiền xác nhận phải đúng bằng số cần thu; không ghi nhận trả thiếu hay trả dư.',
+  PAYMENT_CASH_ITEM_NOT_PAYABLE:
+    'Khoản này không còn thu được (báo giá đã hết hạn, bị từ chối hoặc đã thay bản mới). Chưa ghi nhận gì. Đã tải lại.',
   PAYMENT_CASH_RECEIPT_DUPLICATE: 'Số phiếu thu này đã dùng cho một lần thanh toán khác. Kiểm tra lại số phiếu thu.',
   // Lịch thi công đã thống nhất với khách
   INSTALLATION_SCHEDULE_NOT_FOUND: 'Không tìm thấy lịch thi công này.',
@@ -366,6 +370,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_SCHEDULE_NOT_LIVE: 'Lịch này đã được thay hoặc đã huỷ. Đã tải lại.',
   INSTALLATION_SCHEDULE_COVERAGE_UNAVAILABLE:
     'Khu vực của công trình hiện chưa có kỹ thuật viên phục vụ; quản lý sẽ sắp xếp lịch thi công.',
+  INSTALLATION_SLOT_OFFER_NOT_FOUND: 'Không tìm thấy khung thời gian này.',
+  INSTALLATION_SLOT_OFFER_UNAVAILABLE:
+    'Khung thời gian này không còn trống. Chọn khung khác hoặc nhờ kỹ thuật viên đề xuất ngày mới.',
+  INSTALLATION_SLOT_OFFER_NOT_OPEN: 'Khung thời gian này vừa được thay hoặc đã được chọn. Đã tải lại danh sách.',
   // Báo giá, duyệt giá, sinh tự động kiểu cũ đã bỏ
   ENDPOINT_RETIRED: 'Chức năng này đã đổi cách làm. Tải lại trang để dùng cách mới.',
   // Khu vực phục vụ

@@ -35,3 +35,20 @@ export type ContractPaymentView = {
   history: PaymentEventView[] | null
   paymentState: ContractPaymentState
 }
+
+/** Một dòng của lần thanh toán (backend 8f70cb2, PaymentLineView). `itemType`: CONTRACT | MAINTENANCE_PACKAGE | DISASTER_PACKAGE | REPAIR_QUOTATION | MAINTENANCE_QUOTATION */
+export type PaymentLineView = {
+  itemType: string
+  amount: number
+  status: string
+  contractId: string | null
+  subscriptionId: string | null
+  quotationId: string | null
+}
+
+/** GET /api/manager/payments (Manager, Admin, luôn phân trang): lần thanh toán kèm các dòng, mới nhất trước */
+export type StaffPaymentAttemptView = {
+  attempt: PaymentAttemptView
+  customerUserId: string
+  lines: PaymentLineView[]
+}

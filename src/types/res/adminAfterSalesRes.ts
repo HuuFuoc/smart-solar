@@ -26,3 +26,50 @@ export type DashboardView = {
   compareTo: string
   metrics: DashboardMetric[]
 }
+
+/** Một nhóm của số liệu tổng quan: số lượng, và số tiền VND khi là tiền (backend 8f70cb2, OverviewBucket) */
+export type OverviewBucket = { key: string; count: number; amount: number | null }
+
+export type OverviewRoleAccounts = {
+  role: string
+  total: number
+  active: number
+  pendingVerification: number
+  inactive: number
+}
+
+/**
+ * GET /api/admin/after-sales/dashboard/overview (AdminOverviewView). Khối "hiện tại" là trạng thái lúc gọi; khối "trong kỳ" đếm
+ * trong [from, to]. Giá trị báo giá là tiền chào, không phải tiền đã nhận; tiền mặt chờ thu chưa phải tiền đã nhận
+ */
+export type AdminOverviewView = {
+  from: string
+  to: string
+  generatedAt: string
+  accounts: OverviewRoleAccounts[]
+  surveyRequestsByStatus: OverviewBucket[]
+  outstandingSurveyAppointments: number
+  installationQuotationsByStatus: OverviewBucket[]
+  contractsByStatus: OverviewBucket[]
+  contractsWithOfficialPdf: number
+  contractsWithSignedScan: number
+  signedScansUploadedByStaff: number
+  installationProjectsByStatus: OverviewBucket[]
+  installationSchedulesByStatus: OverviewBucket[]
+  openInstallationSlotOffers: number
+  serviceRequestsByKindAndStatus: OverviewBucket[]
+  serviceQuotationsByStatus: OverviewBucket[]
+  serviceQuotationsByIssuer: OverviewBucket[]
+  disasterClaimsByStatus: OverviewBucket[]
+  subscriptionsByKindAndStatus: OverviewBucket[]
+  openSalesTasksByType: OverviewBucket[]
+  openServiceVisitsByStatus: OverviewBucket[]
+  pendingCashChoices: OverviewBucket
+  refundRecordsByStatus: OverviewBucket[]
+  paymentAttemptsCreatedByMethodAndStatus: OverviewBucket[]
+  collectedByMethod: OverviewBucket[]
+  combinedCheckoutsPaid: OverviewBucket
+  packageRevenueBySaleChannel: OverviewBucket[]
+  installationQuotationValueIssued: OverviewBucket
+  serviceQuotationValueIssued: OverviewBucket
+}

@@ -251,11 +251,26 @@ export type ServiceVisitView = {
 }
 
 /** Một dòng báo giá (backend lưu dạng JSON) */
+/** Sản phẩm danh mục của một dòng báo giá kỹ thuật viên lập (bản chụp lúc gửi, backend 8f70cb2). `kind`: PARTS | LABOR */
+export type ServiceQuotationComponent = {
+  productId: string
+  sku: string
+  name: string
+  productType: string
+  unit: string
+  unitPrice: number
+  quantity: number
+  amount: number
+  kind: string
+}
+
 export type ServiceQuotationLine = {
   itemId: string | null
   description: string
   partsAmount: number
   laborAmount: number
+  /** Chỉ có ở báo giá kỹ thuật viên lập */
+  components?: ServiceQuotationComponent[]
 }
 
 export type ServiceQuotationView = {
@@ -277,8 +292,10 @@ export type ServiceQuotationView = {
   expiresAt: string
   acceptedAt: string | null
   paidAt: string | null
-  /** Link PayOS đang gắn, xem bằng GET .../payments/{attemptId} */
+  /** Lần thanh toán đang gắn (PayOS hoặc tiền mặt), xem bằng GET .../payments/{attemptId} */
   currentPaymentAttemptId: string | null
+  /** SALES | TECHNICIAN (backend 8f70cb2; bản cũ không có thì là SALES) */
+  issuedByRole?: string
 }
 
 export type ServiceEvidenceView = {

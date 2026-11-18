@@ -59,3 +59,39 @@ export type TechnicianScheduleContractView = {
   /** Null khi chưa ghi lịch nào */
   schedule: InstallationScheduleView | null
 }
+
+/** Khung thi công kỹ thuật viên có thể đề xuất (backend 8f70cb2, InstallationSlotAvailabilityView); `reason` là câu / mã gốc */
+export type InstallationSlotAvailabilityView = {
+  /** Ngày bắt đầu, yyyy-MM-dd theo giờ Việt Nam */
+  date: string
+  startsAt: string
+  endsAt: string
+  available: boolean
+  reason: string | null
+}
+
+/** OPEN: khách chọn được; SELECTED: khách đã chọn (thành lịch dự kiến); WITHDRAWN: bị thay hoặc khách chọn khung khác */
+export type InstallationSlotOfferStatus = 'OPEN' | 'SELECTED' | 'WITHDRAWN' | (string & {})
+
+/**
+ * Một khung kỹ thuật viên đề xuất (InstallationSlotOfferView). `available` được tính lại mỗi lần đọc, khung không giữ chỗ.
+ * `withdrawnReason` chỉ có ở kỹ thuật viên: REPLACED_BY_NEW_OFFERS | ANOTHER_OFFER_SELECTED
+ */
+export type InstallationSlotOfferView = {
+  offerId: string
+  contractId: string
+  technicianUserId: string
+  technicianName: string
+  startsAt: string
+  endsAt: string
+  status: InstallationSlotOfferStatus
+  available: boolean
+  unavailableReason: string | null
+  note: string | null
+  createdAt: string
+  selectedAt: string | null
+  selectedScheduleId: string | null
+  withdrawnAt: string | null
+  withdrawnReason: string | null
+  revision: number
+}

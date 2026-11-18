@@ -31,4 +31,22 @@ export type SaveRagConfigurationDraftRequest = {
   notes?: string | null
   /** Format: int32 */
   expectedRevision?: number | null
+  reasoningEffort?: unknown
+  generationEnabled?: boolean | null
+  /** Format: int32 */
+  userRequestsPerDay?: number | null
+  /** Format: int32 */
+  userConcurrency?: number | null
+  /** Format: int32 */
+  globalConcurrency?: number | null
+  /** Format: int32 */
+  maxQuestionCharacters?: number | null
+  /** Format: int32 */
+  generationTimeoutSeconds?: number | null
+  /** Format: double */
+  dailyBudgetUsd?: number | null
+  /** Format: double */
+  monthlyBudgetUsd?: number | null
+  /** Format: double */
+  monthlyIngestionBudgetUsd?: number | null
 }

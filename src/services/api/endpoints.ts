@@ -116,6 +116,9 @@ export const ENDPOINTS = {
     base: '/customers/me/installation-schedules',
     byContract: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/installation-schedule`,
     changeRequest: (scheduleId: string) => `/customers/me/installation-schedules/${encode(scheduleId)}/change-request`,
+    // Khung giờ kỹ thuật viên đề xuất: khách chọn một, thành lịch dự kiến
+    offers: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/installation-slot-offers`,
+    selectOffer: (offerId: string) => `/customers/me/installation-slot-offers/${encode(offerId)}/select`,
   },
   // Báo giá lắp đặt: khách không thấy bản nháp
   customerQuotations: {
@@ -145,6 +148,9 @@ export const ENDPOINTS = {
     acceptQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/accept`,
     rejectQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/reject`,
     checkoutQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/checkout`,
+    cashQuotation: (quotationId: string) => `/customers/me/after-sales/quotations/${encode(quotationId)}/cash`,
+    cancelCashQuotation: (quotationId: string) =>
+      `/customers/me/after-sales/quotations/${encode(quotationId)}/cash/cancel`,
     evidenceUrl: (requestId: string, evidenceId: string) =>
       `/customers/me/after-sales/requests/${encode(requestId)}/evidence/${encode(evidenceId)}/url`,
     // Lượt bảo trì của gói, đổi giờ, xin xét lại hỗ trợ thiên tai, báo lỗi từ lần bảo trì, thông báo
@@ -202,6 +208,8 @@ export const ENDPOINTS = {
     publish: (contractId: string) => `/contracts/${encode(contractId)}/publish`,
     discard: (contractId: string) => `/contracts/${encode(contractId)}/discard`,
     review: (contractId: string) => `/contracts/${encode(contractId)}/review`,
+    // Bản hợp đồng giấy đã ký do kinh doanh phụ trách / quản lý / quản trị tải lên
+    signedDocument: (contractId: string) => `/contracts/${encode(contractId)}/signed-document`,
     amendments: (contractId: string) => `/contracts/${encode(contractId)}/amendments`,
     payments: (contractId: string) => `/contracts/${encode(contractId)}/payments`,
     cashConfirm: (contractId: string) => `/contracts/${encode(contractId)}/payments/cash/confirm`,
@@ -255,6 +263,8 @@ export const ENDPOINTS = {
     base: '/technicians/me/installation-schedules',
     byContract: (contractId: string) => `/technicians/me/contracts/${encode(contractId)}/installation-schedule`,
     cancel: (scheduleId: string) => `/technicians/me/installation-schedules/${encode(scheduleId)}/cancel`,
+    availability: (contractId: string) => `/technicians/me/contracts/${encode(contractId)}/installation-availability`,
+    offers: (contractId: string) => `/technicians/me/contracts/${encode(contractId)}/installation-slot-offers`,
   },
   technicianInstallations: {
     base: '/technicians/me/installation-projects',
@@ -284,6 +294,8 @@ export const ENDPOINTS = {
       `/technicians/me/after-sales/visits/${encode(visitId)}/supplementary-items`,
     workReport: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/work-report`,
     absence: (visitId: string) => `/technicians/me/after-sales/visits/${encode(visitId)}/absence`,
+    // Kỹ thuật viên của buổi hẹn lập báo giá sửa chữa / bảo trì lẻ đã kiểm tra từ sản phẩm danh mục
+    quotations: (requestId: string) => `/technicians/me/after-sales/requests/${encode(requestId)}/quotations`,
   },
 
   // Thi công, phía quản lý và quản trị
@@ -332,6 +344,13 @@ export const ENDPOINTS = {
     warrantyActivation: (assetId: string) => `/manager/after-sales/assets/${encode(assetId)}/warranty-activation`,
     tasks: '/manager/after-sales/tasks',
     assignTask: (taskId: string) => `/manager/after-sales/tasks/${encode(taskId)}/assign`,
+    // Sổ tiền đã nhận nhưng không áp vào khoản nào, chỉ đọc
+    unappliedMoney: '/manager/after-sales/unapplied-money',
+  },
+  // Bàn thu tiền: mọi lần thanh toán (lọc cách trả, trạng thái, ngày), xác nhận tiền mặt theo lần thanh toán
+  managerPayments: {
+    base: '/manager/payments',
+    cashConfirm: (attemptId: string) => `/manager/payments/${encode(attemptId)}/cash/confirm`,
   },
 
   // Điều phối kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý và quản trị)
@@ -386,6 +405,7 @@ export const ENDPOINTS = {
     warrantyOptions: '/admin/after-sales/warranty-options',
     dashboard: '/admin/after-sales/dashboard',
     dashboardExport: '/admin/after-sales/dashboard/export',
+    overview: '/admin/after-sales/dashboard/overview',
   },
   // Chatbot hỏi đáp theo tài liệu đã công bố (mọi người đăng nhập, chỉ đọc phiên của mình)
   chat: {
