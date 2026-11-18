@@ -341,7 +341,8 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
   (`activeDisasterTerm`), vì không có kỳ đó BE luôn ghi claim `NOT_ELIGIBLE`; chỉ liệt các loại gói bảo vệ. Lúc xảy ra bắt
   buộc, không sau lúc gửi và không trước mốc "Bảo vệ từ" (`incidentTimeError`): trước mốc đó BE vẫn nhận nhưng chắc chắn
   ghi `NOT_ELIGIBLE` kèm lý do tiếng Anh, trang yêu cầu sẽ in nguyên câu đó.
-- Quản lý + quản trị (trang dùng chung `pages/after-sales-request(s)-page.tsx`): xếp / đổi buổi hẹn (loại buổi theo
+- Quản lý + quản trị (trang dùng chung `pages/after-sales-request(s)-page.tsx`): xếp / đổi buổi hẹn (nút "Kiểm tra ai rảnh khung này" hỏi
+  technician-candidates của dự án thi công, cùng bộ kiểm tra lịch với lệnh xếp buổi; loại buổi theo
   `visitToSchedule`, gửi `expectedRevision`; kỹ thuật viên ngoài khu vực của công trình thì bắt lý do, khu vực lấy từ dự án
   thi công), quyết định ai chịu chi phí từng hạng mục, xét khi khách không đồng ý kết quả, xét yêu cầu huỷ việc đã trả tiền.
   Từ 03/11/2026 thêm (luật ở `features/after-sales/managerAfterSalesRules.ts`, bám `ServiceManagerHandlers`, test ở

@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
@@ -8,6 +8,7 @@ import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Facts } from '@/features/pre-surveys/Facts'
+import { CandidateList } from '@/features/installation-projects/CandidateList'
 import { ErrorLine, ReasonField } from '@/features/installation-projects/formParts'
 import {
   assignmentStatusMeta,
@@ -20,14 +21,12 @@ import {
   addDays,
   formatMoment,
   formatTime,
-  ineligibleLabel,
   todayVn,
   vnDate,
   vnTimestamp,
 } from '@/features/scheduling/schedulingDisplay'
 import { useAssignInstallationMutation, useTechnicianCandidatesQuery } from '@/hooks/useManagerInstallations'
-import type { InstallationCandidateView, InstallationStaffView } from '@/types/res/managerInstallationsRes'
-import { cx } from '@/utils/cx'
+import type { InstallationStaffView } from '@/types/res/managerInstallationsRes'
 
 // Kỹ thuật viên phụ trách và lịch thi công. Phân công, đổi người, đổi lịch đều là PUT .../assignment:
 // chọn khoảng thời gian, bấm tìm để backend kiểm tra ai nhận được, chọn một người rồi gửi kèm revision của dự án.
@@ -44,69 +43,6 @@ function initialInterval(project: InstallationStaffView, now: number) {
     return { startDate: vnDate(start), startTime: formatTime(start), endDate: vnDate(end), endTime: formatTime(end) }
   const tomorrow = addDays(todayVn(), 1)
   return { startDate: tomorrow, startTime: '08:00', endDate: tomorrow, endTime: '17:00' }
-}
-
-function CandidateList({
-  candidates,
-  zoneName,
-  currentId,
-  value,
-  onChange,
-}: {
-  candidates: InstallationCandidateView[]
-  zoneName: string | null
-  currentId: string | null
-  value: string | null
-  onChange: (id: string) => void
-}) {
-  const name = useId()
-  // Backend xếp người trong khu vực trước, người ngoài khu vực sau
-  const groups = [
-    { title: zoneName ? `Trong khu vực ${zoneName}` : 'Trong khu vực', items: candidates.filter((c) => !c.crossZone) },
-    { title: 'Ngoài khu vực của công trình', items: candidates.filter((c) => c.crossZone) },
-  ].filter((group) => group.items.length > 0)
-  return (
-    <fieldset className="space-y-4">
-      <legend className="sr-only">Kỹ thuật viên phụ trách</legend>
-      {groups.map((group) => (
-        <div key={group.title}>
-          <p className="mb-2 text-meta font-medium text-fg-2">{group.title}</p>
-          <div className="space-y-2">
-            {group.items.map((c) => (
-              <label
-                key={c.technicianUserId}
-                className={cx(
-                  'flex gap-3 rounded-control border border-line-2 bg-panel px-4 py-3',
-                  c.isEligible
-                    ? 'press cursor-pointer [&:not(:has(:checked)):hover]:border-fg-3 has-checked:border-accent-line has-checked:bg-accent-soft has-focus-visible:outline-2 has-focus-visible:outline-offset-1 has-focus-visible:outline-ring'
-                    : 'cursor-not-allowed bg-surface-2',
-                )}
-              >
-                <input
-                  type="radio"
-                  name={name}
-                  value={c.technicianUserId}
-                  disabled={!c.isEligible}
-                  checked={value === c.technicianUserId}
-                  onChange={() => onChange(c.technicianUserId)}
-                  className="mt-1 size-4 shrink-0 accent-accent"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className={cx('font-semibold', c.isEligible ? 'text-fg' : 'text-fg-2')}>{c.fullName}</span>
-                    {c.technicianUserId === currentId && <Badge tone="info">Đang phụ trách</Badge>}
-                  </span>
-                  <span className="mt-1 block text-meta text-fg-2">
-                    {c.isEligible ? 'Nhận được khoảng thời gian này' : `Không nhận được: ${ineligibleLabel(c.reason)}`}
-                  </span>
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-      ))}
-    </fieldset>
-  )
 }
 
 function AssignDialog({ project, onClose }: { project: InstallationStaffView; onClose: () => void }) {

@@ -6,7 +6,9 @@ import { DateField, Field, Input, Select, TimeSelect } from '@/components/common
 import { Notice } from '@/components/common/ui/lists'
 import { openVisit, visitPurposeLabel } from '@/features/after-sales/serviceDisplay'
 import { addDays, formatTime, todayVn, vnDate, vnTimestamp } from '@/features/scheduling/schedulingDisplay'
+import { CandidateList } from '@/features/installation-projects/CandidateList'
 import { useScheduleVisitMutation } from '@/hooks/useManagerAfterSales'
+import { useTechnicianCandidatesQuery } from '@/hooks/useManagerInstallations'
 import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
 import { errorMessage, isApiError, messageForCode } from '@/services/api/errors'
 import type { TechnicianProfileView } from '@/types/res/adminTechniciansRes'
@@ -14,7 +16,9 @@ import type { ServiceRequestView } from '@/types/res/customerAfterSalesRes'
 
 // Quản lý xếp buổi hẹn (kiểm tra, sửa, bảo trì, làm lại) hoặc đổi buổi đã hẹn mà kỹ thuật viên chưa bắt đầu
 // Kỹ thuật viên ngoài khu vực của công trình thì backend bắt đánh dấu ngoài khu vực và ghi lý do
-// Giờ chọn được cả ngày: giờ làm của từng kỹ thuật viên khác nhau và backend kiểm tra
+// Giờ chọn được cả ngày: giờ làm của từng kỹ thuật viên khác nhau và backend kiểm tra. "Kiểm tra ai rảnh" hỏi technician-candidates
+// của dự án thi công (cùng bộ kiểm tra lịch khảo sát, lịch lắp đặt, giờ làm, ngày nghỉ với lệnh xếp buổi); chỉ gọi khi bấm vì
+// backend giới hạn 15 lần / phút. Lịch khảo sát đang chờ người nhận vẫn có thể chặn khi gửi, backend báo lại
 
 const REASON_MAX = 500
 
@@ -55,6 +59,19 @@ export function ScheduleVisitForm({
   const [reason, setReason] = useState('')
   const [issue, setIssue] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [checked, setChecked] = useState<{ startsAt: string; endsAt: string } | null>(null)
+  const candidates = useTechnicianCandidatesQuery(request.projectId, checked)
+  const interval = { startsAt: vnTimestamp(date, from), endsAt: vnTimestamp(date, to) }
+  // Kết quả chỉ đúng cho khung đã kiểm tra; đổi ngày / giờ thì ẩn để không chọn theo kết quả cũ
+  const checkedCurrent = checked?.startsAt === interval.startsAt && checked.endsAt === interval.endsAt
+  const shownCandidates = (candidates.data ?? []).filter((c) => c.reason !== 'TECHNICIAN_INACTIVE')
+
+  function checkFree() {
+    if (!date) return setIssue('Chọn ngày hẹn.')
+    if (to <= from) return setIssue('Giờ kết thúc phải sau giờ bắt đầu.')
+    setIssue(null)
+    setChecked(interval)
+  }
 
   const list = [...(technicians.data ?? [])]
     .filter((t) => t.isActiveUser)
@@ -121,6 +138,29 @@ export function ScheduleVisitForm({
         <Field label="Đến" htmlFor="visit-to" required>
           <TimeSelect id="visit-to" value={to} onChange={setTo} />
         </Field>
+      </div>
+      <div className="space-y-3">
+        <Button type="button" icon="person_search" variant="info" disabled={candidates.isFetching} onClick={checkFree}>
+          {candidates.isFetching ? 'Đang kiểm tra…' : 'Kiểm tra ai rảnh khung này'}
+        </Button>
+        {checked && !checkedCurrent && <p className="text-meta text-fg-2">Đã đổi ngày hoặc giờ. Bấm kiểm tra lại.</p>}
+        {checked && checkedCurrent && candidates.isError && (
+          <Notice tone="danger">{errorMessage(candidates.error)}</Notice>
+        )}
+        {checked &&
+          checkedCurrent &&
+          candidates.data &&
+          (shownCandidates.some((c) => c.isEligible) ? (
+            <CandidateList
+              candidates={shownCandidates}
+              zoneName={null}
+              currentId={moving?.technicianUserId ?? null}
+              value={technicianId || null}
+              onChange={setTechnicianId}
+            />
+          ) : (
+            <Notice tone="warn">Không ai rảnh trong khung này. Đổi ngày hoặc giờ rồi kiểm tra lại.</Notice>
+          ))}
       </div>
       {outside && (
         <Notice tone="warn">
