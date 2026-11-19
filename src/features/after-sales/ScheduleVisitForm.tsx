@@ -25,12 +25,23 @@ const REASON_MAX = 500
 const inZone = (t: TechnicianProfileView, zoneId: string | null) =>
   zoneId !== null && t.zones.some((z) => z.zoneId === zoneId)
 
+/** Backend chỉ nhận buổi bắt đầu sau lúc gửi và kết thúc sau lúc bắt đầu */
+function intervalIssue(date: string, from: string, to: string) {
+  if (!date) return 'Chọn ngày hẹn.'
+  if (to <= from) return 'Giờ kết thúc phải sau giờ bắt đầu.'
+  if (new Date(vnTimestamp(date, from)).getTime() <= Date.now()) return 'Giờ bắt đầu đã qua. Chọn giờ sau lúc này.'
+  return null
+}
+
 /** Lỗi trùng lịch có mã lý do trong `details.reason`, dịch được thì dùng câu đó */
 function scheduleError(error: unknown) {
   if (isApiError(error) && error.details && typeof error.details === 'object' && 'reason' in error.details) {
     const reason = (error.details as { reason?: unknown }).reason
     if (typeof reason === 'string') return messageForCode(reason) ?? error.message
   }
+  // Lỗi kiểm tra duy nhất của lệnh xếp buổi là khung giờ (giờ đã qua lúc tới server)
+  if (isApiError(error) && error.code === 'AFTER_SALES_VALIDATION_FAILED')
+    return 'Giờ bắt đầu đã qua hoặc giờ kết thúc không sau giờ bắt đầu. Chọn lại giờ.'
   return errorMessage(error)
 }
 
@@ -67,10 +78,9 @@ export function ScheduleVisitForm({
   const shownCandidates = (candidates.data ?? []).filter((c) => c.reason !== 'TECHNICIAN_INACTIVE')
 
   function checkFree() {
-    if (!date) return setIssue('Chọn ngày hẹn.')
-    if (to <= from) return setIssue('Giờ kết thúc phải sau giờ bắt đầu.')
-    setIssue(null)
-    setChecked(interval)
+    const problem = intervalIssue(date, from, to)
+    setIssue(problem)
+    if (!problem) setChecked(interval)
   }
 
   const list = [...(technicians.data ?? [])]
@@ -84,8 +94,8 @@ export function ScheduleVisitForm({
     e.preventDefault()
     setError(null)
     if (!technicianId) return setIssue('Chọn kỹ thuật viên.')
-    if (!date) return setIssue('Chọn ngày hẹn.')
-    if (to <= from) return setIssue('Giờ kết thúc phải sau giờ bắt đầu.')
+    const problem = intervalIssue(date, from, to)
+    if (problem) return setIssue(problem)
     if (reasonRequired && !reason.trim())
       return setIssue(moving ? 'Ghi lý do đổi lịch.' : 'Ghi lý do giao cho kỹ thuật viên ngoài khu vực.')
     setIssue(null)
