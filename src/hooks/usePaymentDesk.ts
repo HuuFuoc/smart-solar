@@ -1,6 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { adminFinanceKeys } from '@/hooks/useAdminFinance'
 import { contractKeys } from '@/hooks/useContracts'
 import { installationScheduleKeys } from '@/hooks/useInstallationSchedules'
+import { paymentPlanKeys } from '@/hooks/paymentPlanKeys'
 import * as desk from '@/services/paymentDeskService'
 import type { PaymentDeskFilter } from '@/services/paymentDeskService'
 import type { ApiError } from '@/services/api/errors'
@@ -65,6 +67,9 @@ export function useConfirmAttemptCashMutation() {
         queryClient.invalidateQueries({ queryKey: paymentDeskKeys.all }),
         queryClient.invalidateQueries({ queryKey: contractKeys.all }),
         queryClient.invalidateQueries({ queryKey: installationScheduleKeys.all }),
+        // Lần thanh toán của một khoản 30/70: khoản, danh sách hợp đồng và báo cáo tài chính đổi theo
+        queryClient.invalidateQueries({ queryKey: paymentPlanKeys.all }),
+        queryClient.invalidateQueries({ queryKey: adminFinanceKeys.all }),
       ]),
   })
 }

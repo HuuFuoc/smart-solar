@@ -9,7 +9,7 @@ import { acceptFor, fileProblem, fileTypesText, maxSizeText } from '@/features/f
 import { FileInfo } from '@/features/files/FileInfo'
 import { ErrorLine } from '@/features/installation-projects/formParts'
 import { formatFileSize } from '@/features/installations/installationDisplay'
-import { contractErrorMessage, contractTitle } from '@/features/contracts/contractDisplay'
+import { contractErrorMessage, contractTitle, uploadErrorMessage } from '@/features/contracts/contractDisplay'
 import { officialDocumentBody, shortHash } from '@/features/contracts/contractRules'
 import { useAttachOfficialDocumentMutation } from '@/hooks/useContracts'
 import { useFileUpload } from '@/hooks/useFiles'
@@ -61,7 +61,7 @@ export function OfficialDocumentDialog({ contract, onClose }: { contract: Contra
         setUploadedId(fileId)
       }
     } catch (e) {
-      return setError(`Chưa tải được tệp lên: ${contractErrorMessage(e)}`)
+      return setError(`Chưa tải được tệp lên: ${uploadErrorMessage(e)}`)
     }
     const body = officialDocumentBody(snapshot, fileId)
     if (!body) return setError('Hợp đồng chưa phát hành nên chưa có mã nội dung.')
@@ -112,7 +112,7 @@ export function OfficialDocumentDialog({ contract, onClose }: { contract: Contra
           <p className="text-body text-fg-2">
             {chosen ? (
               <>
-                Tải lên khi gắn: <span className="font-medium text-fg">{chosen.name}</span>
+                Tải lên khi gắn: <span className="font-medium break-all text-fg">{chosen.name}</span>
                 <span className="tnum">, {formatFileSize(chosen.size)}</span>.
               </>
             ) : snapshot.officialDocument ? (

@@ -9,13 +9,13 @@ import type { ServiceRequestSummary } from '@/types/res/customerAfterSalesRes'
 import type { DispatchQueueItemView } from '@/types/res/dispatchRes'
 import type { InstallationProjectSummary } from '@/types/res/managerInstallationsRes'
 
-// Số đỏ trên menu của quản lý và quản trị: hợp đồng chưa tạo dự án, dự án chờ phân công / chờ nghiệm thu nội bộ, yêu cầu bảo hành chờ xử lý,
+// Số đỏ trên menu của quản lý và quản trị: hợp đồng chưa tạo dự án, dự án chờ phân công, yêu cầu bảo hành chờ xử lý,
 // công trình chờ xếp kỹ thuật viên, kỹ thuật viên chưa thuộc khu vực nào, cộng dự án / yêu cầu vừa đổi trạng thái mà chưa xem
 const projectAlert = {
   key: (p: InstallationProjectSummary) => p.projectId,
   sig: (p: InstallationProjectSummary) => `${p.status}|${p.technicianAccepted}`,
-  todo: (p: InstallationProjectSummary) =>
-    p.status === 'PENDING_ASSIGNMENT' || p.status === 'PENDING_CUSTOMER_ACCEPTANCE',
+  // Chờ nghiệm thu là việc của khách (backend 7d27054), không còn là việc của quản lý
+  todo: (p: InstallationProjectSummary) => p.status === 'PENDING_ASSIGNMENT',
 }
 const dispatchAlert = {
   key: (d: DispatchQueueItemView) => d.dispatchRequestId,

@@ -54,8 +54,13 @@ export const ROUTES = {
     /** Tab "Của tôi" có đường dẫn riêng để menu đánh dấu đúng */
     surveysMine: '/ops/surveys/mine',
     survey: '/ops/surveys/:id',
-    /** Một phiên bản hợp đồng lắp đặt, chỉ xem; mở từ khối Hợp đồng của yêu cầu khảo sát (backend không có danh sách mọi hợp đồng) */
+    /** Danh sách mọi hợp đồng (chỉ đọc) */
+    contracts: '/ops/contracts',
+    /** Một phiên bản hợp đồng lắp đặt, chỉ xem */
     contract: '/ops/contracts/:id',
+    /** Hồ sơ thu hồi khoản quá hạn của hợp đồng 30/70 */
+    collections: '/ops/collections',
+    collection: '/ops/collections/:id',
     /** Việc báo giá sửa chữa, bảo trì, việc nhắc khách; chi tiết theo mã yêu cầu */
     afterSales: '/ops/after-sales',
     afterSalesRequest: '/ops/after-sales/:id',
@@ -75,6 +80,9 @@ export const ROUTES = {
     installation: '/tech/installations/:id',
     /** Hợp đồng đã ký của công trình mình khảo sát: ghi ngày thi công đã thống nhất với khách */
     installationSchedules: '/tech/installation-schedules',
+    /** Danh sách mọi hợp đồng (chỉ đọc); hợp đồng 30/70 của công trình mình khảo sát thì thu tiền và tải trang ký ở đây */
+    contracts: '/tech/contracts',
+    contract: '/tech/contracts/:id',
     /** Buổi hẹn bảo hành, sửa chữa, bảo trì; chi tiết theo mã buổi hẹn */
     afterSales: '/tech/after-sales',
     afterSalesVisit: '/tech/after-sales/:id',
@@ -93,7 +101,7 @@ export const ROUTES = {
     /** Dự án thi công + hợp đồng chờ tạo dự án (quản lý dùng chung trang với quản trị) */
     installations: '/manage/installations',
     installation: '/manage/installations/:id',
-    /** Mở hợp đồng theo mã yêu cầu khảo sát / mã hợp đồng (backend không có danh sách mọi hợp đồng) */
+    /** Danh sách mọi hợp đồng, lọc và tìm ở server */
     contracts: '/manage/contracts',
     /** Một phiên bản hợp đồng: soạn, phát hành, gửi ký, duyệt bản ký, xác nhận tiền mặt (dùng chung trang với quản trị) */
     contract: '/manage/contracts/:id',
@@ -109,6 +117,8 @@ export const ROUTES = {
     salesTasks: '/manage/sales-tasks',
     /** Bàn thu tiền: xác nhận tiền mặt theo lần thanh toán, sổ tiền chưa áp (chỉ đọc) */
     payments: '/manage/payments',
+    collections: '/manage/collections',
+    collection: '/manage/collections/:id',
   },
 
   admin: {
@@ -127,6 +137,8 @@ export const ROUTES = {
     contract: '/admin/contracts/:id',
     installationSchedules: '/admin/installation-schedules',
     payments: '/admin/payments',
+    collections: '/admin/collections',
+    collection: '/admin/collections/:id',
     packages: '/admin/packages',
     afterSales: '/admin/after-sales',
     afterSalesRequest: '/admin/after-sales/:id',

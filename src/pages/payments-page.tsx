@@ -47,6 +47,10 @@ const TABS: { value: Tab; label: string }[] = [
 
 type Viewer = 'manager' | 'admin'
 const CONTRACT_PATTERN = { manager: ROUTES.manage.contract, admin: ROUTES.admin.contract }
+const CONTRACTS = { manager: ROUTES.manage.contracts, admin: ROUTES.admin.contracts }
+
+/** Lần thanh toán một khoản của hợp đồng 30/70: số tiền là của khoản đó, không phải cả hợp đồng */
+const isInstallment = (row: StaffPaymentAttemptView) => row.lines.some((l) => l.itemType === 'CONTRACT_INSTALLMENT')
 
 const pageOf = (raw: string | null) => Math.max(1, Number.parseInt(raw ?? '1', 10) || 1)
 
@@ -167,6 +171,7 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
                     const a = row.attempt
                     const meta = paymentStatusMeta(a.status, a.method)
                     const contractId = a.contractId ?? row.lines.find((l) => l.contractId)?.contractId ?? null
+                    const installment = isInstallment(row)
                     const cashPending = a.method === 'CASH' && a.status === 'PENDING'
                     return (
                       <Tr key={a.paymentAttemptId}>
@@ -206,6 +211,17 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
                                 Mở hợp đồng
                               </ButtonLink>
                             )}
+                            {/* Dòng của một khoản 30/70 không có mã hợp đồng: mở danh sách hợp đồng của khách đó */}
+                            {!contractId && installment && (
+                              <ButtonLink
+                                size="sm"
+                                icon="history_edu"
+                                variant="info"
+                                to={`${CONTRACTS[viewer]}?khach=${encodeURIComponent(row.customerUserId)}`}
+                              >
+                                Hợp đồng của khách
+                              </ButtonLink>
+                            )}
                           </div>
                         </Td>
                       </Tr>
@@ -233,11 +249,14 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
             title: `Lần thanh toán #${confirming.attempt.orderCode} (${
               confirming.lines.map((l) => PAYMENT_ITEM_TYPES[l.itemType] ?? l.itemType).join(', ') || 'Hợp đồng lắp đặt'
             })`,
+            // Một khoản 30/70: số phải thu đúng bằng khoản đó (backend ghi trong `amount` của lần thanh toán)
             amount: confirming.attempt.amount,
             currency: confirming.attempt.currency,
             successText: confirming.lines.some((l) => l.itemType === 'INSTALLATION_QUOTATION')
               ? 'Đã ghi nhận khách trả tiền mặt. Hợp đồng được lập từ báo giá đã thanh toán.'
-              : 'Đã ghi nhận khách trả tiền mặt.',
+              : isInstallment(confirming)
+                ? 'Đã ghi nhận khách trả tiền mặt cho khoản này của hợp đồng 30/70.'
+                : 'Đã ghi nhận khách trả tiền mặt.',
             confirm: (body) => confirm.mutateAsync({ attemptId: confirming.attempt.paymentAttemptId, body }),
           }}
           onClose={() => setConfirming(null)}

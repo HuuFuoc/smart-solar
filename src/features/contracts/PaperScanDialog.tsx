@@ -5,7 +5,7 @@ import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/d
 import { DateField, Field, Textarea, fieldMessageId } from '@/components/common/ui/field'
 import { FileButton } from '@/components/common/ui/file-button'
 import { Notice, Progress } from '@/components/common/ui/lists'
-import { contractErrorMessage, contractTitle } from '@/features/contracts/contractDisplay'
+import { contractErrorMessage, contractTitle, uploadErrorMessage } from '@/features/contracts/contractDisplay'
 import { PAPER_NOTE_MAX, canUploadPaperScan, paperScanErrors, shortHash } from '@/features/contracts/contractRules'
 import { REUPLOAD_ERROR_CODES } from '@/features/contracts/customerContractRules'
 import { acceptFor, fileProblem, fileTypesText, maxSizeText } from '@/features/files/fileDisplay'
@@ -63,7 +63,7 @@ export function PaperScanDialog({ contract, onClose }: { contract: ContractView;
         setUploadedId(fileId)
       }
     } catch (e) {
-      return setError(`Chưa tải được tệp lên: ${contractErrorMessage(e)}`)
+      return setError(`Chưa tải được tệp lên: ${uploadErrorMessage(e)}`)
     }
     try {
       await submit.mutateAsync({
@@ -105,7 +105,7 @@ export function PaperScanDialog({ contract, onClose }: { contract: ContractView;
             <p className="text-body text-fg-2">
               {chosen ? (
                 <>
-                  Tải lên khi gửi: <span className="font-medium text-fg">{chosen.name}</span>
+                  Tải lên khi gửi: <span className="font-medium break-all text-fg">{chosen.name}</span>
                   <span className="tnum">, {formatFileSize(chosen.size)}</span>.
                 </>
               ) : uploadedId ? (

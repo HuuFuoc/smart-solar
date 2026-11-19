@@ -26,9 +26,26 @@ export function useFileUpload(purpose: FilePurpose) {
   const [progress, setProgress] = useState<number | null>(null)
   // Kho trả lỗi sớm (403) thì trình duyệt vẫn có thể báo tiến độ sau khi lượt tải đã hỏng: bỏ qua để nút không kẹt "Đang tải 0%"
   const active = useRef(false)
+  // Tệp đã đăng ký mà chưa xác minh xong: lần sau chỉ kiểm tra lại đúng tệp đó, không tải lại
+  const pending = useRef(new WeakMap<File, string>())
   const mutation = useMutation<FileView, ApiError, File>({
-    mutationFn: (file) =>
-      fileService.uploadFile(file, purpose, { onProgress: (fraction) => active.current && setProgress(fraction) }),
+    mutationFn: async (file) => {
+      const waiting = pending.current.get(file)
+      try {
+        const view = waiting
+          ? await fileService.verifyUploadedFile(waiting)
+          : await fileService.uploadFile(file, purpose, {
+              onProgress: (fraction) => active.current && setProgress(fraction),
+            })
+        pending.current.delete(file)
+        return view
+      } catch (error) {
+        const fileId = fileService.pendingFileIdOf(error)
+        if (fileId) pending.current.set(file, fileId)
+        else pending.current.delete(file)
+        throw error
+      }
+    },
     onMutate: () => {
       active.current = true
       setProgress(0)
@@ -54,6 +71,8 @@ export type UploadItem = {
   error: string | null
   /** Có từ khi tệp đã xác minh: gắn lỗi thì lần thử lại chỉ gắn, không tải lại */
   fileId: string | null
+  /** Tệp đã đăng ký mà hệ thống chưa kiểm tra xong: lần thử lại chỉ kiểm tra lại */
+  pendingFileId?: string | null
 }
 
 let lastKey = 0
@@ -93,10 +112,12 @@ export function useUploadQueue({
     try {
       if (!fileId) {
         patch(item.key, { status: 'uploading', progress: 0, error: null })
-        const view = await fileService.uploadFile(item.file, purpose, {
-          signal,
-          onProgress: (progress) => patch(item.key, { progress }),
-        })
+        const view = item.pendingFileId
+          ? await fileService.verifyUploadedFile(item.pendingFileId, signal)
+          : await fileService.uploadFile(item.file, purpose, {
+              signal,
+              onProgress: (progress) => patch(item.key, { progress }),
+            })
         fileId = view.fileId
       }
       patch(item.key, { status: 'attaching', fileId, error: null })
@@ -113,7 +134,12 @@ export function useUploadQueue({
         pause.start(error.retryAfter ?? 60)
         return 'pause'
       }
-      patch(item.key, { status: 'failed', fileId, error: errorMessage(error) })
+      patch(item.key, {
+        status: 'failed',
+        fileId,
+        pendingFileId: fileService.pendingFileIdOf(error),
+        error: errorMessage(error),
+      })
       tally.current.failed++
       return 'next'
     }
@@ -148,13 +174,14 @@ export function useUploadQueue({
     busy,
     /** Còn chờ tải sau 429, 0 là không chờ */
     waitSeconds: pause.secondsLeft,
-    add(files: File[]) {
-      const added = files.map((file): UploadItem => {
+    /** `captions`: chú thích ban đầu của từng tệp (vd. số trang hợp đồng giấy) */
+    add(files: File[], captions?: string[]) {
+      const added = files.map((file, index): UploadItem => {
         const problem = check(file)
         return {
           key: ++lastKey,
           file,
-          caption: '',
+          caption: captions?.[index] ?? '',
           status: problem ? 'invalid' : 'queued',
           progress: 0,
           error: problem,

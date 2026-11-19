@@ -9,7 +9,6 @@ import { openContractPrint } from '@/features/contracts/contractPrint'
 import { signatureOutcomeMeta } from '@/features/contracts/contractDisplay'
 import { shortHash } from '@/features/contracts/contractRules'
 import { canSubmitSigned } from '@/features/contracts/customerContractRules'
-import { SignContractDialog } from '@/features/contracts/SignContractDialog'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
@@ -18,9 +17,9 @@ import { useMySitesQuery } from '@/hooks/usePreSurveys'
 import type { DocumentDisposition } from '@/services/contractService'
 import type { ContractView } from '@/types/res/customerContractsRes'
 
-// Ký hợp đồng phía khách: xem / tải PDF chính thức, mã nội dung để đối chiếu, gửi bản đã ký, các lần đã gửi (xem lại được tệp đã
-// gửi) và lý do bị từ chối. Link tải xin lúc bấm, chỉ cho hợp đồng của chính khách. Chưa có link tải thì khách in bản dựng
-// từ dữ liệu hợp đồng (`contractPrint.ts`)
+// Ký hợp đồng cũ (trả 100%) phía khách: xem / tải PDF chính thức, mã nội dung để đối chiếu, các lần đã gửi (xem lại được tệp đã
+// gửi) và lý do bị từ chối. Khách không còn tự gửi bản ký trong ứng dụng (backend 7d27054 trả 410): ký bản giấy, nhân viên Smart
+// Solar tải bản quét lên. Link tải xin lúc bấm. Chưa có link tải thì khách in bản dựng từ dữ liệu hợp đồng (`contractPrint.ts`)
 
 function PrintContractButton({ contract: c }: { contract: ContractView }) {
   const [blocked, setBlocked] = useState(false)
@@ -54,7 +53,6 @@ function PrintContractButton({ contract: c }: { contract: ContractView }) {
 }
 
 export function CustomerSignPanel({ contract: c }: { contract: ContractView }) {
-  const [signing, setSigning] = useState(false)
   const documentUrl = useMyContractDocumentUrlMutation()
   const submissions = c.submissions ?? []
   const canSign = canSubmitSigned(c)
@@ -63,16 +61,7 @@ export function CustomerSignPanel({ contract: c }: { contract: ContractView }) {
 
   return (
     <Panel id="contract-sign" className="scroll-mt-6">
-      <PanelHeader
-        title="Ký hợp đồng"
-        action={
-          canSign && (
-            <Button icon="draw" variant="primary" onClick={() => setSigning(true)}>
-              {c.status === 'SIGNATURE_REJECTED' ? 'Gửi lại bản ký' : 'Gửi bản đã ký'}
-            </Button>
-          )
-        }
-      />
+      <PanelHeader title="Ký hợp đồng" />
       <PanelBody className="space-y-4">
         <Facts
           items={[
@@ -95,8 +84,8 @@ export function CustomerSignPanel({ contract: c }: { contract: ContractView }) {
         {canSign && (
           <Notice>
             {CONTRACT_DOCUMENT_LINKS
-              ? 'Tải PDF chính thức, in và ký tay, rồi quét thành PDF để gửi lại. Mã nội dung in trên PDF phải trùng mã ở đây; khi gửi bản ký, bạn kiểm tra được tệp PDF đang giữ có đúng bản chính thức không.'
-              : 'Bấm In hợp đồng, ký nháy từng trang và ký ở cuối, rồi quét thành một tệp PDF để gửi lại. Mã nội dung in trên hợp đồng phải trùng mã ở đây.'}
+              ? 'Tải PDF chính thức, in và ký tay, rồi đưa bản đã ký cho nhân viên Smart Solar để họ quét và tải lên. Mã nội dung in trên PDF phải trùng mã ở đây.'
+              : 'Bấm In hợp đồng, ký nháy từng trang và ký ở cuối, rồi đưa bản đã ký cho nhân viên Smart Solar để họ quét và tải lên. Mã nội dung in trên hợp đồng phải trùng mã ở đây.'}
           </Notice>
         )}
         {c.status === 'UNDER_REVIEW' && (
@@ -132,7 +121,6 @@ export function CustomerSignPanel({ contract: c }: { contract: ContractView }) {
           </section>
         )}
       </PanelBody>
-      {signing && <SignContractDialog contract={c} onClose={() => setSigning(false)} />}
     </Panel>
   )
 }

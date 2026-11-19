@@ -165,6 +165,8 @@ export type QuotationView = {
   closedAt: string | null
   /** Ghi tại công trình thì bắt đầu bằng "DECLINED_ON_SITE: " rồi tới điều khách nói */
   closeReason: string | null
+  /** Hợp đồng 30/70 backend lập lúc ghi khách đồng ý (backend 7d27054); ghi đồng ý lại thì vẫn là hợp đồng đó */
+  contractId?: string | null
 }
 
 /**

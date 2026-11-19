@@ -42,6 +42,15 @@ const OpsSurveyRequestPage = page(() => import('@/pages/ops/survey-request-page'
 const OpsAfterSalesPage = page(() => import('@/pages/ops/after-sales-page'), 'OpsAfterSalesPage')
 const OpsAfterSalesRequestPage = page(() => import('@/pages/ops/after-sales-request-page'), 'OpsAfterSalesRequestPage')
 const OpsContractPage = page(() => import('@/pages/contract-page'), 'OpsContractPage')
+const OpsContractsPage = page(() => import('@/pages/contracts-page'), 'OpsContractsPage')
+const OpsCollectionsPage = page(() => import('@/pages/collections-page'), 'OpsCollectionsPage')
+const OpsCollectionPage = page(() => import('@/pages/collection-page'), 'OpsCollectionPage')
+const TechContractsPage = page(() => import('@/pages/contracts-page'), 'TechContractsPage')
+const TechContractPage = page(() => import('@/pages/contract-page'), 'TechContractPage')
+const ManageCollectionsPage = page(() => import('@/pages/collections-page'), 'ManageCollectionsPage')
+const ManageCollectionPage = page(() => import('@/pages/collection-page'), 'ManageCollectionPage')
+const AdminCollectionsPage = page(() => import('@/pages/collections-page'), 'AdminCollectionsPage')
+const AdminCollectionPage = page(() => import('@/pages/collection-page'), 'AdminCollectionPage')
 const OpsCatalogPage = page(() => import('@/pages/catalog-page'), 'OpsCatalogPage')
 const OpsCatalogProductPage = page(() => import('@/pages/catalog-product-page'), 'OpsCatalogProductPage')
 
@@ -208,7 +217,10 @@ export const protectedRoutes: RouteObject[] = [
       { path: ops.surveys, lazy: OpsSurveysPage },
       { path: ops.surveysMine, lazy: OpsMySurveysPage },
       { path: ops.survey, lazy: OpsSurveyRequestPage },
+      { path: ops.contracts, lazy: OpsContractsPage },
       { path: ops.contract, lazy: OpsContractPage },
+      { path: ops.collections, lazy: OpsCollectionsPage },
+      { path: ops.collection, lazy: OpsCollectionPage },
       { path: ops.afterSales, lazy: OpsAfterSalesPage },
       { path: ops.afterSalesRequest, lazy: OpsAfterSalesRequestPage },
       { path: ops.products, lazy: OpsCatalogPage },
@@ -228,6 +240,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: tech.installations, lazy: TechInstallationsPage },
       { path: tech.installation, lazy: TechInstallationPage },
       { path: tech.installationSchedules, lazy: TechInstallationSchedulesPage },
+      { path: tech.contracts, lazy: TechContractsPage },
+      { path: tech.contract, lazy: TechContractPage },
       { path: tech.afterSales, lazy: TechAfterSalesPage },
       { path: tech.afterSalesVisit, lazy: TechAfterSalesVisitPage },
       { path: tech.schedule, lazy: TechSchedulePage },
@@ -249,6 +263,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.contract, lazy: ManageContractPage },
       { path: manage.installationSchedules, lazy: ManageInstallationSchedulesPage },
       { path: manage.payments, lazy: ManagePaymentsPage },
+      { path: manage.collections, lazy: ManageCollectionsPage },
+      { path: manage.collection, lazy: ManageCollectionPage },
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
       { path: manage.afterSalesRequest, lazy: ManageAfterSalesRequestPage },
       { path: manage.salesTasks, lazy: ManageSalesTasksPage },
@@ -280,6 +296,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.contract, lazy: AdminContractPage },
       { path: admin.installationSchedules, lazy: AdminInstallationSchedulesPage },
       { path: admin.payments, lazy: AdminPaymentsPage },
+      { path: admin.collections, lazy: AdminCollectionsPage },
+      { path: admin.collection, lazy: AdminCollectionPage },
       { path: admin.packages, lazy: AdminPackagesPage },
       { path: admin.afterSales, lazy: AdminAfterSalesPage },
       { path: admin.dispatch, lazy: AdminDispatchRequestsPage },

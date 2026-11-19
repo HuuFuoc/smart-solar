@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import { paymentPollMs } from '@/features/contracts/customerContractRules'
 import * as contractService from '@/services/customerContractService'
 import type { ApiError } from '@/services/api/errors'
-import type { SignedDocumentRequest } from '@/types/req/customerContractsReq'
 import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 import type { ContractDocumentTarget } from '@/services/contractService'
 import type { ContractDocumentUrlView, ContractView } from '@/types/res/customerContractsRes'
@@ -32,14 +31,6 @@ export function useMyContractQuery(contractId: string | undefined) {
     queryKey: customerContractKeys.detail(contractId ?? ''),
     queryFn: () => contractService.getMyContract(contractId!),
     enabled: Boolean(contractId),
-  })
-}
-
-export function useSubmitSignedDocumentMutation() {
-  const queryClient = useQueryClient()
-  return useMutation<ContractView, ApiError, { contractId: string; body: SignedDocumentRequest }>({
-    mutationFn: ({ contractId, body }) => contractService.submitSignedDocument(contractId, body),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: customerContractKeys.all }),
   })
 }
 

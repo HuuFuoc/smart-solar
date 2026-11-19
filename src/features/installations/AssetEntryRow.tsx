@@ -1,16 +1,13 @@
-import type { KeyboardEvent, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { ASSET_TYPES } from '@/common/installation'
 import { IconButton } from '@/components/common/ui/button'
-import { Input, Select, Textarea } from '@/components/common/ui/field'
+import { Input, Select } from '@/components/common/ui/field'
 import {
   ASSET_LIMITS,
-  MANUAL_PRODUCT_VALUE,
   assetFieldId,
   changeAssetType,
   filterProductsForAssetType,
   formatProductOptionLabel,
-  parseSerials,
-  requiresCatalogProduct,
   selectAssetProduct,
   type AssetField,
   type AssetRow,
@@ -91,23 +88,16 @@ function SubTextInput({
   )
 }
 
-// Enter ở ô vị trí chuyển sang ô serial dòng dưới, không gửi form: thiết bị đã lưu không sửa được
-const enterMovesTo = (nextId: string | null) => (e: KeyboardEvent<HTMLInputElement>) => {
-  if (e.key !== 'Enter' || e.nativeEvent.isComposing) return
-  e.preventDefault()
-  if (nextId) document.getElementById(nextId)?.focus()
-}
-
 function emptyOptionText(assetType: string, isPending: boolean, hasOptions: boolean) {
   if (isPending) return 'Đang tải danh sách sản phẩm…'
   if (assetType === 'PANEL') return hasOptions ? 'Chọn tấm pin có sẵn…' : 'Chưa có tấm pin nào trong danh mục'
-  return hasOptions ? 'Chọn inverter có sẵn…' : 'Chưa có inverter nào trong danh mục'
+  if (assetType === 'INVERTER') return hasOptions ? 'Chọn inverter có sẵn…' : 'Chưa có inverter nào trong danh mục'
+  return hasOptions ? 'Chọn sản phẩm có sẵn…' : 'Chưa có sản phẩm nào cho loại này trong danh mục'
 }
 
 export function AssetEntryRow({
   row,
   index,
-  nextRowKey,
   canRemove,
   className,
   errors,
@@ -120,7 +110,6 @@ export function AssetEntryRow({
 }: {
   row: AssetRow
   index: number
-  nextRowKey: number | null
   canRemove: boolean
   className?: string
   errors: AssetRowErrors
@@ -131,15 +120,12 @@ export function AssetEntryRow({
   onChangeRow: (transform: (row: AssetRow) => AssetRow) => void
   onRemove: () => void
 }) {
-  const catalogRequired = requiresCatalogProduct(row.assetType)
   const options = filterProductsForAssetType(products, row.assetType, differences)
-  const manualMode = !catalogRequired && !row.productId
-  const needsBrand = manualMode || (Boolean(row.productId) && !row.manufacturer.trim())
-  const needsModel = manualMode || (Boolean(row.productId) && !row.model.trim())
-  const serialCount = parseSerials(row.serials).length
+  // Sản phẩm danh mục thiếu hãng / model thì kỹ thuật viên ghi bổ sung
+  const needsBrand = Boolean(row.productId) && !row.manufacturer.trim()
+  const needsModel = Boolean(row.productId) && !row.model.trim()
   const contract = row.productId ? diffByProduct.get(row.productId) : undefined
   const remaining = contract ? Math.max(contract.contractedQuantity - contract.installedQuantity, 0) : null
-  const serialLines = row.serials.split('\n').length
 
   return (
     <li
@@ -176,16 +162,12 @@ export function AssetEntryRow({
       >
         <Select
           id={assetFieldId(row, 'productId')}
-          value={row.productId ?? (catalogRequired ? '' : MANUAL_PRODUCT_VALUE)}
-          disabled={catalogRequired && catalogPending}
+          value={row.productId ?? ''}
+          disabled={catalogPending}
           onChange={(e) => onChangeRow((r) => selectAssetProduct(r, e.target.value, products))}
           {...ariaInvalid(row, 'productId', errors)}
         >
-          {catalogRequired ? (
-            <option value="">{emptyOptionText(row.assetType, catalogPending, options.length > 0)}</option>
-          ) : (
-            <option value={MANUAL_PRODUCT_VALUE}>Nhập ngoài danh mục (tự ghi hãng, model)</option>
-          )}
+          <option value="">{emptyOptionText(row.assetType, catalogPending, options.length > 0)}</option>
           {options.map((product) => (
             <option key={product.id} value={product.id}>
               {formatProductOptionLabel(product, diffByProduct.get(product.id))}
@@ -227,57 +209,20 @@ export function AssetEntryRow({
           inputMode="numeric"
           maxLength={5}
           autoComplete="off"
-          // Thiết bị ngoài danh mục chỉ ghi được theo serial
-          disabled={manualMode}
-          placeholder={serialCount > 0 ? String(serialCount) : undefined}
+          aria-required
           className="tnum"
           onChange={(e) => onChangeRow((r) => ({ ...r, quantity: e.target.value }))}
           {...ariaInvalid(row, 'quantity', errors)}
         />
         {remaining !== null && <p className="tnum text-meta text-fg-2">Hợp đồng còn {remaining}</p>}
       </Cell>
-      <Cell
-        row={row}
-        field="serials"
-        label="Số serial (nếu ghi từng thiết bị, mỗi dòng một số)"
-        error={errors.serials}
-        className="col-span-2 xl:col-span-1"
-      >
-        <Textarea
-          id={assetFieldId(row, 'serials')}
-          value={row.serials}
-          rows={Math.min(Math.max(serialLines, 2), 8)}
-          autoComplete="off"
-          spellCheck={false}
-          className="tnum"
-          onChange={(e) => onChangeRow((r) => ({ ...r, serials: e.target.value }))}
-          {...ariaInvalid(row, 'serials', errors)}
-        />
-        {serialCount > 0 && <p className="tnum text-meta text-fg-2">Đã nhập {serialCount} số serial</p>}
-      </Cell>
-      <Cell row={row} field="positionCode" label="Vị trí lắp (không bắt buộc)" error={errors.positionCode}>
-        <Input
-          id={assetFieldId(row, 'positionCode')}
-          value={row.positionCode}
-          maxLength={ASSET_LIMITS.position}
-          autoComplete="off"
-          onKeyDown={enterMovesTo(nextRowKey === null ? null : assetFieldId({ key: nextRowKey }, 'serials'))}
-          onChange={(e) => onChangeRow((r) => ({ ...r, positionCode: e.target.value }))}
-          {...ariaInvalid(row, 'positionCode', errors)}
-        />
-      </Cell>
       <Cell row={row} field="warrantyMonths" label="Bảo hành, tháng (theo danh mục)" error={errors.warrantyMonths}>
         <Input
           id={assetFieldId(row, 'warrantyMonths')}
           value={row.warrantyMonths}
-          placeholder={row.productId ? 'Theo danh mục' : 'Không áp dụng'}
+          placeholder="Theo danh mục"
           readOnly
           disabled
-          title={
-            row.productId
-              ? 'Thời hạn bảo hành lấy theo sản phẩm trong danh mục'
-              : 'Thiết bị ngoài danh mục không ghi bảo hành'
-          }
           className="tnum"
           {...ariaInvalid(row, 'warrantyMonths', errors)}
         />

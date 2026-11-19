@@ -8,11 +8,9 @@ import {
   ASSET_LIMITS,
   assetCount,
   assetFieldId,
-  entryCount,
   filterProductsForAssetType,
   hasErrors,
   newAssetRow,
-  requiresCatalogProduct,
   serverRowErrors,
   toAssetRequests,
   validateAssetRows,
@@ -24,31 +22,20 @@ import { useProductsQuery } from '@/hooks/useProducts'
 import { useRegisterAssetsMutation } from '@/hooks/useTechnicianInstallations'
 import { errorMessage, isApiError } from '@/services/api/errors'
 import { PRODUCT_PAGE_SIZE_MAX } from '@/services/productService'
-import type { AssetView, EquipmentComparisonView } from '@/types/res/customerInstallationsRes'
+import type { EquipmentComparisonView } from '@/types/res/customerInstallationsRes'
 import { cx } from '@/utils/cx'
 
-const COLUMNS = 'xl:grid-cols-[2rem_9rem_minmax(0,1.6fr)_6.5rem_minmax(0,1fr)_minmax(0,0.8fr)_7.5rem_2.5rem]'
-const HEADERS = [
-  '',
-  'Loại',
-  'Sản phẩm có sẵn',
-  'Số lượng',
-  'Số serial (nếu ghi từng thiết bị)',
-  'Vị trí lắp (không bắt buộc)',
-  'Bảo hành (tháng)',
-  '',
-]
+const COLUMNS = 'xl:grid-cols-[2rem_9rem_minmax(0,1.6fr)_6.5rem_7.5rem_2.5rem]'
+const HEADERS = ['', 'Loại', 'Sản phẩm có sẵn', 'Số lượng', 'Bảo hành (tháng)', '']
 
-// Ghi thiết bị đã lắp: mỗi dòng một sản phẩm, theo số lượng hoặc theo danh sách serial. Thiết bị đã lưu không sửa hay xoá
-// được nên báo lỗi trước khi gửi
+// Ghi thiết bị đã lắp: mỗi dòng một sản phẩm danh mục và số lượng, không ghi số serial hay vị trí lắp. Thiết bị đã lưu không
+// sửa hay xoá được nên báo lỗi trước khi gửi
 export function AssetEntry({
   projectId,
-  saved,
   equipment,
   onClose,
 }: {
   projectId: string
-  saved: AssetView[]
   equipment?: EquipmentComparisonView | null
   onClose: () => void
 }) {
@@ -68,7 +55,7 @@ export function AssetEntry({
   // Lỗi backend chỉ đúng với các dòng lúc gửi: sửa dòng nào là bỏ
   const [rejected, setRejected] = useState<AssetRowErrors[] | null>(null)
   const focusKey = useRef<number | null>(null)
-  const errors = rejected ?? (checked ? validateAssetRows(rows, saved) : rows.map(() => ({})))
+  const errors = rejected ?? (checked ? validateAssetRows(rows) : rows.map(() => ({})))
   const total = assetCount(rows)
 
   useEffect(() => {
@@ -97,15 +84,8 @@ export function AssetEntry({
   async function submit() {
     if (register.isPending) return
     setChecked(true)
-    const found = validateAssetRows(rows, saved)
+    const found = validateAssetRows(rows)
     if (hasErrors(found)) return focusFirstError(found)
-    const entries = entryCount(rows)
-    if (entries > ASSET_LIMITS.perRequest) {
-      setError(
-        `Mỗi lần lưu tối đa ${ASSET_LIMITS.perRequest} số serial và lô. Đang có ${entries}, lưu bớt rồi ghi tiếp phần còn lại.`,
-      )
-      return
-    }
     try {
       await register.mutateAsync({ id: projectId, assets: toAssetRequests(rows) })
       toast.success(`Đã lưu ${total.toLocaleString('vi-VN')} thiết bị.`)
@@ -123,11 +103,7 @@ export function AssetEntry({
   const missingCatalog =
     !catalog.isPending &&
     !catalog.isError &&
-    rows.some(
-      (r) =>
-        requiresCatalogProduct(r.assetType) &&
-        filterProductsForAssetType(products, r.assetType, differences).length === 0,
-    )
+    rows.some((r) => filterProductsForAssetType(products, r.assetType, differences).length === 0)
 
   return (
     <form
@@ -139,8 +115,8 @@ export function AssetEntry({
       }}
     >
       <Notice tone="warn">
-        Thiết bị đã lưu không sửa hay xoá được trên hệ thống. Mỗi dòng ghi theo số lượng, hoặc theo số serial từng thiết
-        bị; chọn đúng sản phẩm trong danh mục và kiểm tra lại trước khi lưu.
+        Thiết bị đã lưu không sửa hay xoá được trên hệ thống. Mỗi dòng chọn đúng sản phẩm trong danh mục và số lượng đã
+        lắp; kiểm tra lại trước khi lưu.
       </Notice>
       {contractedMissing.length > 0 && (
         <Notice tone="info">
@@ -166,8 +142,8 @@ export function AssetEntry({
       )}
       {missingCatalog && (
         <Notice tone="warn">
-          Danh mục chưa có sản phẩm đang bán cho loại Tấm pin hoặc Inverter đã chọn. Liên hệ quản trị để bổ sung trước
-          khi ghi thiết bị.
+          Danh mục chưa có sản phẩm đang bán cho loại thiết bị đã chọn. Liên hệ quản trị để bổ sung trước khi ghi thiết
+          bị.
         </Notice>
       )}
       <div aria-hidden className={cx('hidden gap-x-3 border-b border-line pb-2 text-meta text-fg-2 xl:grid', COLUMNS)}>
@@ -181,7 +157,6 @@ export function AssetEntry({
             key={row.key}
             row={row}
             index={i}
-            nextRowKey={rows[i + 1]?.key ?? null}
             canRemove={rows.length > 1}
             className={COLUMNS}
             errors={errors[i]!}

@@ -28,7 +28,11 @@ import type { ContractView } from '@/types/res/customerContractsRes'
 // bằng ghi chú (không bắt buộc); lịch giữ nguyên tới khi kỹ thuật viên ghi ngày mới
 
 export function CustomerSchedulePanel({ contract }: { contract: ContractView }) {
-  const enabled = canPlanForContract(contract.status, contract.paymentCompleted)
+  // Hợp đồng 30/70 hẹn được ngày từ khi khoản 30% được xác minh
+  const enabled = canPlanForContract(
+    contract.status,
+    contract.paymentCompleted || Boolean(contract.paymentPlan?.depositPaid),
+  )
   const query = useCustomerContractScheduleQuery(contract.contractId, { enabled })
   const change = useRequestScheduleChangeMutation()
   const [asking, setAsking] = useState(false)

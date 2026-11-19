@@ -161,6 +161,19 @@ describe('lịch thi công đã thống nhất với khách', () => {
   test('xác nhận lại chỉ lịch dự kiến của hợp đồng đã thanh toán; PLANNED không bao giờ coi là đã xác nhận', () => {
     assert.equal(canRetryConfirm(schedule('PLANNED', { contractStatus: 'PAID' })), true)
     assert.equal(canRetryConfirm(schedule('PLANNED', { contractStatus: 'SIGNED' })), false)
+    // Hợp đồng 30/70 đã ký giấy (backend 7d27054) sẵn sàng thi công dù chưa trả 70%; hợp đồng cũ SIGNED vẫn chờ tiền
+    assert.equal(
+      canRetryConfirm(
+        schedule('PLANNED', { contractStatus: 'SIGNED', awaitingPayment: false, awaitingContractSignature: false }),
+      ),
+      true,
+    )
+    assert.equal(
+      canRetryConfirm(
+        schedule('PLANNED', { contractStatus: 'SIGNED', awaitingPayment: true, awaitingContractSignature: false }),
+      ),
+      false,
+    )
     assert.equal(canRetryConfirm(schedule('CONFIRMED', { contractStatus: 'PAID' })), false)
   })
 

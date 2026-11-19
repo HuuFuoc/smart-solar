@@ -332,6 +332,14 @@ export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
   // Ba loại dưới chỉ còn ở thông báo cũ: báo giá, chọn ngày và nghiệm thu nay làm tại công trình với kỹ thuật viên
   INSTALLATION_QUOTATION_ISSUED: 'Có báo giá lắp đặt (thông báo cũ)',
   CONTRACT_CREATED_AFTER_PAYMENT: 'Đã nhận đủ tiền, hợp đồng đã được lập',
+  // Hợp đồng 30/70 (backend 7d27054)
+  CONTRACT_READY_FOR_PREVIEW: 'Hợp đồng đã lập, mời bạn đọc trước khi trả 30%',
+  CONTRACT_DEPOSIT_RECEIVED: 'Đã nhận khoản 30%',
+  CONTRACT_PAPER_SIGNED: 'Hợp đồng giấy đã ký, sẵn sàng thi công',
+  INSTALLATION_ACCEPTANCE_REQUESTED: 'Công trình đã lắp xong, mời bạn nghiệm thu',
+  CONTRACT_BALANCE_DUE: 'Khoản 70% đã đến hạn',
+  CONTRACT_BALANCE_OVERDUE: 'Khoản 70% đã quá hạn',
+  CONTRACT_FULLY_PAID: 'Đã trả đủ 100% hợp đồng',
   CONTRACT_AWAITING_SIGNATURE: 'Hợp đồng đã sẵn sàng, mời bạn ký',
   CONTRACT_SIGNED: 'Bản ký hợp đồng đã được duyệt, mời bạn thanh toán',
   CONTRACT_SIGNATURE_REJECTED: 'Bản ký hợp đồng chưa được duyệt, mời bạn ký lại',

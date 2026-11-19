@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import {
-  ON_SITE_DECISIONS,
-  ON_SITE_NOTE_MAX,
-  ON_SITE_PAYMENT_METHODS,
-  QUOTATION_PAYMENT_STATES,
-  type OnSiteDecision,
-} from '@/common/quotation'
+import { ON_SITE_DECISIONS, ON_SITE_NOTE_MAX, QUOTATION_PAYMENT_STATES, type OnSiteDecision } from '@/common/quotation'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, ButtonLink, buttonClass } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
@@ -29,7 +24,6 @@ import {
   canCancelPayment,
   canRecordAgreed,
   canRecordWithdrawal,
-  canStartPayment,
   decisionNoteError,
   isVerifiedPaid,
 } from '@/features/quotations/quotationRules'
@@ -38,22 +32,21 @@ import {
   useCancelQuotationPaymentMutation,
   useOnSiteDecisionMutation,
   useQuotationPaymentQuery,
-  useStartQuotationPaymentMutation,
 } from '@/hooks/useTechnicianQuotations'
-import { ROUTES } from '@/routes/paths'
-import { isApiError } from '@/services/api/errors'
+import { ROUTES, withId } from '@/routes/paths'
 import type { QuotationPaymentView, QuotationView } from '@/types/res/quotationsRes'
 
 // Báo giá đã chốt, trình bày và chốt tại công trình trên máy kỹ thuật viên: màn xem to cho khách đọc, ghi điều khách quyết định
-// bằng tài khoản kỹ thuật viên (khách không đăng nhập), rồi mở thanh toán QR PayOS hoặc tiền mặt. "Đã thanh toán" chỉ hiện khi
-// backend xác minh (PAID kèm hợp đồng); trang PayOS chuyển về hay khách nói đã quét đều không đủ
+// bằng tài khoản kỹ thuật viên (khách không đăng nhập). Từ backend 7d27054 ghi "khách đồng ý" là lập ngay hợp đồng 30/70 (bản nháp,
+// khách đọc trước khi trả): thu 30% và tải trang ký ở trang hợp đồng. Thanh toán 100% báo giá theo cách cũ đã bỏ (mở mới trả 410),
+// chỉ còn xem / huỷ lần đã mở trước đó
 
 const DECISION_TEXT: Record<OnSiteDecision, { title: string; confirm: string; icon: string; done: string }> = {
   AGREED: {
     title: 'Khách đồng ý báo giá?',
     confirm: 'Khách đồng ý',
     icon: 'check_circle',
-    done: 'Đã ghi khách đồng ý. Mở thanh toán cho khách.',
+    done: 'Đã ghi khách đồng ý. Hợp đồng 30/70 đã lập; thu 30% ở trang hợp đồng.',
   },
   DECLINED: {
     title: 'Khách không đồng ý báo giá?',
@@ -82,6 +75,7 @@ export function DecisionDialog({
   onDone?: () => void
 }) {
   const record = useOnSiteDecisionMutation()
+  const navigate = useNavigate()
   const [note, setNote] = useState('')
   const [noteError, setNoteError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -94,7 +88,7 @@ export function DecisionDialog({
     setNoteError(problem)
     if (problem) return
     try {
-      await record.mutateAsync({
+      const view = await record.mutateAsync({
         quotationId: q.quotationId,
         decision,
         revision: q.revision,
@@ -103,6 +97,9 @@ export function DecisionDialog({
       toast.success(text.done)
       onDone?.()
       onClose()
+      // Ghi đồng ý lại cũng trả đúng hợp đồng đã lập, không lập bản thứ hai
+      if (decision === ON_SITE_DECISIONS.agreed && view.contractId)
+        void navigate(withId(ROUTES.tech.contract, view.contractId))
     } catch (e) {
       setError(quotationErrorMessage(e))
     }
@@ -278,8 +275,8 @@ function QrBlock({ view, onCheck, checking }: { view: QuotationPaymentView; onCh
 }
 
 /**
- * Thanh toán của báo giá khách đã đồng ý. Mở / huỷ bị giới hạn 5 lần / 10 phút nên chỉ gọi khi bấm. Đổi cách trả phải huỷ lần đang
- * mở trước; khách đổi ý khi chưa mở thanh toán thì ghi "không đồng ý" / "muốn sửa"
+ * Thanh toán 100% của báo giá đồng ý theo cách cũ (trước hợp đồng 30/70): chỉ xem và huỷ lần đã mở, vì mở mới đã bỏ (410). Báo giá
+ * có hợp đồng 30/70 không dùng khối này
  */
 export function QuotationPaymentPanel({
   quotation: q,
@@ -289,26 +286,12 @@ export function QuotationPaymentPanel({
   onWithdraw: (decision: OnSiteDecision) => void
 }) {
   const query = useQuotationPaymentQuery(q.quotationId)
-  const start = useStartQuotationPaymentMutation()
   const cancel = useCancelQuotationPaymentMutation()
-  const [confirmCash, setConfirmCash] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const busy = start.isPending || cancel.isPending
+  const busy = cancel.isPending
   const view = query.data
   const state = view?.paymentState
   const meta = state ? (QUOTATION_PAYMENT_STATES[state] ?? { label: state, tone: 'neutral' as const }) : null
-
-  async function open(method: 'ONLINE' | 'CASH') {
-    setError(null)
-    try {
-      await start.mutateAsync({ quotationId: q.quotationId, method })
-      toast.success(method === 'CASH' ? 'Đã ghi khách trả tiền mặt. Chờ quản lý xác nhận đã thu.' : 'Đã tạo mã QR.')
-      setConfirmCash(false)
-    } catch (e) {
-      setError(quotationErrorMessage(e))
-      if (isApiError(e)) void query.refetch()
-    }
-  }
 
   async function stop() {
     setError(null)
@@ -329,7 +312,7 @@ export function QuotationPaymentPanel({
             Thanh toán {meta && <Badge tone={meta.tone}>{meta.label}</Badge>}
           </span>
         }
-        description={`Khách trả đúng ${formatQuotationMoney(q.totalAmount, q.currency)}; tiền được xác minh thì hợp đồng tự lập.`}
+        description="Thanh toán 100% báo giá theo cách cũ, mở trước khi chuyển sang hợp đồng 30/70. Chỉ còn xem và huỷ."
       />
       <PanelBody className="space-y-4">
         {query.isPending ? (
@@ -365,7 +348,8 @@ export function QuotationPaymentPanel({
           </Notice>
         ) : state === 'AWAITING_PAYMENT' ? (
           <p className="text-body text-fg-2">
-            Khách đã đồng ý lúc {formatMoment(q.acceptedAt)}. Hiện mã QR để khách quét, hoặc ghi khách trả tiền mặt.
+            Khách đã đồng ý lúc {formatMoment(q.acceptedAt)} theo cách cũ. Thanh toán 100% báo giá không mở mới được
+            nữa; ghi khách muốn sửa rồi chốt lại để lập hợp đồng 30/70.
           </p>
         ) : (
           <Notice tone="warn" title="Báo giá không còn thanh toán được">
@@ -383,21 +367,6 @@ export function QuotationPaymentPanel({
 
         {view && !isVerifiedPaid(view) && (
           <div className="flex flex-wrap gap-3">
-            {canStartPayment(state) && (
-              <>
-                <Button
-                  icon="qr_code_2"
-                  variant="primary"
-                  disabled={busy}
-                  onClick={() => void open(ON_SITE_PAYMENT_METHODS.online)}
-                >
-                  {start.isPending ? 'Đang tạo…' : 'Hiện mã QR'}
-                </Button>
-                <Button icon="payments" variant="soft" disabled={busy} onClick={() => setConfirmCash(true)}>
-                  Khách trả tiền mặt
-                </Button>
-              </>
-            )}
             {canCancelPayment(state) && (
               <Button icon="cancel" variant="danger" disabled={busy} onClick={() => void stop()}>
                 {cancel.isPending
@@ -431,41 +400,6 @@ export function QuotationPaymentPanel({
         )}
         {canCancelPayment(state) && <p className="text-meta text-fg-2">Muốn đổi cách trả thì huỷ lần đang mở trước.</p>}
       </PanelBody>
-
-      {confirmCash && (
-        <ModalDialog
-          open
-          onOpenChange={(o) => !o && !busy && setConfirmCash(false)}
-          dismissible={!busy}
-          aria-label="Khách trả tiền mặt?"
-        >
-          <DialogTitle>Khách trả tiền mặt?</DialogTitle>
-          <div className="mt-2 space-y-3 text-body text-fg-2">
-            <p>
-              Thu đúng {formatQuotationMoney(q.totalAmount, q.currency)} và viết phiếu thu. Quản lý / quản trị xác nhận
-              đã thu (đúng số tiền, số phiếu thu, ảnh phiếu); chỉ khi đó hợp đồng mới được lập.
-            </p>
-          </div>
-          {error && (
-            <div role="alert" className="mt-4">
-              <Notice tone="danger">{error}</Notice>
-            </div>
-          )}
-          <DialogFooter>
-            <Button icon="close" variant="secondary" disabled={busy} onClick={() => setConfirmCash(false)}>
-              Đóng
-            </Button>
-            <Button
-              icon="payments"
-              variant="primary"
-              disabled={busy}
-              onClick={() => void open(ON_SITE_PAYMENT_METHODS.cash)}
-            >
-              {start.isPending ? 'Đang ghi…' : 'Ghi trả tiền mặt'}
-            </Button>
-          </DialogFooter>
-        </ModalDialog>
-      )}
     </Panel>
   )
 }

@@ -2,25 +2,22 @@ import { ASSET_TYPES } from '../../common/installation.ts'
 import { INVERTER_TYPE, SOLAR_PANEL_TYPE } from '../../common/product.ts'
 import type { AssetRequest } from '@/types/req/technicianInstallationsReq'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
-import type { AssetView, EquipmentDifference } from '@/types/res/customerInstallationsRes'
+import type { EquipmentDifference } from '@/types/res/customerInstallationsRes'
 
-// Ô nhập thiết bị đã lắp (RegisterAssetsAsync): PANEL/INVERTER bắt buộc gắn productId danh mục; loại khác chọn sản phẩm
-// không phải dịch vụ hoặc nhập tay (không bảo hành); serial không trùng cùng hãng. Một dòng ghi theo số lượng (lô, không
-// serial, phải có sản phẩm danh mục) hoặc theo serial (mỗi serial một thiết bị). Không dùng "@/" để chạy node --test.
+// Ô nhập thiết bị đã lắp (RegisterAssetsAsync): mỗi dòng là một lô theo số lượng của một sản phẩm danh mục (backend bắt lô phải
+// có productId), không ghi số serial hay vị trí lắp. Tấm pin / inverter chọn đúng loại; loại khác chọn sản phẩm không phải dịch
+// vụ. Không dùng "@/" để chạy node --test.
 
-/** `perRequest`: số mục gửi mỗi lần (một lô là một mục, mỗi serial một mục); `lotQuantity`: số thiết bị tối đa của một lô */
+/** `perRequest`: số dòng (lô) gửi mỗi lần; `lotQuantity`: số thiết bị tối đa của một lô */
 export const ASSET_LIMITS = {
   text: 100,
-  position: 50,
   warrantyMonths: 600,
   perRequest: 500,
   lotQuantity: 10_000,
 } as const
-export const MANUAL_PRODUCT_VALUE = '__manual__'
 const SERVICE_PRODUCT_TYPES = new Set(['INSTALLATION_LABOR', 'TRANSPORT', 'OTHER_SERVICE'])
 
-// Mỗi dòng là một nhóm thiết bị cùng sản phẩm. Có `serials` (mỗi dòng chữ một số) thì gửi lên thành từng thiết bị;
-// để trống thì gửi một lô `quantity` thiết bị
+// Mỗi dòng là một lô `quantity` thiết bị cùng sản phẩm
 export type AssetRow = {
   key: number
   assetType: string
@@ -28,19 +25,14 @@ export type AssetRow = {
   manufacturer: string
   model: string
   quantity: string
-  serials: string
-  positionCode: string
   warrantyMonths: string
 }
 
-export type AssetField =
-  'assetType' | 'productId' | 'manufacturer' | 'model' | 'quantity' | 'serials' | 'positionCode' | 'warrantyMonths'
+export type AssetField = 'assetType' | 'productId' | 'manufacturer' | 'model' | 'quantity' | 'warrantyMonths'
 export type AssetRowErrors = Partial<Record<AssetField, string>>
 export const assetFieldId = (row: Pick<AssetRow, 'key'>, field: AssetField) => `asset-${row.key}-${field}`
 
 let lastKey = 0
-
-export const requiresCatalogProduct = (assetType: string) => assetType === 'PANEL' || assetType === 'INVERTER'
 
 export const isServiceProductType = (productType: string | null | undefined) =>
   SERVICE_PRODUCT_TYPES.has((productType ?? '').trim().toUpperCase())
@@ -133,18 +125,9 @@ export function newAssetRow(): AssetRow {
     manufacturer: '',
     model: '',
     quantity: '',
-    serials: '',
-    positionCode: '',
     warrantyMonths: '',
   }
 }
-
-/** Mỗi dòng một serial (máy quét gửi Enter, dán cột Excel); tab, dấu phẩy, chấm phẩy cũng tách để dán được một hàng Excel. */
-export const parseSerials = (text: string) =>
-  text
-    .split(/[\r\n\t,;]+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
 
 const LOT_MAX_TEXT = ASSET_LIMITS.lotQuantity.toLocaleString('vi-VN')
 
@@ -153,23 +136,12 @@ const lotQuantity = (text: string) => {
   return /^\d+$/.test(value) && Number(value) >= 1 && Number(value) <= ASSET_LIMITS.lotQuantity ? Number(value) : null
 }
 
-/** Số thiết bị của một dòng: số serial đã nhập, không có serial thì số lượng của lô (chưa hợp lệ là 0) */
-export const rowUnits = (row: Pick<AssetRow, 'serials' | 'quantity'>) =>
-  parseSerials(row.serials).length || (lotQuantity(row.quantity) ?? 0)
+/** Số thiết bị của một dòng (số lượng chưa hợp lệ là 0) */
+export const rowUnits = (row: Pick<AssetRow, 'quantity'>) => lotQuantity(row.quantity) ?? 0
 
 export const assetCount = (rows: readonly AssetRow[]) => rows.reduce((sum, r) => sum + rowUnits(r), 0)
 
-/** Dòng nào của form sinh ra mục thứ i gửi lên (cùng thứ tự với `toAssetRequests`), để đặt lỗi `assets[i]` về đúng dòng */
-const entryRows = (rows: readonly AssetRow[]) =>
-  rows.flatMap((row, index) => Array<number>(Math.max(parseSerials(row.serials).length, 1)).fill(index))
-
-/** Số mục gửi lên: backend nhận tối đa `ASSET_LIMITS.perRequest` mục mỗi lần */
-export const entryCount = (rows: readonly AssetRow[]) => entryRows(rows).length
-
 export function selectAssetProduct(row: AssetRow, value: string, products: readonly ProductResponse[]): AssetRow {
-  if (value === MANUAL_PRODUCT_VALUE) {
-    return !requiresCatalogProduct(row.assetType) && !row.productId ? row : clearProduct(row)
-  }
   const product = value ? products.find((p) => p.id === value) : undefined
   if (!product || !assetMatchesProductType(row.assetType, product.productType)) return clearProduct(row)
   return { ...row, productId: value, ...productAssetMetadata(product) }
@@ -177,19 +149,11 @@ export function selectAssetProduct(row: AssetRow, value: string, products: reado
 
 export function changeAssetType(row: AssetRow, nextType: string, products: readonly ProductResponse[]): AssetRow {
   if (nextType === row.assetType) return row
-  if (row.productId) {
-    const current = products.find((p) => p.id === row.productId)
-    return current && assetMatchesProductType(nextType, current.productType)
-      ? { ...row, assetType: nextType }
-      : clearProduct(row, nextType)
-  }
-  return requiresCatalogProduct(nextType)
-    ? clearProduct(row, nextType)
-    : { ...row, assetType: nextType, warrantyMonths: '' }
+  const current = row.productId ? products.find((p) => p.id === row.productId) : undefined
+  return current && assetMatchesProductType(nextType, current.productType)
+    ? { ...row, assetType: nextType }
+    : clearProduct(row, nextType)
 }
-
-const serialKey = (manufacturer: string, serial: string) =>
-  `${manufacturer.trim().toUpperCase()}\u0000${serial.trim().toUpperCase()}`
 
 function required(value: string, empty: string) {
   const text = value.trim()
@@ -197,77 +161,26 @@ function required(value: string, empty: string) {
   return text.length > ASSET_LIMITS.text ? `Tối đa ${ASSET_LIMITS.text} ký tự.` : undefined
 }
 
-const LISTED = 3
-function listSerials(values: readonly string[]) {
-  const unique = [...new Set(values)]
-  return unique.length > LISTED
-    ? `${unique.slice(0, LISTED).join(', ')} và ${unique.length - LISTED} số khác`
-    : unique.join(', ')
-}
-
-// Serial không trùng cùng hãng: với thiết bị đã lưu, trong cùng ô và với dòng phía trên. `firstRow` ghi dòng đầu tiên có serial đó
-function serialProblems(
-  row: AssetRow,
-  serials: readonly string[],
-  index: number,
-  savedKeys: ReadonlySet<string>,
-  firstRow: Map<string, number>,
-) {
-  const tooLong = serials.findIndex((s) => s.length > ASSET_LIMITS.text)
-  if (tooLong >= 0) return `Serial thứ ${tooLong + 1} dài hơn ${ASSET_LIMITS.text} ký tự.`
-  if (!row.manufacturer.trim()) return undefined
-  const own = new Set<string>()
-  const onSaved: string[] = []
-  const repeated: string[] = []
-  const elsewhere: string[] = []
-  const otherRows = new Set<number>()
-  for (const serial of serials) {
-    const key = serialKey(row.manufacturer, serial)
-    if (savedKeys.has(key)) onSaved.push(serial)
-    else if (own.has(key)) repeated.push(serial)
-    else if (firstRow.has(key)) {
-      elsewhere.push(serial)
-      otherRows.add(firstRow.get(key)! + 1)
-    }
-    own.add(key)
-  }
-  for (const key of own) if (!firstRow.has(key)) firstRow.set(key, index)
-  const parts = [
-    onSaved.length > 0 && `Đã ghi cho công trình: ${listSerials(onSaved)}.`,
-    repeated.length > 0 && `Nhập trùng: ${listSerials(repeated)}.`,
-    elsewhere.length > 0 && `Trùng với dòng ${[...otherRows].join(', ')}: ${listSerials(elsewhere)}.`,
-  ].filter(Boolean)
-  return parts.length > 0 ? parts.join(' ') : undefined
-}
-
 /** Lỗi của từng dòng, cùng thứ tự với `rows`. */
-export function validateAssetRows(rows: AssetRow[], saved: AssetView[]): AssetRowErrors[] {
-  const savedKeys = new Set(saved.flatMap((a) => (a.serialNumber ? [serialKey(a.manufacturer, a.serialNumber)] : [])))
-  const firstRow = new Map<string, number>()
-  return rows.map((row, i) => {
+export function validateAssetRows(rows: AssetRow[]): AssetRowErrors[] {
+  return rows.map((row) => {
     const errors: AssetRowErrors = {}
-    const catalogRequired = requiresCatalogProduct(row.assetType)
     if (!(row.assetType in ASSET_TYPES)) errors.assetType = 'Chọn loại thiết bị.'
-    if (catalogRequired && !row.productId)
-      errors.productId = row.assetType === 'PANEL' ? 'Chọn tấm pin trong danh mục.' : 'Chọn inverter trong danh mục.'
-    if (!catalogRequired || row.productId) {
+    if (!row.productId)
+      errors.productId =
+        row.assetType === 'PANEL'
+          ? 'Chọn tấm pin trong danh mục.'
+          : row.assetType === 'INVERTER'
+            ? 'Chọn inverter trong danh mục.'
+            : 'Chọn sản phẩm trong danh mục.'
+    else {
       errors.manufacturer = required(row.manufacturer, 'Nhập hãng.')
       errors.model = required(row.model, 'Nhập model.')
     }
-    const serials = parseSerials(row.serials)
-    if (serials.length > 0) {
-      errors.serials = serialProblems(row, serials, i, savedKeys, firstRow)
-      if ((catalogRequired || row.productId) && row.quantity.trim() && Number(row.quantity.trim()) !== serials.length)
-        errors.quantity = `Đã nhập ${serials.length} số serial thì số lượng là ${serials.length}. Ghi theo số lượng thì để trống ô serial.`
-    } else if (!catalogRequired && !row.productId) errors.serials = 'Thiết bị ngoài danh mục phải ghi số serial.'
-    else if (lotQuantity(row.quantity) === null)
-      errors.quantity = `Nhập số lượng đã lắp (1 đến ${LOT_MAX_TEXT}), hoặc ghi số serial từng thiết bị.`
-    if (row.positionCode.trim().length > ASSET_LIMITS.position)
-      errors.positionCode = `Tối đa ${ASSET_LIMITS.position} ký tự.`
+    if (lotQuantity(row.quantity) === null) errors.quantity = `Nhập số lượng đã lắp (1 đến ${LOT_MAX_TEXT}).`
     const warranty = row.warrantyMonths.trim()
     if (row.productId && warranty && !(/^\d+$/.test(warranty) && Number(warranty) <= ASSET_LIMITS.warrantyMonths))
       errors.warrantyMonths = `Nhập số tháng từ 0 đến ${ASSET_LIMITS.warrantyMonths}.`
-    else if (!row.productId && warranty) errors.warrantyMonths = 'Thiết bị ngoài danh mục không ghi thời hạn bảo hành.'
 
     for (const field of Object.keys(errors) as AssetField[]) if (!errors[field]) delete errors[field]
     return errors
@@ -300,30 +213,23 @@ export function missingFromDetails(details: unknown): string[] {
   return Array.isArray(missing) ? missing.filter((m): m is string => typeof m === 'string') : []
 }
 
-/**
- * Dòng có serial: mỗi serial thành một thiết bị (không gửi số lượng); dòng không có serial: một lô theo số lượng.
- * Các mục cùng dòng dùng chung sản phẩm và vị trí lắp.
- */
+/** Mỗi dòng gửi một lô theo số lượng, không có số serial và vị trí lắp */
 export function toAssetRequests(rows: AssetRow[]): AssetRequest[] {
-  return rows.flatMap((row): AssetRequest[] => {
-    const entry = {
-      assetType: row.assetType,
-      productId: row.productId,
-      manufacturer: row.manufacturer.trim(),
-      model: row.model.trim(),
-      positionCode: row.positionCode.trim() || null,
-      warrantyMonths: row.productId && row.warrantyMonths.trim() ? Number(row.warrantyMonths.trim()) : null,
-    }
-    const serials = parseSerials(row.serials)
-    return serials.length > 0
-      ? serials.map((serialNumber) => ({ ...entry, serialNumber }))
-      : [{ ...entry, serialNumber: null, quantity: lotQuantity(row.quantity) }]
-  })
+  return rows.map((row) => ({
+    assetType: row.assetType,
+    productId: row.productId,
+    manufacturer: row.manufacturer.trim(),
+    model: row.model.trim(),
+    positionCode: null,
+    warrantyMonths: row.productId && row.warrantyMonths.trim() ? Number(row.warrantyMonths.trim()) : null,
+    serialNumber: null,
+    quantity: lotQuantity(row.quantity),
+  }))
 }
 
 const SERVER_ENTRY_ERRORS: Partial<Record<AssetField, string>> = {
-  quantity: `Số lượng chưa hợp lệ: lô ghi từ 1 đến ${LOT_MAX_TEXT} thiết bị, dòng có serial thì không ghi số lượng.`,
-  productId: 'Ghi theo số lượng phải chọn sản phẩm trong danh mục.',
+  quantity: `Số lượng chưa hợp lệ: ghi từ 1 đến ${LOT_MAX_TEXT} thiết bị.`,
+  productId: 'Chọn sản phẩm trong danh mục.',
 }
 
 /**
@@ -334,12 +240,11 @@ export function serverRowErrors(
   fieldErrors: Record<string, string>,
   rows: readonly AssetRow[],
 ): AssetRowErrors[] | null {
-  const owner = entryRows(rows)
   const found: AssetRowErrors[] = rows.map(() => ({}))
   let any = false
   for (const key of Object.keys(fieldErrors)) {
     const match = /^assets\[(\d+)\]\.(quantity|productId)$/.exec(key)
-    const row = match ? owner[Number(match[1])] : undefined
+    const row = match && Number(match[1]) < rows.length ? Number(match[1]) : undefined
     if (!match || row === undefined) continue
     found[row]![match[2] as AssetField] = SERVER_ENTRY_ERRORS[match[2] as AssetField]
     any = true

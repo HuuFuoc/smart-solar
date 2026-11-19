@@ -34,9 +34,6 @@ export function assetTypeLabel(type: string) {
 /** Số thiết bị thật: một lô ghi theo số lượng tính đủ số đã đếm, không tính là một dòng */
 export const assetUnits = (assets: readonly { quantity: number }[]) => assets.reduce((sum, a) => sum + a.quantity, 0)
 
-/** Ô serial của bảng thiết bị; lô ghi theo số lượng không có serial */
-export const serialText = (asset: { serialNumber: string | null }) => asset.serialNumber ?? 'Theo số lượng'
-
 /** Kết quả một lần nghiệm thu. Quản lý trả về thì ghi rõ để không tưởng là khách yêu cầu */
 export function acceptanceDecisionMeta(a: Pick<AcceptanceView, 'decision' | 'decidedBy'>): {
   label: string

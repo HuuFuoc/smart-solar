@@ -6,12 +6,21 @@ import type {
   InstallationEvidenceFileView,
   InstallationEvidenceUrlView,
 } from '@/types/res/customerInstallationsRes'
-import { get } from '@/services/api/client'
+import type { CustomerAcceptanceRequest } from '@/types/req/paymentPlanReq'
+import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
 
-// Khách theo dõi dự án lắp đặt của mình: tiến độ, ảnh thi công, bàn giao. Nghiệm thu và đồng ý thay thiết bị trong ứng dụng
-// đã bỏ (410): quản lý / quản trị nghiệm thu nội bộ
+// Khách theo dõi dự án lắp đặt của mình: tiến độ, ảnh thi công, bàn giao, và nghiệm thu (backend 7d27054 trả lại quyền nghiệm thu
+// cho khách; quản lý chỉ còn trả về làm lại). Đồng ý thay thiết bị trong ứng dụng vẫn bỏ (410)
 // Dự án của người khác backend trả 404 INSTALLATION_PROJECT_NOT_FOUND (không lộ là có tồn tại)
+
+/**
+ * Khách quyết định báo cáo hoàn thành đang chờ: ACCEPT (hợp đồng 30/70 mở khoản 70%, hạn 72 giờ do backend tính), hoặc
+ * REQUEST_REWORK / REJECT kèm lý do và ảnh ACCEPTANCE_EVIDENCE. Gửi `revision` của dự án đang xem (lệch thì 409)
+ */
+export function decideAcceptance(projectId: string, body: CustomerAcceptanceRequest) {
+  return post<InstallationCustomerView>(ENDPOINTS.customerAcceptance.decide(projectId), body)
+}
 
 /** GET /api/customers/me/installation-projects */
 export function listMyProjects() {

@@ -13,6 +13,7 @@ import { usePageCrumb } from '@/components/layout/page-crumb'
 import { ProjectAfterSalesPanel } from '@/features/after-sales/ProjectAfterSalesPanel'
 import { FaultReportFlow } from '@/features/after-sales/FaultReportFlow'
 import { Notice } from '@/components/common/ui/lists'
+import { CustomerAcceptancePanel } from '@/features/installations/CustomerAcceptancePanel'
 import { EnergyEstimatePanel } from '@/features/installations/EnergyEstimatePanel'
 import { EquipmentDifferences } from '@/features/installations/EquipmentDifferences'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
@@ -26,7 +27,6 @@ import {
   formatWarrantyMonths,
   installationStatusMeta,
   pendingAcceptance,
-  serialText,
 } from '@/features/installations/installationDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment, vnDate } from '@/features/scheduling/schedulingDisplay'
@@ -90,7 +90,7 @@ function lastRework(p: InstallationCustomerView) {
   return [...p.acceptances].reverse().find((a) => a.decision === 'REWORK_REQUESTED') ?? null
 }
 
-// Khách chỉ theo dõi: không còn bước nào chờ khách nên không có đỏ. Xanh dương khi chờ người khác, xanh lá khi đã ổn
+// Việc của khách là nghiệm thu (đỏ); còn lại xanh dương khi chờ người khác, xanh lá khi đã ổn
 function nextStep(p: InstallationCustomerView): TrackerNext {
   const range = formatInstallationWindow(p.scheduledStartsAt, p.scheduledEndsAt)
   switch (p.status) {
@@ -116,13 +116,13 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
       return {
         tone: 'info',
         title: 'Đang lắp đặt',
-        body: 'Xong việc, kỹ thuật viên gửi báo cáo hoàn thành để Smart Solar nghiệm thu.',
+        body: 'Xong việc, kỹ thuật viên gửi báo cáo hoàn thành để bạn nghiệm thu.',
       }
     case 'PENDING_CUSTOMER_ACCEPTANCE':
       return {
-        tone: 'info',
-        title: 'Smart Solar đang nghiệm thu công trình',
-        body: 'Kỹ thuật viên đã báo cáo hoàn thành. Bạn không cần làm gì thêm; bàn giao xong thì hồ sơ và bảo hành hiện ở đây.',
+        tone: 'danger',
+        title: 'Nghiệm thu công trình',
+        body: 'Kỹ thuật viên đã báo cáo hoàn thành. Kiểm tra rồi nghiệm thu, hoặc yêu cầu làm lại kèm lý do.',
         action: { label: 'Xem báo cáo', icon: 'visibility', target: 'completion' },
       }
     case 'REWORK_REQUIRED': {
@@ -132,8 +132,8 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
         title: 'Kỹ thuật viên đang sửa lại',
         body:
           rework?.decidedBy === 'STAFF'
-            ? 'Quản lý đã trả báo cáo về để kỹ thuật viên bổ sung. Sửa xong Smart Solar nghiệm thu lại.'
-            : 'Sửa xong, kỹ thuật viên gửi báo cáo mới để nghiệm thu lại.',
+            ? 'Quản lý đã trả báo cáo về để kỹ thuật viên bổ sung. Sửa xong bạn nghiệm thu lại.'
+            : 'Bạn đã yêu cầu làm lại. Sửa xong, kỹ thuật viên gửi báo cáo mới để bạn nghiệm thu lại.',
       }
     }
     case 'COMPLETED':
@@ -159,7 +159,7 @@ function SubstitutionNotice({ project: p }: { project: InstallationCustomerView 
   if (equipment?.status === 'SUBSTITUTION_APPROVAL_REQUIRED')
     return (
       <Notice tone="info" title="Thiết bị đã lắp khác hợp đồng">
-        Smart Solar đang xem lại thay đổi này trước khi nghiệm thu.
+        Smart Solar đang xem lại thay đổi này; bạn nghiệm thu được sau khi thay đổi được duyệt.
       </Notice>
     )
   if (equipment?.status !== 'SUBSTITUTION_APPROVED' || equipment.differences.length === 0) return null
@@ -172,22 +172,6 @@ function SubstitutionNotice({ project: p }: { project: InstallationCustomerView 
       </Notice>
       <EquipmentDifferences items={equipment.differences} />
     </div>
-  )
-}
-
-/** Báo cáo hoàn thành đang chờ nghiệm thu nội bộ, chỉ để khách đọc */
-function CompletionReportPanel({ project, pending }: { project: InstallationCustomerView; pending: AcceptanceView }) {
-  return (
-    <Panel>
-      <PanelHeader
-        title="Báo cáo hoàn thành"
-        description={`Lần ${pending.round}, gửi ${formatMoment(pending.requestedAt)}`}
-      />
-      <PanelBody className="space-y-4">
-        <p className="max-w-[72ch] text-body whitespace-pre-line text-fg">{pending.completionReport}</p>
-        <SubstitutionNotice project={project} />
-      </PanelBody>
-    </Panel>
   )
 }
 
@@ -235,15 +219,13 @@ function AssetTable({
           <Th>Thiết bị</Th>
           <Th>Hãng, model</Th>
           <Th className="text-right">Số lượng</Th>
-          <Th>Số serial</Th>
-          <Th>Vị trí</Th>
           <Th>Bảo hành</Th>
           {warrantyOf && <Th>Bảo hành hãng đến</Th>}
         </tr>
       </thead>
       <tbody>
         {assets.map((a, i) => (
-          // Dòng của biên bản bàn giao không có mã; lô không có serial nên dùng thứ tự
+          // Dòng của biên bản bàn giao không có mã nên dùng thứ tự
           <Tr key={'assetId' in a ? a.assetId : i}>
             <Td label="Thiết bị" className="font-medium text-fg">
               {assetTypeLabel(a.assetType)}
@@ -254,10 +236,6 @@ function AssetTable({
             <Td label="Số lượng" className="tnum xl:text-right">
               {a.quantity.toLocaleString('vi-VN')}
             </Td>
-            <Td label="Số serial" className="tnum">
-              {serialText(a)}
-            </Td>
-            <Td label="Vị trí">{a.positionCode || '—'}</Td>
             <Td label="Bảo hành">{formatWarrantyMonths(a.warrantyMonths)}</Td>
             {warrantyOf && (
               <Td label="Bảo hành hãng đến" className="tnum">
@@ -417,7 +395,9 @@ export function CustomerProjectPage() {
                 <div className="min-w-0 space-y-4 lg:col-span-2">
                   {pending && (
                     <div id="completion" className="scroll-mt-6">
-                      <CompletionReportPanel project={p} pending={pending} />
+                      <CustomerAcceptancePanel project={p} pending={pending}>
+                        <SubstitutionNotice project={p} />
+                      </CustomerAcceptancePanel>
                     </div>
                   )}
                   {completed && <ProjectAfterSalesPanel projectId={p.projectId} />}

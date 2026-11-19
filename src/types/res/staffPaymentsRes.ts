@@ -49,6 +49,8 @@ export type PaymentLineView = {
   quotationId: string | null
   /** Báo giá lắp đặt khách đồng ý tại công trình; áp xong thì hợp đồng tự lập (`contractId` của lần thanh toán) */
   installationQuotationId?: string | null
+  /** CONTRACT_INSTALLMENT (backend 7d27054): một khoản 30% / 70%; dòng không mang mã hợp đồng */
+  contractInstallmentId?: string | null
 }
 
 /** GET /api/manager/payments (Manager, Admin, luôn phân trang): lần thanh toán kèm các dòng, mới nhất trước */

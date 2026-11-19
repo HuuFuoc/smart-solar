@@ -11,6 +11,8 @@ export const PAYMENT_ITEM_TYPES: Record<string, string> = {
   MAINTENANCE_QUOTATION: 'Báo giá bảo trì lẻ',
   // Báo giá lắp đặt khách đồng ý tại công trình, trả trước khi có hợp đồng; áp xong thì hợp đồng tự lập
   INSTALLATION_QUOTATION: 'Báo giá lắp đặt (tại công trình)',
+  // Một khoản của hợp đồng 30/70; dòng không mang mã hợp đồng, chỉ mã khoản
+  CONTRACT_INSTALLMENT: 'Một khoản của hợp đồng 30/70',
 }
 
 export const PAYMENT_ITEM_STATUSES: Record<string, { label: string; tone: Tone }> = {

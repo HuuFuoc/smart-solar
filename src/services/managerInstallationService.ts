@@ -2,7 +2,6 @@ import type {
   AssignInstallationTechnicianRequest,
   CancelInstallationRequest,
   ChecklistRequest,
-  InternalAcceptanceRequest,
   ReturnToReworkRequest,
   SubstitutionApprovalRequest,
 } from '@/types/req/managerInstallationsReq'
@@ -66,15 +65,6 @@ export function cancelProject(projectId: string, body: CancelInstallationRequest
 /** Chỉ khi báo cáo hoàn thành đang chờ nghiệm thu nội bộ */
 export function returnToRework(projectId: string, body: ReturnToReworkRequest) {
   return post<InstallationStaffView>(api.returnToRework(projectId), body)
-}
-
-/**
- * Nghiệm thu nội bộ báo cáo hoàn thành (chờ nghiệm thu → COMPLETED, bàn giao). Ghi chú căn cứ bắt buộc (≤ 500), biên bản bàn giao
- * PROJECT_DOCUMENT đã xác minh không bắt buộc. Backend từ chối khi checklist bắt buộc chưa xong (INSTALLATION_CHECKLIST_INCOMPLETE)
- * hoặc thiết bị khác hợp đồng chưa được duyệt (INSTALLATION_SUBSTITUTION_APPROVAL_REQUIRED)
- */
-export function acceptInternally(projectId: string, body: InternalAcceptanceRequest) {
-  return post<InstallationStaffView>(api.acceptance(projectId), body)
 }
 
 export function listEvidence(projectId: string) {

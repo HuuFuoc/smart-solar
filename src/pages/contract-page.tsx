@@ -35,11 +35,17 @@ import {
   canEditDraft,
   canPublish,
   canSeePayments,
+  canWriteContract,
   type ContractViewer,
   isPrepaidContract,
   issueBlockers,
   shortHash,
 } from '@/features/contracts/contractRules'
+import { InstallmentPlanPanel } from '@/features/payment-plan/InstallmentPlanPanel'
+import { SignatureSetPanel } from '@/features/payment-plan/SignatureSetPanel'
+import { formatVnd, planNextStep, planTrackerSteps, stageMeta } from '@/features/payment-plan/paymentPlanDisplay'
+import { isPaymentPlanContract } from '@/features/payment-plan/paymentPlanRules'
+import type { ContractPaymentPlanView } from '@/types/res/paymentPlanRes'
 import { canPlanForContract } from '@/features/installation-schedules/scheduleRules'
 import { StaffContractSchedulePanel } from '@/features/installation-schedules/StaffContractSchedulePanel'
 import { OfficialDocumentDialog } from '@/features/contracts/OfficialDocumentDialog'
@@ -70,6 +76,7 @@ type Dialog = 'issue' | 'publish' | 'document' | 'discard' | null
 
 const DETAIL_PATTERNS: Record<ContractViewer, string> = {
   sales: ROUTES.ops.contract,
+  technician: ROUTES.tech.contract,
   manager: ROUTES.manage.contract,
   admin: ROUTES.admin.contract,
 }
@@ -296,6 +303,29 @@ function ContentPanel({ contract: c }: { contract: ContractView }) {
   )
 }
 
+function PlanAside({ contract: c, plan }: { contract: ContractView; plan: ContractPaymentPlanView }) {
+  return (
+    <PanelAside aria-label="Thông tin hợp đồng">
+      <Panel>
+        <PanelHeader title="Thông tin" />
+        <PanelBody>
+          <Facts
+            column
+            items={[
+              { k: 'Số hợp đồng', v: c.contractNumber },
+              { k: 'Phiên bản', v: versionLabel(c) },
+              { k: 'Cách trả', v: 'Hai khoản: 30% trước khi ký, 70% sau nghiệm thu' },
+              { k: 'Yêu cầu khảo sát', v: shortCode(c.surveyRequestId) },
+              { k: 'Phiên bản điều khoản', v: plan.termsVersion ?? '—' },
+              { k: 'Đã trả đủ', v: plan.fullyPaid ? formatMoment(c.paidAt) : 'Chưa' },
+            ]}
+          />
+        </PanelBody>
+      </Panel>
+    </PanelAside>
+  )
+}
+
 function ContractAside({ contract: c, viewer }: { contract: ContractView; viewer: ContractViewer }) {
   const documentUrl = useContractDocumentUrlMutation()
   return (
@@ -346,10 +376,90 @@ function ContractAside({ contract: c, viewer }: { contract: ContractView; viewer
   )
 }
 
+/**
+ * Hợp đồng 30/70: hai khoản trả, hợp đồng giấy nhiều trang, lịch thi công. Ẩn mọi thao tác của luồng cũ (phát hành, PDF chính
+ * thức, gửi ký, duyệt bản ký, phụ lục, thu 100%): backend trả 409 CONTRACT_PAYMENT_PLAN_NOT_APPLICABLE cho hợp đồng này
+ */
+function PlanContract({
+  contract: c,
+  viewer,
+  versions,
+}: {
+  contract: ContractView & { paymentPlan: ContractPaymentPlanView }
+  viewer: ContractViewer
+  versions: ContractView[]
+}) {
+  const plan = c.paymentPlan
+  const stage = stageMeta(plan.stage)
+  const status = contractStatusMeta(c.status)
+  const writer = viewer === 'technician' ? 'technician' : canWriteContract(viewer) ? 'support' : null
+  return (
+    <>
+      <PageHeader
+        meta={
+          <>
+            <Badge tone={stage.tone === 'danger' ? 'neutral' : stage.tone}>{stage.label}</Badge>
+            <span>{status.label}</span>
+            <span className="tnum">{versionLabel(c)}</span>
+          </>
+        }
+        title={`Hợp đồng ${c.contractNumber}`}
+        description={`${formatVnd(plan.total)}, trả 30% rồi 70%, bảo hành lắp đặt ${warrantyText(c.warrantyMonths)}.`}
+        actions={
+          viewer === 'sales' ? (
+            <ButtonLink to={withId(ROUTES.ops.survey, c.surveyRequestId)} variant="info" icon="assignment">
+              Yêu cầu khảo sát
+            </ButtonLink>
+          ) : viewer === 'technician' && plan.depositPaid ? (
+            <ButtonLink to={ROUTES.tech.installationSchedules} variant="soft" icon="event_available">
+              Hẹn ngày thi công
+            </ButtonLink>
+          ) : undefined
+        }
+      />
+
+      <ProgressTracker steps={planTrackerSteps(plan)} next={planNextStep(plan, viewer)} />
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
+          <InstallmentPlanPanel
+            contract={c}
+            actor={viewer === 'technician' ? 'technician' : 'staff'}
+            canConfirmCash={canWriteContract(viewer)}
+          />
+          <SignatureSetPanel contract={c} writer={writer} reader="staff" />
+          {canWriteContract(viewer) && plan.depositPaid && canPlanForContract(c.status, true) && (
+            <StaffContractSchedulePanel contract={c} />
+          )}
+          <ContentPanel contract={c} />
+        </div>
+        <PlanAside contract={c} plan={plan} />
+      </div>
+
+      <div className="mt-6 space-y-4 border-t border-line pt-4">
+        {versions.length > 1 && (
+          <Panel>
+            <PanelHeader title="Các phiên bản" />
+            <PanelBody>
+              <ContractVersionList
+                versions={versions}
+                detailPattern={DETAIL_PATTERNS[viewer]}
+                currentId={c.contractId}
+              />
+            </PanelBody>
+          </Panel>
+        )}
+        {c.events && <ContractEventLog events={c.events} />}
+      </div>
+    </>
+  )
+}
+
 function ContractPage({ viewer }: { viewer: ContractViewer }) {
   const { id } = useParams()
   const query = useContractQuery(id)
-  const versions = useSurveyRequestContractsQuery(query.data?.surveyRequestId)
+  // Danh sách phiên bản theo yêu cầu khảo sát không mở cho kỹ thuật viên
+  const versions = useSurveyRequestContractsQuery(query.data?.surveyRequestId, { enabled: viewer !== 'technician' })
   usePageCrumb(query.data ? contractTitle(query.data) : null)
 
   if (query.data === undefined && isFeatureUnavailable(query.error))
@@ -366,6 +476,7 @@ function ContractPage({ viewer }: { viewer: ContractViewer }) {
       {(c) => {
         const status = contractStatusMeta(c.status)
         const list = versions.data ?? [c]
+        if (isPaymentPlanContract(c)) return <PlanContract contract={c} viewer={viewer} versions={list} />
         return (
           <>
             <PageHeader
@@ -392,15 +503,17 @@ function ContractPage({ viewer }: { viewer: ContractViewer }) {
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="min-w-0 space-y-4 lg:col-span-2">
-                {viewer !== 'sales' && <StaffActions contract={c} viewer={viewer} />}
+                {canWriteContract(viewer) && <StaffActions contract={c} viewer={viewer as 'manager' | 'admin'} />}
                 <SignaturePanel contract={c} viewer={viewer} />
                 {canSeePayments(viewer) && (
                   <ContractPaymentPanel contract={c} viewer={viewer} installationsPath={INSTALLATIONS[viewer]} />
                 )}
-                {viewer !== 'sales' && canPlanForContract(c.status, c.paymentCompleted) && (
+                {canWriteContract(viewer) && canPlanForContract(c.status, c.paymentCompleted) && (
                   <StaffContractSchedulePanel contract={c} />
                 )}
-                {viewer !== 'sales' && <AmendmentPanel contract={c} versions={list} viewer={viewer} />}
+                {canWriteContract(viewer) && (
+                  <AmendmentPanel contract={c} versions={list} viewer={viewer as 'manager' | 'admin'} />
+                )}
                 <ContentPanel contract={c} />
               </div>
               <ContractAside contract={c} viewer={viewer} />
@@ -430,6 +543,10 @@ function ContractPage({ viewer }: { viewer: ContractViewer }) {
 
 export function OpsContractPage() {
   return <ContractPage viewer="sales" />
+}
+
+export function TechContractPage() {
+  return <ContractPage viewer="technician" />
 }
 
 export function ManageContractPage() {

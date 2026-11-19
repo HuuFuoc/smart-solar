@@ -66,12 +66,23 @@ export const PORTALS: Record<PortalKey, Portal> = {
         items: [
           { label: 'Chờ nhận', to: ROUTES.ops.surveys, icon: 'move_to_inbox', end: true },
           // Backend chỉ trả chi tiết cho sales đã nhận yêu cầu, nên trang chi tiết thuộc "Đã nhận"
-          // Hợp đồng mở từ trang yêu cầu nên cũng thuộc "Đã nhận"
           {
             label: 'Đã nhận',
             to: ROUTES.ops.surveysMine,
             icon: 'assignment_ind',
-            alsoActiveOn: [ROUTES.ops.survey, ROUTES.ops.contract],
+            alsoActiveOn: [ROUTES.ops.survey],
+          },
+        ],
+      },
+      {
+        label: 'Hợp đồng',
+        items: [
+          { label: 'Hợp đồng', to: ROUTES.ops.contracts, icon: 'history_edu', alsoActiveOn: [ROUTES.ops.contract] },
+          {
+            label: 'Thu hồi công nợ',
+            to: ROUTES.ops.collections,
+            icon: 'request_quote',
+            alsoActiveOn: [ROUTES.ops.collection],
           },
         ],
       },
@@ -100,6 +111,12 @@ export const PORTALS: Record<PortalKey, Portal> = {
             alsoActiveOn: [ROUTES.manage.contract],
           },
           { label: 'Thu tiền', to: ROUTES.manage.payments, icon: 'payments' },
+          {
+            label: 'Thu hồi công nợ',
+            to: ROUTES.manage.collections,
+            icon: 'request_quote',
+            alsoActiveOn: [ROUTES.manage.collection],
+          },
           { label: 'Lịch thi công', to: ROUTES.manage.installationSchedules, icon: 'event_note' },
           { label: 'Thi công', to: ROUTES.manage.installations, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.manage.afterSales, icon: 'build' },
@@ -130,6 +147,12 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Điều phối', to: ROUTES.admin.dispatch, icon: 'support_agent' },
           { label: 'Hợp đồng', to: ROUTES.admin.contracts, icon: 'history_edu', alsoActiveOn: [ROUTES.admin.contract] },
           { label: 'Thu tiền', to: ROUTES.admin.payments, icon: 'payments' },
+          {
+            label: 'Thu hồi công nợ',
+            to: ROUTES.admin.collections,
+            icon: 'request_quote',
+            alsoActiveOn: [ROUTES.admin.collection],
+          },
           { label: 'Lịch thi công', to: ROUTES.admin.installationSchedules, icon: 'event_note' },
           { label: 'Thi công', to: ROUTES.admin.installations, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.admin.afterSales, icon: 'build' },
@@ -164,6 +187,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
         label: 'Tác vụ kỹ thuật',
         items: [
           { label: 'Khảo sát', to: ROUTES.tech.jobs, icon: 'assignment' },
+          { label: 'Hợp đồng', to: ROUTES.tech.contracts, icon: 'history_edu', alsoActiveOn: [ROUTES.tech.contract] },
           { label: 'Hẹn lịch thi công', to: ROUTES.tech.installationSchedules, icon: 'event_note' },
           { label: 'Lắp đặt', to: ROUTES.tech.installations, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.tech.afterSales, icon: 'build' },

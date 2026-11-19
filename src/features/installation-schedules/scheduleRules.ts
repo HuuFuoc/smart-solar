@@ -54,9 +54,18 @@ export const canCancelSchedule = (s: Schedule) => s.status === 'PLANNED' || s.st
 export const canRequestChange = (s: Pick<InstallationScheduleView, 'status' | 'projectStatus'>) =>
   isLiveSchedule(s) && !projectLocksSchedule(s.projectStatus)
 
-/** Quản lý thử xác nhận lại: lịch dự kiến của hợp đồng đã thanh toán (backend tự thử mỗi phút) */
-export const canRetryConfirm = (s: Pick<InstallationScheduleView, 'status' | 'contractStatus'>) =>
-  s.status === 'PLANNED' && s.contractStatus === 'PAID'
+/**
+ * Quản lý thử xác nhận lại lịch dự kiến (backend tự thử mỗi phút) khi hợp đồng đã sẵn sàng thi công: hợp đồng cũ khi PAID; hợp
+ * đồng 30/70 khi đã ký giấy (SIGNED, backend 7d27054). Lịch không mang gói thanh toán nên SIGNED chỉ tính khi backend báo rõ không
+ * còn chờ tiền (`awaitingPayment` false: hợp đồng cũ SIGNED luôn true) và không còn chờ ký
+ */
+export const canRetryConfirm = (
+  s: Pick<InstallationScheduleView, 'status' | 'contractStatus'> &
+    Partial<Pick<InstallationScheduleView, 'awaitingPayment' | 'awaitingContractSignature'>>,
+) =>
+  s.status === 'PLANNED' &&
+  (s.contractStatus === 'PAID' ||
+    (s.contractStatus === 'SIGNED' && s.awaitingPayment === false && s.awaitingContractSignature === false))
 
 export type ScheduleForm = {
   date: string

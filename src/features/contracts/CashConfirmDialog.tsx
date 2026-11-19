@@ -8,7 +8,7 @@ import { Progress } from '@/components/common/ui/lists'
 import { acceptFor, fileProblem, fileTypesText, maxSizeText } from '@/features/files/fileDisplay'
 import { ErrorLine } from '@/features/installation-projects/formParts'
 import { formatFileSize } from '@/features/installations/installationDisplay'
-import { contractErrorMessage } from '@/features/contracts/contractDisplay'
+import { contractErrorMessage, uploadErrorMessage } from '@/features/contracts/contractDisplay'
 import {
   CASH_NOTE_MAX,
   CASH_RECEIPT_MAX,
@@ -74,7 +74,7 @@ export function CashConfirmDialog({ target, onClose }: { target: CashTarget; onC
         setUploadedId(fileId)
       }
     } catch (e) {
-      return setError(`Chưa tải được phiếu thu lên: ${contractErrorMessage(e)}`)
+      return setError(`Chưa tải được phiếu thu lên: ${uploadErrorMessage(e)}`)
     }
     setPending(true)
     try {
@@ -145,7 +145,7 @@ export function CashConfirmDialog({ target, onClose }: { target: CashTarget; onC
           <p className="text-body text-fg-2">
             {chosen ? (
               <>
-                Tải lên khi xác nhận: <span className="font-medium text-fg">{chosen.name}</span>
+                Tải lên khi xác nhận: <span className="font-medium break-all text-fg">{chosen.name}</span>
                 <span className="tnum">, {formatFileSize(chosen.size)}</span>.
               </>
             ) : (

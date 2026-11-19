@@ -24,14 +24,18 @@ import { CustomerSchedulePanel } from '@/features/installation-schedules/Custome
 import { PAYOS_RETURN_PARAM } from '@/features/payments/payosReturn'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { InstallmentPlanPanel } from '@/features/payment-plan/InstallmentPlanPanel'
+import { SignatureSetPanel } from '@/features/payment-plan/SignatureSetPanel'
+import { formatVnd, planNextStep, planTrackerSteps, stageMeta } from '@/features/payment-plan/paymentPlanDisplay'
+import { isPaymentPlanContract } from '@/features/payment-plan/paymentPlanRules'
 import { useMyContractQuery, useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { ROUTES, withId } from '@/routes/paths'
 import { isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
 
-// Chi tiết một phiên bản hợp đồng của khách: tình hình, ký, thanh toán, lịch thi công, nội dung. Hợp đồng lập từ báo giá đã trả
-// tiền tại công trình thì khách chỉ theo dõi (trạng thái hợp đồng và trạng thái thanh toán hiện riêng); hợp đồng cũ vẫn ký và
-// thanh toán ở đây. Quay về từ PayOS (?payos=) chỉ làm hiện câu "đang kiểm tra", không đổi trạng thái
+// Chi tiết một phiên bản hợp đồng của khách: tình hình, ký, thanh toán, lịch thi công, nội dung. Hợp đồng 30/70 (backend 7d27054):
+// khách đọc bản nháp trước khi trả 30%, trả 30% / 70% trong ứng dụng, xem ảnh các trang đã ký; không còn tải bản ký lên (410).
+// Hợp đồng cũ vẫn ký và thanh toán 100% ở đây. Quay về từ PayOS (?payos=) chỉ làm hiện câu "đang kiểm tra", không đổi trạng thái
 
 function ContentPanel({ contract: c }: { contract: ContractView }) {
   return (
@@ -77,9 +81,17 @@ function ContractAside({ contract: c }: { contract: ContractView }) {
                   </Link>
                 ),
               },
-              { k: 'Thanh toán', v: c.paymentCompleted ? `Đã nhận đủ ${formatMoment(paidMoment(c))}` : 'Chưa' },
-              { k: isPrepaid(c) ? 'Lập hồ sơ ký' : 'Gửi bạn ký', v: formatMoment(c.publishedAt) },
-              { k: 'Duyệt bản ký', v: formatMoment(c.signedAt) },
+              ...(c.paymentPlan
+                ? [
+                    { k: 'Cách trả', v: 'Hai khoản: 30% trước khi ký, 70% sau nghiệm thu' },
+                    { k: 'Đã trả', v: <span className="tnum">{formatVnd(c.paymentPlan.paid)}</span> },
+                    { k: 'Đã trả đủ', v: c.paymentPlan.fullyPaid ? formatMoment(c.paidAt) : 'Chưa' },
+                  ]
+                : [
+                    { k: 'Thanh toán', v: c.paymentCompleted ? `Đã nhận đủ ${formatMoment(paidMoment(c))}` : 'Chưa' },
+                    { k: isPrepaid(c) ? 'Lập hồ sơ ký' : 'Gửi bạn ký', v: formatMoment(c.publishedAt) },
+                    { k: 'Duyệt bản ký', v: formatMoment(c.signedAt) },
+                  ]),
             ]}
           />
         </PanelBody>
@@ -110,6 +122,46 @@ export function CustomerContractPage() {
     <QueryBoundary query={query}>
       {(c) => {
         const status = contractStatusMeta(c.status, 'customer')
+        if (isPaymentPlanContract(c)) {
+          const plan = c.paymentPlan
+          const stage = stageMeta(plan.stage, 'customer')
+          const planNext = planNextStep(plan, 'customer')
+          return (
+            <>
+              <PageHeader
+                meta={
+                  <>
+                    <Badge tone={planNext.tone === 'danger' ? 'neutral' : stage.tone}>{stage.label}</Badge>
+                    <span className="tnum">{versionLabel(c)}</span>
+                  </>
+                }
+                title={`Hợp đồng ${c.contractNumber}`}
+                description={`${formatVnd(plan.total)}, trả 30% rồi 70%, bảo hành lắp đặt ${warrantyText(c.warrantyMonths)}.`}
+              />
+              <ProgressTracker steps={planTrackerSteps(plan)} next={planNext} />
+              {returned && (
+                <Notice className="mt-6" title="Đang kiểm tra thanh toán">
+                  Khoản tiền chỉ được ghi đã trả khi PayOS xác nhận với Smart Solar; trang tự cập nhật.
+                </Notice>
+              )}
+              <div className="mt-6 grid gap-6 lg:grid-cols-3">
+                <div className="min-w-0 space-y-4 lg:col-span-2">
+                  {c.status === 'DRAFT' && (
+                    <Notice title="Đọc kỹ toàn bộ điều khoản trước khi trả 30%">
+                      Hợp đồng gồm điều khoản thanh toán hai khoản, nghiệm thu và quyền sở hữu thiết bị. Khoản 70% đến
+                      hạn trong 72 giờ sau khi bạn nghiệm thu công trình.
+                    </Notice>
+                  )}
+                  <InstallmentPlanPanel contract={c} actor="customer" />
+                  <SignatureSetPanel contract={c} writer={null} reader="customer" />
+                  <CustomerSchedulePanel contract={c} />
+                  <ContentPanel contract={c} />
+                </div>
+                <ContractAside contract={c} />
+              </div>
+            </>
+          )
+        }
         const next = customerContractNext(c)
         const versions = (all.data ?? []).filter((v) => v.contractNumber === c.contractNumber)
         const newer = c.status === 'SUPERSEDED' ? newerVersion(c, versions) : null

@@ -1,6 +1,8 @@
 // Viết tay vì swagger của tag CustomerContracts chỉ khai "200 OK". Theo record C# của backend `main` (6025bc1):
 // Modules.CustomerContracts (ContractView, ContractDocumentView, SignatureSubmissionView, ContractEventView)
-// Khách chỉ thấy hợp đồng từ lúc chờ ký trở đi (AWAITING_SIGNATURE, UNDER_REVIEW, SIGNATURE_REJECTED, SIGNED, PAID, SUPERSEDED)
+// Hợp đồng cũ: khách thấy từ lúc chờ ký trở đi. Hợp đồng 30/70 (backend 7d27054): khách thấy cả bản nháp để đọc trước khi trả 30%
+
+import type { ContractPaymentPlanView } from '@/types/res/paymentPlanRes'
 
 export type ContractStatus =
   | 'DRAFT'
@@ -79,6 +81,11 @@ export type ContractView = {
   paymentAttemptId: string | null
   /** Lúc tiền được xác minh (PayOS hoặc quản lý xác nhận tiền mặt) */
   paymentConfirmedAt: string | null
+  /**
+   * Gói thanh toán 30/70 (backend 7d27054); null là hợp đồng cũ trả 100%. Với gói 30/70 `paymentCompleted` chỉ true khi đã trả đủ
+   * cả hai khoản, và SIGNED không có nghĩa đã trả đủ
+   */
+  paymentPlan?: ContractPaymentPlanView | null
 }
 
 /**

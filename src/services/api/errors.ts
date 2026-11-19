@@ -303,7 +303,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   QUOTATION_PRODUCT_UNAVAILABLE: 'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác.',
   QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này. Mở thanh toán cho khách.',
   QUOTATION_PAYMENT_STARTED:
-    'Đã mở thanh toán cho báo giá này nên chưa ghi khách đổi ý được. Huỷ mã QR / bỏ chọn tiền mặt trước; tiền đã nhận thì không rút được.',
+    'Đã mở thanh toán khoản 30% (hoặc đã nhận tiền) nên chưa ghi khách đổi ý được. Huỷ mã QR / bỏ chọn tiền mặt trước; tiền đã nhận thì không rút được.',
   QUOTATION_NOT_AGREED: 'Ghi khách đồng ý trước rồi mới mở thanh toán.',
   QUOTATION_CANNOT_REVISE: 'Không lập bản sửa được vì khách vừa đồng ý hoặc báo giá vừa thay đổi. Đã tải lại.',
   QUOTATION_SURVEY_CHANGED:
@@ -314,7 +314,26 @@ const ERROR_MESSAGES: Record<string, string> = {
   QUOTATION_SURVEY_NOT_FOUND:
     'Không tìm thấy yêu cầu khảo sát, hoặc bạn không phải kỹ thuật viên đã khảo sát yêu cầu này.',
   // Hợp đồng lắp đặt (phía nhân viên)
-  CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng, hoặc bạn không phụ trách yêu cầu khảo sát này.',
+  CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng, hoặc bạn không phụ trách hợp đồng này.',
+  // Gói thanh toán 30/70, hợp đồng ký giấy, thu hồi công nợ
+  CONTRACT_PAYMENT_PLAN_NOT_APPLICABLE:
+    'Thao tác này không dùng cho hợp đồng này (hợp đồng trả 30/70 và hợp đồng trả 100% theo cách cũ có các bước khác nhau). Đã tải lại.',
+  PAYMENT_CONTRACT_HAS_INSTALLMENTS:
+    'Hợp đồng này trả theo hai khoản 30% và 70%. Thanh toán từng khoản ở khối "Thanh toán theo khoản".',
+  CONTRACT_INSTALLMENT_NOT_FOUND: 'Không tìm thấy khoản thanh toán này của hợp đồng.',
+  CONTRACT_INSTALLMENT_NOT_PAYABLE:
+    'Khoản này chưa trả được lúc này: khoản 70% mở khi khách nghiệm thu, khoản 30% chỉ trả trước khi ký hợp đồng giấy.',
+  CONTRACT_INSTALLMENT_ALREADY_PAID: 'Khoản này đã được thanh toán. Đã tải lại.',
+  CONTRACT_PAYMENT_PLAN_AMOUNT_NOT_SUPPORTED: 'Tổng báo giá quá nhỏ để chia hai khoản 30% và 70%. Lập bản sửa.',
+  CONTRACT_DEPOSIT_REQUIRED: 'Khoản 30% chưa được xác minh nên chưa tải hợp đồng giấy đã ký được.',
+  CONTRACT_SIGNATURE_NOT_STARTED: 'Ghi số trang của hợp đồng giấy trước khi tải từng trang.',
+  CONTRACT_SIGNATURE_SET_NOT_FOUND: 'Chưa có bộ trang hợp đồng giấy nào.',
+  CONTRACT_SIGNED_PAGE_OUT_OF_RANGE: 'Số trang này nằm ngoài số trang đã khai.',
+  CONTRACT_SIGNED_PAGES_INCOMPLETE: 'Còn thiếu trang nên chưa chốt được. Tải đủ các trang còn thiếu.',
+  CONTRACT_SIGNATURE_ALREADY_FINALIZED: 'Các trang hợp đồng giấy đã được chốt nên không sửa được nữa.',
+  COLLECTION_CASE_NOT_FOUND: 'Không tìm thấy hồ sơ công nợ này.',
+  COLLECTION_CASE_CLOSED: 'Hồ sơ công nợ đã đóng nên không ghi thêm được.',
+  COLLECTION_INVALID_TRANSITION: 'Hồ sơ đã ở bước này rồi. Đã tải lại.',
   CONTRACT_QUOTATION_NOT_ACCEPTED: 'Chỉ lập được hợp đồng từ báo giá khách đã đồng ý.',
   CONTRACT_PAYMENT_REQUIRED:
     'Hợp đồng chỉ lập khi báo giá đã được thanh toán (tiền được xác minh thì hệ thống tự lập). Báo giá này chưa có thanh toán đã xác minh.',
@@ -333,7 +352,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   CONTRACT_REJECTION_REASON_REQUIRED: 'Ghi lý do từ chối bản ký.',
   CONTRACT_WARRANTY_VALIDATION_FAILED: 'Thời hạn bảo hành này không còn được dùng. Chọn lại thời hạn trong danh sách.',
   CONTRACT_WARRANTY_REQUIRED:
-    'Chưa chọn thời hạn bảo hành lắp đặt. Nếu không có thời hạn nào để chọn, nhờ quản trị thêm thời hạn bảo hành lắp đặt.',
+    'Chưa có thời hạn bảo hành lắp đặt mặc định nên chưa lập được hợp đồng. Nhờ quản trị thêm thời hạn bảo hành lắp đặt trong cài đặt.',
   CONTRACT_SURVEY_CHANGED:
     'Biên bản khảo sát được bổ sung sau khi lập báo giá. Lập báo giá sửa trước rồi mới lập hợp đồng.',
   CONTRACT_REQUEST_CLOSED: 'Yêu cầu khảo sát đã đóng hoặc khách đã rút nên không lập được hợp đồng.',

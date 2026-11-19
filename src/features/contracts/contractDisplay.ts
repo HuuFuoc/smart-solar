@@ -83,6 +83,12 @@ export function contractErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Đã xảy ra lỗi. Vui lòng thử lại.'
 }
 
+/** Lỗi lúc tải tệp lên: không dùng câu riêng của bước duyệt bản ký (cùng mã lỗi nhưng khác việc) */
+export function uploadErrorMessage(error: unknown) {
+  if (isApiError(error) && error.status !== 429) return messageForCode(error.code) ?? error.message
+  return contractErrorMessage(error)
+}
+
 // Thứ tự các bước trên khối Tình hình; bản ký bị từ chối quay lại bước khách ký
 const STEP_RANK: Record<string, number> = {
   DRAFT: 0,

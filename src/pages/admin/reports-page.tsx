@@ -25,6 +25,9 @@ import {
 } from '@/features/after-sales/adminAfterSalesRules'
 import { formatDay, todayVn } from '@/features/scheduling/schedulingDisplay'
 import { AdminOverview } from '@/features/admin-dashboard/AdminOverview'
+import { FinanceOverview } from '@/features/admin-dashboard/FinanceOverview'
+import { financePeriodError, monthOf } from '@/features/payment-plan/paymentPlanRules'
+import { useFinanceOverviewQuery } from '@/hooks/useAdminFinance'
 import {
   useAdminOverviewQuery,
   useAfterSalesDashboardQuery,
@@ -74,15 +77,17 @@ function download(csv: string, name: string) {
   URL.revokeObjectURL(url)
 }
 
-type Tab = '' | 'thu-tien'
+type Tab = '' | 'thu-tien' | 'tai-chinh'
 const TABS: { value: Tab; label: string }[] = [
   { value: '', label: 'Tổng quan vận hành' },
+  { value: 'tai-chinh', label: 'Tài chính hợp đồng' },
   { value: 'thu-tien', label: 'Thu tiền, sau bán' },
 ]
 
 export function AdminReportsPage() {
   const [search, setSearch] = useSearchParams()
-  const tab: Tab = search.get('muc') === 'thu-tien' ? 'thu-tien' : ''
+  const muc = search.get('muc')
+  const tab: Tab = muc === 'thu-tien' || muc === 'tai-chinh' ? muc : ''
   return (
     <>
       <PageHeader title="Báo cáo" />
@@ -93,7 +98,7 @@ export function AdminReportsPage() {
         value={tab}
         onChange={(next) => setSearch(next ? { muc: next } : {}, { replace: true })}
       />
-      {tab === 'thu-tien' ? <AfterSalesReport /> : <OverviewReport />}
+      {tab === 'thu-tien' ? <AfterSalesReport /> : tab === 'tai-chinh' ? <FinanceReport /> : <OverviewReport />}
     </>
   )
 }
@@ -149,6 +154,81 @@ function OverviewReport() {
           />
         ) : query.data ? (
           <AdminOverview view={query.data} />
+        ) : (
+          <ErrorState message={rateLimitedMessage(query.error)} onRetry={() => void query.refetch()} />
+        )}
+      </section>
+    </>
+  )
+}
+
+// Tài chính hợp đồng lắp đặt (30/70 và cách cũ): khoảng ngày theo giờ Việt Nam (mặc định tháng này, tối đa 366 ngày), lọc khu vực
+function FinanceReport() {
+  const [search, setSearch] = useSearchParams()
+  const defaults = useMemo(() => monthOf(todayVn()), [])
+  const from = search.get('tu') ?? defaults.from
+  const to = search.get('den') ?? defaults.to
+  const zoneId = search.get('khu') ?? ''
+  const error = financePeriodError(from, to) ?? undefined
+  const zones = useOperationalZonesQuery()
+  const query = useFinanceOverviewQuery({ from, to, zoneId: zoneId || undefined }, { enabled: !error })
+  const set = (key: 'tu' | 'den' | 'khu', value: string) =>
+    setSearch(
+      (prev) => {
+        const p = new URLSearchParams(prev)
+        if (value) p.set(key, value)
+        else p.delete(key)
+        return p
+      },
+      { replace: true },
+    )
+
+  return (
+    <>
+      <fieldset className="mb-6 flex flex-col gap-2">
+        <legend className="mb-2 text-body font-medium text-fg">Kỳ xem và khu vực</legend>
+        <div className="flex flex-wrap items-center gap-2">
+          <DateField className="w-40" label="Từ ngày" value={from} onChange={(v) => set('tu', v)} />
+          <span aria-hidden className="text-fg-3">
+            –
+          </span>
+          <DateField className="w-40" label="Đến ngày" value={to} onChange={(v) => set('den', v)} />
+          <Select
+            aria-label="Khu vực"
+            active={Boolean(zoneId)}
+            value={zoneId}
+            disabled={zones.isPending}
+            onChange={(e) => set('khu', e.target.value)}
+          >
+            <option value="">Mọi khu vực</option>
+            {(zones.data ?? []).map((z) => (
+              <option key={z.zoneId} value={z.zoneId}>
+                {z.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+        {error && (
+          <p className="text-meta text-danger" role="alert">
+            {error}
+          </p>
+        )}
+        {zoneId && <p className="text-meta text-fg-2">Lọc khu vực bỏ qua hợp đồng chưa có dự án thi công.</p>}
+      </fieldset>
+      <section aria-busy={query.isFetching} className={cx(query.isPlaceholderData && 'opacity-70')}>
+        {error ? null : query.isPending ? (
+          <div aria-label="Đang tải" className="space-y-4">
+            <Skeleton className="h-64" />
+            <Skeleton className="h-40" />
+          </div>
+        ) : query.isError && isFeatureUnavailable(query.error) ? (
+          <UnavailableState
+            title="Báo cáo tài chính chưa sẵn sàng."
+            message={errorMessage(query.error)}
+            pendingMigrations={pendingMigrationsOf(query.error)}
+          />
+        ) : query.data ? (
+          <FinanceOverview view={query.data} />
         ) : (
           <ErrorState message={rateLimitedMessage(query.error)} onRetry={() => void query.refetch()} />
         )}

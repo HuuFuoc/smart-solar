@@ -18,7 +18,8 @@ export const CONTRACT_TERMS_MAX = 8000
 export const REJECTION_REASON_MAX = 2000
 
 /** Người xem trang hợp đồng phía nhân viên */
-export type ContractViewer = 'sales' | 'manager' | 'admin'
+/** Kỹ thuật viên đọc mọi hợp đồng (backend 7d27054); chỉ ghi được khoản trả và trang ký của hợp đồng 30/70 mình đã khảo sát */
+export type ContractViewer = 'sales' | 'technician' | 'manager' | 'admin'
 
 /** Soạn, phát hành, gắn PDF, gửi ký, duyệt bản ký, phụ lục, huỷ nháp, xác nhận tiền mặt: chỉ quản lý / quản trị */
 export const canWriteContract = (viewer: ContractViewer) => viewer === 'manager' || viewer === 'admin'

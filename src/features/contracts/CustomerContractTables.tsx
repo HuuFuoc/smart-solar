@@ -12,6 +12,7 @@ import {
   warrantyText,
 } from '@/features/contracts/contractDisplay'
 import { isCustomerTodo } from '@/features/contracts/customerContractRules'
+import { stageMeta } from '@/features/payment-plan/paymentPlanDisplay'
 import {
   DATE_FILTER_OPTIONS,
   type DateFilter,
@@ -23,13 +24,18 @@ import {
 import { ROUTES, withId } from '@/routes/paths'
 import type { ContractView } from '@/types/res/customerContractsRes'
 
-type ContractGroupKey = 'todo' | 'reviewing' | 'completed'
+type ContractGroupKey = 'todo' | 'progress' | 'reviewing' | 'completed' | 'closed'
 
 const STATUS_GROUPS: { key: ContractGroupKey; title: string; emptyText: string }[] = [
   {
     key: 'todo',
     title: 'Chờ bạn ký hoặc thanh toán',
     emptyText: 'Không có hợp đồng nào đang chờ bạn ký hoặc thanh toán.',
+  },
+  {
+    key: 'progress',
+    title: 'Đang thực hiện',
+    emptyText: 'Không có hợp đồng nào đang ký giấy, thi công hoặc chờ nghiệm thu.',
   },
   {
     key: 'reviewing',
@@ -41,12 +47,24 @@ const STATUS_GROUPS: { key: ContractGroupKey; title: string; emptyText: string }
     title: 'Đã thanh toán',
     emptyText: 'Chưa có hợp đồng nào đã thanh toán.',
   },
+  {
+    key: 'closed',
+    title: 'Đã huỷ, đã có bản mới',
+    emptyText: 'Không có hợp đồng nào đã huỷ hoặc đã có phiên bản mới.',
+  },
 ]
 
 function classifyContract(c: ContractView): ContractGroupKey {
+  if (c.status === 'SUPERSEDED' || c.status === 'DISCARDED' || c.paymentPlan?.stage === 'DISCARDED') return 'closed'
   if (isCustomerTodo(c)) return 'todo'
+  if (c.paymentPlan) return c.paymentPlan.fullyPaid ? 'completed' : 'progress'
   if (c.status === 'UNDER_REVIEW') return 'reviewing'
   return 'completed'
+}
+
+/** Hợp đồng 30/70 hiện chặng (trả 30%, ký giấy, chờ 70%…), hợp đồng cũ hiện trạng thái */
+function rowStatus(c: ContractView) {
+  return c.paymentPlan ? stageMeta(c.paymentPlan.stage, 'customer') : contractStatusMeta(c.status, 'customer')
 }
 
 function contractMilestoneLabel(c: ContractView): string | null {
@@ -102,8 +120,10 @@ export function CustomerContractTables({
   const grouped = useMemo(() => {
     const map: Record<ContractGroupKey, EnrichedContract[]> = {
       todo: [],
+      progress: [],
       reviewing: [],
       completed: [],
+      closed: [],
     }
     for (const item of filtered) {
       map[item.group].push(item)
@@ -160,8 +180,7 @@ export function CustomerContractTables({
         <div className="space-y-4">
           {visibleTables.map((table) => {
             // Nhóm chỉ một trạng thái thì tiêu đề nhóm đã ghi trạng thái đó, cột trạng thái chỉ lặp lại
-            const showStatus =
-              new Set(table.rows.map((r) => contractStatusMeta(r.contract.status, 'customer').label)).size > 1
+            const showStatus = new Set(table.rows.map((r) => rowStatus(r.contract).label)).size > 1
             return (
               <StatusTableSection
                 key={table.key}
@@ -182,7 +201,7 @@ export function CustomerContractTables({
                   </thead>
                   <tbody>
                     {table.rows.map(({ contract: c, propertyName }) => {
-                      const status = contractStatusMeta(c.status, 'customer')
+                      const status = rowStatus(c)
                       const milestone = contractMilestoneLabel(c)
                       return (
                         <Tr key={c.contractId}>

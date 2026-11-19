@@ -886,15 +886,13 @@ theo đội / ca / mốc (`InstallationTaskPage`, `InstallationChecklistPage`, `
   ≤ 500) gửi `expectedRevision` = `revision` đang xem; quá khung giờ được giao thì không nhận được. Bắt đầu chỉ khi `canStart`
   (lý do chặn `startBlockedReason`: chưa tới ngày, hết khung giờ, quản lý chưa xong hạng mục bắt buộc); checklist chỉ quản lý
   sửa được (`PUT …/checklist` chỉ cho Manager/Admin), kỹ thuật viên không thấy.
-- Thiết bị (`AssetEntry.tsx`, luật ở `assetForm.ts` bám `RegisterAssetsAsync` của backend `main` facbc5e): mỗi dòng là một sản
-  phẩm, ghi theo số lượng (lô: ô serial để trống, `quantity` 1–10.000, bắt buộc sản phẩm danh mục, gửi một mục `serialNumber`
-  null) hoặc theo serial (ô serial nhiều dòng, dán cột Excel hoặc quét mã vạch, `parseSerials` tách cả tab / phẩy / chấm phẩy;
-  mỗi serial một mục, không gửi `quantity`). Thiết bị ngoài danh mục chỉ ghi theo serial. Backend so với hợp đồng theo tổng số
-  thiết bị (`SUM(quantity)`), nên mọi số "N thiết bị" trên web là `assetUnits`, không phải số dòng; bảng thiết bị có cột "Số lượng",
-  lô ghi "Theo số lượng". Tối đa 500 mục mỗi lần lưu (một lô là một mục). Lỗi theo mục của backend (`assets[i].quantity`,
-  `assets[i].productId`) về đúng dòng (`serverRowErrors`). "Thêm dòng" luôn thêm dòng trống; Enter ở ô vị trí chuyển ô, không gửi
-  form. Đã lưu thì không sửa / xoá được nên báo serial trùng (cùng hãng: trong ô, với dòng trên, với thiết bị đã lưu) trước khi gửi.
-  Trang kỹ thuật viên hiện bảng "Chưa khớp hợp đồng" (`equipment.differences`).
+- Thiết bị (`AssetEntry.tsx`, luật ở `assetForm.ts` bám `RegisterAssetsAsync` của backend): người dùng bỏ số serial và vị trí lắp
+  (18/11/2026), cả lúc ghi lẫn lúc hiển thị (trang kỹ thuật viên, khách, biên bản bàn giao của nhân viên). Mỗi dòng là một lô: một
+  sản phẩm danh mục (bắt buộc với mọi loại, vì backend bắt lô phải có `productId`; không còn "nhập ngoài danh mục") + `quantity`
+  1–10.000; gửi `serialNumber` và `positionCode` null. Backend so với hợp đồng theo tổng số thiết bị (`SUM(quantity)`), nên mọi số
+  "N thiết bị" trên web là `assetUnits`, không phải số dòng. Tối đa 500 dòng mỗi lần lưu. Lỗi theo mục của backend
+  (`assets[i].quantity`, `assets[i].productId`) về đúng dòng (`serverRowErrors`, mỗi dòng một mục). "Thêm dòng" luôn thêm dòng trống.
+  Đã lưu thì không sửa / xoá được. Trang kỹ thuật viên hiện bảng "Chưa khớp hợp đồng" (`equipment.differences`).
 - Báo cáo hoàn thành (≤ 8000 ký tự, hỏi xác nhận) cần ít nhất một ảnh của lượt hiện tại và, khi `requiresPanelAndInverterAssets`,
   ít nhất một dòng tấm pin và một dòng inverter: thiếu thì khoá nút và ghi đúng loại còn thiếu (`missingAssetTypes`; lỗi
   `INSTALLATION_ASSETS_REQUIRED` đọc `details.missing`). Thiết bị lắp khác hợp đồng mà quản lý chưa duyệt (`awaitsSubstitutionApproval`)

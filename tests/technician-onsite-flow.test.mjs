@@ -26,9 +26,8 @@ import {
   visitQuotationIds,
 } from '../src/features/after-sales/technicianVisitRules.ts'
 import {
-  acceptanceNoteError,
-  awaitsInternalAcceptance,
-  internalAcceptanceBlockers,
+  awaitsCustomerAcceptance,
+  customerAcceptanceBlockers,
 } from '../src/features/installation-projects/acceptanceRules.ts'
 
 const quote = (status, extra = {}) => ({
@@ -142,7 +141,8 @@ describe('Hợp đồng lập sau thanh toán', () => {
   })
 })
 
-describe('Nghiệm thu nội bộ', () => {
+// Backend 7d27054: khách nghiệm thu, quản lý chỉ trả về làm lại và phải xong các điều kiện dưới thì khách mới nghiệm thu được
+describe('Điều kiện để khách nghiệm thu', () => {
   const project = (extra = {}) => ({
     status: 'PENDING_CUSTOMER_ACCEPTANCE',
     acceptances: [{ round: 1, decision: 'PENDING' }],
@@ -155,29 +155,26 @@ describe('Nghiệm thu nội bộ', () => {
     ...extra,
   })
 
-  test('nghiệm thu được khi có báo cáo đang chờ, checklist bắt buộc đã xong, thiết bị khớp hoặc đã duyệt', () => {
-    assert.equal(awaitsInternalAcceptance(project()), true)
-    assert.deepEqual(internalAcceptanceBlockers(project()), [])
-    assert.deepEqual(internalAcceptanceBlockers(project({ equipment: { status: 'SUBSTITUTION_APPROVED' } })), [])
+  test('khách nghiệm thu được khi có báo cáo đang chờ, checklist bắt buộc đã xong, thiết bị khớp hoặc đã duyệt', () => {
+    assert.equal(awaitsCustomerAcceptance(project()), true)
+    assert.deepEqual(customerAcceptanceBlockers(project()), [])
+    assert.deepEqual(customerAcceptanceBlockers(project({ equipment: { status: 'SUBSTITUTION_APPROVED' } })), [])
   })
 
   test('checklist bắt buộc chưa xong hoặc thiết bị khác hợp đồng chưa duyệt thì chặn', () => {
     assert.equal(
-      internalAcceptanceBlockers(project({ checklist: [{ isRequired: true, status: 'PENDING' }] })).length,
+      customerAcceptanceBlockers(project({ checklist: [{ isRequired: true, status: 'PENDING' }] })).length,
       1,
     )
     assert.equal(
-      internalAcceptanceBlockers(project({ equipment: { status: 'SUBSTITUTION_APPROVAL_REQUIRED' } })).length,
+      customerAcceptanceBlockers(project({ equipment: { status: 'SUBSTITUTION_APPROVAL_REQUIRED' } })).length,
       1,
     )
   })
 
-  test('không có lượt chờ hoặc dự án ở trạng thái khác thì không nghiệm thu; ghi chú bắt buộc ≤ 500', () => {
-    assert.equal(awaitsInternalAcceptance(project({ acceptances: [{ round: 1, decision: 'ACCEPTED' }] })), false)
-    assert.equal(awaitsInternalAcceptance(project({ status: 'IN_PROGRESS' })), false)
-    assert.ok(acceptanceNoteError(' '))
-    assert.ok(acceptanceNoteError('x'.repeat(501)))
-    assert.equal(acceptanceNoteError('Đã bàn giao với khách'), null)
+  test('không có lượt chờ hoặc dự án ở trạng thái khác thì không chờ khách nghiệm thu', () => {
+    assert.equal(awaitsCustomerAcceptance(project({ acceptances: [{ round: 1, decision: 'ACCEPTED' }] })), false)
+    assert.equal(awaitsCustomerAcceptance(project({ status: 'IN_PROGRESS' })), false)
   })
 })
 
@@ -244,7 +241,10 @@ describe('API đã bỏ (410 ENDPOINT_RETIRED) không còn được giao diện 
   const RETIRED = [
     ['báo giá lắp đặt của khách', /['"`]\/customers\/me\/quotations/],
     ['khung thi công đề xuất cho khách', /installation-slot-offers/],
-    ['khách nghiệm thu lắp đặt', /\/customers\/me\/installation-projects\/\$\{[^}]+\}\/acceptance/],
+    // Khách nghiệm thu được trả lại ở backend 7d27054; ba đường dưới bị bỏ ở cùng bản
+    ['quản lý nghiệm thu nội bộ', /[`'"]\/installation-projects\/\$\{[^}]+\}\/acceptance/],
+    ['khách tự tải bản ký hợp đồng', /\/customers\/me\/contracts\/\$\{[^}]+\}\/signed-document/],
+    ['kỹ thuật viên mở thanh toán 100% báo giá', /post<QuotationPaymentView>\(api\.payment\(/],
     ['khách đồng ý thay thiết bị', /\/customers\/me\/installation-projects\/\$\{[^}]+\}\/equipment-substitution/],
     ['kinh doanh tự lập / gửi báo giá', /quotations\/generate|pending-review|pricing-approval|confirm-survey-version/],
   ]

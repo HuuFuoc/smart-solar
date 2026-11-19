@@ -8,8 +8,8 @@ import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 
-// Hợp đồng lắp đặt của khách, mỗi số hợp đồng một dòng (phiên bản mới nhất). Việc của khách (ký, ký lại, thanh toán) lên đầu.
-// Khách chỉ thấy hợp đồng từ lúc kinh doanh gửi ký
+// Hợp đồng lắp đặt của khách: mọi công trình, mọi phiên bản backend trả (kể cả bản nháp 30/70 để đọc trước khi trả 30%). Việc
+// của khách (trả 30% / 70%, ký và thanh toán hợp đồng cũ) lên đầu; bản đã huỷ / đã có bản mới để nhóm riêng ở cuối
 export function CustomerContractsPage() {
   const query = useMyContractsQuery()
   // Hợp đồng không kèm tên công trình, lấy từ yêu cầu khảo sát
@@ -37,11 +37,11 @@ export function CustomerContractsPage() {
       />
       <QueryBoundary query={query}>
         {(list) => {
-          const rows = latestPerContract(list)
+          const rows = [...list].sort((a, b) => Number(isCustomerTodo(b)) - Number(isCustomerTodo(a)))
           return rows.length === 0 ? (
             <EmptyState
               title="Chưa có hợp đồng"
-              description="Khi bạn đồng ý và thanh toán báo giá với kỹ thuật viên tại công trình, Smart Solar lập hợp đồng; hợp đồng hiện ở đây khi hồ sơ sẵn sàng."
+              description="Khi bạn đồng ý báo giá với kỹ thuật viên tại công trình, hợp đồng hiện ở đây để bạn đọc trước khi trả 30%."
             />
           ) : (
             <CustomerContractTables contracts={rows} propertyNames={names} />

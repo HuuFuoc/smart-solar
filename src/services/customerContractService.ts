@@ -1,4 +1,3 @@
-import type { SignedDocumentRequest } from '@/types/req/customerContractsReq'
 import type { DocumentDisposition } from '@/services/contractService'
 import type { ContractDocumentUrlView, ContractView } from '@/types/res/customerContractsRes'
 import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
@@ -18,14 +17,6 @@ export function listMyContracts() {
 /** GET .../contracts/{id}. Không có link tải PDF: chỉ có fileId và SHA-256 của PDF chính thức */
 export function getMyContract(contractId: string) {
   return get<ContractView>(ENDPOINTS.customerContracts.byId(contractId))
-}
-
-/**
- * POST .../signed-document: tệp SIGNED_CONTRACT đã xác minh do chính khách tải lên, kèm SHA-256 của PDF chính thức khách đã
- * ký. SHA-256 lệch PDF hiện tại thì 409 CONTRACT_WRONG_DOCUMENT_VERSION
- */
-export function submitSignedDocument(contractId: string, body: SignedDocumentRequest) {
-  return post<ContractView>(ENDPOINTS.customerContracts.signedDocument(contractId), body)
 }
 
 /**

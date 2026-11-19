@@ -28,7 +28,7 @@ import {
   scheduleExpired,
   siteMapUrl,
 } from '@/features/installation-projects/projectDisplay'
-import { internalAcceptanceBlockers } from '@/features/installation-projects/acceptanceRules'
+import { customerAcceptanceBlockers } from '@/features/installation-projects/acceptanceRules'
 import { EnergyEstimatePanel } from '@/features/installations/EnergyEstimatePanel'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useEnergyMonitoringQuery, useInstallationProjectQuery } from '@/hooks/useManagerInstallations'
@@ -152,16 +152,20 @@ function nextStep(p: InstallationStaffView, isManager: boolean): TrackerNext {
       title: `${name} đang sửa lại`,
       body: 'Kỹ thuật viên thêm ảnh mới rồi gửi báo cáo lượt sau để nghiệm thu lại.',
     }
-  const blockers = internalAcceptanceBlockers(p)
-  return {
-    tone: 'danger',
-    title: 'Cần nghiệm thu báo cáo hoàn thành',
-    body:
-      blockers.length > 0
-        ? `${blockers.join(' ')} Xong rồi mới nghiệm thu được; báo cáo sai hoặc thiếu thì trả về làm lại.`
-        : 'Xem ảnh, thiết bị và báo cáo rồi nghiệm thu kèm căn cứ (biên bản bàn giao nếu có), hoặc trả về làm lại.',
-    action: { label: 'Nghiệm thu', icon: 'verified', target: 'completion' },
-  }
+  const blockers = customerAcceptanceBlockers(p)
+  return blockers.length > 0
+    ? {
+        tone: 'danger',
+        title: 'Hoàn tất hồ sơ để khách nghiệm thu được',
+        body: `${blockers.join(' ')} Báo cáo sai hoặc thiếu thì trả về làm lại.`,
+        action: { label: 'Xem báo cáo', icon: 'visibility', target: 'completion' },
+      }
+    : {
+        tone: 'info',
+        title: 'Chờ khách nghiệm thu',
+        body: 'Khách nghiệm thu hoặc yêu cầu làm lại trong ứng dụng. Báo cáo sai hoặc thiếu thì trả về làm lại.',
+        action: { label: 'Xem báo cáo', icon: 'visibility', target: 'completion' },
+      }
 }
 
 function SitePanel({ project }: { project: InstallationStaffView }) {

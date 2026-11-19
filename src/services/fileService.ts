@@ -108,12 +108,20 @@ function storageFailureMessage(status: number, body = '') {
   return 'Chưa tải được tệp lên. Thử lại sau ít phút.'
 }
 
+/** Tệp đã đăng ký nhưng hệ thống chưa kiểm tra xong: gọi `verifyUploadedFile` với mã này thay vì tải lại */
+export function pendingFileIdOf(error: unknown): string | null {
+  if (!(error instanceof ApiError) || error.code !== 'FILE_STORAGE_UNAVAILABLE') return null
+  const details = error.details as { fileId?: unknown } | null | undefined
+  return typeof details?.fileId === 'string' ? details.fileId : null
+}
+
 function notVerified(view: FileView) {
   if (view.status === FILE_STATUSES.pending)
     return new ApiError({
       status: 503,
       code: 'FILE_STORAGE_UNAVAILABLE',
       message: messageForCode('FILE_STORAGE_UNAVAILABLE')!,
+      details: { fileId: view.fileId },
     })
   const reason = view.rejectionReason ?? ''
   const known = Object.entries(FILE_REJECTION_REASONS).find(([prefix]) => reason.startsWith(prefix))
@@ -163,6 +171,13 @@ export async function uploadFile(file: File, purpose: FilePurpose, { onProgress,
     await new Promise((resolve) => setTimeout(resolve, VERIFY_RETRY_MS))
     view = await verifyFile(view.fileId, signal)
   }
+  if (view.status !== FILE_STATUSES.verified) throw notVerified(view)
+  return view
+}
+
+/** Kiểm tra lại một tệp đã đăng ký mà chưa xác minh được (không tải lại, không tạo object mới) */
+export async function verifyUploadedFile(fileId: string, signal?: AbortSignal) {
+  const view = await verifyFile(fileId, signal)
   if (view.status !== FILE_STATUSES.verified) throw notVerified(view)
   return view
 }

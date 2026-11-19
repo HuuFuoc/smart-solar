@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
-import { Button, IconButton } from '@/components/common/ui/button'
+import { Button, ButtonLink, IconButton } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState, UnavailableState } from '@/components/common/ui/states'
@@ -32,6 +32,7 @@ import {
   workingQuotation,
 } from '@/features/quotations/quotationRules'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { ROUTES, withId } from '@/routes/paths'
 import {
   useAddCartLineMutation,
   useCreateCartMutation,
@@ -42,7 +43,7 @@ import {
 } from '@/hooks/useTechnicianQuotations'
 import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import { isApiError, isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
-import type { OnSiteDecision } from '@/common/quotation'
+import { ON_SITE_DECISIONS, type OnSiteDecision } from '@/common/quotation'
 import type { QuotationLineView, QuotationView } from '@/types/res/quotationsRes'
 import type { OnSiteSurveyBillOfMaterials } from '@/types/res/technicianOnSiteSurveyRes'
 
@@ -385,10 +386,26 @@ function IssuedQuotation({
           </span>
         </Notice>
       )}
-      {q.status === 'ACCEPTED' && (
+      {q.status === 'ACCEPTED' && q.contractId && (
+        <Notice tone="info" title="Hợp đồng 30/70 đã lập">
+          Khách đồng ý lúc {formatMoment(q.acceptedAt)}. Khách đọc hợp đồng, trả 30%, rồi ký bản giấy; thu tiền và tải
+          trang ký ở trang hợp đồng. Khách đổi ý khi chưa trả 30% thì ghi khách muốn sửa hoặc không đồng ý.
+          <span className="mt-3 flex flex-wrap gap-3">
+            <ButtonLink to={withId(ROUTES.tech.contract, q.contractId)} variant="info" icon="history_edu">
+              Mở hợp đồng
+            </ButtonLink>
+            <Button icon="edit_note" variant="warn" onClick={() => setDeciding(ON_SITE_DECISIONS.revisionNeeded)}>
+              Khách muốn sửa
+            </Button>
+            <Button icon="block" variant="danger" onClick={() => setDeciding(ON_SITE_DECISIONS.declined)}>
+              Khách đổi ý
+            </Button>
+          </span>
+        </Notice>
+      )}
+      {q.status === 'ACCEPTED' && !q.contractId && (
         <p className="text-body text-fg-2">
-          Khách đồng ý lúc {formatMoment(q.acceptedAt)}. Giá không đổi nữa; muốn đổi thì ghi khách muốn sửa trước khi mở
-          thanh toán.
+          Khách đồng ý lúc {formatMoment(q.acceptedAt)} theo cách cũ (trả 100% trước khi có hợp đồng).
         </p>
       )}
       {q.origin !== 'TECHNICIAN' && <p className="text-meta text-fg-2">{quotationOriginLabel(q.origin)}.</p>}
@@ -396,7 +413,7 @@ function IssuedQuotation({
       <QuotationTotals quotation={q} className="ml-auto" />
       <QuotationTerms quotation={q} />
       {reviseButton && <div className="flex flex-wrap gap-3">{reviseButton}</div>}
-      {q.status === 'ACCEPTED' && <QuotationPaymentPanel quotation={q} onWithdraw={setDeciding} />}
+      {q.status === 'ACCEPTED' && !q.contractId && <QuotationPaymentPanel quotation={q} onWithdraw={setDeciding} />}
 
       {presenting && (
         <PresentQuotationDialog

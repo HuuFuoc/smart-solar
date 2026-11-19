@@ -34,6 +34,15 @@ export const FILE_PURPOSES = {
   PRODUCT_IMAGE: { types: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 10 * MB },
   /** Quản trị: ảnh bìa gói dịch vụ tải từ máy */
   PACKAGE_IMAGE: { types: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 10 * MB },
+  /**
+   * Kỹ thuật viên (quản lý / quản trị hỗ trợ): ảnh chụp từng trang hợp đồng giấy 30/70 đã ký. Backend nhận cả PDF khi bật
+   * `PaymentPlan:AllowPdfSignedPages`; web không đọc được cài đặt đó nên chỉ nhận ảnh. Khác SIGNED_CONTRACT (bản quét cũ)
+   */
+  SIGNED_CONTRACT_PAGE: { types: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 20 * MB },
+  /** Khách hàng: ảnh / PDF kèm yêu cầu làm lại khi không nghiệm thu */
+  ACCEPTANCE_EVIDENCE: { types: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'], maxBytes: 15 * MB },
+  /** Kinh doanh, quản lý, quản trị: bằng chứng khi theo dõi khoản quá hạn */
+  COLLECTION_EVIDENCE: { types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'], maxBytes: 15 * MB },
 } as const satisfies Record<string, { types: readonly string[]; maxBytes: number }>
 
 export type FilePurpose = keyof typeof FILE_PURPOSES

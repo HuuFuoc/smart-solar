@@ -3,7 +3,6 @@ import type {
   CartLineQuantityRequest,
   CartLineRequest,
   OnSiteDecisionRequest,
-  QuotationPaymentRequest,
   TechnicianCartCreateRequest,
 } from '@/types/req/technicianQuotationsReq'
 import type { QuotationPaymentView, QuotationView } from '@/types/res/quotationsRes'
@@ -12,7 +11,8 @@ import { ENDPOINTS } from '@/services/api/endpoints'
 
 // Báo giá lắp đặt của kỹ thuật viên đã hoàn thành khảo sát tại công trình. Giỏ chỉ chọn sản phẩm danh mục và số lượng: đơn giá,
 // thuế, tổng do backend tính theo giá danh mục, không có ô giá / giảm giá / thuế. Chốt giá rồi trình bày trên máy kỹ thuật viên,
-// ghi khách đồng ý / không / muốn sửa, mở thanh toán QR PayOS hoặc tiền mặt; tiền được xác minh thì backend tự lập hợp đồng.
+// ghi khách đồng ý / không / muốn sửa. Ghi đồng ý là lập hợp đồng 30/70 (backend 7d27054); thu tiền theo từng khoản ở
+// installmentService. Thanh toán 100% báo giá cũ chỉ còn xem / huỷ lần đã mở.
 // Mỗi lệnh sửa gửi `revision` đang xem (lệch thì 409)
 
 const api = ENDPOINTS.technicianQuotations
@@ -76,14 +76,6 @@ export function recordOnSiteDecision(
 ) {
   const body: OnSiteDecisionRequest = { decision, revision, note }
   return post<QuotationView>(api.onSiteDecision(quotationId), body)
-}
-
-/**
- * Mở thanh toán của báo giá khách đã đồng ý: ONLINE trả mã QR / link PayOS để hiện trên máy kỹ thuật viên, CASH ghi khách trả
- * tiền mặt (quản lý / quản trị xác nhận). Gọi lại cùng cách trả thì nhận lại lần đang mở; đổi cách trả thì huỷ trước
- */
-export function startPayment(quotationId: string, method: QuotationPaymentRequest['method']) {
-  return post<QuotationPaymentView>(api.payment(quotationId), { method })
 }
 
 /** Trạng thái thanh toán; link đang mở được backend hỏi thẳng PayOS (trang PayOS chuyển về không phải bằng chứng đã trả) */

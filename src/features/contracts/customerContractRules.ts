@@ -27,8 +27,16 @@ export const CUSTOMER_TODO_CONTRACT_STATUSES: readonly string[] = ['AWAITING_SIG
 export const isPrepaid = (c: Pick<ContractView, 'paymentCompleted' | 'paymentAttemptId'>) =>
   c.paymentCompleted === true && c.paymentAttemptId != null
 
-export const isCustomerTodo = (c: Pick<ContractView, 'status' | 'paymentCompleted' | 'paymentAttemptId'>) =>
-  !isPrepaid(c) && CUSTOMER_TODO_CONTRACT_STATUSES.includes(c.status)
+/** Chặng của hợp đồng 30/70 mà khách phải trả tiền: 30% (bản nháp) hoặc 70% (sau khi nghiệm thu, kể cả quá hạn) */
+export const CUSTOMER_TODO_PLAN_STAGES: readonly string[] = ['DRAFT_CREATED', 'BALANCE_DUE', 'BALANCE_OVERDUE']
+
+export const isCustomerTodo = (
+  c: Pick<ContractView, 'status' | 'paymentCompleted' | 'paymentAttemptId'> &
+    Partial<Pick<ContractView, 'paymentPlan'>>,
+) =>
+  c.paymentPlan
+    ? c.status !== 'SUPERSEDED' && CUSTOMER_TODO_PLAN_STAGES.includes(c.paymentPlan.stage)
+    : !isPrepaid(c) && CUSTOMER_TODO_CONTRACT_STATUSES.includes(c.status)
 
 /** Lúc nhận đủ tiền: hợp đồng trả trước lấy lúc xác minh thanh toán báo giá, hợp đồng cũ lấy lúc thành PAID */
 export const paidMoment = (c: Pick<ContractView, 'paymentConfirmedAt' | 'paidAt'>) => c.paymentConfirmedAt ?? c.paidAt
@@ -213,7 +221,10 @@ export function newerVersion(c: Pick<ContractView, 'contractNumber' | 'version'>
   )
 }
 
-/** Mỗi số hợp đồng một dòng: phiên bản mới nhất khách thấy. Việc của khách lên đầu */
+/**
+ * Mỗi số hợp đồng một dòng: phiên bản mới nhất khách thấy. Việc của khách lên đầu. Chỉ dùng để đếm việc; danh sách hợp đồng của
+ * khách hiện mọi phiên bản (backend 7d27054 trả mọi công trình, phiên bản và bản nháp 30/70)
+ */
 export function latestPerContract(list: ContractView[]) {
   const latest = new Map<string, ContractView>()
   for (const c of list) {

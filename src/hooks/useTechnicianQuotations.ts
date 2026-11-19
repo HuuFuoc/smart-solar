@@ -116,7 +116,7 @@ export function useQuotationPaymentQuery(
   })
 }
 
-// Mở / huỷ thanh toán: backend cho 5 lần / 10 phút nên chỉ gọi khi bấm, không bao giờ tự gọi lại
+// Huỷ lần thanh toán 100% cũ đã mở: backend cho 5 lần / 10 phút nên chỉ gọi khi bấm. Mở mới đã bỏ (410)
 function usePaymentWrite<V>(write: (variables: V) => Promise<QuotationPaymentView>) {
   const queryClient = useQueryClient()
   return useMutation<QuotationPaymentView, ApiError, V>({
@@ -124,12 +124,6 @@ function usePaymentWrite<V>(write: (variables: V) => Promise<QuotationPaymentVie
     onSuccess: (view) => queryClient.setQueryData(technicianQuotationKeys.payment(view.quotationId), view),
     onSettled: () => queryClient.invalidateQueries({ queryKey: technicianQuotationKeys.all }),
   })
-}
-
-export function useStartQuotationPaymentMutation() {
-  return usePaymentWrite(({ quotationId, method }: { quotationId: string; method: 'ONLINE' | 'CASH' }) =>
-    quotationService.startPayment(quotationId, method),
-  )
 }
 
 export function useCancelQuotationPaymentMutation() {

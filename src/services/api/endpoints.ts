@@ -97,7 +97,6 @@ export const ENDPOINTS = {
   customerContracts: {
     base: '/customers/me/contracts',
     byId: (contractId: string) => `/customers/me/contracts/${encode(contractId)}`,
-    signedDocument: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/signed-document`,
     officialDocumentUrl: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/official-document/url`,
     submissionUrl: (contractId: string, submissionId: string) =>
       `/customers/me/contracts/${encode(contractId)}/submissions/${encode(submissionId)}/url`,
@@ -310,7 +309,6 @@ export const ENDPOINTS = {
     cancel: (projectId: string) => `/installation-projects/${encode(projectId)}/cancel`,
     returnToRework: (projectId: string) => `/installation-projects/${encode(projectId)}/return-to-rework`,
     // Nghiệm thu nội bộ của quản lý / quản trị, thay cho bước khách nghiệm thu trong ứng dụng
-    acceptance: (projectId: string) => `/installation-projects/${encode(projectId)}/acceptance`,
     evidence: (projectId: string) => `/installation-projects/${encode(projectId)}/evidence`,
     evidenceUrl: (projectId: string, evidenceId: string) =>
       `/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,
@@ -457,6 +455,55 @@ export const ENDPOINTS = {
   adminRagBudget: '/admin/rag-budget',
 
   // Tệp tải lên kho S3, mọi vai trò
+  // Gói thanh toán 30/70 (backend 7d27054): khoản trả, trang hợp đồng giấy đã ký, danh sách hợp đồng, thu hồi công nợ, tài chính
+  installments: {
+    technician: (contractId: string, sequence: number) =>
+      `/technician/contracts/${encode(contractId)}/installments/${sequence}/payment`,
+    technicianCancel: (contractId: string, sequence: number) =>
+      `/technician/contracts/${encode(contractId)}/installments/${sequence}/payment/cancel`,
+    customer: (contractId: string, sequence: number) =>
+      `/customers/me/contracts/${encode(contractId)}/installments/${sequence}/payment`,
+    customerCancel: (contractId: string, sequence: number) =>
+      `/customers/me/contracts/${encode(contractId)}/installments/${sequence}/payment/cancel`,
+    /** Nhân viên chỉ đọc */
+    staff: (contractId: string, sequence: number) =>
+      `/contracts/${encode(contractId)}/installments/${sequence}/payment`,
+  },
+  signatureSets: {
+    technicianStart: (contractId: string) => `/technician/contracts/${encode(contractId)}/signature-set`,
+    technicianPage: (contractId: string, pageNumber: number) =>
+      `/technician/contracts/${encode(contractId)}/signature-set/pages/${pageNumber}`,
+    technicianFinalize: (contractId: string) => `/technician/contracts/${encode(contractId)}/signature-set/finalize`,
+    /** Quản lý / quản trị hỗ trợ */
+    supportStart: (contractId: string) => `/contracts/${encode(contractId)}/signature-set`,
+    supportPage: (contractId: string, pageNumber: number) =>
+      `/contracts/${encode(contractId)}/signature-set/pages/${pageNumber}`,
+    supportFinalize: (contractId: string) => `/contracts/${encode(contractId)}/signature-set/finalize`,
+    staffList: (contractId: string) => `/contracts/${encode(contractId)}/signature-sets`,
+    staffPageUrl: (contractId: string, fileId: string) =>
+      `/contracts/${encode(contractId)}/signed-pages/${encode(fileId)}/url`,
+    customerList: (contractId: string) => `/customers/me/contracts/${encode(contractId)}/signature-sets`,
+    customerPageUrl: (contractId: string, fileId: string) =>
+      `/customers/me/contracts/${encode(contractId)}/signed-pages/${encode(fileId)}/url`,
+  },
+  contractDirectory: {
+    base: '/contracts',
+  },
+  customerAcceptance: {
+    decide: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/acceptance`,
+  },
+  collections: {
+    base: '/collections',
+    byId: (caseId: string) => `/collections/${encode(caseId)}`,
+    activities: (caseId: string) => `/collections/${encode(caseId)}/activities`,
+    escalate: (caseId: string) => `/collections/${encode(caseId)}/escalate`,
+    legalReview: (caseId: string) => `/collections/${encode(caseId)}/legal-review`,
+    resolve: (caseId: string) => `/collections/${encode(caseId)}/resolve`,
+  },
+  adminFinance: {
+    overview: '/admin/finance/overview',
+  },
+
   files: {
     presignedUpload: '/files/presigned-upload',
     base: '/files',

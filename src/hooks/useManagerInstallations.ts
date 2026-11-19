@@ -190,17 +190,6 @@ export function useApproveSubstitutionMutation(id: string) {
   })
 }
 
-export function useAcceptInternallyMutation(id: string) {
-  return useMutation<
-    InstallationStaffView,
-    ApiError,
-    { expectedRevision: number; note: string; evidenceFileId: string | null }
-  >({
-    mutationFn: (body) => installationService.acceptInternally(id, body),
-    ...useAfterWrite(id),
-  })
-}
-
 export function useReturnToReworkMutation(id: string) {
   return useMutation<InstallationStaffView, ApiError, { reason: string; expectedRevision: number }>({
     mutationFn: (body) => installationService.returnToRework(id, body),
