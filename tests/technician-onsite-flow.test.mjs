@@ -20,6 +20,7 @@ import { canPay, isCustomerTodo, isPrepaid, paidMoment } from '../src/features/c
 import { isDecidedOnSite } from '../src/features/after-sales/customerServiceRules.ts'
 import {
   canConfirmCompletionOnSite,
+  confirmedOnSite,
   onSiteNoteError,
   serviceQuotationPollMs,
   serviceQuoteStage,
@@ -227,6 +228,19 @@ describe('Hậu mãi tại công trình', () => {
     assert.equal(canConfirmCompletionOnSite({ purpose: 'MAINTENANCE', status: 'REPORTED' }), true)
     assert.equal(canConfirmCompletionOnSite({ purpose: 'INSPECTION', status: 'REPORTED' }), false)
     assert.equal(canConfirmCompletionOnSite({ purpose: 'REPAIR', status: 'IN_PROGRESS' }), false)
+  })
+
+  test('đã ghi khách xác nhận khi yêu cầu có ảnh xác nhận tại công trình; ảnh khác không tính', () => {
+    const photo = (caption) => ({
+      evidenceId: 'e',
+      visitId: null,
+      fileId: 'f',
+      caption,
+      addedAt: '2026-11-19T09:02:00+07:00',
+    })
+    assert.equal(confirmedOnSite({ evidence: [photo(null), photo('on-site confirmation')] }), true)
+    assert.equal(confirmedOnSite({ evidence: [photo(null), photo('customer')] }), false)
+    assert.equal(confirmedOnSite({ evidence: [] }), false)
   })
 })
 
