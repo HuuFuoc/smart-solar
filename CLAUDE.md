@@ -379,6 +379,10 @@ chỉ khai "200 OK". Chỉ làm trên công trình đã bàn giao.
   `…/requests/{requestId}/completion-confirmation`, ghi chú bắt buộc, ≤ 10 ảnh `SERVICE_EVIDENCE`) sau báo cáo công việc của buổi
   sửa / bảo trì; khách không đồng ý thì không ghi. Phía khách, báo giá `issuedByRole = TECHNICIAN` chỉ để xem (`isDecidedOnSite`;
   backend trả 409 `SERVICE_QUOTATION_DECIDED_ON_SITE` nếu khách tự duyệt); báo giá của kinh doanh khách vẫn tự duyệt / trả tiền.
+  Báo giá đã đóng (khách từ chối, đã thay bằng bản mới…) còn một dòng trạng thái. View buổi hẹn không có trạng thái yêu cầu nên
+  khối "Khách xác nhận hoàn thành" chỉ biết đã ghi khi lần trước có ảnh (`confirmedOnSite`) hoặc khi backend trả
+  `AFTER_SALES_INVALID_STATE` (thôi hiện nút). Chú thích ảnh backend tự gắn (`customer`, `on-site confirmation`, `reconsideration`)
+  dịch ở `SERVICE_PHOTO_CAPTIONS`. Đếm ngược "còn N phút" của buổi chờ dùng `hooks/useNow.ts` (30 giây / lần).
   Từ 04/11/2026 (luật ở `features/after-sales/technicianVisitRules.ts`, test ở `tests/tech-portal-rules.test.mjs`; đối
   chiếu: `docs/api/tech-portal-verification.md`):
   - Báo cáo kiểm tra có "Ở lại công trình để sửa luôn" → `stayOnSite: true` (chỉ khi có hạng mục; không lỗi thì luôn false vì BE

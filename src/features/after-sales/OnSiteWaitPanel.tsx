@@ -21,6 +21,7 @@ import {
   type Readiness,
 } from '@/features/after-sales/technicianVisitRules'
 import { formatTime } from '@/features/scheduling/schedulingDisplay'
+import { useNow } from '@/hooks/useNow'
 import { useContinueRepairMutation, useFinishOnSiteMutation } from '@/hooks/useTechnicianAfterSales'
 import { isApiError, rateLimitedMessage } from '@/services/api/errors'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
@@ -57,7 +58,7 @@ export function OnSiteWaitPanel({ visit }: { visit: TechnicianVisitView }) {
   const [blocked, setBlocked] = useState<{ title: string; body: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [finishing, setFinishing] = useState(false)
-  const [now] = useState(() => Date.now())
+  const now = useNow()
   const busy = proceed.isPending || finish.isPending
   const left = minutesLeft(visit, now)
   const status = readiness(visit.items)

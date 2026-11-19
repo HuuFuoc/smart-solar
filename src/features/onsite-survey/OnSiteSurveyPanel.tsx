@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
@@ -34,6 +34,7 @@ import {
   useSaveOnSiteSurveyMutation,
   useStartOnSiteSurveyMutation,
 } from '@/hooks/useOnSiteSurvey'
+import { useNow } from '@/hooks/useNow'
 import { getMyOnSiteSurveyAttachmentUrl } from '@/services/onSiteSurveyService'
 import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import { errorMessage, isApiError } from '@/services/api/errors'
@@ -45,16 +46,6 @@ import type { OnSiteSurveyView } from '@/types/res/technicianOnSiteSurveyRes'
 // 2. Nhập số đo, thêm ảnh; lưu bao nhiêu lần cũng được.
 // 3. "Hoàn thành khảo sát": cần đủ ô bắt buộc và ít nhất một ảnh Mái. Xong thì lịch hẹn và yêu cầu chuyển sang
 //    đã khảo sát; sau đó chỉ sửa bằng "Bổ sung biên bản" (lý do bắt buộc, backend giữ giá trị cũ trong lịch sử)
-
-/** Đồng hồ cập nhật mỗi 30 giây để nút Bắt đầu tự mở khi tới giờ */
-function useNow() {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 30_000)
-    return () => window.clearInterval(id)
-  }, [])
-  return now
-}
 
 export function OnSiteSurveyPanel({ job }: { job: TechnicianJobView }) {
   const appointmentId = job.appointmentId

@@ -6,6 +6,7 @@ import type {
 } from '@/types/req/technicianAfterSalesReq'
 import type { ServiceItemView } from '@/types/res/customerAfterSalesRes'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
+import { ON_SITE_CONFIRMATION_CAPTION } from '../../common/afterSales.ts'
 
 // Luật buổi hẹn phía kỹ thuật viên: báo cáo kiểm tra (kể cả ở lại sửa luôn), sửa luôn trong buổi kiểm tra, kết thúc buổi
 // chờ, hạng mục phát sinh khi sửa. Bám TechnicianServiceHandlers và AfterSalesWorkflow.NextStatus của backend `main`
@@ -305,3 +306,7 @@ export const COMPLETION_PHOTOS_MAX = 10
  */
 export const canConfirmCompletionOnSite = (v: Pick<TechnicianVisitView, 'purpose' | 'status'>) =>
   v.purpose !== 'INSPECTION' && v.status === 'REPORTED'
+
+/** Đã ghi khách xác nhận ở lần trước: chỉ biết được khi lần đó có kèm ảnh (ảnh mang chú thích backend tự gắn) */
+export const confirmedOnSite = (v: Pick<TechnicianVisitView, 'evidence'>) =>
+  v.evidence.some((e) => e.caption === ON_SITE_CONFIRMATION_CAPTION)

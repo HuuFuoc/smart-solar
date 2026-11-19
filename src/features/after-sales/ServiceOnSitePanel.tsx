@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
@@ -9,11 +10,12 @@ import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { paymentStatusMeta } from '@/features/after-sales/afterSalesDisplay'
-import { formatVnd } from '@/features/after-sales/serviceDisplay'
+import { formatVnd, quotationStatusMeta } from '@/features/after-sales/serviceDisplay'
 import {
   COMPLETION_PHOTOS_MAX,
   ON_SITE_NOTE_MAX,
   canConfirmCompletionOnSite,
+  confirmedOnSite,
   onSiteNoteError,
   serviceQuoteStage,
   visitQuotationIds,
@@ -118,6 +120,7 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
   const [declining, setDeclining] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const busy = decide.isPending || start.isPending || cancel.isPending
+  const starting = start.isPending ? start.variables?.method : null
   const q = query.data
   const stage = serviceQuoteStage(q)
 
@@ -140,8 +143,8 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
         onRetry={() => void query.refetch()}
       />
     )
-  if (stage === 'closed') return null
   const attempt = q.current
+  const closed = stage === 'closed' ? quotationStatusMeta(q.quotationStatus) : null
 
   return (
     <section
@@ -154,6 +157,8 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
         {stage === 'authorized' && (
           <Badge tone="ok">{q.nothingToPay ? 'Không phải trả, làm được' : 'Đã thanh toán, làm được'}</Badge>
         )}
+        {stage === 'pay' && <Badge tone="info">Khách đã đồng ý, chưa thanh toán</Badge>}
+        {closed && <Badge tone={closed.tone}>{closed.label}</Badge>}
         {stage === 'cash' && <Badge tone="info">Chờ quản lý xác nhận tiền mặt</Badge>}
         {stage === 'online' && attempt && (
           <Badge tone={paymentStatusMeta(attempt.status, attempt.method).tone}>
@@ -198,7 +203,7 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
             disabled={busy}
             onClick={() => void run(() => start.mutateAsync({ quotationId, method: 'ONLINE' }), 'Đã tạo mã QR.')}
           >
-            {start.isPending ? 'Đang tạo…' : 'Hiện mã QR'}
+            {starting === 'ONLINE' ? 'Đang tạo…' : 'Hiện mã QR'}
           </Button>
           <Button
             icon="payments"
@@ -211,7 +216,7 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
               )
             }
           >
-            Khách trả tiền mặt
+            {starting === 'CASH' ? 'Đang ghi…' : 'Khách trả tiền mặt'}
           </Button>
           <Button icon="block" variant="danger" disabled={busy} onClick={() => setDeclining(true)}>
             Khách đổi ý
@@ -239,7 +244,9 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
             <div className="flex flex-wrap gap-3">
               {isCheckoutUrl(attempt.checkoutUrl) && (
                 <a href={attempt.checkoutUrl} target="_blank" rel="noopener noreferrer" className={buttonClass('info')}>
+                  <Icon name="open_in_new" className="-ml-0.5 text-[20px]" />
                   Mở trang thanh toán
+                  <span className="sr-only"> (mở tab mới)</span>
                 </a>
               )}
               <Button
@@ -256,7 +263,7 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
                 disabled={busy}
                 onClick={() => void run(() => cancel.mutateAsync(quotationId), 'Đã huỷ mã QR.')}
               >
-                Huỷ mã QR
+                {cancel.isPending ? 'Đang huỷ…' : 'Huỷ mã QR'}
               </Button>
             </div>
           </div>
@@ -272,7 +279,7 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
             disabled={busy}
             onClick={() => void run(() => cancel.mutateAsync(quotationId), 'Đã bỏ chọn tiền mặt.')}
           >
-            Bỏ chọn tiền mặt
+            {cancel.isPending ? 'Đang bỏ chọn…' : 'Bỏ chọn tiền mặt'}
           </Button>
         </div>
       )}
@@ -287,7 +294,7 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
   )
 }
 
-/** Các báo giá của buổi hẹn (theo mã báo giá trên hạng mục); báo giá đã đóng không hiện */
+/** Các báo giá của buổi hẹn (theo mã báo giá trên hạng mục); báo giá đã đóng chỉ còn một dòng trạng thái */
 export function ServiceQuotationsOnSite({ visit }: { visit: TechnicianVisitView }) {
   const ids = visitQuotationIds(visit)
   if (ids.length === 0) return null
@@ -307,12 +314,13 @@ export function ServiceQuotationsOnSite({ visit }: { visit: TechnicianVisitView 
 export function CompletionConfirmation({ visit }: { visit: TechnicianVisitView }) {
   const confirm = useConfirmCompletionOnSiteMutation()
   const [open, setOpen] = useState(false)
-  const [done, setDone] = useState(false)
+  const [outcome, setOutcome] = useState<'done' | 'closed' | null>(null)
   const [note, setNote] = useState('')
   const [files, setFiles] = useState<File[]>([])
   const [noteError, setNoteError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   if (!canConfirmCompletionOnSite(visit)) return null
+  const state = outcome ?? (confirmedOnSite(visit) ? 'done' : null)
 
   function pick(list: File[]) {
     const all = [...files, ...list].slice(0, COMPLETION_PHOTOS_MAX)
@@ -329,9 +337,15 @@ export function CompletionConfirmation({ visit }: { visit: TechnicianVisitView }
     try {
       await confirm.mutateAsync({ requestId: visit.requestId, note: note.trim(), files })
       toast.success('Đã ghi khách xác nhận hoàn thành. Yêu cầu đã đóng.')
-      setDone(true)
+      setOutcome('done')
       setOpen(false)
     } catch (e) {
+      // View buổi hẹn không có trạng thái yêu cầu: chỉ biết yêu cầu đã thôi chờ xác nhận khi backend từ chối
+      if (isApiError(e) && e.code === 'AFTER_SALES_INVALID_STATE') {
+        setOutcome('closed')
+        setOpen(false)
+        return
+      }
       setError(serviceError(e))
     }
   }
@@ -340,9 +354,14 @@ export function CompletionConfirmation({ visit }: { visit: TechnicianVisitView }
     <Panel id="completion-confirmation" className="scroll-mt-6">
       <PanelHeader title="Khách xác nhận hoàn thành" />
       <PanelBody className="space-y-3">
-        {done ? (
+        {state === 'done' ? (
           <Notice tone="ok" title="Đã ghi khách xác nhận">
             Yêu cầu đã hoàn thành; khách xem kết quả trong ứng dụng.
+          </Notice>
+        ) : state === 'closed' ? (
+          <Notice tone="info">
+            Yêu cầu không còn chờ khách xác nhận: đã ghi trước đó, khách đã tự nghiệm thu trong ứng dụng hoặc đã báo
+            chưa đạt.
           </Notice>
         ) : (
           <>
