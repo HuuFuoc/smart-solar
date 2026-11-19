@@ -125,7 +125,7 @@ function nextStep(r: ServiceRequestView): TrackerNext {
         action: { label: 'Nghiệm thu', icon: 'fact_check', target: 'acceptance' },
       }
     case 'SUBMITTED':
-      return { tone: 'info', title: 'Smart Solar đang xếp kỹ thuật viên', body: 'Lịch hẹn hiện ở đây khi đã xếp xong.' }
+      return { tone: 'info', title: 'Smart Solar đang xếp kỹ thuật viên' }
     case 'SCHEDULED':
       if (!visit) return { tone: 'info', title: 'Đã có lịch hẹn' }
       return visit.assignmentStatus === 'ACCEPTED'
@@ -144,7 +144,7 @@ function nextStep(r: ServiceRequestView): TrackerNext {
     case 'AWAITING_DECISION':
       return { tone: 'info', title: 'Smart Solar đang xét lỗi nào được bảo hành' }
     case 'AWAITING_QUOTATION':
-      return { tone: 'info', title: 'Smart Solar đang lập báo giá', body: 'Báo giá hiện ở đây để bạn duyệt.' }
+      return { tone: 'info', title: 'Smart Solar đang lập báo giá' }
     case 'READY_FOR_WORK':
       return { tone: 'info', title: 'Smart Solar đang xếp lịch làm' }
     case 'DISPUTED':
