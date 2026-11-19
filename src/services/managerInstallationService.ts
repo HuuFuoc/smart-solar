@@ -62,7 +62,7 @@ export function cancelProject(projectId: string, body: CancelInstallationRequest
   return post<InstallationStaffView>(api.cancel(projectId), body)
 }
 
-/** Chỉ khi báo cáo hoàn thành đang chờ nghiệm thu nội bộ */
+/** Chỉ khi báo cáo hoàn thành đang chờ khách nghiệm thu */
 export function returnToRework(projectId: string, body: ReturnToReworkRequest) {
   return post<InstallationStaffView>(api.returnToRework(projectId), body)
 }

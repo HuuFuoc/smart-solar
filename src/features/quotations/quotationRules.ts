@@ -180,6 +180,22 @@ export const declineNote = (closeReason: string | null | undefined) =>
 /** Mở thanh toán khi khách đã đồng ý, còn hạn và chưa có lần nào đang mở */
 export const canStartPayment = (paymentState: string | null | undefined) => paymentState === 'AWAITING_PAYMENT'
 
+/**
+ * Báo giá khách đồng ý trước bản 30/70 mà chưa có hợp đồng, chưa mở thanh toán, chưa có tiền: ghi khách đồng ý lại thì backend lập
+ * ngay hợp đồng 30/70 (cutover của QuotationOnSiteDecisions, 7d27054), miễn báo giá còn hạn và biên bản khảo sát chưa đổi. Không
+ * cần lập bản sửa
+ */
+export const canReconfirmAgreement = (
+  q: Pick<QuotationView, 'status' | 'contractId' | 'isExpired' | 'surveyChanged'>,
+  paymentState: string | null | undefined,
+) => q.status === 'ACCEPTED' && !q.contractId && paymentState === 'AWAITING_PAYMENT' && !q.isExpired && !q.surveyChanged
+
+/**
+ * Backend có hợp đồng 30/70 (từ 770379b) luôn trả trường `contractId` của báo giá, kể cả khi null; backend cũ không có trường
+ * này. Chỉ để báo server chưa cập nhật; web không quay lại thu 100% báo giá
+ */
+export const hasPaymentPlanBackend = (q: object) => 'contractId' in q
+
 /** Huỷ lần đang mở: mã QR còn chờ, hoặc lựa chọn tiền mặt chưa được xác nhận */
 export const canCancelPayment = (paymentState: string | null | undefined) =>
   paymentState === 'ONLINE_IN_PROGRESS' || paymentState === 'AWAITING_CASH_CONFIRMATION'

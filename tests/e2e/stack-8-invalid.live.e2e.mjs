@@ -242,6 +242,8 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
     )
   })
 
+  // Hợp đồng của giai đoạn 3 là hợp đồng 30/70 đã trả đủ: mọi bước của luồng cũ bị từ chối (409 CONTRACT_PAYMENT_PLAN_NOT_APPLICABLE
+  // hoặc lỗi trạng thái), và bước trả 100% cũ của hợp đồng trả 409 PAYMENT_CONTRACT_HAS_INSTALLMENTS / đã trả
   test('hợp đồng đã thanh toán: không sửa, phát hành, gắn PDF, gửi ký, duyệt, lập phụ lục, gửi bản ký hay tạo link nữa', async () => {
     const c = await S.must('SALES', 'GET', `/contracts/${state.contractId}`)
     assert.equal(c.status, 'PAID')
@@ -304,7 +306,7 @@ describe('8. Ca không hợp lệ của lệnh ghi (API thật)', { skip }, () =
       'S08',
       'SALES2',
       'POST',
-      `/contracts/${state.supersededContractId}/review`,
+      `/contracts/${state.supersededContractId ?? state.contractId}/review`,
       { revision: 0, decision: 'APPROVE', reason: null },
       'kinh doanh không được duyệt bản ký',
     )

@@ -24,11 +24,14 @@ import { CustomerSchedulePanel } from '@/features/installation-schedules/Custome
 import { PAYOS_RETURN_PARAM } from '@/features/payments/payosReturn'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { ContractSnapshotPanel } from '@/features/payment-plan/ContractSnapshotPanel'
 import { InstallmentPlanPanel } from '@/features/payment-plan/InstallmentPlanPanel'
 import { SignatureSetPanel } from '@/features/payment-plan/SignatureSetPanel'
 import { formatVnd, planNextStep, planTrackerSteps, stageMeta } from '@/features/payment-plan/paymentPlanDisplay'
 import { isPaymentPlanContract } from '@/features/payment-plan/paymentPlanRules'
 import { useMyContractQuery, useMyContractsQuery } from '@/hooks/useCustomerContracts'
+import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
+import { installationStatusMeta } from '@/features/installations/installationDisplay'
 import { ROUTES, withId } from '@/routes/paths'
 import { isFeatureUnavailable, pendingMigrationsOf } from '@/services/api/errors'
 import type { ContractView } from '@/types/res/customerContractsRes'
@@ -63,6 +66,8 @@ function ContentPanel({ contract: c }: { contract: ContractView }) {
 }
 
 function ContractAside({ contract: c }: { contract: ContractView }) {
+  // Công trình của hợp đồng (nghiệm thu, tiến độ thi công); danh sách đã được khung khách hàng tải cho số trên menu
+  const project = useMyInstallationsQuery().data?.find((p) => p.contractId === c.contractId)
   return (
     <PanelAside aria-label="Thông tin hợp đồng">
       <Panel>
@@ -81,10 +86,23 @@ function ContractAside({ contract: c }: { contract: ContractView }) {
                   </Link>
                 ),
               },
+              ...(project
+                ? [
+                    {
+                      k: 'Công trình',
+                      v: (
+                        <Link className="ui-link" to={withId(ROUTES.customer.project, project.projectId)}>
+                          {installationStatusMeta(project.status, 'customer').label}
+                        </Link>
+                      ),
+                    },
+                  ]
+                : []),
               ...(c.paymentPlan
                 ? [
                     { k: 'Cách trả', v: 'Hai khoản: 30% trước khi ký, 70% sau nghiệm thu' },
                     { k: 'Đã trả', v: <span className="tnum">{formatVnd(c.paymentPlan.paid)}</span> },
+                    { k: 'Còn lại', v: <span className="tnum">{formatVnd(c.paymentPlan.outstanding)}</span> },
                     { k: 'Đã trả đủ', v: c.paymentPlan.fullyPaid ? formatMoment(c.paidAt) : 'Chưa' },
                   ]
                 : [
@@ -149,12 +167,13 @@ export function CustomerContractPage() {
                   {c.status === 'DRAFT' && (
                     <Notice title="Đọc kỹ toàn bộ điều khoản trước khi trả 30%">
                       Hợp đồng gồm điều khoản thanh toán hai khoản, nghiệm thu và quyền sở hữu thiết bị. Khoản 70% đến
-                      hạn trong 72 giờ sau khi bạn nghiệm thu công trình.
+                      hạn trong tối đa 72 giờ sau khi bạn nghiệm thu công trình (giờ cụ thể ghi trong điều khoản).
                     </Notice>
                   )}
                   <InstallmentPlanPanel contract={c} actor="customer" />
                   <SignatureSetPanel contract={c} writer={null} reader="customer" />
                   <CustomerSchedulePanel contract={c} />
+                  <ContractSnapshotPanel contract={c} />
                   <ContentPanel contract={c} />
                 </div>
                 <ContractAside contract={c} />

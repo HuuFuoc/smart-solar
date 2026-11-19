@@ -1,14 +1,19 @@
-// Luồng kỹ thuật viên tại công trình (backend 462733c): chốt báo giá → ghi quyết định của khách → thanh toán QR / tiền mặt →
-// hợp đồng lập sau thanh toán → nghiệm thu nội bộ; hậu mãi tại công trình. Mỗi luật: đường chính, luật nghiệp vụ, trường hợp sai
+// Luồng kỹ thuật viên tại công trình: chốt báo giá → ghi quyết định của khách → (backend 7d27054) hợp đồng 30/70 lập ngay khi khách
+// đồng ý, thu từng khoản qua hợp đồng, khách nghiệm thu; thanh toán 100% báo giá cũ chỉ còn xem / huỷ; hậu mãi tại công trình. Mỗi
+// luật: đường chính, luật nghiệp vụ, trường hợp sai
 import { describe, test } from 'node:test'
+import { ENDPOINTS } from '../src/services/api/endpoints.ts'
+import { ApiError, isEndpointRetired } from '../src/services/api/errors.ts'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
   canCancelPayment,
+  canReconfirmAgreement,
   canRecordAgreed,
   canRecordWithdrawal,
   canStartPayment,
+  hasPaymentPlanBackend,
   decisionNoteError,
   declineNote,
   isSwitchMethodError,
@@ -80,6 +85,13 @@ describe('Thanh toán tại công trình', () => {
     assert.equal(canCancelPayment('ONLINE_IN_PROGRESS'), true)
     assert.equal(canCancelPayment('AWAITING_CASH_CONFIRMATION'), true)
     assert.equal(canCancelPayment('PAID'), false)
+  })
+
+  // Backend 30/70 (770379b trở đi) luôn trả `contractId` của báo giá, kể cả null; backend cũ không có trường này
+  test('nhận ra máy chủ chưa cập nhật bản 30/70 để báo, không quay lại thu 100% báo giá', () => {
+    assert.equal(hasPaymentPlanBackend({ status: 'ACCEPTED' }), false)
+    assert.equal(hasPaymentPlanBackend({ status: 'ACCEPTED', contractId: null }), true)
+    assert.equal(hasPaymentPlanBackend({ status: 'ACCEPTED', contractId: 'c1' }), true)
   })
 
   test('chỉ báo đã trả khi backend báo PAID kèm hợp đồng; QR đã quét hay tiền về chưa áp được thì chưa', () => {
@@ -256,9 +268,9 @@ describe('API đã bỏ (410 ENDPOINT_RETIRED) không còn được giao diện 
     ['báo giá lắp đặt của khách', /['"`]\/customers\/me\/quotations/],
     ['khung thi công đề xuất cho khách', /installation-slot-offers/],
     // Khách nghiệm thu được trả lại ở backend 7d27054; ba đường dưới bị bỏ ở cùng bản
+    ['kỹ thuật viên mở thanh toán 100% báo giá', /post<QuotationPaymentView>\(api\.payment\(/],
     ['quản lý nghiệm thu nội bộ', /[`'"]\/installation-projects\/\$\{[^}]+\}\/acceptance/],
     ['khách tự tải bản ký hợp đồng', /\/customers\/me\/contracts\/\$\{[^}]+\}\/signed-document/],
-    ['kỹ thuật viên mở thanh toán 100% báo giá', /post<QuotationPaymentView>\(api\.payment\(/],
     ['khách đồng ý thay thiết bị', /\/customers\/me\/installation-projects\/\$\{[^}]+\}\/equipment-substitution/],
     ['kinh doanh tự lập / gửi báo giá', /quotations\/generate|pending-review|pricing-approval|confirm-survey-version/],
   ]
@@ -271,4 +283,53 @@ describe('API đã bỏ (410 ENDPOINT_RETIRED) không còn được giao diện 
         [],
       )
     })
+})
+
+describe('Đường 30/70 thay cho đường đã bỏ', () => {
+  test('thu 30% / 70% đi qua khoản của hợp đồng, không qua báo giá', () => {
+    assert.equal(ENDPOINTS.installments.technician('c 1', 1), '/technician/contracts/c%201/installments/1/payment')
+    assert.equal(
+      ENDPOINTS.installments.technicianCancel('c1', 1),
+      '/technician/contracts/c1/installments/1/payment/cancel',
+    )
+    assert.equal(ENDPOINTS.installments.customer('c1', 2), '/customers/me/contracts/c1/installments/2/payment')
+    assert.equal(ENDPOINTS.installments.staff('c1', 2), '/contracts/c1/installments/2/payment')
+  })
+
+  test('trang hợp đồng giấy: kỹ thuật viên và quản lý / quản trị hỗ trợ dùng hai đường riêng', () => {
+    assert.equal(ENDPOINTS.signatureSets.technicianStart('c1'), '/technician/contracts/c1/signature-set')
+    assert.equal(ENDPOINTS.signatureSets.technicianPage('c1', 3), '/technician/contracts/c1/signature-set/pages/3')
+    assert.equal(ENDPOINTS.signatureSets.technicianFinalize('c1'), '/technician/contracts/c1/signature-set/finalize')
+    assert.equal(ENDPOINTS.signatureSets.supportFinalize('c1'), '/contracts/c1/signature-set/finalize')
+  })
+
+  test('nghiệm thu là của khách; quản lý chỉ còn trả về làm lại', () => {
+    assert.equal(ENDPOINTS.customerAcceptance.decide('p1'), '/customers/me/installation-projects/p1/acceptance')
+    assert.equal('acceptance' in ENDPOINTS.managerInstallations, false)
+  })
+
+  test('410 ENDPOINT_RETIRED là chức năng đã bỏ; 410 FILE_OBJECT_MISSING là tệp mất, không phải chức năng bị bỏ', () => {
+    const retired = new ApiError({ status: 410, code: 'ENDPOINT_RETIRED', message: 'x' })
+    const missing = new ApiError({ status: 410, code: 'FILE_OBJECT_MISSING', message: 'x' })
+    const bare = new ApiError({ status: 410, code: null, message: 'x' })
+    assert.equal(isEndpointRetired(retired), true)
+    assert.equal(isEndpointRetired(missing), false)
+    assert.equal(isEndpointRetired(bare), true)
+  })
+})
+
+describe('Báo giá khách đồng ý trước bản 30/70', () => {
+  const agreed = { status: 'ACCEPTED', contractId: null, isExpired: false, surveyChanged: false }
+  test('chưa mở thanh toán, còn hạn, biên bản chưa đổi: ghi đồng ý lại để backend lập hợp đồng 30/70, không cần bản sửa', () => {
+    assert.equal(canReconfirmAgreement(agreed, 'AWAITING_PAYMENT'), true)
+  })
+  test('đang mở / đã có tiền, đã có hợp đồng, hết hạn hoặc biên bản đổi: không', () => {
+    assert.equal(canReconfirmAgreement(agreed, 'ONLINE_IN_PROGRESS'), false)
+    assert.equal(canReconfirmAgreement(agreed, 'AWAITING_CASH_CONFIRMATION'), false)
+    assert.equal(canReconfirmAgreement(agreed, 'PAID'), false)
+    assert.equal(canReconfirmAgreement({ ...agreed, contractId: 'c1' }, 'AWAITING_PAYMENT'), false)
+    assert.equal(canReconfirmAgreement({ ...agreed, isExpired: true }, 'AWAITING_PAYMENT'), false)
+    assert.equal(canReconfirmAgreement({ ...agreed, surveyChanged: true }, 'AWAITING_PAYMENT'), false)
+    assert.equal(canReconfirmAgreement({ ...agreed, status: 'ISSUED' }, 'AWAITING_PAYMENT'), false)
+  })
 })

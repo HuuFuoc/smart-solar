@@ -388,7 +388,7 @@ function InstallationDetail({ view, now }: { view: InstallationTechnicianView; n
   )
 }
 
-// Chi tiết một công trình lắp đặt được giao: trả lời quản lý, bắt đầu, ghi thiết bị, gửi báo cáo hoàn thành để quản lý nghiệm thu
+// Chi tiết một công trình lắp đặt được giao: trả lời quản lý, bắt đầu, ghi thiết bị, gửi báo cáo hoàn thành để khách nghiệm thu
 export function TechInstallationPage() {
   const { id } = useParams()
   const query = useMyInstallationQuery(id)

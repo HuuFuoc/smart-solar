@@ -187,7 +187,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_EXEMPTION_EVIDENCE_REQUIRED: 'Cần đính kèm tài liệu chứng minh khi miễn hạng mục bắt buộc.',
   // Lắp đặt: quản lý
   INSTALLATION_CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng.',
-  INSTALLATION_CONTRACT_NOT_PAID: 'Hợp đồng chưa được xác nhận thanh toán đủ nên chưa tạo được dự án thi công.',
+  INSTALLATION_CONTRACT_NOT_PAID:
+    'Hợp đồng chưa sẵn sàng thi công: hợp đồng trả 30/70 cần đã nhận 30% và đã chốt đủ trang hợp đồng giấy; hợp đồng cũ cần đã thanh toán đủ.',
   INSTALLATION_PROJECT_EXISTS: 'Hợp đồng này đã có dự án thi công. Danh sách đã được tải lại.',
   INSTALLATION_CHECKLIST_ITEM_NOT_FOUND: 'Không tìm thấy hạng mục này trong checklist. Tải lại trang.',
   INSTALLATION_INVALID_SCHEDULE:
@@ -216,7 +217,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   FILE_CONTENT_CHANGED: 'Tệp trên kho đã thay đổi sau khi xác minh nên không dùng được nữa.',
   FILE_STORAGE_UNAVAILABLE: 'Hệ thống chưa kiểm tra được tệp. Thử lại sau ít phút.',
   FILE_NOT_SIGNABLE: 'Không mở được tệp này.',
-  FILE_OBJECT_MISSING: 'Tệp này không còn nữa.',
+  FILE_OBJECT_MISSING: 'Tệp không còn trên kho lưu trữ (bị xoá hoặc đổi). Chọn lại tệp rồi thử lại.',
   STORAGE_NOT_CONFIGURED: 'Chức năng tải tệp đang tạm tắt. Liên hệ quản trị hệ thống.',
   STORAGE_UNAVAILABLE: 'Tạm thời chưa mở được tệp. Thử lại sau ít phút.',
   STORAGE_PUBLIC_URL_NOT_CONFIGURED: 'Hiện chưa nhận ảnh tải từ máy. Dán link ảnh (https) thay thế.',
@@ -301,7 +302,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   QUOTATION_EMPTY: 'Thêm ít nhất một dòng trước khi chốt báo giá.',
   QUOTATION_STALE_REVISION: 'Báo giá vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
   QUOTATION_PRODUCT_UNAVAILABLE: 'Sản phẩm này đã ngừng bán hoặc không bán bằng VND. Chọn sản phẩm khác.',
-  QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này. Mở thanh toán cho khách.',
+  QUOTATION_ALREADY_ACCEPTED: 'Khách đã đồng ý báo giá này. Mở hợp đồng 30/70 để thu khoản 30%.',
   QUOTATION_PAYMENT_STARTED:
     'Đã mở thanh toán khoản 30% (hoặc đã nhận tiền) nên chưa ghi khách đổi ý được. Huỷ mã QR / bỏ chọn tiền mặt trước; tiền đã nhận thì không rút được.',
   QUOTATION_NOT_AGREED: 'Ghi khách đồng ý trước rồi mới mở thanh toán.',
@@ -613,9 +614,12 @@ export function pendingMigrationsOf(error: unknown): string[] {
   return Array.isArray(list) ? list.filter((m): m is string => typeof m === 'string') : []
 }
 
-/** Chức năng cũ đã bị backend gỡ (410 ENDPOINT_RETIRED); `details.replacement` ghi cách làm mới (tiếng Anh, không hiện) */
+/**
+ * Chức năng cũ đã bị backend gỡ (410 ENDPOINT_RETIRED); `details.replacement` ghi cách làm mới (tiếng Anh, không hiện). 410 khác
+ * mã (FILE_OBJECT_MISSING: tệp không còn trên kho) không phải chức năng bị gỡ
+ */
 export function isEndpointRetired(error: unknown) {
-  return isApiError(error) && (error.code === 'ENDPOINT_RETIRED' || error.status === 410)
+  return isApiError(error) && (error.code === 'ENDPOINT_RETIRED' || (error.status === 410 && !error.code))
 }
 
 /** Một trường trong `details` của lỗi (vd. `surveyRequestId` của 409 khi đặt khảo sát trực tiếp) */

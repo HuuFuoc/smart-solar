@@ -91,7 +91,8 @@ export function planTrackerSteps(plan: ContractPaymentPlanView): TrackerStep[] {
   return steps.map((step, i) => ({ ...step, state: i < rank ? 'done' : i === rank && !ended ? 'current' : 'todo' }))
 }
 
-export type PlanViewer = 'customer' | 'technician' | 'sales' | 'manager' | 'admin'
+/** `observer`: nhân viên chỉ đọc hợp đồng này (kỹ thuật viên không khảo sát công trình) */
+export type PlanViewer = 'customer' | 'technician' | 'sales' | 'manager' | 'admin' | 'observer'
 
 /** Việc tiếp theo và là của ai: đỏ khi người đang xem phải làm, xanh dương khi chờ người khác */
 export function planNextStep(plan: ContractPaymentPlanView, viewer: PlanViewer): TrackerNext {
@@ -134,7 +135,7 @@ export function planNextStep(plan: ContractPaymentPlanView, viewer: PlanViewer):
       return {
         tone: 'ok',
         title: 'Đã ký giấy, sẵn sàng thi công',
-        body: 'Thi công theo lịch đã hẹn và các hồ sơ bắt buộc. Khoản 70% mở khi khách nghiệm thu, hạn 72 giờ.',
+        body: 'Thi công theo lịch đã hẹn và các hồ sơ bắt buộc. Khoản 70% mở khi khách nghiệm thu, hạn tối đa 72 giờ.',
       }
     case 'BALANCE_DUE':
       return viewer === 'customer'
@@ -156,7 +157,10 @@ export function planNextStep(plan: ContractPaymentPlanView, viewer: PlanViewer):
         : {
             tone: viewer === 'sales' ? 'danger' : 'warn',
             title: 'Khoản 70% đã quá hạn',
-            body: 'Theo dõi ở mục Thu hồi công nợ. Hạn trong hợp đồng không đổi.',
+            body:
+              viewer === 'observer' || viewer === 'technician'
+                ? 'Bộ phận kinh doanh theo dõi thu hồi công nợ. Hạn trong hợp đồng không đổi.'
+                : 'Theo dõi ở mục Thu hồi công nợ. Hạn trong hợp đồng không đổi.',
           }
     case 'FULLY_PAID':
       return { tone: 'neutral', title: 'Đã trả đủ 100%' }

@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/common/ui/page-header'
 import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ProgressTracker } from '@/components/common/ui/progress-tracker'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
-import { UnavailableState } from '@/components/common/ui/states'
+import { Skeleton, UnavailableState } from '@/components/common/ui/states'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { ContractConfirmDialog } from '@/features/contracts/ContractConfirmDialog'
 import { ContractEventLog } from '@/features/contracts/ContractEventLog'
@@ -42,11 +42,14 @@ import {
   shortHash,
 } from '@/features/contracts/contractRules'
 import { InstallmentPlanPanel } from '@/features/payment-plan/InstallmentPlanPanel'
+import { ContractSnapshotPanel } from '@/features/payment-plan/ContractSnapshotPanel'
 import { SignatureSetPanel } from '@/features/payment-plan/SignatureSetPanel'
+import { TechContractSchedulePanel } from '@/features/installation-schedules/TechContractSchedulePanel'
 import { formatVnd, planNextStep, planTrackerSteps, stageMeta } from '@/features/payment-plan/paymentPlanDisplay'
-import { isPaymentPlanContract } from '@/features/payment-plan/paymentPlanRules'
+import { isPaymentPlanContract, planPermissions } from '@/features/payment-plan/paymentPlanRules'
 import type { ContractPaymentPlanView } from '@/types/res/paymentPlanRes'
-import { canPlanForContract } from '@/features/installation-schedules/scheduleRules'
+import { isSchedulableContract } from '@/features/installation-schedules/scheduleRules'
+import { useTechnicianAssignment } from '@/hooks/usePaymentPlan'
 import { StaffContractSchedulePanel } from '@/features/installation-schedules/StaffContractSchedulePanel'
 import { OfficialDocumentDialog } from '@/features/contracts/OfficialDocumentDialog'
 import { SignaturePanel } from '@/features/contracts/SignaturePanel'
@@ -392,7 +395,11 @@ function PlanContract({
   const plan = c.paymentPlan
   const stage = stageMeta(plan.stage)
   const status = contractStatusMeta(c.status)
-  const writer = viewer === 'technician' ? 'technician' : canWriteContract(viewer) ? 'support' : null
+  // Kỹ thuật viên đọc mọi hợp đồng; chỉ người đã khảo sát công trình mới ghi (backend trả 404 cho người khác)
+  const assignment = useTechnicianAssignment(c.contractId, viewer === 'technician')
+  const can = planPermissions(viewer, { assigned: assignment === 'assigned' })
+  const observer = viewer === 'technician' && assignment !== 'assigned'
+  const checking = viewer === 'technician' && assignment === 'pending'
   return (
     <>
       <PageHeader
@@ -410,27 +417,30 @@ function PlanContract({
             <ButtonLink to={withId(ROUTES.ops.survey, c.surveyRequestId)} variant="info" icon="assignment">
               Yêu cầu khảo sát
             </ButtonLink>
-          ) : viewer === 'technician' && plan.depositPaid ? (
-            <ButtonLink to={ROUTES.tech.installationSchedules} variant="soft" icon="event_available">
-              Hẹn ngày thi công
-            </ButtonLink>
           ) : undefined
         }
       />
 
-      <ProgressTracker steps={planTrackerSteps(plan)} next={planNextStep(plan, viewer)} />
+      <ProgressTracker steps={planTrackerSteps(plan)} next={planNextStep(plan, observer ? 'observer' : viewer)} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-4 lg:col-span-2">
-          <InstallmentPlanPanel
-            contract={c}
-            actor={viewer === 'technician' ? 'technician' : 'staff'}
-            canConfirmCash={canWriteContract(viewer)}
-          />
-          <SignatureSetPanel contract={c} writer={writer} reader="staff" />
-          {canWriteContract(viewer) && plan.depositPaid && canPlanForContract(c.status, true) && (
-            <StaffContractSchedulePanel contract={c} />
+          {observer && !checking && (
+            <Notice title="Bạn chỉ xem hợp đồng này">
+              Thu tiền, tải ảnh hợp đồng giấy đã ký và hẹn ngày thi công do kỹ thuật viên đã khảo sát công trình làm.
+            </Notice>
           )}
+          {checking ? (
+            <Skeleton className="h-48" />
+          ) : (
+            <>
+              <InstallmentPlanPanel contract={c} actor={can.installmentActor} canConfirmCash={can.canConfirmCash} />
+              <SignatureSetPanel contract={c} writer={can.signatureWriter} reader="staff" />
+              {can.canPlanSchedule && isSchedulableContract(c) && <TechContractSchedulePanel contract={c} />}
+            </>
+          )}
+          {can.canManageSchedule && isSchedulableContract(c) && <StaffContractSchedulePanel contract={c} />}
+          <ContractSnapshotPanel contract={c} />
           <ContentPanel contract={c} />
         </div>
         <PlanAside contract={c} plan={plan} />
@@ -458,8 +468,7 @@ function PlanContract({
 function ContractPage({ viewer }: { viewer: ContractViewer }) {
   const { id } = useParams()
   const query = useContractQuery(id)
-  // Danh sách phiên bản theo yêu cầu khảo sát không mở cho kỹ thuật viên
-  const versions = useSurveyRequestContractsQuery(query.data?.surveyRequestId, { enabled: viewer !== 'technician' })
+  const versions = useSurveyRequestContractsQuery(query.data?.surveyRequestId)
   usePageCrumb(query.data ? contractTitle(query.data) : null)
 
   if (query.data === undefined && isFeatureUnavailable(query.error))
@@ -508,9 +517,7 @@ function ContractPage({ viewer }: { viewer: ContractViewer }) {
                 {canSeePayments(viewer) && (
                   <ContractPaymentPanel contract={c} viewer={viewer} installationsPath={INSTALLATIONS[viewer]} />
                 )}
-                {canWriteContract(viewer) && canPlanForContract(c.status, c.paymentCompleted) && (
-                  <StaffContractSchedulePanel contract={c} />
-                )}
+                {canWriteContract(viewer) && isSchedulableContract(c) && <StaffContractSchedulePanel contract={c} />}
                 {canWriteContract(viewer) && (
                   <AmendmentPanel contract={c} versions={list} viewer={viewer as 'manager' | 'admin'} />
                 )}

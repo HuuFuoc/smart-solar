@@ -29,7 +29,7 @@ const STAGES = [
   { id: 'ASSESSMENT', label: 'Đánh giá sơ bộ', meta: 'Khai mái nhà, xem mô phỏng' },
   { id: 'SURVEY', label: 'Khảo sát tại nhà', meta: 'Kỹ thuật viên đo đạc' },
   { id: 'QUOTATION', label: 'Báo giá, hợp đồng', meta: 'Chốt và thanh toán với kỹ thuật viên' },
-  { id: 'INSTALLATION', label: 'Lắp đặt', meta: 'Thi công, Smart Solar nghiệm thu' },
+  { id: 'INSTALLATION', label: 'Lắp đặt', meta: 'Thi công, bạn nghiệm thu' },
   { id: 'HANDOVER', label: 'Bàn giao, bảo hành', meta: 'Bảo hành, bảo trì' },
 ] as const
 type StageId = (typeof STAGES)[number]['id']
@@ -59,10 +59,11 @@ export function CustomerDashboardPage() {
         requests: surveyRequests,
         dispatches,
         contracts,
+        projects: installations,
         serviceRequests,
         subscriptions,
       }),
-    [surveyRequests, dispatches, contracts, serviceRequests, subscriptions],
+    [surveyRequests, dispatches, contracts, installations, serviceRequests, subscriptions],
   )
 
   const activeProjects = installations.filter((p) => isOpenProject(p.status)).length
@@ -72,7 +73,8 @@ export function CustomerDashboardPage() {
   ).length
   const toBook = todos.filter((t) => t.kind === 'survey').length
   const contractsToDo = contracts.filter(isCustomerTodo)
-  const toPay = contractsToDo.filter((c) => c.status === 'SIGNED').length
+  // Việc của hợp đồng 30/70 luôn là trả một khoản; hợp đồng cũ chỉ khi đã ký
+  const toPay = contractsToDo.filter((c) => c.paymentPlan != null || c.status === 'SIGNED').length
   const upcoming = surveyRequests
     .filter((r) => isUpcomingAppointment(r))
     .sort((a, b) => a.appointment!.startsAt.localeCompare(b.appointment!.startsAt))

@@ -108,7 +108,7 @@ export function InstallmentPlanPanel({
     <Panel id="installments" className="scroll-mt-6">
       <PanelHeader
         title="Thanh toán theo khoản (30% và 70%)"
-        description="Trả 30% trước khi ký hợp đồng giấy; khoản 70% mở khi khách nghiệm thu, hạn 72 giờ."
+        description="Trả 30% trước khi ký hợp đồng giấy; khoản 70% mở khi khách nghiệm thu, hạn tối đa 72 giờ."
       />
       <PanelBody className="space-y-4">
         {plan.termsPendingLegalReview && (

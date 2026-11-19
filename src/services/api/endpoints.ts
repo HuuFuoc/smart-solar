@@ -307,8 +307,8 @@ export const ENDPOINTS = {
     checklistItem: (projectId: string, itemId: string) =>
       `/installation-projects/${encode(projectId)}/checklist/${encode(itemId)}`,
     cancel: (projectId: string) => `/installation-projects/${encode(projectId)}/cancel`,
+    // Quản lý / quản trị chỉ trả báo cáo về làm lại; nghiệm thu là của khách (nghiệm thu nội bộ cũ trả 410 từ 7d27054)
     returnToRework: (projectId: string) => `/installation-projects/${encode(projectId)}/return-to-rework`,
-    // Nghiệm thu nội bộ của quản lý / quản trị, thay cho bước khách nghiệm thu trong ứng dụng
     evidence: (projectId: string) => `/installation-projects/${encode(projectId)}/evidence`,
     evidenceUrl: (projectId: string, evidenceId: string) =>
       `/installation-projects/${encode(projectId)}/evidence/${encode(evidenceId)}/url`,

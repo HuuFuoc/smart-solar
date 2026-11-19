@@ -4,19 +4,25 @@ import { isTodo, requestStatusMeta } from '@/features/after-sales/serviceDisplay
 import { contractStatusMeta } from '@/features/contracts/contractDisplay'
 import { isCustomerTodo } from '@/features/contracts/customerContractRules'
 import { customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
+import { stageMeta } from '@/features/payment-plan/paymentPlanDisplay'
+import { customerPlanTodo } from '@/features/payment-plan/paymentPlanRules'
+import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { ROUTES, withId } from '@/routes/paths'
 import type { ServiceRequestSummary, SubscriptionView } from '@/types/res/customerAfterSalesRes'
 import type { ContractView } from '@/types/res/customerContractsRes'
+import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 import type { CustomerDispatchView } from '@/types/res/dispatchRes'
 
-// Báo giá lắp đặt và nghiệm thu công trình làm tại công trình với kỹ thuật viên / quản lý, không còn là việc của khách
-export type TodoKind = 'survey' | 'contract' | 'service' | 'package'
+// Báo giá lắp đặt chốt tại công trình với kỹ thuật viên, không phải việc của khách. Nghiệm thu công trình là việc của khách (backend
+// 7d27054): kỹ thuật viên báo hoàn thành thì khách nghiệm thu hoặc yêu cầu làm lại trong ứng dụng
+export type TodoKind = 'survey' | 'contract' | 'installation' | 'service' | 'package'
 
 /** Tên nhóm trên tab "Việc cần làm", theo thứ tự khách đi qua */
 export const TODO_KINDS: { kind: TodoKind; label: string }[] = [
   { kind: 'survey', label: 'Khảo sát' },
   { kind: 'contract', label: 'Hợp đồng' },
+  { kind: 'installation', label: 'Nghiệm thu' },
   { kind: 'service', label: 'Bảo hành, sửa chữa' },
   { kind: 'package', label: 'Gói dịch vụ' },
 ]
@@ -31,14 +37,33 @@ export type TodoItem = {
   action: { label: string; icon: string }
 }
 
-/** Hợp đồng đã ký thì việc còn lại là trả tiền; chờ ký hoặc bản ký bị trả lại thì ký */
-const contractAction = (status: string) =>
-  status === 'SIGNED' ? { label: 'Thanh toán', icon: 'payments' } : { label: 'Ký hợp đồng', icon: 'draw' }
+/**
+ * Hợp đồng 30/70: trả 30% (bản nháp) hoặc trả 70% (sau nghiệm thu). Hợp đồng cũ: đã ký thì việc còn lại là trả tiền; chờ ký hoặc bản
+ * ký bị trả lại thì ký
+ */
+function contractTodo(c: ContractView) {
+  if (c.paymentPlan) {
+    const todo = customerPlanTodo(c.paymentPlan.stage)
+    return {
+      label: stageMeta(c.paymentPlan.stage, 'customer').label,
+      action: { label: todo === 'pay-balance' ? 'Trả 70%' : 'Trả 30%', icon: 'payments' },
+    }
+  }
+  return {
+    label: contractStatusMeta(c.status, 'customer').label,
+    action: c.status === 'SIGNED' ? { label: 'Thanh toán', icon: 'payments' } : { label: 'Ký hợp đồng', icon: 'draw' },
+  }
+}
+
+/** Kỹ thuật viên đã báo hoàn thành, đang chờ khách nghiệm thu */
+export const awaitsCustomerAcceptance = (p: Pick<InstallationCustomerView, 'status'>) =>
+  p.status === 'PENDING_CUSTOMER_ACCEPTANCE'
 
 export type TodoSources = {
   requests: CustomerSurveyRequestView[]
   dispatches: Map<string, CustomerDispatchView>
   contracts: ContractView[]
+  projects: InstallationCustomerView[]
   serviceRequests: ServiceRequestSummary[]
   subscriptions: SubscriptionView[]
 }
@@ -63,10 +88,18 @@ export function customerTodos(s: TodoSources): TodoItem[] {
     items.push({
       key: `contract-${c.contractId}`,
       kind: 'contract',
-      label: contractStatusMeta(c.status, 'customer').label,
+      ...contractTodo(c),
       detail: `Hợp đồng ${c.contractNumber}`,
       to: withId(ROUTES.customer.contract, c.contractId),
-      action: contractAction(c.status),
+    })
+  for (const p of s.projects.filter(awaitsCustomerAcceptance))
+    items.push({
+      key: `project-${p.projectId}`,
+      kind: 'installation',
+      label: 'Nghiệm thu công trình',
+      detail: `Công trình ${shortCode(p.projectId)}, kỹ thuật viên đã báo hoàn thành`,
+      to: withId(ROUTES.customer.project, p.projectId),
+      action: { label: 'Nghiệm thu', icon: 'verified' },
     })
   for (const r of s.serviceRequests.filter((r) => isTodo(r.status, 'customer')))
     items.push({

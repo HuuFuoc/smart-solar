@@ -40,6 +40,78 @@ export const legacyActionsAllowed = (c: Pick<ContractView, 'paymentPlan'>) => !i
 export const installmentOf = (plan: Pick<ContractPaymentPlanView, 'installments'>, sequence: number) =>
   plan.installments.find((i) => i.sequence === sequence) ?? null
 
+/**
+ * Mua gói sau bán trên một hợp đồng (ServicePackageHandlers của backend 7d27054). Sau bán vẫn trả 100% trước. Hợp đồng 30/70 chỉ
+ * mua được khi đã trả đủ (PAID) và không bao giờ gộp khoản 70% vào link mua gói; hợp đồng cũ đã ký chưa trả thì gộp tiền hợp đồng
+ * (`with-contract`), đã trả thì mua riêng gói. null: hợp đồng chưa mua gói được
+ */
+export function packagePurchaseMode(c: Pick<ContractView, 'status' | 'paymentPlan'>) {
+  if (c.status === 'PAID') return 'packages-only' as const
+  if (c.status === 'SIGNED' && !isPaymentPlanContract(c)) return 'with-contract' as const
+  return null
+}
+
+// ---------- Quyền theo vai trò (CONTRACT_AND_RBAC §2) ----------
+
+export type PlanViewerRole = 'customer' | 'sales' | 'technician' | 'manager' | 'admin'
+
+/**
+ * Việc mỗi vai trò làm được trên một hợp đồng 30/70. Mọi kỹ thuật viên đọc được mọi hợp đồng, nhưng chỉ người đã khảo sát công
+ * trình (`assigned`) mới thu tiền, tải trang ký, hẹn ngày: backend trả 404 cho người khác trên đường của kỹ thuật viên, nên người
+ * khác đọc bằng đường chỉ đọc của nhân viên. Kinh doanh chỉ đọc; chỉ quản lý / quản trị xác nhận tiền mặt; khách trả trong ứng
+ * dụng, không tải trang ký
+ */
+export function planPermissions(role: PlanViewerRole, { assigned = true }: { assigned?: boolean } = {}) {
+  const staffWriter = role === 'manager' || role === 'admin'
+  const fieldTechnician = role === 'technician' && assigned
+  return {
+    /** Đường đọc / mở thanh toán một khoản */
+    installmentActor: role === 'customer' ? 'customer' : fieldTechnician ? 'technician' : 'staff',
+    /** Mở / huỷ thanh toán một khoản */
+    canOpenPayment: role === 'customer' || fieldTechnician,
+    canConfirmCash: staffWriter,
+    /** Tải / thay / chốt trang hợp đồng giấy */
+    signatureWriter: fieldTechnician ? 'technician' : staffWriter ? 'support' : null,
+    /** Ghi lịch thi công đã thống nhất với khách */
+    canPlanSchedule: fieldTechnician,
+    /** Ghi lịch thay, thử xác nhận lại, huỷ lịch */
+    canManageSchedule: staffWriter,
+    /** Nghiệm thu chỉ khách */
+    canAccept: role === 'customer',
+    /** Ghi theo dõi công nợ; xem xét pháp lý / đóng hồ sơ chỉ quản lý, quản trị */
+    canRecordCollection: role === 'sales' || staffWriter,
+    canDecideCollection: staffWriter,
+  } as const
+}
+
+/**
+ * Kỹ thuật viên có phải người đã khảo sát (phụ trách bán tại công trình) không, theo lần đọc khoản 30% trên đường của kỹ thuật viên:
+ * đọc được là phải; 404 (CONTRACT_NOT_FOUND) là người khác, chỉ đọc; lỗi khác (mạng, 5xx) cũng chỉ đọc cho an toàn
+ */
+export function technicianAssignment(probe: { isPending: boolean; isSuccess: boolean; error: unknown }) {
+  if (probe.isPending) return 'pending' as const
+  if (probe.isSuccess) return 'assigned' as const
+  return (probe.error as { status?: number } | null)?.status === 404 ? ('other' as const) : ('unknown' as const)
+}
+
+// ---------- Khách đổi ý sau khi đã đồng ý ----------
+
+/**
+ * Ghi "khách muốn sửa" / "khách không đồng ý" cho báo giá đã đồng ý được khi hợp đồng 30/70 còn là bản nháp và chưa mở thanh toán
+ * khoản 30% (backend: QUOTATION_PAYMENT_STARTED khi đang mở QR / chờ xác nhận tiền mặt, 409 khi đã nhận tiền). Chưa đọc được thì để
+ * backend quyết định
+ */
+export function agreementWithdrawal(
+  contract: Pick<ContractView, 'status'> | null | undefined,
+  deposit: Pick<InstallmentPaymentView, 'paymentState'> | null | undefined,
+): 'allowed' | 'payment-open' | 'deposit-paid' | 'closed' {
+  if (deposit?.paymentState === 'PAID') return 'deposit-paid'
+  if (contract && contract.status !== 'DRAFT') return contract.status === 'DISCARDED' ? 'closed' : 'deposit-paid'
+  if (deposit?.paymentState === 'ONLINE_IN_PROGRESS' || deposit?.paymentState === 'AWAITING_CASH_CONFIRMATION')
+    return 'payment-open'
+  return 'allowed'
+}
+
 // ---------- Hạn và quá hạn ----------
 
 /** Quá hạn khi DUE và đã qua hạn, tính tới mili giây: đúng `dueAt` chưa quá hạn, `dueAt` + 1 giây là quá hạn */
@@ -63,6 +135,13 @@ export function moneySplit(plan: Pick<ContractPaymentPlanView, 'installments' | 
 }
 
 // ---------- Thanh toán một khoản ----------
+
+/** Việc khách phải làm trên hợp đồng 30/70 theo chặng của backend: trả 30% (bản nháp), trả 70% (đến hạn / quá hạn), không có gì */
+export function customerPlanTodo(stage: string | null | undefined): 'pay-deposit' | 'pay-balance' | null {
+  if (stage === 'DRAFT_CREATED') return 'pay-deposit'
+  if (stage === 'BALANCE_DUE' || stage === 'BALANCE_OVERDUE') return 'pay-balance'
+  return null
+}
 
 /** Mở được thanh toán: backend báo AWAITING_PAYMENT (DUE và hợp đồng ở đúng trạng thái) */
 export const canOpenInstallment = (view: Pick<InstallmentPaymentView, 'paymentState'> | null | undefined) =>

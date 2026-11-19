@@ -34,7 +34,7 @@ import type { InstallationScheduleView } from '@/types/res/installationSchedules
 
 // Ghi hoặc đổi ngày thi công đã thống nhất trực tiếp với khách. Kỹ thuật viên ghi cho chính mình (xem khung trống của mình rồi
 // chọn, hoặc gõ ngày giờ); quản lý / quản trị ghi thay khi kỹ thuật viên khảo sát không làm được (chọn người khác, bỏ trống là kỹ
-// thuật viên đã khảo sát). Lịch chỉ là dự kiến, không giữ chỗ; hệ thống xác nhận khi hợp đồng đã trả tiền và đã ký. Đổi lịch
+// thuật viên đã khảo sát). Lịch chỉ là dự kiến, không giữ chỗ; hệ thống xác nhận khi hợp đồng sẵn sàng thi công. Đổi lịch
 // đang có thì bắt buộc lý do và gửi revision của lịch đó
 
 type Props = {
@@ -178,7 +178,7 @@ export function ScheduleDialog({ contractId, title, live, by, onClose }: Props) 
           : view.status === 'RESCHEDULE_REQUIRED'
             ? 'Đã ghi lịch nhưng chưa xác nhận được; xem lý do ở lịch.'
             : view.awaitingContractSignature
-              ? 'Đã ghi lịch dự kiến. Lịch được xác nhận tự động khi hợp đồng được duyệt bản ký.'
+              ? 'Đã ghi lịch dự kiến. Lịch được xác nhận tự động khi hợp đồng giấy đã ký xong.'
               : 'Đã ghi lịch dự kiến. Lịch được xác nhận khi hợp đồng đã thanh toán.',
       )
       onClose()
@@ -310,7 +310,8 @@ export function ScheduleDialog({ contractId, title, live, by, onClose }: Props) 
           </Field>
         )}
         <p className="text-meta text-fg-2">
-          Lịch chỉ là dự kiến và chưa giữ chỗ; hệ thống xác nhận khi hợp đồng đã thanh toán và đã được duyệt bản ký.
+          Lịch chỉ là dự kiến và chưa giữ chỗ; hệ thống xác nhận khi hợp đồng sẵn sàng thi công (hợp đồng 30/70: đã nhận
+          30% và đã chốt trang hợp đồng giấy, không cần trả đủ; hợp đồng cũ: đã thanh toán và đã duyệt bản ký).
         </p>
       </div>
 

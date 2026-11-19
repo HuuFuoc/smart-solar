@@ -73,7 +73,7 @@ function CollectionsPage({ viewer }: { viewer: CollectionViewer }) {
           data.items.length === 0 ? (
             <EmptyState
               title={scope === 'open' ? 'Không có khoản quá hạn nào đang theo dõi' : 'Chưa có hồ sơ công nợ'}
-              description="Hồ sơ được mở tự động khi khoản 70% quá hạn 72 giờ sau nghiệm thu."
+              description="Hồ sơ được mở tự động khi khoản 70% quá hạn (hạn tối đa 72 giờ sau nghiệm thu)."
             />
           ) : (
             <>

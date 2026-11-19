@@ -14,7 +14,7 @@ import {
 } from '@/features/installation-schedules/scheduleDisplay'
 import {
   SCHEDULE_NOTE_MAX,
-  canPlanForContract,
+  isSchedulableContract,
   canRequestChange,
   liveSchedule,
   plannedWaitReason,
@@ -29,10 +29,8 @@ import type { ContractView } from '@/types/res/customerContractsRes'
 
 export function CustomerSchedulePanel({ contract }: { contract: ContractView }) {
   // Hợp đồng 30/70 hẹn được ngày từ khi khoản 30% được xác minh
-  const enabled = canPlanForContract(
-    contract.status,
-    contract.paymentCompleted || Boolean(contract.paymentPlan?.depositPaid),
-  )
+  const enabled = isSchedulableContract(contract)
+  const plan = contract.paymentPlan != null
   const query = useCustomerContractScheduleQuery(contract.contractId, { enabled })
   const change = useRequestScheduleChangeMutation()
   const [asking, setAsking] = useState(false)
@@ -69,7 +67,9 @@ export function CustomerSchedulePanel({ contract }: { contract: ContractView }) 
             {live.status === 'PLANNED' && (
               <p className="text-body text-fg-2">
                 {plannedWaitReason(live) === 'signature'
-                  ? 'Ngày dự kiến, chưa xác nhận. Bạn đã thanh toán; lịch được xác nhận tự động khi hồ sơ hợp đồng hoàn tất.'
+                  ? plan
+                    ? 'Ngày dự kiến, chưa xác nhận. Bạn đã trả 30%; lịch được xác nhận tự động khi hợp đồng giấy được ký và tải đủ các trang.'
+                    : 'Ngày dự kiến, chưa xác nhận. Bạn đã thanh toán; lịch được xác nhận tự động khi hồ sơ hợp đồng hoàn tất.'
                   : plannedWaitReason(live) === 'payment'
                     ? 'Ngày dự kiến, chưa xác nhận. Lịch được xác nhận sau khi hợp đồng được thanh toán.'
                     : 'Hợp đồng đã hoàn tất, hệ thống đang xác nhận lịch với kỹ thuật viên.'}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button, buttonClass } from '@/components/common/ui/button'
@@ -29,6 +29,7 @@ import { useConfirmAttemptCashMutation } from '@/hooks/usePaymentDesk'
 import {
   useCancelInstallmentPaymentMutation,
   useInstallmentPaymentQuery,
+  useRefreshContractWorld,
   useStartInstallmentPaymentMutation,
 } from '@/hooks/usePaymentPlan'
 import type { InstallmentActor } from '@/services/installmentService'
@@ -183,6 +184,21 @@ export function InstallmentPaymentBlock({
   const [error, setError] = useState<string | null>(null)
   const busy = start.isPending || cancel.isPending
   const view = query.data
+  const refreshContract = useRefreshContractWorld()
+  const lastState = useRef<string | null>(null)
+
+  // Khối này chỉ vẽ cho khoản hợp đồng còn ghi DUE. Lần hỏi lại thấy backend đã ghi PAID (PayOS xác minh, quản lý xác nhận tiền
+  // mặt) thì hợp đồng đã đổi chặng: tải lại hợp đồng, lịch, dự án. Chỉ báo "đã nhận" khi chính lần xem này thấy đổi sang PAID
+  const paymentState = view?.paymentState ?? null
+  const paidAmount = view?.amount
+  const paidName = view ? installmentName(view) : ''
+  useEffect(() => {
+    const before = lastState.current
+    lastState.current = paymentState
+    if (paymentState !== 'PAID' || before === 'PAID') return
+    if (before !== null) toast.success(`Đã nhận ${paidName.toLowerCase()} (${formatVnd(paidAmount)}).`)
+    void refreshContract()
+  }, [paymentState, paidAmount, paidName, refreshContract])
 
   async function open(method: 'ONLINE' | 'CASH') {
     if (!writer || busy) return
@@ -252,7 +268,7 @@ export function InstallmentPaymentBlock({
       ) : view.paymentState === 'NOT_PAYABLE' ? (
         <p className="text-body text-fg-2">
           {view.kind === 'BALANCE' && view.installmentStatus === 'PENDING'
-            ? 'Khoản 70% mở khi khách nghiệm thu công trình, hạn trả 72 giờ sau đó.'
+            ? 'Khoản 70% mở khi khách nghiệm thu công trình, hạn trả tối đa 72 giờ sau đó.'
             : 'Khoản này chưa trả được lúc này.'}
         </p>
       ) : null}

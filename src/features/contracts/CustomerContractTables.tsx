@@ -69,7 +69,9 @@ function rowStatus(c: ContractView) {
 
 function contractMilestoneLabel(c: ContractView): string | null {
   if (c.status === 'PAID' && c.paidAt) return `Thanh toán ${formatDateVn(c.paidAt)}`
-  if (c.status === 'SIGNED' && c.signedAt) return `Duyệt ký ${formatDateVn(c.signedAt)}`
+  // Hợp đồng 30/70: lúc chốt các trang hợp đồng giấy đã ký, không có bước duyệt
+  if (c.status === 'SIGNED' && c.signedAt)
+    return `${c.paymentPlan ? 'Ký giấy' : 'Duyệt ký'} ${formatDateVn(c.signedAt)}`
   if (c.status === 'UNDER_REVIEW' && c.signedDocument?.confirmedAt) {
     return `Đã gửi ${formatDateVn(c.signedDocument.confirmedAt)}`
   }

@@ -24,9 +24,10 @@ import {
 import { useCancelTechnicianScheduleMutation, useTechnicianSchedulesQuery } from '@/hooks/useInstallationSchedules'
 import type { InstallationScheduleView, TechnicianScheduleContractView } from '@/types/res/installationSchedulesRes'
 
-// Hợp đồng của công trình kỹ thuật viên đã khảo sát, hẹn được ngày: lập từ báo giá đã trả tiền tại công trình (chưa cần ký) hoặc
-// hợp đồng cũ đã ký. Kỹ thuật viên thống nhất ngày trực tiếp với khách rồi ghi lên đây (lịch dự kiến, không giữ chỗ); hợp đồng
-// đã trả và đã ký thì hệ thống tự tạo dự án thi công và xác nhận lịch. Việc cần làm (chưa hẹn, phải hẹn lại, khách xin đổi) lên đầu
+// Hợp đồng của công trình kỹ thuật viên đã khảo sát, hẹn được ngày: hợp đồng 30/70 đã nhận 30% (chưa cần ký giấy), hợp đồng trả
+// trước của bản 18/11 hoặc hợp đồng cũ đã ký. Kỹ thuật viên thống nhất ngày trực tiếp với khách rồi ghi lên đây (lịch dự kiến, không
+// giữ chỗ); hợp đồng sẵn sàng thi công (30/70: đã chốt trang ký giấy, không cần trả đủ) thì hệ thống tự tạo dự án thi công và xác
+// nhận lịch. Việc cần làm (chưa hẹn, phải hẹn lại, khách xin đổi) lên đầu
 
 const rank = (row: TechnicianScheduleContractView) => {
   const s = row.schedule
@@ -62,7 +63,7 @@ export function TechInstallationSchedulesPage() {
           rows.length === 0 ? (
             <EmptyState
               title="Chưa có hợp đồng nào để hẹn ngày"
-              description="Khách trả tiền báo giá xong thì hợp đồng hiện ở đây; thống nhất ngày thi công với khách rồi ghi lại."
+              description="Khách trả khoản 30% của hợp đồng xong thì hợp đồng hiện ở đây; thống nhất ngày thi công với khách rồi ghi lại."
             />
           ) : (
             <Table stack="xl">
@@ -103,7 +104,9 @@ export function TechInstallationSchedulesPage() {
                                 <p className="text-meta text-fg-2">{rescheduleReasonText(s.rescheduleReasonCode)}</p>
                               )}
                               {plannedWaitReason(s) === 'signature' && (
-                                <p className="text-meta text-fg-2">Đã trả tiền, chờ duyệt bản ký hợp đồng</p>
+                                <p className="text-meta text-fg-2">
+                                  Đã nhận tiền, chờ hợp đồng ký xong; lịch tự xác nhận khi ký xong
+                                </p>
                               )}
                               {plannedWaitReason(s) === 'payment' && (
                                 <p className="text-meta text-fg-2">Chờ khách thanh toán hợp đồng</p>

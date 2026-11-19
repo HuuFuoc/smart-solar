@@ -22,7 +22,9 @@ import {
 } from '@/features/quotations/quotationDisplay'
 import {
   canCancelPayment,
+  canReconfirmAgreement,
   canRecordAgreed,
+  hasPaymentPlanBackend,
   canRecordWithdrawal,
   decisionNoteError,
   isVerifiedPaid,
@@ -37,16 +39,16 @@ import { ROUTES, withId } from '@/routes/paths'
 import type { QuotationPaymentView, QuotationView } from '@/types/res/quotationsRes'
 
 // Báo giá đã chốt, trình bày và chốt tại công trình trên máy kỹ thuật viên: màn xem to cho khách đọc, ghi điều khách quyết định
-// bằng tài khoản kỹ thuật viên (khách không đăng nhập). Từ backend 7d27054 ghi "khách đồng ý" là lập ngay hợp đồng 30/70 (bản nháp,
-// khách đọc trước khi trả): thu 30% và tải trang ký ở trang hợp đồng. Thanh toán 100% báo giá theo cách cũ đã bỏ (mở mới trả 410),
-// chỉ còn xem / huỷ lần đã mở trước đó
+// bằng tài khoản kỹ thuật viên (khách không đăng nhập). Ghi "khách đồng ý" là backend lập ngay hợp đồng 30/70 (bản nháp, khách đọc
+// trước khi trả): thu 30% và tải trang ký ở trang hợp đồng. Thanh toán 100% báo giá đã bỏ (mở mới trả 410), chỉ còn xem / huỷ lần
+// đã mở trước bản 30/70
 
 const DECISION_TEXT: Record<OnSiteDecision, { title: string; confirm: string; icon: string; done: string }> = {
   AGREED: {
     title: 'Khách đồng ý báo giá?',
     confirm: 'Khách đồng ý',
     icon: 'check_circle',
-    done: 'Đã ghi khách đồng ý. Hợp đồng 30/70 đã lập; thu 30% ở trang hợp đồng.',
+    done: 'Đã ghi khách đồng ý.',
   },
   DECLINED: {
     title: 'Khách không đồng ý báo giá?',
@@ -94,7 +96,10 @@ export function DecisionDialog({
         revision: q.revision,
         note: note.trim() || null,
       })
-      toast.success(text.done)
+      if (decision !== ON_SITE_DECISIONS.agreed) toast.success(text.done)
+      else if (view.contractId) toast.success('Đã ghi khách đồng ý. Hợp đồng 30/70 đã lập; thu 30% ở trang hợp đồng.')
+      // Backend 30/70 luôn trả hợp đồng khi ghi đồng ý; không có là máy chủ chưa cập nhật. Không quay lại thu 100% báo giá
+      else toast.warning('Đã ghi khách đồng ý nhưng hệ thống chưa lập hợp đồng 30/70. Báo quản trị hệ thống.')
       onDone?.()
       onClose()
       // Ghi đồng ý lại cũng trả đúng hợp đồng đã lập, không lập bản thứ hai
@@ -275,15 +280,16 @@ function QrBlock({ view, onCheck, checking }: { view: QuotationPaymentView; onCh
 }
 
 /**
- * Thanh toán 100% của báo giá đồng ý theo cách cũ (trước hợp đồng 30/70): chỉ xem và huỷ lần đã mở, vì mở mới đã bỏ (410). Báo giá
- * có hợp đồng 30/70 không dùng khối này
+ * Thanh toán 100% của báo giá đồng ý trước bản 30/70: chỉ xem và huỷ lần đã mở, vì mở mới đã bỏ (410). Báo giá có hợp đồng 30/70
+ * không dùng khối này
  */
 export function QuotationPaymentPanel({
   quotation: q,
-  onWithdraw,
+  onDecide,
 }: {
   quotation: QuotationView
-  onWithdraw: (decision: OnSiteDecision) => void
+  /** Ghi quyết định của khách: đổi ý / muốn sửa, hoặc đồng ý lại để lập hợp đồng 30/70 (báo giá đồng ý trước bản 30/70) */
+  onDecide: (decision: OnSiteDecision) => void
 }) {
   const query = useQuotationPaymentQuery(q.quotationId)
   const cancel = useCancelQuotationPaymentMutation()
@@ -292,6 +298,8 @@ export function QuotationPaymentPanel({
   const view = query.data
   const state = view?.paymentState
   const meta = state ? (QUOTATION_PAYMENT_STATES[state] ?? { label: state, tone: 'neutral' as const }) : null
+  // Server chưa chạy bản 30/70: ghi đồng ý lại cũng không lập được hợp đồng
+  const outdated = !hasPaymentPlanBackend(q)
 
   async function stop() {
     setError(null)
@@ -309,10 +317,11 @@ export function QuotationPaymentPanel({
       <PanelHeader
         title={
           <span className="flex flex-wrap items-center gap-2">
-            Thanh toán {meta && <Badge tone={meta.tone}>{meta.label}</Badge>}
+            Thanh toán
+            {/* Không mở mới được nữa: không gắn nhãn "chờ mở" */}
+            {meta && state !== 'AWAITING_PAYMENT' && <Badge tone={meta.tone}>{meta.label}</Badge>}
           </span>
         }
-        description="Thanh toán 100% báo giá theo cách cũ, mở trước khi chuyển sang hợp đồng 30/70. Chỉ còn xem và huỷ."
       />
       <PanelBody className="space-y-4">
         {query.isPending ? (
@@ -346,11 +355,24 @@ export function QuotationPaymentPanel({
           <Notice tone="info" title="Chờ quản lý xác nhận thu tiền mặt">
             Nộp tiền và phiếu thu cho quản lý. Bạn không tự xác nhận được; hợp đồng lập khi quản lý ghi đã thu đủ.
           </Notice>
+        ) : state === 'AWAITING_PAYMENT' && outdated ? (
+          <Notice tone="warn" title="Hệ thống chưa cập nhật hợp đồng 30/70">
+            Ghi khách đồng ý xong mà không có hợp đồng 30/70 nghĩa là máy chủ chưa chạy bản mới, nên chưa thu được 30%
+            và chưa tải được hợp đồng giấy. Báo quản trị hệ thống cập nhật, rồi ghi khách muốn sửa, chốt lại và ghi
+            khách đồng ý.
+          </Notice>
+        ) : state === 'AWAITING_PAYMENT' && canReconfirmAgreement(q, state) ? (
+          <Notice tone="warn" title="Báo giá này chưa có hợp đồng 30/70">
+            Khách đồng ý lúc {formatMoment(q.acceptedAt)}, trước khi hệ thống chuyển sang trả 30/70, nên chưa có hợp
+            đồng để thu 30%. Xác nhận lại với khách rồi bấm &quot;Lập hợp đồng 30/70&quot;: hệ thống lập ngay hợp đồng
+            (bản nháp) theo đúng báo giá này, khách đọc trước khi trả 30%.
+          </Notice>
         ) : state === 'AWAITING_PAYMENT' ? (
-          <p className="text-body text-fg-2">
-            Khách đã đồng ý lúc {formatMoment(q.acceptedAt)} theo cách cũ. Thanh toán 100% báo giá không mở mới được
-            nữa; ghi khách muốn sửa rồi chốt lại để lập hợp đồng 30/70.
-          </p>
+          <Notice tone="warn" title="Báo giá này chưa có hợp đồng 30/70">
+            {q.isExpired
+              ? 'Báo giá đã hết hạn nên không lập hợp đồng theo bản này được. Ghi khách muốn sửa rồi lập bản mới theo giá hiện tại.'
+              : 'Biên bản khảo sát đã được bổ sung sau khi khách đồng ý. Ghi khách muốn sửa rồi lập bản mới theo biên bản mới.'}
+          </Notice>
         ) : (
           <Notice tone="warn" title="Báo giá không còn thanh toán được">
             {q.isExpired
@@ -367,6 +389,16 @@ export function QuotationPaymentPanel({
 
         {view && !isVerifiedPaid(view) && (
           <div className="flex flex-wrap gap-3">
+            {!outdated && canReconfirmAgreement(q, state) && (
+              <Button
+                icon="history_edu"
+                variant="primary"
+                disabled={busy}
+                onClick={() => onDecide(ON_SITE_DECISIONS.agreed)}
+              >
+                Lập hợp đồng 30/70
+              </Button>
+            )}
             {canCancelPayment(state) && (
               <Button icon="cancel" variant="danger" disabled={busy} onClick={() => void stop()}>
                 {cancel.isPending
@@ -382,7 +414,7 @@ export function QuotationPaymentPanel({
                   icon="edit_note"
                   variant="warn"
                   disabled={busy}
-                  onClick={() => onWithdraw(ON_SITE_DECISIONS.revisionNeeded)}
+                  onClick={() => onDecide(ON_SITE_DECISIONS.revisionNeeded)}
                 >
                   Khách muốn sửa
                 </Button>
@@ -390,7 +422,7 @@ export function QuotationPaymentPanel({
                   icon="block"
                   variant="danger"
                   disabled={busy}
-                  onClick={() => onWithdraw(ON_SITE_DECISIONS.declined)}
+                  onClick={() => onDecide(ON_SITE_DECISIONS.declined)}
                 >
                   Khách đổi ý
                 </Button>

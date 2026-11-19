@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   availabilityRangeErrors,
   canPlanForContract,
+  isSchedulableContract,
   plannedWaitReason,
   slotToForm,
   vnDateTime,
@@ -47,4 +48,22 @@ test('lịch dự kiến không bao giờ là đã xác nhận: chờ ký (đã 
   assert.equal(plannedWaitReason(s('PLANNED')), 'confirming')
   assert.equal(plannedWaitReason(s('CONFIRMED', { awaitingPayment: true })), null)
   assert.equal(plannedWaitReason(s('RESCHEDULE_REQUIRED')), null)
+})
+
+test('hợp đồng 30/70 hẹn ngày được từ khi nhận 30% (chưa cần ký giấy, không cần trả đủ); bản nháp, đã huỷ thì không', () => {
+  const plan = { plan: 'DEPOSIT_30_BALANCE_70' }
+  assert.equal(isSchedulableContract({ status: 'DRAFT', paymentPlan: plan }), false)
+  assert.equal(isSchedulableContract({ status: 'DISCARDED', paymentPlan: plan }), false)
+  assert.equal(isSchedulableContract({ status: 'AWAITING_SIGNATURE', paymentPlan: plan }), true)
+  assert.equal(isSchedulableContract({ status: 'SIGNED', paymentPlan: plan }), true)
+  assert.equal(isSchedulableContract({ status: 'PAID', paymentPlan: plan }), true)
+  // Không dùng cờ trả trước của luồng cũ cho hợp đồng 30/70: DRAFT có paymentCompleted vẫn chưa hẹn được
+  assert.equal(isSchedulableContract({ status: 'DRAFT', paymentCompleted: true, paymentPlan: plan }), false)
+})
+
+test('hợp đồng cũ giữ luật cũ: đã ký / đã trả, hoặc trả trước ở trạng thái còn hiệu lực', () => {
+  assert.equal(isSchedulableContract({ status: 'SIGNED', paymentPlan: null }), true)
+  assert.equal(isSchedulableContract({ status: 'AWAITING_SIGNATURE', paymentPlan: null }), false)
+  assert.equal(isSchedulableContract({ status: 'AWAITING_SIGNATURE', paymentCompleted: true, paymentPlan: null }), true)
+  assert.equal(isSchedulableContract({ status: 'SUPERSEDED', paymentCompleted: true, paymentPlan: null }), false)
 })

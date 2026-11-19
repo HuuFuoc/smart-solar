@@ -4,6 +4,10 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import {
   acceptanceErrors,
+  agreementWithdrawal,
+  customerPlanTodo,
+  packagePurchaseMode,
+  technicianAssignment,
   assignToPages,
   canCancelInstallment,
   canCustomerDecide,
@@ -27,8 +31,10 @@ import {
   moneySplit,
   pageCountError,
   pendingAcceptance,
+  planPermissions,
   signedOnError,
 } from '../src/features/payment-plan/paymentPlanRules.ts'
+import { readContractSnapshot } from '../src/features/payment-plan/contractSnapshot.ts'
 
 const deposit = (over = {}) => ({
   sequence: 1,
@@ -293,5 +299,184 @@ describe('Báo cáo tài chính', () => {
     assert.ok(financePeriodError('2026-01-01', '2027-01-03'))
     assert.ok(financePeriodError('2026-11-20', '2026-11-19'))
     assert.ok(financePeriodError('', '2026-11-19'))
+  })
+})
+
+describe('Quyền theo vai trò trên hợp đồng 30/70', () => {
+  test('kỹ thuật viên mở thanh toán và tải trang ký, nhưng không xác nhận tiền mặt và không nghiệm thu', () => {
+    const t = planPermissions('technician')
+    assert.equal(t.installmentActor, 'technician')
+    assert.equal(t.canOpenPayment, true)
+    assert.equal(t.signatureWriter, 'technician')
+    assert.equal(t.canPlanSchedule, true)
+    assert.equal(t.canConfirmCash, false)
+    assert.equal(t.canAccept, false)
+  })
+
+  test('kinh doanh chỉ đọc hợp đồng; ghi công nợ được nhưng không quyết định pháp lý / đóng hồ sơ', () => {
+    const s = planPermissions('sales')
+    assert.equal(s.installmentActor, 'staff')
+    assert.equal(s.canOpenPayment, false)
+    assert.equal(s.canConfirmCash, false)
+    assert.equal(s.signatureWriter, null)
+    assert.equal(s.canRecordCollection, true)
+    assert.equal(s.canDecideCollection, false)
+  })
+
+  test('quản lý, quản trị xác nhận tiền mặt và hỗ trợ trang ký, không tự nghiệm thu thay khách', () => {
+    for (const role of ['manager', 'admin']) {
+      const m = planPermissions(role)
+      assert.equal(m.canConfirmCash, true, role)
+      assert.equal(m.signatureWriter, 'support', role)
+      assert.equal(m.canOpenPayment, false, role)
+      assert.equal(m.canAccept, false, role)
+      assert.equal(m.canDecideCollection, true, role)
+    }
+  })
+
+  test('khách trả trong ứng dụng và nghiệm thu, không tải trang ký, không xác nhận tiền', () => {
+    const c = planPermissions('customer')
+    assert.equal(c.installmentActor, 'customer')
+    assert.equal(c.canOpenPayment, true)
+    assert.equal(c.canAccept, true)
+    assert.equal(c.signatureWriter, null)
+    assert.equal(c.canConfirmCash, false)
+  })
+})
+
+describe('Bản chụp khách và báo giá của hợp đồng', () => {
+  const pricing = {
+    quoteNumber: 'QT-20261119-ABC',
+    quotationVersion: 2,
+    currency: 'VND',
+    lines: [
+      { lineNumber: 2, sku: 'INV-5K', name: 'Inverter 5kW', quantity: 1, unitPrice: 12_000_000, lineTotal: 12_000_000 },
+      {
+        lineNumber: 1,
+        sku: 'PV-550',
+        name: 'Tấm pin 550W',
+        quantity: 10,
+        unit: 'PCS',
+        unitPrice: 3_000_000,
+        lineTotal: 30_000_000,
+      },
+    ],
+    equipmentSubtotal: 42_000_000,
+    taxRatePercent: 8,
+    taxAmount: 3_360_000,
+    totalAmount: 45_360_000,
+  }
+  const customer = {
+    customerName: 'Nguyễn Văn A',
+    customerPhone: '0900000000',
+    streetLine: '12 Lê Lợi',
+    province: 'TP.HCM',
+  }
+
+  test('đọc đúng khách, địa chỉ và các dòng theo số thứ tự; tiền giữ nguyên số backend ghi', () => {
+    const s = readContractSnapshot(pricing, customer)
+    assert.equal(s.customer.name, 'Nguyễn Văn A')
+    assert.equal(s.customer.address, '12 Lê Lợi, TP.HCM')
+    assert.deepEqual(
+      s.lines.map((l) => l.sku),
+      ['PV-550', 'INV-5K'],
+    )
+    assert.equal(s.lines[0].lineTotal, 30_000_000)
+    assert.equal(s.totals.totalAmount, 45_360_000)
+    assert.equal(s.quotationVersion, 2)
+  })
+
+  test('JSON thiếu hoặc sai kiểu không làm vỡ trang', () => {
+    const s = readContractSnapshot(null, 'x')
+    assert.deepEqual(s.lines, [])
+    assert.equal(s.customer.name, null)
+    assert.equal(s.totals.totalAmount, null)
+    const bad = readContractSnapshot({ lines: [{ quantity: '3', lineTotal: 'nhiều' }, 5] }, {})
+    assert.equal(bad.lines.length, 2)
+    assert.equal(bad.lines[0].quantity, null)
+    assert.equal(bad.lines[0].lineTotal, null)
+    assert.equal(bad.lines[0].name, 'Sản phẩm')
+  })
+})
+
+describe('Kỹ thuật viên không khảo sát công trình chỉ đọc hợp đồng 30/70', () => {
+  test('người đã khảo sát: đường của kỹ thuật viên, thu tiền, tải trang ký, hẹn ngày', () => {
+    const t = planPermissions('technician', { assigned: true })
+    assert.equal(t.installmentActor, 'technician')
+    assert.equal(t.canOpenPayment, true)
+    assert.equal(t.signatureWriter, 'technician')
+    assert.equal(t.canPlanSchedule, true)
+  })
+
+  test('kỹ thuật viên khác: đọc bằng đường của nhân viên, không có nút ghi nào', () => {
+    const t = planPermissions('technician', { assigned: false })
+    assert.equal(t.installmentActor, 'staff')
+    assert.equal(t.canOpenPayment, false)
+    assert.equal(t.signatureWriter, null)
+    assert.equal(t.canPlanSchedule, false)
+    assert.equal(t.canConfirmCash, false)
+    assert.equal(t.canAccept, false)
+  })
+
+  test('nhận ra người phụ trách theo lần đọc khoản 30%: được là phải, 404 là người khác, lỗi khác thì chỉ đọc', () => {
+    assert.equal(technicianAssignment({ isPending: true, isSuccess: false, error: null }), 'pending')
+    assert.equal(technicianAssignment({ isPending: false, isSuccess: true, error: null }), 'assigned')
+    assert.equal(
+      technicianAssignment({ isPending: false, isSuccess: false, error: { status: 404, code: 'CONTRACT_NOT_FOUND' } }),
+      'other',
+    )
+    const network = technicianAssignment({ isPending: false, isSuccess: false, error: { status: 0 } })
+    assert.equal(network, 'unknown')
+    // "unknown" không phải "assigned": không mở nút ghi khi chưa chắc
+    assert.equal(planPermissions('technician', { assigned: network === 'assigned' }).canOpenPayment, false)
+  })
+})
+
+describe('Khách đổi ý sau khi đã đồng ý báo giá', () => {
+  test('bản nháp, chưa mở thanh toán 30%: ghi được', () => {
+    assert.equal(agreementWithdrawal({ status: 'DRAFT' }, { paymentState: 'AWAITING_PAYMENT' }), 'allowed')
+    // Chưa đọc được hợp đồng / khoản: để backend quyết định
+    assert.equal(agreementWithdrawal(undefined, undefined), 'allowed')
+  })
+
+  test('đang mở QR hoặc chờ xác nhận tiền mặt: phải huỷ trước (QUOTATION_PAYMENT_STARTED)', () => {
+    assert.equal(agreementWithdrawal({ status: 'DRAFT' }, { paymentState: 'ONLINE_IN_PROGRESS' }), 'payment-open')
+    assert.equal(
+      agreementWithdrawal({ status: 'DRAFT' }, { paymentState: 'AWAITING_CASH_CONFIRMATION' }),
+      'payment-open',
+    )
+  })
+
+  test('đã nhận 30% hoặc hợp đồng đã qua bản nháp: không ghi khách đổi ý được', () => {
+    assert.equal(agreementWithdrawal({ status: 'DRAFT' }, { paymentState: 'PAID' }), 'deposit-paid')
+    assert.equal(agreementWithdrawal({ status: 'AWAITING_SIGNATURE' }, undefined), 'deposit-paid')
+    assert.equal(agreementWithdrawal({ status: 'SIGNED' }, { paymentState: 'NOT_PAYABLE' }), 'deposit-paid')
+    assert.equal(agreementWithdrawal({ status: 'DISCARDED' }, { paymentState: 'NOT_PAYABLE' }), 'closed')
+  })
+})
+
+describe('Việc của khách trên hợp đồng 30/70', () => {
+  test('bản nháp là trả 30%; khoản 70% đến hạn / quá hạn là trả 70%; các chặng khác không có việc', () => {
+    assert.equal(customerPlanTodo('DRAFT_CREATED'), 'pay-deposit')
+    assert.equal(customerPlanTodo('BALANCE_DUE'), 'pay-balance')
+    assert.equal(customerPlanTodo('BALANCE_OVERDUE'), 'pay-balance')
+    for (const stage of ['DEPOSIT_VERIFIED', 'READY_FOR_INSTALLATION', 'FULLY_PAID', 'DISCARDED', null])
+      assert.equal(customerPlanTodo(stage), null, String(stage))
+  })
+})
+
+describe('Sau bán vẫn trả 100% trước, không gộp khoản của hợp đồng 30/70', () => {
+  const plan = { plan: 'DEPOSIT_30_BALANCE_70' }
+  test('hợp đồng cũ: đã ký chưa trả thì gộp tiền hợp đồng, đã trả thì mua riêng gói', () => {
+    assert.equal(packagePurchaseMode({ status: 'SIGNED', paymentPlan: null }), 'with-contract')
+    assert.equal(packagePurchaseMode({ status: 'PAID', paymentPlan: null }), 'packages-only')
+    assert.equal(packagePurchaseMode({ status: 'AWAITING_SIGNATURE', paymentPlan: null }), null)
+  })
+
+  test('hợp đồng 30/70 đã ký giấy mà chưa trả đủ: chưa mua gói được; trả đủ thì mua riêng gói', () => {
+    assert.equal(packagePurchaseMode({ status: 'SIGNED', paymentPlan: plan }), null)
+    assert.equal(packagePurchaseMode({ status: 'DRAFT', paymentPlan: plan }), null)
+    assert.equal(packagePurchaseMode({ status: 'AWAITING_SIGNATURE', paymentPlan: plan }), null)
+    assert.equal(packagePurchaseMode({ status: 'PAID', paymentPlan: plan }), 'packages-only')
   })
 })

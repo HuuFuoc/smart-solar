@@ -127,7 +127,7 @@ function InstallationSchedulesPage({ contractPattern }: { contractPattern: strin
                               <p className="text-meta text-fg-2">Chờ khách thanh toán</p>
                             )}
                             {s.status === 'PLANNED' && s.awaitingContractSignature && (
-                              <p className="text-meta text-fg-2">Đã thanh toán, chờ duyệt bản ký</p>
+                              <p className="text-meta text-fg-2">Đã nhận tiền, chờ hợp đồng ký xong</p>
                             )}
                             {s.customerChangeRequestNote && (
                               <p className="text-meta text-fg-2">Khách xin đổi: {s.customerChangeRequestNote}</p>

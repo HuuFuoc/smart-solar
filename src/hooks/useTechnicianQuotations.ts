@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { OnSiteDecision } from '@/common/quotation'
 import { quotationPaymentPollMs } from '@/features/quotations/quotationRules'
+import { contractKeys } from '@/hooks/useContracts'
+import { paymentPlanKeys } from '@/hooks/paymentPlanKeys'
 import * as quotationService from '@/services/technicianQuotationService'
 import type { ApiError } from '@/services/api/errors'
 import type { QuotationPaymentView, QuotationView } from '@/types/res/quotationsRes'
@@ -25,7 +27,11 @@ export function useTechnicianQuotationsQuery(
   })
 }
 
-function useCartWrite<V>(write: (variables: V) => Promise<QuotationView>) {
+/** `alsoRefresh`: khoá cache khác đổi theo lệnh này (vd. hợp đồng 30/70 lập / huỷ theo quyết định của khách) */
+function useCartWrite<V>(
+  write: (variables: V) => Promise<QuotationView>,
+  alsoRefresh: readonly (readonly string[])[] = [],
+) {
   const queryClient = useQueryClient()
   return useMutation<QuotationView, ApiError, V>({
     mutationFn: write,
@@ -35,7 +41,10 @@ function useCartWrite<V>(write: (variables: V) => Promise<QuotationView>) {
           ? list.map((q) => (q.quotationId === view.quotationId ? view : q))
           : [...(list ?? []), view],
       ),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: technicianQuotationKeys.all }),
+    onSettled: () =>
+      Promise.all(
+        [technicianQuotationKeys.all, ...alsoRefresh].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+      ),
   })
 }
 
@@ -93,9 +102,15 @@ export function useReviseCartMutation() {
 
 type DecisionVars = { quotationId: string; decision: OnSiteDecision; revision: number; note: string | null }
 
+/**
+ * Khách đồng ý thì backend lập (hoặc trả lại) đúng một hợp đồng 30/70; khách đổi ý trước khi trả 30% thì hợp đồng đó bị huỷ. Cả hai
+ * đổi hợp đồng và khoản trả, nên tải lại cả hai cùng danh sách báo giá
+ */
 export function useOnSiteDecisionMutation() {
-  return useCartWrite(({ quotationId, decision, revision, note }: DecisionVars) =>
-    quotationService.recordOnSiteDecision(quotationId, decision, revision, note),
+  return useCartWrite(
+    ({ quotationId, decision, revision, note }: DecisionVars) =>
+      quotationService.recordOnSiteDecision(quotationId, decision, revision, note),
+    [contractKeys.all, paymentPlanKeys.all],
   )
 }
 
@@ -116,7 +131,7 @@ export function useQuotationPaymentQuery(
   })
 }
 
-// Huỷ lần thanh toán 100% cũ đã mở: backend cho 5 lần / 10 phút nên chỉ gọi khi bấm. Mở mới đã bỏ (410)
+// Huỷ lần thanh toán 100% báo giá đã mở trước bản 30/70: backend cho 5 lần / 10 phút nên chỉ gọi khi bấm. Mở mới đã bỏ (410)
 function usePaymentWrite<V>(write: (variables: V) => Promise<QuotationPaymentView>) {
   const queryClient = useQueryClient()
   return useMutation<QuotationPaymentView, ApiError, V>({

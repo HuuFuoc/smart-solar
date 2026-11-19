@@ -1,4 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { INSTALLMENT_CASH_POLL_MS, INSTALLMENT_ONLINE_POLL_MS } from '@/common/paymentPlan'
 import { contractKeys } from '@/hooks/useContracts'
 import { customerContractKeys } from '@/hooks/useCustomerContracts'
@@ -8,6 +9,7 @@ import { managerInstallationKeys } from '@/hooks/useManagerInstallations'
 import { paymentDeskKeys } from '@/hooks/usePaymentDesk'
 import { paymentPlanKeys } from '@/hooks/paymentPlanKeys'
 import { technicianQuotationKeys } from '@/hooks/useTechnicianQuotations'
+import { technicianAssignment } from '@/features/payment-plan/paymentPlanRules'
 import * as directoryService from '@/services/contractDirectoryService'
 import * as customerInstallationService from '@/services/customerInstallationService'
 import * as installmentService from '@/services/installmentService'
@@ -35,21 +37,25 @@ import type {
 
 export { paymentPlanKeys }
 
-function useRefreshContractWorld() {
+/** Tải lại mọi thứ đổi theo một khoản trả / trang ký / nghiệm thu (hàm ổn định giữa các lần vẽ) */
+export function useRefreshContractWorld() {
   const queryClient = useQueryClient()
-  return () =>
-    Promise.all(
-      [
-        paymentPlanKeys.all,
-        contractKeys.all,
-        customerContractKeys.all,
-        installationScheduleKeys.all,
-        technicianQuotationKeys.all,
-        paymentDeskKeys.all,
-        customerInstallationKeys.all,
-        managerInstallationKeys.all,
-      ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
-    )
+  return useCallback(
+    () =>
+      Promise.all(
+        [
+          paymentPlanKeys.all,
+          contractKeys.all,
+          customerContractKeys.all,
+          installationScheduleKeys.all,
+          technicianQuotationKeys.all,
+          paymentDeskKeys.all,
+          customerInstallationKeys.all,
+          managerInstallationKeys.all,
+        ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+      ),
+    [queryClient],
+  )
 }
 
 /** Hỏi lại khi khách đang quét mã (backend đối soát với PayOS mỗi lần đọc) hoặc đang chờ quản lý xác nhận tiền mặt */
@@ -71,6 +77,15 @@ export function useInstallmentPaymentQuery(
     // Rời trang thì react-query tự dừng hỏi lại; tab ẩn cũng không hỏi
     refetchInterval: (query) => installmentPollMs(query.state.data),
   })
+}
+
+/**
+ * Kỹ thuật viên đang xem có phải người đã khảo sát hợp đồng này không (mới được thu tiền, tải trang ký, hẹn ngày). Hỏi khoản 30%
+ * trên đường của kỹ thuật viên: backend trả 404 cho kỹ thuật viên khác. Dùng chung cache với khối thanh toán khoản 30%
+ */
+export function useTechnicianAssignment(contractId: string, enabled: boolean) {
+  const probe = useInstallmentPaymentQuery('technician', { contractId, sequence: 1 }, { enabled })
+  return enabled ? technicianAssignment(probe) : ('other' as const)
 }
 
 export function useStartInstallmentPaymentMutation(actor: Exclude<InstallmentActor, 'staff'>) {

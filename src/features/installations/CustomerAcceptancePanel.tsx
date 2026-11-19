@@ -114,9 +114,15 @@ function DecisionDialog({
           expectedRevision: p.revision,
         },
       })
-      toast.success(text.done)
+      toast.success(
+        decision === 'ACCEPT' && balance && balance.status !== 'PAID'
+          ? 'Đã nghiệm thu. Khoản 70% đã đến hạn; xem hạn và trả ở trang hợp đồng.'
+          : text.done,
+      )
       onClose()
     } catch (e) {
+      // Tệp đã tải bị từ chối (mất trên kho, chưa xác minh…): lần gửi sau tải lại tệp, không gửi lại mã tệp cũ
+      if (isApiError(e) && e.code?.startsWith('FILE_')) setUploaded(new Map())
       setError(acceptanceError(e))
     }
   }
@@ -132,8 +138,8 @@ function DecisionDialog({
             </p>
             {balance && balance.status !== 'PAID' && (
               <p className="text-fg">
-                Khoản 70% (<span className="tnum">{formatVnd(balance.amount)}</span>) đến hạn trong 72 giờ kể từ lúc bạn
-                nghiệm thu; hạn chính xác hiện ở trang hợp đồng sau khi gửi.
+                Khoản 70% (<span className="tnum">{formatVnd(balance.amount)}</span>) đến hạn trong tối đa 72 giờ kể từ
+                lúc bạn nghiệm thu, theo điều khoản hợp đồng; hạn chính xác hiện ngay trên trang này sau khi gửi.
               </p>
             )}
           </>

@@ -36,7 +36,7 @@ import type { InstallationStaffView } from '@/types/res/managerInstallationsRes'
 
 const projectTitle = (p: InstallationStaffView) => p.site?.propertyName || `Dự án ${shortCode(p.projectId)}`
 
-/** Vị trí trên dải các bước: 0 phân công, 1 kỹ thuật viên nhận, 2 thi công, 3 nghiệm thu nội bộ, 4 bàn giao */
+/** Vị trí trên dải các bước: 0 phân công, 1 kỹ thuật viên nhận, 2 thi công, 3 khách nghiệm thu, 4 bàn giao */
 function stepIndex(p: InstallationStaffView) {
   // Đổi người khi đã thi công thì người mới phải nhận việc trước
   const waitingAcceptance = p.responsibleTechnician?.assignmentStatus === 'PENDING'
@@ -81,7 +81,7 @@ function trackerSteps(p: InstallationStaffView): TrackerStep[] {
       state: state(2),
     },
     {
-      label: 'Nghiệm thu nội bộ',
+      label: 'Khách nghiệm thu',
       detail: p.acceptanceRequestedAt ? `Báo cáo ${formatMoment(p.acceptanceRequestedAt)}` : undefined,
       state: state(3),
     },

@@ -3,6 +3,7 @@ import { ButtonLink } from '@/components/common/ui/button'
 import { Panel, PanelHeader } from '@/components/common/ui/panel'
 import { contractStatusMeta, formatContractMoney, versionLabel } from '@/features/contracts/contractDisplay'
 import { isCustomerTodo, latestPerContract } from '@/features/contracts/customerContractRules'
+import { stageMeta } from '@/features/payment-plan/paymentPlanDisplay'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { ROUTES, withId } from '@/routes/paths'
 
@@ -22,7 +23,10 @@ export function ContractLinkPanel({
   )
   const latest = latestPerContract(related)[0]
   if (!latest) return null
-  const status = contractStatusMeta(latest.status, 'customer')
+  // Hợp đồng 30/70 hiện chặng (trả 30%, ký giấy, trả 70%…), hợp đồng cũ hiện trạng thái
+  const status = latest.paymentPlan
+    ? stageMeta(latest.paymentPlan.stage, 'customer')
+    : contractStatusMeta(latest.status, 'customer')
   return (
     <Panel>
       <PanelHeader

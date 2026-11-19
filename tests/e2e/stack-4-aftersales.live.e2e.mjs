@@ -24,25 +24,30 @@ const sawPath = (method, pattern, since, status) =>
 const request = (id) => S.must('MANAGER', 'GET', `/manager/after-sales/requests/${id}`)
 
 describe('4. Sau bán', { skip }, () => {
-  test('tiền đề (API, ngoài 76): cài đặt, 2 gói đang bán, khách mua gói thiên tai trên hợp đồng đã trả tiền nhưng chưa bàn giao', async () => {
-    assert.ok(state.contractId, 'cần chạy giai đoạn 3 trước')
-    assert.equal((await S.must('CUSTOMER', 'GET', `/customers/me/contracts/${state.contractId}`)).status, 'PAID')
+  // Hợp đồng của giai đoạn 3 trả 30/70: chỉ thành PAID sau khi khách nghiệm thu và trả 70% (đã bàn giao ở giai đoạn 3), nên gói chỉ
+  // mua được sau bàn giao. Sau bán vẫn trả 100% trước, không gộp khoản nào của hợp đồng 30/70 vào link mua gói
+  test('tiền đề (API, ngoài 76): cài đặt, 2 gói đang bán, khách mua gói thiên tai trên hợp đồng 30/70 đã trả đủ, đã bàn giao', async () => {
+    assert.ok(state.contractId && state.projectId, 'cần chạy giai đoạn 3 trước')
+    const contract = await S.must('CUSTOMER', 'GET', `/customers/me/contracts/${state.contractId}`)
+    assert.equal(contract.status, 'PAID')
+    assert.equal(contract.paymentPlan?.fullyPaid, true)
     await F.setAfterSalesSettings()
     state.maintenancePackageId = await F.createPackage('MAINTENANCE', `Bảo trì 12 tháng ${tag}`, 2_000_000)
     state.disasterPackageId = await F.createPackage('DISASTER_PROTECTION', `Bảo vệ bão ${tag}`, 1_500_000)
     const subs = await F.buyPackages('CUSTOMER', state.contractId, { disasterPackageId: state.disasterPackageId })
-    // Chưa bàn giao: đã trả tiền nhưng kỳ chưa bắt đầu
-    assert.deepEqual(
-      subs.map((s) => s.status),
-      ['PAID'],
+    assert.ok(
+      subs.every((s) => s.status === 'PAID' || s.status === 'ACTIVE'),
+      subs.map((s) => s.status).join(','),
     )
   })
 
-  test('tiền đề (API, ngoài 76): thi công → bàn giao; gói thiên tai bắt đầu kỳ; khách mua gói bảo trì (bắt đầu ngay)', async () => {
-    const { projectId, assets } = await F.installAndHandOver(state.contractId, state.productId)
-    state.projectId = projectId
-    state.inverterAssetId = assets.find((a) => a.assetType === 'INVERTER').assetId
-    state.panelAssetId = assets.find((a) => a.assetType === 'PANEL').assetId
+  test('tiền đề (API, ngoài 76): công trình đã bàn giao ở giai đoạn 3; gói thiên tai bắt đầu kỳ; khách mua gói bảo trì (bắt đầu ngay)', async () => {
+    if (!state.inverterAssetId || !state.panelAssetId) {
+      const project = await S.must('CUSTOMER', 'GET', `/customers/me/installation-projects/${state.projectId}`)
+      assert.equal(project.status, 'COMPLETED')
+      state.inverterAssetId = project.assets.find((a) => a.assetType === 'INVERTER').assetId
+      state.panelAssetId = project.assets.find((a) => a.assetType === 'PANEL').assetId
+    }
     const subs = await F.buyPackages('CUSTOMER', state.contractId, { maintenancePackageId: state.maintenancePackageId })
     state.maintenanceSubscriptionId = subs[0].subscriptionId
     state.maintenancePurchasedAt = new Date().toISOString()

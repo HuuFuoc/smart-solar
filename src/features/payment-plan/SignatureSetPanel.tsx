@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
+import { DocumentPreviewButtons } from '@/components/common/ui/document-preview'
 import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/dialog'
 import { DateField, Field, Input, Select, Textarea, fieldMessageId } from '@/components/common/ui/field'
 import { FileButton } from '@/components/common/ui/file-button'
@@ -42,52 +43,15 @@ import type { AttachedFileUrlView, ContractPaymentPlanView, SignatureSetView } f
 
 const PURPOSE = 'SIGNED_CONTRACT_PAGE'
 
-function PageLinks({ request }: { request: (disposition: 'inline' | 'attachment') => Promise<AttachedFileUrlView> }) {
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  async function open(disposition: 'inline' | 'attachment') {
-    if (busy) return
-    setBusy(true)
-    setError(null)
-    // Mở tab ngay trong lần bấm để trình chặn cửa sổ bật lên không chặn
-    const tab = disposition === 'inline' ? window.open('', '_blank') : null
-    try {
-      const link = await request(disposition)
-      if (tab) {
-        tab.opener = null
-        tab.location.href = link.url
-      } else {
-        const a = document.createElement('a')
-        a.href = link.url
-        a.rel = 'noopener'
-        document.body.append(a)
-        a.click()
-        a.remove()
-      }
-    } catch (e) {
-      tab?.close()
-      setError(paymentPlanErrorMessage(e))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <span className="flex flex-wrap items-center gap-2">
-      <Button size="sm" variant="info" icon="visibility" disabled={busy} onClick={() => void open('inline')}>
-        Xem
-      </Button>
-      <Button size="sm" variant="secondary" icon="download" disabled={busy} onClick={() => void open('attachment')}>
-        Tải về
-      </Button>
-      {error && (
-        <span role="alert" className="text-meta text-danger">
-          {error}
-        </span>
-      )}
-    </span>
-  )
+/** Xem trong hộp thoại hoặc tải một trang đã ký bằng link ký sẵn xin lúc bấm */
+function PageLinks({
+  name,
+  request,
+}: {
+  name: string
+  request: (disposition: 'inline' | 'attachment') => Promise<AttachedFileUrlView>
+}) {
+  return <DocumentPreviewButtons name={name} request={request} errorText={paymentPlanErrorMessage} />
 }
 
 function StartForm({
@@ -340,6 +304,7 @@ function UploadingSet({
               <span className="flex flex-wrap items-center gap-2">
                 {page && (
                   <PageLinks
+                    name={`Trang ${n}`}
                     request={(disposition) =>
                       pageUrl.mutateAsync({ contractId: contract.contractId, fileId: page.fileId, disposition })
                     }
@@ -501,6 +466,7 @@ function SetHistory({
                           <code className="font-mono">{p.sha256.slice(0, 12)}</code>
                         </span>
                         <PageLinks
+                          name={`Trang ${p.pageNumber}, lần ${s.version}`}
                           request={(disposition) => pageUrl.mutateAsync({ contractId, fileId: p.fileId, disposition })}
                         />
                       </li>
@@ -551,7 +517,9 @@ export function SignatureSetPanel({
       <PanelBody className="space-y-4">
         {waitingDeposit ? (
           <p className="text-body text-fg-2">
-            Khách ký bản giấy sau khi khoản 30% được xác minh. Trước đó khách đọc đầy đủ điều khoản ở mục Nội dung.
+            {writer
+              ? 'Chỗ tải ảnh các trang hiện ở đây khi khoản 30% đã được xác minh (PayOS báo đã nhận, hoặc quản lý xác nhận tiền mặt). Lúc đó in hợp đồng cho khách ký rồi chụp từng trang.'
+              : 'Khách ký bản giấy sau khi khoản 30% được xác minh. Trước đó khách đọc đầy đủ điều khoản ở mục Nội dung.'}
           </p>
         ) : current?.status === 'FINALIZED' ? (
           <Notice

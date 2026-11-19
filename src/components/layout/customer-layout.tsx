@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthProvider'
 import { awaitsPayment } from '@/features/after-sales/afterSalesDisplay'
 import { isTodo } from '@/features/after-sales/serviceDisplay'
 import { isCustomerTodo } from '@/features/contracts/customerContractRules'
+import { awaitsCustomerAcceptance } from '@/features/customer-dashboard/customerTodos'
 import { customerRequestTodo } from '@/features/dispatch/dispatchDisplay'
 import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useSubscriptionsQuery } from '@/hooks/useCustomerAfterSales'
@@ -20,8 +21,8 @@ import type { InstallationCustomerView } from '@/types/res/customerInstallations
 import type { CustomerSurveyRequestView } from '@/types/res/customerSurveyRequestsRes'
 import type { CustomerDispatchView } from '@/types/res/dispatchRes'
 
-// Số đỏ cạnh menu: việc chờ khách (đặt giờ khảo sát, ký hợp đồng, duyệt báo giá sửa chữa do kinh doanh lập, thanh toán gói)
-// và mục có thay đổi khách chưa xem (kỹ thuật viên nhận lịch, công trình được xếp lịch...)
+// Số đỏ cạnh menu: việc chờ khách (đặt giờ khảo sát, ký / trả từng khoản hợp đồng, nghiệm thu công trình, duyệt báo giá sửa chữa do
+// kinh doanh lập, thanh toán gói) và mục có thay đổi khách chưa xem (kỹ thuật viên nhận lịch, công trình được xếp lịch...)
 type RequestItem = { request: CustomerSurveyRequestView; dispatch: CustomerDispatchView | undefined }
 const requestAlert = {
   key: ({ request: r }: RequestItem) => r.surveyRequestId,
@@ -36,6 +37,8 @@ const requestAlert = {
 const projectAlert = {
   key: (p: InstallationCustomerView) => p.projectId,
   sig: (p: InstallationCustomerView) => [p.status, p.scheduledStartsAt, p.technicianName].join('|'),
+  // Kỹ thuật viên báo hoàn thành: khách nghiệm thu hoặc yêu cầu làm lại (backend 7d27054)
+  todo: awaitsCustomerAcceptance,
 }
 const serviceAlert = {
   key: (r: ServiceRequestSummary) => r.requestId,
@@ -44,7 +47,8 @@ const serviceAlert = {
 }
 const contractAlert = {
   key: (c: ContractView) => c.contractId,
-  sig: (c: ContractView) => c.status,
+  // Hợp đồng 30/70 đổi chặng (vd. khoản 70% đến hạn) mà trạng thái hợp đồng vẫn là SIGNED
+  sig: (c: ContractView) => [c.status, c.paymentPlan?.stage].join('|'),
   todo: isCustomerTodo,
 }
 const subscriptionAlert = {

@@ -165,7 +165,7 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
         ? {
             tone: 'danger',
             title: 'Gửi báo cáo hoàn thành',
-            body: 'Đã có ảnh, tấm pin và inverter. Viết báo cáo rồi gửi để quản lý nghiệm thu.',
+            body: 'Đã có ảnh, tấm pin và inverter. Viết báo cáo rồi gửi để khách nghiệm thu.',
             action: { label: 'Viết báo cáo', icon: 'edit_note', target: 'installation-report' },
           }
         : {
@@ -192,8 +192,8 @@ export function installationTracker(v: View, now: number): { steps: TrackerStep[
       steps,
       next: {
         tone: 'info',
-        title: 'Chờ quản lý nghiệm thu',
-        body: `Bạn đã gửi báo cáo lúc ${formatDateTime(v.acceptanceRequestedAt)}. Quản lý nghiệm thu nội bộ thì công trình hoàn tất; báo cáo thiếu thì quản lý trả về làm lại.`,
+        title: 'Chờ khách nghiệm thu',
+        body: `Bạn đã gửi báo cáo lúc ${formatDateTime(v.acceptanceRequestedAt)}. Khách nghiệm thu trong ứng dụng thì công trình hoàn tất; khách yêu cầu làm lại hoặc quản lý trả về thì sửa theo lý do. Bạn không nghiệm thu thay khách.`,
       },
     }
   if (completed)

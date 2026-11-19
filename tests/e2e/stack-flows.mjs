@@ -1,6 +1,7 @@
 // Chuỗi tiền đề nhiều bước gọi API nghiệp vụ THẬT của stack kiểm thử (stack-api.mjs), dùng lại ở nhiều giai đoạn. Các bước ở đây nằm
 // ngoài 76 endpoint (hoặc đã có bằng chứng giao diện ở giai đoạn trước), không tính là bằng chứng giao diện. Không sửa DB tay: mọi
-// trạng thái (đã thanh toán, đã bàn giao…) đều do backend chuyển qua đúng lệnh của từng vai trò.
+// trạng thái (đã thanh toán, đã bàn giao…) đều do backend chuyển qua đúng lệnh của từng vai trò. Luồng hợp đồng theo backend `main`
+// 7d27054: hợp đồng 30/70 lập khi khách đồng ý, trả 30% → ký giấy (ảnh từng trang) → thi công → KHÁCH nghiệm thu → trả 70%.
 import assert from 'node:assert/strict'
 import * as S from './stack-api.mjs'
 
@@ -108,40 +109,30 @@ export async function inverterProductId() {
   return created.id
 }
 
-/**
- * Hợp đồng đã thanh toán → dự án (backend tự tạo cho hợp đồng trả trước) → phân công → checklist → kỹ thuật viên lắp, ghi thiết bị →
- * quản lý duyệt thiết bị khác hợp đồng (inverter không có trong báo giá) → báo cáo → quản lý nghiệm thu nội bộ → bàn giao.
- * Trả { projectId, assets }
- */
-export async function installAndHandOver(contractId, panelProductId) {
+/** Giờ làm cả ngày, mọi ngày cho TECH: giờ hẹn / giờ giao gần lúc chạy kiểm thử vẫn hợp lệ. Trả mã kỹ thuật viên */
+export async function openTechnicianDay() {
   const tech = await S.userId('TECH')
   const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
   await S.must('ADMIN', 'PUT', `/admin/technicians/${tech}/working-schedule`, {
     useDefault: false,
     periods: days.map((day) => ({ day, start: '00:00', end: '23:59' })),
   })
+  return tech
+}
+
+/** Dự án thi công của hợp đồng: dự án backend tự lập khi xác nhận lịch, hoặc quản lý lập cho hợp đồng sẵn sàng thi công */
+export async function projectOf(contractId) {
   const created = await S.call('MANAGER', 'POST', `/contracts/${contractId}/installation-project`)
   const projectId =
     created.data?.projectId ??
     (await S.must('MANAGER', 'GET', '/installation-projects')).find((p) => p.contractId === contractId)?.projectId
-  assert.ok(projectId, `không tạo được dự án: ${created.status} ${created.error?.code}`)
-  let p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
-  const startsAt = vnAt(70_000)
-  const endsAt = vnAt(8 * 3600_000)
-  await S.must(
-    'MANAGER',
-    'GET',
-    `/installation-projects/${projectId}/technician-candidates?startsAt=${encodeURIComponent(startsAt)}&endsAt=${encodeURIComponent(endsAt)}`,
-  )
-  await S.must('MANAGER', 'PUT', `/installation-projects/${projectId}/assignment`, {
-    technicianUserId: tech,
-    scheduledStartsAt: startsAt,
-    scheduledEndsAt: endsAt,
-    reason: null,
-    expectedRevision: p.revision,
-    crossZoneAuthorized: false,
-  })
-  p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
+  assert.ok(projectId, `không có dự án: ${created.status} ${created.error?.code}`)
+  return projectId
+}
+
+/** Quản lý xong mọi mục checklist bắt buộc (PROJECT_DOCUMENT đã xác minh) */
+export async function satisfyChecklist(projectId) {
+  const p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
   for (const item of p.checklist ?? []) {
     if (!item.isRequired || item.status === 'SATISFIED') continue
     const doc = await S.uploadFile(
@@ -160,68 +151,138 @@ export async function installAndHandOver(contractId, panelProductId) {
       note: 'Kiểm thử',
     })
   }
-  // Kỹ thuật viên chỉ bắt đầu được từ giờ đã giao
-  await sleep(Math.max(0, Date.parse(startsAt) - Date.now()) + 5000)
-  const tv = await S.must('TECH', 'GET', `/technicians/me/installation-projects/${projectId}`)
-  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/accept`, {
-    expectedRevision: tv.revision,
+}
+
+/**
+ * Quản lý giao dự án cho TECH, bắt đầu sau khoảng 70 giây (dự án đã có người thì là đổi lịch, lý do bắt buộc); kỹ thuật viên phải
+ * nhận lại việc. Trả giờ bắt đầu
+ */
+export async function assignSoon(projectId) {
+  const tech = await openTechnicianDay()
+  const p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
+  const startsAt = vnAt(70_000)
+  const endsAt = vnAt(8 * 3600_000)
+  await S.must(
+    'MANAGER',
+    'GET',
+    `/installation-projects/${projectId}/technician-candidates?startsAt=${encodeURIComponent(startsAt)}&endsAt=${encodeURIComponent(endsAt)}`,
+  )
+  await S.must('MANAGER', 'PUT', `/installation-projects/${projectId}/assignment`, {
+    technicianUserId: tech,
+    scheduledStartsAt: startsAt,
+    scheduledEndsAt: endsAt,
+    reason: p.responsibleTechnician ? 'Kiểm thử: dời giờ thi công sớm hơn theo khách' : null,
+    expectedRevision: p.revision,
+    crossZoneAuthorized: false,
   })
-  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/start`)
+  return startsAt
+}
+
+/** Kỹ thuật viên nhận việc (khi đang chờ nhận) rồi đợi tới giờ được giao */
+export async function acceptAndWait(projectId, startsAt) {
+  const tv = await S.must('TECH', 'GET', `/technicians/me/installation-projects/${projectId}`)
+  if (tv.status === 'PENDING_TECHNICIAN_ACCEPTANCE')
+    await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/accept`, {
+      expectedRevision: tv.revision,
+    })
+  await sleep(Math.max(0, Date.parse(startsAt) - Date.now()) + 5000)
+}
+
+/**
+ * Kỹ thuật viên chụp ảnh lượt hiện tại, (lần đầu) ghi tấm pin + inverter ngoài báo giá và quản lý duyệt thiết bị khác hợp đồng, rồi
+ * gửi báo cáo hoàn thành. Trả dự án phía quản lý sau khi báo cáo
+ */
+export async function reportCompletion(projectId, panelProductId, { registerAssets = true, report } = {}) {
   const photo = await S.uploadFile('TECH', 'INSTALLATION_EVIDENCE', 'lap-dat.png', 'image/png', S.tinyPng())
   await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/evidence`, {
     fileId: photo,
     caption: 'Đã lắp xong',
   })
-  const stamp = Date.now()
-  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/assets`, {
-    assets: [
-      {
-        assetType: 'PANEL',
-        productId: panelProductId,
-        manufacturer: 'Audit',
-        model: 'A550',
-        serialNumber: `PV-${stamp}`,
-        positionCode: 'R1',
-        warrantyMonths: null,
-      },
-      {
-        assetType: 'INVERTER',
-        productId: await inverterProductId(),
-        manufacturer: 'Audit',
-        model: 'INV5',
-        serialNumber: `INV-${stamp}`,
-        positionCode: 'T1',
-        warrantyMonths: null,
-      },
-    ],
-  })
-  p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
-  const approve = await S.call(
-    'MANAGER',
-    'POST',
-    `/installation-projects/${projectId}/equipment-substitution/approve`,
-    {
+  if (registerAssets) {
+    const stamp = Date.now()
+    await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/assets`, {
+      assets: [
+        {
+          assetType: 'PANEL',
+          productId: panelProductId,
+          manufacturer: 'Audit',
+          model: 'A550',
+          serialNumber: `PV-${stamp}`,
+          positionCode: 'R1',
+          warrantyMonths: null,
+        },
+        {
+          assetType: 'INVERTER',
+          productId: await inverterProductId(),
+          manufacturer: 'Audit',
+          model: 'INV5',
+          serialNumber: `INV-${stamp}`,
+          positionCode: 'T1',
+          warrantyMonths: null,
+        },
+      ],
+    })
+    const p = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
+    // Không lệch thiết bị thì backend từ chối lệnh duyệt (không sao); lệch mà chưa duyệt thì khách không nghiệm thu được
+    await S.call('MANAGER', 'POST', `/installation-projects/${projectId}/equipment-substitution/approve`, {
       reason: 'Kiểm thử: lắp thêm inverter ngoài báo giá',
       expectedRevision: p.revision,
+    })
+  }
+  const tv = await S.must('TECH', 'GET', `/technicians/me/installation-projects/${projectId}`)
+  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/completion-report`, {
+    completionReport: report ?? 'Lắp đặt hoàn tất, chạy thử đạt.',
+    expectedRevision: tv.revision,
+  })
+  return S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
+}
+
+/** Khách nghiệm thu báo cáo đang chờ (API). Hợp đồng 30/70 thì khoản 70% đến hạn trong cùng giao dịch */
+export async function customerAccept(customer, projectId) {
+  const p = await S.must(customer, 'GET', `/customers/me/installation-projects/${projectId}`)
+  return S.must(customer, 'POST', `/customers/me/installation-projects/${projectId}/acceptance`, {
+    decision: 'ACCEPT',
+    reason: null,
+    evidenceFileIds: null,
+    expectedRevision: p.revision,
+  })
+}
+
+/** Khách trả một khoản của hợp đồng 30/70 qua PayOS giả lập rồi chờ backend ghi khoản đó PAID. Trả ContractView */
+export async function payInstallment(customer, contractId, sequence) {
+  const open = await S.must(
+    customer,
+    'POST',
+    `/customers/me/contracts/${contractId}/installments/${sequence}/payment`,
+    {
+      method: 'ONLINE',
     },
   )
-  // Không lệch thiết bị thì backend từ chối lệnh duyệt; báo cáo bên dưới sẽ hỏng nếu thật ra cần duyệt
-  const tv2 = await S.must('TECH', 'GET', `/technicians/me/installation-projects/${projectId}`)
-  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/completion-report`, {
-    completionReport: 'Lắp đặt hoàn tất, chạy thử đạt.',
-    expectedRevision: tv2.revision,
-  })
-  // Không lệch thiết bị thì lệnh duyệt bị từ chối, không sao; khách không còn đồng ý / nghiệm thu trong ứng dụng (410)
-  void approve
-  const reported = await S.must('MANAGER', 'GET', `/installation-projects/${projectId}`)
-  await S.must('MANAGER', 'POST', `/installation-projects/${projectId}/acceptance`, {
-    expectedRevision: reported.revision,
-    note: 'Kiểm thử: đã bàn giao trực tiếp với khách tại công trình.',
-    evidenceFileId: null,
-  })
-  await S.must('CUSTOMER', 'GET', `/customers/me/installation-projects/${projectId}/handover`)
-  const view = await S.must('CUSTOMER', 'GET', `/customers/me/installation-projects/${projectId}`)
+  await payFake(open.current.orderCode)
+  return poll(async () => {
+    const c = await S.must(customer, 'GET', `/customers/me/contracts/${contractId}`)
+    return c.paymentPlan?.installments.find((i) => i.sequence === sequence)?.status === 'PAID' && c
+  }, `khoản ${sequence} được xác minh`)
+}
+
+/**
+ * Hợp đồng sẵn sàng thi công (30/70 SIGNED, hoặc hợp đồng cũ PAID) → dự án → phân công → checklist → kỹ thuật viên lắp, ghi thiết bị
+ * → quản lý duyệt thiết bị khác hợp đồng → báo cáo → KHÁCH nghiệm thu (backend 7d27054; quản lý không nghiệm thu thay khách) → bàn
+ * giao; hợp đồng 30/70 thì khách trả khoản 70% → PAID. Trả { projectId, assets }
+ */
+export async function installAndHandOver(contractId, panelProductId, customer = 'CUSTOMER') {
+  const projectId = await projectOf(contractId)
+  const startsAt = await assignSoon(projectId)
+  await satisfyChecklist(projectId)
+  await acceptAndWait(projectId, startsAt)
+  await S.must('TECH', 'POST', `/technicians/me/installation-projects/${projectId}/start`)
+  await reportCompletion(projectId, panelProductId)
+  await customerAccept(customer, projectId)
+  await S.must(customer, 'GET', `/customers/me/installation-projects/${projectId}/handover`)
+  const view = await S.must(customer, 'GET', `/customers/me/installation-projects/${projectId}`)
   assert.equal(view.status, 'COMPLETED')
+  const contract = await S.must(customer, 'GET', `/customers/me/contracts/${contractId}`)
+  if (contract.paymentPlan && !contract.paymentPlan.fullyPaid) await payInstallment(customer, contractId, 2)
   return { projectId, assets: view.assets }
 }
 
@@ -288,11 +349,12 @@ export async function decideCoverage(requestId, coverage) {
 }
 
 /**
- * Một khách khác đi trọn luồng 1–2 bằng API tới hợp đồng ĐÃ THANH TOÁN (PayOS giả lập): đánh giá sơ bộ ở Bến Thành, đặt giờ, kỹ thuật
- * viên nhận và hoàn thành khảo sát, kinh doanh báo giá, khách đồng ý, hợp đồng phát hành + PDF + ký + quản lý duyệt, thanh toán.
- * Trả { contractId, surveyRequestId }
+ * Một khách đi luồng 1–2 bằng API tới hợp đồng 30/70 (backend 7d27054): đánh giá sơ bộ ở Bến Thành, đặt giờ, kỹ thuật viên nhận
+ * và hoàn thành khảo sát, lập giỏ, chốt giá, ghi khách đồng ý (backend lập ngay hợp đồng bản nháp + hai khoản). `through`: 'agreed'
+ * dừng ở bản nháp; 'deposit' trả 30% qua PayOS giả lập (AWAITING_SIGNATURE); 'signed' thêm ảnh 1 trang hợp đồng giấy rồi chốt
+ * (SIGNED, sẵn sàng thi công). Trả { contractId, surveyRequestId, quotationId }
  */
-export async function paidContract(customer, label, productId) {
+export async function planContract(customer, label, productId, { through = 'signed' } = {}) {
   await S.call(customer, 'POST', '/customers/me', {
     customerType: 'INDIVIDUAL',
     companyName: null,
@@ -377,8 +439,7 @@ export async function paidContract(customer, label, productId) {
     revision: att.revision,
   })
 
-  // Luồng kỹ thuật viên tại công trình (backend 462733c): kỹ thuật viên lập giỏ, chốt giá, ghi khách đồng ý, mở QR; tiền được xác
-  // minh thì backend tự lập bản nháp hợp đồng (đã trả); quản lý phát hành, gắn PDF, gửi ký, duyệt bản ký → PAID, không thu lại
+  // Kỹ thuật viên lập giỏ, chốt giá, ghi khách đồng ý: backend lập ngay hợp đồng 30/70 (bản nháp); không còn trả 100% báo giá
   let q = await S.must('TECH', 'POST', `/technician/survey-requests/${surveyRequestId}/quotation`, { notes: null })
   q = await S.must('TECH', 'POST', `/technician/quotations/${q.quotationId}/lines`, {
     revision: q.revision,
@@ -391,52 +452,39 @@ export async function paidContract(customer, label, productId) {
     revision: q.revision,
     note: 'Kiểm thử: khách đồng ý tại nhà',
   })
-  const checkout = await S.must('TECH', 'POST', `/technician/quotations/${q.quotationId}/payment`, { method: 'ONLINE' })
-  await payFake(checkout.current.orderCode)
-  const settled = await poll(async () => {
-    const view = await S.must('TECH', 'GET', `/technician/quotations/${q.quotationId}/payment`)
-    return view.paymentState === 'PAID' && view.contractId ? view : null
-  }, 'thanh toán báo giá được xác minh và hợp đồng tự lập')
+  assert.ok(q.contractId, 'ghi khách đồng ý phải trả hợp đồng 30/70')
+  const result = { contractId: q.contractId, surveyRequestId, quotationId: q.quotationId }
+  if (through === 'agreed') return result
 
-  let c = await S.must('MANAGER', 'GET', `/contracts/${settled.contractId}`)
-  if (c.status !== 'DRAFT' || !c.paymentCompleted)
-    throw new Error('Hợp đồng lập từ báo giá đã trả phải là bản nháp đã thanh toán')
-  if (!c.terms || c.warrantyMonths == null)
-    c = await S.must('MANAGER', 'PUT', `/contracts/${c.contractId}`, {
-      revision: c.revision,
-      terms: c.terms ?? 'Bảo hành theo hợp đồng.',
-      warrantyMonths: null,
-    })
-  c = await S.must('MANAGER', 'POST', `/contracts/${c.contractId}/issue`, { revision: c.revision })
-  const official = S.tinyPdf(`Hop dong ${label}`)
-  const officialId = await S.uploadFile('MANAGER', 'CONTRACT_DOCUMENT', 'hop-dong.pdf', 'application/pdf', official)
-  c = await S.must('MANAGER', 'PUT', `/contracts/${c.contractId}/official-document`, {
-    revision: c.revision,
-    fileId: officialId,
-    canonicalHash: c.canonicalHash,
+  const deposit = await S.must('TECH', 'POST', `/technician/contracts/${q.contractId}/installments/1/payment`, {
+    method: 'ONLINE',
   })
-  c = await S.must('MANAGER', 'POST', `/contracts/${c.contractId}/publish`, { revision: c.revision })
-  const signedId = await S.uploadFile(
-    customer,
-    'SIGNED_CONTRACT',
-    'ban-ky.pdf',
-    'application/pdf',
-    S.tinyPdf(`Ban ky ${label}`),
-  )
-  await S.must(customer, 'POST', `/customers/me/contracts/${c.contractId}/signed-document`, {
-    fileId: signedId,
-    officialDocumentSha256: S.sha256(official),
-  })
-  c = await S.must('MANAGER', 'GET', `/contracts/${c.contractId}`)
-  // Đã trả trước: duyệt bản ký là thành PAID ngay, không có lần thu thứ hai
-  await S.must('MANAGER', 'POST', `/contracts/${c.contractId}/review`, {
-    revision: c.revision,
-    decision: 'APPROVE',
-    reason: null,
-  })
+  await payFake(deposit.current.orderCode)
   await poll(
-    async () => (await S.must(customer, 'GET', `/customers/me/contracts/${c.contractId}`)).status === 'PAID',
-    'hợp đồng thứ hai đã thanh toán',
+    async () => (await S.must('MANAGER', 'GET', `/contracts/${q.contractId}`)).status === 'AWAITING_SIGNATURE',
+    'khoản 30% được xác minh',
   )
-  return { contractId: c.contractId, surveyRequestId }
+  if (through === 'deposit') return result
+
+  const page = await S.uploadFile('TECH', 'SIGNED_CONTRACT_PAGE', 'trang-1.png', 'image/png', S.tinyPng())
+  await S.must('TECH', 'POST', `/technician/contracts/${q.contractId}/signature-set`, {
+    expectedPageCount: 1,
+    signedOn: vnDate(0),
+    note: null,
+  })
+  const set = await S.must('TECH', 'PUT', `/technician/contracts/${q.contractId}/signature-set/pages/1`, {
+    fileId: page,
+  })
+  await S.must('TECH', 'POST', `/technician/contracts/${q.contractId}/signature-set/finalize`, {
+    expectedRevision: set.revision,
+  })
+  assert.equal((await S.must('MANAGER', 'GET', `/contracts/${q.contractId}`)).status, 'SIGNED')
+  return result
+}
+
+/** Hợp đồng 30/70 đã trả đủ (PAID) và công trình đã bàn giao của một khách. Trả { contractId, surveyRequestId, quotationId, projectId } */
+export async function paidContract(customer, label, productId) {
+  const plan = await planContract(customer, label, productId, { through: 'signed' })
+  const { projectId } = await installAndHandOver(plan.contractId, productId, customer)
+  return { ...plan, projectId }
 }

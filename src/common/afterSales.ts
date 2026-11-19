@@ -75,12 +75,6 @@ export const PURCHASE_METHODS = [
 /** Link còn trả tiền được (PaymentStatuses.Payable); backend chỉ đối soát với PayOS khi link ở các trạng thái này */
 export const PAYABLE_ATTEMPT_STATUSES: readonly string[] = ['PENDING', 'PROCESSING']
 
-/** Trạng thái hợp đồng mua gói được: PAID mua riêng gói, SIGNED thì link thanh toán gồm cả tiền hợp đồng */
-export const PURCHASABLE_CONTRACT_STATUSES = {
-  paid: 'PAID',
-  signed: 'SIGNED',
-} as const
-
 // Yêu cầu bảo hành, sửa chữa, bảo trì (ServiceRequest và các bảng đi kèm của Modules.AfterSales)
 
 /** ServiceRequestKinds */
@@ -361,7 +355,7 @@ export const CUSTOMER_NOTIFICATION_TYPES: Record<string, string> = {
   INSTALLATION_SCHEDULED: 'Công trình đã có lịch lắp đặt',
   INSTALLATION_STARTED: 'Kỹ thuật viên đã bắt đầu lắp đặt',
   INSTALLATION_ACCEPTANCE_REQUIRED: 'Lắp đặt xong (thông báo cũ)',
-  INSTALLATION_COMPLETION_REPORTED: 'Kỹ thuật viên đã báo hoàn thành, Smart Solar đang nghiệm thu',
+  INSTALLATION_COMPLETION_REPORTED: 'Kỹ thuật viên đã báo hoàn thành (thông báo cũ)',
   INSTALLATION_COMPLETED: 'Công trình đã nghiệm thu và bàn giao',
   INSTALLATION_REWORK_REQUIRED: 'Công trình được làm lại theo yêu cầu',
   INSTALLATION_CANCELLED: 'Công trình lắp đặt đã bị huỷ',

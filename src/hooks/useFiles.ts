@@ -134,10 +134,13 @@ export function useUploadQueue({
         pause.start(error.retryAfter ?? 60)
         return 'pause'
       }
+      // Lỗi do chính tệp đã đăng ký (mất trên kho, chưa / không còn xác minh, sai mục đích, của tài khoản khác, đã gắn chỗ khác):
+      // gắn lại cùng tệp vẫn hỏng, nên lần thử sau tải tệp mới
+      const staleFile = isApiError(error) && error.code !== null && STALE_FILE_CODES.has(error.code)
       patch(item.key, {
         status: 'failed',
-        fileId,
-        pendingFileId: fileService.pendingFileIdOf(error),
+        fileId: staleFile ? null : fileId,
+        pendingFileId: staleFile ? null : fileService.pendingFileIdOf(error),
         error: errorMessage(error),
       })
       tally.current.failed++
@@ -201,6 +204,14 @@ export function useUploadQueue({
     },
   }
 }
+
+const STALE_FILE_CODES = new Set([
+  'FILE_OBJECT_MISSING',
+  'FILE_NOT_VERIFIED',
+  'FILE_WRONG_PURPOSE',
+  'FILE_NOT_OWNED',
+  'FILE_ALREADY_LINKED',
+])
 
 const keysOf = (items: UploadItem[], ...statuses: UploadStatus[]) =>
   items.filter((i) => statuses.includes(i.status)).map((i) => i.key)

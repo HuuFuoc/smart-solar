@@ -29,9 +29,24 @@ export const canPlanForContract = (contractStatus: string, paymentCompleted = fa
   contractStatus === 'PAID' ||
   (paymentCompleted && LIVE_CONTRACT.includes(contractStatus))
 
+/** Hợp đồng 30/70 hẹn được ngày từ khi khoản 30% được xác minh; xác nhận lịch khi đã ký giấy (SIGNED) */
+const PLAN_SCHEDULABLE = ['AWAITING_SIGNATURE', 'SIGNED', 'PAID']
+
 /**
- * Vì sao lịch dự kiến chưa xác nhận. `awaitingContractSignature`: đã thanh toán, chờ duyệt bản ký giấy; `awaitingPayment`: hợp
- * đồng cũ chưa thanh toán. Hai cờ do backend tính; không có cờ nào là hợp đồng đã xong, hệ thống đang xác nhận
+ * Hợp đồng hẹn ngày thi công được, đúng `Schedulable` của backend 7d27054: hợp đồng 30/70 khi đã nhận 30% (AWAITING_SIGNATURE,
+ * SIGNED, PAID; chưa ký giấy thì lịch chỉ là dự kiến); hợp đồng cũ như `canPlanForContract`. Không bắt trả đủ 100%
+ */
+export function isSchedulableContract(
+  c: { status: string; paymentCompleted?: boolean | null } & { paymentPlan?: object | null },
+) {
+  if (c.paymentPlan) return PLAN_SCHEDULABLE.includes(c.status)
+  return canPlanForContract(c.status, c.paymentCompleted === true)
+}
+
+/**
+ * Vì sao lịch dự kiến chưa xác nhận. `awaitingContractSignature`: đã nhận tiền (30% với hợp đồng 30/70), chờ hợp đồng ký xong
+ * (30/70: chốt đủ trang hợp đồng giấy; hợp đồng trả trước cũ: duyệt bản ký); `awaitingPayment`: hợp đồng cũ chưa thanh toán. Hai
+ * cờ do backend tính; không có cờ nào là hợp đồng đã xong, hệ thống đang xác nhận
  */
 export function plannedWaitReason(
   s: Pick<InstallationScheduleView, 'status' | 'awaitingPayment' | 'awaitingContractSignature'>,

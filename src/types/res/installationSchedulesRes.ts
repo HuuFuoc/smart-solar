@@ -13,7 +13,8 @@ export type InstallationRescheduleReason = string
 
 /**
  * Một lịch thi công. `isConfirmed` chỉ true khi CONFIRMED: PLANNED không bao giờ hiện như đã xác nhận. `awaitingPayment`: PLANNED
- * của hợp đồng cũ chưa thanh toán; `awaitingContractSignature`: PLANNED của hợp đồng đã trả tiền tại công trình, chờ duyệt bản ký.
+ * của hợp đồng cũ chưa thanh toán; `awaitingContractSignature`: PLANNED của hợp đồng đã nhận tiền (30/70: đã nhận 30%), chờ hợp đồng
+ * ký xong (30/70: chốt đủ trang hợp đồng giấy; hợp đồng trả trước cũ: duyệt bản ký).
  * `revision` gửi làm `expectedRevision` khi đổi lịch đang hiệu lực
  */
 export type InstallationScheduleView = {

@@ -14,6 +14,7 @@ import { ProjectAfterSalesPanel } from '@/features/after-sales/ProjectAfterSales
 import { FaultReportFlow } from '@/features/after-sales/FaultReportFlow'
 import { Notice } from '@/components/common/ui/lists'
 import { CustomerAcceptancePanel } from '@/features/installations/CustomerAcceptancePanel'
+import { ProjectBalanceNotice } from '@/features/payment-plan/ProjectBalanceNotice'
 import { EnergyEstimatePanel } from '@/features/installations/EnergyEstimatePanel'
 import { EquipmentDifferences } from '@/features/installations/EquipmentDifferences'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
@@ -347,8 +348,9 @@ function AcceptanceHistory({ acceptances }: { acceptances: AcceptanceView[] }) {
   )
 }
 
-// Chi tiết công trình lắp đặt của khách, chỉ để theo dõi: tiến độ, báo cáo hoàn thành, ảnh thi công, thiết bị, bàn giao.
-// Nghiệm thu và duyệt thiết bị thay thế do quản lý / quản trị làm nội bộ
+// Chi tiết công trình lắp đặt của khách: tiến độ, báo cáo hoàn thành, ảnh thi công, thiết bị, bàn giao. Kỹ thuật viên báo hoàn
+// thành thì khách nghiệm thu hoặc yêu cầu làm lại tại đây (backend 7d27054, mỗi lượt giữ lịch sử); hợp đồng 30/70 nghiệm thu xong
+// thì báo khoản 70% đến hạn và dẫn sang trang hợp đồng. Duyệt thiết bị lắp khác hợp đồng do quản lý làm nội bộ
 export function CustomerProjectPage() {
   const { id } = useParams()
   const query = useMyInstallationQuery(id)
@@ -400,6 +402,7 @@ export function CustomerProjectPage() {
                       </CustomerAcceptancePanel>
                     </div>
                   )}
+                  {completed && <ProjectBalanceNotice contractId={p.contractId} />}
                   {completed && <ProjectAfterSalesPanel projectId={p.projectId} />}
                   {completed && <HandoverPanel projectId={p.projectId} />}
                   <EvidencePanel projectId={p.projectId} />

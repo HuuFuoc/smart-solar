@@ -17,6 +17,7 @@ import {
   type CashForm,
 } from '@/features/contracts/contractRules'
 import { useFileUpload } from '@/hooks/useFiles'
+import { isApiError } from '@/services/api/errors'
 import type { CashConfirmationRequest } from '@/types/req/staffPaymentsReq'
 import { formatMoney } from '@/utils/format'
 import { readGroupedNumber } from '@/utils/number'
@@ -82,6 +83,8 @@ export function CashConfirmDialog({ target, onClose }: { target: CashTarget; onC
       toast.success(target.successText)
       onClose()
     } catch (e) {
+      // Phiếu thu đã tải bị từ chối (mất trên kho, chưa xác minh, sai mục đích…): lần sau tải lại, không gửi lại mã tệp cũ
+      if (isApiError(e) && e.code?.startsWith('FILE_')) setUploadedId(null)
       setError(contractErrorMessage(e))
     } finally {
       setPending(false)

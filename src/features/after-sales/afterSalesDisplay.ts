@@ -6,11 +6,11 @@ import {
   PAYABLE_ATTEMPT_STATUSES,
   CASH_ATTEMPT_STATUSES,
   PAYMENT_ATTEMPT_STATUSES,
-  PURCHASABLE_CONTRACT_STATUSES,
   SUBSCRIPTION_CANCEL_MODES,
   SUBSCRIPTION_STATUSES,
 } from '@/common/afterSales'
 import type { Tone } from '@/components/common/ui/badge'
+import { packagePurchaseMode } from '@/features/payment-plan/paymentPlanRules'
 import type { ContractView } from '@/types/res/customerContractsRes'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 
@@ -92,8 +92,9 @@ export type PurchasableContract = {
 }
 
 /**
- * Hợp đồng mua gói được: PAID (mua riêng gói) hoặc SIGNED (trả cùng hợp đồng), trừ hợp đồng có công trình đã huỷ.
- * `projects` có thể chưa tải xong; khi đó không loại hợp đồng nào, backend sẽ từ chối nếu công trình đã huỷ
+ * Hợp đồng mua gói được: PAID (mua riêng gói) hoặc hợp đồng cũ SIGNED (trả cùng hợp đồng), trừ hợp đồng có công trình đã huỷ. Hợp
+ * đồng 30/70 chỉ mua được khi đã trả đủ: khoản 70% không gộp vào link mua gói (backend 7d27054 từ chối). `projects` có thể chưa
+ * tải xong; khi đó không loại hợp đồng nào, backend sẽ từ chối nếu công trình đã huỷ
  */
 export function purchasableContracts(
   contracts: ContractView[],
@@ -101,10 +102,6 @@ export function purchasableContracts(
 ): PurchasableContract[] {
   const cancelled = new Set((projects ?? []).filter((p) => p.status === 'CANCELLED').map((p) => p.contractId))
   return contracts
-    .filter(
-      (c) =>
-        (c.status === PURCHASABLE_CONTRACT_STATUSES.paid || c.status === PURCHASABLE_CONTRACT_STATUSES.signed) &&
-        !cancelled.has(c.contractId),
-    )
-    .map((contract) => ({ contract, includeContract: contract.status === PURCHASABLE_CONTRACT_STATUSES.signed }))
+    .filter((c) => packagePurchaseMode(c) !== null && !cancelled.has(c.contractId))
+    .map((contract) => ({ contract, includeContract: packagePurchaseMode(contract) === 'with-contract' }))
 }

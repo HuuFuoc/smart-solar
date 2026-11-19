@@ -32,6 +32,10 @@ import {
   workingQuotation,
 } from '@/features/quotations/quotationRules'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { stageMeta } from '@/features/payment-plan/paymentPlanDisplay'
+import { agreementWithdrawal } from '@/features/payment-plan/paymentPlanRules'
+import { useContractQuery } from '@/hooks/useContracts'
+import { useInstallmentPaymentQuery } from '@/hooks/usePaymentPlan'
 import { ROUTES, withId } from '@/routes/paths'
 import {
   useAddCartLineMutation,
@@ -49,7 +53,7 @@ import type { OnSiteSurveyBillOfMaterials } from '@/types/res/technicianOnSiteSu
 
 // Báo giá lắp đặt do kỹ thuật viên đã khảo sát lập, như một giỏ hàng: chọn sản phẩm danh mục và số lượng, backend tính giá, thuế,
 // tổng. Chỉ hiện khi biên bản khảo sát đã hoàn thành. Chốt giá rồi trình bày cho khách trên máy này, ghi khách đồng ý / không /
-// muốn sửa, mở thanh toán QR hoặc tiền mặt. Khách không nhận gì trong ứng dụng; tiền được xác minh thì backend tự lập hợp đồng
+// muốn sửa. Khách không phải đăng nhập; ghi khách đồng ý là backend lập ngay hợp đồng 30/70, thu 30% và tải trang ký ở trang hợp đồng
 
 type Props = {
   surveyRequestId: string
@@ -387,33 +391,14 @@ function IssuedQuotation({
         </Notice>
       )}
       {q.status === 'ACCEPTED' && q.contractId && (
-        <Notice tone="info" title="Hợp đồng 30/70 đã lập">
-          Khách đồng ý lúc {formatMoment(q.acceptedAt)}. Khách đọc hợp đồng, trả 30%, rồi ký bản giấy; thu tiền và tải
-          trang ký ở trang hợp đồng. Khách đổi ý khi chưa trả 30% thì ghi khách muốn sửa hoặc không đồng ý.
-          <span className="mt-3 flex flex-wrap gap-3">
-            <ButtonLink to={withId(ROUTES.tech.contract, q.contractId)} variant="info" icon="history_edu">
-              Mở hợp đồng
-            </ButtonLink>
-            <Button icon="edit_note" variant="warn" onClick={() => setDeciding(ON_SITE_DECISIONS.revisionNeeded)}>
-              Khách muốn sửa
-            </Button>
-            <Button icon="block" variant="danger" onClick={() => setDeciding(ON_SITE_DECISIONS.declined)}>
-              Khách đổi ý
-            </Button>
-          </span>
-        </Notice>
-      )}
-      {q.status === 'ACCEPTED' && !q.contractId && (
-        <p className="text-body text-fg-2">
-          Khách đồng ý lúc {formatMoment(q.acceptedAt)} theo cách cũ (trả 100% trước khi có hợp đồng).
-        </p>
+        <AgreedContract quotation={q} contractId={q.contractId} onWithdraw={setDeciding} />
       )}
       {q.origin !== 'TECHNICIAN' && <p className="text-meta text-fg-2">{quotationOriginLabel(q.origin)}.</p>}
       <QuotationLines quotation={q} />
       <QuotationTotals quotation={q} className="ml-auto" />
       <QuotationTerms quotation={q} />
       {reviseButton && <div className="flex flex-wrap gap-3">{reviseButton}</div>}
-      {q.status === 'ACCEPTED' && !q.contractId && <QuotationPaymentPanel quotation={q} onWithdraw={setDeciding} />}
+      {q.status === 'ACCEPTED' && !q.contractId && <QuotationPaymentPanel quotation={q} onDecide={setDeciding} />}
 
       {presenting && (
         <PresentQuotationDialog
@@ -427,6 +412,59 @@ function IssuedQuotation({
       )}
       {deciding && <DecisionDialog quotation={q} decision={deciding} onClose={() => setDeciding(null)} />}
     </>
+  )
+}
+
+/**
+ * Báo giá khách đã đồng ý, đã có hợp đồng 30/70: chặng của hợp đồng và lối sang trang hợp đồng (thu 30%, tải trang ký). Khách đổi ý
+ * chỉ ghi được khi hợp đồng còn là bản nháp và chưa mở thanh toán khoản 30% (backend: QUOTATION_PAYMENT_STARTED); đọc chưa được
+ * thì để nút và backend quyết định
+ */
+function AgreedContract({
+  quotation: q,
+  contractId,
+  onWithdraw,
+}: {
+  quotation: QuotationView
+  contractId: string
+  onWithdraw: (decision: OnSiteDecision) => void
+}) {
+  const contract = useContractQuery(contractId)
+  const deposit = useInstallmentPaymentQuery('technician', { contractId, sequence: 1 })
+  const plan = contract.data?.paymentPlan
+  const withdrawal = agreementWithdrawal(contract.data, deposit.data)
+  const stage = plan ? stageMeta(plan.stage) : null
+  return (
+    <Notice
+      tone="info"
+      title={
+        <span className="flex flex-wrap items-center gap-2">
+          Hợp đồng 30/70 đã lập {stage && <Badge tone={stage.tone}>{stage.label}</Badge>}
+        </span>
+      }
+    >
+      Khách đồng ý lúc {formatMoment(q.acceptedAt)}. Khách đọc hợp đồng, trả 30%, rồi ký bản giấy; thu tiền và tải trang
+      ký ở trang hợp đồng.
+      {withdrawal === 'allowed' && ' Khách đổi ý khi chưa trả 30% thì ghi khách muốn sửa hoặc không đồng ý.'}
+      {withdrawal === 'payment-open' &&
+        ' Đang mở thanh toán khoản 30%: khách đổi ý thì huỷ mã QR / bỏ chọn tiền mặt ở trang hợp đồng trước.'}
+      {withdrawal === 'deposit-paid' && ' Đã nhận 30% nên không ghi khách đổi ý tại công trình được nữa.'}
+      <span className="mt-3 flex flex-wrap gap-3">
+        <ButtonLink to={withId(ROUTES.tech.contract, contractId)} variant="info" icon="history_edu">
+          Mở hợp đồng
+        </ButtonLink>
+        {withdrawal === 'allowed' && (
+          <>
+            <Button icon="edit_note" variant="warn" onClick={() => onWithdraw(ON_SITE_DECISIONS.revisionNeeded)}>
+              Khách muốn sửa
+            </Button>
+            <Button icon="block" variant="danger" onClick={() => onWithdraw(ON_SITE_DECISIONS.declined)}>
+              Khách đổi ý
+            </Button>
+          </>
+        )}
+      </span>
+    </Notice>
   )
 }
 
