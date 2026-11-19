@@ -168,6 +168,16 @@ export const VISIT_STATUSES: Record<string, { label: string; tone: Tone }> = {
   CANCELLED: { label: 'Đã huỷ', tone: 'neutral' },
 }
 
+/** Ảnh kỹ thuật viên kèm khi ghi khách xác nhận hoàn thành tại công trình (chú thích backend tự gắn) */
+export const ON_SITE_CONFIRMATION_CAPTION = 'on-site confirmation'
+
+/** Chú thích backend tự gắn cho ảnh của yêu cầu; chú thích khác là chữ người gửi tự ghi */
+export const SERVICE_PHOTO_CAPTIONS: Record<string, string> = {
+  customer: 'Ảnh khách gửi khi nghiệm thu',
+  [ON_SITE_CONFIRMATION_CAPTION]: 'Ảnh khách xác nhận tại công trình',
+  reconsideration: 'Ảnh xin xét lại hỗ trợ',
+}
+
 /** QuotationStatuses của báo giá sửa chữa, bảo trì */
 export const SERVICE_QUOTATION_STATUSES: Record<string, { label: string; tone: Tone }> = {
   ISSUED: { label: 'Chờ khách duyệt', tone: 'info' },

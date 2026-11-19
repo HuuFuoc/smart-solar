@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Skeleton } from '@/components/common/ui/states'
+import { photoCaption } from '@/features/after-sales/serviceDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { errorMessage } from '@/services/api/errors'
 import type { ServiceEvidenceUrlView, ServiceEvidenceView } from '@/types/res/customerAfterSalesRes'
@@ -12,6 +13,7 @@ export type PhotoUrlFetcher = (evidenceId: string) => Promise<ServiceEvidenceUrl
 function Photo({ photo, getUrl }: { photo: ServiceEvidenceView; getUrl: PhotoUrlFetcher }) {
   const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const caption = photoCaption(photo.caption)
 
   useEffect(() => {
     let alive = true
@@ -30,7 +32,7 @@ function Photo({ photo, getUrl }: { photo: ServiceEvidenceView; getUrl: PhotoUrl
         <a href={url} target="_blank" rel="noreferrer" className="block">
           <img
             src={url}
-            alt={photo.caption ?? 'Ảnh hiện trường'}
+            alt={caption ?? 'Ảnh hiện trường'}
             className="aspect-4/3 w-full rounded-container border border-line object-cover"
           />
         </a>
@@ -42,7 +44,7 @@ function Photo({ photo, getUrl }: { photo: ServiceEvidenceView; getUrl: PhotoUrl
         <Skeleton className="aspect-4/3 w-full" />
       )}
       <figcaption className="tnum text-meta text-fg-2">
-        {photo.caption ? `${photo.caption}, ` : ''}
+        {caption ? `${caption}, ` : ''}
         {formatMoment(photo.addedAt)}
       </figcaption>
     </figure>
