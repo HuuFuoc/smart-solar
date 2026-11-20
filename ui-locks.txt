@@ -1,0 +1,50 @@
+# Giao diện đã khoá (UI locks)
+#
+# Các file dưới đây là giao diện chủ sở hữu đã chỉnh và chốt. Người khác (và phiên AI của người khác) KHÔNG sửa các file này.
+# Cần đổi thì báo chủ sở hữu để họ tự sửa, hoặc để họ gỡ dòng khỏi danh sách này trước.
+#
+# Cách áp dụng:
+#   - Claude Code: hook trong .claude/settings.json (scripts/ui-lock-guard.mjs) chặn Edit / Write / lệnh Bash ghi vào file khoá
+#     khi `git config user.name` không nằm trong owner; với chủ sở hữu thì hỏi xác nhận trước khi sửa.
+#   - GitHub: .github/CODEOWNERS bắt PR chạm vào file khoá phải được chủ sở hữu duyệt (cần bật "Require review from Code
+#     Owners" trong branch protection của main).
+#
+# Cú pháp: mỗi dòng một đường dẫn tính từ gốc repo, dùng "/". Kết thúc bằng "/**" để khoá cả thư mục.
+# Dòng "owner: <git user.name>" khai báo chủ sở hữu (được nhiều dòng). Sửa danh sách thì cập nhật cả .github/CODEOWNERS.
+
+owner: huufuoc
+
+# Commit fc9297b (19/11/2026 22:14): bảng hợp đồng, lịch thi công, thanh toán 30/70, báo giá tại công trình
+src/components/common/ui/document-preview.tsx
+src/components/layout/customer-layout.tsx
+src/features/contracts/CashConfirmDialog.tsx
+src/features/contracts/ContractDocumentButtons.tsx
+src/features/contracts/ContractLinkPanel.tsx
+src/features/contracts/CustomerContractTables.tsx
+src/features/installation-schedules/CustomerSchedulePanel.tsx
+src/features/installation-schedules/ScheduleDialog.tsx
+src/features/installation-schedules/TechContractSchedulePanel.tsx
+src/features/installations/CompletionReportForm.tsx
+src/features/installations/CustomerAcceptancePanel.tsx
+src/features/payment-plan/ContractSnapshotPanel.tsx
+src/features/payment-plan/InstallmentPaymentBlock.tsx
+src/features/payment-plan/InstallmentPlanPanel.tsx
+src/features/payment-plan/ProjectBalanceNotice.tsx
+src/features/payment-plan/SignatureSetPanel.tsx
+src/features/quotations/OnSiteQuotation.tsx
+src/features/quotations/TechnicianQuotationPanel.tsx
+src/pages/collections-page.tsx
+src/pages/contract-page.tsx
+src/pages/customer/contract-page.tsx
+src/pages/customer/customer-dashboard-page.tsx
+src/pages/customer/project-page.tsx
+src/pages/installation-project-page.tsx
+src/pages/installation-schedules-page.tsx
+src/pages/tech/installation-page.tsx
+src/pages/tech/installation-schedules-page.tsx
+
+# Chính cơ chế khoá: không để người khác tự gỡ
+ui-locks.txt
+scripts/ui-lock-guard.mjs
+.claude/settings.json
+.github/CODEOWNERS

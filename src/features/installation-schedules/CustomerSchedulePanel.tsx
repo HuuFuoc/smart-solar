@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
@@ -22,10 +23,25 @@ import {
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useCustomerContractScheduleQuery, useRequestScheduleChangeMutation } from '@/hooks/useInstallationSchedules'
 import type { ContractView } from '@/types/res/customerContractsRes'
+import type { InstallationScheduleView } from '@/types/res/installationSchedulesRes'
 
 // Lịch thi công khách đã thống nhất trực tiếp với kỹ thuật viên, trên trang hợp đồng của khách (chỉ theo dõi, khách không chọn
 // khung nào). Lịch dự kiến không bao giờ ghi là đã xác nhận: chỉ xác nhận khi hợp đồng đã trả tiền và đã ký. Khách xin ngày khác
 // bằng ghi chú (không bắt buộc); lịch giữ nguyên tới khi kỹ thuật viên ghi ngày mới
+
+/** Câu dưới ngày hẹn: đã xác nhận chưa, chờ gì */
+function scheduleNote(live: InstallationScheduleView, plan: boolean) {
+  if (live.status === 'CONFIRMED') return 'Lịch đã xác nhận. Tiến độ thi công xem ở mục Lắp đặt.'
+  if (live.status === 'RESCHEDULE_REQUIRED') return 'Ngày này không xác nhận được, cần hẹn ngày khác.'
+  if (live.status !== 'PLANNED') return scheduleStatusMeta(live.status, 'customer').label
+  const wait = plannedWaitReason(live)
+  if (wait === 'signature')
+    return plan
+      ? 'Ngày dự kiến, chưa xác nhận. Bạn đã trả 30%; lịch được xác nhận tự động khi hợp đồng giấy được ký và tải đủ các trang.'
+      : 'Ngày dự kiến, chưa xác nhận. Bạn đã thanh toán; lịch được xác nhận tự động khi hồ sơ hợp đồng hoàn tất.'
+  if (wait === 'payment') return 'Ngày dự kiến, chưa xác nhận. Lịch được xác nhận sau khi hợp đồng được thanh toán.'
+  return 'Hợp đồng đã hoàn tất, hệ thống đang xác nhận lịch với kỹ thuật viên.'
+}
 
 export function CustomerSchedulePanel({ contract }: { contract: ContractView }) {
   // Hợp đồng 30/70 hẹn được ngày từ khi khoản 30% được xác minh
@@ -47,9 +63,23 @@ export function CustomerSchedulePanel({ contract }: { contract: ContractView }) 
             Lịch thi công {status && <Badge tone={status.tone}>{status.label}</Badge>}
           </span>
         }
-        description={live ? scheduleWhen(live) : undefined}
       />
       <PanelBody className="space-y-4">
+        {live && (
+          <div className="ct-box ct-well flex flex-wrap items-start justify-between gap-x-6 gap-y-3 px-4 py-3">
+            <div className="flex min-w-0 gap-3">
+              <Icon name="calendar_month" className="mt-0.5 shrink-0 text-[20px] text-accent-fg" />
+              <div className="min-w-0">
+                <p className="tnum text-body font-bold text-fg">{scheduleWhen(live)}</p>
+                <p className="mt-0.5 text-meta text-fg-2">{scheduleNote(live, plan)}</p>
+              </div>
+            </div>
+            <div className="text-meta sm:text-right">
+              <p className="text-fg-3">Kỹ thuật viên phụ trách:</p>
+              <p className="font-semibold text-fg">{live.technicianName}</p>
+            </div>
+          </div>
+        )}
         {query.isPending ? (
           <p className="text-body text-fg-2">Đang tải lịch thi công…</p>
         ) : query.data === undefined ? (
@@ -64,26 +94,11 @@ export function CustomerSchedulePanel({ contract }: { contract: ContractView }) 
           </p>
         ) : (
           <>
-            {live.status === 'PLANNED' && (
-              <p className="text-body text-fg-2">
-                {plannedWaitReason(live) === 'signature'
-                  ? plan
-                    ? 'Ngày dự kiến, chưa xác nhận. Bạn đã trả 30%; lịch được xác nhận tự động khi hợp đồng giấy được ký và tải đủ các trang.'
-                    : 'Ngày dự kiến, chưa xác nhận. Bạn đã thanh toán; lịch được xác nhận tự động khi hồ sơ hợp đồng hoàn tất.'
-                  : plannedWaitReason(live) === 'payment'
-                    ? 'Ngày dự kiến, chưa xác nhận. Lịch được xác nhận sau khi hợp đồng được thanh toán.'
-                    : 'Hợp đồng đã hoàn tất, hệ thống đang xác nhận lịch với kỹ thuật viên.'}
-              </p>
-            )}
-            {live.status === 'CONFIRMED' && (
-              <p className="text-body text-fg-2">Lịch đã xác nhận. Tiến độ thi công xem ở mục Lắp đặt.</p>
-            )}
             {live.status === 'RESCHEDULE_REQUIRED' && (
               <Notice tone="info" title="Ngày này không xác nhận được">
                 Kỹ thuật viên hoặc Smart Solar sẽ liên hệ để chọn ngày khác.
               </Notice>
             )}
-            <p className="text-meta text-fg-2">Kỹ thuật viên {live.technicianName}</p>
             {live.customerChangeRequestedAt && (
               <Notice title={`Bạn đã xin đổi ngày lúc ${formatMoment(live.customerChangeRequestedAt)}`}>
                 <span className="whitespace-pre-line">{live.customerChangeRequestNote}</span>

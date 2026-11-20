@@ -1,0 +1,69 @@
+/*
+  Màu biểu đồ của các trang Tổng quan. Chỉ thêm token mới, không đổi token có sẵn trong globals.css.
+  series-*: nhận diện nhóm (khoản 30%, khoản 70%, hợp đồng cũ; khảo sát, lắp đặt, bảo hành), luôn theo thứ tự cố định.
+  ord-*: một màu xanh lá đậm dần cho các chặng có thứ tự (chặng thanh toán, tiến độ công trình).
+  Trạng thái (đã trả, đến hạn, quá hạn) dùng lại token ok / info / danger của globals.css, không dùng series-*.
+  Đã kiểm bằng validate_palette.js của skill dataviz: sáng trên #fcfcfb, tối trên #1a201d (độ sáng, độ đậm, mù màu, tương phản).
+*/
+:root {
+  --series-1: #2f8a5c;
+  --series-2: #4a7fc1;
+  --series-3: #b07d1e;
+  --series-4: #8f6bbf;
+
+  --ord-1: #86bf9b;
+  --ord-2: #5ca37b;
+  --ord-3: #3c855e;
+  --ord-4: #286645;
+  --ord-5: #1a4a32;
+
+  --chart-neutral: #9aa49e;
+  --chart-grid: var(--line);
+  --chart-axis: var(--fg-3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --series-1: #3a9a69;
+    --series-2: #5885cc;
+    --series-3: #b3862f;
+    --series-4: #9271c2;
+
+    --ord-1: #1f5a3d;
+    --ord-2: #2f7a54;
+    --ord-3: #47996d;
+    --ord-4: #6bb88c;
+    --ord-5: #9bd5b0;
+
+    --chart-neutral: #66706b;
+  }
+}
+
+:root[data-theme='dark'] {
+  --series-1: #3a9a69;
+  --series-2: #5885cc;
+  --series-3: #b3862f;
+  --series-4: #9271c2;
+
+  --ord-1: #1f5a3d;
+  --ord-2: #2f7a54;
+  --ord-3: #47996d;
+  --ord-4: #6bb88c;
+  --ord-5: #9bd5b0;
+
+  --chart-neutral: #66706b;
+}
+
+/* Recharts vẽ khung focus mặc định quanh vùng vẽ khi bấm; giữ focus bàn phím ở các nút / link bên ngoài */
+.chart-frame .recharts-wrapper:focus,
+.chart-frame .recharts-surface:focus,
+.chart-frame .recharts-sector:focus {
+  outline: none;
+}
+
+@media (forced-colors: active) {
+  .chart-frame .recharts-sector,
+  .chart-frame .recharts-rectangle {
+    stroke: CanvasText;
+  }
+}

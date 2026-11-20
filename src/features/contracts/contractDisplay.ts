@@ -243,3 +243,20 @@ export function contractNextStep(c: ContractView, viewer: ContractViewer): Track
       return { tone: 'neutral', title: contractStatusLabel(c.status) }
   }
 }
+
+const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 })
+const whole = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 })
+
+/** Tiền gọn cho ô số liệu: [số, đơn vị], vd. ["32,4", "tỷ đ"], ["535,97", "triệu đ"], ["2.182", "đ"] */
+export function compactVnd(amount: number): [string, string] {
+  const abs = Math.abs(amount)
+  if (abs >= 1e9) return [decimal.format(amount / 1e9), 'tỷ đ']
+  if (abs >= 1e6) return [decimal.format(amount / 1e6), 'triệu đ']
+  return [whole.format(amount), 'đ']
+}
+
+/** "63,6%" của phần trên tổng; tổng 0 thì null */
+export function shareText(part: number, total: number) {
+  if (total <= 0) return null
+  return `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format((part / total) * 100)}%`
+}

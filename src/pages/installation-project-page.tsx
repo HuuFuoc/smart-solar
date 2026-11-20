@@ -30,6 +30,7 @@ import {
 } from '@/features/installation-projects/projectDisplay'
 import { customerAcceptanceBlockers } from '@/features/installation-projects/acceptanceRules'
 import { EnergyEstimatePanel } from '@/features/installations/EnergyEstimatePanel'
+import { StaffIotPanel } from '@/features/iot/StaffIotPanel'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useEnergyMonitoringQuery, useInstallationProjectQuery } from '@/hooks/useManagerInstallations'
 import type { InstallationStaffView } from '@/types/res/managerInstallationsRes'
@@ -323,6 +324,9 @@ function InstallationProjectPage() {
                 </div>
                 <div className="sv-card">
                   <EnergyEstimatePanel query={energy} />
+                </div>
+                <div className="sv-card">
+                  <StaffIotPanel projectId={p.projectId} projectStatus={p.status} />
                 </div>
                 <div className="sv-card">
                   <EvidencePanel projectId={p.projectId} currentRound={p.currentRound} />

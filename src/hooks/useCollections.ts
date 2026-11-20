@@ -57,3 +57,34 @@ export const useCollectionDecisionMutation = () =>
           ? collectionService.requestLegalReview(caseId, body)
           : collectionService.resolve(caseId, body),
   )
+
+/** Số trang tối đa đọc cho thống kê công nợ (100 hồ sơ mỗi trang, giới hạn PageRequest.MaxPageSize của backend) */
+const COLLECTIONS_SUMMARY_MAX_PAGES = 10
+
+export type CollectionsSummary = {
+  items: CollectionCaseView[]
+  totalItems: number
+  /** Còn hồ sơ chưa đọc vì vượt COLLECTIONS_SUMMARY_MAX_PAGES trang */
+  partial: boolean
+}
+
+/** Mọi hồ sơ công nợ (cả đã đóng) cho biểu đồ của trang Tổng quan: phát sinh / đóng theo tháng, bước xử lý. Giữ 2 phút */
+export function useCollectionsSummaryQuery({ enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery<CollectionsSummary, ApiError>({
+    queryKey: [...collectionKeys.all, 'summary'],
+    queryFn: async () => {
+      const pageSize = 100
+      const first = await collectionService.listCollections({ page: 1, pageSize, openOnly: false })
+      const items = [...first.items]
+      const last = Math.min(first.totalPages, COLLECTIONS_SUMMARY_MAX_PAGES)
+      for (let page = 2; page <= last; page++) {
+        const next = await collectionService.listCollections({ page, pageSize, openOnly: false })
+        items.push(...next.items)
+      }
+      return { items, totalItems: first.totalItems, partial: first.totalPages > last }
+    },
+    staleTime: 2 * 60_000,
+    refetchOnWindowFocus: false,
+    enabled,
+  })
+}

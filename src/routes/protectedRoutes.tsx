@@ -36,6 +36,8 @@ const CustomerCatalogProductPage = page(() => import('@/pages/catalog-product-pa
 
 // Kinh doanh
 const OpsDashboardPage = page(() => import('@/pages/ops/dashboard-page'), 'OpsDashboardPage')
+const ManageDashboardPage = page(() => import('@/pages/manage/dashboard-page'), 'ManageDashboardPage')
+const TechDashboardPage = page(() => import('@/pages/tech/dashboard-page'), 'TechDashboardPage')
 const OpsSurveysPage = page(() => import('@/pages/ops/surveys-page'), 'OpsSurveysPage')
 const OpsMySurveysPage = page(() => import('@/pages/ops/my-surveys-page'), 'OpsMySurveysPage')
 const OpsSurveyRequestPage = page(() => import('@/pages/ops/survey-request-page'), 'OpsSurveyRequestPage')
@@ -137,6 +139,7 @@ const AdminWarrantyOptionsPage = page(() => import('@/pages/admin/warranty-optio
 const AdminSalesTasksPage = page(() => import('@/pages/sales-tasks-page'), 'AdminSalesTasksPage')
 const AdminReportsPage = page(() => import('@/pages/admin/reports-page'), 'AdminReportsPage')
 const AdminAiUsagePage = page(() => import('@/pages/admin/ai-usage-page'), 'AdminAiUsagePage')
+const AdminIotDevicesPage = page(() => import('@/pages/admin/iot-devices-page'), 'AdminIotDevicesPage')
 const AdminKnowledgeDocumentsPage = page(
   () => import('@/pages/admin/knowledge-documents-page'),
   'AdminKnowledgeDocumentsPage',
@@ -232,8 +235,9 @@ export const protectedRoutes: RouteObject[] = [
     role: 'technician',
     path: tech.home,
     Layout: TechLayout,
-    start: tech.jobs,
+    start: tech.dashboard,
     pages: [
+      { path: tech.dashboard, lazy: TechDashboardPage },
       { path: tech.jobs, lazy: TechJobsPage },
       { path: tech.job, lazy: TechJobPage },
       { path: tech.openJob, lazy: TechOpenJobPage },
@@ -255,8 +259,9 @@ export const protectedRoutes: RouteObject[] = [
     role: 'manager',
     path: manage.home,
     Layout: ManageLayout,
-    start: manage.technicians,
+    start: manage.dashboard,
     pages: [
+      { path: manage.dashboard, lazy: ManageDashboardPage },
       { path: manage.installations, lazy: ManageInstallationProjectsPage },
       { path: manage.installation, lazy: ManageInstallationProjectPage },
       { path: manage.contracts, lazy: ManageContractsPage },
@@ -312,6 +317,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.knowledgeBase, lazy: AdminKnowledgeDocumentsPage },
       { path: admin.knowledgeDocument, lazy: AdminKnowledgeDocumentPage },
       { path: admin.aiUsage, lazy: AdminAiUsagePage },
+      { path: admin.iotDevices, lazy: AdminIotDevicesPage },
     ],
   }),
 

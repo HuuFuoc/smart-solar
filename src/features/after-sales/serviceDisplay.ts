@@ -71,15 +71,17 @@ export function equipmentWarrantyText(asset: InstalledAssetView, now = Date.now(
  * Bỏ thiết bị đã thay ra và thiết bị thay thế chưa nghiệm thu
  */
 export function groupEquipmentWarranty(assets: InstalledAssetView[]) {
-  const groups = new Map<string, { name: string; count: number; text: string }>()
+  // assetType / product: loại và "hãng model" tách riêng cho thẻ thiết bị; name là cả hai
+  const groups = new Map<string, { name: string; assetType: string; product: string; count: number; text: string }>()
   for (const asset of assets) {
     if (asset.status !== 'ACTIVE') continue
-    const name = `${assetTypeLabel(asset.assetType)} ${asset.manufacturer} ${asset.model}`
+    const product = `${asset.manufacturer} ${asset.model}`
+    const name = `${assetTypeLabel(asset.assetType)} ${product}`
     const text = equipmentWarrantyText(asset)
     const key = `${name}|${text}`
     const group = groups.get(key)
     if (group) group.count += asset.quantity
-    else groups.set(key, { name, count: asset.quantity, text })
+    else groups.set(key, { name, assetType: asset.assetType, product, count: asset.quantity, text })
   }
   return [...groups.values()]
 }

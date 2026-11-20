@@ -167,6 +167,35 @@ export function useContractDirectoryQuery(query: ContractDirectoryQuery) {
   })
 }
 
+/** Số trang tối đa đọc cho ô số liệu và tệp xuất (100 hợp đồng mỗi trang, giới hạn PageRequest.MaxPageSize của backend) */
+const DIRECTORY_SUMMARY_MAX_PAGES = 20
+
+export type ContractDirectorySummary = {
+  items: ContractDirectoryItem[]
+  totalItems: number
+  /** Còn hợp đồng chưa đọc vì vượt DIRECTORY_SUMMARY_MAX_PAGES trang */
+  partial: boolean
+}
+
+/** Mọi hợp đồng khớp bộ lọc (không phân trang), cho ô số liệu đầu trang và nút xuất Excel */
+export function useContractDirectorySummaryQuery(filter: Omit<ContractDirectoryQuery, 'page' | 'pageSize'>) {
+  return useQuery<ContractDirectorySummary, ApiError>({
+    queryKey: [...paymentPlanKeys.all, 'directory-summary', filter],
+    queryFn: async () => {
+      const pageSize = 100
+      const first = await directoryService.listContracts({ ...filter, page: 1, pageSize })
+      const items = [...first.items]
+      const last = Math.min(first.totalPages, DIRECTORY_SUMMARY_MAX_PAGES)
+      for (let page = 2; page <= last; page++) {
+        const next = await directoryService.listContracts({ ...filter, page, pageSize })
+        items.push(...next.items)
+      }
+      return { items, totalItems: first.totalItems, partial: first.totalPages > last }
+    },
+    placeholderData: keepPreviousData,
+  })
+}
+
 /** Khách nghiệm thu / yêu cầu làm lại. Không báo thành công trước khi backend trả lời */
 export function useCustomerAcceptanceMutation() {
   const refresh = useRefreshContractWorld()

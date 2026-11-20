@@ -1,21 +1,22 @@
-import { useState } from 'react'
-import { useParams } from 'react-router'
+import { useState, type ReactNode } from 'react'
+import { Link, useParams } from 'react-router'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
-import { KeyValueList } from '@/components/common/ui/lists'
+import { Notice } from '@/components/common/ui/lists'
 import { PageHeader } from '@/components/common/ui/page-header'
-import { Panel, PanelAside, PanelBody, PanelHeader } from '@/components/common/ui/panel'
-import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
+import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
+import type { TrackerNext, TrackerStep } from '@/components/common/ui/progress-tracker'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { usePageCrumb } from '@/components/layout/page-crumb'
-import { ProjectAfterSalesPanel } from '@/features/after-sales/ProjectAfterSalesPanel'
 import { FaultReportFlow } from '@/features/after-sales/FaultReportFlow'
-import { Notice } from '@/components/common/ui/lists'
+import { ProjectAfterSalesPanel } from '@/features/after-sales/ProjectAfterSalesPanel'
+import { CalloutCard, CardHeading, ContractCard, StepsCard } from '@/features/contracts/CustomerContractCards'
+import { goToBlock } from '@/features/contracts/goToBlock'
 import { CustomerAcceptancePanel } from '@/features/installations/CustomerAcceptancePanel'
-import { ProjectBalanceNotice } from '@/features/payment-plan/ProjectBalanceNotice'
 import { EnergyEstimatePanel } from '@/features/installations/EnergyEstimatePanel'
+import { CustomerIotPanel } from '@/features/iot/CustomerIotPanel'
 import { EquipmentDifferences } from '@/features/installations/EquipmentDifferences'
 import { EvidenceGallery } from '@/features/installations/EvidenceGallery'
 import {
@@ -29,6 +30,7 @@ import {
   installationStatusMeta,
   pendingAcceptance,
 } from '@/features/installations/installationDisplay'
+import { ProjectBalanceNotice } from '@/features/payment-plan/ProjectBalanceNotice'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment, vnDate } from '@/features/scheduling/schedulingDisplay'
 import {
@@ -39,6 +41,7 @@ import {
   useMyInstallationQuery,
 } from '@/hooks/useCustomerInstallations'
 import { useWarrantyQuery } from '@/hooks/useCustomerServiceRequests'
+import { ROUTES, withId } from '@/routes/paths'
 import type {
   AcceptanceView,
   AssetView,
@@ -141,7 +144,15 @@ function nextStep(p: InstallationCustomerView): TrackerNext {
       return {
         tone: 'ok',
         title: 'Công trình đã bàn giao',
-        body: 'Thiết bị có vấn đề hoặc cần bảo trì thì gửi yêu cầu ở mục Bảo hành, sửa chữa.',
+        body: (
+          <>
+            Thiết bị có vấn đề hoặc cần bảo trì thì gửi yêu cầu ở mục{' '}
+            <Link to={ROUTES.customer.afterSales} className="font-medium text-accent-fg underline underline-offset-4">
+              Bảo hành, sửa chữa
+            </Link>
+            .
+          </>
+        ),
       }
     case 'CANCELLED':
       return {
@@ -203,7 +214,7 @@ function EvidencePanel({ projectId }: { projectId: string }) {
 }
 
 /**
- * Bảng thiết bị. Đã bàn giao thì thêm cột hạn bảo hành của hãng đã xác nhận (`warrantyOf`), không dùng ngày backend
+ * Bảng thiết bị trong khung. Đã bàn giao thì thêm cột hạn bảo hành của hãng đã xác nhận (`warrantyOf`), không dùng ngày backend
  * tự tính từ ngày bàn giao vì khác với hạn ở khối bảo hành
  */
 function AssetTable({
@@ -214,39 +225,41 @@ function AssetTable({
   warrantyOf?: (asset: AssetView | HandoverAssetView) => string
 }) {
   return (
-    <Table stack="xl">
-      <thead>
-        <tr>
-          <Th>Thiết bị</Th>
-          <Th>Hãng, model</Th>
-          <Th className="text-right">Số lượng</Th>
-          <Th>Bảo hành</Th>
-          {warrantyOf && <Th>Bảo hành hãng đến</Th>}
-        </tr>
-      </thead>
-      <tbody>
-        {assets.map((a, i) => (
-          // Dòng của biên bản bàn giao không có mã nên dùng thứ tự
-          <Tr key={'assetId' in a ? a.assetId : i}>
-            <Td label="Thiết bị" className="font-medium text-fg">
-              {assetTypeLabel(a.assetType)}
-            </Td>
-            <Td label="Hãng, model">
-              {a.manufacturer} {a.model}
-            </Td>
-            <Td label="Số lượng" className="tnum xl:text-right">
-              {a.quantity.toLocaleString('vi-VN')}
-            </Td>
-            <Td label="Bảo hành">{formatWarrantyMonths(a.warrantyMonths)}</Td>
-            {warrantyOf && (
-              <Td label="Bảo hành hãng đến" className="tnum">
-                {warrantyOf(a)}
+    <div className="ct-table ct-table-plain">
+      <Table stack="xl">
+        <thead>
+          <tr>
+            <Th>Thiết bị</Th>
+            <Th>Hãng, model</Th>
+            <Th className="text-right">Số lượng</Th>
+            <Th>Bảo hành</Th>
+            {warrantyOf && <Th>Bảo hành hãng đến</Th>}
+          </tr>
+        </thead>
+        <tbody>
+          {assets.map((a, i) => (
+            // Dòng của biên bản bàn giao không có mã nên dùng thứ tự
+            <Tr key={'assetId' in a ? a.assetId : i}>
+              <Td label="Thiết bị" className="font-semibold text-fg">
+                {assetTypeLabel(a.assetType)}
               </Td>
-            )}
-          </Tr>
-        ))}
-      </tbody>
-    </Table>
+              <Td label="Hãng, model">
+                {a.manufacturer} {a.model}
+              </Td>
+              <Td label="Số lượng" className="tnum xl:text-right">
+                {a.quantity.toLocaleString('vi-VN')}
+              </Td>
+              <Td label="Bảo hành">{formatWarrantyMonths(a.warrantyMonths)}</Td>
+              {warrantyOf && (
+                <Td label="Bảo hành hãng đến" className="tnum">
+                  {warrantyOf(a)}
+                </Td>
+              )}
+            </Tr>
+          ))}
+        </tbody>
+      </Table>
+    </div>
   )
 }
 
@@ -269,11 +282,18 @@ function HandoverPanel({ projectId }: { projectId: string }) {
   return (
     <Panel>
       <PanelHeader
-        title="Bàn giao"
+        title="Bàn giao thiết bị"
         description={
-          h
-            ? `Bàn giao ${formatMoment(h.handoverAt)}${h.technicianName ? `, kỹ thuật viên ${h.technicianName}` : ''}`
-            : undefined
+          h ? (
+            <>
+              <span className="tnum">Bàn giao {formatMoment(h.handoverAt)}</span>
+              {h.technicianName && (
+                <>
+                  , kỹ thuật viên: <span className="font-semibold text-fg">{h.technicianName}</span>
+                </>
+              )}
+            </>
+          ) : undefined
         }
       />
       <PanelBody>
@@ -295,49 +315,78 @@ function HandoverPanel({ projectId }: { projectId: string }) {
   )
 }
 
+/** Dòng nhãn trái / giá trị phải của cột phụ */
+function AsideRows({ items }: { items: { k: string; v: ReactNode }[] }) {
+  return (
+    <dl className="divide-y divide-line text-meta">
+      {items.map((item) => (
+        <div key={item.k} className="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0">
+          <dt className="shrink-0 text-fg-2">{item.k}</dt>
+          <dd className="min-w-0 text-right font-semibold wrap-break-word text-fg">{item.v}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+/** "Thứ Sáu, 20/11/2026" và "13:00–13:30" trên hai dòng khi lịch trong một ngày */
+function scheduleValue(p: InstallationCustomerView) {
+  const text = formatInstallationWindow(p.scheduledStartsAt, p.scheduledEndsAt)
+  if (!text) return 'Chưa có lịch'
+  const sameDay = p.scheduledStartsAt && p.scheduledEndsAt && vnDate(p.scheduledStartsAt) === vnDate(p.scheduledEndsAt)
+  const cut = text.lastIndexOf(', ')
+  if (!sameDay || cut < 0) return <span className="tnum">{text}</span>
+  return (
+    <>
+      <span className="block">{text.slice(0, cut)}</span>
+      <span className="tnum block text-accent-fg">{text.slice(cut + 2)}</span>
+    </>
+  )
+}
+
 function SchedulePanel({ p }: { p: InstallationCustomerView }) {
-  const items = [
-    {
-      k: 'Lịch lắp đặt',
-      v: formatInstallationWindow(p.scheduledStartsAt, p.scheduledEndsAt) ?? 'Chưa có lịch',
-    },
+  const items: { k: string; v: ReactNode }[] = [
+    { k: 'Lịch lắp đặt', v: scheduleValue(p) },
     { k: 'Kỹ thuật viên', v: p.technicianName ?? 'Chưa có người nhận việc' },
   ]
-  if (p.startedAt) items.push({ k: 'Bắt đầu thi công', v: formatMoment(p.startedAt) })
-  if (p.completedAt) items.push({ k: 'Nghiệm thu xong', v: formatMoment(p.completedAt) })
-  if (p.cancelledAt) items.push({ k: 'Huỷ lúc', v: formatMoment(p.cancelledAt) })
+  if (p.startedAt) items.push({ k: 'Bắt đầu thi công', v: <span className="tnum">{formatMoment(p.startedAt)}</span> })
+  if (p.completedAt)
+    items.push({ k: 'Nghiệm thu xong', v: <span className="tnum">{formatMoment(p.completedAt)}</span> })
+  if (p.cancelledAt) items.push({ k: 'Huỷ lúc', v: <span className="tnum">{formatMoment(p.cancelledAt)}</span> })
   return (
-    <Panel>
-      <PanelHeader title="Lịch lắp đặt" />
-      <PanelBody>
-        <KeyValueList items={items} />
-      </PanelBody>
-    </Panel>
+    <section aria-labelledby="project-schedule">
+      <CardHeading id="project-schedule" icon="schedule" rule>
+        Lịch lắp đặt
+      </CardHeading>
+      <AsideRows items={items} />
+    </section>
   )
 }
 
 function AcceptanceHistory({ acceptances }: { acceptances: AcceptanceView[] }) {
   return (
-    <ul className="divide-y divide-line">
+    <ul className="space-y-2">
       {[...acceptances]
         .sort((a, b) => b.round - a.round)
         .map((a) => {
           const meta = acceptanceDecisionMeta(a)
           const by = deciderLabel(a.decidedBy)
           return (
-            <li key={a.round} className="space-y-1 py-3 first:pt-0 last:pb-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-body font-medium text-fg">Lần {a.round}</p>
+            <li key={a.round} className="ct-box space-y-1 px-3 py-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-body font-semibold text-fg">Lần {a.round}</p>
                 <Badge tone={meta.tone}>{meta.label}</Badge>
               </div>
               <p className="tnum text-meta text-fg-2">
                 Báo cáo {formatMoment(a.requestedAt)}
                 {a.decidedAt && `, quyết định ${formatMoment(a.decidedAt)}${by ? ` (${by})` : ''}`}
               </p>
-              {a.reason && <p className="text-body whitespace-pre-line text-fg-2">{a.reason}</p>}
+              {a.reason && <p className="text-meta whitespace-pre-line text-fg-2">{a.reason}</p>}
               {a.decision !== 'PENDING' && (
-                <details className="text-body">
-                  <summary className="tap cursor-pointer text-fg-2 hover:text-fg">Báo cáo hoàn thành</summary>
+                <details className="text-meta">
+                  <summary className="tap cursor-pointer font-medium text-fg-2 hover:text-fg">
+                    Báo cáo hoàn thành
+                  </summary>
                   <p className="mt-1 whitespace-pre-line text-fg">{a.completionReport}</p>
                 </details>
               )}
@@ -350,7 +399,8 @@ function AcceptanceHistory({ acceptances }: { acceptances: AcceptanceView[] }) {
 
 // Chi tiết công trình lắp đặt của khách: tiến độ, báo cáo hoàn thành, ảnh thi công, thiết bị, bàn giao. Kỹ thuật viên báo hoàn
 // thành thì khách nghiệm thu hoặc yêu cầu làm lại tại đây (backend 7d27054, mỗi lượt giữ lịch sử); hợp đồng 30/70 nghiệm thu xong
-// thì báo khoản 70% đến hạn và dẫn sang trang hợp đồng. Duyệt thiết bị lắp khác hợp đồng do quản lý làm nội bộ
+// thì báo khoản 70% đến hạn và dẫn sang trang hợp đồng. Duyệt thiết bị lắp khác hợp đồng do quản lý làm nội bộ.
+// Bố cục kiểu thẻ như trang hợp đồng của khách (`.ct-page`, contract-detail.css)
 export function CustomerProjectPage() {
   const { id } = useParams()
   const query = useMyInstallationQuery(id)
@@ -366,13 +416,18 @@ export function CustomerProjectPage() {
         const pending = p.status === 'PENDING_CUSTOMER_ACCEPTANCE' ? pendingAcceptance(p) : null
         const completed = p.status === 'COMPLETED'
         return (
-          <>
+          <div className="ct-page">
             <PageHeader
               meta={
                 <>
-                  {/* Việc cần làm đã báo đỏ ở khối Tình hình, nhãn trạng thái không đỏ lần nữa */}
+                  {/* Việc cần làm đã báo đỏ ở thẻ việc tiếp theo, nhãn trạng thái không đỏ lần nữa */}
                   <Badge tone={next.tone === 'danger' ? 'neutral' : status.tone}>{status.label}</Badge>
-                  <span className="tnum">Hợp đồng {shortCode(p.contractId)}</span>
+                  <Link
+                    to={withId(ROUTES.customer.contract, p.contractId)}
+                    className="text-fg-3 underline-offset-4 hover:underline"
+                  >
+                    Hợp đồng <span className="tnum font-semibold text-fg-2">{shortCode(p.contractId)}</span>
+                  </Link>
                 </>
               }
               title={
@@ -390,23 +445,57 @@ export function CustomerProjectPage() {
             />
             {reporting && <FaultReportFlow projects={[p]} onClose={() => setReporting(false)} />}
 
-            <div className="space-y-6">
-              <ProgressTracker steps={trackerSteps(p)} next={next} />
+            <div className="mt-6 space-y-4">
+              <ContractCard>
+                <StepsCard steps={trackerSteps(p)} />
+              </ContractCard>
+              <CalloutCard
+                tone={next.tone}
+                title={next.title}
+                action={
+                  next.action && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      icon={next.action.icon}
+                      onClick={() => goToBlock(next.action!.target)}
+                    >
+                      {next.action.label}
+                    </Button>
+                  )
+                }
+              >
+                {next.body}
+              </CalloutCard>
+              {completed && <ProjectBalanceNotice contractId={p.contractId} />}
+            </div>
 
-              <div className="grid gap-6 lg:grid-cols-3">
-                <div className="min-w-0 space-y-4 lg:col-span-2">
-                  {pending && (
+            <div className="mt-6 grid gap-6 lg:grid-cols-3">
+              <div className="min-w-0 space-y-6 lg:col-span-2">
+                {pending && (
+                  <ContractCard>
                     <div id="completion" className="scroll-mt-6">
                       <CustomerAcceptancePanel project={p} pending={pending}>
                         <SubstitutionNotice project={p} />
                       </CustomerAcceptancePanel>
                     </div>
-                  )}
-                  {completed && <ProjectBalanceNotice contractId={p.contractId} />}
-                  {completed && <ProjectAfterSalesPanel projectId={p.projectId} />}
-                  {completed && <HandoverPanel projectId={p.projectId} />}
+                  </ContractCard>
+                )}
+                {completed && (
+                  <ContractCard>
+                    <ProjectAfterSalesPanel projectId={p.projectId} />
+                  </ContractCard>
+                )}
+                {completed && (
+                  <ContractCard>
+                    <HandoverPanel projectId={p.projectId} />
+                  </ContractCard>
+                )}
+                <ContractCard>
                   <EvidencePanel projectId={p.projectId} />
-                  {!completed && p.assets.length > 0 && (
+                </ContractCard>
+                {!completed && p.assets.length > 0 && (
+                  <ContractCard>
                     <Panel>
                       <PanelHeader
                         title="Thiết bị đã lắp"
@@ -416,24 +505,37 @@ export function CustomerProjectPage() {
                         <AssetTable assets={p.assets} />
                       </PanelBody>
                     </Panel>
-                  )}
-                </div>
-
-                <PanelAside aria-label="Lịch lắp đặt và các lần nghiệm thu">
-                  <SchedulePanel p={p} />
-                  {p.status !== 'CANCELLED' && <EnergyEstimatePanel query={energy} />}
-                  {p.acceptances.length > 0 && (
-                    <Panel>
-                      <PanelHeader title="Các lần nghiệm thu" />
-                      <PanelBody>
-                        <AcceptanceHistory acceptances={p.acceptances} />
-                      </PanelBody>
-                    </Panel>
-                  )}
-                </PanelAside>
+                  </ContractCard>
+                )}
+                {p.status !== 'CANCELLED' && (
+                  <ContractCard>
+                    <CustomerIotPanel projectId={p.projectId} energy={energy} />
+                  </ContractCard>
+                )}
               </div>
+
+              <aside aria-label="Lịch lắp đặt và các lần nghiệm thu" className="min-w-0 space-y-6 self-start">
+                <ContractCard>
+                  <SchedulePanel p={p} />
+                </ContractCard>
+                {p.status !== 'CANCELLED' && (
+                  <ContractCard>
+                    <EnergyEstimatePanel query={energy} variant="card" />
+                  </ContractCard>
+                )}
+                {p.acceptances.length > 0 && (
+                  <ContractCard>
+                    <section aria-labelledby="project-acceptances">
+                      <CardHeading id="project-acceptances" icon="verified_user" rule>
+                        Các lần nghiệm thu
+                      </CardHeading>
+                      <AcceptanceHistory acceptances={p.acceptances} />
+                    </section>
+                  </ContractCard>
+                )}
+              </aside>
             </div>
-          </>
+          </div>
         )
       }}
     </QueryBoundary>

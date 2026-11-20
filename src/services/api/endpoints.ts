@@ -454,6 +454,25 @@ export const ENDPOINTS = {
   },
   adminRagBudget: '/admin/rag-budget',
 
+  // Giám sát dòng điện bằng ESP32 + ACS712: quản trị đăng ký thiết bị, quản lý / quản trị gắn vào công trình, khách xem số đo
+  adminIotDevices: {
+    base: '/admin/iot/devices',
+    byId: (id: string) => `/admin/iot/devices/${encode(id)}`,
+    disable: (id: string) => `/admin/iot/devices/${encode(id)}/disable`,
+    enable: (id: string) => `/admin/iot/devices/${encode(id)}/enable`,
+    rotate: (id: string) => `/admin/iot/devices/${encode(id)}/rotate-credential`,
+  },
+  staffIot: {
+    bind: (projectId: string) => `/installation-projects/${encode(projectId)}/iot-device`,
+    bindings: '/iot/bindings',
+    release: (bindingId: string) => `/iot/bindings/${encode(bindingId)}/release`,
+  },
+  // Thiết bị, số đo mới nhất, lịch sử số đo của một công trình; nhân viên và khách khác tiền tố
+  iotMonitoring: {
+    staff: (projectId: string) => `/installation-projects/${encode(projectId)}/energy-monitoring`,
+    customer: (projectId: string) => `/customers/me/installation-projects/${encode(projectId)}/energy-monitoring`,
+  },
+
   // Tệp tải lên kho S3, mọi vai trò
   // Gói thanh toán 30/70 (backend 7d27054): khoản trả, trang hợp đồng giấy đã ký, danh sách hợp đồng, thu hồi công nợ, tài chính
   installments: {

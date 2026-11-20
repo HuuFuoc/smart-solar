@@ -1,0 +1,34 @@
+# Sinh từ ui-locks.txt: PR chạm vào giao diện đã khoá phải được chủ sở hữu duyệt.
+# Cần bật "Require review from Code Owners" trong branch protection của main thì mới chặn được merge.
+
+/src/components/common/ui/document-preview.tsx @HuuFuoc
+/src/components/layout/customer-layout.tsx @HuuFuoc
+/src/features/contracts/CashConfirmDialog.tsx @HuuFuoc
+/src/features/contracts/ContractDocumentButtons.tsx @HuuFuoc
+/src/features/contracts/ContractLinkPanel.tsx @HuuFuoc
+/src/features/contracts/CustomerContractTables.tsx @HuuFuoc
+/src/features/installation-schedules/CustomerSchedulePanel.tsx @HuuFuoc
+/src/features/installation-schedules/ScheduleDialog.tsx @HuuFuoc
+/src/features/installation-schedules/TechContractSchedulePanel.tsx @HuuFuoc
+/src/features/installations/CompletionReportForm.tsx @HuuFuoc
+/src/features/installations/CustomerAcceptancePanel.tsx @HuuFuoc
+/src/features/payment-plan/ContractSnapshotPanel.tsx @HuuFuoc
+/src/features/payment-plan/InstallmentPaymentBlock.tsx @HuuFuoc
+/src/features/payment-plan/InstallmentPlanPanel.tsx @HuuFuoc
+/src/features/payment-plan/ProjectBalanceNotice.tsx @HuuFuoc
+/src/features/payment-plan/SignatureSetPanel.tsx @HuuFuoc
+/src/features/quotations/OnSiteQuotation.tsx @HuuFuoc
+/src/features/quotations/TechnicianQuotationPanel.tsx @HuuFuoc
+/src/pages/collections-page.tsx @HuuFuoc
+/src/pages/contract-page.tsx @HuuFuoc
+/src/pages/customer/contract-page.tsx @HuuFuoc
+/src/pages/customer/customer-dashboard-page.tsx @HuuFuoc
+/src/pages/customer/project-page.tsx @HuuFuoc
+/src/pages/installation-project-page.tsx @HuuFuoc
+/src/pages/installation-schedules-page.tsx @HuuFuoc
+/src/pages/tech/installation-page.tsx @HuuFuoc
+/src/pages/tech/installation-schedules-page.tsx @HuuFuoc
+/ui-locks.txt @HuuFuoc
+/scripts/ui-lock-guard.mjs @HuuFuoc
+/.claude/settings.json @HuuFuoc
+/.github/CODEOWNERS @HuuFuoc

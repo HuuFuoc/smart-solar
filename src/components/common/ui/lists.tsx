@@ -174,7 +174,11 @@ export function Notice({
 }) {
   const t = noticeTones[tone]
   return (
-    <div className={cx('flex gap-3 rounded-container px-4 py-3 text-body', t.box, className)}>
+    <div
+      data-notice=""
+      data-tone={tone}
+      className={cx('flex gap-3 rounded-container px-4 py-3 text-body', t.box, className)}
+    >
       {t.icon && <Icon name={t.icon} className={cx('mt-px shrink-0 text-[20px]', t.iconColor)} />}
       <div className="min-w-0">
         {title && <p className="font-semibold text-fg">{title}</p>}

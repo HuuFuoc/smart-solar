@@ -1,19 +1,16 @@
-import { useState } from 'react'
 import { CONTRACT_DOCUMENT_LINKS } from '@/common/contract'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ContractDocumentButtons } from '@/features/contracts/ContractDocumentButtons'
-import { openContractPrint } from '@/features/contracts/contractPrint'
 import { signatureOutcomeMeta } from '@/features/contracts/contractDisplay'
 import { shortHash } from '@/features/contracts/contractRules'
 import { canSubmitSigned } from '@/features/contracts/customerContractRules'
+import { useContractPrint } from '@/features/contracts/useContractPrint'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
-import { useMyRequestsQuery } from '@/hooks/useBooking'
 import { useMyContractDocumentUrlMutation } from '@/hooks/useCustomerContracts'
-import { useMySitesQuery } from '@/hooks/usePreSurveys'
 import type { DocumentDisposition } from '@/services/contractService'
 import type { ContractView } from '@/types/res/customerContractsRes'
 
@@ -22,22 +19,7 @@ import type { ContractView } from '@/types/res/customerContractsRes'
 // Solar tải bản quét lên. Link tải xin lúc bấm. Chưa có link tải thì khách in bản dựng từ dữ liệu hợp đồng (`contractPrint.ts`)
 
 function PrintContractButton({ contract: c }: { contract: ContractView }) {
-  const [blocked, setBlocked] = useState(false)
-  // Phường (hợp đồng không chụp phường) chỉ để in cho đủ, thiếu thì vẫn in được. Khách không còn đọc được báo giá nên không in
-  // ngày đồng ý báo giá
-  const requests = useMyRequestsQuery()
-  const sites = useMySitesQuery()
-  const siteId = requests.data?.find((r) => r.surveyRequestId === c.surveyRequestId)?.propertySiteId
-  const site = sites.data?.items.find((s) => s.siteId === siteId)
-
-  function print() {
-    const opened = openContractPrint({
-      contract: c,
-      ward: site?.communeName ?? site?.ward,
-    })
-    setBlocked(!opened)
-  }
-
+  const { print, blocked } = useContractPrint(c)
   return (
     <div className="space-y-2">
       <Button size="sm" variant="info" icon="print" onClick={print}>

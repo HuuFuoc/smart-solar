@@ -103,6 +103,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
       {
         label: 'Công việc',
         items: [
+          { label: 'Tổng quan', to: ROUTES.manage.dashboard, icon: 'dashboard', end: true },
           { label: 'Điều phối', to: ROUTES.manage.dispatch, icon: 'support_agent' },
           {
             label: 'Hợp đồng',
@@ -173,6 +174,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Sản phẩm', to: ROUTES.admin.products, icon: 'solar_power' },
           { label: 'Kho tri thức AI', to: ROUTES.admin.knowledgeBase, icon: 'menu_book' },
           { label: 'Chi phí AI', to: ROUTES.admin.aiUsage, icon: 'paid' },
+          { label: 'Thiết bị IoT', to: ROUTES.admin.iotDevices, icon: 'sensors' },
           { label: 'Cài đặt hệ thống', to: ROUTES.admin.settings, icon: 'settings' },
         ],
       },
@@ -186,6 +188,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
       {
         label: 'Tác vụ kỹ thuật',
         items: [
+          { label: 'Tổng quan', to: ROUTES.tech.dashboard, icon: 'dashboard', end: true },
           { label: 'Khảo sát', to: ROUTES.tech.jobs, icon: 'assignment' },
           { label: 'Hợp đồng', to: ROUTES.tech.contracts, icon: 'history_edu', alsoActiveOn: [ROUTES.tech.contract] },
           { label: 'Hẹn lịch thi công', to: ROUTES.tech.installationSchedules, icon: 'event_note' },

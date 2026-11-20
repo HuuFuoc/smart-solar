@@ -1,6 +1,7 @@
 // Viết tay vì swagger của tag CustomerInstallations chỉ khai "200 OK". Theo record C# của Modules.Installations
 // (InstallationCustomerView, InstallationEvidenceFileView, InstallationEvidenceUrlView, HandoverView)
 // Giờ trả về kèm +07:00. Khách không bao giờ thấy checklist, nhật ký hay id của kỹ thuật viên
+import type { IotMeasuredMonitoringView } from '@/types/res/iotMonitoringRes'
 
 export type InstallationStatus =
   | 'PENDING_ASSIGNMENT'
@@ -121,8 +122,10 @@ export type SimulatedProductionView = {
 }
 
 /**
- * GET .../energy-monitoring (khách: công trình của mình; quản lý, quản trị: mọi công trình). Hệ thống chưa nối đồng hồ hay
- * inverter nên `dataSource` luôn SIMULATED, `measuredDataAvailable` false; `simulated` null khi không có mô phỏng đã chọn
+ * GET .../energy-monitoring (khách: công trình của mình; quản lý, quản trị: mọi công trình). `dataSource` luôn SIMULATED: nguồn của
+ * khối `simulated` (null khi không có mô phỏng đã chọn). Từ backend 7d27054 có thêm số đo của thiết bị IoT đang gắn: `measured`
+ * (null khi công trình không có thiết bị), `measuredDataAvailable` true khi thiết bị đang gắn đã có số đo và không bị khoá.
+ * Hai trường mới để tuỳ chọn vì backend cũ không trả
  */
 export type EnergyMonitoringView = {
   projectId: string
@@ -130,11 +133,15 @@ export type EnergyMonitoringView = {
   handoverAt: string | null
   dataSource: string
   measuredDataAvailable: boolean
+  /** MEASURED_DATA_AVAILABLE | NO_MEASURED_DATA | SIMULATION_UNAVAILABLE */
   status: string
   simulated: SimulatedProductionView | null
   alerts: string[]
   alertsStatus: string
   notice: string
+  /** IOT_DEVICE khi công trình có thiết bị đang gắn */
+  measuredDataSource?: string | null
+  measured?: IotMeasuredMonitoringView | null
 }
 
 /** GET .../evidence. downloadable=false: tệp không còn VERIFIED, không được xin URL (contentType, sizeBytes, sha256 null) */

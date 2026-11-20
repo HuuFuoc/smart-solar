@@ -12,6 +12,7 @@ import {
   UpcomingAppointments,
 } from '@/features/customer-dashboard/CustomerOverviewPanels'
 import { isCustomerTodo } from '@/features/contracts/customerContractRules'
+import { CustomerPaymentOverview } from '@/features/customer-dashboard/CustomerPaymentOverview'
 import { CustomerTodoList } from '@/features/customer-dashboard/CustomerTodoList'
 import { customerTodos } from '@/features/customer-dashboard/customerTodos'
 import { isUpcomingAppointment } from '@/features/customer-dashboard/services/dashboardChartService'
@@ -168,6 +169,8 @@ export function CustomerDashboardPage() {
               note={upcoming[0]?.appointment ? formatMoment(upcoming[0].appointment.startsAt) : undefined}
             />
           </StatRow>
+
+          <CustomerPaymentOverview contracts={contracts} installations={installations} />
 
           <Panel raised aria-labelledby="todo-title">
             <h2 id="todo-title" className="mb-2 text-title font-semibold">

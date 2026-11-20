@@ -1,7 +1,9 @@
 import type { UseQueryResult } from '@tanstack/react-query'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { KeyValueList } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
+import { CardHeading } from '@/features/contracts/CustomerContractCards'
 import { formatKwh, formatOne } from '@/features/pre-surveys/simulationDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { errorMessage } from '@/services/api/errors'
@@ -10,11 +12,25 @@ import type { EnergyMonitoringView } from '@/types/res/customerInstallationsRes'
 // Sản lượng dự kiến của công trình, lấy từ mô phỏng khách chọn trước khi lắp. Chưa có đồng hồ đo nên không có số thực tế
 // và không có cảnh báo sản lượng thấp; luôn ghi rõ là dự kiến
 
-export function EnergyEstimatePanel({ query }: { query: UseQueryResult<EnergyMonitoringView> }) {
+/** `variant="card"`: tiêu đề IN HOA có icon, chưa có mô phỏng thì khung trống có hình (trang công trình phía khách) */
+export function EnergyEstimatePanel({
+  query,
+  variant = 'plain',
+}: {
+  query: UseQueryResult<EnergyMonitoringView>
+  variant?: 'plain' | 'card'
+}) {
   const sim = query.data?.simulated
+  const card = variant === 'card'
   return (
     <Panel>
-      <PanelHeader title="Sản lượng dự kiến" />
+      {card ? (
+        <CardHeading icon="bolt" iconClass="text-sun" rule>
+          Sản lượng dự kiến
+        </CardHeading>
+      ) : (
+        <PanelHeader title="Sản lượng dự kiến" />
+      )}
       <PanelBody>
         {query.isPending ? (
           <Skeleton className="h-24" />
@@ -25,7 +41,16 @@ export function EnergyEstimatePanel({ query }: { query: UseQueryResult<EnergyMon
             onRetry={() => void query.refetch()}
           />
         ) : !sim ? (
-          <p className="text-body text-fg-2">Công trình chưa có mô phỏng đã chọn nên chưa ước tính được sản lượng.</p>
+          card ? (
+            <div className="ct-box ct-well flex flex-col items-center gap-2 px-4 py-6 text-center">
+              <Icon name="bar_chart" className="text-[24px] text-fg-3" />
+              <p className="text-meta text-fg-2">
+                Công trình chưa có mô phỏng đã chọn nên chưa ước tính được sản lượng.
+              </p>
+            </div>
+          ) : (
+            <p className="text-body text-fg-2">Công trình chưa có mô phỏng đã chọn nên chưa ước tính được sản lượng.</p>
+          )
         ) : (
           <div className="space-y-3">
             <KeyValueList

@@ -5,6 +5,7 @@
 @import '@fontsource/be-vietnam-pro/700.css';
 @import './landing.css';
 @import './survey-detail.css';
+@import './contract-detail.css';
 
 /* `dark:` theo data-theme trên <html> (không đặt thì theo hệ thống), vì mặc định Tailwind chỉ đọc prefers-color-scheme */
 @custom-variant dark {

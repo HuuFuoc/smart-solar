@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Badge } from '@/components/common/ui/badge'
 import { Button } from '@/components/common/ui/button'
 import { DocumentPreviewButtons } from '@/components/common/ui/document-preview'
@@ -422,6 +423,112 @@ function UploadingSet({
   )
 }
 
+/** "2 trang, lập lúc …, chốt lúc …, ký ngày …" của một lần tải */
+const setMetaText = (s: SignatureSetView) =>
+  `${s.expectedPageCount} trang, lập lúc ${formatMoment(s.createdAt)}` +
+  (s.finalizedAt ? `, chốt lúc ${formatMoment(s.finalizedAt)}` : '') +
+  (s.signedOn ? `, ký ngày ${s.signedOn.split('-').reverse().join('/')}` : '')
+
+const byPage = (a: SignatureSetView['pages'][number], b: SignatureSetView['pages'][number]) =>
+  a.pageNumber - b.pageNumber || a.uploadedAt.localeCompare(b.uploadedAt)
+
+/** Các trang của một lần tải dạng dòng có khung (kiểu thẻ của trang hợp đồng phía khách) */
+function CardSetPages({
+  set: s,
+  request,
+}: {
+  set: SignatureSetView
+  request: (fileId: string, disposition: 'inline' | 'attachment') => Promise<AttachedFileUrlView>
+}) {
+  return (
+    <ul className="space-y-2">
+      {s.pages
+        .slice()
+        .sort(byPage)
+        .map((p) => (
+          <li key={`${p.pageNumber}-${p.fileId}`} className="ct-box flex flex-wrap items-center gap-3 px-3 py-2.5">
+            <span
+              aria-hidden
+              className="flex size-9 shrink-0 items-center justify-center rounded-control bg-accent-soft text-accent-fg"
+            >
+              <Icon name="description" className="text-[20px]" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-body font-semibold text-fg">
+                Trang <span className="tnum">{p.pageNumber}</span>
+              </p>
+              <p className="ct-code text-meta break-all text-fg-3">
+                {p.replacedAt ? `bị thay lúc ${formatMoment(p.replacedAt)}` : formatMoment(p.uploadedAt)}, mã{' '}
+                {p.sha256.slice(0, 12)}
+              </p>
+            </div>
+            <PageLinks
+              name={`Trang ${p.pageNumber}, lần ${s.version}`}
+              request={(disposition) => request(p.fileId, disposition)}
+            />
+          </li>
+        ))}
+    </ul>
+  )
+}
+
+/** Các lần tải kiểu thẻ: lần đang dùng mở sẵn, lần bị thay gập trong khung nét đứt, bấm "Chi tiết" mới hiện trang */
+function CardSetHistory({
+  sets,
+  reader,
+  contractId,
+}: {
+  sets: SignatureSetView[]
+  reader: 'staff' | 'customer'
+  contractId: string
+}) {
+  const pageUrl = useSignedPageUrlMutation(reader)
+  if (sets.length === 0) return null
+  const request = (fileId: string, disposition: 'inline' | 'attachment') =>
+    pageUrl.mutateAsync({ contractId, fileId, disposition })
+  return (
+    <div className="space-y-3">
+      {[...sets]
+        .sort((a, b) => b.version - a.version)
+        .map((s) => {
+          const status = signatureSetMeta(s.status)
+          if (s.status === 'SUPERSEDED')
+            return (
+              <details key={s.signatureSetId} className="ct-dashed group px-3 py-1.5">
+                <summary className="tap flex cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 py-1 [&::-webkit-details-marker]:hidden">
+                  <span className="text-body font-semibold text-fg">Lần {s.version}</span>
+                  <Badge tone={status.tone}>{status.label}</Badge>
+                  <span className="tnum min-w-0 flex-1 text-meta text-fg-3">{setMetaText(s)}</span>
+                  <span className="text-meta font-medium text-fg underline underline-offset-4 group-open:hidden">
+                    Chi tiết
+                  </span>
+                  <span className="hidden text-meta font-medium text-fg underline underline-offset-4 group-open:inline">
+                    Thu gọn
+                  </span>
+                </summary>
+                <div className="space-y-2 pt-2 pb-2">
+                  {s.note && <p className="text-body whitespace-pre-line text-fg-2">{s.note}</p>}
+                  <CardSetPages set={s} request={request} />
+                </div>
+              </details>
+            )
+          return (
+            <section key={s.signatureSetId} className="space-y-2">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <h3 className="text-body font-semibold text-fg">
+                  Lần {s.version} ({status.label})
+                </h3>
+                <p className="tnum text-meta text-fg-3">{setMetaText(s)}</p>
+              </div>
+              {s.note && <p className="text-body whitespace-pre-line text-fg-2">{s.note}</p>}
+              {s.status !== 'UPLOADING' && <CardSetPages set={s} request={request} />}
+            </section>
+          )
+        })}
+    </div>
+  )
+}
+
 function SetHistory({
   sets,
   reader,
@@ -444,18 +551,14 @@ function SetHistory({
               <p className="flex flex-wrap items-center gap-2 text-body text-fg">
                 <span className="font-medium">Lần {s.version}</span>
                 <Badge tone={status.tone}>{status.label}</Badge>
-                <span className="tnum text-meta text-fg-2">
-                  {s.expectedPageCount} trang, lập lúc {formatMoment(s.createdAt)}
-                  {s.finalizedAt && `, chốt lúc ${formatMoment(s.finalizedAt)}`}
-                  {s.signedOn && `, ký ngày ${s.signedOn.split('-').reverse().join('/')}`}
-                </span>
+                <span className="tnum text-meta text-fg-2">{setMetaText(s)}</span>
               </p>
               {s.note && <p className="text-body whitespace-pre-line text-fg-2">{s.note}</p>}
               {s.status !== 'UPLOADING' && (
                 <ul className="space-y-1">
                   {s.pages
                     .slice()
-                    .sort((a, b) => a.pageNumber - b.pageNumber || a.uploadedAt.localeCompare(b.uploadedAt))
+                    .sort(byPage)
                     .map((p) => (
                       <li key={`${p.pageNumber}-${p.fileId}`} className="flex flex-wrap items-center gap-2">
                         <span className="text-body text-fg">
@@ -482,16 +585,19 @@ function SetHistory({
 
 /**
  * `writer`: technician (kỹ thuật viên đã khảo sát) hoặc support (quản lý / quản trị) thì ghi được; null là chỉ đọc. `reader`
- * quyết định đường đọc (khách chỉ đọc hợp đồng của mình)
+ * quyết định đường đọc (khách chỉ đọc hợp đồng của mình). `variant="card"`: các lần tải dạng dòng có khung (trang hợp đồng phía
+ * khách, xem contract-detail.css)
  */
 export function SignatureSetPanel({
   contract: c,
   writer,
   reader,
+  variant = 'plain',
 }: {
   contract: ContractView & { paymentPlan: ContractPaymentPlanView }
   writer: SignatureWriter | null
   reader: 'staff' | 'customer'
+  variant?: 'plain' | 'card'
 }) {
   const sets = useSignatureSetsQuery(reader, c.contractId)
   const [changingCount, setChangingCount] = useState(false)
@@ -562,12 +668,15 @@ export function SignatureSetPanel({
             onRetry={() => void sets.refetch()}
           />
         ) : (
-          history.length > 0 && (
+          history.length > 0 &&
+          (variant === 'card' ? (
+            <CardSetHistory sets={history} reader={reader} contractId={c.contractId} />
+          ) : (
             <section className="space-y-2 border-t border-line pt-4">
               <h3 className="text-body font-medium text-fg">Các lần tải</h3>
               <SetHistory sets={history} reader={reader} contractId={c.contractId} />
             </section>
-          )
+          ))
         )}
       </PanelBody>
     </Panel>

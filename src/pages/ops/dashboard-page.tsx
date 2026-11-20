@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { paymentPlanKeys } from '@/hooks/paymentPlanKeys'
+import { collectionKeys } from '@/hooks/useCollections'
 import { ErrorState, PageSkeleton } from '@/components/common/ui/states'
 import {
   useClaimSurveyRequestMutation,
@@ -10,18 +13,20 @@ import {
 import { useMyTasksQuery, useOpenTasksQuery } from '@/hooks/useSalesAfterSales'
 import { errorMessage } from '@/services/api/errors'
 import type { PendingSurveyRequestItem } from '@/types/res/surveyRequestsRes'
-import { isCompletedStatus, isPendingStatus, isScheduledStatus } from '@/features/pre-surveys/preSurveyDisplay'
+import { todayVn } from '@/features/scheduling/schedulingDisplay'
 
 import { SalesDashboardHeader } from '@/features/sales-dashboard/components/SalesDashboardHeader'
-import { SalesDashboardStats } from '@/features/sales-dashboard/components/SalesDashboardStats'
-import { SalesPipelineFunnel } from '@/features/sales-dashboard/components/SalesPipelineFunnel'
+import { SalesInsights } from '@/features/sales-dashboard/SalesInsights'
 import { SalesUrgentActionsCard } from '@/features/sales-dashboard/components/SalesUrgentActionsCard'
 import { SalesRecentSurveysCard } from '@/features/sales-dashboard/components/SalesRecentSurveysCard'
 import { SalesRegionalDistributionCard } from '@/features/sales-dashboard/components/SalesRegionalDistributionCard'
 import { SalesAfterSalesTasksCard } from '@/features/sales-dashboard/components/SalesAfterSalesTasksCard'
 
+// /ops/dashboard: chỉ số và phân tích kinh doanh (SalesInsights) → việc cần xử lý ngay → hồ sơ của tôi, việc sau bán, địa bàn
 export function OpsDashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const queryClient = useQueryClient()
+  const today = useMemo(() => todayVn(), [])
 
   // Real Queries from API
   const {
@@ -59,6 +64,8 @@ export function OpsDashboardPage() {
         refetchEscalated(),
         refetchOpenTasks(),
         refetchMyTasks(),
+        queryClient.invalidateQueries({ queryKey: collectionKeys.all }),
+        queryClient.invalidateQueries({ queryKey: paymentPlanKeys.all }),
       ])
       toast.success('Đã làm mới dữ liệu thống kê kinh doanh!')
     } finally {
@@ -92,12 +99,6 @@ export function OpsDashboardPage() {
     )
   }
 
-  // Statistical calculations from real dataset
-  const totalCount = mySurveys.length
-  const pendingAssignmentCount = mySurveys.filter((s) => isPendingStatus(s.status)).length
-  const scheduledCount = mySurveys.filter((s) => isScheduledStatus(s.status)).length
-  const completedCount = mySurveys.filter((s) => isCompletedStatus(s.status)).length
-
   return (
     <div className="sv-list space-y-6">
       <SalesDashboardHeader
@@ -106,24 +107,12 @@ export function OpsDashboardPage() {
         isRefreshing={isRefreshing}
       />
 
-      <SalesDashboardStats
-        totalSurveys={totalCount}
-        pendingAssignment={pendingAssignmentCount}
-        scheduledSurveys={scheduledCount}
-        completedSurveys={completedCount}
-      />
+      <SalesInsights mySurveys={mySurveys} surveysLoading={loadingMy} today={today} />
 
       {/* Grid 2 cột cân đối: Cột chính bên trái (~67%) và Cột phụ bên phải (~33%) */}
       <div className="grid gap-6 items-start lg:grid-cols-12">
-        {/* Cột chính bên trái: Tiến độ mini + Bảng Hồ sơ của tôi */}
+        {/* Cột chính bên trái: Bảng Hồ sơ của tôi */}
         <div className="space-y-6 lg:col-span-8">
-          <SalesPipelineFunnel
-            total={totalCount}
-            pending={pendingAssignmentCount}
-            scheduled={scheduledCount}
-            completed={completedCount}
-          />
-
           <SalesRecentSurveysCard surveys={mySurveys} />
         </div>
 

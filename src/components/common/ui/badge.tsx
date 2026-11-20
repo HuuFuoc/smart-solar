@@ -24,7 +24,12 @@ export function Badge({
   className?: string
   children: ReactNode
 }) {
-  return <span className={cx('text-meta font-semibold', tones[tone], className)}>{children}</span>
+  // data-badge / data-tone: trang có kiểu riêng (vd. `.ct-page` của hợp đồng khách) vẽ lại thành viên có nền
+  return (
+    <span data-badge="" data-tone={tone} className={cx('text-meta font-semibold', tones[tone], className)}>
+      {children}
+    </span>
+  )
 }
 
 // Số đếm cạnh mục menu / tab. `attention` là việc đang chờ người xem nên tô đỏ, còn lại là số xám không nền

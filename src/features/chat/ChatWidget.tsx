@@ -9,6 +9,7 @@ import { ChatComposer } from '@/features/chat/ChatComposer'
 import { ChatSessionList } from '@/features/chat/ChatSessionList'
 import { ChatThread } from '@/features/chat/ChatThread'
 import { CHAT_UNAVAILABLE, CHAT_UNAVAILABLE_ADMIN, chatSendError } from '@/features/chat/chatDisplay'
+import { OPEN_ASSISTANT_EVENT } from '@/features/chat/openAssistant'
 import {
   activeBlock,
   chatBlockOf,
@@ -86,6 +87,16 @@ function UserChatWidget({ userKey, isAdmin }: { userKey: string; isAdmin: boolea
   const returnFocus = useRef(false)
 
   useEffect(() => writeSaved(userKey, { open, sessionId, block }), [userKey, open, sessionId, block])
+
+  // Nút "Hỏi trợ lý" trong trang (openAssistant) mở khung như bấm nút Trợ lý ở góc
+  useEffect(() => {
+    const show = () => {
+      setMounted(true)
+      setOpen(true)
+    }
+    window.addEventListener(OPEN_ASSISTANT_EVENT, show)
+    return () => window.removeEventListener(OPEN_ASSISTANT_EVENT, show)
+  }, [])
 
   useEffect(() => {
     if (open || !returnFocus.current) return

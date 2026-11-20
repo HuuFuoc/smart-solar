@@ -1,5 +1,5 @@
 import { ButtonLink } from '@/components/common/ui/button'
-import { Notice } from '@/components/common/ui/lists'
+import { CalloutCard } from '@/features/contracts/CustomerContractCards'
 import { dueText, formatVnd, installmentName } from '@/features/payment-plan/paymentPlanDisplay'
 import { installmentOf } from '@/features/payment-plan/paymentPlanRules'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
@@ -19,25 +19,36 @@ export function ProjectBalanceNotice({ contractId }: { contractId: string }) {
 
   if (balance.status === 'PAID')
     return (
-      <Notice tone="ok" title={`Đã trả ${installmentName(balance).toLowerCase()} lúc ${formatMoment(balance.paidAt)}`}>
-        {plan.fullyPaid ? 'Hợp đồng đã trả đủ 100%.' : null}
-      </Notice>
+      <CalloutCard
+        tone="ok"
+        title={
+          <span className="tnum">
+            Đã trả {installmentName(balance).toLowerCase()} lúc {formatMoment(balance.paidAt)}
+          </span>
+        }
+      >
+        {plan.fullyPaid ? (
+          <>
+            Hợp đồng đã trả đủ <span className="font-semibold text-fg">100%</span>.
+          </>
+        ) : null}
+      </CalloutCard>
     )
   if (balance.status !== 'DUE') return null
   return (
-    <Notice
+    <CalloutCard
       tone="danger"
       title={`${balance.overdue ? 'Khoản 70% đã quá hạn' : 'Trả khoản 70%'}: ${formatVnd(balance.amount)}`}
+      action={
+        <ButtonLink to={to} size="sm" variant="info" icon="payments">
+          Trả 70%
+        </ButtonLink>
+      }
     >
       <span className="tnum">{dueText(balance.dueAt)} (giờ Việt Nam).</span>{' '}
       {balance.overdue
         ? 'Bạn vẫn trả được; khoản trả muộn được ghi lại. Liên hệ Smart Solar nếu cần hỗ trợ.'
         : 'Trả bằng mã QR trong ứng dụng hoặc tiền mặt có phiếu thu của Smart Solar.'}
-      <span className="mt-3 flex">
-        <ButtonLink to={to} size="sm" variant="info" icon="payments">
-          Trả 70%
-        </ButtonLink>
-      </span>
-    </Notice>
+    </CalloutCard>
   )
 }

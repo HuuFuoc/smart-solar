@@ -404,6 +404,19 @@ const ERROR_MESSAGES: Record<string, string> = {
   INSTALLATION_SLOT_OFFER_NOT_OPEN: 'Khung thời gian này vừa được thay hoặc đã được chọn. Đã tải lại danh sách.',
   // Báo giá, duyệt giá, sinh tự động kiểu cũ đã bỏ
   ENDPOINT_RETIRED: 'Chức năng này đã đổi cách làm. Tải lại trang để dùng cách mới.',
+  // Giám sát IoT
+  IOT_VALIDATION_FAILED: 'Thông tin thiết bị chưa hợp lệ. Kiểm tra các ô được đánh dấu.',
+  IOT_DEVICE_NOT_FOUND: 'Không tìm thấy thiết bị có mã này. Kiểm tra lại mã hoặc nhờ quản trị đăng ký thiết bị.',
+  IOT_BINDING_NOT_FOUND: 'Công trình này chưa gắn thiết bị đo.',
+  IOT_DEVICE_ID_TAKEN: 'Mã thiết bị này đã được đăng ký. Dùng mã khác.',
+  IOT_DEVICE_ALREADY_BOUND: 'Thiết bị đang gắn ở công trình khác. Tháo ở công trình đó trước rồi gắn lại.',
+  IOT_PROJECT_ALREADY_BOUND: 'Công trình đã có thiết bị đo khác.',
+  IOT_PROJECT_NOT_BINDABLE: 'Công trình đã huỷ nên không gắn thiết bị được.',
+  IOT_BINDING_NOT_ACTIVE: 'Thiết bị đã được tháo trước đó. Trang đã tải lại.',
+  IOT_DEVICE_NOT_DISABLED: 'Thiết bị đang không bị khoá.',
+  IOT_DEVICE_DISABLED: 'Thiết bị đang bị khoá. Nhờ quản trị mở khoá trước.',
+  IOT_STALE_REVISION: 'Thiết bị vừa được cập nhật ở nơi khác. Đã tải lại, kiểm tra rồi thử lại.',
+  IOT_STORAGE_UNAVAILABLE: 'Hệ thống giám sát tạm thời chưa lưu được số đo. Thử lại sau ít phút.',
   // Khu vực phục vụ
   ZONE_NOT_FOUND: 'Không tìm thấy khu vực này.',
   ZONE_MANAGEMENT_FORBIDDEN: 'Chỉ quản trị viên đang hoạt động mới tạo hoặc sửa khu vực.',

@@ -70,6 +70,8 @@ export const ROUTES = {
 
   tech: {
     home: '/tech',
+    /** Tổng quan việc của kỹ thuật viên: lịch tuần này, việc tiếp theo */
+    dashboard: '/tech/dashboard',
     /** Lịch khảo sát được phân công */
     jobs: '/tech/jobs',
     job: '/tech/jobs/:id',
@@ -93,6 +95,8 @@ export const ROUTES = {
 
   manage: {
     home: '/manage',
+    /** Tổng quan thi công và việc chờ quản lý */
+    dashboard: '/manage/dashboard',
     /** Cấu hình lịch + lịch ngày của kỹ thuật viên (quản lý dùng chung trang với quản trị) */
     technicians: '/manage/technicians',
     technician: '/manage/technicians/:id',
@@ -159,6 +163,8 @@ export const ROUTES = {
     knowledgeDocument: '/admin/knowledge-base/:id',
     /** Chi phí của trợ lý (sổ chi phí, ngân sách, giới hạn) */
     aiUsage: '/admin/ai-usage',
+    /** Sổ thiết bị IoT (ESP32): đăng ký, khoá, đổi khoá. Gắn vào công trình làm trên trang Thi công */
+    iotDevices: '/admin/iot-devices',
   },
 
   // Đường cũ của kỹ thuật viên, mọi đường chuyển về /tech
