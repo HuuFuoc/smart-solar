@@ -10,7 +10,14 @@ import { ROUTES, withId } from '@/routes/paths'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 import { cx } from '@/utils/cx'
 
-export function CustomerInstallationTable({ items }: { items: InstallationCustomerView[] }) {
+export function CustomerInstallationTable({
+  items,
+  names,
+}: {
+  items: InstallationCustomerView[]
+  /** Tên công trình theo hợp đồng; thiếu thì hiện mã dự án */
+  names?: ReadonlyMap<string, string>
+}) {
   return (
     <div className="overflow-hidden rounded-container border border-line bg-panel">
       <div className="overflow-x-auto [scrollbar-width:thin]">
@@ -53,7 +60,11 @@ export function CustomerInstallationTable({ items }: { items: InstallationCustom
                       </div>
                       <div className="min-w-0">
                         <div className="text-body font-bold text-fg">
-                          Công trình <span className="tnum">{shortCode(p.projectId)}</span>
+                          {names?.get(p.contractId) ?? (
+                            <>
+                              Công trình <span className="tnum">{shortCode(p.projectId)}</span>
+                            </>
+                          )}
                         </div>
                         <div className="mt-0.5 flex items-center gap-1 text-meta text-fg-2">
                           <Icon name="location_on" className="text-[16px] text-fg-3 shrink-0" />

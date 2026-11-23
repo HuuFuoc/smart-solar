@@ -1,6 +1,12 @@
 import { Link } from 'react-router'
 import { ChartPanel, LegendItem } from '@/components/common/charts/ChartPanel'
-import { ORDINAL, STATUS_COLOR, formatPercent, formatVndCompact, formatVndFull } from '@/components/common/charts/chartTheme'
+import {
+  ORDINAL,
+  STATUS_COLOR,
+  formatPercent,
+  formatVndCompact,
+  formatVndFull,
+} from '@/components/common/charts/chartTheme'
 import { KpiLabel } from '@/components/common/charts/KpiLabel'
 import { Stat, StatRow } from '@/components/common/ui/stat'
 import { CUSTOMER_INSTALLATION_LABELS, INSTALLATION_STATUS_LABELS } from '@/common/installation'
@@ -43,8 +49,14 @@ export function CustomerPaymentOverview({
   const outstanding = plans.reduce((s, c) => s + c.paymentPlan!.outstanding, 0)
   const nextDue = earliest(plans.filter((c) => !c.paymentPlan!.fullyPaid).map((c) => c.paymentPlan!.nextDueAt))
   const anyOverdue = plans.some((c) => c.paymentPlan!.overdue)
+  // Lắp xong trước ngày hẹn thì lịch vẫn CONFIRMED: bỏ lịch của công trình đã bàn giao hoặc đã huỷ
   const nextSchedule = (schedules.data ?? [])
-    .filter((s) => s.status === 'CONFIRMED' && new Date(s.endsAt).getTime() >= now)
+    .filter(
+      (s) =>
+        s.status === 'CONFIRMED' &&
+        new Date(s.endsAt).getTime() >= now &&
+        (!s.projectStatus || isOpenProject(s.projectStatus)),
+    )
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0]
   const project = installations.find((p) => isOpenProject(p.status))
 
@@ -98,7 +110,10 @@ export function CustomerPaymentOverview({
               columns: [{ label: 'Hợp đồng' }, ...PARTS.map((p) => ({ label: p.label, numeric: true }))],
               rows: plans.map((c) => {
                 const split = installmentSplit(c.paymentPlan!.installments)
-                return { key: c.contractId, cells: [c.contractNumber, ...PARTS.map((p) => formatVndFull(split[p.key]))] }
+                return {
+                  key: c.contractId,
+                  cells: [c.contractNumber, ...PARTS.map((p) => formatVndFull(split[p.key]))],
+                }
               }),
             }}
           >
@@ -124,7 +139,10 @@ export function CustomerPaymentOverview({
                           Đã trả {formatPercent(split.paid, total)} / {formatVndCompact(total)}
                         </span>
                       </span>
-                      <span aria-hidden className="mt-1.5 flex h-3 w-full gap-0.5 overflow-hidden rounded-control bg-surface-2">
+                      <span
+                        aria-hidden
+                        className="mt-1.5 flex h-3 w-full gap-0.5 overflow-hidden rounded-control bg-surface-2"
+                      >
                         {PARTS.map((p) =>
                           split[p.key] > 0 ? (
                             <span
@@ -163,13 +181,18 @@ export function CustomerPaymentOverview({
                       aria-hidden
                       className="flex size-6 shrink-0 items-center justify-center rounded-full text-meta font-semibold"
                       style={{
-                        backgroundColor: state === 'upcoming' ? 'var(--surface-2)' : ORDINAL[Math.min(i, ORDINAL.length - 1)],
+                        backgroundColor:
+                          state === 'upcoming' ? 'var(--surface-2)' : ORDINAL[Math.min(i, ORDINAL.length - 1)],
                         color: state === 'upcoming' ? 'var(--fg-3)' : i >= 2 ? 'var(--on-accent)' : 'var(--fg)',
                       }}
                     >
                       {state === 'done' ? '✓' : i + 1}
                     </span>
-                    <span className={state === 'upcoming' ? 'text-fg-3' : state === 'active' ? 'font-semibold text-fg' : 'text-fg-2'}>
+                    <span
+                      className={
+                        state === 'upcoming' ? 'text-fg-3' : state === 'active' ? 'font-semibold text-fg' : 'text-fg-2'
+                      }
+                    >
                       {g.key === 'ACCEPTANCE' && rework ? 'Đang sửa lại theo yêu cầu của bạn' : g.label}
                     </span>
                     {state === 'active' && <span className="sr-only">(bước hiện tại)</span>}

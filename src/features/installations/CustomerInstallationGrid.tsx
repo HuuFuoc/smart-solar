@@ -10,7 +10,14 @@ import { ROUTES, withId } from '@/routes/paths'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 import { cx } from '@/utils/cx'
 
-export function CustomerInstallationGrid({ items }: { items: InstallationCustomerView[] }) {
+export function CustomerInstallationGrid({
+  items,
+  names,
+}: {
+  items: InstallationCustomerView[]
+  /** Tên công trình theo hợp đồng; thiếu thì hiện mã dự án */
+  names?: ReadonlyMap<string, string>
+}) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((p) => {
@@ -32,7 +39,11 @@ export function CustomerInstallationGrid({ items }: { items: InstallationCustome
                   </div>
                   <div>
                     <h3 className="text-body font-bold text-fg">
-                      Công trình <span className="tnum">{shortCode(p.projectId)}</span>
+                      {names?.get(p.contractId) ?? (
+                        <>
+                          Công trình <span className="tnum">{shortCode(p.projectId)}</span>
+                        </>
+                      )}
                     </h3>
                     <div className="mt-0.5 flex items-center gap-1 text-meta text-fg-2">
                       <Icon name="location_on" className="text-[16px] text-fg-3 shrink-0" />

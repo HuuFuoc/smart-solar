@@ -65,17 +65,23 @@ export function SalesInsights({
   const collections = useCollectionsSummaryQuery()
   const months = useMemo(() => monthsEndingAt(today.slice(0, 7), MONTHS), [today])
 
-  const contracts = useMemo(
-    () => myLiveContracts(directory.data?.items ?? [], mySurveys),
-    [directory.data, mySurveys],
-  )
+  const contracts = useMemo(() => myLiveContracts(directory.data?.items ?? [], mySurveys), [directory.data, mySurveys])
   const funnel = salesFunnel(mySurveys, contracts)
   const contractValue = contracts.reduce((s, c) => s + c.totalAmount, 0)
-  const coll = useMemo(() => collectionStats(collections.data?.items ?? [], months, today), [collections.data, months, today])
+  const coll = useMemo(
+    () => collectionStats(collections.data?.items ?? [], months, today),
+    [collections.data, months, today],
+  )
   const contactAmount = coll.contactRequired.reduce((s, c) => s + c.amountDue, 0)
 
   const contractsLoading = directory.isPending || surveysLoading
-  const contractState = contractsLoading ? 'loading' : directory.isError ? 'error' : contracts.length === 0 ? 'empty' : 'ready'
+  const contractState = contractsLoading
+    ? 'loading'
+    : directory.isError
+      ? 'error'
+      : contracts.length === 0
+        ? 'empty'
+        : 'ready'
   const collectionsState = collections.isPending ? 'loading' : collections.isError ? 'error' : 'ready'
 
   // ---- hợp đồng theo tháng
@@ -211,7 +217,7 @@ export function SalesInsights({
           className="lg:col-span-7"
           title="Phễu khách của bạn"
           scope="Hiện tại"
-          description={`Mỗi yêu cầu đếm một lần ở mỗi bước; % là tỉ lệ so với bước trước. Chưa có bước báo giá vì backend chưa có danh sách báo giá cho kinh doanh.${funnel.closed > 0 ? ` ${formatCount(funnel.closed)} yêu cầu đã đóng / huỷ vẫn tính ở bước đầu.` : ''}`}
+          description={`Mỗi yêu cầu đếm một lần ở mỗi bước; % là tỉ lệ so với bước trước.${funnel.closed > 0 ? ` ${formatCount(funnel.closed)} yêu cầu đã đóng / huỷ vẫn tính ở bước đầu.` : ''}`}
           state={contractsLoading ? 'loading' : mySurveys.length === 0 ? 'empty' : 'ready'}
           emptyText="Bạn chưa nhận yêu cầu khảo sát nào."
           table={{
@@ -225,7 +231,12 @@ export function SalesInsights({
             steps={funnel.stages.map((s, i) => ({ ...s, color: ORDINAL[i]! }))}
           />
         </ChartPanel>
-        <ActionList className="lg:col-span-5" title="Công nợ cần bạn xử lý" actions={actions} loading={collections.isPending} />
+        <ActionList
+          className="lg:col-span-5"
+          title="Công nợ cần bạn xử lý"
+          actions={actions}
+          loading={collections.isPending}
+        />
       </div>
 
       <div className="grid items-start gap-4 lg:grid-cols-2">
@@ -267,7 +278,11 @@ export function SalesInsights({
           onRetry={() => void directory.refetch()}
           table={{
             caption: 'Hợp đồng theo trạng thái',
-            columns: [{ label: 'Trạng thái' }, { label: 'Hợp đồng', numeric: true }, { label: 'Giá trị', numeric: true }],
+            columns: [
+              { label: 'Trạng thái' },
+              { label: 'Hợp đồng', numeric: true },
+              { label: 'Giá trị', numeric: true },
+            ],
             rows: [...groups.entries()].map(([key, b]) => ({
               key,
               cells: [groupLabel(key), formatCount(b.count), formatVndFull(b.amount)],
@@ -297,7 +312,11 @@ export function SalesInsights({
           }}
           footer={collections.data?.partial ? 'Chỉ đọc 1.000 hồ sơ đầu.' : undefined}
         >
-          <BarList items={caseBars} formatValue={formatVndCompact} ariaLabel="Số tiền công nợ đang mở theo bước xử lý" />
+          <BarList
+            items={caseBars}
+            formatValue={formatVndCompact}
+            ariaLabel="Số tiền công nợ đang mở theo bước xử lý"
+          />
         </ChartPanel>
 
         <ChartPanel
@@ -331,4 +350,3 @@ export function SalesInsights({
     </div>
   )
 }
-

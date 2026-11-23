@@ -72,6 +72,4 @@ export const ONSITE_SURVEY_LIMITS = {
   notesLength: 4000,
   obstacleDescriptionLength: 500,
   maxAttachments: 60,
-  /** Bắt đầu sớm nhất trước giờ hẹn (mặc định của backend, quản trị đổi được) */
-  earlyStartMinutes: 120,
 } as const
