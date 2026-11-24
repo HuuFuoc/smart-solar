@@ -47,7 +47,7 @@ const DEFAULT_COVERS: Record<string, string> = {
 }
 
 /** Ảnh bìa của gói: ảnh quản trị gắn, không có hoặc lỗi thì ảnh mặc định của loại gói; cả hai lỗi thì bỏ hẳn */
-function PackageCover({ url, kind }: { url: string | null; kind: string }) {
+export function PackageCover({ url, kind }: { url: string | null; kind: string }) {
   const fallback = DEFAULT_COVERS[kind] ?? null
   const [src, setSrc] = useState(url || fallback)
   if (!src) return null
