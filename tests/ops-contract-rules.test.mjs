@@ -100,6 +100,12 @@ describe('lập hợp đồng từ báo giá', () => {
     // Hợp đồng của báo giá khác không tính
     assert.equal(canCreateContract(quotation('ACCEPTED'), [contract('DRAFT', { quotationId: 'q-9' })]), true)
   })
+
+  test('báo giá có gói dịch vụ đi kèm: không lập tay (backend 763cb0b chỉ lập qua thoả thuận 30/70)', () => {
+    const withPackage = { ...quotation('ACCEPTED'), servicePackages: [{ kind: 'DISASTER_PROTECTION' }] }
+    assert.equal(canCreateContract(withPackage, []), false)
+    assert.equal(canCreateContract({ ...quotation('ACCEPTED'), servicePackages: [] }, []), true)
+  })
 })
 
 describe('thời hạn bảo hành và điều khoản', () => {

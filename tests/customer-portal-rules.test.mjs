@@ -35,7 +35,6 @@ import {
   RESIGN_ERROR_CODES,
   secondsLeft,
   shouldPollPayment,
-  signedDocumentBody,
   signingSnapshot,
   snapshotStillCurrent,
 } from '../src/features/contracts/customerContractRules.ts'
@@ -118,10 +117,11 @@ describe('Ký hợp đồng', () => {
     assert.equal(signingSnapshot(contract({ status: 'UNDER_REVIEW' })), null)
   })
 
-  test('gửi đúng SHA-256 đã chụp lúc mở hộp thoại, không lấy mã của bản tải lại', () => {
+  // Khách tự gửi bản ký điện tử đã bị backend bỏ (không còn trong swagger origin/main): chỉ còn kiểm bản chụp PDF chính thức
+  test('bản chụp PDF chính thức lúc mở hộp thoại, không lấy mã của bản tải lại', () => {
     const snapshot = signingSnapshot(contract())
     const reloaded = contract({ officialDocument: { fileId: 'f-2', sha256: 'c'.repeat(64), confirmedAt: null } })
-    assert.deepEqual(signedDocumentBody(snapshot, 'file-9'), { fileId: 'file-9', officialDocumentSha256: OFFICIAL })
+    assert.equal(snapshot.officialSha256, OFFICIAL)
     assert.equal(snapshotStillCurrent(snapshot, contract()), true)
     assert.equal(
       snapshotStillCurrent(

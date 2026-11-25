@@ -15,6 +15,8 @@ export type PublishKnowledgeVersionRequest = {
   versionId?: string
   /** Format: int32 */
   revision?: number
+  confirmSharedVisibility?: boolean
+  note?: string | null
 }
 
 export type RegisterKnowledgeDocumentRequest = {

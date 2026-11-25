@@ -21,6 +21,7 @@ import {
   canOpenInstallment,
   isVerifiedInstallmentPaid,
 } from '@/features/payment-plan/paymentPlanRules'
+import { AllocationNote } from '@/features/payment-plan/InstallmentAllocation'
 import { PaymentQr } from '@/features/payments/PaymentQr'
 import { isCheckoutUrl } from '@/features/payments/payosReturn'
 import { Facts } from '@/features/pre-surveys/Facts'
@@ -244,6 +245,7 @@ export function InstallmentPaymentBlock({
         {name}: <span className="tnum">{formatVnd(view.amount)}</span>
         <Badge tone={view.overdue ? 'danger' : state.tone}>{view.overdue ? 'Quá hạn' : state.label}</Badge>
       </p>
+      <AllocationNote allocation={view.allocation} />
       {view.dueAt && view.installmentStatus !== 'PAID' && (
         <p className="tnum text-body text-fg-2">
           {dueText(view.dueAt)}

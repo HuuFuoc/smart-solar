@@ -102,6 +102,7 @@ const AdminDispatchRequestPage = page(() => import('@/pages/dispatch-request-pag
 
 // Quản trị
 const ManageAfterSalesPage = page(() => import('@/pages/after-sales-requests-page'), 'ManageAfterSalesPage')
+const ManageBundledPackagesPage = page(() => import('@/pages/bundled-packages-page'), 'ManageBundledPackagesPage')
 const ManageAfterSalesRequestPage = page(
   () => import('@/pages/after-sales-request-page'),
   'ManageAfterSalesRequestPage',
@@ -116,6 +117,7 @@ const AdminTechnicianPage = page(() => import('@/pages/technician-page'), 'Admin
 const AdminProductsPage = page(() => import('@/pages/admin/products-page'), 'AdminProductsPage')
 const AdminProductPage = page(() => import('@/pages/admin/product-page'), 'AdminProductPage')
 const AdminPackagesPage = page(() => import('@/pages/admin/packages-page'), 'AdminPackagesPage')
+const AdminBundledPackagesPage = page(() => import('@/pages/bundled-packages-page'), 'AdminBundledPackagesPage')
 const AdminInstallationProjectsPage = page(
   () => import('@/pages/installation-projects-page'),
   'AdminInstallationProjectsPage',
@@ -272,6 +274,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.collection, lazy: ManageCollectionPage },
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
       { path: manage.afterSalesRequest, lazy: ManageAfterSalesRequestPage },
+      { path: manage.bundledPackages, lazy: ManageBundledPackagesPage },
       { path: manage.salesTasks, lazy: ManageSalesTasksPage },
       { path: manage.dispatch, lazy: ManageDispatchRequestsPage },
       { path: manage.dispatchRequest, lazy: ManageDispatchRequestPage },
@@ -304,6 +307,7 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.collections, lazy: AdminCollectionsPage },
       { path: admin.collection, lazy: AdminCollectionPage },
       { path: admin.packages, lazy: AdminPackagesPage },
+      { path: admin.bundledPackages, lazy: AdminBundledPackagesPage },
       { path: admin.afterSales, lazy: AdminAfterSalesPage },
       { path: admin.dispatch, lazy: AdminDispatchRequestsPage },
       { path: admin.dispatchRequest, lazy: AdminDispatchRequestPage },

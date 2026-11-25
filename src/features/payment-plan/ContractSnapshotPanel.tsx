@@ -1,5 +1,7 @@
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
+import { contractPackageBreakdown } from '@/features/payment-plan/bundledContractRules'
+import { ContractPackagesSection } from '@/features/payment-plan/ContractPackagesSection'
 import { readContractSnapshot } from '@/features/payment-plan/contractSnapshot'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { formatQuantity, lineIdentity } from '@/features/quotations/quotationDisplay'
@@ -19,6 +21,8 @@ export function ContractSnapshotPanel({
   const s = readContractSnapshot(c.pricingSnapshot, c.customerSnapshot)
   const card = variant === 'card'
   const money = (amount: number | null) => (amount === null ? '—' : formatMoney(amount, c.currency))
+  // Hợp đồng có gói đi kèm: tổng giá trị gồm cả gói, nên ghi hai phần trước tổng (chi tiết gói ở khối gói đi kèm)
+  const breakdown = contractPackageBreakdown(c)
   const totals = [
     { k: 'Thiết bị', v: s.totals.equipmentSubtotal },
     { k: 'Nhân công', v: s.totals.laborCost },
@@ -29,6 +33,12 @@ export function ContractSnapshotPanel({
       k: `Thuế${s.totals.taxRatePercent !== null ? ` ${s.totals.taxRatePercent.toLocaleString('vi-VN')}%` : ''}`,
       v: s.totals.taxAmount,
     },
+    ...(breakdown
+      ? [
+          { k: 'Chi phí lắp đặt', v: breakdown.installation },
+          { k: 'Gói dịch vụ đi kèm', v: breakdown.packages },
+        ]
+      : []),
   ].filter((t) => t.v !== null && t.v !== 0)
   const totalText = formatMoney(c.totalAmount, c.currency)
 
@@ -106,6 +116,7 @@ export function ContractSnapshotPanel({
             </dl>
           </div>
           {s.lines.length === 0 ? lines : <div className="ct-table">{lines}</div>}
+          <ContractPackagesSection contract={c} variant="card" />
           <div className="ct-box ct-well flex flex-wrap items-end justify-between gap-x-8 gap-y-3 p-4">
             {totals.length > 0 && (
               <dl className="flex flex-wrap gap-x-6 gap-y-2">
@@ -127,6 +138,7 @@ export function ContractSnapshotPanel({
         <PanelBody className="space-y-4">
           <Facts items={[...customer, address]} />
           {lines}
+          <ContractPackagesSection contract={c} />
           <Facts
             items={[
               ...totals.map((t) => ({ k: t.k, v: <span className="tnum">{money(t.v)}</span> })),

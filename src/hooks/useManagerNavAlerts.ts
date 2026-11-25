@@ -1,7 +1,7 @@
 import { isTodo } from '@/features/after-sales/serviceDisplay'
 import { useDispatchQueueQuery } from '@/hooks/useDispatch'
 import { technicianReadiness } from '@/features/scheduling/schedulingDisplay'
-import { useServiceRequestsQuery } from '@/hooks/useManagerAfterSales'
+import { useBundledPackagesQuery, useServiceRequestsQuery } from '@/hooks/useManagerAfterSales'
 import { useInstallationProjectsQuery, useReadyContractsQuery } from '@/hooks/useManagerInstallations'
 import { useNavAlert } from '@/hooks/useNavAlert'
 import { useTechniciansQuery } from '@/hooks/useTechnicianAdmin'
@@ -10,7 +10,8 @@ import type { DispatchQueueItemView } from '@/types/res/dispatchRes'
 import type { InstallationProjectSummary } from '@/types/res/managerInstallationsRes'
 
 // Số đỏ trên menu của quản lý và quản trị: hợp đồng chưa tạo dự án, dự án chờ phân công, yêu cầu bảo hành chờ xử lý,
-// công trình chờ xếp kỹ thuật viên, kỹ thuật viên chưa thuộc khu vực nào, cộng dự án / yêu cầu vừa đổi trạng thái mà chưa xem
+// công trình chờ xếp kỹ thuật viên, kỹ thuật viên chưa thuộc khu vực nào, gói đi kèm hợp đồng chờ đối soát, cộng dự án / yêu cầu vừa
+// đổi trạng thái mà chưa xem
 const projectAlert = {
   key: (p: InstallationProjectSummary) => p.projectId,
   sig: (p: InstallationProjectSummary) => `${p.status}|${p.technicianAccepted}`,
@@ -41,5 +42,16 @@ export function useManagerNavAlerts(
     (t) => technicianReadiness(t).tone === 'danger',
   ).length
   const dispatch = useNavAlert(routes.dispatch, useDispatchQueueQuery({ enabled }).data?.items, dispatchAlert)
-  return { installations: ready + projectsAlert, afterSales: requestsAlert, dispatch, technicians: missingBase }
+  // Một trang 1 dòng chỉ để lấy tổng số đang chờ đối soát; máy chủ chưa có API này thì không hiện số
+  const reconciliation = useBundledPackagesQuery(
+    { status: 'RECONCILIATION_REQUIRED', page: 1, pageSize: 1 },
+    { enabled },
+  ).data?.totalItems
+  return {
+    installations: ready + projectsAlert,
+    afterSales: requestsAlert,
+    dispatch,
+    technicians: missingBase,
+    reconciliation,
+  }
 }

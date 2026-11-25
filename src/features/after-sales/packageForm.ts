@@ -1,9 +1,16 @@
 import { isMaintenance } from '@/features/after-sales/afterSalesDisplay'
+import {
+  PER_INSTALLATION_LEGACY,
+  isPerPanelUnit,
+  pricingUnitOf,
+  withPricingUnit,
+} from '@/features/after-sales/packagePricing'
 import type { PackageRequest } from '@/types/req/adminAfterSalesReq'
 import type { PackageView, ServicePackageKind } from '@/types/res/customerAfterSalesRes'
 
 // Form thêm / sửa gói dịch vụ. Luật bám ValidatePackage của backend (ServicePackageHandlers); backend vẫn kiểm tra lại.
-// Gói bảo trì chỉ dùng các tháng có lượt bảo trì; gói thiên tai dùng loại thiên tai, tỷ lệ hỗ trợ và hai hạn mức
+// Gói bảo trì chỉ dùng các tháng có lượt bảo trì; gói thiên tai dùng loại thiên tai, tỷ lệ hỗ trợ và hai hạn mức. Đơn vị tính giá
+// (theo tấm pin / theo hệ thống) chọn lúc tạo, không đổi được sau đó; lượt bảo trì và hạn mức luôn tính theo kỳ
 
 export const PACKAGE_LIMITS = {
   /** Backend cắt tên quá 150 ký tự, mô tả quá 2000 ký tự */
@@ -28,9 +35,11 @@ export type PackageFormValues = {
   /** Link ảnh bìa; ảnh chọn từ máy nằm ngoài form, tải lên lúc lưu */
   imageUrl: string
   isActive: boolean
+  /** PER_PANEL | PER_INSTALLATION_LEGACY; chỉ chọn được khi tạo */
+  pricingUnit: string
 }
 
-export type PackageField = Exclude<keyof PackageFormValues, 'kind' | 'isActive'>
+export type PackageField = Exclude<keyof PackageFormValues, 'kind' | 'isActive' | 'pricingUnit'>
 export type PackageErrors = Partial<Record<PackageField, string>>
 
 export function emptyPackage(kind: ServicePackageKind): PackageFormValues {
@@ -47,6 +56,8 @@ export function emptyPackage(kind: ServicePackageKind): PackageFormValues {
     termLimit: '',
     imageUrl: '',
     isActive: true,
+    // Mặc định như backend khi không gửi: gói theo hệ thống
+    pricingUnit: PER_INSTALLATION_LEGACY,
   }
 }
 
@@ -68,6 +79,7 @@ export function valuesFromPackage(p: PackageView): PackageFormValues {
     termLimit: money(p.termLimit),
     imageUrl: p.imageUrl ?? '',
     isActive: p.isActive,
+    pricingUnit: pricingUnitOf(p),
   }
 }
 
@@ -100,7 +112,7 @@ export function validatePackage(v: PackageFormValues): PackageErrors {
   if (!v.name.trim()) errors.name = 'Nhập tên gói.'
 
   const price = parseVnd(v.price)
-  if (!v.price.trim()) errors.price = 'Nhập giá gói.'
+  if (!v.price.trim()) errors.price = isPerPanelUnit(v.pricingUnit) ? 'Nhập đơn giá một tấm pin.' : 'Nhập giá gói.'
   else if (price === null) errors.price = 'Giá là số tiền nguyên, ví dụ 1500000 hoặc 1.500.000.'
   else if (price <= 0) errors.price = 'Giá phải lớn hơn 0.'
 
@@ -138,10 +150,13 @@ export function validatePackage(v: PackageFormValues): PackageErrors {
 
 export const hasErrors = (errors: PackageErrors) => Object.keys(errors).length > 0
 
-/** Body của POST / PUT từ form đã qua validatePackage. Trường của loại gói kia gửi null */
-export function toPackageRequest(v: PackageFormValues, revision: number): PackageRequest {
+/**
+ * Body của POST / PUT từ form đã qua validatePackage. Trường của loại gói kia gửi null. `pricingUnit` chỉ gửi khi tạo (sửa gói thì
+ * backend giữ đơn vị đang có)
+ */
+export function toPackageRequest(v: PackageFormValues, revision: number, mode: 'create' | 'update'): PackageRequest {
   const maintenance = isMaintenance(v.kind)
-  return {
+  const body: PackageRequest = {
     kind: v.kind,
     name: v.name.trim(),
     description: v.description.trim() || null,
@@ -156,6 +171,7 @@ export function toPackageRequest(v: PackageFormValues, revision: number): Packag
     isActive: v.isActive,
     revision,
   }
+  return withPricingUnit(body, v.pricingUnit, mode)
 }
 
 /** Body ghi lại nguyên gói, chỉ đổi những trường trong `change` (ngừng bán / mở bán lại) */

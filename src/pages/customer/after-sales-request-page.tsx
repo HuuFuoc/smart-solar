@@ -11,6 +11,7 @@ import { ProgressTracker, type TrackerNext } from '@/components/common/ui/progre
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
 import { CustomerQuotationPanel } from '@/features/after-sales/CustomerQuotationPanel'
+import { claimReasonText } from '@/features/after-sales/servicePackageDisplay'
 import { isDecidedOnSite } from '@/features/after-sales/customerServiceRules'
 import {
   BOOKING_LEAD_DAYS,
@@ -317,7 +318,8 @@ function ClaimPanel({ request: r, onReconsider }: { request: ServiceRequestView;
     { k: 'Xảy ra lúc', v: formatMoment(claim.incidentOccurredAt) },
     { k: 'Kết quả', v: <Badge tone={status.tone}>{status.label}</Badge> },
   ]
-  if (claim.decisionReason) items.push({ k: 'Lý do', v: claim.decisionReason })
+  if (claim.coverageAllocationId) items.push({ k: 'Phạm vi xét', v: 'Gói bảo vệ theo tấm pin của tấm bị hư hại' })
+  if (claim.decisionReason) items.push({ k: 'Lý do', v: claimReasonText(claim.decisionReason) ?? claim.decisionReason })
   if (claim.reconsiderationRequestedAt)
     items.push({ k: 'Bạn xin xét lại lúc', v: formatMoment(claim.reconsiderationRequestedAt) })
   return (

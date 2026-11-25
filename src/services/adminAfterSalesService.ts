@@ -15,12 +15,18 @@ export function listPackages(kind?: ServicePackageKind) {
   return get<PackageView[]>(api.packages, { params: kind ? { kind } : undefined })
 }
 
-/** Trả 201 kèm gói vừa tạo. Loại gói không đổi được sau khi tạo */
+/**
+ * Trả 201 kèm gói vừa tạo. Loại gói và đơn vị tính giá (`pricingUnit`, không gửi là PER_INSTALLATION_LEGACY) không đổi được sau khi
+ * tạo
+ */
 export function createPackage(body: PackageRequest) {
   return post<PackageView>(api.packages, body)
 }
 
-/** Ghi đè cả gói: gửi đủ mọi trường kèm `revision` đang xem; lệch revision thì AFTER_SALES_STALE_REVISION */
+/**
+ * Ghi đè cả gói: gửi đủ mọi trường kèm `revision` đang xem; lệch revision thì AFTER_SALES_STALE_REVISION. Không gửi `pricingUnit`
+ * (giữ nguyên); gửi khác đơn vị đang có thì 400
+ */
 export function updatePackage(packageId: string, body: PackageRequest) {
   return put<PackageView>(api.package(packageId), body)
 }

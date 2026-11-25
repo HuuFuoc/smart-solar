@@ -1,3 +1,4 @@
+import type { PackageRequest } from '@/types/req/adminAfterSalesReq'
 import { useId, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { DISASTER_TYPES, SERVICE_PACKAGE_KINDS } from '@/common/afterSales'
@@ -8,6 +9,14 @@ import { Checkbox, Field, Input, Textarea, WithUnit } from '@/components/common/
 import { Notice } from '@/components/common/ui/lists'
 import { Segmented } from '@/components/common/ui/segmented'
 import { formatDurationMonths, isMaintenance, packageKindLabel } from '@/features/after-sales/afterSalesDisplay'
+import {
+  PER_INSTALLATION_LEGACY,
+  PER_PANEL,
+  createdWithUnit,
+  isPerPanelUnit,
+  pricingUnitOf,
+} from '@/features/after-sales/packagePricing'
+import { priceLabel, pricingUnitLabel } from '@/features/after-sales/servicePackageDisplay'
 import {
   PACKAGE_LIMITS,
   emptyPackage,
@@ -25,7 +34,6 @@ import { imageSourceError } from '@/features/products/imageSource'
 import { useCreatePackageMutation, useUpdatePackageMutation } from '@/hooks/useAdminAfterSales'
 import { useFileUpload } from '@/hooks/useFiles'
 import { errorMessage, isApiError } from '@/services/api/errors'
-import type { PackageRequest } from '@/types/req/adminAfterSalesReq'
 import type { PackageView, ServicePackageKind } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
 
@@ -39,6 +47,8 @@ const KIND_OPTIONS = [SERVICE_PACKAGE_KINDS.disasterProtection, SERVICE_PACKAGE_
   value,
   label: packageKindLabel(value),
 }))
+
+const UNIT_OPTIONS = [PER_PANEL, PER_INSTALLATION_LEGACY].map((value) => ({ value, label: pricingUnitLabel(value) }))
 
 /** Thứ tự ô để đưa con trỏ tới lỗi đầu tiên */
 const FIELD_ORDER: PackageField[] = [
@@ -151,9 +161,16 @@ function PackageForm({
         imageFileId = (await upload.upload(imageFile)).fileId
         setUploadedId(imageFileId)
       }
-      const body = toPackageRequest(values, revision)
+      const body = toPackageRequest(values, revision, pkg ? 'update' : 'create')
       const view = await save(imageFileId ? { ...body, imageUrl: null, imageFileId } : body)
-      toast.success(pkg ? `Đã lưu ${view.name}` : `Đã thêm ${view.name}`)
+      if (!pkg && !createdWithUnit(view, values.pricingUnit))
+        toast.warning(
+          `Đã thêm ${view.name} nhưng hệ thống ghi gói theo ${pricingUnitLabel(pricingUnitOf(view)).toLowerCase()}.`,
+          {
+            description: 'Máy chủ chưa hỗ trợ gói theo tấm pin. Ngừng bán gói này và tạo lại khi hệ thống đã cập nhật.',
+          },
+        )
+      else toast.success(pkg ? `Đã lưu ${view.name}` : `Đã thêm ${view.name}`)
       onDone()
     } catch (error) {
       setRootError(submitError(error))
@@ -198,6 +215,30 @@ function PackageForm({
             <p className="text-meta text-fg-3">Không đổi được sau khi tạo.</p>
           </div>
         )}
+        {!pkg && (
+          <div className="flex flex-col gap-2 sm:col-span-2">
+            <span className="text-body font-medium text-fg">Đơn vị tính giá</span>
+            <Segmented
+              label="Đơn vị tính giá"
+              options={UNIT_OPTIONS}
+              value={values.pricingUnit}
+              onChange={(value) => set('pricingUnit', value)}
+              className="sm:w-fit"
+            />
+            <p className="text-meta text-fg-3">
+              Không đổi được sau khi tạo.{' '}
+              {isPerPanelUnit(values.pricingUnit)
+                ? 'Gói theo tấm pin bán kèm báo giá lắp đặt và mua riêng cho từng tấm sau bàn giao; lượt bảo trì và hạn mức vẫn tính theo kỳ, không nhân theo số tấm.'
+                : 'Một giá cho cả công trình, như các gói hiện có.'}
+            </p>
+          </div>
+        )}
+        {pkg && (
+          <p className="text-body text-fg-2 sm:col-span-2">
+            Đơn vị tính giá: <span className="font-medium text-fg">{pricingUnitLabel(values.pricingUnit)}</span>. Không
+            đổi được sau khi tạo; cần đơn vị khác thì tạo gói mới.
+          </p>
+        )}
         <Field label="Tên gói" required htmlFor={f('name')} error={errors.name} className="sm:col-span-2">
           <Input
             id={f('name')}
@@ -238,7 +279,7 @@ function PackageForm({
           />
         </div>
         <Field
-          label="Giá"
+          label={priceLabel(values.pricingUnit)}
           required
           htmlFor={f('price')}
           error={errors.price}

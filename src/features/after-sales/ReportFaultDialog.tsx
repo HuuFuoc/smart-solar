@@ -7,10 +7,13 @@ import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/d
 import { DateField, Field, Select, Textarea, TimeSelect } from '@/components/common/ui/field'
 import { Notice } from '@/components/common/ui/lists'
 import {
-  activeDisasterTerm,
+  activeDisasterTerms,
+  disasterTypesOf,
   FAULT_DESCRIPTION_MAX,
   faultDescriptionError,
   incidentTimeError,
+  needsDamagedPanel,
+  termCoveringPanel,
 } from '@/features/after-sales/customerServiceRules'
 import { assetName, equipmentWarrantyText } from '@/features/after-sales/serviceDisplay'
 import { formatMoment, todayVn, vnTimestamp } from '@/features/scheduling/schedulingDisplay'
@@ -19,7 +22,8 @@ import { ROUTES, withId } from '@/routes/paths'
 import { errorMessage } from '@/services/api/errors'
 import type { InstalledAssetView, SubscriptionView } from '@/types/res/customerAfterSalesRes'
 
-// Khách báo lỗi trên công trình đã bàn giao. Gửi xong mở trang yêu cầu để theo dõi
+// Khách báo lỗi trên công trình đã bàn giao. Gửi xong mở trang yêu cầu để theo dõi. Lỗi do thiên tai trên công trình chỉ có gói
+// bảo vệ theo tấm pin thì phải chọn tấm pin bị hư hại (gửi làm `suspectedAssetId`); backend xét hỗ trợ theo kỳ bảo vệ tấm đó
 
 export function ReportFaultDialog({
   open,
@@ -46,7 +50,7 @@ export function ReportFaultDialog({
       <FaultForm
         projectId={projectId}
         assets={assets}
-        disasterTerm={activeDisasterTerm(subscriptions)}
+        disasterTerms={activeDisasterTerms(subscriptions)}
         create={create}
         onClose={onClose}
       />
@@ -57,13 +61,13 @@ export function ReportFaultDialog({
 function FaultForm({
   projectId,
   assets,
-  disasterTerm,
+  disasterTerms,
   create,
   onClose,
 }: {
   projectId: string
   assets: InstalledAssetView[]
-  disasterTerm: SubscriptionView | undefined
+  disasterTerms: SubscriptionView[]
   create: ReturnType<typeof useCreateFaultMutation>
   onClose: () => void
 }) {
@@ -75,23 +79,35 @@ function FaultForm({
   const [incidentTime, setIncidentTime] = useState('')
   const [fieldError, setFieldError] = useState<string | null>(null)
   const [incidentError, setIncidentError] = useState<string | null>(null)
+  const [panelError, setPanelError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   // Kỳ gói có thể hết khi form đang mở (dữ liệu tải lại khi quay về trang): lúc đó gửi như lỗi thường
+  const disasterTerm = disasterTerms[0]
   const disaster = disasterTerm ? disasterType : ''
+  // Chỉ có kỳ theo tấm pin: lỗi do thiên tai phải chỉ ra tấm pin bị hư hại
+  const panelMode = Boolean(disaster) && needsDamagedPanel(disasterTerms)
+  const panels = assets.filter((a) => a.assetType === 'PANEL' && a.status === 'ACTIVE')
+  const pickedPanel = panelMode ? panels.find((a) => a.assetId === assetId) : undefined
+  const covering = pickedPanel ? termCoveringPanel(disasterTerms, pickedPanel.assetId) : null
+  // Mốc bảo vệ để báo trước: kỳ cả công trình, hoặc kỳ đang bảo vệ tấm đã chọn (tấm chưa có kỳ thì để backend xét)
+  const coverageStartsAt = panelMode ? (covering?.coverageStartsAt ?? null) : (disasterTerm?.coverageStartsAt ?? null)
 
   async function submit() {
     const incidentAt = incidentDate && incidentTime ? vnTimestamp(incidentDate, incidentTime) : ''
     const descriptionProblem = faultDescriptionError(description, null)
-    const incidentProblem = disaster ? incidentTimeError(incidentAt, disasterTerm?.coverageStartsAt ?? null) : null
+    const incidentProblem = disaster ? incidentTimeError(incidentAt, coverageStartsAt) : null
+    const panelProblem =
+      panelMode && !pickedPanel ? 'Chọn tấm pin bị hư hại để xét hỗ trợ của gói bảo vệ thiên tai theo tấm pin.' : null
     setFieldError(descriptionProblem)
     setIncidentError(incidentProblem)
-    if (descriptionProblem || incidentProblem) return
+    setPanelError(panelProblem)
+    if (descriptionProblem || incidentProblem || panelProblem) return
     setError(null)
     try {
       const request = await create.mutateAsync({
         projectId,
         description: description.trim(),
-        suspectedAssetId: assetId || null,
+        suspectedAssetId: panelMode ? (pickedPanel?.assetId ?? null) : assetId || null,
         disasterType: disaster || null,
         incidentOccurredAt: disaster ? incidentAt : null,
       })
@@ -127,37 +143,71 @@ function FaultForm({
             onChange={(e) => setDescription(e.target.value)}
           />
         </Field>
-        {assets.length > 0 && (
+        {panelMode ? (
           <Field
-            label="Thiết bị nghi bị lỗi"
-            htmlFor="fault-asset"
-            optional
-            hint={(() => {
-              const picked = assets.find((asset) => asset.assetId === assetId)
-              return picked ? `${equipmentWarrantyText(picked)}.` : undefined
-            })()}
+            label="Tấm pin bị hư hại"
+            htmlFor="fault-panel"
+            required
+            error={panelError ?? undefined}
+            hint={
+              pickedPanel
+                ? covering
+                  ? `Thuộc ${covering.packageName}${covering.coverageStartsAt ? `, bảo vệ từ ${formatMoment(covering.coverageStartsAt)}` : ''}.`
+                  : 'Tấm pin này không nằm trong gói bảo vệ thiên tai đang hiệu lực; Smart Solar vẫn nhận báo lỗi và xét theo hợp đồng.'
+                : undefined
+            }
           >
-            <Select id="fault-asset" value={assetId} onChange={(e) => setAssetId(e.target.value)}>
-              <option value="">Không rõ</option>
-              {assets.map((asset) => (
+            <Select
+              id="fault-panel"
+              aria-required
+              aria-invalid={panelError ? true : undefined}
+              value={pickedPanel?.assetId ?? ''}
+              onChange={(e) => setAssetId(e.target.value)}
+            >
+              <option value="">Chọn tấm pin</option>
+              {panels.map((asset) => (
                 <option key={asset.assetId} value={asset.assetId}>
                   {assetName(asset)}
+                  {asset.positionCode ? `, vị trí ${asset.positionCode}` : ''}
                 </option>
               ))}
             </Select>
           </Field>
+        ) : (
+          assets.length > 0 && (
+            <Field
+              label="Thiết bị nghi bị lỗi"
+              htmlFor="fault-asset"
+              optional
+              hint={(() => {
+                const picked = assets.find((asset) => asset.assetId === assetId)
+                return picked ? `${equipmentWarrantyText(picked)}.` : undefined
+              })()}
+            >
+              <Select id="fault-asset" value={assetId} onChange={(e) => setAssetId(e.target.value)}>
+                <option value="">Không rõ</option>
+                {assets.map((asset) => (
+                  <option key={asset.assetId} value={asset.assetId}>
+                    {assetName(asset)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )
         )}
         {disasterTerm && (
           <Field
             label="Lỗi do thiên tai"
             htmlFor="fault-disaster"
             hint={
-              disasterTerm.coverageStartsAt ? `Bảo vệ từ ${formatMoment(disasterTerm.coverageStartsAt)}.` : undefined
+              !needsDamagedPanel(disasterTerms) && disasterTerm.coverageStartsAt
+                ? `Bảo vệ từ ${formatMoment(disasterTerm.coverageStartsAt)}.`
+                : undefined
             }
           >
             <Select id="fault-disaster" value={disasterType} onChange={(e) => setDisasterType(e.target.value)}>
               <option value="">Không</option>
-              {disasterTerm.coveredDisasterTypes.map((type) => (
+              {disasterTypesOf(disasterTerms).map((type) => (
                 <option key={type} value={type}>
                   {DISASTER_TYPES[type] ?? type}
                 </option>

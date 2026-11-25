@@ -22,6 +22,7 @@ export type PackageRequest = {
   imageUrl?: string | null
   /** Format: uuid */
   imageFileId?: string | null
+  pricingUnit?: string | null
 }
 
 export type WarrantyOptionRequest = {

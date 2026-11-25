@@ -1,4 +1,5 @@
 import type { ContractView } from '@/types/res/customerContractsRes'
+import { contractPackageBreakdown } from '../payment-plan/bundledContractRules.ts'
 
 // Bản in hợp đồng dựng từ dữ liệu phiên bản hợp đồng (A4, Times New Roman 13pt theo Nghị định 30/2020): khách chưa tải được
 // PDF chính thức nên in bản này để ký; giấy khớp hệ thống nhờ mã nội dung in ở đầu và chân mỗi trang
@@ -61,6 +62,15 @@ const esc = (s: unknown) =>
 const cssText = (s: unknown) => `"${String(s ?? '').replace(/[\\"]/g, '\\$&')}"`
 
 const money = (n: unknown) => new Intl.NumberFormat('vi-VN').format(Number(n ?? 0))
+
+/**
+ * Số giờ của hạn đợt 2 đúng như điều khoản thanh toán backend đã sinh vào hợp đồng 30/70 (PaymentPlanCalculator.Clauses, cấu hình
+ * được, tối đa 72). Không đọc được thì null và bản in dẫn sang điều khoản thanh toán ở Điều 12, không tự đặt số giờ
+ */
+export function balanceDueHours(terms: string | null | undefined) {
+  const m = /trong vòng (\d+) giờ kể từ thời điểm khách hàng nghiệm thu/i.exec(terms ?? '')
+  return m ? Number(m[1]) : null
+}
 
 function vnParts(iso: string) {
   const parts = new Intl.DateTimeFormat('en-GB', {
@@ -169,6 +179,37 @@ export function contractPrintHtml({ contract: c, ward, quotationAcceptedAt }: Co
     })
     .join('')
 
+  const bundled = contractPackageBreakdown(c)
+  // Hợp đồng 30/70: hai đợt, số tiền và tỷ lệ là của backend; hợp đồng cũ trả một lần giữ nguyên văn bản cũ
+  const plan = c.paymentPlan ?? null
+  const installments = plan ? [...plan.installments].sort((a, b) => a.sequence - b.sequence) : []
+  const hours = balanceDueHours(c.terms)
+  const installmentText = (i: (typeof installments)[number]) => {
+    const when =
+      i.kind === 'DEPOSIT'
+        ? 'thanh toán trước khi hai bên ký hợp đồng giấy'
+        : `thanh toán ${hours ? `trong vòng ${hours} giờ` : 'trong thời hạn ghi tại điều khoản thanh toán ở Điều 12'} kể từ khi Bên A nghiệm thu công trình trên hệ thống${i.dueAt ? ` (hạn ${longDate(i.dueAt)})` : ''}`
+    const parts = i.allocation
+      ? `; gồm chi phí lắp đặt ${money(i.allocation.installation)} đồng${
+          i.allocation.maintenancePackages > 0 ? `, gói bảo trì ${money(i.allocation.maintenancePackages)} đồng` : ''
+        }${i.allocation.disasterPackages > 0 ? `, gói bảo vệ thiên tai ${money(i.allocation.disasterPackages)} đồng` : ''}`
+      : ''
+    return `Đợt ${i.sequence} (${money(i.percent)}%): <b>${money(i.amount)} đồng</b>, ${when}${parts}.`
+  }
+  const paymentArticle = plan
+    ? `<p>3.1. Bên A thanh toán tổng giá trị hợp đồng ${money(plan.total)} đồng thành ${installments.length} đợt:</p>
+  ${installments.map((i, n) => `<p>${String.fromCharCode(97 + n)}) ${installmentText(i)}</p>`).join('\n  ')}
+  ${bundled ? '<p>3.2. Gói dịch vụ đi kèm được thanh toán trong chính các đợt trên, không có khoản thu riêng.</p>' : ''}
+  <p>3.${bundled ? 3 : 2}. Hình thức: chuyển khoản qua mã QR PayOS hoặc tiền mặt có phiếu thu của Bên B. Mỗi đợt chỉ được ghi nhận đã
+  thanh toán khi hệ thống Smart Solar ghi nhận Bên B đã nhận đủ tiền (PayOS xác nhận, hoặc Bên B xác nhận phiếu thu tiền mặt); nhân
+  viên kỹ thuật không xác nhận thanh toán thay Bên B.</p>
+  <p>3.${bundled ? 4 : 3}. Bên B xuất hoá đơn giá trị gia tăng cho Bên A theo quy định của pháp luật.</p>`
+    : `<p>3.1. Bên A thanh toán một lần toàn bộ giá trị hợp đồng theo báo giá đã đồng ý, bằng mã QR PayOS hoặc tiền mặt khi
+  kỹ thuật viên của Bên B trình bày báo giá tại công trình. Khoản đã thanh toán trước khi ký được tính là thanh toán của hợp
+  đồng này; Bên B không thu thêm lần nào khác.</p>
+  <p>3.2. Nghĩa vụ thanh toán hoàn thành khi hệ thống Smart Solar ghi nhận Bên B đã nhận đủ tiền (PayOS xác nhận, hoặc
+  Bên B xác nhận phiếu thu tiền mặt).</p>
+  <p>3.3. Bên B xuất hoá đơn giá trị gia tăng cho Bên A theo quy định của pháp luật.</p>`
   const sumRow = (label: string, value: string, cls = '') =>
     `<tr class="${cls}"><td colspan="6">${label}</td><td class="num">${value}</td></tr>`
   const sums = [
@@ -179,6 +220,19 @@ export function contractPrintHtml({ contract: c, ward, quotationAcceptedAt }: Co
     p.subtotal != null ? sumRow('Cộng', money(p.subtotal)) : '',
     (p.discountAmount ?? 0) > 0 ? sumRow('Giảm giá', `-${money(p.discountAmount)}`) : '',
     p.taxAmount != null ? sumRow(`Thuế giá trị gia tăng${tax != null ? ` (${tax}%)` : ''}`, money(p.taxAmount)) : '',
+    // Hợp đồng có gói đi kèm (backend 763cb0b): tổng giá trị = chi phí lắp đặt + gói, ghi đủ các phần để cộng ra đúng tổng
+    ...(bundled
+      ? [
+          sumRow('Tổng chi phí lắp đặt', money(bundled.installation)),
+          ...bundled.items.map((pkg) =>
+            sumRow(
+              `${pkg.kind === 'MAINTENANCE' ? 'Gói bảo trì' : 'Gói bảo vệ thiên tai'} "${esc(pkg.packageName)}": ${money(pkg.unitPrice)} đồng/tấm pin × ${money(pkg.quantity)} tấm, ${pkg.durationMonths} tháng`,
+              money(pkg.totalAmount),
+            ),
+          ),
+          sumRow('Tổng chi phí gói dịch vụ đi kèm', money(bundled.packages)),
+        ]
+      : []),
     sumRow('Tổng giá trị hợp đồng', money(c.totalAmount), 'total'),
   ].join('')
 
@@ -258,27 +312,32 @@ export function contractPrintHtml({ contract: c, ward, quotationAcceptedAt }: Co
     <tbody>${itemRows}${sums}</tbody>
   </table>
   <p>2.2. Tổng giá trị hợp đồng: <b>${money(c.totalAmount)} đồng</b> (bằng chữ: ${moneyInWords(c.totalAmount)}),
-  đã gồm thuế giá trị gia tăng${tax != null ? ` ${tax}%` : ''}, chi phí nhân công và vận chuyển.</p>
+  ${bundled ? 'trong đó chi phí lắp đặt ' : ''}đã gồm thuế giá trị gia tăng${tax != null ? ` ${tax}%` : ''}, chi phí nhân công và vận chuyển.${
+    bundled
+      ? ' Giá gói dịch vụ đi kèm là giá bán theo danh mục, không cộng thêm thuế của báo giá; việc áp dụng thuế đối với gói dịch vụ chờ bộ phận tài chính, pháp chế xác nhận.'
+      : ''
+  }</p>
   <p>2.3. Giá trị hợp đồng không thay đổi trong suốt thời gian thực hiện hợp đồng, kể cả khi lập phụ lục.</p>
 
   <h2>Điều 3. Thanh toán</h2>
-  <p>3.1. Bên A thanh toán một lần toàn bộ giá trị hợp đồng theo báo giá đã đồng ý, bằng mã QR PayOS hoặc tiền mặt khi
-  kỹ thuật viên của Bên B trình bày báo giá tại công trình. Khoản đã thanh toán trước khi ký được tính là thanh toán của hợp
-  đồng này; Bên B không thu thêm lần nào khác.</p>
-  <p>3.2. Nghĩa vụ thanh toán hoàn thành khi hệ thống Smart Solar ghi nhận Bên B đã nhận đủ tiền (PayOS xác nhận, hoặc
-  Bên B xác nhận phiếu thu tiền mặt).</p>
-  <p>3.3. Bên B xuất hoá đơn giá trị gia tăng cho Bên A theo quy định của pháp luật.</p>
+  ${paymentArticle}
 
   <h2>Điều 4. Thi công</h2>
-  <p>4.1. Kỹ thuật viên của Bên B thống nhất ngày thi công trực tiếp với Bên A. Lịch được xác nhận khi hợp đồng đã thanh
-  toán và đã ký; Bên A theo dõi lịch và tiến độ trên cổng khách hàng.</p>
+  <p>4.1. Kỹ thuật viên của Bên B thống nhất ngày thi công trực tiếp với Bên A. Lịch được xác nhận khi ${
+    plan ? 'Bên A đã thanh toán đợt 1 và hai bên đã ký hợp đồng giấy' : 'hợp đồng đã thanh toán và đã ký'
+  }; Bên A theo dõi lịch và tiến độ trên cổng khách hàng.</p>
   <p>4.2. Bên A bố trí mặt bằng, lối đi và điện thi công tại công trình trong thời gian thi công đã thông báo. Thời gian
   thi công chỉ thay đổi khi hai bên cùng đồng ý.</p>
 
   <h2>Điều 5. Nghiệm thu và bàn giao</h2>
-  <p>5.1. Lắp đặt xong, Bên B gửi báo cáo hoàn thành kèm ảnh thi công lên hệ thống và cùng Bên A kiểm tra, bàn giao tại công
+  ${
+    plan
+      ? `<p>5.1. Lắp đặt xong, Bên B báo hoàn thành kèm ảnh thi công trên hệ thống. Bên A xem báo cáo, ảnh và nghiệm thu hoặc yêu
+  cầu sửa chữa (kèm lý do) trên cổng khách hàng; Bên B không nghiệm thu thay Bên A. Đợt 2 đến hạn khi Bên A nghiệm thu.</p>`
+      : `<p>5.1. Lắp đặt xong, Bên B gửi báo cáo hoàn thành kèm ảnh thi công lên hệ thống và cùng Bên A kiểm tra, bàn giao tại công
   trình. Bên B nghiệm thu trên hệ thống theo kết quả bàn giao đó; Bên A xem báo cáo, ảnh và hồ sơ bàn giao trên cổng khách
-  hàng.</p>
+  hàng.</p>`
+  }
   <p>5.2. Khi kết quả chưa đạt, Bên B khắc phục bằng chi phí của mình rồi nghiệm thu lại.</p>
   <p>5.3. Sau khi Bên A đồng ý nghiệm thu, Bên B bàn giao hệ thống kèm danh sách thiết bị đã lắp (hãng, model, số serial)
   và thời hạn bảo hành của từng thiết bị. Ngày bàn giao ghi trên hệ thống là ngày bắt đầu tính bảo hành.</p>
@@ -321,10 +380,17 @@ export function contractPrintHtml({ contract: c, ward, quotationAcceptedAt }: Co
   <div class="terms">${termsHtml}</div>
 
   <h2>Điều 13. Hiệu lực và cách ký</h2>
-  <p>13.1. Hợp đồng có hiệu lực từ ngày Bên B xác nhận bản hợp đồng có chữ ký của Bên A trên hệ thống Smart Solar.</p>
+  ${
+    plan
+      ? `<p>13.1. Hợp đồng có hiệu lực khi hệ thống Smart Solar ghi nhận đủ các trang hợp đồng giấy đã ký của hai bên.</p>
+  <p>13.2. Sau khi Bên A thanh toán đợt 1, hai bên ký hợp đồng giấy này: Bên A ký nháy từng trang, ký và ghi rõ họ tên ở phần chữ
+  ký. Kỹ thuật viên của Bên B chụp từng trang đã ký và tải lên hệ thống; bản đã tải lên được lưu trên hệ thống và có giá trị như
+  nhau với mỗi bên.</p>`
+      : `<p>13.1. Hợp đồng có hiệu lực từ ngày Bên B xác nhận bản hợp đồng có chữ ký của Bên A trên hệ thống Smart Solar.</p>
   <p>13.2. Bên A in hợp đồng này, ký nháy từng trang, ký và ghi rõ họ tên ở phần chữ ký, rồi quét thành một tệp PDF và
   gửi lên mục “Hợp đồng” trên cổng khách hàng. Bản có chữ ký được lưu trên hệ thống và có giá trị như nhau với mỗi
-  bên.</p>
+  bên.</p>`
+  }
 
   <section class="sign">
     <div>

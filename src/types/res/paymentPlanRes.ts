@@ -24,6 +24,58 @@ export type InstallmentStatus = 'PENDING' | 'DUE' | 'PAID' | 'CANCELLED' | (stri
 
 export type OwnershipStatus = 'OWNERSHIP_RETAINED' | 'OWNERSHIP_TRANSFER_ELIGIBLE' | 'NOT_APPLICABLE' | (string & {})
 
+/**
+ * InstallmentAllocation (backend 763cb0b): một khoản chia cho chi phí lắp đặt và từng loại gói đi kèm, chốt lúc lập hợp đồng. Chỉ
+ * để đọc: số phải trả luôn là `amount` của khoản; installation + maintenancePackages + disasterPackages = amount
+ */
+export type InstallmentAllocation = {
+  sequence: number
+  amount: number
+  installation: number
+  maintenancePackages: number
+  disasterPackages: number
+}
+
+/**
+ * ContractServicePackageStatuses. COMMITTED: thuộc hợp đồng, chưa cấp quyền lợi; PROVISIONED: đã tạo kỳ gói (`subscriptionId`, kỳ
+ * có trạng thái riêng); RECONCILIATION_REQUIRED: số tấm pin đã lắp khác hợp đồng, chưa cấp gì; DISCARDED: hợp đồng huỷ trước 30%
+ */
+export type BundledPackageStatus = 'COMMITTED' | 'PROVISIONED' | 'RECONCILIATION_REQUIRED' | 'DISCARDED' | (string & {})
+
+/**
+ * Gói đi kèm hợp đồng (ContractServicePackageView): bản chụp bất biến, phần của từng khoản và trạng thái. Giá là giá trong hợp
+ * đồng, không phải giá danh mục hiện tại
+ */
+export type ContractServicePackageView = {
+  commitmentId: string
+  kind: string
+  packageId: string
+  packageName: string
+  description: string | null
+  imageUrl: string | null
+  pricingUnit: string
+  unitPrice: number
+  quantity: number
+  totalAmount: number
+  durationMonths: number
+  visitMonths: number[]
+  coveredDisasterTypes: string[]
+  coveragePercent: number | null
+  perIncidentLimit: number | null
+  termLimit: number | null
+  catalogRevision: number
+  snapshotAt: string
+  /** Phần của gói trong khoản 30% */
+  depositAllocation: number
+  /** Phần của gói trong khoản 70% */
+  balanceAllocation: number
+  status: BundledPackageStatus
+  /** Câu tiếng Anh của backend: vì sao chờ đối soát, hoặc vì sao huỷ */
+  statusReason: string | null
+  subscriptionId: string | null
+  statusChangedAt: string | null
+}
+
 /** InstallmentView */
 export type InstallmentView = {
   installmentId: string
@@ -42,6 +94,8 @@ export type InstallmentView = {
   paidAmount: number | null
   paidLate: boolean
   settledPaymentAttemptId: string | null
+  /** Hợp đồng có gói đi kèm: khoản này chia cho lắp đặt và gói thế nào (backend 763cb0b). null với hợp đồng không có gói */
+  allocation: InstallmentAllocation | null
 }
 
 /** SignedPageView */
@@ -139,6 +193,13 @@ export type InstallmentPaymentView = {
   /** Lần đã trả, không thì lần đang mở */
   current: PaymentAttemptView | null
   attempts: PaymentAttemptView[]
+  // Backend 763cb0b. Số phải trả (và số của mã QR) luôn là `amount`; các trường dưới chỉ để đọc
+  /** Tổng giá trị hợp đồng (lắp đặt + gói đi kèm) */
+  contractTotal: number
+  /** null với hợp đồng không có gói */
+  installationTotal: number | null
+  servicePackagesTotal: number | null
+  allocation: InstallmentAllocation | null
 }
 
 /** AttachedFileUrlView: link ký sẵn sống vài phút, không lưu */
@@ -274,4 +335,10 @@ export type FinanceOverviewView = {
   legacyContractPaymentsCollected: MoneyBucket
   unapplied: MoneyBucket
   refunded: MoneyBucket
+  /**
+   * Backend 763cb0b, trong kỳ: tiền đã thu theo thành phần (`key`: INSTALLATION, BUNDLED_MAINTENANCE_PACKAGES,
+   * BUNDLED_DISASTER_PROTECTION_PACKAGES, RETAIL_MAINTENANCE_PACKAGES, RETAIL_DISASTER_PROTECTION_PACKAGES). Ba nhóm đầu cộng lại
+   * bằng khoản 30% + 70% đã thu; mỗi đồng chỉ tính một lần. Thiếu khi máy chủ chưa nâng cấp
+   */
+  collectedByComponent: MoneyBucket[] | null
 }

@@ -52,6 +52,18 @@ export type PurchaseRequest = {
   disasterPackageId?: string | null
   includeContract?: boolean
   paymentMethod?: string | null
+  /** Format: int32 */
+  quantity?: number | null
+  targetAssets?: PurchaseTargetAssetRequest[] | null
+  /** Format: uuid */
+  renewsSubscriptionId?: string | null
+}
+
+export type PurchaseTargetAssetRequest = {
+  /** Format: uuid */
+  assetId?: string
+  /** Format: int32 */
+  units?: number
 }
 
 export type ReconsiderationRequest = {

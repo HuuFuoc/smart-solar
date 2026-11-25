@@ -124,6 +124,36 @@ export type QuotationPaymentView = {
   contractId?: string | null
 }
 
+export type QuotationServicePackageView = {
+  /** Format: uuid */
+  packageId?: string
+  kind?: string | null
+  packageName?: string | null
+  description?: string | null
+  imageUrl?: string | null
+  pricingUnit?: string | null
+  /** Format: double */
+  unitPrice?: number
+  /** Format: int32 */
+  quantity?: number
+  /** Format: double */
+  totalAmount?: number
+  /** Format: int32 */
+  durationMonths?: number
+  visitMonths?: number[] | null
+  coveredDisasterTypes?: string[] | null
+  /** Format: double */
+  coveragePercent?: number | null
+  /** Format: double */
+  perIncidentLimit?: number | null
+  /** Format: double */
+  termLimit?: number | null
+  /** Format: int32 */
+  catalogRevision?: number
+  /** Format: date-time */
+  snapshotAt?: string
+}
+
 export type QuotationView = {
   /** Format: uuid */
   quotationId?: string
@@ -185,4 +215,19 @@ export type QuotationView = {
   /** Format: date-time */
   closedAt?: string | null
   closeReason?: string | null
+  /** Format: uuid */
+  contractId?: string | null
+  /** Format: double */
+  installationTotal?: number | null
+  /** Format: int32 */
+  panelQuantity?: number | null
+  servicePackages?: QuotationServicePackageView[] | null
+  /** Format: double */
+  maintenancePackagesTotal?: number
+  /** Format: double */
+  disasterPackagesTotal?: number
+  /** Format: double */
+  servicePackagesTotal?: number
+  /** Format: double */
+  grandTotal?: number | null
 }

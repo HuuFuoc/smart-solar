@@ -12,6 +12,8 @@ import {
   isMaintenance,
 } from '@/features/after-sales/afterSalesDisplay'
 import { entitlementDeadline, isBookable } from '@/features/after-sales/customerServiceRules'
+import { mayRenew } from '@/features/after-sales/panelCoverageRules'
+import { coveredPanelLabel, formatUnitPrice } from '@/features/after-sales/servicePackageDisplay'
 import { formatDateOnly } from '@/features/installations/installationDisplay'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment, vnDate } from '@/features/scheduling/schedulingDisplay'
@@ -63,6 +65,41 @@ function benefitText(s: SubscriptionView) {
 }
 
 const day = (iso: string | null) => (iso ? formatDateOnly(vnDate(iso)) : '—')
+
+/** Gói đến từ đâu: đi kèm hợp đồng lắp đặt (trả trong 30/70), gia hạn kỳ trước, hay mua riêng */
+function originText(s: SubscriptionView) {
+  if (s.contractServicePackageId) return 'đi kèm hợp đồng lắp đặt'
+  if (s.renewsSubscriptionId) return 'gia hạn kỳ trước'
+  return 'mua riêng'
+}
+
+/** Kỳ PANEL chỉ bảo vệ các tấm được phân bổ; kỳ cũ bảo vệ cả công trình */
+function scopeText(s: SubscriptionView) {
+  if (s.coverageScope !== 'PANEL') return 'Áp dụng cho toàn bộ công trình.'
+  const units = s.coveredUnits ?? (s.coveredPanels ?? []).reduce((sum, a) => sum + a.unitCount, 0)
+  return `Bảo vệ ${units} tấm pin, đơn giá ${formatUnitPrice(s.unitPrice, 'PER_PANEL')}.`
+}
+
+/** Tấm pin được kỳ PANEL bảo vệ; tấm đã thay vẫn hiện làm lịch sử, ghi rõ không còn hoạt động */
+function CoveredPanels({ subscription: s }: { subscription: SubscriptionView }) {
+  const panels = s.coveredPanels ?? []
+  if (s.coverageScope !== 'PANEL' || panels.length === 0) return null
+  return (
+    <details className="mt-2">
+      <summary className="tap cursor-pointer text-meta font-medium text-fg">
+        Tấm pin được bảo vệ ({panels.reduce((sum, a) => sum + a.unitCount, 0)} tấm)
+      </summary>
+      <ul className="mt-1 space-y-1 text-meta text-fg">
+        {panels.map((a) => (
+          <li key={a.allocationId}>
+            {coveredPanelLabel(a)}
+            {a.assetStatus !== 'ACTIVE' && <span className="text-fg-2">, không còn hoạt động</span>}
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
 
 /** Các lượt bảo trì của gói: kỳ của lượt, trạng thái, đặt lịch lượt còn đặt được, mở yêu cầu của lượt đã đặt */
 function EntitlementList({
@@ -119,6 +156,7 @@ export function SubscriptionList({
   onPay,
   onCancel,
   onBook,
+  onRenew,
 }: {
   items: SubscriptionView[]
   /** contractId → số hợp đồng; thiếu thì in mã ngắn */
@@ -127,6 +165,8 @@ export function SubscriptionList({
   onCancel: (subscription: SubscriptionView) => void
   /** Đặt lịch một lượt bảo trì của gói đang hiệu lực */
   onBook: (entitlement: EntitlementView, subscription: SubscriptionView) => void
+  /** Gia hạn một kỳ gói theo tấm pin (hộp gia hạn hỏi backend kỳ đó gia hạn được không) */
+  onRenew?: (subscription: SubscriptionView) => void
 }) {
   return (
     <ul className="divide-y divide-line border-y border-line">
@@ -135,6 +175,7 @@ export function SubscriptionList({
         const mode = cancelMode(s.status)
         const term = termText(s)
         const payAttempt = s.status === 'AWAITING_PAYMENT' ? s.currentPaymentAttemptId : null
+        const renewable = Boolean(onRenew) && mayRenew(s)
         return (
           <li key={s.subscriptionId} className="py-4">
             <div className="grid gap-x-6 gap-y-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.8fr)_auto] lg:items-center">
@@ -142,8 +183,9 @@ export function SubscriptionList({
                 <h3 className="text-body font-semibold text-fg">{s.packageName}</h3>
                 <p className="mt-0.5 text-meta text-fg-2">
                   Hợp đồng <span className="tnum">{contractNumbers.get(s.contractId) ?? shortCode(s.contractId)}</span>,{' '}
-                  {vnd(s.price)}, {formatDurationMonths(s.durationMonths)}
+                  {vnd(s.price)}, {formatDurationMonths(s.durationMonths)}, {originText(s)}
                 </p>
+                <p className="mt-0.5 text-meta text-fg-2">{scopeText(s)}</p>
                 {term && <p className="mt-1 text-meta font-medium text-fg">{term}</p>}
                 {s.status === 'ACTIVE' && s.supportAvailable != null && (
                   <p className="mt-0.5 text-meta text-fg">
@@ -154,11 +196,19 @@ export function SubscriptionList({
                   </p>
                 )}
               </div>
-              <p className="min-w-0 text-meta text-fg">{benefitText(s)}</p>
+              <div className="min-w-0">
+                <p className="text-meta text-fg">{benefitText(s)}</p>
+                <CoveredPanels subscription={s} />
+              </div>
               <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-end">
                 <Badge tone={status.tone}>{status.label}</Badge>
-                {(payAttempt || mode) && (
+                {(payAttempt || mode || renewable) && (
                   <div className="flex flex-wrap items-center gap-2">
+                    {renewable && (
+                      <Button icon="autorenew" size="sm" variant="soft" onClick={() => onRenew?.(s)}>
+                        Gia hạn
+                      </Button>
+                    )}
                     {mode && (
                       <Button icon="cancel" size="sm" variant="danger" onClick={() => onCancel(s)}>
                         Huỷ đơn

@@ -102,6 +102,14 @@ const CART_ERROR_OVERRIDES: Record<string, string> = {
   PAYMENT_ALREADY_PAID: 'Báo giá này đã được thanh toán. Trang đã tải lại.',
   PAYMENT_ATTEMPT_NOT_FOUND: 'Không còn lần thanh toán nào đang mở. Trang đã tải lại.',
   PAYMENT_TOO_MANY_ATTEMPTS: 'Đã mở thanh toán nhiều lần trong ít phút. Chờ vài phút rồi thử lại.',
+  // Gói dịch vụ đi kèm: lỗi này cũng đến từ lệnh sửa dòng hàng (bỏ / giảm dòng tấm pin khi còn gói)
+  QUOTATION_NO_ELIGIBLE_PANELS:
+    'Báo giá cần có tấm pin hợp lệ để áp dụng gói dịch vụ. Muốn bỏ hết tấm pin thì bỏ các gói dịch vụ đi kèm trước.',
+  QUOTATION_INVALID_PANEL_QUANTITY:
+    'Số lượng tấm pin phải là số nguyên hợp lệ. Sửa số lượng các dòng tấm pin, hoặc bỏ gói dịch vụ đi kèm trước.',
+  QUOTATION_SERVICE_PACKAGE_INACTIVE: 'Gói dịch vụ này không còn được cung cấp. Bỏ hoặc đổi sang gói khác.',
+  QUOTATION_SERVICE_PACKAGE_INCOMPATIBLE: 'Gói dịch vụ không tương thích với báo giá. Chọn gói khác cùng loại.',
+  QUOTATION_SERVICE_PACKAGE_NOT_FOUND: 'Không tìm thấy gói dịch vụ đã chọn. Trang đã tải lại, kiểm tra rồi thử lại.',
 }
 
 /** Câu lỗi của lệnh báo giá, kèm số giây phải chờ khi bị giới hạn số lần */

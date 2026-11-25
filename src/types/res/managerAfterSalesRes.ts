@@ -1,5 +1,33 @@
 // Viết tay vì swagger của tag ManagerAfterSales chỉ khai "200 OK"
 
+import type { BundledPackageStatus } from '@/types/res/paymentPlanRes'
+
+/**
+ * GET /api/manager/after-sales/bundled-packages (backend 763cb0b, BundledPackageView; quản lý và quản trị): gói đi kèm hợp đồng
+ * lắp đặt và kỳ gói nó đã thành. `statusReason` là câu tiếng Anh của backend
+ */
+export type BundledPackageView = {
+  commitmentId: string
+  contractId: string
+  kind: string
+  packageName: string
+  unitPrice: number
+  quantity: number
+  totalAmount: number
+  depositAllocation: number
+  balanceAllocation: number
+  status: BundledPackageStatus
+  statusReason: string | null
+  statusChangedAt: string | null
+  subscriptionId: string | null
+  /** Trạng thái của kỳ gói đã tạo (SubscriptionStatuses); null khi chưa tạo */
+  subscriptionStatus: string | null
+  startsAt: string | null
+  endsAt: string | null
+  coverageStartsAt: string | null
+  revision: number
+}
+
 /** Tài khoản kinh doanh đang hoạt động để giao việc (GET /api/manager/after-sales/sales-assignees, quản lý và quản trị) */
 export type SalesAssigneeView = {
   userId: string

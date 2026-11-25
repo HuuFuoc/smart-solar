@@ -114,6 +114,8 @@ export const ROUTES = {
     /** Yêu cầu bảo hành, sửa chữa, bảo trì (quản lý dùng chung trang với quản trị) */
     afterSales: '/manage/after-sales',
     afterSalesRequest: '/manage/after-sales/:id',
+    /** Gói dịch vụ đi kèm hợp đồng lắp đặt: trạng thái, đối soát lại khi số tấm pin đã lắp khác hợp đồng */
+    bundledPackages: '/manage/bundled-packages',
     /** Xếp kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý dùng chung trang với quản trị) */
     dispatch: '/manage/dispatch',
     dispatchRequest: '/manage/dispatch/:id',
@@ -144,6 +146,8 @@ export const ROUTES = {
     collections: '/admin/collections',
     collection: '/admin/collections/:id',
     packages: '/admin/packages',
+    /** Gói dịch vụ đi kèm hợp đồng lắp đặt (cùng trang với quản lý) */
+    bundledPackages: '/admin/bundled-packages',
     afterSales: '/admin/after-sales',
     afterSalesRequest: '/admin/after-sales/:id',
     dispatch: '/admin/dispatch',

@@ -2,7 +2,10 @@ import { Badge } from '@/components/common/ui/badge'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { EmptyState, ErrorState, UnavailableState } from '@/components/common/ui/states'
-import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
+import { BundledPackagesSection } from '@/features/quotations/BundledPackagesSection'
+import { customerTotal } from '@/features/quotations/bundledPackageRules'
+import { QuotationLines, QuotationTerms } from '@/features/quotations/QuotationContent'
+import { QuotationPricingSummary } from '@/features/quotations/QuotationPricingSummary'
 import {
   currentQuotation,
   formatDateVn,
@@ -68,7 +71,8 @@ export function QuotationReadPanel({ surveyRequestId, enabled }: { surveyRequest
             )}
             {q.origin !== 'TECHNICIAN' && <p className="text-meta text-fg-2">{quotationOriginLabel(q.origin)}.</p>}
             <QuotationLines quotation={q} showCatalogPrice />
-            <QuotationTotals quotation={q} className="ml-auto" />
+            <BundledPackagesSection quotation={q} />
+            <QuotationPricingSummary quotation={q} className="ml-auto" />
             <QuotationTerms quotation={q} />
             {list.length > 1 && (
               <details className="border-t border-line pt-4">
@@ -84,7 +88,7 @@ export function QuotationReadPanel({ surveyRequestId, enabled }: { surveyRequest
                           className="flex flex-wrap items-baseline justify-between gap-x-4 text-body"
                         >
                           <span className="tnum text-fg">
-                            Bản {v.version}, {formatQuotationMoney(v.totalAmount, v.currency)}
+                            Bản {v.version}, {formatQuotationMoney(customerTotal(v), v.currency)}
                           </span>
                           <Badge tone={meta.tone}>{meta.label}</Badge>
                         </li>

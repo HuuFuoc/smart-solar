@@ -16,15 +16,18 @@ export type CartLineRequest = {
   quantity?: number
 }
 
+export type CartServicePackageRequest = {
+  /** Format: uuid */
+  packageId?: string | null
+  /** Format: int32 */
+  revision?: number | null
+}
+
 export type OnSiteDecisionRequest = {
   decision?: string | null
   /** Format: int32 */
   revision?: number | null
   note?: string | null
-}
-
-export type QuotationPaymentRequest = {
-  method?: string | null
 }
 
 export type TechnicianCartCreateRequest = {

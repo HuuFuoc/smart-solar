@@ -92,7 +92,7 @@ export function QuotationLines({
   )
 }
 
-function TotalRow({ label, value, strong }: { label: ReactNode; value: string; strong?: boolean }) {
+export function TotalRow({ label, value, strong }: { label: ReactNode; value: string; strong?: boolean }) {
   return (
     <div className={cx('flex items-baseline justify-between gap-6 py-1', strong && 'mt-1 border-t border-line pt-3')}>
       <dt className={strong ? 'text-body font-semibold text-fg' : 'text-body text-fg-2'}>{label}</dt>

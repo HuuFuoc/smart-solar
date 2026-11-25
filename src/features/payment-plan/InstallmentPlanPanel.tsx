@@ -4,6 +4,7 @@ import { Badge } from '@/components/common/ui/badge'
 import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
+import { InstallmentAllocationTable } from '@/features/payment-plan/InstallmentAllocation'
 import { InstallmentPaymentBlock } from '@/features/payment-plan/InstallmentPaymentBlock'
 import {
   dueText,
@@ -209,6 +210,7 @@ export function InstallmentPlanPanel({
           <PlanSummary plan={plan} viewer={actor === 'customer' ? 'customer' : 'staff'} now={now} />
         )}
         {card ? <div className="ct-table">{table}</div> : table}
+        <InstallmentAllocationTable plan={plan} variant={variant} />
         {live.map((i) => (
           <div key={i.installmentId} className="border-t border-line pt-4">
             <InstallmentPaymentBlock

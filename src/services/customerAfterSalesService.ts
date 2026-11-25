@@ -11,6 +11,7 @@ import type {
 import type {
   NotificationView,
   PackageView,
+  PanelEligibilityView,
   PaymentAttemptView,
   PurchaseView,
   ServicePackageKind,
@@ -33,10 +34,20 @@ export function listPackages(kind: ServicePackageKind) {
 
 /**
  * POST .../purchases. Hợp đồng PAID thì `includeContract: false`; hợp đồng SIGNED (chưa thanh toán) thì phải
- * `includeContract: true` và link gồm cả tiền hợp đồng. Trả về link thanh toán và id các gói vừa tạo (AWAITING_PAYMENT)
+ * `includeContract: true` và link gồm cả tiền hợp đồng. Gói PER_PANEL: luôn `includeContract: false`, kèm tấm pin muốn bảo vệ
+ * (`targetAssets`) hoặc kỳ gia hạn; trả 100% trước, số tiền là của link backend trả về. Trả về link thanh toán và id các gói vừa
+ * tạo (AWAITING_PAYMENT)
  */
 export function purchase(body: PurchaseRequest) {
   return post<PurchaseView>(ENDPOINTS.customerAfterSales.purchases, body)
+}
+
+/**
+ * Gói tính theo tấm pin (backend 763cb0b): các tấm pin đang hoạt động của công trình, số tấm đã có gói và còn mua được theo loại,
+ * kỳ gia hạn được, gói PER_PANEL đang bán. Hợp đồng của khách khác thì 404 AFTER_SALES_PROJECT_NOT_FOUND
+ */
+export function getPanelCoverage(contractId: string) {
+  return get<PanelEligibilityView>(ENDPOINTS.customerAfterSales.panelCoverage(contractId))
 }
 
 /** GET .../subscriptions: mọi gói đã mua của khách, mọi loại */

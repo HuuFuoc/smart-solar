@@ -18,6 +18,7 @@ import {
   coverageDecisionAhead,
 } from '@/features/after-sales/managerAfterSalesRules'
 import { formatVnd } from '@/features/after-sales/serviceDisplay'
+import { claimReasonText } from '@/features/after-sales/servicePackageDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import { useDecideClaimMutation } from '@/hooks/useManagerAfterSales'
 import type { DisasterClaimView, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
@@ -32,12 +33,15 @@ function ClaimFacts({ claim }: { claim: DisasterClaimView }) {
     { k: 'Xảy ra lúc', v: formatMoment(claim.incidentOccurredAt) },
     { k: 'Tỷ lệ hỗ trợ của gói', v: <span className="tnum">{claim.coveragePercent} %</span> },
     { k: 'Hạn mức mỗi sự cố', v: <span className="tnum">{formatVnd(claim.perIncidentLimit)}</span> },
+    // Gói theo tấm pin: xét theo kỳ đang bảo vệ đúng tấm khách báo hư hại (backend 763cb0b)
+    ...(claim.coverageAllocationId ? [{ k: 'Phạm vi xét', v: 'Gói bảo vệ theo tấm pin của tấm bị hư hại' }] : []),
     { k: 'Đã giữ cho yêu cầu này', v: <span className="tnum">{formatVnd(claim.supportReserved)}</span> },
     { k: 'Đã chi', v: <span className="tnum">{formatVnd(claim.supportConsumed)}</span> },
   ]
   if (claim.reconsiderationRequestedAt)
     items.push({ k: 'Khách xin xét lại lúc', v: formatMoment(claim.reconsiderationRequestedAt) })
-  if (claim.decisionReason) items.push({ k: 'Lý do quyết định', v: claim.decisionReason })
+  if (claim.decisionReason)
+    items.push({ k: 'Lý do quyết định', v: claimReasonText(claim.decisionReason) ?? claim.decisionReason })
   return <KeyValueList items={items} columns={2} />
 }
 
@@ -118,8 +122,8 @@ export function ClaimDecisionPanel({ request }: { request: ServiceRequestView })
         <ClaimFacts claim={claim} />
         {claim.status === 'NOT_ELIGIBLE' && (
           <Notice tone="neutral">
-            Không có gói bảo vệ thiên tai nào còn hiệu lực cho loại thiên tai và thời điểm này nên không xét hỗ trợ
-            được.
+            {claimReasonText(claim.decisionReason) ??
+              'Không có gói bảo vệ thiên tai nào còn hiệu lực cho loại thiên tai và thời điểm này nên không xét hỗ trợ được.'}
           </Notice>
         )}
         {claim.status === 'APPROVED' && coverageDecisionAhead(request) && (

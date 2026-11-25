@@ -16,7 +16,8 @@ import type {
   ServiceRequestSummary,
   ServiceRequestView,
 } from '@/types/res/customerAfterSalesRes'
-import type { SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
+import type { BundledPackageView, SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
+import type { PagedResult } from '@/types/res/paymentPlanRes'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 import { get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
@@ -111,4 +112,23 @@ export type WarrantyActivationBody = { activatedAt: string; evidenceFileId: stri
 /** Ghi một lần, không sửa được. Hạn bảo hành = ngày kích hoạt + số tháng của danh mục */
 export function recordWarrantyActivation(assetId: string, body: WarrantyActivationBody) {
   return post<InstalledAssetView>(api.warrantyActivation(assetId), body)
+}
+
+/** Bộ lọc của danh sách gói đi kèm hợp đồng; `status` rỗng là mọi trạng thái. Trang đánh số từ 1, phân trang ở server */
+export type BundledPackageQuery = { status?: string; page: number; pageSize: number }
+
+/** Gói đi kèm hợp đồng lắp đặt, mới nhất trước (backend 763cb0b, quản lý và quản trị) */
+export function listBundledPackages({ status, page, pageSize }: BundledPackageQuery) {
+  return get<PagedResult<BundledPackageView>>(api.bundledPackages, {
+    params: { status: status || undefined, page, pageSize },
+  })
+}
+
+/**
+ * Đối soát lại một gói đang chờ đối soát, sau khi đã sửa sổ thiết bị đã lắp. Không có body. Backend chỉ tạo kỳ gói khi mọi điều kiện
+ * đúng (đã trả đủ, đã bàn giao, số tấm pin đang hoạt động bằng số trong hợp đồng); không đổi số tiền nào. Trả trạng thái mới của gói;
+ * gói không còn chờ đối soát thì 409 AFTER_SALES_INVALID_STATE
+ */
+export function reconcileBundledPackage(commitmentId: string) {
+  return post<BundledPackageView>(api.reconcileBundledPackage(commitmentId))
 }

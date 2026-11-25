@@ -10,9 +10,12 @@ import { awaitsPayment, packageKindLabel } from '@/features/after-sales/afterSal
 import { CancelSubscriptionDialog } from '@/features/after-sales/CancelSubscriptionDialog'
 import { BOOKING_LEAD_DAYS, entitlementDeadline } from '@/features/after-sales/customerServiceRules'
 import { PackageList } from '@/features/after-sales/PackageList'
+import { isPerPanelPackage } from '@/features/after-sales/panelCoverageRules'
+import { PanelPurchaseDialog } from '@/features/after-sales/PanelPurchaseDialog'
 import { PaymentDialog } from '@/features/after-sales/PaymentDialog'
 import { PreferredTimeDialog } from '@/features/after-sales/PreferredTimeDialog'
 import { PurchaseDialog } from '@/features/after-sales/PurchaseDialog'
+import { RenewalDialog } from '@/features/after-sales/RenewalDialog'
 import { SubscriptionList } from '@/features/after-sales/SubscriptionList'
 import { PAYOS_RETURN_PARAM } from '@/features/payments/payosReturn'
 import { useCheckoutRedirect } from '@/hooks/useCheckoutRedirect'
@@ -23,6 +26,7 @@ import { ROUTES, withId } from '@/routes/paths'
 import type {
   EntitlementView,
   PackageView,
+  PaymentAttemptView,
   ServicePackageKind,
   SubscriptionView,
 } from '@/types/res/customerAfterSalesRes'
@@ -30,8 +34,9 @@ import type {
 /** Mở lại hộp thoại thanh toán của một link, khi PayOS chuyển khách về trang này */
 const PAYMENT_PARAM = 'thanh-toan'
 
-// Gói dịch vụ của khách: gói đã mua (thanh toán, huỷ trước khi hiệu lực) và gói đang bán của hai loại, bảo vệ thiên tai
-// và bảo trì định kỳ (mua cho một hợp đồng), đặt lịch từng lượt bảo trì của gói đang hiệu lực
+// Gói dịch vụ của khách: gói đã mua (thanh toán, huỷ trước khi hiệu lực, gia hạn kỳ theo tấm pin) và gói đang bán của hai loại,
+// bảo vệ thiên tai và bảo trì định kỳ (mua cho một hợp đồng), đặt lịch từng lượt bảo trì của gói đang hiệu lực. Gói theo tấm pin mua
+// cho các tấm đã chọn sau bàn giao; gói theo hệ thống mua như trước. Cả hai trả 100% trước, không gộp vào khoản 30/70
 
 function OnSale({ kind, onBuy }: { kind: ServicePackageKind; onBuy: (pkg: PackageView) => void }) {
   const packages = usePackagesQuery(kind)
@@ -64,6 +69,13 @@ export function CustomerPackagesPage() {
   const book = useBookMaintenanceMutation()
   // Giữ bản lúc bấm: danh sách tải lại ngay khi huỷ xong, trước khi hộp thoại kịp đóng
   const [cancelling, setCancelling] = useState<SubscriptionView | null>(null)
+  const [renewing, setRenewing] = useState<SubscriptionView | null>(null)
+
+  // Sang ngay trang PayOS trong tab này; PayOS chưa trả link (hoặc trả tiền mặt) thì mở hộp thanh toán để khách kiểm tra lại
+  function payNow(attempt: PaymentAttemptView) {
+    const back = `${ROUTES.customer.packages}?${PAYMENT_PARAM}=${attempt.paymentAttemptId}`
+    if (!redirect.go(attempt, back)) setPayingAttemptId(attempt.paymentAttemptId)
+  }
 
   const mine = subscriptions.data ?? []
   const toPay = mine.filter(awaitsPayment).length
@@ -99,6 +111,7 @@ export function CustomerPackagesPage() {
                     onPay={setPayingAttemptId}
                     onCancel={setCancelling}
                     onBook={(entitlement, subscription) => setBooking({ entitlement, subscription })}
+                    onRenew={setRenewing}
                   />
                 )}
               </PagedList>
@@ -111,13 +124,27 @@ export function CustomerPackagesPage() {
       </div>
 
       <PurchaseDialog
-        pkg={buying}
+        pkg={buying && !isPerPanelPackage(buying) ? buying : null}
         onClose={() => setBuying(null)}
         onPurchased={(attempt) => {
           setBuying(null)
-          // Sang ngay trang PayOS trong tab này; PayOS chưa trả link thì mở hộp thanh toán để khách kiểm tra lại
-          const back = `${ROUTES.customer.packages}?${PAYMENT_PARAM}=${attempt.paymentAttemptId}`
-          if (!redirect.go(attempt, back)) setPayingAttemptId(attempt.paymentAttemptId)
+          payNow(attempt)
+        }}
+      />
+      <PanelPurchaseDialog
+        pkg={buying && isPerPanelPackage(buying) ? buying : null}
+        onClose={() => setBuying(null)}
+        onPurchased={(attempt) => {
+          setBuying(null)
+          payNow(attempt)
+        }}
+      />
+      <RenewalDialog
+        subscription={renewing}
+        onClose={() => setRenewing(null)}
+        onPurchased={(attempt) => {
+          setRenewing(null)
+          payNow(attempt)
         }}
       />
       <PaymentDialog

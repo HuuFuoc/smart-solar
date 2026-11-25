@@ -46,6 +46,20 @@ export function useContractQuery(contractId: string | undefined) {
   })
 }
 
+/**
+ * Số hợp đồng của các hợp đồng đã có trong cache (đã mở chi tiết trước đó), không gọi API: danh sách chỉ có mã hợp đồng và backend
+ * không có API tra nhiều hợp đồng một lần, nên không gọi chi tiết cho từng dòng
+ */
+export function useCachedContractNumbers(contractIds: string[]) {
+  const queryClient = useQueryClient()
+  return new Map(
+    contractIds.flatMap((id) => {
+      const cached = queryClient.getQueryData<ContractView>(contractKeys.detail(id))
+      return cached ? [[id, cached.contractNumber] as const] : []
+    }),
+  )
+}
+
 /** `waiting`: hợp đồng đã ký, chờ khách trả tiền thì tự hỏi lại */
 export function useContractPaymentsQuery(
   contractId: string,

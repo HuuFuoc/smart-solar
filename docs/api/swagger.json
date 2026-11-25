@@ -658,6 +658,46 @@
         }
       }
     },
+    "/api/admin/finance/overview": {
+      "get": {
+        "tags": ["AdminFinance"],
+        "parameters": [
+          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "zoneId", "in": "query", "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/FinanceOverviewViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/FinanceOverviewViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/FinanceOverviewViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/admin/iot/devices": {
       "post": {
         "tags": ["AdminIotDevices"],
@@ -1168,6 +1208,30 @@
         }
       }
     },
+    "/api/admin/knowledge-documents/shared-visibility-review": {
+      "get": {
+        "tags": ["AdminKnowledgeDocuments"],
+        "responses": {
+          "200": { "description": "OK" },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/admin/knowledge-documents/{documentId}/versions": {
       "post": {
         "tags": ["AdminKnowledgeDocuments"],
@@ -1228,7 +1292,6 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
           "400": {
             "description": "Validation failed (see error.fieldErrors).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -1249,6 +1312,7 @@
             "description": "State, staleness or duplicate conflict.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
+          "410": { "description": "Gone" },
           "429": {
             "description": "Rate limit or quota reached.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -4575,6 +4639,648 @@
         }
       }
     },
+    "/api/collections": {
+      "get": {
+        "tags": ["Collections"],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "format": "int32" } },
+          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "format": "int32" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "openOnly", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "customerId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "contractId", "in": "query", "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewPagedResultApiResponse" } },
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CollectionCaseViewPagedResultApiResponse" }
+              },
+              "text/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewPagedResultApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/collections/{caseId}": {
+      "get": {
+        "tags": ["Collections"],
+        "parameters": [
+          { "name": "caseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/collections/{caseId}/activities": {
+      "post": {
+        "tags": ["Collections"],
+        "parameters": [
+          { "name": "caseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CollectionActivityRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CollectionActivityRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CollectionActivityRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/collections/{caseId}/escalate": {
+      "post": {
+        "tags": ["Collections"],
+        "parameters": [
+          { "name": "caseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/collections/{caseId}/legal-review": {
+      "post": {
+        "tags": ["Collections"],
+        "parameters": [
+          { "name": "caseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/collections/{caseId}/resolve": {
+      "post": {
+        "tags": ["Collections"],
+        "parameters": [
+          { "name": "caseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CollectionDecisionRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/CollectionCaseViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts": {
+      "get": {
+        "tags": ["ContractDirectory"],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "format": "int32" } },
+          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "format": "int32" } },
+          { "name": "customerId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "paymentPlan", "in": "query", "schema": { "type": "string" } },
+          { "name": "surveyRequestId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "propertySiteId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "quotationId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "projectId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "overdue", "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": { "$ref": "#/components/schemas/ContractDirectoryItemPagedResultApiResponse" }
+              },
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ContractDirectoryItemPagedResultApiResponse" }
+              },
+              "text/json": { "schema": { "$ref": "#/components/schemas/ContractDirectoryItemPagedResultApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/signature-sets": {
+      "get": {
+        "tags": ["ContractDirectory"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/SignatureSetViewIReadOnlyListApiResponse" } },
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SignatureSetViewIReadOnlyListApiResponse" }
+              },
+              "text/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewIReadOnlyListApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/signed-pages/{fileId}/url": {
+      "get": {
+        "tags": ["ContractDirectory"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "fileId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "disposition", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/installments/{sequence}/payment": {
+      "get": {
+        "tags": ["ContractDirectory"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "sequence", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/signature-set": {
+      "post": {
+        "tags": ["ContractDirectory"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/StartSignatureSetRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/StartSignatureSetRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/StartSignatureSetRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/signature-set/pages/{pageNumber}": {
+      "put": {
+        "tags": ["ContractDirectory"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "pageNumber", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/SignedPageRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/SignedPageRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/SignedPageRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contractId}/signature-set/finalize": {
+      "post": {
+        "tags": ["ContractDirectory"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/FinalizeSignatureSetRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/FinalizeSignatureSetRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/FinalizeSignatureSetRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/customers/me/after-sales/installations/{projectId}/warranty": {
       "get": {
         "tags": ["CustomerAfterSales"],
@@ -5380,6 +6086,41 @@
         }
       }
     },
+    "/api/customers/me/after-sales/contracts/{contractId}/panel-coverage": {
+      "get": {
+        "tags": ["CustomerAfterSales"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/customers/me/after-sales/subscriptions": {
       "get": {
         "tags": ["CustomerAfterSales"],
@@ -5574,6 +6315,236 @@
         }
       }
     },
+    "/api/customers/me/contracts/{contractId}/installments/{sequence}/payment": {
+      "post": {
+        "tags": ["CustomerContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "sequence", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      },
+      "get": {
+        "tags": ["CustomerContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "sequence", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/contracts/{contractId}/installments/{sequence}/payment/cancel": {
+      "post": {
+        "tags": ["CustomerContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "sequence", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/contracts/{contractId}/signature-sets": {
+      "get": {
+        "tags": ["CustomerContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/SignatureSetViewIReadOnlyListApiResponse" } },
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SignatureSetViewIReadOnlyListApiResponse" }
+              },
+              "text/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewIReadOnlyListApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/customers/me/contracts/{contractId}/signed-pages/{fileId}/url": {
+      "get": {
+        "tags": ["CustomerContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "fileId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "disposition", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/AttachedFileUrlViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/customers/me/contracts": {
       "get": {
         "tags": ["CustomerContracts"],
@@ -5639,15 +6610,7 @@
         "parameters": [
           { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/SignedDocumentRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/SignedDocumentRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/SignedDocumentRequest" } }
-          }
-        },
         "responses": {
-          "200": { "description": "OK" },
           "400": {
             "description": "Validation failed (see error.fieldErrors).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -5668,6 +6631,7 @@
             "description": "State, staleness or duplicate conflict.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
+          "410": { "description": "Gone" },
           "429": {
             "description": "Rate limit or quota reached.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -6211,7 +7175,22 @@
         "parameters": [
           { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CustomerAcceptanceRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CustomerAcceptanceRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CustomerAcceptanceRequest" } }
+          }
+        },
         "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/InstallationCustomerViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/InstallationCustomerViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/InstallationCustomerViewApiResponse" } }
+            }
+          },
           "400": {
             "description": "Validation failed (see error.fieldErrors).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -6232,7 +7211,6 @@
             "description": "State, staleness or duplicate conflict.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
-          "410": { "description": "Gone" },
           "429": {
             "description": "Rate limit or quota reached.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -7648,6 +8626,78 @@
         }
       }
     },
+    "/api/manager/after-sales/bundled-packages": {
+      "get": {
+        "tags": ["ManagerAfterSales"],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "format": "int32" } },
+          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/manager/after-sales/bundled-packages/{commitmentId}/reconcile": {
+      "post": {
+        "tags": ["ManagerAfterSales"],
+        "parameters": [
+          { "name": "commitmentId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/manager/after-sales/requests": {
       "get": {
         "tags": ["ManagerAfterSales"],
@@ -8740,15 +9790,7 @@
         "parameters": [
           { "name": "projectId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/InternalAcceptanceRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/InternalAcceptanceRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/InternalAcceptanceRequest" } }
-          }
-        },
         "responses": {
-          "200": { "description": "OK" },
           "400": {
             "description": "Validation failed (see error.fieldErrors).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -8769,6 +9811,7 @@
             "description": "State, staleness or duplicate conflict.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
+          "410": { "description": "Gone" },
           "429": {
             "description": "Rate limit or quota reached.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -13395,6 +14438,308 @@
         }
       }
     },
+    "/api/technician/contracts/{contractId}/installments/{sequence}/payment": {
+      "post": {
+        "tags": ["TechnicianContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "sequence", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      },
+      "get": {
+        "tags": ["TechnicianContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "sequence", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/contracts/{contractId}/installments/{sequence}/payment/cancel": {
+      "post": {
+        "tags": ["TechnicianContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "sequence", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/InstallmentPaymentViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/contracts/{contractId}/signature-set": {
+      "post": {
+        "tags": ["TechnicianContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/StartSignatureSetRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/StartSignatureSetRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/StartSignatureSetRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/contracts/{contractId}/signature-set/pages/{pageNumber}": {
+      "put": {
+        "tags": ["TechnicianContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "pageNumber", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/SignedPageRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/SignedPageRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/SignedPageRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/technician/contracts/{contractId}/signature-set/finalize": {
+      "post": {
+        "tags": ["TechnicianContractPaymentPlan"],
+        "parameters": [
+          { "name": "contractId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/FinalizeSignatureSetRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/FinalizeSignatureSetRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/FinalizeSignatureSetRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/SignatureSetViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/technicians/me/installation-projects": {
       "get": {
         "tags": ["TechnicianInstallations"],
@@ -14716,6 +16061,106 @@
         }
       }
     },
+    "/api/technician/quotations/{quotationId}/service-packages/{kind}": {
+      "put": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "kind", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CartServicePackageRequest" } },
+            "text/json": { "schema": { "$ref": "#/components/schemas/CartServicePackageRequest" } },
+            "application/*+json": { "schema": { "$ref": "#/components/schemas/CartServicePackageRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["TechnicianQuotations"],
+        "parameters": [
+          { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "kind", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "revision", "in": "query", "schema": { "type": "integer", "format": "int32" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/QuotationViewApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "404": {
+            "description": "Not found (or not visible to the caller).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "409": {
+            "description": "State, staleness or duplicate conflict.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
+    },
     "/api/technician/quotations/{quotationId}/issue": {
       "post": {
         "tags": ["TechnicianQuotations"],
@@ -14874,22 +16319,7 @@
         "parameters": [
           { "name": "quotationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/QuotationPaymentRequest" } },
-            "text/json": { "schema": { "$ref": "#/components/schemas/QuotationPaymentRequest" } },
-            "application/*+json": { "schema": { "$ref": "#/components/schemas/QuotationPaymentRequest" } }
-          }
-        },
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": { "schema": { "$ref": "#/components/schemas/QuotationPaymentViewApiResponse" } },
-              "application/json": { "schema": { "$ref": "#/components/schemas/QuotationPaymentViewApiResponse" } },
-              "text/json": { "schema": { "$ref": "#/components/schemas/QuotationPaymentViewApiResponse" } }
-            }
-          },
           "400": {
             "description": "Validation failed (see error.fieldErrors).",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -14910,6 +16340,7 @@
             "description": "State, staleness or duplicate conflict.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
           },
+          "410": { "description": "Gone" },
           "429": {
             "description": "Rate limit or quota reached.",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
@@ -15047,6 +16478,42 @@
           }
         }
       }
+    },
+    "/api/technician/service-packages": {
+      "get": {
+        "tags": ["TechnicianServicePackages"],
+        "parameters": [{ "name": "kind", "in": "query", "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": { "schema": { "$ref": "#/components/schemas/PackageViewIReadOnlyListApiResponse" } },
+              "application/json": { "schema": { "$ref": "#/components/schemas/PackageViewIReadOnlyListApiResponse" } },
+              "text/json": { "schema": { "$ref": "#/components/schemas/PackageViewIReadOnlyListApiResponse" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed (see error.fieldErrors).",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "403": {
+            "description": "The caller's role or ownership does not allow this.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "429": {
+            "description": "Rate limit or quota reached.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          },
+          "503": {
+            "description": "A provider, storage or feature is unavailable.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ObjectApiResponse" } } }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -15069,6 +16536,19 @@
       "AcceptDispatchProposalRequest": {
         "type": "object",
         "properties": { "expectedRevision": { "type": "integer", "format": "int32", "nullable": true } },
+        "additionalProperties": false
+      },
+      "AcceptanceView": {
+        "type": "object",
+        "properties": {
+          "round": { "type": "integer", "format": "int32" },
+          "requestedAt": { "type": "string", "format": "date-time" },
+          "completionReport": { "type": "string", "nullable": true },
+          "decision": { "type": "string", "nullable": true },
+          "decidedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "reason": { "type": "string", "nullable": true },
+          "decidedBy": { "type": "string", "nullable": true }
+        },
         "additionalProperties": false
       },
       "ActivateRagConfigurationRequest": {
@@ -15379,6 +16859,14 @@
         },
         "additionalProperties": false
       },
+      "CartServicePackageRequest": {
+        "type": "object",
+        "properties": {
+          "packageId": { "type": "string", "format": "uuid", "nullable": true },
+          "revision": { "type": "integer", "format": "int32", "nullable": true }
+        },
+        "additionalProperties": false
+      },
       "CashConfirmationRequest": {
         "type": "object",
         "properties": {
@@ -15439,7 +16927,9 @@
           "reason": { "type": "string", "nullable": true },
           "failure": { "$ref": "#/components/schemas/ProviderFailure" },
           "context": { "$ref": "#/components/schemas/ClimateContext" },
-          "disclaimer": { "type": "string", "nullable": true }
+          "disclaimer": { "type": "string", "nullable": true },
+          "estimateBasis": { "type": "string", "nullable": true },
+          "regional": { "$ref": "#/components/schemas/RegionalEstimateDocument" }
         },
         "additionalProperties": false
       },
@@ -15452,8 +16942,8 @@
           "endYear": { "type": "integer", "format": "int32" },
           "community": { "type": "string", "nullable": true },
           "sources": { "type": "array", "items": { "type": "string" }, "nullable": true },
-          "requestedLatitude": { "type": "number", "format": "double" },
-          "requestedLongitude": { "type": "number", "format": "double" },
+          "requestedLatitude": { "type": "number", "format": "double", "nullable": true },
+          "requestedLongitude": { "type": "number", "format": "double", "nullable": true },
           "parameterUnits": { "type": "object", "additionalProperties": { "type": "string" }, "nullable": true },
           "retrievedAt": { "type": "string", "format": "date-time" }
         },
@@ -15477,6 +16967,123 @@
         "properties": {
           "reasonCode": { "type": "string", "nullable": true },
           "note": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "CollectionActivityRequest": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "nullable": true },
+          "channel": { "type": "string", "nullable": true },
+          "summary": { "type": "string", "nullable": true },
+          "promisedPaymentDate": { "type": "string", "format": "date", "nullable": true },
+          "evidenceFileIds": { "type": "array", "items": { "type": "string", "format": "uuid" }, "nullable": true },
+          "expectedRevision": { "type": "integer", "format": "int32", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "CollectionActivityView": {
+        "type": "object",
+        "properties": {
+          "activityId": { "type": "string", "format": "uuid" },
+          "kind": { "type": "string", "nullable": true },
+          "fromStatus": { "type": "string", "nullable": true },
+          "toStatus": { "type": "string", "nullable": true },
+          "actorUserId": { "type": "string", "format": "uuid", "nullable": true },
+          "actorRole": { "type": "string", "nullable": true },
+          "channel": { "type": "string", "nullable": true },
+          "summary": { "type": "string", "nullable": true },
+          "promisedPaymentDate": { "type": "string", "format": "date", "nullable": true },
+          "evidenceFileIds": { "type": "array", "items": { "type": "string", "format": "uuid" }, "nullable": true },
+          "occurredAt": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "CollectionCaseSummaryView": {
+        "type": "object",
+        "properties": {
+          "caseId": { "type": "string", "format": "uuid" },
+          "installmentId": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "nullable": true },
+          "openedAt": { "type": "string", "format": "date-time" },
+          "dueAt": { "type": "string", "format": "date-time" },
+          "amountDue": { "type": "number", "format": "double" },
+          "promisedPaymentDate": { "type": "string", "format": "date", "nullable": true },
+          "resolvedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "resolution": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "CollectionCaseView": {
+        "type": "object",
+        "properties": {
+          "caseId": { "type": "string", "format": "uuid" },
+          "contractId": { "type": "string", "format": "uuid" },
+          "contractNumber": { "type": "string", "nullable": true },
+          "installmentId": { "type": "string", "format": "uuid" },
+          "installmentSequence": { "type": "integer", "format": "int32" },
+          "customerUserId": { "type": "string", "format": "uuid" },
+          "customerName": { "type": "string", "nullable": true },
+          "customerPhone": { "type": "string", "nullable": true },
+          "status": { "type": "string", "nullable": true },
+          "openedAt": { "type": "string", "format": "date-time" },
+          "dueAt": { "type": "string", "format": "date-time" },
+          "daysOverdue": { "type": "integer", "format": "int32" },
+          "amountDue": { "type": "number", "format": "double" },
+          "installmentStatus": { "type": "string", "nullable": true },
+          "promisedPaymentDate": { "type": "string", "format": "date", "nullable": true },
+          "resolvedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "resolvedByUserId": { "type": "string", "format": "uuid", "nullable": true },
+          "resolution": { "type": "string", "nullable": true },
+          "revision": { "type": "integer", "format": "int32" },
+          "activities": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CollectionActivityView" },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectionCaseViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/CollectionCaseView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "CollectionCaseViewPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CollectionCaseView" },
+            "nullable": true
+          },
+          "page": { "type": "integer", "format": "int32" },
+          "pageSize": { "type": "integer", "format": "int32" },
+          "totalItems": { "type": "integer", "format": "int32" },
+          "totalPages": { "type": "integer", "format": "int32" }
+        },
+        "additionalProperties": false
+      },
+      "CollectionCaseViewPagedResultApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/CollectionCaseViewPagedResult" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "CollectionDecisionRequest": {
+        "type": "object",
+        "properties": {
+          "reason": { "type": "string", "nullable": true },
+          "expectedRevision": { "type": "integer", "format": "int32", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -15549,6 +17156,61 @@
         },
         "additionalProperties": false
       },
+      "ContractDirectoryItem": {
+        "type": "object",
+        "properties": {
+          "contractId": { "type": "string", "format": "uuid" },
+          "contractNumber": { "type": "string", "nullable": true },
+          "version": { "type": "integer", "format": "int32" },
+          "status": { "type": "string", "nullable": true },
+          "paymentPlan": { "type": "string", "nullable": true },
+          "stage": { "type": "string", "nullable": true },
+          "customerUserId": { "type": "string", "format": "uuid" },
+          "customerName": { "type": "string", "nullable": true },
+          "customerPhone": { "type": "string", "nullable": true },
+          "surveyRequestId": { "type": "string", "format": "uuid" },
+          "propertySiteId": { "type": "string", "format": "uuid", "nullable": true },
+          "propertyName": { "type": "string", "nullable": true },
+          "quotationId": { "type": "string", "format": "uuid" },
+          "projectId": { "type": "string", "format": "uuid", "nullable": true },
+          "projectStatus": { "type": "string", "nullable": true },
+          "totalAmount": { "type": "number", "format": "double" },
+          "paid": { "type": "number", "format": "double" },
+          "outstanding": { "type": "number", "format": "double" },
+          "depositPaid": { "type": "boolean" },
+          "fullyPaid": { "type": "boolean" },
+          "overdue": { "type": "boolean" },
+          "nextDueAt": { "type": "string", "format": "date-time", "nullable": true },
+          "ownershipStatus": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "ContractDirectoryItemPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ContractDirectoryItem" },
+            "nullable": true
+          },
+          "page": { "type": "integer", "format": "int32" },
+          "pageSize": { "type": "integer", "format": "int32" },
+          "totalItems": { "type": "integer", "format": "int32" },
+          "totalPages": { "type": "integer", "format": "int32" }
+        },
+        "additionalProperties": false
+      },
+      "ContractDirectoryItemPagedResultApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/ContractDirectoryItemPagedResult" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
       "ContractDiscardView": {
         "type": "object",
         "properties": {
@@ -15579,12 +17241,74 @@
         },
         "additionalProperties": false
       },
+      "ContractPaymentPlanView": {
+        "type": "object",
+        "properties": {
+          "plan": { "type": "string", "nullable": true },
+          "termsVersion": { "type": "string", "nullable": true },
+          "stage": { "type": "string", "nullable": true },
+          "total": { "type": "number", "format": "double" },
+          "paid": { "type": "number", "format": "double" },
+          "outstanding": { "type": "number", "format": "double" },
+          "depositPaid": { "type": "boolean" },
+          "paperSigned": { "type": "boolean" },
+          "readyForInstallation": { "type": "boolean" },
+          "fullyPaid": { "type": "boolean" },
+          "overdue": { "type": "boolean" },
+          "nextDueAt": { "type": "string", "format": "date-time", "nullable": true },
+          "ownershipStatus": { "type": "string", "nullable": true },
+          "termsPendingLegalReview": { "type": "boolean" },
+          "legalReviewRequired": { "type": "boolean" },
+          "installments": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/InstallmentView" },
+            "nullable": true
+          },
+          "signature": { "$ref": "#/components/schemas/SignatureSetView" },
+          "collection": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CollectionCaseSummaryView" },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ContractReviewRequest": {
         "type": "object",
         "properties": {
           "revision": { "type": "integer", "format": "int32" },
           "decision": { "type": "string", "nullable": true },
           "reason": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "ContractServicePackageView": {
+        "type": "object",
+        "properties": {
+          "commitmentId": { "type": "string", "format": "uuid" },
+          "kind": { "type": "string", "nullable": true },
+          "packageId": { "type": "string", "format": "uuid" },
+          "packageName": { "type": "string", "nullable": true },
+          "description": { "type": "string", "nullable": true },
+          "imageUrl": { "type": "string", "nullable": true },
+          "pricingUnit": { "type": "string", "nullable": true },
+          "unitPrice": { "type": "number", "format": "double" },
+          "quantity": { "type": "integer", "format": "int32" },
+          "totalAmount": { "type": "number", "format": "double" },
+          "durationMonths": { "type": "integer", "format": "int32" },
+          "visitMonths": { "type": "array", "items": { "type": "integer", "format": "int32" }, "nullable": true },
+          "coveredDisasterTypes": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "coveragePercent": { "type": "number", "format": "double", "nullable": true },
+          "perIncidentLimit": { "type": "number", "format": "double", "nullable": true },
+          "termLimit": { "type": "number", "format": "double", "nullable": true },
+          "catalogRevision": { "type": "integer", "format": "int32" },
+          "snapshotAt": { "type": "string", "format": "date-time" },
+          "depositAllocation": { "type": "number", "format": "double" },
+          "balanceAllocation": { "type": "number", "format": "double" },
+          "status": { "type": "string", "nullable": true },
+          "statusReason": { "type": "string", "nullable": true },
+          "subscriptionId": { "type": "string", "format": "uuid", "nullable": true },
+          "statusChangedAt": { "type": "string", "format": "date-time", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -15636,7 +17360,15 @@
           "discard": { "$ref": "#/components/schemas/ContractDiscardView" },
           "paymentCompleted": { "type": "boolean" },
           "paymentAttemptId": { "type": "string", "format": "uuid", "nullable": true },
-          "paymentConfirmedAt": { "type": "string", "format": "date-time", "nullable": true }
+          "paymentConfirmedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "paymentPlan": { "$ref": "#/components/schemas/ContractPaymentPlanView" },
+          "installationTotal": { "type": "number", "format": "double", "nullable": true },
+          "servicePackagesTotal": { "type": "number", "format": "double", "nullable": true },
+          "servicePackages": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ContractServicePackageView" },
+            "nullable": true
+          }
         },
         "additionalProperties": false
       },
@@ -15796,6 +17528,16 @@
         },
         "additionalProperties": false
       },
+      "CustomerAcceptanceRequest": {
+        "type": "object",
+        "properties": {
+          "decision": { "type": "string", "nullable": true },
+          "reason": { "type": "string", "nullable": true },
+          "evidenceFileIds": { "type": "array", "items": { "type": "string", "format": "uuid" }, "nullable": true },
+          "expectedRevision": { "type": "integer", "format": "int32", "nullable": true }
+        },
+        "additionalProperties": false
+      },
       "CustomerPreSurveyListItem": {
         "type": "object",
         "properties": {
@@ -15949,7 +17691,8 @@
           "coveragePercent": { "type": "number", "format": "double" },
           "perIncidentLimit": { "type": "number", "format": "double" },
           "supportReserved": { "type": "number", "format": "double" },
-          "supportConsumed": { "type": "number", "format": "double" }
+          "supportConsumed": { "type": "number", "format": "double" },
+          "coverageAllocationId": { "type": "string", "format": "uuid", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -16004,7 +17747,9 @@
           "assumptions": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "disclaimer": { "type": "string", "nullable": true },
           "annualEnergyBeforeShadingKwh": { "type": "number", "format": "double", "nullable": true },
-          "annualEnergyAfterShadingKwh": { "type": "number", "format": "double", "nullable": true }
+          "annualEnergyAfterShadingKwh": { "type": "number", "format": "double", "nullable": true },
+          "estimateBasis": { "type": "string", "nullable": true },
+          "regional": { "$ref": "#/components/schemas/RegionalEstimateDocument" }
         },
         "additionalProperties": false
       },
@@ -16048,6 +17793,37 @@
           "specificYieldKwhPerKwpYear": { "type": "number", "format": "double", "nullable": true },
           "monthly": { "type": "array", "items": { "$ref": "#/components/schemas/PvMonthlyEnergy" }, "nullable": true },
           "provider": { "$ref": "#/components/schemas/PvProviderMetadata" }
+        },
+        "additionalProperties": false
+      },
+      "EquipmentComparisonView": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "nullable": true },
+          "differences": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EquipmentDifference" },
+            "nullable": true
+          },
+          "fingerprint": { "type": "string", "nullable": true },
+          "managerApproval": { "$ref": "#/components/schemas/InstallationApprovalStep" },
+          "customerApproval": { "$ref": "#/components/schemas/InstallationApprovalStep" },
+          "history": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SubstitutionRecordView" },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EquipmentDifference": {
+        "type": "object",
+        "properties": {
+          "productId": { "type": "string", "format": "uuid" },
+          "productType": { "type": "string", "nullable": true },
+          "name": { "type": "string", "nullable": true },
+          "contractedQuantity": { "type": "number", "format": "double" },
+          "installedQuantity": { "type": "integer", "format": "int32" }
         },
         "additionalProperties": false
       },
@@ -16096,6 +17872,17 @@
         },
         "additionalProperties": false
       },
+      "EvidenceView": {
+        "type": "object",
+        "properties": {
+          "evidenceId": { "type": "string", "format": "uuid" },
+          "fileId": { "type": "string", "format": "uuid" },
+          "round": { "type": "integer", "format": "int32" },
+          "caption": { "type": "string", "nullable": true },
+          "addedAt": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
       "FaultFromMaintenanceRequest": {
         "type": "object",
         "properties": { "description": { "type": "string", "nullable": true } },
@@ -16135,6 +17922,72 @@
           "isSuccess": { "type": "boolean" },
           "traceId": { "type": "string", "nullable": true },
           "data": { "$ref": "#/components/schemas/FileView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "FinalizeSignatureSetRequest": {
+        "type": "object",
+        "properties": { "expectedRevision": { "type": "integer", "format": "int32", "nullable": true } },
+        "additionalProperties": false
+      },
+      "FinanceOverviewView": {
+        "type": "object",
+        "properties": {
+          "from": { "type": "string", "format": "date" },
+          "to": { "type": "string", "format": "date" },
+          "zoneId": { "type": "string", "format": "uuid", "nullable": true },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "paymentPlanContracts": { "$ref": "#/components/schemas/MoneyBucket" },
+          "legacyContracts": { "$ref": "#/components/schemas/MoneyBucket" },
+          "depositsPaid": { "$ref": "#/components/schemas/MoneyBucket" },
+          "depositsDue": { "$ref": "#/components/schemas/MoneyBucket" },
+          "balancesPending": { "$ref": "#/components/schemas/MoneyBucket" },
+          "balancesDue": { "$ref": "#/components/schemas/MoneyBucket" },
+          "balancesOverdue": { "$ref": "#/components/schemas/MoneyBucket" },
+          "balancesPaid": { "$ref": "#/components/schemas/MoneyBucket" },
+          "balancesPaidLate": { "type": "integer", "format": "int32" },
+          "outstanding": { "$ref": "#/components/schemas/MoneyBucket" },
+          "outstandingDueNow": { "$ref": "#/components/schemas/MoneyBucket" },
+          "awaitingAcceptance": { "$ref": "#/components/schemas/MoneyBucket" },
+          "acceptedUnpaid": { "$ref": "#/components/schemas/MoneyBucket" },
+          "fullyPaid": { "$ref": "#/components/schemas/MoneyBucket" },
+          "contractsByStage": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MoneyBucket" },
+            "nullable": true
+          },
+          "openCollectionCasesByStatus": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MoneyBucket" },
+            "nullable": true
+          },
+          "negotiations": { "$ref": "#/components/schemas/MoneyBucket" },
+          "escalations": { "$ref": "#/components/schemas/MoneyBucket" },
+          "depositsCollected": { "$ref": "#/components/schemas/MoneyBucket" },
+          "balancesCollected": { "$ref": "#/components/schemas/MoneyBucket" },
+          "installmentsCollectedByMethod": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MoneyBucket" },
+            "nullable": true
+          },
+          "legacyContractPaymentsCollected": { "$ref": "#/components/schemas/MoneyBucket" },
+          "unapplied": { "$ref": "#/components/schemas/MoneyBucket" },
+          "refunded": { "$ref": "#/components/schemas/MoneyBucket" },
+          "collectedByComponent": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MoneyBucket" },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FinanceOverviewViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/FinanceOverviewView" },
           "error": { "$ref": "#/components/schemas/ApiError" }
         },
         "additionalProperties": false
@@ -16225,6 +18078,56 @@
             "nullable": true
           },
           "stayOnSite": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "InstallationApprovalStep": {
+        "type": "object",
+        "properties": {
+          "actorUserId": { "type": "string", "format": "uuid", "nullable": true },
+          "reason": { "type": "string", "nullable": true },
+          "at": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "InstallationCustomerView": {
+        "type": "object",
+        "properties": {
+          "projectId": { "type": "string", "format": "uuid" },
+          "contractId": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "nullable": true },
+          "scheduledStartsAt": { "type": "string", "format": "date-time", "nullable": true },
+          "scheduledEndsAt": { "type": "string", "format": "date-time", "nullable": true },
+          "technicianName": { "type": "string", "nullable": true },
+          "startedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "acceptanceRequestedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "completedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "handoverAt": { "type": "string", "format": "date-time", "nullable": true },
+          "cancelledAt": { "type": "string", "format": "date-time", "nullable": true },
+          "currentRound": { "type": "integer", "format": "int32" },
+          "revision": { "type": "integer", "format": "int32" },
+          "evidence": { "type": "array", "items": { "$ref": "#/components/schemas/EvidenceView" }, "nullable": true },
+          "assets": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/InstallationsAssetView" },
+            "nullable": true
+          },
+          "acceptances": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AcceptanceView" },
+            "nullable": true
+          },
+          "equipment": { "$ref": "#/components/schemas/EquipmentComparisonView" }
+        },
+        "additionalProperties": false
+      },
+      "InstallationCustomerViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/InstallationCustomerView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
         },
         "additionalProperties": false
       },
@@ -16351,12 +18254,94 @@
         },
         "additionalProperties": false
       },
-      "InternalAcceptanceRequest": {
+      "InstallationsAssetView": {
         "type": "object",
         "properties": {
-          "expectedRevision": { "type": "integer", "format": "int32", "nullable": true },
-          "note": { "type": "string", "nullable": true },
-          "evidenceFileId": { "type": "string", "format": "uuid", "nullable": true }
+          "assetId": { "type": "string", "format": "uuid" },
+          "assetType": { "type": "string", "nullable": true },
+          "productId": { "type": "string", "format": "uuid", "nullable": true },
+          "manufacturer": { "type": "string", "nullable": true },
+          "model": { "type": "string", "nullable": true },
+          "serialNumber": { "type": "string", "nullable": true },
+          "positionCode": { "type": "string", "nullable": true },
+          "warrantyMonths": { "type": "integer", "format": "int32", "nullable": true },
+          "quantity": { "type": "integer", "format": "int32" },
+          "registeredAt": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "InstallmentAllocation": {
+        "type": "object",
+        "properties": {
+          "sequence": { "type": "integer", "format": "int32" },
+          "amount": { "type": "number", "format": "double" },
+          "installation": { "type": "number", "format": "double" },
+          "maintenancePackages": { "type": "number", "format": "double" },
+          "disasterPackages": { "type": "number", "format": "double" }
+        },
+        "additionalProperties": false
+      },
+      "InstallmentPaymentRequest": {
+        "type": "object",
+        "properties": { "method": { "type": "string", "nullable": true } },
+        "additionalProperties": false
+      },
+      "InstallmentPaymentView": {
+        "type": "object",
+        "properties": {
+          "contractId": { "type": "string", "format": "uuid" },
+          "contractNumber": { "type": "string", "nullable": true },
+          "installmentId": { "type": "string", "format": "uuid" },
+          "sequence": { "type": "integer", "format": "int32" },
+          "kind": { "type": "string", "nullable": true },
+          "amount": { "type": "number", "format": "double" },
+          "currency": { "type": "string", "nullable": true },
+          "installmentStatus": { "type": "string", "nullable": true },
+          "dueAt": { "type": "string", "format": "date-time", "nullable": true },
+          "overdue": { "type": "boolean" },
+          "paidAt": { "type": "string", "format": "date-time", "nullable": true },
+          "paidLate": { "type": "boolean" },
+          "paymentState": { "type": "string", "nullable": true },
+          "current": { "$ref": "#/components/schemas/PaymentAttemptView" },
+          "attempts": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PaymentAttemptView" },
+            "nullable": true
+          },
+          "contractTotal": { "type": "number", "format": "double" },
+          "installationTotal": { "type": "number", "format": "double", "nullable": true },
+          "servicePackagesTotal": { "type": "number", "format": "double", "nullable": true },
+          "allocation": { "$ref": "#/components/schemas/InstallmentAllocation" }
+        },
+        "additionalProperties": false
+      },
+      "InstallmentPaymentViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/InstallmentPaymentView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "InstallmentView": {
+        "type": "object",
+        "properties": {
+          "installmentId": { "type": "string", "format": "uuid" },
+          "sequence": { "type": "integer", "format": "int32" },
+          "kind": { "type": "string", "nullable": true },
+          "percent": { "type": "number", "format": "double" },
+          "amount": { "type": "number", "format": "double" },
+          "status": { "type": "string", "nullable": true },
+          "openedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "dueAt": { "type": "string", "format": "date-time", "nullable": true },
+          "overdue": { "type": "boolean" },
+          "paidAt": { "type": "string", "format": "date-time", "nullable": true },
+          "paidAmount": { "type": "number", "format": "double", "nullable": true },
+          "paidLate": { "type": "boolean" },
+          "settledPaymentAttemptId": { "type": "string", "format": "uuid", "nullable": true },
+          "allocation": { "$ref": "#/components/schemas/InstallmentAllocation" }
         },
         "additionalProperties": false
       },
@@ -16738,6 +18723,15 @@
         },
         "additionalProperties": false
       },
+      "MoneyBucket": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string", "nullable": true },
+          "count": { "type": "integer", "format": "int32" },
+          "amount": { "type": "number", "format": "double" }
+        },
+        "additionalProperties": false
+      },
       "MountingView": {
         "type": "object",
         "properties": {
@@ -16951,7 +18945,39 @@
           "isActive": { "type": "boolean" },
           "revision": { "type": "integer", "format": "int32" },
           "imageUrl": { "type": "string", "nullable": true },
-          "imageFileId": { "type": "string", "format": "uuid", "nullable": true }
+          "imageFileId": { "type": "string", "format": "uuid", "nullable": true },
+          "pricingUnit": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "PackageView": {
+        "type": "object",
+        "properties": {
+          "packageId": { "type": "string", "format": "uuid" },
+          "kind": { "type": "string", "nullable": true },
+          "name": { "type": "string", "nullable": true },
+          "description": { "type": "string", "nullable": true },
+          "price": { "type": "number", "format": "double" },
+          "durationMonths": { "type": "integer", "format": "int32" },
+          "visitMonths": { "type": "array", "items": { "type": "integer", "format": "int32" }, "nullable": true },
+          "coveredDisasterTypes": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "coveragePercent": { "type": "number", "format": "double", "nullable": true },
+          "perIncidentLimit": { "type": "number", "format": "double", "nullable": true },
+          "termLimit": { "type": "number", "format": "double", "nullable": true },
+          "isActive": { "type": "boolean" },
+          "revision": { "type": "integer", "format": "int32" },
+          "imageUrl": { "type": "string", "nullable": true },
+          "pricingUnit": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "PackageViewIReadOnlyListApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/PackageView" }, "nullable": true },
+          "error": { "$ref": "#/components/schemas/ApiError" }
         },
         "additionalProperties": false
       },
@@ -17335,7 +19361,9 @@
         "type": "object",
         "properties": {
           "versionId": { "type": "string", "format": "uuid" },
-          "revision": { "type": "integer", "format": "int32" }
+          "revision": { "type": "integer", "format": "int32" },
+          "confirmSharedVisibility": { "type": "boolean" },
+          "note": { "type": "string", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -17346,7 +19374,22 @@
           "maintenancePackageId": { "type": "string", "format": "uuid", "nullable": true },
           "disasterPackageId": { "type": "string", "format": "uuid", "nullable": true },
           "includeContract": { "type": "boolean" },
-          "paymentMethod": { "type": "string", "nullable": true }
+          "paymentMethod": { "type": "string", "nullable": true },
+          "quantity": { "type": "integer", "format": "int32", "nullable": true },
+          "targetAssets": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PurchaseTargetAssetRequest" },
+            "nullable": true
+          },
+          "renewsSubscriptionId": { "type": "string", "format": "uuid", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "PurchaseTargetAssetRequest": {
+        "type": "object",
+        "properties": {
+          "assetId": { "type": "string", "format": "uuid" },
+          "units": { "type": "integer", "format": "int32" }
         },
         "additionalProperties": false
       },
@@ -17438,11 +19481,6 @@
         },
         "additionalProperties": false
       },
-      "QuotationPaymentRequest": {
-        "type": "object",
-        "properties": { "method": { "type": "string", "nullable": true } },
-        "additionalProperties": false
-      },
       "QuotationPaymentView": {
         "type": "object",
         "properties": {
@@ -17470,6 +19508,29 @@
           "traceId": { "type": "string", "nullable": true },
           "data": { "$ref": "#/components/schemas/QuotationPaymentView" },
           "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "QuotationServicePackageView": {
+        "type": "object",
+        "properties": {
+          "packageId": { "type": "string", "format": "uuid" },
+          "kind": { "type": "string", "nullable": true },
+          "packageName": { "type": "string", "nullable": true },
+          "description": { "type": "string", "nullable": true },
+          "imageUrl": { "type": "string", "nullable": true },
+          "pricingUnit": { "type": "string", "nullable": true },
+          "unitPrice": { "type": "number", "format": "double" },
+          "quantity": { "type": "integer", "format": "int32" },
+          "totalAmount": { "type": "number", "format": "double" },
+          "durationMonths": { "type": "integer", "format": "int32" },
+          "visitMonths": { "type": "array", "items": { "type": "integer", "format": "int32" }, "nullable": true },
+          "coveredDisasterTypes": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "coveragePercent": { "type": "number", "format": "double", "nullable": true },
+          "perIncidentLimit": { "type": "number", "format": "double", "nullable": true },
+          "termLimit": { "type": "number", "format": "double", "nullable": true },
+          "catalogRevision": { "type": "integer", "format": "int32" },
+          "snapshotAt": { "type": "string", "format": "date-time" }
         },
         "additionalProperties": false
       },
@@ -17517,7 +19578,19 @@
           "pricingReview": { "$ref": "#/components/schemas/PricingReview" },
           "pricingApproval": { "$ref": "#/components/schemas/PricingApprovalView" },
           "closedAt": { "type": "string", "format": "date-time", "nullable": true },
-          "closeReason": { "type": "string", "nullable": true }
+          "closeReason": { "type": "string", "nullable": true },
+          "contractId": { "type": "string", "format": "uuid", "nullable": true },
+          "installationTotal": { "type": "number", "format": "double", "nullable": true },
+          "panelQuantity": { "type": "integer", "format": "int32", "nullable": true },
+          "servicePackages": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/QuotationServicePackageView" },
+            "nullable": true
+          },
+          "maintenancePackagesTotal": { "type": "number", "format": "double" },
+          "disasterPackagesTotal": { "type": "number", "format": "double" },
+          "servicePackagesTotal": { "type": "number", "format": "double" },
+          "grandTotal": { "type": "number", "format": "double", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -17557,6 +19630,64 @@
       "RefreshTokenRequest": {
         "type": "object",
         "properties": { "refreshToken": { "type": "string", "nullable": true } },
+        "additionalProperties": false
+      },
+      "RegionalBoundaryDocument": {
+        "type": "object",
+        "properties": {
+          "publisher": { "type": "string", "nullable": true },
+          "datasetPage": { "type": "string", "nullable": true },
+          "downloadUrl": { "type": "string", "nullable": true },
+          "fileSha256": { "type": "string", "nullable": true },
+          "featurePcode": { "type": "string", "nullable": true },
+          "validOn": { "type": "string", "nullable": true },
+          "license": { "type": "string", "nullable": true },
+          "crs": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "RegionalEstimateDocument": {
+        "type": "object",
+        "properties": {
+          "estimateBasis": { "type": "string", "nullable": true },
+          "label": { "type": "string", "nullable": true },
+          "regionCode": { "type": "string", "nullable": true },
+          "regionName": { "type": "string", "nullable": true },
+          "algorithmVersion": { "type": "string", "nullable": true },
+          "datasetKey": { "type": "string", "nullable": true },
+          "sourceDatasetVersion": { "type": "string", "nullable": true },
+          "manifestSha256": { "type": "string", "nullable": true },
+          "samplesSha256": { "type": "string", "nullable": true },
+          "weightMethod": { "type": "string", "nullable": true },
+          "cellKm": { "type": "number", "format": "double" },
+          "sampleCount": { "type": "integer", "format": "int32" },
+          "succeededSampleCount": { "type": "integer", "format": "int32" },
+          "coveredWeightFraction": { "type": "number", "format": "double" },
+          "quality": { "type": "string", "nullable": true },
+          "missingLocationIds": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "referenceKwp": { "type": "number", "format": "double", "nullable": true },
+          "providerDatabases": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "providerYearMin": { "type": "integer", "format": "int32", "nullable": true },
+          "providerYearMax": { "type": "integer", "format": "int32", "nullable": true },
+          "providerRetrievedFrom": { "type": "string", "format": "date-time", "nullable": true },
+          "providerRetrievedTo": { "type": "string", "format": "date-time", "nullable": true },
+          "computedAt": { "type": "string", "format": "date-time" },
+          "membershipBasis": { "type": "string", "nullable": true },
+          "referencePoint": { "$ref": "#/components/schemas/RegionalReferencePoint" },
+          "boundary": { "$ref": "#/components/schemas/RegionalBoundaryDocument" },
+          "formula": { "type": "string", "nullable": true },
+          "limitations": { "type": "array", "items": { "type": "string" }, "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "RegionalReferencePoint": {
+        "type": "object",
+        "properties": {
+          "latitude": { "type": "number", "format": "double" },
+          "longitude": { "type": "number", "format": "double" },
+          "displayOnly": { "type": "boolean" },
+          "method": { "type": "string", "nullable": true }
+        },
         "additionalProperties": false
       },
       "RegisterFileRequest": {
@@ -17870,7 +20001,8 @@
           "selectedAt": { "type": "string", "format": "date-time" },
           "snapshotStored": { "type": "boolean" },
           "snapshotStatus": { "type": "string", "nullable": true },
-          "source": { "type": "string", "nullable": true }
+          "source": { "type": "string", "nullable": true },
+          "estimateBasis": { "type": "string", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -18122,7 +20254,8 @@
           "sunHeightCheckDeviationDegree": { "type": "number", "format": "double", "nullable": true },
           "samplesPerPanel": { "type": "integer", "format": "int32" },
           "directionBinDegree": { "type": "number", "format": "double" },
-          "limitations": { "type": "array", "items": { "type": "string" }, "nullable": true }
+          "limitations": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "correctionBasis": { "type": "string", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -18145,6 +20278,47 @@
         },
         "additionalProperties": false
       },
+      "SignatureSetView": {
+        "type": "object",
+        "properties": {
+          "signatureSetId": { "type": "string", "format": "uuid" },
+          "contractId": { "type": "string", "format": "uuid" },
+          "version": { "type": "integer", "format": "int32" },
+          "status": { "type": "string", "nullable": true },
+          "expectedPageCount": { "type": "integer", "format": "int32" },
+          "uploadedPageCount": { "type": "integer", "format": "int32" },
+          "missingPages": { "type": "array", "items": { "type": "integer", "format": "int32" }, "nullable": true },
+          "signedOn": { "type": "string", "format": "date", "nullable": true },
+          "note": { "type": "string", "nullable": true },
+          "createdByUserId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "finalizedByUserId": { "type": "string", "format": "uuid", "nullable": true },
+          "finalizedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "revision": { "type": "integer", "format": "int32" },
+          "pages": { "type": "array", "items": { "$ref": "#/components/schemas/SignedPageView" }, "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "SignatureSetViewApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "$ref": "#/components/schemas/SignatureSetView" },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
+      "SignatureSetViewIReadOnlyListApiResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "traceId": { "type": "string", "nullable": true },
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/SignatureSetView" }, "nullable": true },
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        },
+        "additionalProperties": false
+      },
       "SignatureSubmissionView": {
         "type": "object",
         "properties": {
@@ -18159,11 +20333,21 @@
         },
         "additionalProperties": false
       },
-      "SignedDocumentRequest": {
+      "SignedPageRequest": {
+        "type": "object",
+        "properties": { "fileId": { "type": "string", "format": "uuid", "nullable": true } },
+        "additionalProperties": false
+      },
+      "SignedPageView": {
         "type": "object",
         "properties": {
+          "pageNumber": { "type": "integer", "format": "int32" },
           "fileId": { "type": "string", "format": "uuid" },
-          "officialDocumentSha256": { "type": "string", "nullable": true }
+          "sha256": { "type": "string", "nullable": true },
+          "contentType": { "type": "string", "nullable": true },
+          "uploadedByUserId": { "type": "string", "format": "uuid" },
+          "uploadedAt": { "type": "string", "format": "date-time" },
+          "replacedAt": { "type": "string", "format": "date-time", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -18208,7 +20392,8 @@
           "limitations": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "expiresAt": { "type": "string", "format": "date-time", "nullable": true },
           "source": { "type": "string", "nullable": true },
-          "shading": { "$ref": "#/components/schemas/ShadingDocument" }
+          "shading": { "$ref": "#/components/schemas/ShadingDocument" },
+          "estimateBasis": { "type": "string", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -18240,7 +20425,8 @@
           "installedCapacityKwp": { "type": "number", "format": "double" },
           "annualEnergyKwh": { "type": "number", "format": "double", "nullable": true },
           "createdAt": { "type": "string", "format": "date-time" },
-          "expiresAt": { "type": "string", "format": "date-time" }
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "estimateBasis": { "type": "string", "nullable": true }
         },
         "additionalProperties": false
       },
@@ -18300,6 +20486,15 @@
         },
         "additionalProperties": false
       },
+      "StartSignatureSetRequest": {
+        "type": "object",
+        "properties": {
+          "expectedPageCount": { "type": "integer", "format": "int32", "nullable": true },
+          "signedOn": { "type": "string", "format": "date", "nullable": true },
+          "note": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
       "StopWorkRequest": {
         "type": "object",
         "properties": { "reason": { "type": "string", "nullable": true } },
@@ -18310,6 +20505,28 @@
         "properties": {
           "reason": { "type": "string", "nullable": true },
           "expectedRevision": { "type": "integer", "format": "int32", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "SubstitutionRecordView": {
+        "type": "object",
+        "properties": {
+          "substitutionId": { "type": "string", "format": "uuid" },
+          "status": { "type": "string", "nullable": true },
+          "fingerprint": { "type": "string", "nullable": true },
+          "quotationId": { "type": "string", "format": "uuid" },
+          "managerUserId": { "type": "string", "format": "uuid" },
+          "managerReason": { "type": "string", "nullable": true },
+          "managerApprovedAt": { "type": "string", "format": "date-time" },
+          "customerApprovedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "customerDeclinedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "customerDeclineReason": { "type": "string", "nullable": true },
+          "supersededAt": { "type": "string", "format": "date-time", "nullable": true },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EquipmentDifference" },
+            "nullable": true
+          }
         },
         "additionalProperties": false
       },

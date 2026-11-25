@@ -1,4 +1,5 @@
 import type { FinanceOverviewView, MoneyBucket } from '@/types/res/paymentPlanRes'
+import { FINANCE_COMPONENT_LABELS, FINANCE_COMPONENT_ORDER } from '../../common/servicePackages.ts'
 import { collectedInPeriod } from '../dashboard/dashboardStats.ts'
 
 // Đọc báo cáo tài chính (GET /api/admin/finance/overview, backend 7d27054) thành số cho ô và biểu đồ. Chỉ lấy các nhóm backend đã
@@ -67,7 +68,12 @@ export function installmentsByStatus(v: FinanceOverviewView) {
         pending: v.balancesPending.count,
       },
     },
-  ] satisfies { key: string; label: string; amount: Record<InstallmentStatusKey, number>; count: Record<InstallmentStatusKey, number> }[]
+  ] satisfies {
+    key: string
+    label: string
+    amount: Record<InstallmentStatusKey, number>
+    count: Record<InstallmentStatusKey, number>
+  }[]
 }
 
 /** Tiền đã thu một tháng của xu hướng, theo ba nhóm rời nhau */
@@ -79,8 +85,42 @@ export function collectedSplit(v: FinanceOverviewView) {
   }
 }
 
+export type ComponentRow = { key: string; label: string; count: number; amount: number; retail: boolean }
+
+/**
+ * Tiền đã thu trong kỳ theo thành phần (backend 763cb0b, `collectedByComponent`). Đọc nguyên số backend, không cộng thêm tiền gói
+ * vào khoản đã thu: gói đi kèm nằm trong chính các khoản 30% / 70%, nên lắp đặt + gói đi kèm = khoản 30% và 70% đã thu; gói mua riêng
+ * là tiền riêng (trả 100% trước). null khi máy chủ chưa trả mục này
+ */
+export function collectedComponents(v: Pick<FinanceOverviewView, 'collectedByComponent'>) {
+  if (!Array.isArray(v.collectedByComponent)) return null
+  const byKey = new Map(v.collectedByComponent.map((b) => [b.key, b]))
+  const known = new Set<string>(FINANCE_COMPONENT_ORDER)
+  const keys = [...FINANCE_COMPONENT_ORDER, ...v.collectedByComponent.map((b) => b.key).filter((k) => !known.has(k))]
+  const rows: ComponentRow[] = keys.map((key) => ({
+    key,
+    label: FINANCE_COMPONENT_LABELS[key] ?? key,
+    count: byKey.get(key)?.count ?? 0,
+    amount: byKey.get(key)?.amount ?? 0,
+    retail: key.startsWith('RETAIL_'),
+  }))
+  const sum = (list: ComponentRow[]) => list.reduce((s, r) => s + r.amount, 0)
+  return {
+    rows,
+    /** Lắp đặt + gói đi kèm: phải bằng khoản 30% + 70% đã thu trong kỳ */
+    installments: sum(rows.filter((r) => !r.retail)),
+    retail: sum(rows.filter((r) => r.retail)),
+  }
+}
+
 /** Thứ tự chặng của gói 30/70 (để tô màu đậm dần theo tiến độ) */
-export const STAGE_ORDER = ['DRAFT_CREATED', 'DEPOSIT_VERIFIED', 'READY_FOR_INSTALLATION', 'BALANCE_DUE', 'FULLY_PAID'] as const
+export const STAGE_ORDER = [
+  'DRAFT_CREATED',
+  'DEPOSIT_VERIFIED',
+  'READY_FOR_INSTALLATION',
+  'BALANCE_DUE',
+  'FULLY_PAID',
+] as const
 
 /** Hồ sơ công nợ đang mở, xếp theo số tiền giảm dần */
 export const openCasesRanked = (v: FinanceOverviewView) =>
