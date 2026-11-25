@@ -54,12 +54,13 @@ function matchesStatus(item: TechnicianAppointmentListItem, filter: StatusFilter
 }
 
 // Sắp xếp quyết định việc nào lên trang đầu; trong một trang, các ngày vẫn theo groupByDay như mọi danh sách lịch
-function sortMine(list: TechnicianAppointmentListItem[], sortBy: SortBy) {
+function sortMine(list: TechnicianAppointmentListItem[], sortBy: SortBy, past: boolean) {
   const at = (iso: string) => new Date(iso).getTime()
   return [...list].sort((a, b) => {
     if (sortBy === 'urgent' && a.isOverdue !== b.isOverdue) return a.isOverdue ? -1 : 1
     if (sortBy === 'newest') return at(b.assignedAt ?? b.startsAt) - at(a.assignedAt ?? a.startsAt)
-    return at(a.startsAt) - at(b.startsAt)
+    // Việc đã khảo sát: gần nhất lên trước, không phải việc cũ nhất
+    return past ? at(b.startsAt) - at(a.startsAt) : at(a.startsAt) - at(b.startsAt)
   })
 }
 
@@ -267,7 +268,7 @@ export function TechJobsPage() {
   const tab: Tab = picked ?? (canTake > 0 ? 'open' : 'upcoming')
   const hasFilter = search.trim() !== '' || date !== '' || time !== '' || statusFilter !== 'all'
 
-  const list = tab === 'open' ? openRows : sortMine(mineRows[tab], sortBy)
+  const list = tab === 'open' ? openRows : sortMine(mineRows[tab], sortBy, tab === 'past')
   const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
   const current = Math.min(page, pages)
   const shown = list.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE)

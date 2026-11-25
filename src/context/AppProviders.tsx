@@ -1,10 +1,13 @@
-import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MutationCache, notifyManager, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { Toaster } from 'sonner'
 import { AuthProvider } from '@/context/AuthProvider'
 import { markOwnAction } from '@/hooks/useNavAlert'
 import { isApiError } from '@/services/api/errors'
 import { cx } from '@/utils/cx'
+
+// Mặc định thư viện báo isPending trễ một nhịp, cú bấm thứ hai của bấm đúp lọt qua trước khi nút kịp khoá
+notifyManager.setScheduler(queueMicrotask)
 
 const queryClient = new QueryClient({
   defaultOptions: {

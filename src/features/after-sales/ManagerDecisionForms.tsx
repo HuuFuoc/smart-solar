@@ -10,6 +10,7 @@ import {
   paidCancellationBlocker,
 } from '@/features/after-sales/managerAfterSalesRules'
 import { formatVnd, pendingItems } from '@/features/after-sales/serviceDisplay'
+import { ContractConfirmDialog } from '@/features/contracts/ContractConfirmDialog'
 import {
   useDecideCancellationMutation,
   useDecideCoverageMutation,
@@ -29,6 +30,13 @@ function ErrorNotice({ message }: { message: string | null }) {
   )
 }
 
+const COVERAGE_LABELS: Record<string, string> = {
+  INSTALLATION_WARRANTY: 'bảo hành lắp đặt',
+  REPAIR_WARRANTY: 'bảo hành sửa chữa',
+  DISASTER_PROTECTION: 'gói bảo vệ thiên tai',
+  CHARGEABLE: 'khách trả tiền',
+}
+
 type Choice = { coverage: string; reason: string }
 
 /**
@@ -46,29 +54,22 @@ export function CoverageForm({ request }: { request: ServiceRequestView }) {
       ? 'DISASTER_PROTECTION'
       : 'CHARGEABLE'
   const [choices, setChoices] = useState<Record<string, Choice>>({})
-  const [error, setError] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState(false)
   const choiceOf = (item: ServiceItemView) => choices[item.itemId] ?? { coverage: firstChoice, reason: '' }
   const setChoice = (item: ServiceItemView, change: Partial<Choice>) =>
     setChoices((all) => ({ ...all, [item.itemId]: { ...choiceOf(item), ...change } }))
 
-  async function submit() {
-    setError(null)
-    try {
-      await decide.mutateAsync({
-        requestId: request.requestId,
-        body: {
-          decisions: items.map((item) => ({
-            itemId: item.itemId,
-            coverage: choiceOf(item).coverage,
-            reason: choiceOf(item).reason.trim() || null,
-          })),
-        },
-      })
-      toast.success('Đã lưu quyết định bảo hành.')
-    } catch (e) {
-      setError(errorMessage(e))
-    }
-  }
+  const submit = () =>
+    decide.mutateAsync({
+      requestId: request.requestId,
+      body: {
+        decisions: items.map((item) => ({
+          itemId: item.itemId,
+          coverage: choiceOf(item).coverage,
+          reason: choiceOf(item).reason.trim() || null,
+        })),
+      },
+    })
 
   return (
     <div className="space-y-4">
@@ -112,12 +113,30 @@ export function CoverageForm({ request }: { request: ServiceRequestView }) {
           </li>
         ))}
       </ul>
-      <ErrorNotice message={error} />
       <FormActions>
-        <Button icon="save" variant="primary" disabled={decide.isPending} onClick={() => void submit()}>
-          {decide.isPending ? 'Đang lưu…' : 'Lưu quyết định'}
+        <Button icon="save" variant="primary" disabled={decide.isPending} onClick={() => setConfirming(true)}>
+          Lưu quyết định
         </Button>
       </FormActions>
+      {confirming && (
+        <ContractConfirmDialog
+          title="Lưu quyết định bảo hành?"
+          confirmLabel="Lưu quyết định"
+          icon="save"
+          successText="Đã lưu quyết định bảo hành."
+          formatError={errorMessage}
+          run={submit}
+          onClose={() => setConfirming(false)}
+        >
+          <ul className="list-disc space-y-1 pl-5">
+            {items.map((item) => (
+              <li key={item.itemId}>
+                {item.description}: {COVERAGE_LABELS[choiceOf(item).coverage]}
+              </li>
+            ))}
+          </ul>
+        </ContractConfirmDialog>
+      )}
     </div>
   )
 }

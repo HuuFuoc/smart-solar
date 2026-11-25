@@ -61,10 +61,17 @@ export function cartIssueBlockers(
   return reasons
 }
 
-/** Số lượng của một dòng: lớn hơn 0, tối đa 100 000, tới 3 chữ số thập phân */
-export function cartQuantityError(value: number): string | null {
+const CART_SERVICE_TYPES = ['INSTALLATION_LABOR', 'TRANSPORT', 'OTHER_SERVICE']
+
+/** Thiết bị đếm theo cái (tấm pin, inverter); dịch vụ như nhân công theo kWp thì có số lẻ */
+export const isCountedType = (type: string | null | undefined) =>
+  !CART_SERVICE_TYPES.includes((type ?? '').trim().toUpperCase())
+
+/** Số lượng của một dòng: lớn hơn 0, tối đa 100 000; thiết bị là số nguyên, dịch vụ tới 3 chữ số thập phân */
+export function cartQuantityError(value: number, counted = false): string | null {
   if (!Number.isFinite(value) || value <= 0) return 'Số lượng phải lớn hơn 0.'
   if (value > CART_MAX_QUANTITY) return `Số lượng tối đa ${CART_MAX_QUANTITY.toLocaleString('vi-VN')}.`
+  if (counted && !Number.isInteger(value)) return 'Thiết bị nhập số nguyên.'
   if (Math.round(value * 1000) / 1000 !== value) return 'Số lượng có tối đa 3 chữ số thập phân.'
   return null
 }

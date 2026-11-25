@@ -71,6 +71,7 @@ export const INELIGIBLE_REASONS: Record<string, string> = {
   TECHNICIAN_SCHEDULE_CONFLICT: 'trùng lịch khác',
   DAILY_LIMIT_REACHED: 'đã đủ số lịch trong ngày',
   SCHEDULE_CONFLICT: 'trùng lịch khác',
+  PLANNED_CONFLICT: 'đã hẹn thi công công trình khác trong khoảng này',
 }
 
 /** Ngày trong tuần của giờ làm */

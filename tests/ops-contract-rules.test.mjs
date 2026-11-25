@@ -50,6 +50,7 @@ import {
   canReviseCart,
   cartIssueBlockers,
   cartQuantityError,
+  isCountedType,
   isStaleQuotationError,
   isTechnicianDraft,
   missingCartTypes,
@@ -421,6 +422,11 @@ describe('giỏ báo giá của kỹ thuật viên (QuotationTechnicianCart)', (
     assert.ok(cartQuantityError(Number.NaN))
     assert.ok(cartQuantityError(100_001))
     assert.ok(cartQuantityError(1.2345))
+    // Thiết bị đếm theo cái
+    assert.ok(cartQuantityError(1.5, true))
+    assert.equal(cartQuantityError(2, true), null)
+    assert.equal(isCountedType('SOLAR_PANEL'), true)
+    assert.equal(isCountedType('installation_labor'), false)
     const lines = [{ productId: 'pv', quantity: 10 }]
     assert.equal(addedQuantity(lines, 'pv', 4), 14)
     assert.equal(addedQuantity(lines, 'inv', 1), 1)

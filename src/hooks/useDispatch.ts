@@ -26,6 +26,8 @@ export const dispatchKeys = {
 
 /** Đề xuất có hạn trả lời nên tải lại mỗi phút */
 const REFRESH_MS = 60_000
+/** Danh sách gọi API này cho từng yêu cầu, mà backend chỉ cho 20 lượt mỗi phút chung với giờ trống: đổi trang không gọi lại */
+const LIST_STALE_MS = 5 * 60_000
 
 export function useMyDispatchQuery(surveyRequestId: string | undefined, { enabled = true } = {}) {
   return useQuery<CustomerDispatchView | null, ApiError>({
@@ -57,6 +59,7 @@ export function useMyDispatchesQuery(
       queryFn: () => dispatchService.getMyDispatchRequest(r.surveyRequestId),
       refetchInterval: (query: { state: { data?: CustomerDispatchView | null } }) =>
         isActiveDispatch(query.state.data?.status) ? REFRESH_MS : false,
+      staleTime: LIST_STALE_MS,
       enabled,
     })),
     combine: byRequest,
@@ -66,9 +69,9 @@ export function useMyDispatchesQuery(
 // Đồng ý đề xuất thì yêu cầu khảo sát có lịch mới, nên tải lại cả yêu cầu của khách
 function useInvalidateCustomerDispatch() {
   const queryClient = useQueryClient()
-  return () =>
+  return (surveyRequestId: string) =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: dispatchKeys.all }),
+      queryClient.invalidateQueries({ queryKey: dispatchKeys.mine(surveyRequestId) }),
       queryClient.invalidateQueries({ queryKey: bookingKeys.all }),
     ])
 }
@@ -81,7 +84,7 @@ export function useCreateDispatchMutation() {
     { surveyRequestId: string; preferredWindows: PreferredWindowView[]; note: string | null }
   >({
     mutationFn: ({ surveyRequestId, ...body }) => dispatchService.createDispatchRequest(surveyRequestId, body),
-    onSettled: invalidate,
+    onSettled: (_data, _error, { surveyRequestId }) => invalidate(surveyRequestId),
   })
 }
 
@@ -96,7 +99,7 @@ export function useAnswerProposalMutation() {
       accept
         ? dispatchService.acceptProposal(surveyRequestId, proposalId, revision)
         : dispatchService.declineProposal(surveyRequestId, proposalId, revision, reason ?? null),
-    onSettled: invalidate,
+    onSettled: (_data, _error, { surveyRequestId }) => invalidate(surveyRequestId),
   })
 }
 
@@ -104,7 +107,7 @@ export function useCancelDispatchMutation() {
   const invalidate = useInvalidateCustomerDispatch()
   return useMutation<CustomerDispatchView, ApiError, { surveyRequestId: string; reason: string | null }>({
     mutationFn: ({ surveyRequestId, reason }) => dispatchService.cancelDispatchRequest(surveyRequestId, reason),
-    onSettled: invalidate,
+    onSettled: (_data, _error, { surveyRequestId }) => invalidate(surveyRequestId),
   })
 }
 

@@ -14,7 +14,7 @@ import {
   quotationErrorMessage,
   readQuantity,
 } from '@/features/quotations/quotationDisplay'
-import { addedQuantity, cartQuantityError } from '@/features/quotations/quotationRules'
+import { addedQuantity, cartQuantityError, isCountedType } from '@/features/quotations/quotationRules'
 import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import { useAddCartLineMutation, useUpdateCartLineMutation } from '@/hooks/useTechnicianQuotations'
 import type { ProductResponse } from '@/types/res/adminProductsRes'
@@ -84,14 +84,19 @@ function LineForm({
   const qty = readQuantity(quantity)
   const unitPrice = editing ? line.unitPrice : (product?.unitPrice ?? null)
   const finalQuantity = product?.id ? addedQuantity(quotation.lines, product.id, qty) : qty
-  const preview = cartQuantityError(qty) === null && unitPrice != null ? Math.round(finalQuantity * unitPrice) : null
+  // Backend ghi mã loại sản phẩm vào `description` của dòng giỏ
+  const type = editing ? line.description : product?.productType
+  const counted = Boolean(type) && isCountedType(type)
+  const preview =
+    cartQuantityError(qty, counted) === null && unitPrice != null ? Math.round(finalQuantity * unitPrice) : null
   const alreadyInCart = product?.id ? quotation.lines.find((l) => l.productId === product.id) : undefined
   const unit = editing ? line.unit : product?.unit
 
   async function submit() {
     const next: { product?: string; quantity?: string } = {}
     if (!editing && !product?.id) next.product = 'Chọn sản phẩm trong danh sách.'
-    const quantityProblem = cartQuantityError(qty) ?? (product?.id ? cartQuantityError(finalQuantity) : null)
+    const quantityProblem =
+      cartQuantityError(qty, counted) ?? (product?.id ? cartQuantityError(finalQuantity, counted) : null)
     if (quantityProblem) next.quantity = quantityProblem
     setErrors(next)
     if (Object.keys(next).length > 0) return
@@ -170,7 +175,9 @@ function LineForm({
           hint={
             alreadyInCart
               ? `Đã có ${formatQuantity(alreadyInCart.quantity)} trong giỏ; số này được cộng thêm.`
-              : 'Tối đa 3 chữ số thập phân.'
+              : counted
+                ? undefined
+                : 'Tối đa 3 chữ số thập phân.'
           }
         >
           <Input

@@ -28,6 +28,7 @@ import { MaintenanceFaultDialog } from '@/features/after-sales/MaintenanceFaultD
 import { PreferredTimeDialog } from '@/features/after-sales/PreferredTimeDialog'
 import { ReconsiderationDialog } from '@/features/after-sales/ReconsiderationDialog'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
+import { ContractConfirmDialog } from '@/features/contracts/ContractConfirmDialog'
 import { ServicePhotos } from '@/features/after-sales/ServicePhotos'
 import { QuotationDetail, ServiceItemList, ServiceVisitList } from '@/features/after-sales/ServiceRequestParts'
 import {
@@ -197,18 +198,8 @@ function ConfirmVisitPanel({ request }: { request: ServiceRequestView }) {
 
 function AcceptancePanel({ request, onReject }: { request: ServiceRequestView; onReject: () => void }) {
   const completion = useCompletionMutation()
-  const [error, setError] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState(false)
   const report = lastReport(request)
-
-  async function accept() {
-    setError(null)
-    try {
-      await completion.mutateAsync({ requestId: request.requestId, accept: true })
-      toast.success('Đã nghiệm thu. Cảm ơn bạn.')
-    } catch (e) {
-      setError(errorMessage(e))
-    }
-  }
 
   return (
     <Panel id="acceptance" className="scroll-mt-6">
@@ -223,17 +214,30 @@ function AcceptancePanel({ request, onReject }: { request: ServiceRequestView; o
           </div>
         )}
         <div className="flex flex-wrap gap-3">
-          <Button icon="check_circle" variant="primary" disabled={completion.isPending} onClick={() => void accept()}>
-            {completion.isPending ? 'Đang gửi…' : 'Đồng ý kết quả'}
+          <Button
+            icon="check_circle"
+            variant="primary"
+            disabled={completion.isPending}
+            onClick={() => setConfirming(true)}
+          >
+            Đồng ý kết quả
           </Button>
           <Button icon="thumb_down" variant="danger" disabled={completion.isPending} onClick={onReject}>
             Chưa đạt
           </Button>
         </div>
-        {error && (
-          <div role="alert">
-            <Notice tone="danger">{error}</Notice>
-          </div>
+        {confirming && (
+          <ContractConfirmDialog
+            title="Đồng ý kết quả?"
+            confirmLabel="Đồng ý"
+            icon="check_circle"
+            successText="Đã nghiệm thu. Cảm ơn bạn."
+            formatError={errorMessage}
+            run={() => completion.mutateAsync({ requestId: request.requestId, accept: true })}
+            onClose={() => setConfirming(false)}
+          >
+            <p>Đồng ý rồi không đổi lại được.</p>
+          </ContractConfirmDialog>
         )}
       </PanelBody>
     </Panel>
@@ -466,8 +470,8 @@ export function CustomerAfterSalesRequestPage() {
               icon="cancel"
               variant="danger"
               onSubmit={async (reason) => {
-                await cancel.mutateAsync({ requestId: r.requestId, reason })
-                toast.success('Đã gửi yêu cầu huỷ.')
+                const result = await cancel.mutateAsync({ requestId: r.requestId, reason })
+                toast.success(result.status === 'CANCELLED' ? 'Đã huỷ yêu cầu.' : 'Đã gửi yêu cầu huỷ.')
               }}
               onClose={() => setDialog(null)}
             />

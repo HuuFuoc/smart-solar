@@ -30,6 +30,7 @@ import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
   useCompleteOnSiteSurveyMutation,
   useMyOnSiteSurveyQuery,
+  useOnSiteSurveyFilesBusy,
   useRemoveOnSiteSurveyFileMutation,
   useSaveOnSiteSurveyMutation,
   useStartOnSiteSurveyMutation,
@@ -216,6 +217,7 @@ function SurveyEditor({
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const dirty = formDiffers(form, survey)
   const busy = save.isPending || complete.isPending
+  const filesBusy = useOnSiteSurveyFilesBusy(appointmentId)
   const roofPhotos = survey.attachments.filter((a) => a.category === 'ROOF').length
   const catalog = useCatalogPickerQuery()
   const units = unitsOf(catalog.data?.items)
@@ -380,7 +382,13 @@ function SurveyEditor({
           </p>
         )}
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" form="onsite-survey-form" icon="save" variant="soft" disabled={busy || !dirty}>
+          <Button
+            type="submit"
+            form="onsite-survey-form"
+            icon="save"
+            variant="soft"
+            disabled={busy || filesBusy || !dirty}
+          >
             {save.isPending && !confirming ? (
               'Đang lưu…'
             ) : (
@@ -394,7 +402,7 @@ function SurveyEditor({
             icon="task_alt"
             variant="primary"
             className="flex-1 sm:ml-auto sm:flex-none"
-            disabled={busy}
+            disabled={busy || filesBusy}
             onClick={askComplete}
           >
             Hoàn thành khảo sát

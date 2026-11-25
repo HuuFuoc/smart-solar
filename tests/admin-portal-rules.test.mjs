@@ -244,6 +244,8 @@ describe('lỗi backend dùng chung', () => {
     assert.match(toApiError(409, { error: { code: 'COMMUNE_ALREADY_MAPPED' } }).message, /khu khác/)
     assert.match(toApiError(409, { error: { code: 'RAG_CONFIG_INVALID_STATE' } }).message, /đang dùng/)
     assert.match(toApiError(409, { error: { code: 'PRODUCT_IMAGE_LIMIT_REACHED' } }).message, /tối đa/)
+    // Lỗi 5xx không hiện câu tiếng Anh của server
+    assert.match(toApiError(500, { error: { code: 'X_NEW', message: 'Object reference not set' } }).message, /sự cố/)
   })
 
   test('chức năng tắt / DB thiếu migration không phải lỗi thường, đọc được danh sách migration', () => {

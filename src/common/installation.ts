@@ -156,4 +156,6 @@ export const INSTALLATION_EVENT_TYPES: Record<string, string> = {
   RETURNED_TO_REWORK: 'Quản lý trả về làm lại',
   CHECKLIST_UPDATED: 'Cập nhật checklist',
   PROJECT_CANCELLED: 'Huỷ dự án',
+  EQUIPMENT_SUBSTITUTION_APPROVED: 'Duyệt thiết bị khác hợp đồng',
+  EQUIPMENT_SUBSTITUTION_CUSTOMER_APPROVED: 'Khách đồng ý thiết bị khác hợp đồng (cách cũ)',
 }

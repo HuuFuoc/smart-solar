@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { cx } from '@/utils/cx'
 
@@ -102,6 +103,13 @@ function parseVnDate(text: string): string | null {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
+/** Vì sao không nhận ngày vừa gõ; ô quay về ngày cũ nên phải nói, nếu không người dùng lưu nhầm */
+function dateProblem(iso: string | null, min?: string, max?: string) {
+  if (!iso) return 'Ngày chưa đúng dạng dd/mm/yyyy nên chưa đổi.'
+  if (min && iso < min) return `Chọn ngày từ ${toVnDate(min)}. Ngày chưa đổi.`
+  return `Chọn ngày tới ${toVnDate(max ?? '')}. Ngày chưa đổi.`
+}
+
 // Ô ngày dạng dd/mm/yyyy, vì ô date gốc hiện theo ngôn ngữ trình duyệt (bản tiếng Anh ra mm/dd/yyyy)
 // Ô chữ để gõ ngày, icon lịch bên phải là một ô date gốc trong suốt để mở lịch của trình duyệt
 export function DateField({
@@ -145,7 +153,10 @@ export function DateField({
     if (iso && (!min || iso >= min) && (!max || iso <= max)) {
       setText(toVnDate(iso))
       if (iso !== value) onChange(iso)
-    } else setText(toVnDate(value))
+    } else {
+      toast.error(dateProblem(iso, min, max))
+      setText(toVnDate(value))
+    }
   }
 
   return (

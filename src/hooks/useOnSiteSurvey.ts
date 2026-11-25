@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { technicianJobKeys } from '@/hooks/useTechnicianJobs'
 import { uploadFile } from '@/services/fileService'
 import * as onSiteSurveyService from '@/services/onSiteSurveyService'
@@ -10,6 +10,7 @@ export const onSiteSurveyKeys = {
   all: ['onsite-survey'] as const,
   mine: (appointmentId: string) => [...onSiteSurveyKeys.all, 'mine', appointmentId] as const,
   staff: (surveyRequestId: string) => [...onSiteSurveyKeys.all, 'staff', surveyRequestId] as const,
+  files: (appointmentId: string) => [...onSiteSurveyKeys.all, 'files', appointmentId] as const,
 }
 
 /** Biên bản của lịch đã nhận; null khi kỹ thuật viên chưa bắt đầu hay lưu lần nào */
@@ -41,10 +42,11 @@ export function useStaffOnSiteSurveyQuery(surveyRequestId: string | undefined, {
 function useSurveyMutation<TVars>(
   appointmentId: string,
   mutationFn: (vars: TVars) => Promise<OnSiteSurveyView>,
-  { refreshJob = false } = {},
+  { refreshJob = false, mutationKey }: { refreshJob?: boolean; mutationKey?: readonly string[] } = {},
 ) {
   const queryClient = useQueryClient()
   return useMutation<OnSiteSurveyView, ApiError, TVars>({
+    mutationKey,
     mutationFn,
     onSuccess: (view) => queryClient.setQueryData(onSiteSurveyKeys.mine(appointmentId), view),
     onError: (error) => {
@@ -68,16 +70,27 @@ export function useSaveOnSiteSurveyMutation(appointmentId: string) {
 
 /** Tải tệp lên kho (ONSITE_SURVEY_EVIDENCE) rồi gắn vào biên bản theo loại */
 export function useAddOnSiteSurveyFileMutation(appointmentId: string) {
-  return useSurveyMutation<{ file: File; category: string }>(appointmentId, async ({ file, category }) => {
-    const registered = await uploadFile(file, 'ONSITE_SURVEY_EVIDENCE')
-    return onSiteSurveyService.addOnSiteSurveyAttachment(appointmentId, { fileId: registered.fileId, category })
-  })
+  return useSurveyMutation<{ file: File; category: string }>(
+    appointmentId,
+    async ({ file, category }) => {
+      const registered = await uploadFile(file, 'ONSITE_SURVEY_EVIDENCE')
+      return onSiteSurveyService.addOnSiteSurveyAttachment(appointmentId, { fileId: registered.fileId, category })
+    },
+    { mutationKey: onSiteSurveyKeys.files(appointmentId) },
+  )
 }
 
 export function useRemoveOnSiteSurveyFileMutation(appointmentId: string) {
-  return useSurveyMutation<string>(appointmentId, (attachmentId) =>
-    onSiteSurveyService.removeOnSiteSurveyAttachment(appointmentId, attachmentId),
+  return useSurveyMutation<string>(
+    appointmentId,
+    (attachmentId) => onSiteSurveyService.removeOnSiteSurveyAttachment(appointmentId, attachmentId),
+    { mutationKey: onSiteSurveyKeys.files(appointmentId) },
   )
+}
+
+/** Đang thêm hoặc xoá tệp: mỗi tệp làm biên bản lên bản mới, lưu số đo lúc này sẽ bị báo bản cũ */
+export function useOnSiteSurveyFilesBusy(appointmentId: string) {
+  return useIsMutating({ mutationKey: onSiteSurveyKeys.files(appointmentId) }) > 0
 }
 
 /** Bổ sung biên bản đã hoàn thành. Tệp đã tải lên kho trước (ONSITE_SURVEY_EVIDENCE), ở đây chỉ gửi fileId */
