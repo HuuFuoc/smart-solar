@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Icon } from '@/components/common/stitch-ui/Icon'
+import { Badge } from '@/components/common/ui/badge'
 import { Button, IconButton } from '@/components/common/ui/button'
 import { PageHeader } from '@/components/common/ui/page-header'
 import { Segmented } from '@/components/common/ui/segmented'
@@ -168,6 +169,7 @@ function OtherWorkOfDay({ items }: { items: WorkItem[] }) {
                   {KINDS.find((k) => k.kind === item.kind)?.label}
                 </span>
                 <span className="text-body font-semibold text-fg">{item.title}</span>
+                <Badge tone={item.statusTone}>{item.statusLabel}</Badge>
               </p>
               <p className="tnum text-meta text-fg-2">
                 {formatTime(item.startsAt)} đến {formatTime(item.endsAt)}

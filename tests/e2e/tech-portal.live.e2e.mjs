@@ -81,7 +81,7 @@ describe('cổng kỹ thuật viên với backend thật', { skip }, () => {
 
   test('biên bản đã hoàn thành: mở form bổ sung, lý do trống bị chặn ở máy, không gửi', async () => {
     await page.goto(`${baseUrl}/tech/jobs`, { waitUntil: 'domcontentloaded' })
-    await page.getByRole('tab', { name: /^Đã qua/ }).click()
+    await page.getByRole('tab', { name: /^Đã khảo sát/ }).click()
     const link = page.getByRole('link', { name: 'Xem chi tiết' }).first()
     if ((await link.count()) === 0) return
     await link.click()

@@ -35,7 +35,7 @@ import { ROUTES, withId } from '@/routes/paths'
 // nào đang chờ tải trang ký. Ưu tiên đọc trên điện thoại: một cột, việc cần làm trước, lịch 7 ngày dạng danh sách
 
 type Kind = 'survey' | 'installation' | 'service'
-type Work = { id: string; kind: Kind; title: string; startsAt: string; endsAt: string; href: string }
+type Work = { id: string; kind: Kind; title: string; startsAt: string; endsAt: string; href: string; done: boolean }
 
 const KIND_SERIES: { key: Kind; label: string; color: string }[] = [
   { key: 'survey', label: 'Khảo sát', color: SERIES[0] },
@@ -92,6 +92,7 @@ export function TechDashboardPage() {
           startsAt: a.startsAt,
           endsAt: a.endsAt,
           href: withId(ROUTES.tech.job, a.appointmentId),
+          done: a.status === 'COMPLETED',
         })),
       ...installations.map((p) => ({
         id: p.projectId,
@@ -100,6 +101,7 @@ export function TechDashboardPage() {
         startsAt: p.startsAt,
         endsAt: p.endsAt,
         href: withId(ROUTES.tech.installation, p.projectId),
+        done: p.status === 'COMPLETED',
       })),
       ...visits.map((v) => ({
         id: v.visitId,
@@ -108,6 +110,7 @@ export function TechDashboardPage() {
         startsAt: v.startsAt,
         endsAt: v.endsAt,
         href: withId(ROUTES.tech.afterSalesVisit, v.visitId),
+        done: v.status === 'REPORTED',
       })),
   ]
 
@@ -128,7 +131,7 @@ export function TechDashboardPage() {
 
   const next7 = Array.from({ length: 7 }, (_, i) => addDays(today, i))
   const agenda: TimelineItem[] = work
-    .filter((w) => new Date(w.endsAt).getTime() >= now)
+    .filter((w) => !w.done && new Date(w.endsAt).getTime() >= now)
     .map((w) => ({
       key: `${w.kind}-${w.id}`,
       label: w.title,

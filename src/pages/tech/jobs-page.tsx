@@ -39,13 +39,14 @@ type StatusFilter = 'all' | 'overdue' | 'upcoming' | 'in_progress' | 'completed'
 
 const PAGE_SIZE = 5
 
-/** Lịch chưa kết thúc hoặc quá giờ mà chưa khảo sát */
-const isActive = (a: TechnicianAppointmentListItem, now: number) => a.isOverdue || new Date(a.endsAt).getTime() >= now
+/** Còn phải làm: theo trạng thái, không theo giờ hẹn (làm xong sớm thì hết việc ngay) */
+const isActive = (a: TechnicianAppointmentListItem) => a.status !== 'COMPLETED'
 
 function matchesStatus(item: TechnicianAppointmentListItem, filter: StatusFilter, now: number) {
   if (filter === 'all') return true
   if (filter === 'overdue') return item.isOverdue
-  if (filter === 'completed') return item.status === 'COMPLETED'
+  if (item.status === 'COMPLETED') return filter === 'completed'
+  if (filter === 'completed') return false
   const start = new Date(item.startsAt).getTime()
   const end = new Date(item.endsAt).getTime()
   if (filter === 'in_progress') return now >= start && now < end
@@ -227,7 +228,7 @@ function DaySections<T extends { startsAt: string; appointmentId: string }>({
 }
 
 // Lịch khảo sát của kỹ thuật viên: chờ nhận (trong khu vực, chưa ai nhận), đã nhận (sắp tới hoặc quá giờ chưa khảo
-// sát), đã qua, khẩn cấp (quá giờ chưa khảo sát). Lọc, sắp xếp, phân trang ở máy vì backend trả cả danh sách
+// sát), đã khảo sát, khẩn cấp (quá giờ chưa khảo sát). Lọc, sắp xếp, phân trang ở máy vì backend trả cả danh sách
 export function TechJobsPage() {
   const open = useOpenAppointmentsQuery()
   const mine = useMyAppointmentsQuery()
@@ -255,14 +256,14 @@ export function TechJobsPage() {
       if (!matchesJob(job, search, date, time)) continue
       if (job.isOverdue) out.urgent.push(job)
       if (!matchesStatus(job, statusFilter, now)) continue
-      out[isActive(job, now) ? 'upcoming' : 'past'].push(job)
+      out[isActive(job) ? 'upcoming' : 'past'].push(job)
     }
     return out
   }, [mine.data, search, date, time, statusFilter, now])
 
   const canTake = (open.data ?? []).filter((j) => j.canAccept).length
   const overdue = (mine.data ?? []).filter((j) => j.isOverdue).length
-  const toDo = (mine.data ?? []).filter((j) => isActive(j, now)).length
+  const toDo = (mine.data ?? []).filter(isActive).length
   const tab: Tab = picked ?? (canTake > 0 ? 'open' : 'upcoming')
   const hasFilter = search.trim() !== '' || date !== '' || time !== '' || statusFilter !== 'all'
 
@@ -400,7 +401,7 @@ export function TechJobsPage() {
             chips={[
               { value: 'open', label: 'Chờ nhận', count: openRows.length },
               { value: 'upcoming', label: 'Đã nhận', count: mineRows.upcoming.length },
-              { value: 'past', label: 'Đã qua', count: mineRows.past.length },
+              { value: 'past', label: 'Đã khảo sát', count: mineRows.past.length },
               { value: 'urgent', label: 'Khẩn cấp', count: mineRows.urgent.length },
             ]}
           />
