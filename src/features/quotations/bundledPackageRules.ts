@@ -80,12 +80,15 @@ type Editable = Pick<QuotationView, 'status' | 'origin' | 'servicePackages' | 'p
 
 /**
  * Gói đi kèm sửa được chỉ trên giỏ nháp của kỹ thuật viên, khi máy chủ có gói đi kèm. Chọn / đổi gói cần số tấm pin hợp lệ; bỏ gói
- * thì luôn được (để gỡ được gói trước khi bỏ tấm pin cuối cùng). Báo giá đã chốt, đã đồng ý, đã đóng chỉ xem
+ * thì luôn được (để gỡ được gói trước khi bỏ tấm pin cuối cùng). Báo giá đã chốt, đã đồng ý, đã đóng chỉ xem.
+ * `serverMissing`: giỏ nháp của kỹ thuật viên nhưng máy chủ chưa có gói đi kèm (không trả mảng `servicePackages`); khối gói vẫn hiện
+ * để kỹ thuật viên biết chỗ chọn gói và lý do chưa chọn được, thay vì biến mất
  */
 export function packageEditing(q: Editable) {
-  const editable = q.status === 'DRAFT' && q.origin === 'TECHNICIAN' && supportsServicePackages(q)
+  const draft = q.status === 'DRAFT' && q.origin === 'TECHNICIAN'
+  const editable = draft && supportsServicePackages(q)
   const problem = editable ? panelQuantityProblem(q) : null
-  return { editable, canSelect: editable && problem === null, problem }
+  return { editable, canSelect: editable && problem === null, problem, serverMissing: draft && !editable }
 }
 
 /** Gói chọn được trong hộp chọn: đang bán, tính theo tấm pin và đúng loại (danh mục của kỹ thuật viên đã lọc, kiểm thêm cho chắc) */

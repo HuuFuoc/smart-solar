@@ -241,37 +241,36 @@ function CartEditor({
           }
         />
       ) : (
-        <>
-          <QuotationLines
-            quotation={q}
-            flaggedLineIds={flagged}
-            actions={(line) => (
-              <>
-                <IconButton
-                  icon="edit"
-                  label={`Đổi số lượng ${line.name}`}
-                  tooltip="Đổi số lượng"
-                  variant="soft"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => setDialog({ line })}
-                />
-                <IconButton
-                  icon="delete"
-                  label={`Bỏ ${line.name}`}
-                  tooltip="Bỏ dòng"
-                  variant="danger-quiet"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => void removeLine(line)}
-                />
-              </>
-            )}
-          />
-          <BundledPackagesSection quotation={q} editable flaggedKinds={flaggedKinds} />
-          <QuotationPricingSummary quotation={q} className="ml-auto" />
-        </>
+        <QuotationLines
+          quotation={q}
+          flaggedLineIds={flagged}
+          actions={(line) => (
+            <>
+              <IconButton
+                icon="edit"
+                label={`Đổi số lượng ${line.name}`}
+                tooltip="Đổi số lượng"
+                variant="soft"
+                size="sm"
+                disabled={busy}
+                onClick={() => setDialog({ line })}
+              />
+              <IconButton
+                icon="delete"
+                label={`Bỏ ${line.name}`}
+                tooltip="Bỏ dòng"
+                variant="danger-quiet"
+                size="sm"
+                disabled={busy}
+                onClick={() => void removeLine(line)}
+              />
+            </>
+          )}
+        />
       )}
+      {/* Gói dịch vụ đi kèm luôn hiện trên giỏ nháp, kể cả khi chưa có dòng nào, để kỹ thuật viên thấy chỗ chọn gói */}
+      <BundledPackagesSection quotation={q} editable flaggedKinds={flaggedKinds} />
+      {q.lines.length > 0 && <QuotationPricingSummary quotation={q} className="ml-auto" />}
       {q.lines.length > 0 && missing.length > 0 && (
         <Notice tone="warn" title="Báo giá chưa có đủ hạng mục thường gặp">
           Chưa có: {missing.map((type) => lineTypeLabel({ description: type }) ?? type).join(', ')}. Vẫn gửi được nếu

@@ -229,7 +229,7 @@ function PackageForm({
               Không đổi được sau khi tạo.{' '}
               {isPerPanelUnit(values.pricingUnit)
                 ? 'Gói theo tấm pin bán kèm báo giá lắp đặt và mua riêng cho từng tấm sau bàn giao; lượt bảo trì và hạn mức vẫn tính theo kỳ, không nhân theo số tấm.'
-                : 'Một giá cho cả công trình, như các gói hiện có.'}
+                : 'Một giá cho cả công trình, như các gói hiện có. Không bán kèm báo giá lắp đặt.'}
             </p>
           </div>
         )}

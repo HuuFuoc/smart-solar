@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button, IconButton } from '@/components/common/ui/button'
+import { Notice } from '@/components/common/ui/lists'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import {
   disasterTypesLabel,
@@ -63,12 +64,14 @@ export function BundledPackagesSection({
   const [picking, setPicking] = useState<BundledKind | null>(null)
   const editing = packageEditing(q)
   const canEdit = editable && editing.editable
+  // Giỏ nháp luôn có khối gói, kể cả khi máy chủ chưa có chức năng: nút chọn gói tắt và ghi rõ lý do
+  const cart = editable && (editing.editable || editing.serverMissing)
   const packages = packagesInKindOrder(quotationPackages(q))
-  if (!canEdit && packages.length === 0) return null
+  if (!cart && packages.length === 0) return null
 
   const money = (amount: number) => formatQuotationMoney(amount, q.currency)
   const panels = validPanelQuantity(q)
-  const rows: { kind: string; pkg: QuotationServicePackageView | null }[] = canEdit
+  const rows: { kind: string; pkg: QuotationServicePackageView | null }[] = cart
     ? BUNDLED_KINDS.map((kind) => ({ kind, pkg: packageOfKind(q, kind) }))
     : packages.map((pkg) => ({ kind: pkg.kind, pkg }))
 
@@ -108,15 +111,20 @@ export function BundledPackagesSection({
         )}
       </div>
       {canEdit && !editing.canSelect && <p className="text-meta text-fg-2">{panelProblemText(editing.problem)}</p>}
+      {cart && editing.serverMissing && (
+        <Notice tone="warn" title="Chưa chọn được gói dịch vụ">
+          Máy chủ hệ thống chưa được cập nhật chức năng gói dịch vụ đi kèm báo giá. Báo quản trị cập nhật máy chủ rồi
+          tải lại trang.
+        </Notice>
+      )}
       <Table stack>
         <thead>
           <tr>
             <Th>Gói</Th>
-            <Th className="text-right">Đơn giá/tấm pin</Th>
             <Th className="text-right">Số tấm pin</Th>
-            <Th>Thời hạn</Th>
+            <Th className="text-right">Đơn giá</Th>
             <Th className="text-right">Thành tiền</Th>
-            {canEdit && (
+            {cart && (
               <Th>
                 <span className="sr-only">Thao tác</span>
               </Th>
@@ -128,13 +136,20 @@ export function BundledPackagesSection({
             const flagged = flaggedKinds.includes(kind)
             return (
               <Tr key={kind}>
-                {/* Loại chưa chọn gói: một ô trải hết các cột số để không lặp bốn dấu gạch */}
-                <Td label="Gói" colSpan={pkg ? undefined : 5}>
+                {/* Loại chưa chọn gói: một ô trải hết các cột số để không lặp ba dấu gạch */}
+                <Td label="Gói" colSpan={pkg ? undefined : 4}>
                   <p className="font-medium text-fg">{pkg ? pkg.packageName : bundledKindLabel(kind)}</p>
                   <p className="text-meta text-fg-2">
-                    {/* Giỏ nháp: cột thao tác chiếm chỗ nên chỉ ghi loại gói; quyền lợi xem ở hộp chọn gói và màn chỉ xem */}
+                    {/* Thời hạn ghi ở dòng phụ cho bảng đủ hẹp để nằm trong khung báo giá. Giỏ nháp: cột thao tác chiếm chỗ nên
+                    không kể quyền lợi; quyền lợi xem ở hộp chọn gói và màn chỉ xem */}
                     {pkg
-                      ? [bundledKindLabel(kind), canEdit ? null : benefitLine(pkg)].filter(Boolean).join(', ')
+                      ? [
+                          bundledKindLabel(kind),
+                          `thời hạn ${formatDurationMonths(pkg.durationMonths)}`,
+                          canEdit ? null : benefitLine(pkg),
+                        ]
+                          .filter(Boolean)
+                          .join(', ')
                       : 'Chưa chọn'}
                   </p>
                   {flagged && (
@@ -143,23 +158,21 @@ export function BundledPackagesSection({
                 </Td>
                 {pkg && (
                   <>
-                    <Td label="Đơn giá/tấm pin" className="tnum whitespace-nowrap lg:text-right">
-                      {money(pkg.unitPrice)}
-                    </Td>
                     <Td label="Số tấm pin" className="tnum whitespace-nowrap lg:text-right">
                       {pkg.quantity.toLocaleString('vi-VN')} tấm
                     </Td>
-                    <Td label="Thời hạn" className="whitespace-nowrap">
-                      {formatDurationMonths(pkg.durationMonths)}
+                    <Td label="Đơn giá" className="tnum lg:text-right">
+                      <span className="whitespace-nowrap">{money(pkg.unitPrice)}</span>
+                      <span className="block text-meta whitespace-nowrap text-fg-3">mỗi tấm pin</span>
                     </Td>
                     <Td label="Thành tiền" className="tnum font-medium whitespace-nowrap text-fg lg:text-right">
                       {money(pkg.totalAmount)}
                     </Td>
                   </>
                 )}
-                {canEdit && (
+                {cart && (
                   <Td>
-                    <div className="flex flex-wrap gap-2 lg:flex-nowrap lg:justify-end">
+                    <div className="flex flex-wrap gap-2 lg:justify-end">
                       {pkg ? (
                         <>
                           <Button

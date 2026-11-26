@@ -76,8 +76,8 @@ const quotation = (over = {}) => ({
 })
 
 /** Máy chủ cũ (trước 763cb0b): không có trường gói nào */
-const legacyQuotation = () => {
-  const q = quotation()
+const legacyQuotation = (over = {}) => {
+  const q = quotation(over)
   for (const key of [
     'installationTotal',
     'panelQuantity',
@@ -190,7 +190,12 @@ describe('Số tấm pin theo backend', () => {
 
 describe('Sửa gói đi kèm chỉ trên giỏ nháp của kỹ thuật viên', () => {
   test('Giỏ nháp có 10 tấm pin: sửa được, chọn được', () => {
-    assert.deepEqual(packageEditing(quotation()), { editable: true, canSelect: true, problem: null })
+    assert.deepEqual(packageEditing(quotation()), {
+      editable: true,
+      canSelect: true,
+      problem: null,
+      serverMissing: false,
+    })
   })
 
   test('Báo giá đã chốt / đã đồng ý / đã đóng chỉ xem (chuyển trạng thái không hợp lệ bị chặn ở FE, backend 409 QUOTATION_NOT_DRAFT)', () => {
@@ -202,15 +207,28 @@ describe('Sửa gói đi kèm chỉ trên giỏ nháp của kỹ thuật viên',
     assert.equal(packageEditing(quotation({ origin: 'SALES' })).editable, false)
   })
 
-  test('Máy chủ cũ (không có mảng gói) thì không hiện nút chọn gói', () => {
-    assert.equal(packageEditing(legacyQuotation()).editable, false)
+  test('Máy chủ cũ (không có mảng gói): giỏ nháp vẫn có khối gói nhưng không chọn được, ghi rõ máy chủ chưa có chức năng', () => {
+    const e = packageEditing(legacyQuotation())
+    assert.equal(e.editable, false)
+    assert.equal(e.canSelect, false)
+    assert.equal(e.serverMissing, true)
+  })
+
+  test('Báo giá đã chốt hoặc của kinh doanh trên máy chủ cũ: không báo thiếu chức năng (không phải giỏ nháp kỹ thuật viên)', () => {
+    assert.equal(packageEditing(legacyQuotation({ status: 'ISSUED' })).serverMissing, false)
+    assert.equal(packageEditing(legacyQuotation({ origin: 'SALES' })).serverMissing, false)
   })
 
   test('Không có tấm pin hợp lệ: vẫn sửa được (bỏ gói) nhưng không chọn / đổi được', () => {
     const q = quotation({ panelQuantity: null, lines: [inverterLine] })
-    assert.deepEqual(packageEditing(q), { editable: true, canSelect: false, problem: 'none' })
+    assert.deepEqual(packageEditing(q), { editable: true, canSelect: false, problem: 'none', serverMissing: false })
     const fractional = quotation({ panelQuantity: null, lines: [panelLine(9.5)] })
-    assert.deepEqual(packageEditing(fractional), { editable: true, canSelect: false, problem: 'fractional' })
+    assert.deepEqual(packageEditing(fractional), {
+      editable: true,
+      canSelect: false,
+      problem: 'fractional',
+      serverMissing: false,
+    })
   })
 })
 

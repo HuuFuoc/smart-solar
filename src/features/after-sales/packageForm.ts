@@ -1,10 +1,5 @@
 import { isMaintenance } from '@/features/after-sales/afterSalesDisplay'
-import {
-  PER_INSTALLATION_LEGACY,
-  isPerPanelUnit,
-  pricingUnitOf,
-  withPricingUnit,
-} from '@/features/after-sales/packagePricing'
+import { PER_PANEL, isPerPanelUnit, pricingUnitOf, withPricingUnit } from '@/features/after-sales/packagePricing'
 import type { PackageRequest } from '@/types/req/adminAfterSalesReq'
 import type { PackageView, ServicePackageKind } from '@/types/res/customerAfterSalesRes'
 
@@ -56,8 +51,9 @@ export function emptyPackage(kind: ServicePackageKind): PackageFormValues {
     termLimit: '',
     imageUrl: '',
     isActive: true,
-    // Mặc định như backend khi không gửi: gói theo hệ thống
-    pricingUnit: PER_INSTALLATION_LEGACY,
+    // Gói mới mặc định theo tấm pin: chỉ gói theo tấm pin bán kèm báo giá lắp đặt (danh mục của kỹ thuật viên bỏ gói theo hệ thống).
+    // Form luôn gửi đơn vị khi tạo nên không phụ thuộc mặc định "theo hệ thống" của backend; quản trị vẫn chọn lại được
+    pricingUnit: PER_PANEL,
   }
 }
 
