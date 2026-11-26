@@ -28,8 +28,9 @@ const range = (s: SubscriptionView) => `${formatMoment(s.startsAt)} đến ${for
 // Một câu về kỳ của gói, chỉ dùng ngày backend đã ghi; chưa có ngày thì nói điều kiện còn thiếu
 function termText(s: SubscriptionView) {
   switch (s.status) {
+    // Danh sách gói không cho biết cách trả; đơn tiền mặt không hết hạn khi còn chờ Smart Solar xác nhận đã thu
     case 'AWAITING_PAYMENT':
-      return `Thanh toán trước ${formatMoment(s.checkoutExpiresAt)}.`
+      return `Trả qua PayOS trước ${formatMoment(s.checkoutExpiresAt)}. Đã chọn tiền mặt thì chờ Smart Solar xác nhận đã thu.`
     case 'CHECKOUT_EXPIRED':
       return 'Link thanh toán đã hết hạn. Mua lại nếu bạn vẫn cần gói.'
     case 'PAID':

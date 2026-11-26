@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Icon } from '@/components/common/stitch-ui/Icon'
 import { Button } from '@/components/common/ui/button'
 import { FaultReportFlow } from '@/features/after-sales/FaultReportFlow'
@@ -15,11 +15,25 @@ import {
   type ProjectFilterStatus,
   type ProjectTimeSort,
 } from '@/features/installations/customerInstallationDisplay'
+import { readContractSnapshot } from '@/features/payment-plan/contractSnapshot'
+import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useMyInstallationsQuery } from '@/hooks/useCustomerInstallations'
 import { cx } from '@/utils/cx'
 
 export function CustomerProjectsPage() {
   const query = useMyInstallationsQuery()
+  const contracts = useMyContractsQuery()
+  // Dự án không có tên công trình; tên nằm trong bản chụp khách của hợp đồng
+  const names = useMemo(
+    () =>
+      new Map(
+        (contracts.data ?? []).flatMap((c) => {
+          const name = readContractSnapshot(null, c.customerSnapshot).customer.propertyName
+          return name ? [[c.contractId, name] as const] : []
+        }),
+      ),
+    [contracts.data],
+  )
   const [statusFilter, setStatusFilter] = useState<ProjectFilterStatus>('ALL')
   const [search, setSearch] = useState('')
   const [timeSort, setTimeSort] = useState<ProjectTimeSort>('ALL')
@@ -146,9 +160,9 @@ export function CustomerProjectsPage() {
                 <PagedList items={displayedItems} noun="công trình">
                   {(pageItems) =>
                     viewMode === 'table' ? (
-                      <CustomerInstallationTable items={pageItems} />
+                      <CustomerInstallationTable items={pageItems} names={names} />
                     ) : (
-                      <CustomerInstallationGrid items={pageItems} />
+                      <CustomerInstallationGrid items={pageItems} names={names} />
                     )
                   }
                 </PagedList>

@@ -33,7 +33,7 @@ export const loginContent = {
   remember: 'Ghi nhớ đăng nhập trên thiết bị này',
   submit: 'Đăng nhập',
   submitting: 'Đang đăng nhập...',
-  errorTitle: 'Lỗi xác thực thông tin',
+  errorTitle: 'Chưa đăng nhập được',
   errorMessage: 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.',
   notVerifiedLink: 'Tài khoản chưa xác thực email? Sang trang xác thực',
   quickTitle: 'Thử nhanh theo các vai trò:',

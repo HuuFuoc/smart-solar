@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { Button } from '@/components/common/ui/button'
 import { FormActions } from '@/components/common/ui/form-actions'
 import { Checkbox, Field, Input, Select, Textarea } from '@/components/common/ui/field'
@@ -15,6 +14,7 @@ import {
   REPORT_MAX,
   type ItemDraft,
 } from '@/features/after-sales/technicianVisitRules'
+import { ContractConfirmDialog } from '@/features/contracts/ContractConfirmDialog'
 import { formatTime } from '@/features/scheduling/schedulingDisplay'
 import { useInspectionReportMutation, useWorkReportMutation } from '@/hooks/useTechnicianAfterSales'
 import { errorMessage } from '@/services/api/errors'
@@ -41,27 +41,19 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
   const [noFault, setNoFault] = useState(false)
   const [stayOnSite, setStayOnSite] = useState(false)
   const [items, setItems] = useState<ItemDraft[]>([emptyItemDraft()])
+  const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const setItem = (index: number, change: Partial<ItemDraft>) =>
     setItems((all) => all.map((item, i) => (i === index ? { ...item, ...change } : item)))
 
-  async function submit() {
-    const draft = { report, noFault, stayOnSite, items }
+  const draft = { report, noFault, stayOnSite, items }
+  const body = inspectionBody(draft)
+
+  function ask() {
     const problem = inspectionError(draft)
-    if (problem) return setError(problem)
-    setError(null)
-    try {
-      const body = inspectionBody(draft)
-      await send.mutateAsync({ visitId: visit.visitId, body })
-      toast.success(
-        body.stayOnSite
-          ? 'Đã gửi kết quả kiểm tra. Chờ tại công trình: được duyệt và thanh toán kịp thì bấm Sửa luôn.'
-          : 'Đã gửi kết quả kiểm tra.',
-      )
-    } catch (e) {
-      setError(errorMessage(e))
-    }
+    setError(problem)
+    if (!problem) setConfirming(true)
   }
 
   return (
@@ -155,10 +147,27 @@ export function InspectionReportForm({ visit }: { visit: TechnicianVisitView }) 
       )}
       <ErrorNotice message={error} />
       <FormActions>
-        <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
-          {send.isPending ? 'Đang gửi…' : 'Gửi kết quả kiểm tra'}
+        <Button icon="send" variant="primary" disabled={send.isPending} onClick={ask}>
+          Gửi kết quả kiểm tra
         </Button>
       </FormActions>
+      {confirming && (
+        <ContractConfirmDialog
+          title="Gửi kết quả kiểm tra?"
+          confirmLabel="Gửi"
+          icon="send"
+          successText={
+            body.stayOnSite
+              ? 'Đã gửi kết quả kiểm tra. Chờ tại công trình: được duyệt và thanh toán kịp thì bấm Sửa luôn.'
+              : 'Đã gửi kết quả kiểm tra.'
+          }
+          formatError={errorMessage}
+          run={() => send.mutateAsync({ visitId: visit.visitId, body })}
+          onClose={() => setConfirming(false)}
+        >
+          <p>{noFault ? 'Không phát hiện lỗi.' : `${items.length} hạng mục hỏng.`} Gửi rồi không sửa được.</p>
+        </ContractConfirmDialog>
+      )}
     </div>
   )
 }
@@ -172,34 +181,33 @@ export function WorkReportForm({ visit }: { visit: TechnicianVisitView }) {
   const [report, setReport] = useState('')
   const [results, setResults] = useState<Record<string, ResultDraft>>({})
   const [findingNote, setFindingNote] = useState('')
+  const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const resultOf = (itemId: string) => results[itemId] ?? { workResult: '', partsUsed: '' }
   const setResult = (itemId: string, change: Partial<ResultDraft>) =>
     setResults((all) => ({ ...all, [itemId]: { ...resultOf(itemId), ...change } }))
 
-  async function submit() {
+  function ask() {
     if (!report.trim()) return setError('Ghi việc bạn đã làm.')
     setError(null)
-    try {
-      await send.mutateAsync({
-        visitId: visit.visitId,
-        body: {
-          report: report.trim(),
-          results: authorized.map((item) => ({
-            itemId: item.itemId,
-            workResult: resultOf(item.itemId).workResult.trim() || null,
-            partsUsed: resultOf(item.itemId).partsUsed.trim() || null,
-          })),
-          replacements: [],
-          findingNote: findingNote.trim() || null,
-        },
-      })
-      toast.success('Đã gửi báo cáo. Khách sẽ nghiệm thu.')
-    } catch (e) {
-      setError(errorMessage(e))
-    }
+    setConfirming(true)
   }
+
+  const submit = () =>
+    send.mutateAsync({
+      visitId: visit.visitId,
+      body: {
+        report: report.trim(),
+        results: authorized.map((item) => ({
+          itemId: item.itemId,
+          workResult: resultOf(item.itemId).workResult.trim() || null,
+          partsUsed: resultOf(item.itemId).partsUsed.trim() || null,
+        })),
+        replacements: [],
+        findingNote: findingNote.trim() || null,
+      },
+    })
 
   return (
     <div className="space-y-4">
@@ -254,10 +262,23 @@ export function WorkReportForm({ visit }: { visit: TechnicianVisitView }) {
       </Field>
       <ErrorNotice message={error} />
       <FormActions>
-        <Button icon="send" variant="primary" disabled={send.isPending} onClick={() => void submit()}>
-          {send.isPending ? 'Đang gửi…' : 'Gửi báo cáo'}
+        <Button icon="send" variant="primary" disabled={send.isPending} onClick={ask}>
+          Gửi báo cáo
         </Button>
       </FormActions>
+      {confirming && (
+        <ContractConfirmDialog
+          title="Gửi báo cáo?"
+          confirmLabel="Gửi"
+          icon="send"
+          successText="Đã gửi báo cáo. Khách sẽ nghiệm thu."
+          formatError={errorMessage}
+          run={submit}
+          onClose={() => setConfirming(false)}
+        >
+          <p>Gửi rồi không sửa được.</p>
+        </ContractConfirmDialog>
+      )}
     </div>
   )
 }

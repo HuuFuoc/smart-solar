@@ -2,7 +2,6 @@ import {
   INSTALLATION_FEASIBILITIES,
   ONSITE_ATTACHMENT_CATEGORIES,
   ONSITE_OBSTACLE_KINDS,
-  ONSITE_SURVEY_LIMITS,
   ONSITE_SURVEY_STATUSES,
   ROOF_CONDITIONS,
 } from '@/common/onsiteSurvey'
@@ -28,13 +27,6 @@ export function feasibilityTone(value: string | null | undefined): Tone {
   if (value === 'NOT_FEASIBLE') return 'danger'
   if (value === 'FEASIBLE_WITH_CONDITIONS') return 'warn'
   return 'ok'
-}
-
-/** Giờ sớm nhất bấm được "Bắt đầu khảo sát" (backend vẫn kiểm lại theo cài đặt của quản trị) */
-export function surveyStartOpensAt(startsAt: string) {
-  // `?.` vì unit test chạy bằng node, không có import.meta.env
-  if (import.meta.env?.DEV && import.meta.env?.VITE_SKIP_SURVEY_START_WINDOW === 'true') return new Date(0)
-  return new Date(new Date(startsAt).getTime() - ONSITE_SURVEY_LIMITS.earlyStartMinutes * 60_000)
 }
 
 /** Tên ô theo tên trường backend ghi trong `changes` của một lần bổ sung */

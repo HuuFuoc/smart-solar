@@ -154,7 +154,9 @@ export function VerifyEmailPage() {
   return (
     <AuthCard className="items-center text-center">
       <h1 className="mb-1 text-headline-xl text-on-surface">{verifyContent.title}</h1>
-      <p className="mb-space-md max-w-md text-body-lg text-on-surface-variant">{verifyContent.description}</p>
+      {emailParam && (
+        <p className="mb-space-md max-w-md text-body-lg text-on-surface-variant">{verifyContent.description}</p>
+      )}
 
       {/* Không có ?email thì hỏi email để gửi lại */}
       {emailParam ? (

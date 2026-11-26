@@ -10,6 +10,7 @@ import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ProgressTracker, type TrackerNext, type TrackerStep } from '@/components/common/ui/progress-tracker'
 import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { usePageCrumb } from '@/components/layout/page-crumb'
+import { AssetIdentity } from '@/features/after-sales/AssetIdentity'
 import { PhotoUpload } from '@/features/after-sales/PhotoUpload'
 import { ReasonDialog } from '@/features/after-sales/ReasonDialog'
 import { ServiceItemList } from '@/features/after-sales/ServiceRequestParts'
@@ -426,7 +427,9 @@ export function TechAfterSalesVisitPage() {
                           <p className="text-body font-bold text-fg">
                             {assetTypeLabel(asset.assetType)} {asset.manufacturer} {asset.model}
                           </p>
-                          <p className="tnum mt-0.5 text-meta text-fg-2">Serial: {asset.serialNumber}</p>
+                          <p className="mt-0.5 text-meta text-fg-2">
+                            <AssetIdentity asset={asset} />
+                          </p>
                           {asset.positionCode && (
                             <span className="sv-tag mt-2" data-tone="neutral">
                               Vị trí: {asset.positionCode}

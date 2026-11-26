@@ -31,7 +31,6 @@ import {
 } from '@/features/scheduling/schedulingDisplay'
 import { OnSiteSurveyPanel } from '@/features/onsite-survey/OnSiteSurveyPanel'
 import { TechnicianQuotationPanel } from '@/features/quotations/TechnicianQuotationPanel'
-import { surveyStartOpensAt } from '@/features/onsite-survey/onSiteSurveyDisplay'
 import { useMyOnSiteSurveyQuery, useStartOnSiteSurveyMutation } from '@/hooks/useOnSiteSurvey'
 import { useMyAppointmentQuery, useReleaseAppointmentMutation } from '@/hooks/useTechnicianJobs'
 import { ROUTES } from '@/routes/paths'
@@ -130,8 +129,7 @@ export function TechJobPage() {
         const sim = job.selectedSimulation
         const map = addressMapUrl(formatAddress(p))
         const progress = technicianProgressMeta(job, now)
-        const opensAt = surveyStartOpensAt(job.startsAt)
-        const tooEarly = now < opensAt.getTime()
+        const upcoming = now < new Date(job.startsAt).getTime()
 
         const w = weekdayOf(job.startsAt)
         const dayStyle = DAY_STYLES[w]
@@ -160,7 +158,6 @@ export function TechJobPage() {
           }
         }
 
-        const opensAtText = `${vnDate(opensAt.toISOString()).split('-').reverse().join('/')} ${formatTime(opensAt.toISOString())}`
         const overdue = progress.tone === 'danger'
         const steps: TrackerStep[] = [
           { label: 'Nhận lịch', detail: formatMoment(job.acceptedAt ?? job.assignedAt), state: 'done' },
@@ -179,18 +176,12 @@ export function TechJobPage() {
                 title: 'Nhập số đo, chụp ảnh mái rồi hoàn thành khảo sát',
                 action: { label: 'Tới biên bản', icon: 'edit_note', target: 'survey-section' },
               }
-            : tooEarly
-              ? {
-                  tone: 'info',
-                  title: `Bắt đầu khảo sát được từ ${opensAtText}`,
-                  body: 'Gọi khách trước khi tới ít nhất 15 phút và mang theo số liệu khách khai để đối chiếu.',
-                }
-              : {
-                  tone: 'danger',
-                  title: overdue ? 'Đã qua giờ hẹn mà chưa bắt đầu khảo sát' : 'Tới công trình và bắt đầu khảo sát',
-                  body: 'Gọi khách trước khi tới ít nhất 15 phút và mang theo số liệu khách khai để đối chiếu.',
-                  action: { label: 'Tới khối khảo sát', icon: 'play_arrow', target: 'survey-section' },
-                }
+            : {
+                tone: upcoming ? 'info' : 'danger',
+                title: overdue ? 'Đã qua giờ hẹn mà chưa bắt đầu khảo sát' : 'Tới công trình và bắt đầu khảo sát',
+                body: 'Gọi khách trước khi tới ít nhất 15 phút và mang theo số liệu khách khai để đối chiếu.',
+                action: { label: 'Tới khối khảo sát', icon: 'play_arrow', target: 'survey-section' },
+              }
 
         return (
           <div className="space-y-6">
@@ -242,19 +233,15 @@ export function TechJobPage() {
                         ảnh mái rồi bấm Hoàn thành khảo sát.
                       </p>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                        {/* Không tự khoá theo giờ: số phút được bắt đầu sớm do quản trị đặt, backend kiểm khi bấm */}
                         <Button
                           variant="primary"
                           icon="play_arrow"
-                          disabled={tooEarly || startMutation.isPending}
+                          disabled={startMutation.isPending}
                           onClick={() => void handleStartSurvey()}
                         >
                           {startMutation.isPending ? 'Đang bắt đầu…' : 'Bắt đầu khảo sát'}
                         </Button>
-                        {tooEarly && (
-                          <span className="tnum text-meta text-fg-2">
-                            Bắt đầu được từ {opensAtText}, 2 giờ trước giờ hẹn
-                          </span>
-                        )}
                       </div>
                     </PanelBody>
                     <PanelFooter className="justify-between border-t border-line pt-4">

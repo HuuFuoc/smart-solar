@@ -15,7 +15,7 @@ import { BOM_ERROR_KEY, FIELD_ERROR_CODES, unitsOf } from '@/features/onsite-sur
 import { OnSiteSurveyFiles, type AttachmentUrlFetcher } from '@/features/onsite-survey/OnSiteSurveyFiles'
 import { OnSiteSurveySummary } from '@/features/onsite-survey/OnSiteSurveySummary'
 import { OnSiteSurveyUpload } from '@/features/onsite-survey/OnSiteSurveyUpload'
-import { onSiteSurveyStatusMeta, surveyStartOpensAt } from '@/features/onsite-survey/onSiteSurveyDisplay'
+import { onSiteSurveyStatusMeta } from '@/features/onsite-survey/onSiteSurveyDisplay'
 import {
   formDiffers,
   clearTouchedErrors,
@@ -30,11 +30,11 @@ import { formatMoment } from '@/features/scheduling/schedulingDisplay'
 import {
   useCompleteOnSiteSurveyMutation,
   useMyOnSiteSurveyQuery,
+  useOnSiteSurveyFilesBusy,
   useRemoveOnSiteSurveyFileMutation,
   useSaveOnSiteSurveyMutation,
   useStartOnSiteSurveyMutation,
 } from '@/hooks/useOnSiteSurvey'
-import { useNow } from '@/hooks/useNow'
 import { getMyOnSiteSurveyAttachmentUrl } from '@/services/onSiteSurveyService'
 import { useCatalogPickerQuery } from '@/hooks/useProducts'
 import { errorMessage, isApiError } from '@/services/api/errors'
@@ -153,12 +153,10 @@ function CompletedSurvey({
   )
 }
 
+// Không tự khoá nút theo giờ: số phút được bắt đầu sớm do quản trị đặt và kỹ thuật viên không đọc được, backend kiểm khi bấm
 function StartSurvey({ job }: { job: TechnicianJobView }) {
   const start = useStartOnSiteSurveyMutation(job.appointmentId)
-  const now = useNow()
   const [error, setError] = useState<string | null>(null)
-  const opensAt = surveyStartOpensAt(job.startsAt)
-  const tooEarly = now < opensAt.getTime()
 
   async function run() {
     setError(null)
@@ -177,14 +175,9 @@ function StartSurvey({ job }: { job: TechnicianJobView }) {
         Hoàn thành khảo sát.
       </p>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <Button icon="play_arrow" variant="primary" disabled={tooEarly || start.isPending} onClick={() => void run()}>
+        <Button icon="play_arrow" variant="primary" disabled={start.isPending} onClick={() => void run()}>
           {start.isPending ? 'Đang bắt đầu…' : 'Bắt đầu khảo sát'}
         </Button>
-        {tooEarly && (
-          <span className="text-body text-fg-2">
-            Bắt đầu được từ {formatMoment(opensAt.toISOString())}, tức 2 giờ trước giờ hẹn.
-          </span>
-        )}
       </div>
       {error && (
         <div role="alert">
@@ -224,6 +217,7 @@ function SurveyEditor({
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const dirty = formDiffers(form, survey)
   const busy = save.isPending || complete.isPending
+  const filesBusy = useOnSiteSurveyFilesBusy(appointmentId)
   const roofPhotos = survey.attachments.filter((a) => a.category === 'ROOF').length
   const catalog = useCatalogPickerQuery()
   const units = unitsOf(catalog.data?.items)
@@ -299,7 +293,7 @@ function SurveyEditor({
     try {
       await complete.mutateAsync(latest.revision)
       setConfirming(false)
-      toast.success('Đã hoàn thành khảo sát. Kinh doanh dùng kết quả này để báo giá cho khách.')
+      toast.success('Đã hoàn thành khảo sát. Lập báo giá cho khách ở khối Báo giá.')
     } catch (e) {
       setConfirming(false)
       handleError(e)
@@ -388,7 +382,13 @@ function SurveyEditor({
           </p>
         )}
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" form="onsite-survey-form" icon="save" variant="soft" disabled={busy || !dirty}>
+          <Button
+            type="submit"
+            form="onsite-survey-form"
+            icon="save"
+            variant="soft"
+            disabled={busy || filesBusy || !dirty}
+          >
             {save.isPending && !confirming ? (
               'Đang lưu…'
             ) : (
@@ -402,7 +402,7 @@ function SurveyEditor({
             icon="task_alt"
             variant="primary"
             className="flex-1 sm:ml-auto sm:flex-none"
-            disabled={busy}
+            disabled={busy || filesBusy}
             onClick={askComplete}
           >
             Hoàn thành khảo sát
@@ -418,8 +418,8 @@ function SurveyEditor({
       >
         <DialogTitle>Hoàn thành khảo sát?</DialogTitle>
         <p className="mt-2 text-body text-fg-2">
-          {dirty ? 'Phần chưa lưu sẽ được lưu trước. ' : ''}Kết quả gửi cho bộ phận kinh doanh để báo giá; lịch hẹn và
-          yêu cầu chuyển sang đã khảo sát. Hoàn thành rồi thì muốn sửa phải gửi bổ sung kèm lý do.
+          {dirty ? 'Phần chưa lưu sẽ được lưu trước. ' : ''}Lịch hẹn và yêu cầu chuyển sang đã khảo sát, sau đó bạn lập
+          báo giá cho khách. Hoàn thành rồi thì muốn sửa phải gửi bổ sung kèm lý do.
         </p>
         <DialogFooter>
           <Button icon="close" variant="secondary" disabled={busy} onClick={() => setConfirming(false)}>

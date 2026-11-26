@@ -496,6 +496,36 @@ const ERROR_MESSAGES: Record<string, string> = {
   AUTH_FORBIDDEN: 'Tài khoản của bạn không có quyền xem nội dung này.',
   RESOURCE_NOT_FOUND: 'Nội dung có thể đã bị xoá, hoặc đường dẫn không đúng.',
   REQUEST_NOT_ACCEPTABLE: 'Hệ thống không hỗ trợ thao tác này.',
+  FORBIDDEN: 'Bạn không có quyền thực hiện thao tác này.',
+  INTERNAL_ERROR: 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.',
+  CONCURRENCY_CONFLICT: 'Dữ liệu vừa được sửa ở nơi khác. Tải lại rồi thử lại.',
+  AUTH_ACCOUNT_NOT_ACTIVE: 'Tài khoản này chưa đổi được mật khẩu.',
+  CATALOG_SKU_ALREADY_EXISTS: 'Đã có sản phẩm dùng mã này. Chọn mã khác.',
+  WARRANTY_OPTION_NOT_FOUND: 'Không tìm thấy lựa chọn bảo hành này.',
+  ONSITE_SURVEY_COMMERCIALLY_LOCKED: 'Yêu cầu này đã có hợp đồng nên không bổ sung biên bản khảo sát được nữa.',
+  ONSITE_SURVEY_REQUEST_CLOSED: 'Yêu cầu khảo sát đã được rút hoặc đã đóng nên không sửa được nữa.',
+  INSTALLATION_CHECKLIST_WAIVER_REASON_REQUIRED: 'Ghi lý do mục này không cần hoặc không áp dụng.',
+  DISASTER_SUPPORT_LIMIT_REACHED: 'Gói bảo vệ thiên tai đã hết hạn mức hỗ trợ.',
+  SERVICE_EVIDENCE_NOT_FOUND: 'Không tìm thấy ảnh này.',
+  BUNDLED_PACKAGE_NOT_FOUND: 'Không tìm thấy gói đi kèm này.',
+  SERVICE_PACKAGE_PRICING_UNIT_VALIDATION_FAILED:
+    'Gói tính theo tấm và gói cho cả công trình phải mua riêng. Kiểm tra lại gói và số tấm.',
+  SERVICE_PANEL_SELECTION_VALIDATION_FAILED: 'Các tấm pin đã chọn không hợp lệ cho gói này. Chọn lại.',
+  QUOTATION_INVALID_PANEL_QUANTITY: 'Có gói tính theo tấm nên số tấm pin phải là số nguyên.',
+  QUOTATION_NO_ELIGIBLE_PANELS: 'Gói tính theo tấm cần có tấm pin trong báo giá. Thêm tấm pin hoặc bỏ gói.',
+  QUOTATION_SERVICE_PACKAGE_INACTIVE: 'Gói này đã ngừng bán. Chọn gói khác.',
+  QUOTATION_SERVICE_PACKAGE_INCOMPATIBLE: 'Gói này không bán kèm báo giá lắp đặt được. Chọn gói khác.',
+  QUOTATION_SERVICE_PACKAGE_NOT_FOUND: 'Không tìm thấy gói này trong báo giá.',
+  QUOTATION_TOTAL_OUT_OF_RANGE: 'Tổng báo giá vượt mức cho phép.',
+  RAG_AUDIENCE_RETIRED: 'Tài liệu dùng chung cho mọi vai trò, không chọn người xem nữa.',
+  RAG_PUBLISH_CONFIRMATION_REQUIRED: 'Xác nhận công bố cho mọi người dùng trước khi công bố.',
+  SETTINGS_VERSION_CONFLICT: 'Cài đặt vừa được sửa ở nơi khác. Tải lại rồi thử lại.',
+  SYSTEM_SETTING_INVALID_UNIT: 'Đơn vị của cài đặt chưa đúng.',
+  SYSTEM_SETTING_INVALID_VALUE: 'Giá trị cài đặt chưa hợp lệ.',
+  SYSTEM_SETTING_NOT_EDITABLE: 'Cài đặt này không sửa được.',
+  SYSTEM_SETTING_RULE_VIOLATION: 'Các giá trị cài đặt mâu thuẫn nhau. Kiểm tra lại.',
+  SYSTEM_SETTING_UNKNOWN_KEY: 'Không có cài đặt này.',
+  SYSTEM_SETTING_VALIDATION_FAILED: 'Cài đặt chưa hợp lệ. Kiểm tra lại các ô được đánh dấu.',
 }
 
 /** Bản dịch theo mã lỗi; chưa có trong bảng thì trả null. */
@@ -606,9 +636,12 @@ export function toApiError(status: number, body: unknown, retryAfter: number | n
 
   return new ApiError({
     status,
-    // Ưu tiên bản dịch theo mã, rồi message của server, cuối cùng là câu theo status
+    // Ưu tiên bản dịch theo mã, rồi message của server (lỗi 5xx là câu kỹ thuật nên bỏ), cuối cùng là câu theo status
     message:
-      messageForCode(code) ?? serverMessage ?? firstString(Object.values(fieldErrors)) ?? messageForStatus(status),
+      messageForCode(code) ??
+      (status >= 500 ? messageForStatus(status) : serverMessage) ??
+      firstString(Object.values(fieldErrors)) ??
+      messageForStatus(status),
     code,
     fieldErrors,
     traceId,

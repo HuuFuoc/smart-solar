@@ -5,6 +5,7 @@ import { Radio } from '@/components/common/ui/field'
 import { ReportFaultDialog } from '@/features/after-sales/ReportFaultDialog'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
 import { formatMoment } from '@/features/scheduling/schedulingDisplay'
+import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
 import { useWarrantyQuery } from '@/hooks/useCustomerServiceRequests'
 import type { InstallationCustomerView } from '@/types/res/customerInstallationsRes'
 
@@ -14,6 +15,8 @@ import type { InstallationCustomerView } from '@/types/res/customerInstallations
 export function FaultReportFlow({ projects, onClose }: { projects: InstallationCustomerView[]; onClose: () => void }) {
   const [projectId, setProjectId] = useState<string | null>(projects.length === 1 ? projects[0]!.projectId : null)
   const [picked, setPicked] = useState<string | null>(null)
+  const contracts = useMyContractsQuery()
+  const numbers = new Map((contracts.data ?? []).map((c) => [c.contractId, c.contractNumber]))
   if (projectId) return <FaultFor projectId={projectId} onClose={onClose} />
   return (
     <ModalDialog
@@ -32,7 +35,7 @@ export function FaultReportFlow({ projects, onClose }: { projects: InstallationC
                 name="fault-project"
                 checked={picked === p.projectId}
                 onChange={() => setPicked(p.projectId)}
-                label={`Công trình ${shortCode(p.projectId)}, hợp đồng ${shortCode(p.contractId)}`}
+                label={`Hợp đồng ${numbers.get(p.contractId) ?? shortCode(p.contractId)}`}
                 description={p.handoverAt ? `Bàn giao ${formatMoment(p.handoverAt)}` : undefined}
               />
             </li>

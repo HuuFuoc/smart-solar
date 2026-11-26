@@ -7,7 +7,8 @@ const MONTH_CELL_LIMIT = 3
 
 function WorkChip({ entry, onOpen }: { entry: DayEntry; onOpen: () => void }) {
   const { item, continued } = entry
-  const text = continued ? `Tiếp tục: ${item.title}` : `${formatTime(item.startsAt)} ${item.title}`
+  const when = continued ? 'Tiếp tục:' : formatTime(item.startsAt)
+  const text = `${item.done ? 'Đã xong: ' : ''}${when} ${item.title}`
   return (
     <button
       type="button"
