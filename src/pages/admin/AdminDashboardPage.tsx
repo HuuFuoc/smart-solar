@@ -99,7 +99,9 @@ export function AdminDashboardPage() {
   const inProgressProjects = projects.filter((p) => p.status === 'IN_PROGRESS' || p.status === 'SCHEDULED').length
   const readyContractsCount = readyContracts.length
   const openDispatchCount = dispatchItems.filter((d) => d.status === 'OPEN' || d.status === 'PROPOSAL_PENDING').length
-  const pendingServicesCount = serviceRequests.filter((s) => s.status !== 'COMPLETED' && s.status !== 'CANCELLED').length
+  const pendingServicesCount = serviceRequests.filter(
+    (s) => s.status !== 'COMPLETED' && s.status !== 'CANCELLED',
+  ).length
   const urgentServicesCount = serviceRequests.filter(
     (s) => s.status === 'AWAITING_DECISION' || s.status === 'DISPUTED',
   ).length

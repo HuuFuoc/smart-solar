@@ -133,7 +133,11 @@ export function ScheduleTimeline({
               {dayRows.map(({ item }) => {
                 const body = (
                   <>
-                    <span aria-hidden className="mt-1.5 size-2.5 shrink-0 rounded-[3px]" style={{ backgroundColor: item.color }} />
+                    <span
+                      aria-hidden
+                      className="mt-1.5 size-2.5 shrink-0 rounded-[3px]"
+                      style={{ backgroundColor: item.color }}
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block text-body text-fg">{item.label}</span>
                       <span className="block text-meta text-fg-3">

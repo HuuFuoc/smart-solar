@@ -10,7 +10,11 @@ export function ChartTooltipBox({ title, rows, total }: { title?: ReactNode; row
       <ul className="space-y-0.5">
         {rows.map((r) => (
           <li key={r.key} className="flex items-baseline gap-2">
-            <span aria-hidden className="size-2 shrink-0 self-center rounded-[2px]" style={{ backgroundColor: r.color }} />
+            <span
+              aria-hidden
+              className="size-2 shrink-0 self-center rounded-[2px]"
+              style={{ backgroundColor: r.color }}
+            />
             <span className="text-fg-2">{r.label}</span>
             <span className="tnum ml-auto pl-3 font-semibold text-fg">{r.value}</span>
           </li>

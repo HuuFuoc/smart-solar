@@ -5,7 +5,12 @@ import type { MoneyBucket } from '@/types/res/paymentPlanRes'
 
 export const VN_TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
-const dayKey = new Intl.DateTimeFormat('en-CA', { timeZone: VN_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' })
+const dayKey = new Intl.DateTimeFormat('en-CA', {
+  timeZone: VN_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
 
 /** Ngày YYYY-MM-DD theo giờ Việt Nam của một thời điểm ISO; '' nếu không đọc được */
 export function vnDayOf(iso: string | null | undefined) {
@@ -114,7 +119,11 @@ export function countBy<T>(items: readonly T[], keyOf: (item: T) => string | nul
 }
 
 /** Đếm và cộng tiền theo khoá */
-export function bucketBy<T>(items: readonly T[], keyOf: (item: T) => string | null | undefined, amountOf: (item: T) => number) {
+export function bucketBy<T>(
+  items: readonly T[],
+  keyOf: (item: T) => string | null | undefined,
+  amountOf: (item: T) => number,
+) {
   const map = new Map<string, { count: number; amount: number }>()
   for (const item of items) {
     const key = keyOf(item)
@@ -128,7 +137,11 @@ export function bucketBy<T>(items: readonly T[], keyOf: (item: T) => string | nu
 }
 
 /** Đếm theo tháng (giờ Việt Nam) cho đúng danh sách tháng đưa vào; thời điểm ngoài các tháng đó không tính */
-export function countByMonth<T>(items: readonly T[], dateOf: (item: T) => string | null | undefined, months: readonly string[]) {
+export function countByMonth<T>(
+  items: readonly T[],
+  dateOf: (item: T) => string | null | undefined,
+  months: readonly string[],
+) {
   const counts = new Map(months.map((m) => [m, 0]))
   for (const item of items) {
     const m = vnMonthOf(dateOf(item))
@@ -138,12 +151,22 @@ export function countByMonth<T>(items: readonly T[], dateOf: (item: T) => string
 }
 
 /** Gom các nhóm nhỏ thành "Khác" khi nhiều hơn `max` nhóm (giữ thứ tự gốc cho nhóm còn lại) */
-export function foldTail<T extends { key: string; value: number }>(items: readonly T[], max: number, other: (value: number, folded: T[]) => T) {
+export function foldTail<T extends { key: string; value: number }>(
+  items: readonly T[],
+  max: number,
+  other: (value: number, folded: T[]) => T,
+) {
   if (items.length <= max) return [...items]
   const ranked = [...items].sort((a, b) => b.value - a.value)
   const keep = new Set(ranked.slice(0, max - 1).map((i) => i.key))
   const folded = items.filter((i) => !keep.has(i.key))
-  return [...items.filter((i) => keep.has(i.key)), other(folded.reduce((s, i) => s + i.value, 0), folded)]
+  return [
+    ...items.filter((i) => keep.has(i.key)),
+    other(
+      folded.reduce((s, i) => s + i.value, 0),
+      folded,
+    ),
+  ]
 }
 
 /** Thứ Hai tới Chủ Nhật (YYYY-MM-DD) của tuần chứa `today` */
@@ -168,7 +191,13 @@ export function daysTouched(startsAt: string, endsAt: string | null | undefined,
 /** Tổng tiền các khoản của gói 30/70 theo trạng thái thanh toán, cho khách xem: đã trả, phải trả ngay, chưa tới lúc trả.
  * Khoản đã huỷ không tính. Tiền đã trả lấy `paidAmount` nếu có (số backend đã xác minh), không thì số tiền của khoản */
 export function installmentSplit(
-  installments: readonly { kind: string; amount: number; status: string; paidAmount: number | null; overdue: boolean }[],
+  installments: readonly {
+    kind: string
+    amount: number
+    status: string
+    paidAmount: number | null
+    overdue: boolean
+  }[],
 ) {
   const out = { paid: 0, due: 0, overdue: 0, notYetDue: 0 }
   for (const i of installments) {

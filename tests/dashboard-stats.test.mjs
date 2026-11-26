@@ -21,7 +21,12 @@ import {
 } from '../src/features/dashboard/dashboardStats.ts'
 import { countProjectGroups, projectGroupOf } from '../src/features/dashboard/projectGroups.ts'
 import { financeKpis, installmentsByStatus, openCasesRanked } from '../src/features/admin-dashboard/financeMapping.ts'
-import { collectionStats, contractsByMonth, myLiveContracts, salesFunnel } from '../src/features/sales-dashboard/salesStats.ts'
+import {
+  collectionStats,
+  contractsByMonth,
+  myLiveContracts,
+  salesFunnel,
+} from '../src/features/sales-dashboard/salesStats.ts'
 
 const bucket = (key, count = 0, amount = 0) => ({ key, count, amount })
 
@@ -46,7 +51,11 @@ function financeView(over = {}) {
     acceptedUnpaid: bucket('ACCEPTED_UNPAID', 1, 70_000_000),
     fullyPaid: bucket('FULLY_PAID'),
     contractsByStage: [],
-    openCollectionCasesByStatus: [bucket('CONTACTED', 1, 10), bucket('SALES_CONTACT_REQUIRED', 2, 90), bucket('X', 0, 0)],
+    openCollectionCasesByStatus: [
+      bucket('CONTACTED', 1, 10),
+      bucket('SALES_CONTACT_REQUIRED', 2, 90),
+      bucket('X', 0, 0),
+    ],
     negotiations: bucket('NEGOTIATIONS'),
     escalations: bucket('ESCALATIONS'),
     depositsCollected: bucket('DEPOSITS_COLLECTED', 2, 60_000_000),
@@ -76,7 +85,10 @@ describe('ngày giờ Việt Nam', () => {
   })
   test('việc nhiều ngày chạm vào từng ngày, giờ kết thúc đúng nửa đêm không tính ngày sau', () => {
     const days = ['2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21']
-    assert.deepEqual(daysTouched('2026-11-19T08:00:00+07:00', '2026-11-20T17:00:00+07:00', days), ['2026-11-19', '2026-11-20'])
+    assert.deepEqual(daysTouched('2026-11-19T08:00:00+07:00', '2026-11-20T17:00:00+07:00', days), [
+      '2026-11-19',
+      '2026-11-20',
+    ])
     assert.deepEqual(daysTouched('2026-11-19T08:00:00+07:00', '2026-11-20T00:00:00+07:00', days), ['2026-11-19'])
     assert.deepEqual(daysTouched('2026-11-25T08:00:00+07:00', '2026-11-25T10:00:00+07:00', days), [])
   })
@@ -194,7 +206,10 @@ describe('kinh doanh', () => {
   test('chỉ hợp đồng của yêu cầu mình nhận, bỏ bản đã thay / đã huỷ', () => {
     const mine = [survey('a', 'COMPLETED')]
     const all = [contract('a'), contract('a', { contractId: 'old', status: 'SUPERSEDED' }), contract('b')]
-    assert.deepEqual(myLiveContracts(all, mine).map((c) => c.contractId), ['c-a'])
+    assert.deepEqual(
+      myLiveContracts(all, mine).map((c) => c.contractId),
+      ['c-a'],
+    )
     assert.equal(isLiveContract({ status: 'DRAFT', stage: 'DISCARDED' }), false)
   })
   test('phễu: bước sau nằm trong bước trước, yêu cầu có hợp đồng tính là đã khảo sát', () => {
@@ -226,16 +241,50 @@ describe('kinh doanh', () => {
   })
   test('công nợ: mở / đóng theo tháng, cần liên hệ, hẹn trả đã quá ngày', () => {
     const cases = [
-      { caseId: '1', status: 'SALES_CONTACT_REQUIRED', amountDue: 70, openedAt: '2026-11-02T00:00:00Z', resolvedAt: null, promisedPaymentDate: null },
-      { caseId: '2', status: 'AGREEMENT_RECORDED', amountDue: 50, openedAt: '2026-10-02T00:00:00Z', resolvedAt: null, promisedPaymentDate: '2026-11-10' },
-      { caseId: '3', status: 'AGREEMENT_RECORDED', amountDue: 50, openedAt: '2026-10-05T00:00:00Z', resolvedAt: null, promisedPaymentDate: '2026-11-25' },
-      { caseId: '4', status: 'RESOLVED', amountDue: 20, openedAt: '2026-09-01T00:00:00Z', resolvedAt: '2026-11-01T00:00:00Z', promisedPaymentDate: null },
+      {
+        caseId: '1',
+        status: 'SALES_CONTACT_REQUIRED',
+        amountDue: 70,
+        openedAt: '2026-11-02T00:00:00Z',
+        resolvedAt: null,
+        promisedPaymentDate: null,
+      },
+      {
+        caseId: '2',
+        status: 'AGREEMENT_RECORDED',
+        amountDue: 50,
+        openedAt: '2026-10-02T00:00:00Z',
+        resolvedAt: null,
+        promisedPaymentDate: '2026-11-10',
+      },
+      {
+        caseId: '3',
+        status: 'AGREEMENT_RECORDED',
+        amountDue: 50,
+        openedAt: '2026-10-05T00:00:00Z',
+        resolvedAt: null,
+        promisedPaymentDate: '2026-11-25',
+      },
+      {
+        caseId: '4',
+        status: 'RESOLVED',
+        amountDue: 20,
+        openedAt: '2026-09-01T00:00:00Z',
+        resolvedAt: '2026-11-01T00:00:00Z',
+        promisedPaymentDate: null,
+      },
     ]
     const s = collectionStats(cases, ['2026-10', '2026-11'], '2026-11-19')
     assert.equal(s.open.length, 3)
     assert.deepEqual(s.byStatus.get('AGREEMENT_RECORDED'), { count: 2, amount: 100 })
-    assert.deepEqual(s.contactRequired.map((c) => c.caseId), ['1'])
-    assert.deepEqual(s.brokenPromises.map((c) => c.caseId), ['2'])
+    assert.deepEqual(
+      s.contactRequired.map((c) => c.caseId),
+      ['1'],
+    )
+    assert.deepEqual(
+      s.brokenPromises.map((c) => c.caseId),
+      ['2'],
+    )
     assert.equal(s.resolved, 1)
     assert.equal(s.resolvedLast30Days, 1)
     assert.deepEqual(s.trend, [

@@ -71,7 +71,15 @@ export function ManageDashboardPage() {
   const escalated = [...(escalatedQuery.data?.items ?? []), ...(legalQuery.data?.items ?? [])]
   const escalatedTotal = (escalatedQuery.data?.totalItems ?? 0) + (legalQuery.data?.totalItems ?? 0)
 
-  const managerTodo = pendingCash + rework.length + escalatedTotal + reschedule.length + ready + pendingAssignment + openDispatch + serviceTodo
+  const managerTodo =
+    pendingCash +
+    rework.length +
+    escalatedTotal +
+    reschedule.length +
+    ready +
+    pendingAssignment +
+    openDispatch +
+    serviceTodo
 
   const loadingCore = projectsQuery.isPending
 
@@ -96,7 +104,10 @@ export function ManageDashboardPage() {
       label: w.name,
       value: w.total,
       color: w.rework > 0 ? STATUS_COLOR.danger : SERIES[0],
-      note: [w.inProgress > 0 && `${w.inProgress} đang lắp`, w.rework > 0 && `${w.rework} sửa lại`].filter(Boolean).join(', ') || undefined,
+      note:
+        [w.inProgress > 0 && `${w.inProgress} đang lắp`, w.rework > 0 && `${w.rework} sửa lại`]
+          .filter(Boolean)
+          .join(', ') || undefined,
       href: withId(ROUTES.manage.technician, id),
     }))
     return foldTail(
@@ -245,7 +256,11 @@ export function ManageDashboardPage() {
             value={formatCount(open.length)}
             note={`${formatCount(projects.length)} dự án tất cả`}
           />
-          <Stat label="Đang lắp đặt" value={formatCount(inProgress)} note={`${formatCount(count('SCHEDULED'))} đã lên lịch`} />
+          <Stat
+            label="Đang lắp đặt"
+            value={formatCount(inProgress)}
+            note={`${formatCount(count('SCHEDULED'))} đã lên lịch`}
+          />
           <Stat label="Chờ khách nghiệm thu" value={formatCount(awaitingAcceptance)} note="Việc của khách" />
           <Stat
             label="Cần sửa lại"
@@ -280,7 +295,15 @@ export function ManageDashboardPage() {
             title="Khối lượng theo kỹ thuật viên"
             scope="Hiện tại"
             description="Dự án đang giao cho từng người (đã phân công, chưa bàn giao). Đỏ: có dự án cần sửa lại."
-            state={projectsQuery.isPending ? 'loading' : projectsQuery.isError ? 'error' : workload.length === 0 ? 'empty' : 'ready'}
+            state={
+              projectsQuery.isPending
+                ? 'loading'
+                : projectsQuery.isError
+                  ? 'error'
+                  : workload.length === 0
+                    ? 'empty'
+                    : 'ready'
+            }
             emptyText="Chưa có dự án nào đang giao cho kỹ thuật viên."
             onRetry={() => void projectsQuery.refetch()}
             table={{

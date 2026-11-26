@@ -48,11 +48,18 @@ const BROAD_WRITE =
 
 function commandTargets(command, paths) {
   const cmd = norm(command.replace(/\d?>\s*\/dev\/null|\d?>\s*\$null|2>&1/gi, ''))
-  if (BROAD_WRITE.test(command)) return paths.filter((p) => !p.endsWith('/**')).slice(0, 5).concat('…')
+  if (BROAD_WRITE.test(command))
+    return paths
+      .filter((p) => !p.endsWith('/**'))
+      .slice(0, 5)
+      .concat('…')
   if (!WRITE_HINT.test(command)) return []
   return paths.filter((p) => {
     const plain = p.endsWith('/**') ? p.slice(0, -3) : p
-    return cmd.includes(plain) || (!p.endsWith('/**') && new RegExp(`(^|[\\s/'"])${escape(path.posix.basename(plain))}`).test(cmd))
+    return (
+      cmd.includes(plain) ||
+      (!p.endsWith('/**') && new RegExp(`(^|[\\s/'"])${escape(path.posix.basename(plain))}`).test(cmd))
+    )
   })
 }
 
@@ -69,7 +76,11 @@ function gitUser() {
 function decide(decision, reason) {
   process.stdout.write(
     JSON.stringify({
-      hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: decision, permissionDecisionReason: reason },
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: decision,
+        permissionDecisionReason: reason,
+      },
     }),
   )
   process.exit(0)
@@ -96,10 +107,7 @@ try {
   const user = gitUser()
   const ownerText = owners.join(', ') || 'chủ sở hữu'
   if (user && owners.includes(user))
-    decide(
-      'ask',
-      `Giao diện đã khoá trong ui-locks.txt: ${list}. Bạn (${user}) là chủ sở hữu, xác nhận nếu muốn sửa.`,
-    )
+    decide('ask', `Giao diện đã khoá trong ui-locks.txt: ${list}. Bạn (${user}) là chủ sở hữu, xác nhận nếu muốn sửa.`)
   decide(
     'deny',
     `Không sửa: ${list} là giao diện đã khoá bởi ${ownerText} (ui-locks.txt). Không sửa, không ghi đè, không khôi phục các file này; ` +

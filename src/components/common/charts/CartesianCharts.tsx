@@ -69,7 +69,8 @@ function tooltipContent(rows: CategoryRow[], series: Series[], format: (n: numbe
 }
 
 /** Recharts đọc giá trị qua dataKey: trải `values` ra cột phẳng */
-const flatten = (rows: CategoryRow[]) => rows.map((r) => ({ ...r.values, label: r.label, key: r.key, title: r.title, href: r.href, values: r.values }))
+const flatten = (rows: CategoryRow[]) =>
+  rows.map((r) => ({ ...r.values, label: r.label, key: r.key, title: r.title, href: r.href, values: r.values }))
 
 // Cột dọc, một chuỗi hoặc xếp chồng nhiều chuỗi cộng được với nhau. Cột rộng tối đa 24px, đầu cột bo 4px, các phần cách nhau 2px
 export function ColumnChart({
@@ -91,8 +92,21 @@ export function ColumnChart({
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={flatten(rows)} margin={{ top: 8, right: 4, bottom: 0, left: 0 }} barCategoryGap="28%">
             <CartesianGrid vertical={false} stroke={CHART_GRID} />
-            <XAxis dataKey="label" tick={axisTick} tickLine={false} axisLine={{ stroke: CHART_GRID }} interval="preserveStartEnd" />
-            <YAxis tick={axisTick} tickLine={false} axisLine={false} width={56} tickFormatter={formatAxis} allowDecimals={false} />
+            <XAxis
+              dataKey="label"
+              tick={axisTick}
+              tickLine={false}
+              axisLine={{ stroke: CHART_GRID }}
+              interval="preserveStartEnd"
+            />
+            <YAxis
+              tick={axisTick}
+              tickLine={false}
+              axisLine={false}
+              width={56}
+              tickFormatter={formatAxis}
+              allowDecimals={false}
+            />
             <Tooltip
               isAnimationActive={false}
               cursor={{ fill: 'var(--color-hover)' }}
@@ -146,8 +160,21 @@ export function TrendChart({
   const axes = (
     <>
       <CartesianGrid vertical={false} stroke={CHART_GRID} />
-      <XAxis dataKey="label" tick={axisTick} tickLine={false} axisLine={{ stroke: CHART_GRID }} interval="preserveStartEnd" />
-      <YAxis tick={axisTick} tickLine={false} axisLine={false} width={56} tickFormatter={formatAxis} allowDecimals={false} />
+      <XAxis
+        dataKey="label"
+        tick={axisTick}
+        tickLine={false}
+        axisLine={{ stroke: CHART_GRID }}
+        interval="preserveStartEnd"
+      />
+      <YAxis
+        tick={axisTick}
+        tickLine={false}
+        axisLine={false}
+        width={56}
+        tickFormatter={formatAxis}
+        allowDecimals={false}
+      />
     </>
   )
   const dot = rows.length <= 12 ? { r: 4, strokeWidth: 2, stroke: CHART_SURFACE } : false

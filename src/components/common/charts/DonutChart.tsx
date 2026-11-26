@@ -91,7 +91,11 @@ export function DonutChart({
         {slices.map((s) => {
           const body = (
             <>
-              <span aria-hidden className="size-2.5 shrink-0 self-center rounded-[3px]" style={{ backgroundColor: s.color }} />
+              <span
+                aria-hidden
+                className="size-2.5 shrink-0 self-center rounded-[3px]"
+                style={{ backgroundColor: s.color }}
+              />
               <span className="min-w-0 flex-1 text-fg-2">
                 {s.label}
                 {s.note && <span className="block text-meta text-fg-3">{s.note}</span>}

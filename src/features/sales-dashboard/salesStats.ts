@@ -8,7 +8,10 @@ import { addDays as addDaysIso, bucketBy, isLiveContract, vnDayOf, vnMonthOf } f
 // - "Toàn hệ thống": hồ sơ thu hồi công nợ (GET /api/collections), vì backend không gắn hồ sơ với một kinh doanh
 
 /** Hợp đồng đang tính của các yêu cầu do kinh doanh này nhận */
-export function myLiveContracts(contracts: readonly ContractDirectoryItem[], mySurveys: readonly MySurveyRequestItem[]) {
+export function myLiveContracts(
+  contracts: readonly ContractDirectoryItem[],
+  mySurveys: readonly MySurveyRequestItem[],
+) {
   const mine = new Set(mySurveys.map((s) => s.surveyRequestId))
   return contracts.filter((c) => mine.has(c.surveyRequestId) && isLiveContract(c))
 }
@@ -20,7 +23,10 @@ export type FunnelStage = { key: string; label: string; value: number; hint: str
  * đã nhận → đã có lịch khảo sát → đã khảo sát → có hợp đồng → đã nhận tiền (khoản 30% của gói 30/70, hoặc 100% của hợp đồng cũ).
  * Không có bước "báo giá" vì kinh doanh không có danh sách báo giá theo yêu cầu (kỹ thuật viên lập báo giá tại công trình)
  */
-export function salesFunnel(mySurveys: readonly MySurveyRequestItem[], liveContracts: readonly ContractDirectoryItem[]) {
+export function salesFunnel(
+  mySurveys: readonly MySurveyRequestItem[],
+  liveContracts: readonly ContractDirectoryItem[],
+) {
   const withContract = new Set(liveContracts.map((c) => c.surveyRequestId))
   const paid = new Set(liveContracts.filter((c) => c.depositPaid).map((c) => c.surveyRequestId))
   const contracted = mySurveys.filter((s) => withContract.has(s.surveyRequestId))
@@ -77,13 +83,21 @@ export type CollectionStats = {
   trend: { month: string; opened: number; resolved: number }[]
 }
 
-export function collectionStats(cases: readonly CollectionCaseView[], months: readonly string[], today: string): CollectionStats {
+export function collectionStats(
+  cases: readonly CollectionCaseView[],
+  months: readonly string[],
+  today: string,
+): CollectionStats {
   const open = cases.filter((c) => c.status !== 'RESOLVED')
   const resolvedCases = cases.filter((c) => c.status === 'RESOLVED')
   const since = addDaysIso(today, -29)
   return {
     open,
-    byStatus: bucketBy(open, (c) => c.status, (c) => c.amountDue),
+    byStatus: bucketBy(
+      open,
+      (c) => c.status,
+      (c) => c.amountDue,
+    ),
     contactRequired: open.filter((c) => c.status === 'SALES_CONTACT_REQUIRED'),
     brokenPromises: open.filter(
       (c) => c.status === 'AGREEMENT_RECORDED' && c.promisedPaymentDate !== null && c.promisedPaymentDate < today,

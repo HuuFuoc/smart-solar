@@ -83,35 +83,35 @@ export function TechDashboardPage() {
 
   // ---- việc theo ngày (bỏ việc đã huỷ, đã từ chối, đã giao người khác)
   const work: Work[] = [
-      ...surveys
-        .filter((a) => a.status !== 'CANCELLED')
-        .map((a) => ({
-          id: a.appointmentId,
-          kind: 'survey' as const,
-          title: a.propertyName,
-          startsAt: a.startsAt,
-          endsAt: a.endsAt,
-          href: withId(ROUTES.tech.job, a.appointmentId),
-          done: a.status === 'COMPLETED',
-        })),
-      ...installations.map((p) => ({
-        id: p.projectId,
-        kind: 'installation' as const,
-        title: p.site?.propertyName ?? 'Công trình lắp đặt',
-        startsAt: p.startsAt,
-        endsAt: p.endsAt,
-        href: withId(ROUTES.tech.installation, p.projectId),
-        done: p.status === 'COMPLETED',
+    ...surveys
+      .filter((a) => a.status !== 'CANCELLED')
+      .map((a) => ({
+        id: a.appointmentId,
+        kind: 'survey' as const,
+        title: a.propertyName,
+        startsAt: a.startsAt,
+        endsAt: a.endsAt,
+        href: withId(ROUTES.tech.job, a.appointmentId),
+        done: a.status === 'COMPLETED',
       })),
-      ...visits.map((v) => ({
-        id: v.visitId,
-        kind: 'service' as const,
-        title: `${visitPurposeLabel(v.purpose)} ${v.requestNumber}`,
-        startsAt: v.startsAt,
-        endsAt: v.endsAt,
-        href: withId(ROUTES.tech.afterSalesVisit, v.visitId),
-        done: v.status === 'REPORTED',
-      })),
+    ...installations.map((p) => ({
+      id: p.projectId,
+      kind: 'installation' as const,
+      title: p.site?.propertyName ?? 'Công trình lắp đặt',
+      startsAt: p.startsAt,
+      endsAt: p.endsAt,
+      href: withId(ROUTES.tech.installation, p.projectId),
+      done: p.status === 'COMPLETED',
+    })),
+    ...visits.map((v) => ({
+      id: v.visitId,
+      kind: 'service' as const,
+      title: `${visitPurposeLabel(v.purpose)} ${v.requestNumber}`,
+      startsAt: v.startsAt,
+      endsAt: v.endsAt,
+      href: withId(ROUTES.tech.afterSalesVisit, v.visitId),
+      done: v.status === 'REPORTED',
+    })),
   ]
 
   const week = weekOf(today)
@@ -127,7 +127,10 @@ export function TechDashboardPage() {
       href: `${ROUTES.tech.schedule}?che-do=ngay&ngay=${day}`,
     }
   })
-  const weekTotal = weekRows.reduce((s, r) => s + (r.values.survey ?? 0) + (r.values.installation ?? 0) + (r.values.service ?? 0), 0)
+  const weekTotal = weekRows.reduce(
+    (s, r) => s + (r.values.survey ?? 0) + (r.values.installation ?? 0) + (r.values.service ?? 0),
+    0,
+  )
 
   const next7 = Array.from({ length: 7 }, (_, i) => addDays(today, i))
   const agenda: TimelineItem[] = work
@@ -224,8 +227,7 @@ export function TechDashboardPage() {
   const core = [surveysQuery, installationsQuery, visitsQuery]
   const loading = core.some((q) => q.isPending)
   const allFailed = core.every((q) => q.isError)
-  const refetch = () =>
-    void Promise.allSettled([...core, openQuery, schedulesQuery].map((q) => q.refetch()))
+  const refetch = () => void Promise.allSettled([...core, openQuery, schedulesQuery].map((q) => q.refetch()))
   const refreshing = core.some((q) => q.isFetching && !q.isPending)
 
   if (allFailed)
@@ -252,7 +254,9 @@ export function TechDashboardPage() {
           <Stat
             label="Lịch khảo sát sắp tới"
             value={formatCount(upcomingSurveys.length)}
-            note={overdueSurveys.length > 0 ? `${formatCount(overdueSurveys.length)} đã qua giờ` : 'Đã nhận, chưa tới giờ'}
+            note={
+              overdueSurveys.length > 0 ? `${formatCount(overdueSurveys.length)} đã qua giờ` : 'Đã nhận, chưa tới giờ'
+            }
           />
           <Stat
             label="Lắp đặt được giao"
@@ -351,7 +355,13 @@ export function TechDashboardPage() {
           scope="6 tháng gần nhất"
           description="Theo ngày bàn giao (giờ Việt Nam)."
           state={
-            installationsQuery.isPending ? 'loading' : installationsQuery.isError ? 'error' : completedInWindow === 0 ? 'empty' : 'ready'
+            installationsQuery.isPending
+              ? 'loading'
+              : installationsQuery.isError
+                ? 'error'
+                : completedInWindow === 0
+                  ? 'empty'
+                  : 'ready'
           }
           emptyText="Chưa có công trình nào bàn giao trong 6 tháng gần nhất."
           onRetry={() => void installationsQuery.refetch()}

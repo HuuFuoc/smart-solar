@@ -45,11 +45,23 @@ export function PeriodFilter({
           onChange={(p) => p !== 'custom' && onChange(presetRange(p, today))}
         />
         <div className="flex flex-wrap items-center gap-2">
-          <DateField className="w-36" size="sm" label="Từ ngày" value={from} onChange={(v) => onChange({ from: v, to })} />
+          <DateField
+            className="w-36"
+            size="sm"
+            label="Từ ngày"
+            value={from}
+            onChange={(v) => onChange({ from: v, to })}
+          />
           <span aria-hidden className="text-fg-3">
             –
           </span>
-          <DateField className="w-36" size="sm" label="Đến ngày" value={to} onChange={(v) => onChange({ from, to: v })} />
+          <DateField
+            className="w-36"
+            size="sm"
+            label="Đến ngày"
+            value={to}
+            onChange={(v) => onChange({ from, to: v })}
+          />
         </div>
         {zones && onZoneChange && (
           <Select
