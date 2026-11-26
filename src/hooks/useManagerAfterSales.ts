@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as managerService from '@/services/managerAfterSalesService'
+import type { BundledPackageQuery } from '@/services/managerAfterSalesService'
 import type { ApiError } from '@/services/api/errors'
 import { managerInstallationKeys } from '@/hooks/useManagerInstallations'
 import type { AfterSalesReasonRequest } from '@/types/req/customerAfterSalesReq'
@@ -16,7 +17,8 @@ import type {
 } from '@/types/req/managerAfterSalesReq'
 import type { WarrantyActivationBody } from '@/services/managerAfterSalesService'
 import type { InstalledAssetView, ServiceRequestSummary, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
-import type { SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
+import type { BundledPackageView, SalesAssigneeView } from '@/types/res/managerAfterSalesRes'
+import type { PagedResult } from '@/types/res/paymentPlanRes'
 import type { SalesTaskView } from '@/types/res/salesAfterSalesRes'
 
 // Yêu cầu bảo hành, sửa chữa, bảo trì phía quản lý / quản trị. Không tự gửi lại khi bị 409: tải lại rồi để người dùng làm lại
@@ -27,6 +29,8 @@ export const managerAfterSalesKeys = {
   request: (requestId: string) => [...managerAfterSalesKeys.requests(), requestId] as const,
   tasks: (status?: string) => [...managerAfterSalesKeys.all, 'tasks', status ?? 'all'] as const,
   salesAssignees: () => [...managerAfterSalesKeys.all, 'sales-assignees'] as const,
+  bundledPackages: () => [...managerAfterSalesKeys.all, 'bundled-packages'] as const,
+  bundledPage: (q: BundledPackageQuery) => [...managerAfterSalesKeys.bundledPackages(), q] as const,
 }
 
 type Options = { enabled?: boolean }
@@ -136,5 +140,24 @@ export function useAssignTaskMutation() {
 export function useRecordWarrantyActivationMutation() {
   return useMutation<InstalledAssetView, ApiError, { assetId: string; body: WarrantyActivationBody }>({
     mutationFn: ({ assetId, body }) => managerService.recordWarrantyActivation(assetId, body),
+  })
+}
+
+/** Một trang gói đi kèm hợp đồng (lọc và phân trang ở server). Giữ trang cũ trên màn trong lúc tải trang mới */
+export function useBundledPackagesQuery(q: BundledPackageQuery, { enabled = true }: Options = {}) {
+  return useQuery<PagedResult<BundledPackageView>, ApiError>({
+    queryKey: managerAfterSalesKeys.bundledPage(q),
+    queryFn: () => managerService.listBundledPackages(q),
+    placeholderData: keepPreviousData,
+    enabled,
+  })
+}
+
+/** Đối soát lại một gói; xong (kể cả lỗi) thì tải lại danh sách để thấy trạng thái thật của backend */
+export function useReconcileBundledPackageMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<BundledPackageView, ApiError, string>({
+    mutationFn: managerService.reconcileBundledPackage,
+    onSettled: () => queryClient.invalidateQueries({ queryKey: managerAfterSalesKeys.bundledPackages() }),
   })
 }

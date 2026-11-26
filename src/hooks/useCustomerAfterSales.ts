@@ -1,12 +1,13 @@
+import type { PurchaseRequest } from '@/types/req/customerAfterSalesReq'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { PAYABLE_ATTEMPT_STATUSES } from '@/common/afterSales'
 import { customerContractKeys } from '@/hooks/useCustomerContracts'
 import * as afterSalesService from '@/services/customerAfterSalesService'
 import type { ApiError } from '@/services/api/errors'
-import type { PurchaseRequest } from '@/types/req/customerAfterSalesReq'
 import type {
   PackageView,
+  PanelEligibilityView,
   PaymentAttemptView,
   PurchaseView,
   ServicePackageKind,
@@ -21,6 +22,7 @@ export const customerAfterSalesKeys = {
   packages: (kind: ServicePackageKind) => [...customerAfterSalesKeys.all, 'packages', kind] as const,
   subscriptions: () => [...customerAfterSalesKeys.all, 'subscriptions'] as const,
   payment: (attemptId: string) => [...customerAfterSalesKeys.all, 'payment', attemptId] as const,
+  panelCoverage: (contractId: string) => [...customerAfterSalesKeys.all, 'panel-coverage', contractId] as const,
 }
 
 // Backend giới hạn 30 lần xem trạng thái thanh toán mỗi phút, 10 giây một lần là đủ xa
@@ -51,12 +53,27 @@ export function usePurchaseMutation() {
     mutationFn: afterSalesService.purchase,
     onSuccess: (view) =>
       queryClient.setQueryData(customerAfterSalesKeys.payment(view.checkout.paymentAttemptId), view.checkout),
-    // Lỗi gói ngừng bán / hợp đồng đã thanh toán cũng cần danh sách mới
+    // Lỗi gói ngừng bán / hợp đồng đã thanh toán / tấm pin vừa có người mua cũng cần danh sách mới (kể cả số tấm còn mua được)
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: customerAfterSalesKeys.all }),
         queryClient.invalidateQueries({ queryKey: customerContractKeys.all }),
       ]),
+  })
+}
+
+/**
+ * Tấm pin và số tấm còn mua được của một hợp đồng (gói PER_PANEL). Không tự tải lại theo giờ: tải lại khi mua xong, khi link thanh
+ * toán đã xong và khi bấm thử lại
+ */
+export function usePanelCoverageQuery(
+  contractId: string | null | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
+  return useQuery<PanelEligibilityView, ApiError>({
+    queryKey: customerAfterSalesKeys.panelCoverage(contractId ?? ''),
+    queryFn: () => afterSalesService.getPanelCoverage(contractId!),
+    enabled: enabled && Boolean(contractId),
   })
 }
 
@@ -94,6 +111,7 @@ export function usePaymentQuery(attemptId: string | null) {
   useEffect(() => {
     if (!settled) return
     void queryClient.invalidateQueries({ queryKey: customerAfterSalesKeys.subscriptions() })
+    void queryClient.invalidateQueries({ queryKey: [...customerAfterSalesKeys.all, 'panel-coverage'] })
     void queryClient.invalidateQueries({ queryKey: customerContractKeys.all })
   }, [settled, status, queryClient])
   return query

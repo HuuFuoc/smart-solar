@@ -19,6 +19,7 @@ import { Stat, StatRow } from '@/components/common/ui/stat'
 import { ErrorState, Skeleton, UnavailableState } from '@/components/common/ui/states'
 import { COLLECTION_STATUSES, PAYMENT_PLAN_STAGES } from '@/common/paymentPlan'
 import {
+  collectedComponents,
   collectedSplit,
   financeKpis,
   installmentsByStatus,
@@ -156,11 +157,16 @@ export function AdminFinanceSection({
   // ---- công nợ đang mở
   const cases = openCasesRanked(v)
 
+  // ---- tiền đã thu theo thành phần (backend 763cb0b; máy chủ cũ không có thì không vẽ). Lắp đặt + gói đi kèm là chính các khoản
+  // 30% và 70% đã thu, không cộng thêm; gói mua riêng là tiền riêng
+  const components = collectedComponents(v)
+  const installmentsCollected = k.depositsCollected.amount + k.balancesCollected.amount
+
   return (
     <div className="space-y-6">
       <p className="tnum text-meta text-fg-3">
-        Số liệu hiện tại tính lúc {formatMoment(v.generatedAt)}. Tiền đã thu là tiền đã xác minh (PayOS báo nhận hoặc quản lý xác
-        nhận tiền mặt), không phải doanh thu kế toán.
+        Số liệu hiện tại tính lúc {formatMoment(v.generatedAt)}. Tiền đã thu là tiền đã xác minh (PayOS báo nhận hoặc
+        quản lý xác nhận tiền mặt), không phải doanh thu kế toán.
       </p>
 
       <section aria-label="Chỉ số hiện tại" className="space-y-2">
@@ -298,6 +304,45 @@ export function AdminFinanceSection({
         </div>
       </ChartPanel>
 
+      {components && (
+        <ChartPanel
+          title="Tiền đã thu theo thành phần"
+          scope={`Trong kỳ ${period}`}
+          description="Lắp đặt và gói đi kèm nằm trong khoản 30% và 70% đã thu; gói mua riêng trả trước 100%, ngoài các khoản đó."
+          state={components.rows.every((r) => r.amount === 0) ? 'empty' : 'ready'}
+          emptyText="Chưa có khoản tiền nào được xác minh trong kỳ."
+          table={{
+            caption: 'Tiền đã thu trong kỳ theo thành phần',
+            columns: [
+              { label: 'Thành phần' },
+              { label: 'Lần thu', numeric: true },
+              { label: 'Số tiền', numeric: true },
+            ],
+            rows: components.rows.map((r) => ({
+              key: r.key,
+              cells: [r.label, formatCount(r.count), formatVndFull(r.amount)],
+            })),
+          }}
+          footer={
+            components.installments === installmentsCollected
+              ? `Lắp đặt và gói đi kèm ${formatVndFull(components.installments)}, bằng khoản 30% và 70% đã thu. Gói mua riêng ${formatVndFull(components.retail)}.`
+              : `Lắp đặt và gói đi kèm ${formatVndFull(components.installments)}; khoản 30% và 70% đã thu ${formatVndFull(installmentsCollected)}. Gói mua riêng ${formatVndFull(components.retail)}.`
+          }
+        >
+          <BarList
+            ariaLabel="Tiền đã thu trong kỳ theo thành phần"
+            formatValue={formatVndCompact}
+            items={components.rows.map((r) => ({
+              key: r.key,
+              label: r.label,
+              value: r.amount,
+              note: `${formatCount(r.count)} lần thu`,
+              color: r.retail ? SERIES[1] : SERIES[0],
+            }))}
+          />
+        </ChartPanel>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartPanel
           title="Hợp đồng 30/70 theo chặng"
@@ -330,17 +375,12 @@ export function AdminFinanceSection({
           emptyText="Chưa có khoản 30/70 nào."
           table={{
             caption: 'Các khoản 30/70 theo trạng thái',
-            columns: [
-              { label: 'Khoản' },
-              ...INSTALLMENT_SERIES.map((s) => ({ label: s.label, numeric: true })),
-            ],
+            columns: [{ label: 'Khoản' }, ...INSTALLMENT_SERIES.map((s) => ({ label: s.label, numeric: true }))],
             rows: installments.map((g) => ({
               key: g.key,
               cells: [
                 g.label,
-                ...INSTALLMENT_SERIES.map(
-                  (s) => `${formatVndFull(g.amount[s.key])} (${formatCount(g.count[s.key])})`,
-                ),
+                ...INSTALLMENT_SERIES.map((s) => `${formatVndFull(g.amount[s.key])} (${formatCount(g.count[s.key])})`),
               ],
             })),
           }}

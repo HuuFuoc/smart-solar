@@ -9,6 +9,8 @@ import {
   visitMonthsLabel,
   isMaintenance,
 } from '@/features/after-sales/afterSalesDisplay'
+import { pricingUnitOf } from '@/features/after-sales/packagePricing'
+import { formatUnitPrice, pricingUnitLabel } from '@/features/after-sales/servicePackageDisplay'
 import type { PackageView } from '@/types/res/customerAfterSalesRes'
 import { formatMoney } from '@/utils/format'
 
@@ -72,7 +74,8 @@ export function PackageTable({
                 {p.description && <p className="line-clamp-2 max-w-[56ch] text-meta text-fg-3">{p.description}</p>}
               </Td>
               <Td label="Giá" className="tnum text-right whitespace-nowrap">
-                {vnd(p.price)}
+                {formatUnitPrice(p.price, pricingUnitOf(p))}
+                <p className="text-meta text-fg-3">{pricingUnitLabel(pricingUnitOf(p))}</p>
               </Td>
               <Td label="Thời hạn" className="whitespace-nowrap">
                 {formatDurationMonths(p.durationMonths)}

@@ -2,7 +2,7 @@
 // Modules.CustomerContracts (ContractView, ContractDocumentView, SignatureSubmissionView, ContractEventView)
 // Hợp đồng cũ: khách thấy từ lúc chờ ký trở đi. Hợp đồng 30/70 (backend 7d27054): khách thấy cả bản nháp để đọc trước khi trả 30%
 
-import type { ContractPaymentPlanView } from '@/types/res/paymentPlanRes'
+import type { ContractPaymentPlanView, ContractServicePackageView } from '@/types/res/paymentPlanRes'
 
 export type ContractStatus =
   | 'DRAFT'
@@ -86,6 +86,11 @@ export type ContractView = {
    * cả hai khoản, và SIGNED không có nghĩa đã trả đủ
    */
   paymentPlan?: ContractPaymentPlanView | null
+  // Gói đi kèm hợp đồng (backend 763cb0b, cũng có ở GET /api/contracts/{id} của nhân viên). Hợp đồng có gói thì `totalAmount` là
+  // tổng giá trị (lắp đặt + gói) và là số chia 30/70; hợp đồng không có gói thì hai tổng dưới là null
+  installationTotal: number | null
+  servicePackagesTotal: number | null
+  servicePackages: ContractServicePackageView[] | null
 }
 
 /**

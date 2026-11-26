@@ -9,17 +9,22 @@ import {
   isMaintenance,
   packageKindLabel,
 } from '@/features/after-sales/afterSalesDisplay'
+import { isPerPanelUnit, pricingUnitOf } from '@/features/after-sales/packagePricing'
+import { formatUnitPrice } from '@/features/after-sales/servicePackageDisplay'
 import type { PackageView } from '@/types/res/customerAfterSalesRes'
 import { cx } from '@/utils/cx'
 import { formatMoney } from '@/utils/format'
 
 const vnd = (amount: number | null) => <span className="tnum">{formatMoney(amount, 'VND')}</span>
 
+/** Gói theo tấm pin ghi đơn giá một tấm; gói theo hệ thống ghi giá cả công trình */
+const priceFact = (p: PackageView) => ({
+  k: isPerPanelUnit(pricingUnitOf(p)) ? 'Đơn giá' : 'Giá gói',
+  v: <span className="tnum">{formatUnitPrice(p.price, pricingUnitOf(p))}</span>,
+})
+
 function packageFacts(p: PackageView): KV[] {
-  const common: KV[] = [
-    { k: 'Giá', v: vnd(p.price) },
-    { k: 'Thời hạn', v: formatDurationMonths(p.durationMonths) },
-  ]
+  const common: KV[] = [priceFact(p), { k: 'Thời hạn', v: formatDurationMonths(p.durationMonths) }]
   if (isMaintenance(p.kind))
     return [
       ...common,
@@ -47,7 +52,7 @@ const DEFAULT_COVERS: Record<string, string> = {
 }
 
 /** Ảnh bìa của gói: ảnh quản trị gắn, không có hoặc lỗi thì ảnh mặc định của loại gói; cả hai lỗi thì bỏ hẳn */
-function PackageCover({ url, kind }: { url: string | null; kind: string }) {
+export function PackageCover({ url, kind }: { url: string | null; kind: string }) {
   const fallback = DEFAULT_COVERS[kind] ?? null
   const [src, setSrc] = useState(url || fallback)
   if (!src) return null
@@ -96,7 +101,7 @@ function PackageCard({ pkg: p, onBuy }: { pkg: PackageView; onBuy: (pkg: Package
         </Button>
       </div>
       <div className="mt-4 grid grid-cols-1 gap-y-4 border-t border-line pt-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metric label="Giá">{vnd(p.price)}</Metric>
+        <Metric label={priceFact(p).k}>{priceFact(p).v}</Metric>
         <Metric label="Thời hạn" className={DIVIDED}>
           {formatDurationMonths(p.durationMonths)}
         </Metric>

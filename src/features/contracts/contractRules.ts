@@ -50,10 +50,13 @@ export function acceptedQuotation(quotations: QuotationView[]): QuotationView | 
 /**
  * Lập hợp đồng tay từ báo giá (đường khôi phục): báo giá ACCEPTED và chưa có phiên bản nào khác SUPERSEDED từ báo giá đó
  * (backend: CONTRACT_QUOTATION_NOT_ACCEPTED, CONTRACT_ALREADY_EXISTS; từ 31/10 bản nháp đã huỷ cũng chặn). Từ backend 462733c còn
- * cần thanh toán đã xác minh (409 CONTRACT_PAYMENT_REQUIRED); bình thường chính thanh toán đó đã tự lập hợp đồng
+ * cần thanh toán đã xác minh (409 CONTRACT_PAYMENT_REQUIRED); bình thường chính thanh toán đó đã tự lập hợp đồng. Báo giá có gói
+ * dịch vụ đi kèm không bao giờ lập tay được (CONTRACT_PAYMENT_PLAN_NOT_APPLICABLE)
  */
 export function canCreateContract(quotation: QuotationView | null, contracts: ContractView[]) {
   if (!quotation || quotation.status !== 'ACCEPTED') return false
+  // Báo giá có gói đi kèm chỉ thành hợp đồng qua thoả thuận 30/70 tại công trình (backend 763cb0b từ chối đường lập tay)
+  if (Array.isArray(quotation.servicePackages) && quotation.servicePackages.length > 0) return false
   return !contracts.some((c) => c.quotationId === quotation.quotationId && c.status !== 'SUPERSEDED')
 }
 

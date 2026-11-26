@@ -189,6 +189,39 @@ export function incidentTimeError(at: string, coverageStartsAt: string | null, n
   return null
 }
 
+type DisasterTerm = Pick<
+  SubscriptionView,
+  'subscriptionId' | 'kind' | 'status' | 'coverageScope' | 'coveredPanels' | 'coveredDisasterTypes' | 'coverageStartsAt'
+>
+
+/** Mọi kỳ gói thiên tai đang hiệu lực của công trình: gói theo tấm pin có thể có nhiều kỳ cùng lúc, mỗi kỳ bảo vệ các tấm riêng */
+export const activeDisasterTerms = <T extends Pick<SubscriptionView, 'kind' | 'status'>>(subscriptions: T[]) =>
+  subscriptions.filter((s) => s.kind === 'DISASTER_PROTECTION' && s.status === 'ACTIVE')
+
+/**
+ * Báo lỗi do thiên tai phải chỉ ra tấm pin bị hư hại khi công trình chỉ có kỳ PANEL (backend 763cb0b, NewClaimAsync): kỳ cả công
+ * trình (gói cũ) bảo vệ mọi tấm nên không cần. Thiếu tấm pin thì backend ghi yêu cầu hỗ trợ NOT_ELIGIBLE
+ */
+export function needsDamagedPanel(terms: Pick<SubscriptionView, 'coverageScope'>[]) {
+  if (terms.some((t) => (t.coverageScope ?? 'INSTALLATION') === 'INSTALLATION')) return false
+  return terms.some((t) => t.coverageScope === 'PANEL')
+}
+
+/**
+ * Kỳ PANEL đang hiệu lực có phân bổ cho tấm pin này, để báo trước cho khách. Không phải quyết định: yêu cầu hỗ trợ vẫn do backend xét
+ * theo ngày xảy ra sự cố và loại thiên tai
+ */
+export function termCoveringPanel<T extends DisasterTerm>(terms: T[], assetId: string): T | null {
+  return (
+    terms.find((t) => t.coverageScope === 'PANEL' && (t.coveredPanels ?? []).some((a) => a.assetId === assetId)) ?? null
+  )
+}
+
+/** Loại thiên tai chọn được: gộp của mọi kỳ đang hiệu lực, giữ thứ tự xuất hiện */
+export function disasterTypesOf(terms: Pick<SubscriptionView, 'coveredDisasterTypes'>[]) {
+  return [...new Set(terms.flatMap((t) => t.coveredDisasterTypes))]
+}
+
 /** Công trình báo lỗi / bảo trì được: đã bàn giao (backend AFTER_SALES_NOT_HANDED_OVER cho mọi trường hợp khác) */
 export const handedOverProjects = <T extends { status: string; handoverAt: string | null }>(projects: T[]) =>
   projects.filter((p) => p.status === 'COMPLETED' && p.handoverAt)

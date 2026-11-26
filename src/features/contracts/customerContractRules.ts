@@ -1,4 +1,3 @@
-import type { SignedDocumentRequest } from '@/types/req/customerContractsReq'
 import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
 import type { ContractView } from '@/types/res/customerContractsRes'
 import type { ContractPaymentView } from '@/types/res/staffPaymentsRes'
@@ -83,11 +82,6 @@ export const snapshotStillCurrent = (
   c.contractId === snapshot.contractId &&
   canSubmitSigned(c) &&
   sameHash(c.officialDocument?.sha256, snapshot.officialSha256)
-
-export const signedDocumentBody = (snapshot: SigningSnapshot, fileId: string): SignedDocumentRequest => ({
-  fileId,
-  officialDocumentSha256: snapshot.officialSha256,
-})
 
 /**
  * Lỗi bắt khách xem lại bản chính thức rồi ký lại; không bao giờ tự gửi lại với SHA-256 mới. FILE_CONTENT_CHANGED: tệp trên

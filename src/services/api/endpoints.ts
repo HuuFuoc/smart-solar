@@ -117,6 +117,8 @@ export const ENDPOINTS = {
     packages: '/customers/me/after-sales/packages',
     purchases: '/customers/me/after-sales/purchases',
     subscriptions: '/customers/me/after-sales/subscriptions',
+    /** Gói tính theo tấm pin: tấm pin của công trình, số tấm còn mua được theo loại gói (backend 763cb0b) */
+    panelCoverage: (contractId: string) => `/customers/me/after-sales/contracts/${encode(contractId)}/panel-coverage`,
     cancelSubscription: (subscriptionId: string) =>
       `/customers/me/after-sales/subscriptions/${encode(subscriptionId)}/cancel`,
     payment: (attemptId: string) => `/customers/me/after-sales/payments/${encode(attemptId)}`,
@@ -246,7 +248,12 @@ export const ENDPOINTS = {
     onSiteDecision: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/on-site-decision`,
     payment: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/payment`,
     paymentCancel: (quotationId: string) => `/technician/quotations/${encode(quotationId)}/payment/cancel`,
+    /** Gói dịch vụ đi kèm (backend 763cb0b): PUT chọn / đổi, DELETE ?revision= bỏ; `kind` là MAINTENANCE | DISASTER_PROTECTION */
+    servicePackage: (quotationId: string, kind: string) =>
+      `/technician/quotations/${encode(quotationId)}/service-packages/${encode(kind)}`,
   },
+  /** Danh mục gói PER_PANEL đang bán để gắn vào báo giá (?kind=), chỉ kỹ thuật viên đọc */
+  technicianServicePackages: '/technician/service-packages',
   // Lịch thi công: kỹ thuật viên đã khảo sát ghi ngày thống nhất trực tiếp với khách khi hợp đồng đã có và đã trả tiền (hoặc đã
   // ký với hợp đồng cũ). Khung trống chỉ để chọn ngày; gửi khung cho khách chọn đã bỏ (410)
   technicianInstallationSchedules: {
@@ -345,6 +352,10 @@ export const ENDPOINTS = {
     assignTask: (taskId: string) => `/manager/after-sales/tasks/${encode(taskId)}/assign`,
     // Sổ tiền đã nhận nhưng không áp vào khoản nào, chỉ đọc
     unappliedMoney: '/manager/after-sales/unapplied-money',
+    /** Gói đi kèm hợp đồng lắp đặt (?status=&page=&pageSize=) và đối soát lại sau khi sửa thiết bị đã lắp (backend 763cb0b) */
+    bundledPackages: '/manager/after-sales/bundled-packages',
+    reconcileBundledPackage: (commitmentId: string) =>
+      `/manager/after-sales/bundled-packages/${encode(commitmentId)}/reconcile`,
   },
   // Bàn thu tiền: mọi lần thanh toán (lọc cách trả, trạng thái, ngày), xác nhận tiền mặt theo lần thanh toán
   managerPayments: {

@@ -6,7 +6,8 @@ import { Segmented } from '@/components/common/ui/segmented'
 import { PURCHASE_METHODS } from '@/common/afterSales'
 import { Notice } from '@/components/common/ui/lists'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
-import { purchasableContracts, type PurchasableContract, isMaintenance } from '@/features/after-sales/afterSalesDisplay'
+import { purchasableContracts, type PurchasableContract } from '@/features/after-sales/afterSalesDisplay'
+import { legacyPurchaseBody } from '@/features/after-sales/panelCoverageRules'
 import { PackageFacts } from '@/features/after-sales/PackageList'
 import { usePurchaseMutation } from '@/hooks/useCustomerAfterSales'
 import { useMyContractsQuery } from '@/hooks/useCustomerContracts'
@@ -68,15 +69,16 @@ export function PurchaseDialog({
     setError(null)
     setBusyContractId(null)
     try {
-      // Mỗi loại gói một ô id; backend từ chối nếu id không đúng loại
-      const maintenance = isMaintenance(pkg.kind)
-      const view = await purchase.mutateAsync({
-        contractId: selected.contract.contractId,
-        disasterPackageId: maintenance ? null : pkg.packageId,
-        maintenancePackageId: maintenance ? pkg.packageId : null,
-        includeContract: selected.includeContract,
-        paymentMethod: method,
-      })
+      // Mỗi loại gói một ô id; backend từ chối nếu id không đúng loại. Gói theo tấm pin mua ở hộp riêng (PanelPurchaseDialog)
+      const view = await purchase.mutateAsync(
+        legacyPurchaseBody({
+          contractId: selected.contract.contractId,
+          kind: pkg.kind,
+          packageId: pkg.packageId,
+          includeContract: selected.includeContract,
+          paymentMethod: method,
+        }),
+      )
       setContractId('')
       setMethod('ONLINE')
       onPurchased(view.checkout)

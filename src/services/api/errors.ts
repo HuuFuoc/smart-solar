@@ -231,8 +231,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   SERVICE_PACKAGE_NOT_FOUND: 'Không tìm thấy gói này. Danh sách gói đã được tải lại.',
   SERVICE_PACKAGE_INACTIVE: 'Gói này đã ngừng bán. Danh sách gói đã được tải lại.',
   SERVICE_SUBSCRIPTION_NOT_FOUND: 'Không tìm thấy gói đã mua.',
+  // Backend 763cb0b dùng chung mã này cho: kỳ cùng loại đã trả chờ bắt đầu, tấm pin đã có / đang giữ chỗ, gói cả công trình và gói
+  // theo tấm pin trùng nhau, gói đi kèm hợp đồng còn chờ đối soát
   SERVICE_SUBSCRIPTION_OVERLAP:
-    'Hợp đồng này đã có một kỳ gói cùng loại đã thanh toán và chưa bắt đầu. Mỗi loại chỉ mua trước được một kỳ.',
+    'Đã có gói cùng loại đang áp dụng, đã thanh toán chờ bắt đầu hoặc đang giữ chỗ cho công trình / các tấm pin này trong cùng thời gian, nên chưa mua thêm được.',
   // Bảo hành, sửa chữa, bảo trì
   AFTER_SALES_NOT_HANDED_OVER: 'Công trình chưa bàn giao nên chưa gửi yêu cầu bảo hành, bảo trì được.',
   SERVICE_REQUEST_NOT_FOUND: 'Không tìm thấy yêu cầu này.',
@@ -314,6 +316,17 @@ const ERROR_MESSAGES: Record<string, string> = {
   QUOTATION_PRICE_MISSING: 'Sản phẩm này chưa có giá trong danh mục nên chưa báo giá được. Nhờ quản trị cập nhật giá.',
   QUOTATION_SURVEY_NOT_FOUND:
     'Không tìm thấy yêu cầu khảo sát, hoặc bạn không phải kỹ thuật viên đã khảo sát yêu cầu này.',
+  // Gói dịch vụ đi kèm báo giá lắp đặt, tính theo tấm pin (backend 763cb0b)
+  QUOTATION_SERVICE_PACKAGE_NOT_FOUND: 'Không tìm thấy gói dịch vụ đã chọn.',
+  QUOTATION_SERVICE_PACKAGE_INACTIVE: 'Gói dịch vụ này không còn được cung cấp.',
+  QUOTATION_SERVICE_PACKAGE_INCOMPATIBLE: 'Gói dịch vụ không tương thích với báo giá.',
+  QUOTATION_NO_ELIGIBLE_PANELS: 'Báo giá cần có tấm pin hợp lệ để áp dụng gói dịch vụ.',
+  QUOTATION_INVALID_PANEL_QUANTITY: 'Số lượng tấm pin phải là số nguyên hợp lệ.',
+  QUOTATION_TOTAL_OUT_OF_RANGE: 'Tổng giá trị báo giá vượt phạm vi cho phép.',
+  // Gói mua riêng theo tấm pin và gói đi kèm hợp đồng (backend 763cb0b)
+  SERVICE_PANEL_SELECTION_VALIDATION_FAILED: 'Danh sách hoặc số lượng tấm pin đã chọn không hợp lệ.',
+  SERVICE_PACKAGE_PRICING_UNIT_VALIDATION_FAILED: 'Đơn vị tính giá của gói dịch vụ không phù hợp.',
+  BUNDLED_PACKAGE_NOT_FOUND: 'Không tìm thấy gói đi kèm hợp đồng này.',
   // Hợp đồng lắp đặt (phía nhân viên)
   CONTRACT_NOT_FOUND: 'Không tìm thấy hợp đồng, hoặc bạn không phụ trách hợp đồng này.',
   // Gói thanh toán 30/70, hợp đồng ký giấy, thu hồi công nợ

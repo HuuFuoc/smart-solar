@@ -2,9 +2,11 @@ import type { OnSiteDecision } from '@/common/quotation'
 import type {
   CartLineQuantityRequest,
   CartLineRequest,
+  CartServicePackageRequest,
   OnSiteDecisionRequest,
   TechnicianCartCreateRequest,
 } from '@/types/req/technicianQuotationsReq'
+import type { PackageView, ServicePackageKind } from '@/types/res/customerAfterSalesRes'
 import type { QuotationPaymentView, QuotationView } from '@/types/res/quotationsRes'
 import { del, get, post, put } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
@@ -76,6 +78,27 @@ export function recordOnSiteDecision(
 ) {
   const body: OnSiteDecisionRequest = { decision, revision, note }
   return post<QuotationView>(api.onSiteDecision(quotationId), body)
+}
+
+/**
+ * Gói dịch vụ đi kèm báo giá (backend 763cb0b): chỉ gói PER_PANEL đang bán của một loại. Giá là giá một tấm pin của danh mục;
+ * kỹ thuật viên không sửa giá
+ */
+export function listServicePackages(kind: ServicePackageKind) {
+  return get<PackageView[]>(ENDPOINTS.technicianServicePackages, { params: { kind } })
+}
+
+/**
+ * Chọn hoặc đổi gói của một loại trên giỏ nháp (mỗi loại một gói). Không gửi giá, số lượng: backend lấy số tấm pin của các dòng
+ * SOLAR_PANEL và giá danh mục, trả báo giá mới (revision + 1). Gói ngừng bán / sai loại / không tính theo tấm pin thì 409
+ */
+export function setServicePackage(quotationId: string, kind: ServicePackageKind, body: CartServicePackageRequest) {
+  return put<QuotationView>(api.servicePackage(quotationId, kind), body)
+}
+
+/** Bỏ gói của một loại khỏi giỏ nháp; loại đó chưa có gói thì 404 QUOTATION_SERVICE_PACKAGE_NOT_FOUND */
+export function removeServicePackage(quotationId: string, kind: ServicePackageKind, revision: number) {
+  return del<QuotationView>(api.servicePackage(quotationId, kind), { params: { revision } })
 }
 
 /** Trạng thái thanh toán; link đang mở được backend hỏi thẳng PayOS (trang PayOS chuyển về không phải bằng chứng đã trả) */

@@ -121,6 +121,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Lịch thi công', to: ROUTES.manage.installationSchedules, icon: 'event_note' },
           { label: 'Thi công', to: ROUTES.manage.installations, icon: 'construction' },
           { label: 'Bảo hành, sửa chữa', to: ROUTES.manage.afterSales, icon: 'build' },
+          { label: 'Gói đi kèm hợp đồng', to: ROUTES.manage.bundledPackages, icon: 'inventory_2' },
           { label: 'Việc của kinh doanh', to: ROUTES.manage.salesTasks, icon: 'assignment' },
         ],
       },
@@ -163,6 +164,7 @@ export const PORTALS: Record<PortalKey, Portal> = {
         label: 'Sau bán',
         items: [
           { label: 'Gói dịch vụ', to: ROUTES.admin.packages, icon: 'shield' },
+          { label: 'Gói đi kèm hợp đồng', to: ROUTES.admin.bundledPackages, icon: 'inventory_2' },
           { label: 'Thời hạn bảo hành', to: ROUTES.admin.warrantyOptions, icon: 'verified_user' },
           { label: 'Việc của kinh doanh', to: ROUTES.admin.salesTasks, icon: 'assignment' },
           { label: 'Báo cáo', to: ROUTES.admin.reports, icon: 'monitoring' },

@@ -8,7 +8,11 @@ import { EmptyState, ErrorState, UnavailableState } from '@/components/common/ui
 import { ContractConfirmDialog } from '@/features/contracts/ContractConfirmDialog'
 import { CartLineDialog } from '@/features/quotations/CartLineDialog'
 import { DecisionDialog, PresentQuotationDialog, QuotationPaymentPanel } from '@/features/quotations/OnSiteQuotation'
-import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
+import { BundledPackagesSection } from '@/features/quotations/BundledPackagesSection'
+import { blockedKindsOf, issueErrorMessage } from '@/features/quotations/bundledPackageDisplay'
+import { customerTotal } from '@/features/quotations/bundledPackageRules'
+import { QuotationLines, QuotationTerms } from '@/features/quotations/QuotationContent'
+import { QuotationPricingSummary } from '@/features/quotations/QuotationPricingSummary'
 import {
   formatDateVn,
   formatQuotationMoney,
@@ -39,6 +43,7 @@ import { useInstallmentPaymentQuery } from '@/hooks/usePaymentPlan'
 import { ROUTES, withId } from '@/routes/paths'
 import {
   useAddCartLineMutation,
+  useCartWriting,
   useCreateCartMutation,
   useIssueCartMutation,
   useRemoveCartLineMutation,
@@ -160,10 +165,13 @@ function CartEditor({
   const [dialog, setDialog] = useState<{ line: QuotationLineView | null } | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [flagged, setFlagged] = useState<string[]>([])
+  const [flaggedKinds, setFlaggedKinds] = useState<string[]>([])
   const [filling, setFilling] = useState(false)
+  // Lệnh gói đi kèm cũng đổi revision: đang ghi bất kỳ lệnh nào thì khoá mọi nút ghi khác
+  const writing = useCartWriting()
   const blockers = cartIssueBlockers(q, feasibility)
   const missing = missingCartTypes(q)
-  const busy = remove.isPending || add.isPending || issue.isPending || filling
+  const busy = remove.isPending || add.isPending || issue.isPending || filling || writing
   const full = q.lines.length >= CART_MAX_LINES
   const plan = catalog.data ? bomCartPlan(billOfMaterials, q.lines, catalog.data.items ?? []) : null
 
@@ -233,36 +241,36 @@ function CartEditor({
           }
         />
       ) : (
-        <>
-          <QuotationLines
-            quotation={q}
-            flaggedLineIds={flagged}
-            actions={(line) => (
-              <>
-                <IconButton
-                  icon="edit"
-                  label={`Đổi số lượng ${line.name}`}
-                  tooltip="Đổi số lượng"
-                  variant="soft"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => setDialog({ line })}
-                />
-                <IconButton
-                  icon="delete"
-                  label={`Bỏ ${line.name}`}
-                  tooltip="Bỏ dòng"
-                  variant="danger-quiet"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => void removeLine(line)}
-                />
-              </>
-            )}
-          />
-          <QuotationTotals quotation={q} className="ml-auto" />
-        </>
+        <QuotationLines
+          quotation={q}
+          flaggedLineIds={flagged}
+          actions={(line) => (
+            <>
+              <IconButton
+                icon="edit"
+                label={`Đổi số lượng ${line.name}`}
+                tooltip="Đổi số lượng"
+                variant="soft"
+                size="sm"
+                disabled={busy}
+                onClick={() => setDialog({ line })}
+              />
+              <IconButton
+                icon="delete"
+                label={`Bỏ ${line.name}`}
+                tooltip="Bỏ dòng"
+                variant="danger-quiet"
+                size="sm"
+                disabled={busy}
+                onClick={() => void removeLine(line)}
+              />
+            </>
+          )}
+        />
       )}
+      {/* Gói dịch vụ đi kèm luôn hiện trên giỏ nháp, kể cả khi chưa có dòng nào, để kỹ thuật viên thấy chỗ chọn gói */}
+      <BundledPackagesSection quotation={q} editable flaggedKinds={flaggedKinds} />
+      {q.lines.length > 0 && <QuotationPricingSummary quotation={q} className="ml-auto" />}
       {q.lines.length > 0 && missing.length > 0 && (
         <Notice tone="warn" title="Báo giá chưa có đủ hạng mục thường gặp">
           Chưa có: {missing.map((type) => lineTypeLabel({ description: type }) ?? type).join(', ')}. Vẫn gửi được nếu
@@ -306,20 +314,22 @@ function CartEditor({
           confirmLabel="Chốt báo giá"
           icon="task_alt"
           successText="Đã chốt báo giá. Trình bày cho khách để ghi quyết định."
-          formatError={quotationErrorMessage}
+          formatError={(e) => issueErrorMessage(e, q)}
           run={async () => {
             try {
               await issue.mutateAsync({ quotationId: q.quotationId, revision: q.revision })
               setFlagged([])
+              setFlaggedKinds([])
             } catch (e) {
               if (isApiError(e)) setFlagged(priceProblemLineIds(e.details))
+              setFlaggedKinds(blockedKindsOf(e))
               throw e
             }
           }}
           onClose={() => setConfirming(false)}
         >
           <p>
-            {q.lines.length} dòng, tạm tính {formatQuotationMoney(q.totalAmount, q.currency)}. Hệ thống tính lại giá
+            {q.lines.length} dòng, tạm tính {formatQuotationMoney(customerTotal(q), q.currency)}. Hệ thống tính lại giá
             theo danh mục lúc chốt, cộng thuế và đặt hạn hiệu lực. Không gửi gì vào ứng dụng của khách.
           </p>
           <p>Chốt rồi thì không sửa được; muốn đổi phải lập bản sửa.</p>
@@ -395,7 +405,8 @@ function IssuedQuotation({
       )}
       {q.origin !== 'TECHNICIAN' && <p className="text-meta text-fg-2">{quotationOriginLabel(q.origin)}.</p>}
       <QuotationLines quotation={q} />
-      <QuotationTotals quotation={q} className="ml-auto" />
+      <BundledPackagesSection quotation={q} />
+      <QuotationPricingSummary quotation={q} className="ml-auto" />
       <QuotationTerms quotation={q} />
       {reviseButton && <div className="flex flex-wrap gap-3">{reviseButton}</div>}
       {q.status === 'ACCEPTED' && !q.contractId && <QuotationPaymentPanel quotation={q} onDecide={setDeciding} />}
@@ -480,7 +491,7 @@ function VersionHistory({ list, currentId }: { list: QuotationView[]; currentId:
           return (
             <li key={q.quotationId} className="flex flex-wrap items-baseline justify-between gap-x-4 text-body">
               <span className="tnum text-fg">
-                Bản {q.version}, {formatQuotationMoney(q.totalAmount, q.currency)}
+                Bản {q.version}, {formatQuotationMoney(customerTotal(q), q.currency)}
               </span>
               <Badge tone={status.tone}>{status.label}</Badge>
             </li>

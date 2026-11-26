@@ -13,7 +13,10 @@ import { formatCountdown, secondsLeft } from '@/features/contracts/customerContr
 import { PaymentQr } from '@/features/payments/PaymentQr'
 import { isCheckoutUrl } from '@/features/payments/payosReturn'
 import { Facts } from '@/features/pre-surveys/Facts'
-import { QuotationLines, QuotationTerms, QuotationTotals } from '@/features/quotations/QuotationContent'
+import { BundledPackagesSection } from '@/features/quotations/BundledPackagesSection'
+import { customerTotal, hasServicePackages } from '@/features/quotations/bundledPackageRules'
+import { QuotationLines, QuotationTerms } from '@/features/quotations/QuotationContent'
+import { QuotationPricingSummary } from '@/features/quotations/QuotationPricingSummary'
 import {
   formatDateVn,
   formatQuotationMoney,
@@ -114,8 +117,8 @@ export function DecisionDialog({
     <ModalDialog open onOpenChange={(o) => !o && !busy && onClose()} dismissible={!busy} aria-label={text.title}>
       <DialogTitle>{text.title}</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        {quotationTitle(q)}, tổng {formatQuotationMoney(q.totalAmount, q.currency)}. Ghi bằng tài khoản của bạn, kèm giờ
-        và bản báo giá đang trình bày.
+        {quotationTitle(q)}, tổng {formatQuotationMoney(customerTotal(q), q.currency)}. Ghi bằng tài khoản của bạn, kèm
+        giờ và bản báo giá đang trình bày.
       </p>
       <div className="mt-4">
         <Field
@@ -179,13 +182,16 @@ export function PresentQuotationDialog({
     <ModalDialog open onOpenChange={(o) => !o && onClose()} className="max-w-5xl" aria-label="Báo giá lắp đặt">
       <DialogTitle>Báo giá lắp đặt {quotationTitle(q)}</DialogTitle>
       <p className="mt-2 text-body text-fg-2">
-        Hiệu lực đến hết ngày {formatDateVn(q.validUntil)}. Giá theo danh mục Smart Solar lúc chốt, đã gồm thuế{' '}
-        {q.taxRatePercent.toLocaleString('vi-VN')}%.
+        Hiệu lực đến hết ngày {formatDateVn(q.validUntil)}. Giá theo danh mục Smart Solar lúc chốt,{' '}
+        {hasServicePackages(q) ? 'chi phí lắp đặt ' : ''}đã gồm thuế {q.taxRatePercent.toLocaleString('vi-VN')}%.
       </p>
-      <p className="tnum mt-3 text-display font-semibold text-fg">{formatQuotationMoney(q.totalAmount, q.currency)}</p>
+      <p className="tnum mt-3 text-display font-semibold text-fg">
+        {formatQuotationMoney(customerTotal(q), q.currency)}
+      </p>
       <div className="mt-4 space-y-4">
         <QuotationLines quotation={q} />
-        <QuotationTotals quotation={q} className="ml-auto" />
+        <BundledPackagesSection quotation={q} />
+        <QuotationPricingSummary quotation={q} className="ml-auto" />
         <QuotationTerms quotation={q} />
         {!agreeable && q.status === 'ISSUED' && (
           <Notice tone="warn" title="Không ghi đồng ý được bản này">

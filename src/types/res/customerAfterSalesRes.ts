@@ -32,7 +32,19 @@ export type PaymentAttemptStatus =
   | 'REFUND_REQUIRED'
   | (string & {})
 
-/** GET /api/customers/me/after-sales/packages: gói đang bán (backend chỉ trả gói isActive) */
+/**
+ * PackagePricingUnits (backend 763cb0b). PER_PANEL: `price` là giá một tấm pin; PER_INSTALLATION_LEGACY: một giá cho cả công trình
+ * (mọi gói tạo trước 25/11/2026). Cố định từ lúc tạo gói
+ */
+export type PricingUnit = 'PER_PANEL' | 'PER_INSTALLATION_LEGACY' | (string & {})
+
+/** CoverageScopes: kỳ gói bảo vệ cả công trình (gói cũ) hay chỉ các tấm pin được phân bổ */
+export type CoverageScope = 'INSTALLATION' | 'PANEL' | (string & {})
+
+/**
+ * GET /api/customers/me/after-sales/packages: gói đang bán (backend chỉ trả gói isActive), cả hai đơn vị tính.
+ * GET /api/technician/service-packages?kind=: chỉ gói PER_PANEL đang bán, để kỹ thuật viên gắn vào báo giá lắp đặt
+ */
 export type PackageView = {
   packageId: string
   kind: ServicePackageKind
@@ -52,6 +64,76 @@ export type PackageView = {
   revision: number
   /** Ảnh bìa (link https tuyệt đối); null khi gói không có ảnh */
   imageUrl: string | null
+  /**
+   * Backend 763cb0b (luôn có). Máy chủ cũ không trả trường này: đọc qua `pricingUnitOf` để coi là gói theo hệ thống. Lượt bảo trì và
+   * hạn mức thiên tai luôn tính theo kỳ, không nhân với số tấm pin
+   */
+  pricingUnit: PricingUnit
+}
+
+/** Tấm pin (một dòng thiết bị đã lắp) được một kỳ gói PANEL bảo vệ, kèm số đơn vị được phân bổ (CoverageAllocationView) */
+export type CoverageAllocationView = {
+  allocationId: string
+  assetId: string
+  /** Tấm có serial là 1; lô ghi theo số lượng là số tấm của lô được bảo vệ */
+  unitCount: number
+  manufacturer: string
+  model: string
+  serialNumber: string | null
+  isLot: boolean
+  /** ACTIVE, REPLACED…; tấm đã thay vẫn giữ dòng phân bổ làm lịch sử. UNKNOWN khi không còn đọc được thiết bị */
+  assetStatus: string
+}
+
+/** Đơn vị của một tấm pin (hoặc một lô) theo loại gói: đã được giữ bởi kỳ khác, còn mua được */
+export type PanelUnitsView = {
+  kind: ServicePackageKind
+  heldUnits: number
+  availableUnits: number
+}
+
+/** Một dòng tấm pin đang hoạt động của công trình (PanelAssetView) */
+export type PanelAssetView = {
+  assetId: string
+  manufacturer: string
+  model: string
+  serialNumber: string | null
+  /** Lô ghi theo số lượng, không có serial từng tấm */
+  isLot: boolean
+  /** Số tấm của dòng: 1 với tấm có serial */
+  quantity: number
+  positionCode: string | null
+  coverage: PanelUnitsView[]
+}
+
+/** Sức chứa mua thêm của một loại gói (KindCapacityView) */
+export type KindCapacityView = {
+  kind: ServicePackageKind
+  activePanelUnits: number
+  heldUnits: number
+  /** Số tấm còn mua được; 0 khi có `blocker` */
+  availableUnits: number
+  /** Câu tiếng Anh của backend khi loại gói này đang bị chặn (gói cả công trình đang hiệu lực, gói đi kèm chờ đối soát…) */
+  blocker: string | null
+  /** Các kỳ PANEL của loại này gia hạn được ngay (mỗi kỳ gia hạn một lần) */
+  renewableSubscriptionIds: string[]
+}
+
+/**
+ * GET /api/customers/me/after-sales/contracts/{contractId}/panel-coverage (backend 763cb0b): khách mua thêm được gì theo tấm pin.
+ * FE lấy `availableUnits` làm giới hạn, không tự tính lại từ danh sách gói đã mua. `reason` là câu tiếng Anh của backend
+ */
+export type PanelEligibilityView = {
+  contractId: string
+  projectId: string | null
+  contractFullyPaid: boolean
+  handedOver: boolean
+  canPurchase: boolean
+  reason: string | null
+  panels: PanelAssetView[]
+  kinds: KindCapacityView[]
+  /** Gói PER_PANEL đang bán */
+  perPanelPackages: PackageView[]
 }
 
 /** Một lượt bảo trì của gói MAINTENANCE */
@@ -103,6 +185,18 @@ export type SubscriptionView = {
   paidAt: string | null
   cancellationRequestedAt: string | null
   entitlements: EntitlementView[]
+  // Backend 763cb0b (luôn có). Máy chủ cũ không trả các trường dưới: coverageScope thiếu nghĩa là INSTALLATION như trước
+  /** INSTALLATION: cả công trình (gói theo hệ thống); PANEL: chỉ các tấm được phân bổ */
+  coverageScope: CoverageScope
+  /** Kỳ PANEL: giá một tấm pin; `price` = đơn giá × `coveredUnits`. null với kỳ cũ */
+  unitPrice: number | null
+  coveredUnits: number | null
+  /** Chỉ kỳ PANEL: các tấm pin được bảo vệ (tấm đã thay vẫn giữ làm lịch sử); null với kỳ cả công trình */
+  coveredPanels: CoverageAllocationView[] | null
+  /** Có khi kỳ được tạo từ gói đi kèm hợp đồng lắp đặt (đã trả trong hai khoản 30/70) */
+  contractServicePackageId: string | null
+  /** Có khi kỳ này gia hạn một kỳ PANEL trước đó (bắt đầu khi kỳ đó hết) */
+  renewsSubscriptionId: string | null
 }
 
 /** ONLINE: link PayOS; CASH: khách chọn trả tiền mặt, quản lý / quản trị xác nhận đã nhận */
@@ -348,6 +442,8 @@ export type DisasterClaimView = {
   perIncidentLimit: number
   supportReserved: number
   supportConsumed: number
+  /** Kỳ PANEL: dòng phân bổ của tấm pin bị hư hại mà yêu cầu được xét theo (backend 763cb0b) */
+  coverageAllocationId: string | null
 }
 
 /**

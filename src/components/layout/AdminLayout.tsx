@@ -14,7 +14,7 @@ import { ROUTES } from '@/routes/paths'
 
 // Layout cho /admin/*. Số xám cạnh menu: tổng tài khoản, tổng sản phẩm, số gói dịch vụ đang bán. Không đếm khu vực ở đây:
 // API khu vực chung giới hạn 20 lần đọc / phút với điều phối và kỹ thuật viên mà layout đã gọi mỗi lần tải trang.
-// Số đỏ (điều phối, thi công, bảo hành, kỹ thuật viên) giống quản lý, xem useManagerNavAlerts; thêm thời hạn bảo hành lắp đặt
+// Số đỏ (điều phối, thi công, bảo hành, kỹ thuật viên, gói đi kèm chờ đối soát) giống quản lý, xem useManagerNavAlerts; thêm thời hạn bảo hành lắp đặt
 // còn thiếu (kinh doanh chưa phát hành được hợp đồng). Số xám cạnh "Việc của kinh doanh": việc chưa ai nhận (kinh doanh tự
 // nhận, quản trị giao khi cần)
 export function AdminLayout({ children }: { children?: ReactNode }) {
@@ -42,6 +42,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
         [ROUTES.admin.afterSales]: { value: alerts.afterSales, attention: true },
         [ROUTES.admin.products]: { value: productTotal },
         [ROUTES.admin.packages]: { value: packagesOnSale },
+        [ROUTES.admin.bundledPackages]: { value: alerts.reconciliation, attention: true },
         [ROUTES.admin.warrantyOptions]: { value: warrantyGap, attention: true },
         [ROUTES.admin.salesTasks]: { value: unclaimedTasks },
       }}

@@ -2,7 +2,7 @@
 // (462733c): Modules.Quotations (QuotationView, QuotationLineView, QuotationEventView, QuotationPaymentView). Kỹ thuật viên, kinh
 // doanh, quản lý nhận cùng một view. Khách không còn đọc báo giá (GET /customers/me/quotations trả 410). `pricingBasis`,
 // `pricingReview`, `pricingApproval` chỉ còn ở báo giá cũ (SALES / AUTOMATIC), báo giá của kỹ thuật viên luôn null
-import type { PaymentAttemptView } from '@/types/res/customerAfterSalesRes'
+import type { PaymentAttemptView, PricingUnit, ServicePackageKind } from '@/types/res/customerAfterSalesRes'
 
 /**
  * ISSUED: kỹ thuật viên đã chốt giá để trình bày tại công trình; ACCEPTED: kỹ thuật viên ghi khách đồng ý (giá không đổi nữa);
@@ -106,6 +106,32 @@ export type PricingApprovalView = {
 }
 
 /**
+ * Gói dịch vụ đi kèm báo giá lắp đặt (QuotationServicePackageView, backend 763cb0b): bản chụp giá và quyền lợi từ danh mục.
+ * `quantity` luôn bằng số tấm pin của báo giá, `totalAmount` = `unitPrice` × `quantity`, đều do backend tính; giá gói không cộng
+ * thuế báo giá. Chụp lại lúc chốt báo giá, từ đó không đổi theo danh mục
+ */
+export type QuotationServicePackageView = {
+  packageId: string
+  kind: ServicePackageKind
+  packageName: string
+  description: string | null
+  imageUrl: string | null
+  /** Luôn PER_PANEL */
+  pricingUnit: PricingUnit
+  unitPrice: number
+  quantity: number
+  totalAmount: number
+  durationMonths: number
+  visitMonths: number[]
+  coveredDisasterTypes: string[]
+  coveragePercent: number | null
+  perIncidentLimit: number | null
+  termLimit: number | null
+  catalogRevision: number
+  snapshotAt: string
+}
+
+/**
  * GET /technician/survey-requests/{id}/quotations, /technician/quotations/{id} và mọi lệnh ghi giỏ báo giá của kỹ thuật viên;
  * GET /survey-requests/{id}/quotations, /quotations/{id} (kinh doanh phụ trách, quản lý, quản trị chỉ đọc);
  * GET /customers/me/quotations(/{id}), accept, reject, revision-request của khách.
@@ -167,6 +193,18 @@ export type QuotationView = {
   closeReason: string | null
   /** Hợp đồng 30/70 backend lập lúc ghi khách đồng ý (backend 7d27054); ghi đồng ý lại thì vẫn là hợp đồng đó */
   contractId?: string | null
+  // Gói dịch vụ đi kèm (backend 763cb0b, luôn có). Máy chủ cũ không trả các trường dưới đây: khi đó báo giá không có gói và
+  // `totalAmount` vẫn là số trình bày cho khách (đọc qua bundledPackageRules, không đọc thẳng)
+  /** Bằng `totalAmount`: chi phí lắp đặt (dòng hàng + thuế báo giá). `totalAmount` giữ nguyên nghĩa này */
+  installationTotal: number | null
+  /** Số tấm pin nguyên của các dòng SOLAR_PANEL; null khi không có tấm pin hoặc tổng lẻ */
+  panelQuantity: number | null
+  servicePackages: QuotationServicePackageView[] | null
+  maintenancePackagesTotal: number
+  disasterPackagesTotal: number
+  servicePackagesTotal: number
+  /** Số trình bày cho khách và là tổng hợp đồng: chi phí lắp đặt + gói dịch vụ */
+  grandTotal: number | null
 }
 
 /**
