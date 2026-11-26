@@ -53,6 +53,7 @@ import { useTechnicianAssignment } from '@/hooks/usePaymentPlan'
 import { StaffContractSchedulePanel } from '@/features/installation-schedules/StaffContractSchedulePanel'
 import { OfficialDocumentDialog } from '@/features/contracts/OfficialDocumentDialog'
 import { SignaturePanel } from '@/features/contracts/SignaturePanel'
+import { TechPlanContract } from '@/features/contracts/tech-contract/TechPlanContract'
 import { FileInfo } from '@/features/files/FileInfo'
 import { Facts } from '@/features/pre-surveys/Facts'
 import { shortCode } from '@/features/pre-surveys/preSurveyDisplay'
@@ -485,6 +486,9 @@ function ContractPage({ viewer }: { viewer: ContractViewer }) {
       {(c) => {
         const status = contractStatusMeta(c.status)
         const list = versions.data ?? [c]
+        // Kỹ thuật viên: bố cục thẻ theo thiết kế 26/11/2026; kinh doanh, quản lý, quản trị giữ bố cục chung
+        if (isPaymentPlanContract(c) && viewer === 'technician')
+          return <TechPlanContract contract={c} versions={list} />
         if (isPaymentPlanContract(c)) return <PlanContract contract={c} viewer={viewer} versions={list} />
         return (
           <>
