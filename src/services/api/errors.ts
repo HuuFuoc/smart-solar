@@ -383,18 +383,16 @@ const ERROR_MESSAGES: Record<string, string> = {
   PAYMENT_CASH_ITEM_NOT_PAYABLE:
     'Khoản này không còn thu được (báo giá đã hết hạn, bị từ chối hoặc đã thay bản mới). Chưa ghi nhận gì. Đã tải lại.',
   PAYMENT_CASH_RECEIPT_DUPLICATE: 'Số phiếu thu này đã dùng cho một lần thanh toán khác. Kiểm tra lại số phiếu thu.',
-  // Phiếu thu tiền mặt kỹ thuật viên gửi, quản lý / quản trị xét duyệt (backend 147c66e)
+  // Phiếu thu tiền mặt kỹ thuật viên gửi (khoản 30/70 và báo giá hậu mãi), quản lý / quản trị xét duyệt (backend 9ae01e7)
   PAYMENT_CASH_RECEIPT_NOT_FOUND: 'Không tìm thấy phiếu thu này.',
-  PAYMENT_CASH_RECEIPT_ALREADY_SUBMITTED: 'Khoản này đã có phiếu thu đang chờ quản lý xác nhận. Đã tải lại.',
-  PAYMENT_CASH_RECEIPT_ATTEMPT_MISMATCH:
-    'Lần trả tiền mặt của khoản này vừa thay đổi. Đã tải lại, kiểm tra rồi gửi lại phiếu thu.',
+  PAYMENT_CASH_RECEIPT_ALREADY_SUBMITTED: 'Đã có phiếu thu đang chờ quản lý duyệt cho lần thu này. Đã tải lại.',
+  PAYMENT_CASH_RECEIPT_ATTEMPT_MISMATCH: 'Lần thu tiền mặt vừa thay đổi. Đã tải lại, kiểm tra rồi gửi lại.',
+  PAYMENT_CASH_RECEIPT_CONTEXT_MISMATCH: 'Lần thu tiền mặt không khớp với khoản này. Đã tải lại.',
+  PAYMENT_CASH_RECEIPT_EVIDENCE_REUSED: 'Ảnh này đã là phiếu thu của lần thanh toán khác. Chụp lại phiếu thu.',
   PAYMENT_CASH_RECEIPT_UNDER_REVIEW:
-    'Phiếu thu của lần trả tiền mặt này đang chờ quản lý xét duyệt (mục Phiếu thu tiền mặt) nên chưa huỷ hay xác nhận trực tiếp được.',
+    'Phiếu thu tiền mặt của khoản này đang chờ quản lý duyệt nên chưa huỷ, đổi cách trả hay xác nhận trực tiếp được.',
   PAYMENT_CASH_RECEIPT_NOT_REVIEWABLE: 'Phiếu thu này đã được xác nhận hoặc đã yêu cầu bổ sung. Đã tải lại.',
   PAYMENT_CASH_RECEIPT_STALE: 'Phiếu thu vừa thay đổi ở nơi khác. Đã tải lại, xem lại rồi quyết định.',
-  PAYMENT_CASH_RECEIPT_EVIDENCE_REUSED:
-    'Ảnh này đã là phiếu thu của một lần thanh toán khác. Chụp ảnh phiếu thu của đúng khoản này.',
-  PAYMENT_CASH_RECEIPT_CONTEXT_MISMATCH: 'Lần trả tiền mặt này không thuộc khoản đang gửi phiếu thu. Đã tải lại.',
   // Lịch thi công đã thống nhất với khách
   INSTALLATION_SCHEDULE_NOT_FOUND: 'Không tìm thấy lịch thi công này.',
   INSTALLATION_SCHEDULE_CONTRACT_NOT_FOUND:

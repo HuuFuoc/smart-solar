@@ -1,3 +1,4 @@
+import type { CashReceiptView } from '@/types/res/cashReceiptsRes'
 import type {
   InstalledAssetView,
   PaymentAttemptView,
@@ -47,4 +48,11 @@ export type ServiceQuotationPaymentView = {
   customerAmount: number
   nothingToPay: boolean
   current: PaymentAttemptView | null
+  /**
+   * Phiếu thu của lần thanh toán đang mở (backend 9ae01e7): phiếu chờ duyệt trước, rồi phiếu đã duyệt, không có thì phiếu mới
+   * nhất (vd. bị yêu cầu bổ sung). Null khi chưa gửi phiếu nào
+   */
+  currentCashReceipt?: CashReceiptView | null
+  /** Mọi phiếu đã gửi cho báo giá này, cũ trước */
+  cashReceipts?: CashReceiptView[] | null
 }

@@ -13,7 +13,7 @@ export function FileButton({
 }: Omit<ComponentProps<typeof Button>, 'onClick' | 'type'> & {
   accept: string
   multiple?: boolean
-  /** Điện thoại mở thẳng camera (`environment`: camera sau); máy tính vẫn mở hộp chọn tệp */
+  /** Mở thẳng máy ảnh trên điện thoại (`environment`: camera sau); máy tính vẫn mở hộp chọn tệp */
   capture?: 'environment' | 'user'
   onFiles: (files: File[]) => void
 }) {

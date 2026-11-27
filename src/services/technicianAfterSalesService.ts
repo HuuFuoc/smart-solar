@@ -10,7 +10,9 @@ import type {
 import type { EvidenceRequest } from '@/types/req/technicianInstallationsReq'
 import type { OnSiteCompletionRequest, TechnicianQuotationRequest } from '@/types/req/technicianAfterSalesQuotationsReq'
 import type { ServicePaymentMethodRequest } from '@/types/req/technicianAfterSalesOnSiteReq'
+import type { CashReceiptRequest } from '@/types/req/cashReceiptsReq'
 import type { PaymentAttemptView, ServiceEvidenceUrlView, ServiceRequestView } from '@/types/res/customerAfterSalesRes'
+import type { AttachedFileUrlView } from '@/types/res/paymentPlanRes'
 import type { ServiceQuotationPaymentView, TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 import { get, post } from '@/services/api/client'
 import { ENDPOINTS } from '@/services/api/endpoints'
@@ -109,6 +111,22 @@ export function getQuotationPayment(quotationId: string) {
 
 export function cancelQuotationPayment(quotationId: string) {
   return post<PaymentAttemptView>(api.quotationPaymentCancel(quotationId))
+}
+
+/** Gửi (hoặc gửi lại sau khi bị yêu cầu bổ sung) phiếu thu của lần tiền mặt đang mở; trả lại thanh toán của báo giá */
+export function submitCashReceipt(quotationId: string, body: CashReceiptRequest) {
+  return post<ServiceQuotationPaymentView>(api.quotationCashReceipt(quotationId), body)
+}
+
+/** Link xem ảnh phiếu đã gửi, sống vài phút: xin lúc bấm, không lưu */
+export function getCashReceiptEvidenceUrl(
+  quotationId: string,
+  receiptId: string,
+  disposition: 'inline' | 'attachment',
+) {
+  return get<AttachedFileUrlView>(api.quotationCashReceiptEvidenceUrl(quotationId, receiptId), {
+    params: { disposition },
+  })
 }
 
 /** Khách kiểm tra kết quả cùng kỹ thuật viên tại công trình: ghi chú bắt buộc, ảnh SERVICE_EVIDENCE đã xác minh không bắt buộc */

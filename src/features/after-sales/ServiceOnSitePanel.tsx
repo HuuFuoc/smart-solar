@@ -10,7 +10,9 @@ import { Notice } from '@/components/common/ui/lists'
 import { Panel, PanelBody, PanelHeader } from '@/components/common/ui/panel'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { paymentStatusMeta } from '@/features/after-sales/afterSalesDisplay'
+import { ServiceCashReceipt } from '@/features/after-sales/ServiceCashReceipt'
 import { formatVnd, quotationStatusMeta } from '@/features/after-sales/serviceDisplay'
+import { receiptStep } from '@/features/payments/cashReceiptRules'
 import {
   COMPLETION_PHOTOS_MAX,
   ON_SITE_NOTE_MAX,
@@ -35,7 +37,7 @@ import { errorMessage, isApiError } from '@/services/api/errors'
 import type { TechnicianVisitView } from '@/types/res/technicianAfterSalesRes'
 
 // Hậu mãi tại công trình: kỹ thuật viên trình bày báo giá sửa chữa / bảo trì mình lập, ghi khách đồng ý / không (khách không vào
-// ứng dụng), mở QR PayOS hoặc tiền mặt (quản lý xác nhận). Việc có phí chỉ làm sau khi tiền được xác minh; báo giá được bảo hiểm
+// ứng dụng), mở QR PayOS hoặc tiền mặt (kỹ thuật viên gửi phiếu thu, quản lý duyệt). Việc có phí chỉ làm sau khi tiền được xác minh; báo giá được bảo hiểm
 // hết thì đồng ý là làm được ngay. Làm xong, khách kiểm tra cùng thì kỹ thuật viên ghi khách đã xác nhận hoàn thành
 
 function serviceError(error: unknown) {
@@ -46,9 +48,18 @@ function serviceError(error: unknown) {
       return 'Đã ghi trả tiền mặt. Bỏ chọn tiền mặt trước nếu khách muốn quét QR.'
     if (error.code === 'PAYMENT_CHECKOUT_IN_PROGRESS')
       return 'Đang có mã QR chờ khách quét. Huỷ mã QR trước nếu khách trả tiền mặt.'
+    if (error.code === 'PAYMENT_CASH_RECEIPT_UNDER_REVIEW')
+      return 'Phiếu thu đang chờ quản lý duyệt nên chưa đổi được. Trang đã tải lại.'
   }
   return errorMessage(error)
 }
+
+/** Nhãn bước tiền mặt theo phiếu thu: đỏ là việc của kỹ thuật viên */
+const CASH_STEP_BADGE = {
+  capture: { label: 'Chưa gửi phiếu thu', tone: 'danger' },
+  review: { label: 'Chờ quản lý duyệt phiếu thu', tone: 'info' },
+  rejected: { label: 'Cần bổ sung phiếu thu', tone: 'danger' },
+} as const
 
 function DeclineDialog({ quotationId, onClose }: { quotationId: string; onClose: () => void }) {
   const decide = useServiceQuotationDecisionMutation()
@@ -145,6 +156,7 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
     )
   const attempt = q.current
   const closed = stage === 'closed' ? quotationStatusMeta(q.quotationStatus) : null
+  const cashBadge = stage === 'cash' ? CASH_STEP_BADGE[receiptStep(q.currentCashReceipt)] : null
 
   return (
     <section
@@ -159,7 +171,8 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
         )}
         {stage === 'pay' && <Badge tone="info">Khách đã đồng ý, chưa thanh toán</Badge>}
         {closed && <Badge tone={closed.tone}>{closed.label}</Badge>}
-        {stage === 'cash' && <Badge tone="info">Chờ quản lý xác nhận tiền mặt</Badge>}
+        {cashBadge && <Badge tone={cashBadge.tone}>{cashBadge.label}</Badge>}
+        {stage === 'unapplied' && <Badge tone="warn">Đã ghi nhận tiền, chờ quản lý xử lý</Badge>}
         {stage === 'online' && attempt && (
           <Badge tone={paymentStatusMeta(attempt.status, attempt.method).tone}>
             {paymentStatusMeta(attempt.status, attempt.method).label}
@@ -212,7 +225,7 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
             onClick={() =>
               void run(
                 () => start.mutateAsync({ quotationId, method: 'CASH' }),
-                'Đã ghi khách trả tiền mặt. Chờ quản lý xác nhận đã thu.',
+                'Đã ghi khách trả tiền mặt. Nhận tiền rồi chụp phiếu thu gửi quản lý.',
               )
             }
           >
@@ -271,17 +284,24 @@ function QuotationBlock({ quotationId }: { quotationId: string }) {
       )}
 
       {stage === 'cash' && (
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="text-body text-fg-2">Nộp tiền và phiếu thu cho quản lý; bạn không tự xác nhận được.</p>
-          <Button
-            icon="undo"
-            variant="warn"
-            disabled={busy}
-            onClick={() => void run(() => cancel.mutateAsync(quotationId), 'Đã bỏ chọn tiền mặt.')}
-          >
-            {cancel.isPending ? 'Đang bỏ chọn…' : 'Bỏ chọn tiền mặt'}
-          </Button>
-        </div>
+        <ServiceCashReceipt
+          quotationId={quotationId}
+          view={q}
+          cancelAction={(sending) => (
+            <Button
+              icon="undo"
+              variant="warn"
+              disabled={busy || sending}
+              onClick={() => void run(() => cancel.mutateAsync(quotationId), 'Đã bỏ chọn tiền mặt.')}
+            >
+              {cancel.isPending ? 'Đang bỏ chọn…' : 'Bỏ chọn tiền mặt'}
+            </Button>
+          )}
+        />
+      )}
+
+      {stage === 'unapplied' && (
+        <p className="text-body text-fg-2">Tiền chưa áp vào báo giá này. Không thu thêm; quản lý sẽ xử lý.</p>
       )}
 
       {error && (

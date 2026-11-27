@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { uploadFile } from '@/services/fileService'
 import * as visitService from '@/services/technicianAfterSalesService'
 import type { TechnicianQuotationRequest } from '@/types/req/technicianAfterSalesQuotationsReq'
+import type { CashReceiptRequest } from '@/types/req/cashReceiptsReq'
 import type { ApiError } from '@/services/api/errors'
 import type {
   ContinueRepairRequest,
@@ -139,6 +140,22 @@ export function useStartServicePaymentMutation() {
 
 export function useCancelServicePaymentMutation() {
   return useOnSiteWrite((quotationId: string) => visitService.cancelQuotationPayment(quotationId))
+}
+
+/**
+ * Gửi phiếu thu (ảnh đã tải và xác minh trước). Backend trả lại thanh toán của báo giá nên hiện ngay; tải lại chạy nền, không chờ,
+ * để lỗi (số phiếu trùng…) hiện ngay chứ không đợi cả trang tải lại
+ */
+export function useSubmitServiceCashReceiptMutation() {
+  const queryClient = useQueryClient()
+  return useMutation<ServiceQuotationPaymentView, ApiError, { quotationId: string; body: CashReceiptRequest }>({
+    mutationFn: ({ quotationId, body }) => visitService.submitCashReceipt(quotationId, body),
+    onSuccess: (view, { quotationId }) =>
+      queryClient.setQueryData(technicianAfterSalesKeys.quotationPayment(quotationId), view),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: technicianAfterSalesKeys.all })
+    },
+  })
 }
 
 export function useConfirmCompletionOnSiteMutation() {
