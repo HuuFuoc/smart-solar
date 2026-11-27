@@ -89,6 +89,10 @@ const ManageContractPage = page(() => import('@/pages/contract-page'), 'ManageCo
 const ManageContractsPage = page(() => import('@/pages/contracts-page'), 'ManageContractsPage')
 const ManagePaymentsPage = page(() => import('@/pages/payments-page'), 'ManagePaymentsPage')
 const AdminPaymentsPage = page(() => import('@/pages/payments-page'), 'AdminPaymentsPage')
+const ManageCashReceiptsPage = page(() => import('@/pages/cash-receipts-page'), 'ManageCashReceiptsPage')
+const AdminCashReceiptsPage = page(() => import('@/pages/cash-receipts-page'), 'AdminCashReceiptsPage')
+const ManageCashReceiptPage = page(() => import('@/pages/cash-receipt-page'), 'ManageCashReceiptPage')
+const AdminCashReceiptPage = page(() => import('@/pages/cash-receipt-page'), 'AdminCashReceiptPage')
 const ManageInstallationSchedulesPage = page(
   () => import('@/pages/installation-schedules-page'),
   'ManageInstallationSchedulesPage',
@@ -270,6 +274,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: manage.contract, lazy: ManageContractPage },
       { path: manage.installationSchedules, lazy: ManageInstallationSchedulesPage },
       { path: manage.payments, lazy: ManagePaymentsPage },
+      { path: manage.cashReceipts, lazy: ManageCashReceiptsPage },
+      { path: manage.cashReceipt, lazy: ManageCashReceiptPage },
       { path: manage.collections, lazy: ManageCollectionsPage },
       { path: manage.collection, lazy: ManageCollectionPage },
       { path: manage.afterSales, lazy: ManageAfterSalesPage },
@@ -304,6 +310,8 @@ export const protectedRoutes: RouteObject[] = [
       { path: admin.contract, lazy: AdminContractPage },
       { path: admin.installationSchedules, lazy: AdminInstallationSchedulesPage },
       { path: admin.payments, lazy: AdminPaymentsPage },
+      { path: admin.cashReceipts, lazy: AdminCashReceiptsPage },
+      { path: admin.cashReceipt, lazy: AdminCashReceiptPage },
       { path: admin.collections, lazy: AdminCollectionsPage },
       { path: admin.collection, lazy: AdminCollectionPage },
       { path: admin.packages, lazy: AdminPackagesPage },

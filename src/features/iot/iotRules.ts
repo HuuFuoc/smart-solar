@@ -155,6 +155,135 @@ export function chartPoints(readings: readonly IotReadingView[]) {
     .sort((a, b) => a.at - b.at)
 }
 
+export type ChartPoint = ReturnType<typeof chartPoints>[number]
+
+// ---------- Khung xem của biểu đồ dòng điện ----------
+// Chỉ đổi phần nhìn thấy (khoảng thời gian, khung trục), không đổi số nào: bảng số đo vẫn đủ, số nằm ngoài khung được ghi rõ
+
+export type ChartWindow = '15m' | '1h' | '6h' | '24h' | 'all'
+
+const WINDOW_MS: Record<Exclude<ChartWindow, 'all'>, number> = {
+  '15m': 15 * 60_000,
+  '1h': 60 * 60_000,
+  '6h': 6 * 60 * 60_000,
+  '24h': 24 * 60 * 60_000,
+}
+
+export const CHART_WINDOWS: readonly { value: ChartWindow; label: string }[] = [
+  { value: '15m', label: '15 phút' },
+  { value: '1h', label: '1 giờ' },
+  { value: '6h', label: '6 giờ' },
+  { value: '24h', label: '24 giờ' },
+  { value: 'all', label: 'Tất cả' },
+]
+
+/** Các điểm trong khoảng xem, tính lùi từ số đo mới nhất (điểm đã xếp tăng dần) */
+export function pointsInWindow<T extends { at: number }>(points: readonly T[], window: ChartWindow): T[] {
+  if (window === 'all' || points.length === 0) return [...points]
+  const end = points[points.length - 1]!.at
+  return points.filter((p) => p.at >= end - WINDOW_MS[window])
+}
+
+/** Khoảng xem mặc định: khoảng ngắn nhất có đủ `enough` số đo (ít số đo hơn thì phải chứa hết) */
+export function defaultWindow(points: readonly { at: number }[], enough = 20): ChartWindow {
+  const need = Math.min(enough, points.length)
+  for (const w of ['15m', '1h', '6h', '24h'] as const) if (pointsInWindow(points, w).length >= need) return w
+  return 'all'
+}
+
+const median = (xs: readonly number[]) => {
+  const s = [...xs].sort((a, b) => a - b)
+  const m = s.length >> 1
+  return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2
+}
+
+/**
+ * Số đo chênh hẳn các số đo xung quanh (lọc Hampel): lệch khỏi trung vị của 7 số đo liền kề quá 5 lần độ lệch thường và quá
+ * `floorAmps`. Cửa sổ dịch vào trong ở hai đầu để số đo mới nhất vẫn so với đủ số đo trước nó. Quá 20% số đo bị đánh dấu thì đó là
+ * mức đo thật, không đánh dấu số nào
+ */
+export function spikeIds(
+  points: readonly Pick<ChartPoint, 'readingId' | 'currentAmps'>[],
+  { half = 3, k = 5, floorAmps = 2 } = {},
+): Set<string> {
+  const out = new Set<string>()
+  const size = half * 2 + 1
+  if (points.length < size) return out
+  points.forEach((p, i) => {
+    const start = Math.min(Math.max(0, i - half), points.length - size)
+    const near = points.slice(start, start + size).map((q) => q.currentAmps)
+    const m = median(near)
+    const mad = median(near.map((v) => Math.abs(v - m)))
+    if (Math.abs(p.currentAmps - m) > Math.max(k * 1.4826 * mad, floorAmps)) out.add(p.readingId)
+  })
+  return out.size > points.length * 0.2 ? new Set() : out
+}
+
+const tidy = (n: number) => Number(n.toFixed(10)) || 0
+
+function niceStep(raw: number) {
+  const exp = 10 ** Math.floor(Math.log10(raw))
+  const f = raw / exp
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * exp
+}
+
+/**
+ * Khung trục dòng điện ôm sát các số đo, đệm 10% rồi làm tròn theo bước đẹp, kèm các mốc chia. Lấy cả mốc 0 khi số đo đổi dấu
+ * hoặc 0 nằm gần (cách không quá một lần độ rộng của số đo), để thấy chiều dòng điện; số đo quanh một mức xa 0 thì không kéo về 0
+ */
+export function ampsAxis(values: readonly number[]): { domain: [number, number]; ticks: number[] } {
+  if (values.length === 0) return { domain: [-1, 1], ticks: [-1, -0.5, 0, 0.5, 1] }
+  let lo = Math.min(...values)
+  let hi = Math.max(...values)
+  const span = hi - lo
+  if (lo > 0 && lo <= span) lo = 0
+  if (hi < 0 && -hi <= span) hi = 0
+  if (lo === hi) {
+    const d = Math.max(Math.abs(lo) * 0.1, 0.5)
+    lo -= d
+    hi += d
+  } else {
+    const pad = (hi - lo) * 0.1
+    if (lo !== 0) lo -= pad
+    if (hi !== 0) hi += pad
+  }
+  const step = niceStep((hi - lo) / 4)
+  const from = tidy(Math.floor(lo / step) * step)
+  const to = tidy(Math.ceil(hi / step) * step)
+  const ticks: number[] = []
+  for (let i = 0; tidy(from + i * step) <= to; i += 1) ticks.push(tidy(from + i * step))
+  return { domain: [from, to], ticks }
+}
+
+export type GapPoint = { readingId: string; at: number; receivedAt: null; currentAmps: null }
+
+/** Chèn điểm rỗng giữa hai số đo cách nhau quá `gapMs` để đường biểu đồ ngắt ở chỗ không có số đo, không vẽ nối qua */
+export function withGaps(
+  points: readonly ChartPoint[],
+  gapMs: number,
+): { line: (ChartPoint | GapPoint)[]; gaps: number } {
+  const line: (ChartPoint | GapPoint)[] = []
+  let gaps = 0
+  points.forEach((p, i) => {
+    const prev = points[i - 1]
+    if (prev && p.at - prev.at > gapMs) {
+      gaps += 1
+      line.push({
+        readingId: `gap-${prev.readingId}`,
+        at: Math.round((prev.at + p.at) / 2),
+        receivedAt: null,
+        currentAmps: null,
+      })
+    }
+    line.push(p)
+  })
+  return { line, gaps }
+}
+
+/** Khoảng thiếu để ngắt đường: 5 lần chu kỳ gửi, ít nhất 1 phút; chưa biết chu kỳ thì 5 phút */
+export const chartGapMs = (reportIntervalSeconds: number | null | undefined) =>
+  reportIntervalSeconds && reportIntervalSeconds > 0 ? Math.max(60, reportIntervalSeconds * 5) * 1000 : 5 * 60_000
+
 /** "2026-11-19" theo giờ Việt Nam → mốc đầu / cuối ngày gửi làm `from` / `to` */
 export const vnDayStart = (date: string) => (date ? `${date}T00:00:00+07:00` : undefined)
 export const vnDayEnd = (date: string) => (date ? `${date}T23:59:59.999+07:00` : undefined)

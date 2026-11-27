@@ -138,7 +138,15 @@ function MeasuredQuantities({ measured }: { measured: IotMeasuredMonitoringView 
   )
 }
 
-function History({ viewer, projectId }: { viewer: IotViewer; projectId: string }) {
+function History({
+  viewer,
+  projectId,
+  reportIntervalSeconds,
+}: {
+  viewer: IotViewer
+  projectId: string
+  reportIntervalSeconds?: number | null
+}) {
   const [draft, setDraft] = useState({ from: '', to: '' })
   const [range, setRange] = useState({ from: '', to: '' })
   const [asTable, setAsTable] = useState(false)
@@ -238,7 +246,7 @@ function History({ viewer, projectId }: { viewer: IotViewer; projectId: string }
               </Table>
             </div>
           ) : (
-            <CurrentChart points={points} />
+            <CurrentChart points={points} reportIntervalSeconds={reportIntervalSeconds} />
           )}
           {query.isError && <Notice tone="warn">{iotErrorMessage(query.error)}</Notice>}
           {query.hasNextPage && (
@@ -303,7 +311,11 @@ export function IotMonitoring({
       )}
       {/* Lịch sử vẫn xem được khi đã tháo thiết bị: số đo cũ của công trình không mất */}
       {!device.isPending && !(device.isError && isFeatureUnavailable(device.error)) && (
-        <History viewer={viewer} projectId={projectId} />
+        <History
+          viewer={viewer}
+          projectId={projectId}
+          reportIntervalSeconds={device.data?.expectedReportIntervalSeconds}
+        />
       )}
     </div>
   )

@@ -113,6 +113,12 @@ export const PORTALS: Record<PortalKey, Portal> = {
           },
           { label: 'Thu tiền', to: ROUTES.manage.payments, icon: 'payments' },
           {
+            label: 'Phiếu thu tiền mặt',
+            to: ROUTES.manage.cashReceipts,
+            icon: 'receipt_long',
+            alsoActiveOn: [ROUTES.manage.cashReceipt],
+          },
+          {
             label: 'Thu hồi công nợ',
             to: ROUTES.manage.collections,
             icon: 'request_quote',
@@ -149,6 +155,12 @@ export const PORTALS: Record<PortalKey, Portal> = {
           { label: 'Điều phối', to: ROUTES.admin.dispatch, icon: 'support_agent' },
           { label: 'Hợp đồng', to: ROUTES.admin.contracts, icon: 'history_edu', alsoActiveOn: [ROUTES.admin.contract] },
           { label: 'Thu tiền', to: ROUTES.admin.payments, icon: 'payments' },
+          {
+            label: 'Phiếu thu tiền mặt',
+            to: ROUTES.admin.cashReceipts,
+            icon: 'receipt_long',
+            alsoActiveOn: [ROUTES.admin.cashReceipt],
+          },
           {
             label: 'Thu hồi công nợ',
             to: ROUTES.admin.collections,

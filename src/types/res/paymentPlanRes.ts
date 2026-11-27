@@ -200,6 +200,100 @@ export type InstallmentPaymentView = {
   installationTotal: number | null
   servicePackagesTotal: number | null
   allocation: InstallmentAllocation | null
+  // Backend 147c66e (phiếu thu tiền mặt của kỹ thuật viên). Kỹ thuật viên và nhân viên đọc mới có; khách luôn null. Máy chủ cũ
+  // không gửi hai trường này (undefined): coi như chưa có chức năng phiếu thu, giữ luồng quản lý xác nhận tiền mặt trực tiếp
+  /** Phiếu thu của lần thanh toán hiện tại: SUBMITTED trước, rồi ACCEPTED, không thì phiếu mới nhất (vd. REJECTED) */
+  currentCashReceipt?: CashReceiptView | null
+  /** Mọi phiếu thu đã gửi cho các lần thanh toán của khoản này, cũ trước (lịch sử xét duyệt) */
+  cashReceipts?: CashReceiptView[] | null
+}
+
+/**
+ * CashReceiptStatuses. SUBMITTED: kỹ thuật viên đã gửi, chờ quản lý / quản trị, CHƯA trả; ACCEPTED: đã xác nhận, lần thanh toán
+ * PAID; REJECTED: yêu cầu bổ sung (lý do bắt buộc), gửi lại được; WITHDRAWN: chỉ còn trong lịch sử, luồng hiện tại không đặt
+ */
+export type CashReceiptStatus = 'SUBMITTED' | 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN' | (string & {})
+
+/** CashReceiptKinds: khoản 30/70 của hợp đồng lắp đặt, hoặc báo giá hậu mãi (backend f176ef9) */
+export type CashReceiptKind = 'INSTALLMENT' | 'SERVICE_QUOTATION' | (string & {})
+
+/** CashReceiptContexts: nhãn ngữ cảnh của dòng trong hàng chờ */
+export type CashReceiptContext =
+  'INSTALLATION_DEPOSIT' | 'INSTALLATION_BALANCE' | 'AFTER_SALES_QUOTATION' | (string & {})
+
+/**
+ * CashReceiptView (Modules.Payments.CashReceiptEntities): một lần gửi phiếu thu. Ảnh phiếu thu (`evidenceFileId`) chỉ xem qua link
+ * ký sẵn của đường kỹ thuật viên / quản lý, không đọc thẳng bằng /files
+ */
+export type CashReceiptView = {
+  cashReceiptId: string
+  paymentAttemptId: string
+  /** null với phiếu thu hậu mãi */
+  contractId: string | null
+  contractInstallmentId: string | null
+  /** Số tiền của lần thanh toán lúc gửi (đúng số phải thu) */
+  amount: number
+  receiptNumber: string
+  collectedByUserId: string
+  /** Lúc kỹ thuật viên nhận tiền (UTC) */
+  collectedAt: string
+  evidenceFileId: string
+  note: string | null
+  status: CashReceiptStatus
+  submittedAt: string
+  reviewedByUserId: string | null
+  reviewedAt: string | null
+  /** Lý do yêu cầu bổ sung (REJECTED), hoặc ghi chú khi xác nhận (ACCEPTED) */
+  reviewReason: string | null
+  /** Gửi lại khi xác nhận / yêu cầu bổ sung; số cũ thì 409 PAYMENT_CASH_RECEIPT_STALE */
+  revision: number
+  // Backend f176ef9; thiếu ở bản 147c66e (luôn là phiếu của khoản 30/70)
+  kind?: CashReceiptKind
+  serviceQuotationId?: string | null
+  serviceRequestId?: string | null
+}
+
+/** StaffCashReceiptView: một dòng hàng chờ của quản lý / quản trị */
+export type StaffCashReceiptView = {
+  receipt: CashReceiptView
+  /** Rỗng với phiếu thu hậu mãi */
+  contractNumber: string
+  /** 1 = 30%, 2 = 70%; null với phiếu thu hậu mãi */
+  installmentSequence: number | null
+  installmentKind: InstallmentKind | null
+  customerUserId: string
+  customerName: string
+  /** Kỹ thuật viên đã nhận tiền */
+  collectedByName: string
+  /** Trạng thái lần thanh toán: PENDING tới khi xác nhận, rồi PAID */
+  paymentStatus: string
+  // Backend f176ef9
+  context?: CashReceiptContext
+  serviceRequestId?: string | null
+  serviceRequestNumber?: string | null
+  serviceRequestKind?: string | null
+  serviceQuotationId?: string | null
+  quotationVersion?: number | null
+}
+
+/** Dòng của lần thanh toán trong chi tiết phiếu thu (PaymentLineView); REVIEW_REQUIRED: tiền đã ghi nhưng chưa áp được */
+export type CashReceiptPaymentLine = {
+  itemType: string
+  amount: number
+  status: string
+  contractId: string | null
+  subscriptionId: string | null
+  quotationId: string | null
+  installationQuotationId?: string | null
+  contractInstallmentId?: string | null
+}
+
+/** StaffCashReceiptDetail: phiếu đang xem, mọi lần gửi của cùng lần thanh toán (cũ trước), các dòng của lần thanh toán */
+export type StaffCashReceiptDetail = {
+  current: StaffCashReceiptView
+  history: CashReceiptView[]
+  /** Backend f176ef9; thiếu ở bản 147c66e */
+  lines?: CashReceiptPaymentLine[] | null
 }
 
 /** AttachedFileUrlView: link ký sẵn sống vài phút, không lưu */

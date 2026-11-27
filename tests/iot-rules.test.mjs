@@ -5,8 +5,11 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
+  ampsAxis,
   bindConflict,
+  chartGapMs,
   chartPoints,
+  defaultWindow,
   deviceIdError,
   formatAmps,
   isBindableProject,
@@ -18,13 +21,16 @@ import {
   normalizeDeviceId,
   noteError,
   parseAmps,
+  pointsInWindow,
   quantityText,
   rangeError,
   reasonError,
   registerBody,
   registerErrors,
+  spikeIds,
   vnDayEnd,
   vnDayStart,
+  withGaps,
 } from '../src/features/iot/iotRules.ts'
 
 const form = (over = {}) => ({
@@ -160,6 +166,63 @@ describe('Lịch sử số đo', () => {
         ['c', -0.3],
       ],
     )
+  })
+
+  // Tình huống thật 27/11/2026: vài số đo tối hôm trước, một loạt dày buổi sáng quanh 0–1 A, cuối loạt có số đo nhiễu −22 A
+  const t0 = Date.parse('2026-11-27T02:00:00Z')
+  const pt = (id, at, a) => ({ readingId: id, at, receivedAt: new Date(at).toISOString(), currentAmps: a })
+  const morning = Array.from({ length: 30 }, (_, i) =>
+    pt(`m${i}`, t0 + i * 5000, i % 3 === 0 ? 0 : 0.9 + (i % 5) * 0.03),
+  )
+  const burst = [
+    pt('e1', t0 - 13 * 3600_000, 0),
+    pt('e2', t0 - 13 * 3600_000 + 5000, 0),
+    ...morning,
+    pt('s1', t0 + 30 * 5000, -22.4),
+    pt('s2', t0 + 31 * 5000, -16.8),
+    pt('m30', t0 + 32 * 5000, 1.01),
+  ]
+
+  test('khoảng xem mặc định là khoảng ngắn nhất có đủ số đo gần nhất; Tất cả giữ mọi số đo', () => {
+    assert.equal(defaultWindow(burst), '15m')
+    assert.equal(pointsInWindow(burst, '15m').length, 33)
+    assert.equal(pointsInWindow(burst, 'all').length, burst.length)
+    // Ít số đo: khoảng phải chứa hết
+    assert.equal(defaultWindow(burst.slice(0, 5)), '24h')
+    assert.deepEqual(pointsInWindow([], '1h'), [])
+  })
+
+  test('số đo chênh hẳn xung quanh được đánh dấu, kể cả ở cuối loạt; mức đo thật hay bước đổi mức thì không', () => {
+    assert.deepEqual([...spikeIds(burst)].sort(), ['s1', 's2'])
+    // Dòng điện tăng hẳn lên một mức mới và giữ ở đó: không phải đột biến
+    const step = Array.from({ length: 20 }, (_, i) => pt(`k${i}`, t0 + i * 5000, i < 10 ? 0.5 : 8))
+    assert.equal(spikeIds(step).size, 0)
+    // Dao động nhỏ dưới ngưỡng tuyệt đối 2 A không bị đánh dấu
+    const noisy = Array.from({ length: 20 }, (_, i) => pt(`n${i}`, t0 + i * 5000, i === 10 ? 1.8 : 0))
+    assert.equal(spikeIds(noisy).size, 0)
+    assert.equal(spikeIds(burst.slice(0, 4)).size, 0)
+  })
+
+  test('khung trục ôm sát số đo thường, có mốc 0 khi gần, không kéo về 0 khi số đo quanh một mức xa', () => {
+    const normal = burst.filter((p) => !['s1', 's2'].includes(p.readingId)).map((p) => p.currentAmps)
+    const { domain, ticks } = ampsAxis(normal)
+    assert.deepEqual(domain, [0, 1.5])
+    assert.deepEqual(ticks, [0, 0.5, 1, 1.5])
+    assert.deepEqual(ampsAxis([-0.22, 1.04]).domain, [-0.5, 1.5])
+    const high = ampsAxis([9.6, 10.1, 10.4]).domain
+    assert.ok(high[0] > 9 && high[1] < 11, `${high}`)
+    assert.deepEqual(ampsAxis([0, 0]).domain, [-0.5, 0.5])
+    assert.deepEqual(ampsAxis([]).domain, [-1, 1])
+  })
+
+  test('đường ngắt ở chỗ thiếu số đo quá 5 chu kỳ gửi, không nối qua', () => {
+    const { line, gaps } = withGaps(pointsInWindow(burst, 'all'), chartGapMs(5))
+    assert.equal(gaps, 1)
+    const gap = line.find((p) => p.currentAmps === null)
+    assert.ok(gap && gap.at > burst[1].at && gap.at < burst[2].at)
+    assert.equal(chartGapMs(5), 60_000)
+    assert.equal(chartGapMs(30), 150_000)
+    assert.equal(chartGapMs(null), 300_000)
   })
 
   test('khoảng ngày theo giờ Việt Nam; từ ngày sau đến ngày thì chặn', () => {

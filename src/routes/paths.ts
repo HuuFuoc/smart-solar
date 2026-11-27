@@ -123,6 +123,9 @@ export const ROUTES = {
     salesTasks: '/manage/sales-tasks',
     /** Bàn thu tiền: xác nhận tiền mặt theo lần thanh toán, sổ tiền chưa áp (chỉ đọc) */
     payments: '/manage/payments',
+    /** Phiếu thu tiền mặt kỹ thuật viên gửi: hàng chờ xác nhận, chi tiết theo mã phiếu (dùng chung trang với quản trị) */
+    cashReceipts: '/manage/cash-receipts',
+    cashReceipt: '/manage/cash-receipts/:id',
     collections: '/manage/collections',
     collection: '/manage/collections/:id',
   },
@@ -143,6 +146,8 @@ export const ROUTES = {
     contract: '/admin/contracts/:id',
     installationSchedules: '/admin/installation-schedules',
     payments: '/admin/payments',
+    cashReceipts: '/admin/cash-receipts',
+    cashReceipt: '/admin/cash-receipts/:id',
     collections: '/admin/collections',
     collection: '/admin/collections/:id',
     packages: '/admin/packages',

@@ -1,6 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { INSTALLMENT_CASH_POLL_MS, INSTALLMENT_ONLINE_POLL_MS } from '@/common/paymentPlan'
+import { pollWithBackoff, receiptPollMs } from '@/features/cash-receipts/cashReceiptRules'
+import { cashReceiptKeys } from '@/hooks/cashReceiptKeys'
 import { contractKeys } from '@/hooks/useContracts'
 import { customerContractKeys } from '@/hooks/useCustomerContracts'
 import { customerInstallationKeys } from '@/hooks/useCustomerInstallations'
@@ -52,14 +54,23 @@ export function useRefreshContractWorld() {
           paymentDeskKeys.all,
           customerInstallationKeys.all,
           managerInstallationKeys.all,
+          cashReceiptKeys.all,
         ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
       ),
     [queryClient],
   )
 }
 
-/** Hỏi lại khi khách đang quét mã (backend đối soát với PayOS mỗi lần đọc) hoặc đang chờ quản lý xác nhận tiền mặt */
-export function installmentPollMs(view: Pick<InstallmentPaymentView, 'paymentState'> | undefined) {
+/**
+ * Hỏi lại khi khách đang quét mã (backend đối soát với PayOS mỗi lần đọc) hoặc đang chờ quản lý xác nhận tiền mặt. Phiếu thu kỹ
+ * thuật viên đã gửi thì hỏi dày hơn để thấy quản lý vừa xác nhận; bị yêu cầu bổ sung thì thôi hỏi (việc tiếp theo là của kỹ thuật
+ * viên, quay lại tab hoặc có mạng lại vẫn tải lại)
+ */
+export function installmentPollMs(
+  view: Pick<InstallmentPaymentView, 'paymentState' | 'current' | 'currentCashReceipt' | 'cashReceipts'> | undefined,
+) {
+  const receipt = receiptPollMs(view)
+  if (receipt !== null) return receipt
   if (view?.paymentState === 'ONLINE_IN_PROGRESS') return INSTALLMENT_ONLINE_POLL_MS
   if (view?.paymentState === 'AWAITING_CASH_CONFIRMATION') return INSTALLMENT_CASH_POLL_MS
   return false
@@ -74,8 +85,8 @@ export function useInstallmentPaymentQuery(
     queryKey: paymentPlanKeys.installment(actor, target.contractId, target.sequence),
     queryFn: () => installmentService.getInstallmentPayment(actor, target),
     enabled,
-    // Rời trang thì react-query tự dừng hỏi lại; tab ẩn cũng không hỏi
-    refetchInterval: (query) => installmentPollMs(query.state.data),
+    // Rời trang thì react-query tự dừng hỏi lại; tab ẩn cũng không hỏi. Bị giới hạn số lần (429) thì giãn nhịp theo Retry-After
+    refetchInterval: (query) => pollWithBackoff(installmentPollMs(query.state.data), query.state.error),
   })
 }
 

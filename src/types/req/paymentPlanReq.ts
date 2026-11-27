@@ -4,6 +4,33 @@
 /** InstallmentPaymentRequest */
 export type InstallmentPaymentRequest = { method: 'ONLINE' | 'CASH' }
 
+/**
+ * CashReceiptRequest (backend 147c66e): kỹ thuật viên gửi phiếu thu của lần trả tiền mặt đang mở. `paymentAttemptId` là
+ * `current.paymentAttemptId` của khoản; số phiếu 1–100 ký tự; ảnh là tệp PAYMENT_EVIDENCE VERIFIED của chính người gửi;
+ * `collectedAt` bỏ trống thì backend lấy giờ gửi (không sau giờ hiện tại quá 5 phút, không trước lúc chọn tiền mặt); ghi chú ≤ 500
+ */
+export type CashReceiptSubmitRequest = {
+  paymentAttemptId: string
+  receiptNumber: string
+  evidenceFileId: string
+  collectedAt?: string | null
+  note?: string | null
+}
+
+/** CashReceiptReviewRequest khi xác nhận: `revision` của phiếu đang xem, ghi chú ≤ 500 */
+export type CashReceiptAcceptRequest = { revision: number; note?: string | null }
+
+/** CashReceiptReviewRequest khi yêu cầu bổ sung: lý do bắt buộc ≤ 500, kỹ thuật viên thấy */
+export type CashReceiptRejectRequest = { revision: number; reason: string }
+
+/** Bộ lọc của GET /api/manager/payments/cash-receipts; bỏ `status` là mọi trạng thái */
+export type CashReceiptQuery = {
+  status?: string | null
+  kind?: 'INSTALLMENT' | 'SERVICE_QUOTATION' | null
+  page: number
+  pageSize: number
+}
+
 /** StartSignatureSetRequest: số trang 1–50, ngày ký YYYY-MM-DD, ghi chú ≤ 500 */
 export type StartSignatureSetRequest = { expectedPageCount: number; signedOn?: string | null; note?: string | null }
 

@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthProvider'
 import { installationWarrantyGap } from '@/features/after-sales/adminAfterSalesRules'
 import { useAdminPackagesQuery, useWarrantyOptionsQuery } from '@/hooks/useAdminAfterSales'
 import { useAdminUsersQuery } from '@/hooks/useAdminUsers'
+import { usePendingCashReceiptCount } from '@/hooks/useCashReceipts'
 import { useManagerNavAlerts } from '@/hooks/useManagerNavAlerts'
 import { usePendingCashCount } from '@/hooks/usePaymentDesk'
 import { useSalesTasksQuery } from '@/hooks/useManagerAfterSales'
@@ -24,6 +25,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
   const userTotal = useAdminUsersQuery({ page: 1, pageSize: 1 }, { enabled: isAdmin }).data?.totalItems
   const alerts = useManagerNavAlerts(isAdmin, ROUTES.admin)
   const pendingCash = usePendingCashCount({ enabled: isAdmin }).data
+  const pendingReceipts = usePendingCashReceiptCount({ enabled: isAdmin }).data
   const packagesOnSale = useAdminPackagesQuery({ enabled: isAdmin }).data?.filter((p) => p.isActive).length
   const warranty = useWarrantyOptionsQuery({ enabled: isAdmin }).data
   const unclaimedTasks = useSalesTasksQuery(undefined, { enabled: isAdmin }).data?.filter(
@@ -35,6 +37,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
       portal={PORTALS.admin}
       badges={{
         [ROUTES.admin.payments]: { value: pendingCash, attention: true },
+        [ROUTES.admin.cashReceipts]: { value: pendingReceipts, attention: true },
         [ROUTES.admin.users]: { value: userTotal },
         [ROUTES.admin.technicians]: { value: alerts.technicians, attention: true },
         [ROUTES.admin.dispatch]: { value: alerts.dispatch, attention: true },

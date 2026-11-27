@@ -6,6 +6,8 @@ import { DialogFooter, DialogTitle, ModalDialog } from '@/components/common/ui/d
 import { Notice } from '@/components/common/ui/lists'
 import { ErrorState, Skeleton } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
+import { InstallmentCashReceipt } from '@/features/cash-receipts/InstallmentCashReceipt'
+import { acceptedReceipt, cashReceiptUnderReview, receiptPanelFor } from '@/features/cash-receipts/cashReceiptRules'
 import { CashConfirmDialog } from '@/features/contracts/CashConfirmDialog'
 import { paymentStatusMeta } from '@/features/contracts/contractDisplay'
 import { formatCountdown, secondsLeft } from '@/features/contracts/customerContractRules'
@@ -38,7 +40,9 @@ import type { InstallmentPaymentView } from '@/types/res/paymentPlanRes'
 
 // Thanh toán một khoản của hợp đồng 30/70. Kỹ thuật viên (tại công trình) và khách (trong ứng dụng) mở QR PayOS hoặc ghi trả
 // tiền mặt; nhân viên khác chỉ đọc, quản lý / quản trị xác nhận tiền mặt đúng số của khoản. "Đã trả" chỉ hiện khi backend trả
-// PAID; trang PayOS chuyển về hay khách nói đã quét đều không đủ. Mở / huỷ bị giới hạn số lần nên chỉ gọi khi bấm
+// PAID; trang PayOS chuyển về hay khách nói đã quét đều không đủ. Mở / huỷ bị giới hạn số lần nên chỉ gọi khi bấm. Tiền mặt tại
+// công trình: kỹ thuật viên chụp phiếu thu gửi quản lý (InstallmentCashReceipt); phiếu đang chờ xét thì không bỏ chọn tiền mặt và
+// không xác nhận trực tiếp được (backend 409 PAYMENT_CASH_RECEIPT_UNDER_REVIEW). Khách không thấy phiếu thu
 
 function useNow(active: boolean) {
   const [now, setNow] = useState(() => Date.now())
@@ -238,6 +242,8 @@ export function InstallmentPaymentBlock({
 
   const state = installmentPaymentStateMeta(view.paymentState)
   const name = installmentName(view)
+  const underReview = cashReceiptUnderReview(view)
+  const accepted = acceptedReceipt(view)
 
   return (
     <div className="space-y-3">
@@ -255,18 +261,26 @@ export function InstallmentPaymentBlock({
 
       {isVerifiedInstallmentPaid(view) ? (
         <Notice tone="ok" title={`Đã nhận ${formatVnd(view.amount)}`}>
-          {view.current?.method === 'CASH' ? 'Quản lý đã xác nhận tiền mặt' : 'PayOS đã xác nhận'}
+          {accepted
+            ? `Quản lý đã xác nhận phiếu thu ${accepted.receiptNumber}`
+            : view.current?.method === 'CASH'
+              ? 'Quản lý đã xác nhận tiền mặt'
+              : 'PayOS đã xác nhận'}
           {view.paidAt ? ` lúc ${formatMoment(view.paidAt)}` : ''}
           {view.paidLate ? '. Trả sau hạn.' : '.'}
         </Notice>
       ) : view.paymentState === 'ONLINE_IN_PROGRESS' ? (
         <QrBlock view={view} actor={actor} checking={query.isFetching} onCheck={() => void query.refetch()} />
       ) : view.paymentState === 'AWAITING_CASH_CONFIRMATION' ? (
-        <p className="text-body text-fg-2">
-          {actor === 'customer'
-            ? 'Bạn đã chọn trả tiền mặt. Khoản này chỉ được ghi đã trả khi Smart Solar xác nhận đã thu đủ.'
-            : 'Chờ quản lý / quản trị xác nhận đã thu (đúng số tiền, số phiếu thu, ảnh phiếu thu).'}
-        </p>
+        receiptPanelFor(actor, view) ? (
+          <InstallmentCashReceipt actor={actor} view={view} canReview={canConfirmCash} />
+        ) : (
+          <p className="text-body text-fg-2">
+            {actor === 'customer'
+              ? 'Bạn đã chọn trả tiền mặt. Khoản này chỉ được ghi đã trả khi Smart Solar xác nhận đã thu đủ.'
+              : 'Chờ quản lý / quản trị xác nhận đã thu (đúng số tiền, số phiếu thu, ảnh phiếu thu).'}
+          </p>
+        )
       ) : view.paymentState === 'NOT_PAYABLE' ? (
         <p className="text-body text-fg-2">
           {view.kind === 'BALANCE' && view.installmentStatus === 'PENDING'
@@ -292,7 +306,7 @@ export function InstallmentPaymentBlock({
             </Button>
           </>
         )}
-        {writer && canCancelInstallment(view) && (
+        {writer && canCancelInstallment(view) && !underReview && (
           <Button icon="cancel" variant="danger" disabled={busy} onClick={() => void stop()}>
             {cancel.isPending
               ? 'Đang huỷ…'
@@ -301,13 +315,13 @@ export function InstallmentPaymentBlock({
                 : 'Huỷ mã QR'}
           </Button>
         )}
-        {canConfirmCash && view.paymentState === 'AWAITING_CASH_CONFIRMATION' && view.current && (
+        {canConfirmCash && view.paymentState === 'AWAITING_CASH_CONFIRMATION' && view.current && !underReview && (
           <Button icon="task_alt" variant="soft" onClick={() => setConfirming(true)}>
             Xác nhận đã thu
           </Button>
         )}
       </div>
-      {writer && canCancelInstallment(view) && (
+      {writer && canCancelInstallment(view) && !underReview && (
         <p className="text-meta text-fg-2">Muốn đổi cách trả thì huỷ lần đang mở trước.</p>
       )}
 

@@ -361,6 +361,13 @@ export const ENDPOINTS = {
   managerPayments: {
     base: '/manager/payments',
     cashConfirm: (attemptId: string) => `/manager/payments/${encode(attemptId)}/cash/confirm`,
+    // Phiếu thu tiền mặt kỹ thuật viên gửi (backend 147c66e): hàng chờ ?status=&kind=&page=&pageSize=, chi tiết, ảnh, xác nhận,
+    // yêu cầu bổ sung
+    cashReceipts: '/manager/payments/cash-receipts',
+    cashReceipt: (receiptId: string) => `/manager/payments/cash-receipts/${encode(receiptId)}`,
+    cashReceiptEvidenceUrl: (receiptId: string) => `/manager/payments/cash-receipts/${encode(receiptId)}/evidence/url`,
+    acceptCashReceipt: (receiptId: string) => `/manager/payments/cash-receipts/${encode(receiptId)}/accept`,
+    rejectCashReceipt: (receiptId: string) => `/manager/payments/cash-receipts/${encode(receiptId)}/reject`,
   },
 
   // Điều phối kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý và quản trị)
@@ -491,6 +498,11 @@ export const ENDPOINTS = {
       `/technician/contracts/${encode(contractId)}/installments/${sequence}/payment`,
     technicianCancel: (contractId: string, sequence: number) =>
       `/technician/contracts/${encode(contractId)}/installments/${sequence}/payment/cancel`,
+    /** Kỹ thuật viên gửi phiếu thu của lần trả tiền mặt đang mở (backend 147c66e) */
+    technicianCashReceipt: (contractId: string, sequence: number) =>
+      `/technician/contracts/${encode(contractId)}/installments/${sequence}/payment/cash-receipt`,
+    technicianCashReceiptEvidenceUrl: (contractId: string, sequence: number, receiptId: string) =>
+      `/technician/contracts/${encode(contractId)}/installments/${sequence}/payment/cash-receipts/${encode(receiptId)}/evidence/url`,
     customer: (contractId: string, sequence: number) =>
       `/customers/me/contracts/${encode(contractId)}/installments/${sequence}/payment`,
     customerCancel: (contractId: string, sequence: number) =>

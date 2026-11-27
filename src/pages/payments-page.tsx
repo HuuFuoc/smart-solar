@@ -20,9 +20,11 @@ import { QueryBoundary } from '@/components/common/ui/query-boundary'
 import { EmptyState } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { paymentStatusMeta } from '@/features/after-sales/afterSalesDisplay'
+import { receiptDetailPath } from '@/features/cash-receipts/cashReceiptRoutes'
 import { CashConfirmDialog } from '@/features/contracts/CashConfirmDialog'
 import { unappliedReasonText } from '@/features/payments/paymentDeskDisplay'
 import { formatMoment, vnTimestamp } from '@/features/scheduling/schedulingDisplay'
+import { useCashReceiptQueueQuery } from '@/hooks/useCashReceipts'
 import {
   useConfirmAttemptCashMutation,
   usePaymentDeskQuery,
@@ -35,7 +37,8 @@ import { formatMoney } from '@/utils/format'
 
 // Bàn thu tiền (quản lý và quản trị dùng chung): mặc định là các lần khách chọn trả tiền mặt đang chờ thu. Xác nhận đã thu
 // theo từng lần thanh toán (hợp đồng, gói, báo giá sửa chữa); số tiền phải đúng bằng số cần thu. Tab "Tiền chưa áp" là sổ chỉ
-// đọc các khoản tiền đã nhận mà không áp vào khoản nào: không duyệt hay hoàn tiền trên web. Mọi danh sách phân trang ở backend
+// đọc các khoản tiền đã nhận mà không áp vào khoản nào: không duyệt hay hoàn tiền trên web. Mọi danh sách phân trang ở backend.
+// Lần trả tiền mặt có phiếu thu kỹ thuật viên đã gửi đang chờ thì xét duyệt phiếu thu, không xác nhận trực tiếp (backend trả 409)
 
 const PAGE_SIZE = 20
 
@@ -53,6 +56,9 @@ const CONTRACTS = { manager: ROUTES.manage.contracts, admin: ROUTES.admin.contra
 const isInstallment = (row: StaffPaymentAttemptView) => row.lines.some((l) => l.itemType === 'CONTRACT_INSTALLMENT')
 
 const pageOf = (raw: string | null) => Math.max(1, Number.parseInt(raw ?? '1', 10) || 1)
+
+/** Phiếu thu đang chờ, theo lần thanh toán (tối đa 100 phiếu mới nhất; máy chủ chưa có phiếu thu thì rỗng) */
+const RECEIPTS_UNDER_REVIEW = { status: 'SUBMITTED', page: 1, pageSize: 100 } as const
 
 function Lines({ row }: { row: StaffPaymentAttemptView }) {
   if (row.lines.length === 0) return <span className="text-fg-2">Hợp đồng lắp đặt</span>
@@ -89,6 +95,8 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
   })
   const confirm = useConfirmAttemptCashMutation()
   const [confirming, setConfirming] = useState<StaffPaymentAttemptView | null>(null)
+  const reviewQueue = useCashReceiptQueueQuery(RECEIPTS_UNDER_REVIEW)
+  const underReview = new Map((reviewQueue.data?.items ?? []).map((r) => [r.receipt.paymentAttemptId, r.receipt]))
 
   // Đổi bộ lọc thì về trang 1
   const set = (key: string, value: string) =>
@@ -173,6 +181,7 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
                     const contractId = a.contractId ?? row.lines.find((l) => l.contractId)?.contractId ?? null
                     const installment = isInstallment(row)
                     const cashPending = a.method === 'CASH' && a.status === 'PENDING'
+                    const receipt = cashPending ? underReview.get(a.paymentAttemptId) : undefined
                     return (
                       <Tr key={a.paymentAttemptId}>
                         <Td label="Lần thanh toán">
@@ -190,16 +199,32 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
                           {a.providerReference && a.method === 'CASH' && (
                             <p className="text-meta text-fg-2">Phiếu thu {a.providerReference}</p>
                           )}
+                          {receipt && (
+                            <p className="text-meta text-fg-2">
+                              Kỹ thuật viên đã gửi phiếu thu {receipt.receiptNumber}
+                            </p>
+                          )}
                         </Td>
                         <Td label="Số tiền" className="tnum xl:text-right">
                           {formatMoney(a.amount, a.currency)}
                         </Td>
                         <Td>
                           <div className="flex flex-wrap gap-2 xl:justify-end">
-                            {cashPending && (
-                              <Button size="sm" icon="task_alt" variant="soft" onClick={() => setConfirming(row)}>
-                                Xác nhận đã thu
-                              </Button>
+                            {receipt ? (
+                              <ButtonLink
+                                size="sm"
+                                icon="fact_check"
+                                variant="soft"
+                                to={receiptDetailPath(viewer, receipt.cashReceiptId)}
+                              >
+                                Xét duyệt phiếu thu
+                              </ButtonLink>
+                            ) : (
+                              cashPending && (
+                                <Button size="sm" icon="task_alt" variant="soft" onClick={() => setConfirming(row)}>
+                                  Xác nhận đã thu
+                                </Button>
+                              )
                             )}
                             {contractId && (
                               <ButtonLink
