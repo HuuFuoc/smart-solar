@@ -21,12 +21,15 @@ import { EmptyState } from '@/components/common/ui/states'
 import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { paymentStatusMeta } from '@/features/after-sales/afterSalesDisplay'
 import { CashConfirmDialog } from '@/features/contracts/CashConfirmDialog'
+import { CashReceiptsTab, type Viewer } from '@/features/payments/CashReceiptQueue'
 import { unappliedReasonText } from '@/features/payments/paymentDeskDisplay'
 import { formatMoment, vnTimestamp } from '@/features/scheduling/schedulingDisplay'
 import {
   useConfirmAttemptCashMutation,
   usePaymentDeskQuery,
   usePendingCashCount,
+  useSubmittedReceiptByAttempt,
+  useSubmittedReceiptCount,
   useUnappliedMoneyQuery,
 } from '@/hooks/usePaymentDesk'
 import { ROUTES, withId } from '@/routes/paths'
@@ -34,18 +37,14 @@ import type { StaffPaymentAttemptView } from '@/types/res/staffPaymentsRes'
 import { formatMoney } from '@/utils/format'
 
 // Bàn thu tiền (quản lý và quản trị dùng chung): mặc định là các lần khách chọn trả tiền mặt đang chờ thu. Xác nhận đã thu
-// theo từng lần thanh toán (hợp đồng, gói, báo giá sửa chữa); số tiền phải đúng bằng số cần thu. Tab "Tiền chưa áp" là sổ chỉ
-// đọc các khoản tiền đã nhận mà không áp vào khoản nào: không duyệt hay hoàn tiền trên web. Mọi danh sách phân trang ở backend
+// theo từng lần thanh toán (hợp đồng, gói, báo giá sửa chữa); số tiền phải đúng bằng số cần thu. Tab "Phiếu thu" duyệt phiếu
+// kỹ thuật viên gửi sau khi nhận tiền tại công trình. Tab "Tiền chưa áp" là sổ chỉ đọc các khoản tiền đã nhận mà không áp vào
+// khoản nào: không duyệt hay hoàn tiền trên web. Mọi danh sách phân trang ở backend
 
 const PAGE_SIZE = 20
 
-type Tab = '' | 'tien-chua-ap'
-const TABS: { value: Tab; label: string }[] = [
-  { value: '', label: 'Lần thanh toán' },
-  { value: 'tien-chua-ap', label: 'Tiền chưa áp' },
-]
-
-type Viewer = 'manager' | 'admin'
+type Tab = '' | 'phieu-thu' | 'tien-chua-ap'
+const TAB_VALUES: Tab[] = ['', 'phieu-thu', 'tien-chua-ap']
 const CONTRACT_PATTERN = { manager: ROUTES.manage.contract, admin: ROUTES.admin.contract }
 const CONTRACTS = { manager: ROUTES.manage.contracts, admin: ROUTES.admin.contracts }
 
@@ -89,6 +88,8 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
   })
   const confirm = useConfirmAttemptCashMutation()
   const [confirming, setConfirming] = useState<StaffPaymentAttemptView | null>(null)
+  // Lần tiền mặt kỹ thuật viên đã gửi phiếu: backend chặn xác nhận thẳng (409), mở phiếu để duyệt
+  const receiptOf = useSubmittedReceiptByAttempt({ enabled: method !== 'ONLINE' }).data
 
   // Đổi bộ lọc thì về trang 1
   const set = (key: string, value: string) =>
@@ -173,6 +174,7 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
                     const contractId = a.contractId ?? row.lines.find((l) => l.contractId)?.contractId ?? null
                     const installment = isInstallment(row)
                     const cashPending = a.method === 'CASH' && a.status === 'PENDING'
+                    const receiptId = cashPending ? receiptOf?.get(a.paymentAttemptId) : undefined
                     return (
                       <Tr key={a.paymentAttemptId}>
                         <Td label="Lần thanh toán">
@@ -196,10 +198,21 @@ function PaymentsTab({ viewer }: { viewer: Viewer }) {
                         </Td>
                         <Td>
                           <div className="flex flex-wrap gap-2 xl:justify-end">
-                            {cashPending && (
-                              <Button size="sm" icon="task_alt" variant="soft" onClick={() => setConfirming(row)}>
-                                Xác nhận đã thu
-                              </Button>
+                            {receiptId ? (
+                              <ButtonLink
+                                size="sm"
+                                icon="receipt_long"
+                                variant="soft"
+                                to={`?muc=phieu-thu&trang-thai=SUBMITTED&phieu=${encodeURIComponent(receiptId)}`}
+                              >
+                                Duyệt phiếu thu
+                              </ButtonLink>
+                            ) : (
+                              cashPending && (
+                                <Button size="sm" icon="task_alt" variant="soft" onClick={() => setConfirming(row)}>
+                                  Xác nhận đã thu
+                                </Button>
+                              )
                             )}
                             {contractId && (
                               <ButtonLink
@@ -360,8 +373,9 @@ function UnappliedTab() {
 
 function PaymentsPage({ viewer }: { viewer: Viewer }) {
   const [params, setParams] = useSearchParams()
-  const tab: Tab = params.get('muc') === 'tien-chua-ap' ? 'tien-chua-ap' : ''
+  const tab = TAB_VALUES.find((t) => t === params.get('muc')) ?? ''
   const pending = usePendingCashCount().data
+  const receipts = useSubmittedReceiptCount().data
 
   return (
     <div>
@@ -372,11 +386,21 @@ function PaymentsPage({ viewer }: { viewer: Viewer }) {
       <FilterChips
         className="mb-4"
         label="Mục"
-        chips={TABS}
+        chips={[
+          { value: '', label: 'Lần thanh toán' },
+          { value: 'phieu-thu', label: 'Phiếu thu', count: receipts, attention: true },
+          { value: 'tien-chua-ap', label: 'Tiền chưa áp' },
+        ]}
         value={tab}
         onChange={(next) => setParams(next ? { muc: next } : {}, { replace: true })}
       />
-      {tab === 'tien-chua-ap' ? <UnappliedTab /> : <PaymentsTab viewer={viewer} />}
+      {tab === 'phieu-thu' ? (
+        <CashReceiptsTab viewer={viewer} />
+      ) : tab === 'tien-chua-ap' ? (
+        <UnappliedTab />
+      ) : (
+        <PaymentsTab viewer={viewer} />
+      )}
     </div>
   )
 }

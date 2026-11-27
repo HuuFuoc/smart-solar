@@ -383,6 +383,16 @@ const ERROR_MESSAGES: Record<string, string> = {
   PAYMENT_CASH_ITEM_NOT_PAYABLE:
     'Khoản này không còn thu được (báo giá đã hết hạn, bị từ chối hoặc đã thay bản mới). Chưa ghi nhận gì. Đã tải lại.',
   PAYMENT_CASH_RECEIPT_DUPLICATE: 'Số phiếu thu này đã dùng cho một lần thanh toán khác. Kiểm tra lại số phiếu thu.',
+  // Phiếu thu kỹ thuật viên gửi, quản lý / quản trị duyệt
+  PAYMENT_CASH_RECEIPT_NOT_FOUND: 'Không tìm thấy phiếu thu này.',
+  PAYMENT_CASH_RECEIPT_ALREADY_SUBMITTED: 'Đã có phiếu thu đang chờ quản lý duyệt cho lần thu này. Đã tải lại.',
+  PAYMENT_CASH_RECEIPT_ATTEMPT_MISMATCH: 'Lần thu tiền mặt vừa thay đổi. Đã tải lại, kiểm tra rồi gửi lại.',
+  PAYMENT_CASH_RECEIPT_CONTEXT_MISMATCH: 'Lần thu tiền mặt không khớp với khoản này. Đã tải lại.',
+  PAYMENT_CASH_RECEIPT_EVIDENCE_REUSED: 'Ảnh này đã là phiếu thu của lần thanh toán khác. Chụp lại phiếu thu.',
+  PAYMENT_CASH_RECEIPT_UNDER_REVIEW:
+    'Nhân viên đã gửi phiếu thu tiền mặt cho khoản này và đang chờ duyệt, nên chưa huỷ hay đổi cách trả được.',
+  PAYMENT_CASH_RECEIPT_NOT_REVIEWABLE: 'Phiếu thu này đã được duyệt hoặc đã yêu cầu bổ sung. Đã tải lại.',
+  PAYMENT_CASH_RECEIPT_STALE: 'Phiếu thu vừa thay đổi. Đã tải lại, xem lại rồi duyệt.',
   // Lịch thi công đã thống nhất với khách
   INSTALLATION_SCHEDULE_NOT_FOUND: 'Không tìm thấy lịch thi công này.',
   INSTALLATION_SCHEDULE_CONTRACT_NOT_FOUND:

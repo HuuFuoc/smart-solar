@@ -6,12 +6,15 @@ import { Button } from '@/components/common/ui/button'
 export function FileButton({
   accept,
   multiple,
+  capture,
   onFiles,
   disabled,
   ...button
 }: Omit<ComponentProps<typeof Button>, 'onClick' | 'type'> & {
   accept: string
   multiple?: boolean
+  /** Mở thẳng máy ảnh trên điện thoại (`environment`: camera sau); máy tính vẫn mở hộp chọn tệp */
+  capture?: 'environment' | 'user'
   onFiles: (files: File[]) => void
 }) {
   const input = useRef<HTMLInputElement>(null)
@@ -22,6 +25,7 @@ export function FileButton({
         type="file"
         accept={accept}
         multiple={multiple}
+        capture={capture}
         disabled={disabled}
         tabIndex={-1}
         aria-hidden

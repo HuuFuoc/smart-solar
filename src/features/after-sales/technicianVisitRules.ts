@@ -263,28 +263,39 @@ type OnSiteQuote = {
   quotationStatus: string
   nothingToPay: boolean
   current: { status: string; method: string } | null
+  currentCashReceipt?: { status: string } | null
 }
 
 const LIVE_ATTEMPT = ['PENDING', 'PROCESSING']
+/** Lần thanh toán đã nhận tiền (kể cả chờ đối soát) */
+const MONEY_RECEIVED = ['PAID', 'REVIEW_REQUIRED']
 
 /**
  * Bước của một báo giá tại công trình: `decide` chờ khách đồng ý / không; `pay` đã đồng ý, chưa mở thanh toán; `online` mã QR đang
- * chờ; `cash` chờ quản lý xác nhận tiền mặt; `authorized` đã trả hoặc không phải trả, làm được; `closed` báo giá đã đóng
+ * chờ; `cash` khách trả tiền mặt, kỹ thuật viên gửi phiếu thu cho quản lý duyệt; `authorized` đã trả hoặc không phải trả, làm được;
+ * `unapplied` tiền đã nhận nhưng không áp vào báo giá (vd. thu sau hạn): không mở thanh toán lại, quản lý xử lý; `closed` báo giá
+ * đã đóng
  */
 export function serviceQuoteStage(q: OnSiteQuote | null | undefined) {
   if (!q) return null
   if (q.quotationStatus === 'ISSUED') return 'decide' as const
   if (q.quotationStatus === 'PAID' || (q.quotationStatus === 'ACCEPTED' && q.nothingToPay)) return 'authorized' as const
+  if (q.current && MONEY_RECEIVED.includes(q.current.status)) return 'unapplied' as const
   if (q.quotationStatus !== 'ACCEPTED') return 'closed' as const
   if (q.current && LIVE_ATTEMPT.includes(q.current.status))
     return q.current.method === 'CASH' ? ('cash' as const) : ('online' as const)
   return 'pay' as const
 }
 
-/** QR 5 giây một lần, tiền mặt 1 phút một lần, không có gì đang mở thì thôi hỏi (backend cho 30 lần xem / phút) */
+/**
+ * QR 5 giây một lần; phiếu thu đang chờ duyệt 15 giây một lần để thấy ngay khi quản lý duyệt; tiền mặt chưa gửi phiếu 1 phút một
+ * lần; không có gì đang mở thì thôi hỏi (backend cho 30 lần xem / phút)
+ */
 export function serviceQuotationPollMs(q: OnSiteQuote | null | undefined): number | false {
   const stage = serviceQuoteStage(q)
-  return stage === 'online' ? 5_000 : stage === 'cash' ? 60_000 : false
+  if (stage === 'online') return 5_000
+  if (stage === 'cash') return q?.currentCashReceipt?.status === 'SUBMITTED' ? 15_000 : 60_000
+  return false
 }
 
 export const ON_SITE_NOTE_MAX = 1000

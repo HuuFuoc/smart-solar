@@ -301,6 +301,11 @@ export const ENDPOINTS = {
     quotationPayment: (quotationId: string) => `/technicians/me/after-sales/quotations/${encode(quotationId)}/payment`,
     quotationPaymentCancel: (quotationId: string) =>
       `/technicians/me/after-sales/quotations/${encode(quotationId)}/payment/cancel`,
+    // Phiếu thu tiền mặt kỹ thuật viên chụp sau khi nhận tiền; quản lý duyệt mới thành đã trả
+    quotationCashReceipt: (quotationId: string) =>
+      `/technicians/me/after-sales/quotations/${encode(quotationId)}/payment/cash-receipt`,
+    quotationCashReceiptEvidenceUrl: (quotationId: string, receiptId: string) =>
+      `/technicians/me/after-sales/quotations/${encode(quotationId)}/payment/cash-receipts/${encode(receiptId)}/evidence/url`,
   },
 
   // Thi công, phía quản lý và quản trị
@@ -361,6 +366,12 @@ export const ENDPOINTS = {
   managerPayments: {
     base: '/manager/payments',
     cashConfirm: (attemptId: string) => `/manager/payments/${encode(attemptId)}/cash/confirm`,
+    // Hàng đợi phiếu thu kỹ thuật viên gửi (?status=&kind=&page=&pageSize=), chung cho khoản 30/70 và báo giá hậu mãi
+    cashReceipts: '/manager/payments/cash-receipts',
+    cashReceipt: (receiptId: string) => `/manager/payments/cash-receipts/${encode(receiptId)}`,
+    cashReceiptEvidenceUrl: (receiptId: string) => `/manager/payments/cash-receipts/${encode(receiptId)}/evidence/url`,
+    acceptCashReceipt: (receiptId: string) => `/manager/payments/cash-receipts/${encode(receiptId)}/accept`,
+    rejectCashReceipt: (receiptId: string) => `/manager/payments/cash-receipts/${encode(receiptId)}/reject`,
   },
 
   // Điều phối kỹ thuật viên cho công trình chưa có người nhận lịch (quản lý và quản trị)
