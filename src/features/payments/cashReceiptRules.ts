@@ -1,8 +1,6 @@
 import type { Tone } from '@/components/common/ui/badge'
 import type { CashReceiptRequest } from '@/types/req/cashReceiptsReq'
-import type { CashReceiptView, StaffCashReceiptView } from '@/types/res/cashReceiptsRes'
-import type { PaymentLineView } from '@/types/res/staffPaymentsRes'
-import { SERVICE_REQUEST_KINDS } from '../../common/afterSales.ts'
+import type { CashReceiptView } from '@/types/res/cashReceiptsRes'
 import { VN_TIME_ZONE, formatMoment, todayVn, vnTimestamp } from '../scheduling/schedulingDisplay.ts'
 
 // Phiếu thu tiền mặt kỹ thuật viên gửi (backend 9ae01e7, PR #24). Gửi phiếu không phải đã trả: lần thanh toán vẫn PENDING tới khi
@@ -11,7 +9,6 @@ import { VN_TIME_ZONE, formatMoment, todayVn, vnTimestamp } from '../scheduling/
 
 export const RECEIPT_NUMBER_MAX = 100
 export const RECEIPT_NOTE_MAX = 500
-export const REVIEW_REASON_MAX = 500
 /** Backend cho đồng hồ máy kỹ thuật viên lệch tới 5 phút về tương lai */
 const CLOCK_SKEW_MS = 5 * 60_000
 
@@ -27,59 +24,9 @@ const TECHNICIAN_STATUSES: Record<string, Meta> = {
   WITHDRAWN: { label: 'Đã đóng', tone: 'neutral' },
 }
 
-/** Quản lý / quản trị: đỏ là phiếu chờ mình duyệt */
-const STAFF_STATUSES: Record<string, Meta> = {
-  SUBMITTED: { label: 'Chờ duyệt', tone: 'danger' },
-  ACCEPTED: { label: 'Đã duyệt', tone: 'ok' },
-  REJECTED: { label: 'Đã yêu cầu bổ sung', tone: 'warn' },
-  WITHDRAWN: { label: 'Đã đóng', tone: 'neutral' },
+export function receiptStatusMeta(status: string): Meta {
+  return TECHNICIAN_STATUSES[status] ?? { label: status, tone: 'neutral' }
 }
-
-export function receiptStatusMeta(status: string, viewer: 'technician' | 'staff'): Meta {
-  return (viewer === 'staff' ? STAFF_STATUSES : TECHNICIAN_STATUSES)[status] ?? { label: status, tone: 'neutral' }
-}
-
-const CONTEXTS: Record<string, string> = {
-  INSTALLATION_DEPOSIT: 'Cọc 30%',
-  INSTALLATION_BALANCE: 'Thanh toán 70%',
-  AFTER_SALES_QUOTATION: 'Hậu mãi',
-}
-
-/** Loại khoản của một dòng hàng đợi: "Cọc 30%" / "Thanh toán 70%" / "Hậu mãi" */
-export function receiptContextLabel(row: Pick<StaffCashReceiptView, 'context'>) {
-  return CONTEXTS[row.context] ?? 'Khoản khác'
-}
-
-/** Khoản cụ thể: "Hợp đồng HD-…" hoặc "AS-… bản 2, Báo lỗi"; thiếu dữ liệu thì bỏ phần đó, không in chữ rỗng */
-export function receiptContextDetail(
-  row: Pick<
-    StaffCashReceiptView,
-    'context' | 'contractNumber' | 'serviceRequestNumber' | 'serviceRequestKind' | 'quotationVersion'
-  >,
-) {
-  if (row.context === 'AFTER_SALES_QUOTATION') {
-    const request = [row.serviceRequestNumber, row.quotationVersion != null ? `bản ${row.quotationVersion}` : null]
-      .filter(Boolean)
-      .join(' ')
-    const kind = row.serviceRequestKind ? (SERVICE_REQUEST_KINDS[row.serviceRequestKind] ?? null) : null
-    return [request, kind].filter(Boolean).join(', ')
-  }
-  return row.contractNumber ? `Hợp đồng ${row.contractNumber}` : ''
-}
-
-/** Bộ lọc hàng đợi; mặc định là phiếu chờ duyệt */
-export const RECEIPT_STATUS_FILTERS = [
-  { value: 'SUBMITTED', label: 'Chờ duyệt' },
-  { value: 'ACCEPTED', label: 'Đã duyệt' },
-  { value: 'REJECTED', label: 'Yêu cầu bổ sung' },
-  { value: '', label: 'Tất cả' },
-] as const
-
-export const RECEIPT_KIND_FILTERS = [
-  { value: '', label: 'Mọi loại' },
-  { value: 'INSTALLMENT', label: 'Lắp đặt 30/70' },
-  { value: 'SERVICE_QUOTATION', label: 'Hậu mãi' },
-] as const
 
 // ---------- Kỹ thuật viên ----------
 
@@ -174,20 +121,3 @@ export function cashReceiptBody(
     note: form.note.trim() || null,
   }
 }
-
-/** Lý do yêu cầu bổ sung: bắt buộc, tối đa 500 ký tự, kỹ thuật viên đọc được */
-export function reviewReasonError(reason: string) {
-  const text = reason.trim()
-  if (!text) return 'Ghi điều kỹ thuật viên cần sửa.'
-  if (text.length > REVIEW_REASON_MAX) return `Tối đa ${REVIEW_REASON_MAX} ký tự.`
-  return null
-}
-
-// ---------- Kết quả duyệt ----------
-
-/**
- * Dòng có tiền đã ghi nhận mà không áp được (thu sau hạn báo giá, báo giá không còn nhận tiền): tiền nằm ở sổ tiền chưa áp, báo
- * giá không thành đã trả. Không coi là thanh toán xong
- */
-export const unappliedLines = (lines: PaymentLineView[] | null | undefined) =>
-  (lines ?? []).filter((l) => l.status === 'REVIEW_REQUIRED')

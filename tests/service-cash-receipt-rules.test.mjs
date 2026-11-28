@@ -8,13 +8,9 @@ import {
   cashReceiptBody,
   earlierReceipts,
   isUnderReview,
-  receiptContextDetail,
-  receiptContextLabel,
   receiptFormErrors,
   receiptStatusMeta,
   receiptStep,
-  reviewReasonError,
-  unappliedLines,
 } from '../src/features/payments/cashReceiptRules.ts'
 import { serviceQuotationPollMs, serviceQuoteStage } from '../src/features/after-sales/technicianVisitRules.ts'
 
@@ -82,6 +78,12 @@ describe('kỹ thuật viên gửi phiếu thu', () => {
 })
 
 describe('bước tiền mặt theo phiếu thu', () => {
+  test('nhãn phiếu của kỹ thuật viên: bị trả lại là việc phải làm (đỏ)', () => {
+    assert.equal(receiptStatusMeta('REJECTED').tone, 'danger')
+    assert.equal(receiptStatusMeta('SUBMITTED').tone, 'info')
+    assert.equal(receiptStatusMeta('LA').label, 'LA')
+  })
+
   test('chưa gửi thì chụp; đang chờ duyệt thì khoá; bị yêu cầu bổ sung thì gửi lại', () => {
     assert.equal(receiptStep(null), 'capture')
     assert.equal(receiptStep({ status: 'SUBMITTED' }), 'review')
@@ -116,53 +118,7 @@ describe('bước tiền mặt theo phiếu thu', () => {
   })
 })
 
-describe('quản lý duyệt phiếu thu', () => {
-  const row = (context, extra = {}) => ({
-    context,
-    contractNumber: '',
-    serviceRequestNumber: null,
-    serviceRequestKind: null,
-    quotationVersion: null,
-    ...extra,
-  })
-
-  test('nhãn khoản theo ngữ cảnh, không in chữ rỗng hay undefined', () => {
-    assert.equal(receiptContextLabel(row('INSTALLATION_DEPOSIT')), 'Cọc 30%')
-    assert.equal(receiptContextLabel(row('INSTALLATION_BALANCE')), 'Thanh toán 70%')
-    assert.equal(receiptContextLabel(row('AFTER_SALES_QUOTATION')), 'Hậu mãi')
-    assert.equal(receiptContextLabel(row('LA')), 'Khoản khác')
-    assert.equal(
-      receiptContextDetail(
-        row('AFTER_SALES_QUOTATION', {
-          serviceRequestNumber: 'AS-1',
-          quotationVersion: 2,
-          serviceRequestKind: 'FAULT',
-        }),
-      ),
-      'AS-1 bản 2, Báo lỗi',
-    )
-    assert.equal(receiptContextDetail(row('AFTER_SALES_QUOTATION')), '')
-    assert.equal(receiptContextDetail(row('INSTALLATION_DEPOSIT', { contractNumber: 'HD-1' })), 'Hợp đồng HD-1')
-    assert.equal(receiptContextDetail(row('INSTALLATION_DEPOSIT')), '')
-    assert.doesNotMatch(receiptContextDetail(row('AFTER_SALES_QUOTATION', { quotationVersion: 1 })), /undefined|null/)
-  })
-
-  test('trạng thái theo người xem: phiếu chờ duyệt đỏ với quản lý, phiếu bị trả lại đỏ với kỹ thuật viên', () => {
-    assert.equal(receiptStatusMeta('SUBMITTED', 'staff').tone, 'danger')
-    assert.equal(receiptStatusMeta('REJECTED', 'technician').tone, 'danger')
-    assert.equal(receiptStatusMeta('SUBMITTED', 'technician').tone, 'info')
-    assert.equal(receiptStatusMeta('LA', 'staff').label, 'LA')
-  })
-
-  test('yêu cầu bổ sung bắt buộc lý do ≤ 500 ký tự; dòng chưa áp được tách ra để cảnh báo', () => {
-    assert.ok(reviewReasonError('  '))
-    assert.ok(reviewReasonError('x'.repeat(501)))
-    assert.equal(reviewReasonError('Ảnh mờ'), null)
-    const lines = [{ status: 'SETTLED' }, { status: 'REVIEW_REQUIRED' }]
-    assert.equal(unappliedLines(lines).length, 1)
-    assert.deepEqual(unappliedLines(null), [])
-  })
-
+describe('API phiếu thu', () => {
   test('đường dẫn API đúng swagger của backend và mọi mã lỗi phiếu thu có câu tiếng Việt', () => {
     assert.equal(
       ENDPOINTS.technicianAfterSales.quotationCashReceipt('q1'),

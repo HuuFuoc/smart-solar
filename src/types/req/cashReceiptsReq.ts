@@ -1,4 +1,4 @@
-// Body gửi phiếu thu và duyệt phiếu thu (backend 9ae01e7: CashReceiptRequest, CashReceiptReviewRequest)
+// Body gửi phiếu thu (backend 9ae01e7: CashReceiptRequest)
 
 /** POST .../payment/cash-receipt của kỹ thuật viên */
 export type CashReceiptRequest = {
@@ -11,12 +11,4 @@ export type CashReceiptRequest = {
   /** Có múi giờ; bỏ trống là lúc gửi */
   collectedAt: string | null
   note: string | null
-}
-
-/** POST /api/manager/payments/cash-receipts/{id}/accept | reject */
-export type CashReceiptReviewRequest = {
-  revision: number
-  /** Bắt buộc khi yêu cầu bổ sung, tối đa 500 ký tự */
-  reason?: string
-  note?: string | null
 }

@@ -22,7 +22,6 @@ import { Table, Td, Th, Tr } from '@/components/common/ui/table'
 import { paymentStatusMeta } from '@/features/after-sales/afterSalesDisplay'
 import { receiptDetailPath } from '@/features/cash-receipts/cashReceiptRoutes'
 import { CashConfirmDialog } from '@/features/contracts/CashConfirmDialog'
-import { CashReceiptsTab, type Viewer } from '@/features/payments/CashReceiptQueue'
 import { unappliedReasonText } from '@/features/payments/paymentDeskDisplay'
 import { formatMoment, vnTimestamp } from '@/features/scheduling/schedulingDisplay'
 import { useCashReceiptQueueQuery } from '@/hooks/useCashReceipts'
@@ -30,7 +29,6 @@ import {
   useConfirmAttemptCashMutation,
   usePaymentDeskQuery,
   usePendingCashCount,
-  useSubmittedReceiptCount,
   useUnappliedMoneyQuery,
 } from '@/hooks/usePaymentDesk'
 import { ROUTES, withId } from '@/routes/paths'
@@ -38,15 +36,16 @@ import type { StaffPaymentAttemptView } from '@/types/res/staffPaymentsRes'
 import { formatMoney } from '@/utils/format'
 
 // Bàn thu tiền (quản lý và quản trị dùng chung): mặc định là các lần khách chọn trả tiền mặt đang chờ thu. Xác nhận đã thu
-// theo từng lần thanh toán (hợp đồng, gói, báo giá sửa chữa); số tiền phải đúng bằng số cần thu. Tab "Phiếu thu" duyệt phiếu
-// kỹ thuật viên gửi sau khi nhận tiền tại công trình. Tab "Tiền chưa áp" là sổ chỉ đọc các khoản tiền đã nhận mà không áp vào
+// theo từng lần thanh toán (hợp đồng, gói, báo giá sửa chữa); số tiền phải đúng bằng số cần thu. Tab "Tiền chưa áp" là sổ chỉ đọc các khoản tiền đã nhận mà không áp vào
 // khoản nào: không duyệt hay hoàn tiền trên web. Mọi danh sách phân trang ở backend. Lần trả tiền mặt có phiếu thu đang chờ thì
 // mở trang xét duyệt phiếu thu, không xác nhận trực tiếp (backend trả 409)
 
 const PAGE_SIZE = 20
 
-type Tab = '' | 'phieu-thu' | 'tien-chua-ap'
-const TAB_VALUES: Tab[] = ['', 'phieu-thu', 'tien-chua-ap']
+type Tab = '' | 'tien-chua-ap'
+const TAB_VALUES: Tab[] = ['', 'tien-chua-ap']
+
+type Viewer = 'manager' | 'admin'
 const CONTRACT_PATTERN = { manager: ROUTES.manage.contract, admin: ROUTES.admin.contract }
 const CONTRACTS = { manager: ROUTES.manage.contracts, admin: ROUTES.admin.contracts }
 
@@ -385,7 +384,6 @@ function PaymentsPage({ viewer }: { viewer: Viewer }) {
   const [params, setParams] = useSearchParams()
   const tab = TAB_VALUES.find((t) => t === params.get('muc')) ?? ''
   const pending = usePendingCashCount().data
-  const receipts = useSubmittedReceiptCount().data
 
   return (
     <div>
@@ -398,19 +396,12 @@ function PaymentsPage({ viewer }: { viewer: Viewer }) {
         label="Mục"
         chips={[
           { value: '', label: 'Lần thanh toán' },
-          { value: 'phieu-thu', label: 'Phiếu thu', count: receipts, attention: true },
           { value: 'tien-chua-ap', label: 'Tiền chưa áp' },
         ]}
         value={tab}
         onChange={(next) => setParams(next ? { muc: next } : {}, { replace: true })}
       />
-      {tab === 'phieu-thu' ? (
-        <CashReceiptsTab viewer={viewer} />
-      ) : tab === 'tien-chua-ap' ? (
-        <UnappliedTab />
-      ) : (
-        <PaymentsTab viewer={viewer} />
-      )}
+      {tab === 'tien-chua-ap' ? <UnappliedTab /> : <PaymentsTab viewer={viewer} />}
     </div>
   )
 }
